@@ -59,7 +59,11 @@ trait CLIUtilsTest {
 		}
 		if(!caSendmail($to, __CA_ADMIN_EMAIL__, _t("[%1] Test email message", __CA_APP_DISPLAY_NAME__), 
 			_t("This is a test of the %1 system outgoing email configuration. If you are receiving this message then your outgoing email configuration appears to work!", __CA_APP_DISPLAY_NAME__),
-			_t("This is a test of the <em>%1</em> system outgoing email configuration. If you are receiving this message then your outgoing email configuration appears to work!", __CA_APP_DISPLAY_NAME__)
+			_t("This is a test of the <em>%1</em> system outgoing email configuration. If you are receiving this message then your outgoing email configuration appears to work!", __CA_APP_DISPLAY_NAME__),
+			null,
+			null,
+			null,
+			['logSuccess' => true, 'source' => 'Test', 'successMessage' => _t('Sent test email message to %1')]
 		)) {
 			CLIUtils::addError(_t("Failed to send test email to %1: %2", $to, $g_last_email_error));
 			return false;

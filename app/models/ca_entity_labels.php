@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -131,10 +131,10 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 512, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
+				'LABEL' => 'Sortable value', 'DESCRIPTION' => 'Sortable version of name value',
 				'BOUNDS_LENGTH' => array(0,512)
 		),
 		'source_info' => array(
@@ -150,6 +150,13 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
+		),
+		'checked' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Checked'), 'DESCRIPTION' => _t('Indicates if components of name have been verified')
 		),
 		'effective_date' => array(
 				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -296,13 +303,15 @@ class ca_entity_labels extends BaseLabel {
 	 * @return bool
 	 */
 	public function insert($options=null) {
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
+
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			// auto-split entity name into forename and surname if displayname is set and 
 			// surname and forename are not explicitly defined
 			$we_set_displayname = false;
 			if($displayname = trim($this->get('displayname'))) {
 			
-				if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+				if ($is_org) {
 					$label = [
 						'displayname' => $displayname,
 						'surname' => $displayname,
@@ -330,8 +339,20 @@ class ca_entity_labels extends BaseLabel {
 		
 		// Generate displayname from forename/middlename/surname when subject
 		// entity is organization or displayname is not explicitly defined
-		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
-			$this->set('displayname', $this->get('surname'));
+		if ($is_org) {
+			if($this->get('displayname') && !$this->get('surname')) {
+				$this->set('surname', trim($this->get('displayname')));
+			} elseif($this->get('displayname') && $this->get('forename')) {
+				$this->set('surname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
+				$this->set('displayname', $this->get('surname'));
+				$this->set('forename', '');
+			} else {	
+				$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
+				$this->set('surname', $this->get('displayname'));
+			}
+			
+			$this->set('middlename', '');
+			$this->set('forename', '');	
 		} elseif (!$this->get('displayname')) {
 			if(is_array($normalized_label = self::normalizeLabel($label_values = [
 				'prefix' => $this->get('prefix'),
@@ -352,7 +373,6 @@ class ca_entity_labels extends BaseLabel {
 				$this->set('displayname', self::labelAsString($label_values));
 			}
 		}
-		
 		return parent::insert($options);
 	}
 	# ------------------------------------------------------
@@ -360,12 +380,23 @@ class ca_entity_labels extends BaseLabel {
 	 * Convert label components into canonical format
 	 *
 	 * @param array $label_values
+	 * @param array $options
 	 *
 	 * @return array
 	 */
 	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
-		$normalized_values = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), $options);
-		return $normalized_values;
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
+		
+		$n =  DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+		
+		if((isset($label_values['suffix']) && strlen($label_values['suffix'])) || (isset($label_values['prefix']) && strlen($label_values['prefix']))) {
+			if(!($label_values['displayname'] ?? null)) {
+				$label_values['displayname'] = $n['displayname'];
+			}
+			// assume name is already split if suffix or prefix is set
+			return $label_values;
+		}
+		return $n;
 	}
 	# ------------------------------------------------------
 	/**
@@ -375,20 +406,30 @@ class ca_entity_labels extends BaseLabel {
 	 *
 	 * @return string
 	 */
-	public static function labelAsString(array $label_values) : string {
-		return trim(preg_replace('![ ]+!', ' ', $label_values['prefix'].' '.$label_values['forename'].' '.$label_values['other_forenames'].' '.$label_values['middlename'].' '.$label_values['surname'].' '.$label_values['suffix']));
+	public static function labelAsString(array $label_values) : ?string {
+		$n = trim(preg_replace('![ ]+!', ' ', ($label_values['prefix'] ?? null).' '.($label_values['forename'] ?? null).' '.($label_values['other_forenames'] ?? null).' '.($label_values['middlename'] ?? null).' '.($label_values['surname'] ?? null).' '.($label_values['suffix'] ?? null)));
+		if(!$n) { $n = $label_values['displayname'] ?? null; }
+		return $n;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
+	 * @param array $options
+	 *
+	 * @return bool
 	 */
 	public function update($options=null) {
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
 			return false;
 		}
-		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
-			$this->set('displayname', $this->get('surname'));
+		if (($t_entity = caGetOption('subject', $options, null)) && $is_org) {
+			if($this->changed('displayname') && !$this->changed('surname')) {
+				$this->set('surname', $this->get('displayname'));
+			} else {
+				$this->set('displayname', $this->get('surname'));
+			}
 		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}

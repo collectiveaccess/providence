@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2012 Whirl-i-Gig
+ * Copyright 2004-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,11 +46,10 @@ require_once(__CA_MODELS_DIR__."/ca_task_queue.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 class TaskQueue extends BaseObject {
-
 	private $opo_eventlog;
 	private $opo_processes;
 	private $opo_app_plugin_manager;
-	private $opa_handler_plugin_dirs = array();
+	private $opa_handler_plugin_dirs = [];
 	private $opo_config;
 
 	# ---------------------------------------------------------------------------
@@ -207,10 +206,10 @@ class TaskQueue extends BaseObject {
 	function resetUnfinishedTasks() {
 		// verify registered processes
 		$o_appvars = new ApplicationVars();
-		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
-		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
-		$va_opo_verified_processes = $this->verifyProcesses($va_opo_processes);
-		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_verified_processes);
+		$va_processes = $o_appvars->getVar("taskqueue_processes");
+		if (!is_array($va_processes)) { $va_processes = array(); }
+		$va_verified_processes = $this->verifyProcesses($va_processes);
+		$o_appvars->setVar("taskqueue_processes", $va_verified_processes);
 		$o_appvars->save();
 
 		$o_db = new Db();
@@ -580,30 +579,30 @@ class TaskQueue extends BaseObject {
 	 *
 	 */
 	function registerProcess() {
-		$vn_max_opo_processes = intval($this->opo_config->get('taskqueue_max_opo_processes'));
+		$vn_max_processes = intval($this->opo_config->get(['taskqueue_max_processes', 'taskqueue_max_opo_processes']));
 		
-		if ($vn_max_opo_processes < 1) { $vn_max_opo_processes = 1; }
+		if ($vn_max_processes < 1) { $vn_max_processes = 1; }
 		$o_appvars = new ApplicationVars();
-		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		$va_processes = $o_appvars->getVar("taskqueue_processes");
 	
-		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
-		$va_opo_processes = $this->verifyProcesses($va_opo_processes);
+		if (!is_array($va_processes)) { $va_processes = array(); }
+		$va_processes = $this->verifyProcesses($va_processes);
 		
-		if (sizeof($va_opo_processes) >= $vn_max_opo_processes) {
+		if (sizeof($va_processes) >= $vn_max_processes) {
 			// too many opo_processes running
 			return false;
 		}
 		
 		$vn_proc_id = $this->opo_processes->getProcessID();
 		if ($vn_proc_id) {
-			$va_opo_processes[$vn_proc_id] = array('time' => time(), 'entity_key' => '', 'row_key' => '');
+			$va_processes[$vn_proc_id] = array('time' => time(), 'entity_key' => '', 'row_key' => '');
 		} else {
 			// will use fallback timeout method to manage opo_processes since
 			// we cannot detect running opo_processes
-			$vn_proc_id = sizeof($va_opo_processes) + 1;
-			$va_opo_processes[$vn_proc_id] = array('time' => time(), 'entity_key' => '', 'row_key' => '');
+			$vn_proc_id = sizeof($va_processes) + 1;
+			$va_processes[$vn_proc_id] = array('time' => time(), 'entity_key' => '', 'row_key' => '');
 		}
-		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_processes);
+		$o_appvars->setVar("taskqueue_processes", $va_processes);
 		$o_appvars->save();
 		
 		return $vn_proc_id;
@@ -614,15 +613,15 @@ class TaskQueue extends BaseObject {
 	 */
 	function updateRegisteredProcess($pn_proc_id, $ps_row_key='', $ps_entity_key='') {
 		$o_appvars = new ApplicationVars();
-		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		$va_processes = $o_appvars->getVar("taskqueue_processes");
 		
-		if (is_array($va_opo_processes[$pn_proc_id])) {
-			$va_proc_info = $va_opo_processes[$pn_proc_id];
+		if (is_array($va_processes[$pn_proc_id])) {
+			$va_proc_info = $va_processes[$pn_proc_id];
 			$va_proc_info['row_key'] = $ps_row_key;
 			$va_proc_info['entity_key'] = $ps_entity_key;
 			
-			$va_opo_processes[$pn_proc_id] = $va_proc_info;
-			$o_appvars->setVar("taskqueue_opo_processes", $va_opo_processes);
+			$va_processes[$pn_proc_id] = $va_proc_info;
+			$o_appvars->setVar("taskqueue_processes", $va_processes);
 			$o_appvars->save();
 		}
 	}
@@ -632,10 +631,10 @@ class TaskQueue extends BaseObject {
 	 */
 	function rowKeyIsBeingProcessed($ps_row_key) {
 		$o_appvars = new ApplicationVars();
-		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		$va_processes = $o_appvars->getVar("taskqueue_processes");
 		
-		if (is_array($va_opo_processes)) {
-			foreach($va_opo_processes as $va_proc_info) {
+		if (is_array($va_processes)) {
+			foreach($va_processes as $va_proc_info) {
 				if ($va_proc_info['row_key'] == $ps_row_key) {
 					return true;
 				} 
@@ -649,10 +648,10 @@ class TaskQueue extends BaseObject {
 	 */
 	function entityKeyIsBeingProcessed($ps_row_key) {
 		$o_appvars = new ApplicationVars();
-		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		$va_processes = $o_appvars->getVar("taskqueue_processes");
 		
-		if (is_array($va_opo_processes)) {
-			foreach($va_opo_processes as $va_proc_info) {
+		if (is_array($va_processes)) {
+			foreach($va_processes as $va_proc_info) {
 				if ($va_proc_info['entity_key'] == $ps_row_key) {
 					return true;
 				} 
@@ -666,36 +665,36 @@ class TaskQueue extends BaseObject {
 	 */
 	function unregisterProcess($pn_proc_id) {
 		$o_appvars = new ApplicationVars();
-		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
-		unset($va_opo_processes[$pn_proc_id]);
-		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_processes);
+		$va_processes = $o_appvars->getVar("taskqueue_processes");
+		unset($va_processes[$pn_proc_id]);
+		$o_appvars->setVar("taskqueue_processes", $va_processes);
 		$o_appvars->save();
 	}
 	# ---------------------------------------------------------------------------
 	/**
 	 *
 	 */
-	function &verifyProcesses($pa_opo_processes) {
-		if (!is_array($pa_opo_processes)) { return array(); }
-		$va_verified_opo_processes = array();
+	function &verifyProcesses($pa_processes) {
+		if (!is_array($pa_processes)) { return array(); }
+		$va_verified_processes = array();
 		
 		if ($this->opo_processes->canDetectProcesses()) {
-			foreach($pa_opo_processes as $vn_proc_id => $va_proc_info) {
+			foreach($pa_processes as $vn_proc_id => $va_proc_info) {
 				if ($this->opo_processes->processExists($vn_proc_id)) {
-					$va_verified_opo_processes[$vn_proc_id] = $va_proc_info;
+					$va_verified_processes[$vn_proc_id] = $va_proc_info;
 				}
 			}
 		} else {
 			// use fallback timeout method
 			$vn_timeout = intval($this->opo_config->get('taskqueue_process_timeout'));
 			if ($vn_timeout < 60) { $vn_timeout = 3600; } 	// default is 1 hour
-			foreach($pa_opo_processes as $vn_proc_id => $va_proc_info) {
+			foreach($pa_processes as $vn_proc_id => $va_proc_info) {
 				if ((time() - $va_proc_info['time']) < $vn_timeout) {
-					$va_verified_opo_processes[$vn_proc_id] = $va_proc_info;
+					$va_verified_processes[$vn_proc_id] = $va_proc_info;
 				}
 			}
 		}
-		return $va_verified_opo_processes;	
+		return $va_verified_processes;	
 	}
 	# ---------------------------------------------------------------------------
 	# Utilities
@@ -709,4 +708,3 @@ class TaskQueue extends BaseObject {
 	}
 	# ---------------------------------------------------------------------------
 }
-# --------------------------------------------------------------------------------------------

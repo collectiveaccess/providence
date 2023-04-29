@@ -287,6 +287,32 @@ $_ca_list_items_settings = array(
 			'label' => _t('Include source entry for non-preferred labels?'),
 			'description' => _t('Include source entry field for non-preferred labels')
 		),
+		'show_checked_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include checked indicator for preferred labels?'),
+			'description' => _t('Include "checked" checkbox for preferred labels')
+		),
+		'show_checked_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include checked indicator for non-preferred labels?'),
+			'description' => _t('Include "checked" checkbox for non-preferred labels')
+		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -972,6 +998,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 		}
 		return $vn_rc;
 	}
@@ -1001,6 +1028,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 		}
 		return $vn_rc;
 	}
@@ -1051,6 +1079,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			}
 			
 			if ($o_trans) { $o_trans->commit(); }
+			
+			ExternalCache::flush('listItems');
+			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 				
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return true;

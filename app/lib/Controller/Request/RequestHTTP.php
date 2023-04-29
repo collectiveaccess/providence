@@ -202,6 +202,13 @@ class RequestHTTP extends Request {
 		
 		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? "/{$vs_path_info}" : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
 		
+		if(!caIsRunFromCLI() && defined('__CA_SITE_HOSTNAME__') && !ExternalCache::contains('system_url', 'system')) {
+			ExternalCache::save('system_url', [
+				'protocol' => __CA_SITE_PROTOCOL__,
+				'hostname' => __CA_SITE_HOSTNAME__,
+				'url_root' => __CA_URL_ROOT__
+			], 'system');
+		}
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
@@ -607,9 +614,6 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 			case pString:
 				if (is_string($vm_val)) {
-					if(caGetOption('retainBackslashes', $pa_options, true)) {
-						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
-					}
 					if(!$purified && caGetOption('urldecode', $pa_options, true)) {
 						$vm_val = rawurldecode($vm_val);
 					}

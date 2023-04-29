@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,789 +33,1478 @@
   /**
   *
   */
- 	require_once(__CA_LIB_DIR__.'/BaseObject.php');
- 	require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
- 	
-	class BaseFindEngine extends BaseObject {
-		# ------------------------------------------------------------------
-		/**
-		 *
-		 */
-		private $ops_tmp_file_path;
-		
-		/**
-		 *
-		 */
-		private $ops_tmp_table_name;
-		# ------------------------------------------------
-		protected $opo_db;
-		
-		# ------------------------------------------------
-		/**
-		 * @param Db $po_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
-		 */
-		public function __construct($po_db=null) {			
+require_once(__CA_LIB_DIR__.'/BaseObject.php');
+require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+
+class BaseFindEngine extends BaseObject {
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private $tmp_file_path;
 	
-			$this->opo_db = $po_db ? $po_db : new Db();
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Quickly loads list of row_ids in $pa_hits into a temporary database table uniquely identified by $ps_key
-		 * Only one temporary table can exist at a time for a given instance. If you call loadListIntoTemporaryResultTable() 
-		 * on an instance for which a temporary table has already been loaded the previously created table will be discarded
-		 * before the new one is created.
-		 *
-		 * @param array $pa_hits Array of row_id values
-		 * @param string $ps_key Unique alphanumeric identifier for the temporary table. Should only contain letters, numbers and underscores.
-		 * @param array $pa_options
-		 * @return string The name of the temporary table created
-		 */
-		public function loadListIntoTemporaryResultTable($pa_hits, $ps_key, $pa_options=null) {
-			global $g_mysql_has_file_priv;
-			
-			$ps_key = preg_replace('![^A-Za-z0-9_]+!', '_', $ps_key);
-			if ($this->ops_tmp_table_name == "caResultTmp{$ps_key}") {
-				return $this->ops_tmp_table_name;
-			}
-			
-			if ($this->ops_tmp_table_name) {
-				$this->cleanupTemporaryResultTable();
-			}
-			$this->ops_tmp_file_path = tempnam(caGetTempDirPath(), 'caResultTmp');
-			$this->ops_tmp_table_name = "caResultTmp{$ps_key}";
-			
-			
-			if (is_array($va_sortable_values = caGetOption('sortableValues', $pa_options, false))) {
-				$this->opo_db->query("
-					CREATE TEMPORARY TABLE {$this->ops_tmp_table_name} (
-						row_id int unsigned not null,
-						idx int unsigned not null,
-						sort_key1 varchar(255) not null default '',
-						sort_key2 varchar(255) not null default '',
-						sort_key3 varchar(255) not null default '',
-						key (row_id)
-					) engine=memory;
-				");
-			} else {
-				$this->opo_db->query("
-					CREATE TEMPORARY TABLE {$this->ops_tmp_table_name} (
-						row_id int unsigned not null,
-						key (row_id)
-					) engine=memory;
-				");
-			}
-			if (!sizeof($pa_hits)) { return $this->ops_tmp_table_name; }
-			
-			if (is_null($g_mysql_has_file_priv)) {	// Figure out if user has FILE priv
-				$qr_grants = $this->opo_db->query("
-					SHOW GRANTS;
-				");
-				$g_mysql_has_file_priv = false;
-				while($qr_grants->nextRow()) {
-					$va_grants = array_values($qr_grants->getRow());
-					$vs_grant = array_shift($va_grants);
-					if (preg_match('!^GRANT FILE!', $vs_grant)) {
-						$g_mysql_has_file_priv = true;
-						break;
-					}
-				}
-			}
+	/**
+	 *
+	 */
+	private $tmp_table_name;
+	
+	/**
+	 * List of temporary tables created
+	 */
+	private $temporary_tables = [];
+	
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	protected $db;
+	
+	# ------------------------------------------------
+	/**
+	 * @param Db $po_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
+	 */
+	public function __construct($po_db=null) {			
+		$this->db = $po_db ? $po_db : new Db();
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Quickly loads list of row_ids in $pa_hits into a temporary database table uniquely identified by $ps_key
+	 * Only one temporary table can exist at a time for a given instance. If you call loadListIntoTemporaryResultTable() 
+	 * on an instance for which a temporary table has already been loaded the previously created table will be discarded
+	 * before the new one is created.
+	 *
+	 * @param array $pa_hits Array of row_id values
+	 * @param string $ps_key Unique alphanumeric identifier for the temporary table. Should only contain letters, numbers and underscores.
+	 * @param array $pa_options
+	 * @return string The name of the temporary table created
+	 */
+	public function loadListIntoTemporaryResultTable($pa_hits, $ps_key, $pa_options=null) {
+		global $g_mysql_has_file_priv;
 		
-			if ((($g_mysql_has_file_priv === true) && (sizeof($pa_hits) > 500))) {
-				// Benchmarking has shown that using "LOAD DATA INFILE" with an on-disk tmp file performs best with large result sets
-				// The downside is that it requires the MySQL global FILE priv, which often is not granted, especially in shared environments
-				$vs_data = '';
-				if (is_array($va_sortable_values)) {
-					foreach($pa_hits as $vn_hit) {
-						if(!($vs_sort_key_1 = $va_sortable_values[0][$vn_hit])) { $vs_sort_key_1 = ''; }
-						if(!($vs_sort_key_2 = $va_sortable_values[1][$vn_hit])) { $vs_sort_key_2 = ''; }
-						if(!($vs_sort_key_3 = $va_sortable_values[2][$vn_hit])) { $vs_sort_key_3 = ''; }
-						if (is_numeric($vs_sort_key_1)) { $vs_sort_key_1 = str_pad($vs_sort_key_1, 12, '0', STR_PAD_LEFT); }
-						if (is_numeric($vs_sort_key_2)) { $vs_sort_key_2 = str_pad($vs_sort_key_2, 12, '0', STR_PAD_LEFT); }
-						if (is_numeric($vs_sort_key_3)) { $vs_sort_key_3 = str_pad($vs_sort_key_3, 12, '0', STR_PAD_LEFT); }
-						$vs_data .= $vn_hit.','.$vs_sort_key_1.','.$vs_sort_key_2.','.$vs_sort_key_3."\n";
-					}
-				} else {
-					$vs_data = join("\n", $pa_hits);
-				}
-				file_put_contents($this->ops_tmp_file_path, $vs_data);
-				chmod($this->ops_tmp_file_path, 0755);
-				
-				if (is_array($va_sortable_values)) {
-					$vs_sql = "LOAD DATA INFILE '{$this->ops_tmp_file_path}' INTO TABLE {$this->ops_tmp_table_name} FIELDS TERMINATED BY ',' (row_id, sort_key1, sort_key2, sort_key3)";
-					$this->opo_db->query($vs_sql);
-				} else {
-					$this->opo_db->query("LOAD DATA INFILE '{$this->ops_tmp_file_path}' INTO TABLE {$this->ops_tmp_table_name} (row_id)");
-				}
-			} else {
-				// Fallback when database login does not have FILE priv
-				
-				if (is_array($va_sortable_values)) {
-					$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id, idx, sort_key1, sort_key2, sort_key3) VALUES ";
-					foreach($pa_hits as $vn_index => $vn_hit) {
-						if(!($vs_sort_key_1 = $va_sortable_values[0][$vn_hit])) { $vs_sort_key_1 = ''; } else { $vs_sort_key_1 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_1); }
-						if(!($vs_sort_key_2 = $va_sortable_values[1][$vn_hit])) { $vs_sort_key_2 = ''; } else { $vs_sort_key_2 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_2); }
-						if(!($vs_sort_key_3 = $va_sortable_values[2][$vn_hit])) { $vs_sort_key_3 = ''; } else { $vs_sort_key_3 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_3); }
-						if (is_numeric($vs_sort_key_1)) { $vs_sort_key_1 = str_pad($vs_sort_key_1, 12, '0', STR_PAD_LEFT); }
-						if (is_numeric($vs_sort_key_2)) { $vs_sort_key_2 = str_pad($vs_sort_key_2, 12, '0', STR_PAD_LEFT); }
-						if (is_numeric($vs_sort_key_3)) { $vs_sort_key_3 = str_pad($vs_sort_key_3, 12, '0', STR_PAD_LEFT); }
-						
-						$vs_sql .= "(".(int)$vn_hit.",".(int)$vn_index.",'".$vs_sort_key_1."','".$vs_sort_key_2."','".$vs_sort_key_3."'),";
-					}
-				} else {
-					$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id) VALUES ";
-					foreach($pa_hits as $vn_hit) {
-						$vs_sql .= "(".(int)$vn_hit."),";
-					}
-				}
-				$this->opo_db->query(substr($vs_sql, 0, strlen($vs_sql)-1));
-			}
-			return $this->ops_tmp_table_name;
+		$ps_key = preg_replace('![^A-Za-z0-9_]+!', '_', $ps_key);
+		if ($this->tmp_table_name == "caResultTmp{$ps_key}") {
+			return $this->tmp_table_name;
 		}
-		# ------------------------------------------------------------------
-		/**
-		 * Remove the current temporary table and cleans up any temporary files on disk
-		 *
-		 * @return boolean Always return true
-		 */
-		public function cleanupTemporaryResultTable() {
-			if ($this->ops_tmp_table_name) {
-				if($this->opo_db->connected()) {
-					$this->opo_db->query("DROP TABLE {$this->ops_tmp_table_name}");
-				}
-			}
-			if ($this->ops_tmp_file_path) { @unlink($this->ops_tmp_file_path); }
-			$this->ops_tmp_file_path = null;
-			$this->ops_tmp_table_name = null;
-			
-			return true;
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Filter list of hits by ACL
-		 * @param array $pa_hits
-		 * @param int $pn_table_num
-		 * @param int $pn_user_id
-		 * @param int $pn_access
-		 * @return array
-		 */
-		public function filterHitsByACL($pa_hits, $pn_table_num, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__) {
-			if (!sizeof($pa_hits)) { return $pa_hits; }
-			if (!(int)$pn_user_id) { $pn_user_id = 0; }
-			$o_conf = Configuration::load();
-			if (!($t_table = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
-
-			$t_user = new ca_users($pn_user_id);
-			if ($t_user->canDoAction('is_administrator')) { return $pa_hits; }
-			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-				$va_group_ids = array_keys($va_groups);
-				$vs_group_sql = 'OR (ca_acl.group_id IN ('.join(',',$va_group_ids).'))';
-			} else {
-				$vs_group_sql = '';
-			}
-
-			$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, md5(rand(1,100000)));
-
-			// first get all items where user has an exception that grants him access.
-			// those trump everything and are definitely part of the result set
-			$qr_items = $this->opo_db->query($vs_sql = "
-				SELECT row_id
-				FROM ca_acl
-				WHERE
-					row_id IN (SELECT * FROM {$vs_search_tmp_table})
-					AND table_num = ? AND access >= ?
-					AND ((ca_acl.user_id = ?) {$vs_group_sql})
-			", (int)$pn_table_num, (int)$pn_access, (int)$pn_user_id);
-			$va_hits = $qr_items->getAllFieldValues('row_id');
-
-			// then get all items that have sufficient global access on item-level,
-			// minus those with an exception that prevents the current user from accessing
-			$qr_items = $this->opo_db->query("
-				SELECT row_id
-				FROM ca_acl
-				WHERE
-					row_id IN (SELECT row_id FROM {$vs_search_tmp_table})
-					AND table_num = ? AND user_id IS NULL AND group_id IS NULL AND access >= ?
-					AND row_id NOT IN (
-						SELECT row_id FROM ca_acl
-						WHERE
-							row_id IN (?)
-							AND table_num = ? AND access < ?
-							AND (user_id = ? {$vs_group_sql})
-					)
-			", (int)$pn_table_num, (int)$pn_access, $pa_hits, (int)$pn_table_num, (int)$pn_access, (int)$pn_user_id);
-			$va_hits = array_merge($va_hits, $qr_items->getAllFieldValues('row_id'));
-
-			// If requested access is less restrictive than default access,
-			// add items with no ACL that don't have an exception for this user and his groups
-			if ($pn_access <= $o_conf->get('default_item_access_level')) {
-				// Find records with default ACL for this user/group
-				$qr_sort = $this->opo_db->query("
-					SELECT {$vs_search_tmp_table}.row_id
-					FROM {$vs_search_tmp_table}
-					LEFT JOIN (SELECT * FROM ca_acl WHERE ((ca_acl.user_id = ?) {$vs_group_sql}) OR (ca_acl.user_id IS NULL)) AS ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
-					WHERE
-						ca_acl.row_id IS NULL
-				", array($pn_user_id, (int)$pn_table_num));
-
-				$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
-			}
-
+		
+		if ($this->tmp_table_name) {
 			$this->cleanupTemporaryResultTable();
-
-			return array_values(array_unique($va_hits));
 		}
-		# ------------------------------------------------------------------
-		/**
-		 * Sort results hits.
-		 *
-		 * @param array $hits Array of row_ids to be sorted
-		 * @param string $table The table for the results being sorted
-		 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
-		 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
-		 * @param array $options No options are currently defined.
-		 *
-		 * @return array
-		 */
-		public function sortHits(&$hits, $table, $sort_list, $sort_directions='asc', $options=null) {
-			if (!$t_table = Datamodel::getInstanceByTableName($table, true)) { return null; } // invalid table
-			if (!is_array($hits) || !sizeof($hits)) { return $hits; } // Don't try to sort empty results
-			
-			$table_pk = $t_table->primaryKey();
-			$table_num = $t_table->tableNum();
-			
-			// Expand field list into array
-			$sort_fields = is_array($sort_list) ? $sort_list : explode(';', $sort_list); 
-			$embedded_sort_directions = array_map(function($v) { $t = explode(':', $v); return (sizeof($t) == 2) ? strtolower(trim(array_pop($t))) : null; }, $sort_fields);
+		$this->tmp_file_path = tempnam(caGetTempDirPath(), 'caResultTmp');
+		$this->tmp_table_name = "caResultTmp{$ps_key}";
 		
-			$sort_directions = is_array($sort_directions) ? $sort_directions : explode(';', $sort_directions); 
-			if(sizeof($sort_directions) < sizeof($sort_fields)) {
-				$sort_directions = array_pad($sort_directions, sizeof($sort_fields), $sort_directions[0]);
-			}
-			foreach($embedded_sort_directions as $i => $d) {
-				if(in_array($d, ['asc', 'desc'])) { 
-					$sort_fields[$i] = array_shift(explode(':', $sort_fields[$i]));
-					$sort_directions[$i] = $d; 
+		
+		if (is_array($va_sortable_values = caGetOption('sortableValues', $pa_options, false))) {
+			$this->db->query("
+				CREATE TEMPORARY TABLE {$this->tmp_table_name} (
+					row_id int unsigned not null,
+					idx int unsigned not null,
+					sort_key1 varchar(255) not null default '',
+					sort_key2 varchar(255) not null default '',
+					sort_key3 varchar(255) not null default '',
+					key (row_id)
+				) engine=memory;
+			");
+		} else {
+			$this->db->query("
+				CREATE TEMPORARY TABLE {$this->tmp_table_name} (
+					row_id int unsigned not null,
+					key (row_id)
+				) engine=memory;
+			");
+		}
+		if (!sizeof($pa_hits)) { return $this->tmp_table_name; }
+		
+		if (is_null($g_mysql_has_file_priv)) {	// Figure out if user has FILE priv
+			$qr_grants = $this->db->query("
+				SHOW GRANTS;
+			");
+			$g_mysql_has_file_priv = false;
+			while($qr_grants->nextRow()) {
+				$va_grants = array_values($qr_grants->getRow());
+				$vs_grant = array_shift($va_grants);
+				if (preg_match('!^GRANT FILE!', $vs_grant)) {
+					$g_mysql_has_file_priv = true;
+					break;
 				}
 			}
-			if (sizeof($sort_directions) !== sizeof($sort_fields)) {
-				$sort_directions = array_pad($sort_directions, sizeof($sort_fields), "asc");
+		}
+	
+		if ((($g_mysql_has_file_priv === true) && (sizeof($pa_hits) > 500))) {
+			// Benchmarking has shown that using "LOAD DATA INFILE" with an on-disk tmp file performs best with large result sets
+			// The downside is that it requires the MySQL global FILE priv, which often is not granted, especially in shared environments
+			$vs_data = '';
+			if (is_array($va_sortable_values)) {
+				foreach($pa_hits as $vn_hit) {
+					if(!($vs_sort_key_1 = $va_sortable_values[0][$vn_hit])) { $vs_sort_key_1 = ''; }
+					if(!($vs_sort_key_2 = $va_sortable_values[1][$vn_hit])) { $vs_sort_key_2 = ''; }
+					if(!($vs_sort_key_3 = $va_sortable_values[2][$vn_hit])) { $vs_sort_key_3 = ''; }
+					if (is_numeric($vs_sort_key_1)) { $vs_sort_key_1 = str_pad($vs_sort_key_1, 12, '0', STR_PAD_LEFT); }
+					if (is_numeric($vs_sort_key_2)) { $vs_sort_key_2 = str_pad($vs_sort_key_2, 12, '0', STR_PAD_LEFT); }
+					if (is_numeric($vs_sort_key_3)) { $vs_sort_key_3 = str_pad($vs_sort_key_3, 12, '0', STR_PAD_LEFT); }
+					$vs_data .= $vn_hit.','.$vs_sort_key_1.','.$vs_sort_key_2.','.$vs_sort_key_3."\n";
+				}
+			} else {
+				$vs_data = join("\n", $pa_hits);
 			}
+			file_put_contents($this->tmp_file_path, $vs_data);
+			chmod($this->tmp_file_path, 0755);
 			
-			$sort_directions = array_map(function($v) { return strtolower($v); }, $sort_directions);
+			if (is_array($va_sortable_values)) {
+				$vs_sql = "LOAD DATA INFILE '{$this->tmp_file_path}' INTO TABLE {$this->tmp_table_name} FIELDS TERMINATED BY ',' (row_id, sort_key1, sort_key2, sort_key3)";
+				$this->db->query($vs_sql);
+			} else {
+				$this->db->query("LOAD DATA INFILE '{$this->tmp_file_path}' INTO TABLE {$this->tmp_table_name} (row_id)");
+			}
+		} else {
+			// Fallback when database login does not have FILE priv
 			
-			$sorted_hits = $sort_key_values = [];
-			$qr_sort = $set_id = null;
-			
-			foreach($sort_fields as $i => $sort_field) {
-				$sort_direction = $sort_directions[$i];
-				$sort_tmp = preg_split('![/\|]+!', $sort_field);		// isolate relationship type (and/or item type) if present
-				$sort_rel_type = (sizeof($sort_tmp) > 1) ? $sort_tmp[1] : null;	
-				$sort_item_type = (sizeof($sort_tmp) > 2) ? $sort_tmp[2] : null;	
-				
-				$sort_field = $sort_tmp[0];	// strip relationship type (and/or item type)
-				
-				list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
-				if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { break; }
+			if (is_array($va_sortable_values)) {
+				$vs_sql = "INSERT IGNORE INTO {$this->tmp_table_name} (row_id, idx, sort_key1, sort_key2, sort_key3) VALUES ";
+				foreach($pa_hits as $vn_index => $vn_hit) {
+					if(!($vs_sort_key_1 = $va_sortable_values[0][$vn_hit])) { $vs_sort_key_1 = ''; } else { $vs_sort_key_1 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_1); }
+					if(!($vs_sort_key_2 = $va_sortable_values[1][$vn_hit])) { $vs_sort_key_2 = ''; } else { $vs_sort_key_2 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_2); }
+					if(!($vs_sort_key_3 = $va_sortable_values[2][$vn_hit])) { $vs_sort_key_3 = ''; } else { $vs_sort_key_3 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_3); }
+					if (is_numeric($vs_sort_key_1)) { $vs_sort_key_1 = str_pad($vs_sort_key_1, 12, '0', STR_PAD_LEFT); }
+					if (is_numeric($vs_sort_key_2)) { $vs_sort_key_2 = str_pad($vs_sort_key_2, 12, '0', STR_PAD_LEFT); }
+					if (is_numeric($vs_sort_key_3)) { $vs_sort_key_3 = str_pad($vs_sort_key_3, 12, '0', STR_PAD_LEFT); }
 					
-				// Transform preferred_labels bundles into label-table references
-				// Eg. ca_objects.preferred_labels.name => ca_object_labels.name
-				if ($sort_field == 'preferred_labels') {
-					$sort_table = $t_bundle->getLabelTableName();
-					$sort_field = $sort_subfield ? $sort_subfield : $t_bundle->getLabelDisplayField();
-					$sort_subfield = null;
+					$vs_sql .= "(".(int)$vn_hit.",".(int)$vn_index.",'".$vs_sort_key_1."','".$vs_sort_key_2."','".$vs_sort_key_3."'),";
 				}
-								
-				// Are we sorting on a set? That's handled specially below...
-				$set_id = null;
-				if (!($set_id = preg_match("!^ca_sets.set_id:([\d]+)$!", $sort_field, $va_matches) ? $va_matches[1] : null)) {	// sort on set_id (Eg. ca_sets.set_id:23)
-					if (($sort_table == 'ca_set_items') && ($sort_field == 'rank') && ((int)$sort_rel_type > 0)) { $set_id = (int)$sort_rel_type; }	// sort of ca_set_items.rank with set_id expressed as relationship type (Eg. ca_set_items.rank/23)
+			} else {
+				$vs_sql = "INSERT IGNORE INTO {$this->tmp_table_name} (row_id) VALUES ";
+				foreach($pa_hits as $vn_hit) {
+					$vs_sql .= "(".(int)$vn_hit."),";
 				}
+			}
+			$this->db->query(substr($vs_sql, 0, strlen($vs_sql)-1));
+		}
+		return $this->tmp_table_name;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Remove the current temporary table and cleans up any temporary files on disk
+	 *
+	 * @return boolean Always return true
+	 */
+	public function cleanupTemporaryResultTable() {
+		if ($this->tmp_table_name) {
+			if($this->db->connected()) {
+				$this->db->query("DROP TEMPORARY TABLE {$this->tmp_table_name}");
+			}
+		}
+		if ($this->tmp_file_path) { @unlink($this->tmp_file_path); }
+		$this->tmp_file_path = null;
+		$this->tmp_table_name = null;
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Filter list of hits by ACL
+	 * @param array $pa_hits
+	 * @param int $pn_table_num
+	 * @param int $pn_user_id
+	 * @param int $pn_access
+	 * @return array
+	 */
+	public function filterHitsByACL($pa_hits, $pn_table_num, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__) {
+		if (!sizeof($pa_hits)) { return $pa_hits; }
+		if (!(int)$pn_user_id) { $pn_user_id = 0; }
+		$o_conf = Configuration::load();
+		if (!($t_table = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
+
+		$t_user = new ca_users($pn_user_id);
+		if ($t_user->canDoAction('is_administrator')) { return $pa_hits; }
+		if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+			$va_group_ids = array_keys($va_groups);
+			$vs_group_sql = 'OR (ca_acl.group_id IN ('.join(',',$va_group_ids).'))';
+		} else {
+			$vs_group_sql = '';
+		}
+
+		$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, md5(rand(1,100000)));
+
+		// first get all items where user has an exception that grants him access.
+		// those trump everything and are definitely part of the result set
+		$qr_items = $this->db->query($vs_sql = "
+			SELECT row_id
+			FROM ca_acl
+			WHERE
+				row_id IN (SELECT * FROM {$vs_search_tmp_table})
+				AND table_num = ? AND access >= ?
+				AND ((ca_acl.user_id = ?) {$vs_group_sql})
+		", (int)$pn_table_num, (int)$pn_access, (int)$pn_user_id);
+		$va_hits = $qr_items->getAllFieldValues('row_id');
+
+		// then get all items that have sufficient global access on item-level,
+		// minus those with an exception that prevents the current user from accessing
+		$qr_items = $this->db->query("
+			SELECT row_id
+			FROM ca_acl
+			WHERE
+				row_id IN (SELECT row_id FROM {$vs_search_tmp_table})
+				AND table_num = ? AND user_id IS NULL AND group_id IS NULL AND access >= ?
+				AND row_id NOT IN (
+					SELECT row_id FROM ca_acl
+					WHERE
+						row_id IN (?)
+						AND table_num = ? AND access < ?
+						AND (user_id = ? {$vs_group_sql})
+				)
+		", (int)$pn_table_num, (int)$pn_access, $pa_hits, (int)$pn_table_num, (int)$pn_access, (int)$pn_user_id);
+		$va_hits = array_merge($va_hits, $qr_items->getAllFieldValues('row_id'));
+
+		// If requested access is less restrictive than default access,
+		// add items with no ACL that don't have an exception for this user and his groups
+		if ($pn_access <= $o_conf->get('default_item_access_level')) {
+			// Find records with default ACL for this user/group
+			$qr_sort = $this->db->query("
+				SELECT {$vs_search_tmp_table}.row_id
+				FROM {$vs_search_tmp_table}
+				LEFT JOIN (SELECT * FROM ca_acl WHERE ((ca_acl.user_id = ?) {$vs_group_sql}) OR (ca_acl.user_id IS NULL)) AS ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
+				WHERE
+					ca_acl.row_id IS NULL
+			", array($pn_user_id, (int)$pn_table_num));
+
+			$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
+		}
+
+		$this->cleanupTemporaryResultTable();
+
+		return array_values(array_unique($va_hits));
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Sort results hits.
+	 *
+	 * @param array $hits Array of row_ids to be sorted
+	 * @param string $table The table for the results being sorted
+	 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
+	 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
+	 * @param array $options No options are currently defined.
+	 *
+	 * @return array
+	 */
+	public function sortHits(array $hits, string $table, $sort_list, $sort_directions='asc', array $options=null) {
+		if(!sizeof($hits)) { return []; }
+		if(!is_array($options)) { $options = []; }
+		
+		// Expand field list into array
+		$sort_fields = is_array($sort_list) ? $sort_list : explode(';', $sort_list); 
+		$embedded_sort_directions = array_map(function($v) { $t = explode(':', $v); return (sizeof($t) == 2) ? strtolower(trim(array_pop($t))) : null; }, $sort_fields);
+		$rel_types = array_map(function($v) { $t = explode('/', $v); return (sizeof($t) == 2) ? array_filter(explode(',',array_pop($t)), 'strlen') : null; }, $sort_fields);
+		
+		$sort_directions = is_array($sort_directions) ? $sort_directions : explode(';', $sort_directions); 
+		if(sizeof($sort_directions) < sizeof($sort_fields)) {
+			$sort_directions = array_pad($sort_directions, sizeof($sort_fields), $sort_directions[0]);
+		}
+		foreach($embedded_sort_directions as $i => $d) {
+			if(in_array($d, ['asc', 'desc'])) { 
+				$sort_fields[$i] = array_shift(explode(':', $sort_fields[$i]));
+				$sort_directions[$i] = $d; 
+			}
+		}
+		if (sizeof($sort_directions) !== sizeof($sort_fields)) {
+			$sort_directions = array_pad($sort_directions, sizeof($sort_fields), "asc");
+		}
+		
+		$parsed_sort_spec = self::_parseSortOpts(array_shift($sort_fields));
+		$primary_sort_field = $parsed_sort_spec['sort'];
+		$options = array_merge($options, $parsed_sort_spec['options']);
+		if ($primary_sort_field === '_natural') { return $hits; }
+		$primary_sort_direction = self::sortDirection(array_shift($sort_directions));
+		
+		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, array_merge($options, ['relationshipTypes' => array_shift($rel_types)]));
+		
+		// secondary sorts?
+		if(is_array($sort_fields) && (sizeof($sort_fields) > 0)) {	
+			foreach($sort_fields as $i => $s) {
+				$parsed_sort_spec = self::_parseSortOpts($s);
+				$sort_fields[$i] = $parsed_sort_spec['sort'];
+				$options = array_merge($options, $parsed_sort_spec['options']);
+			}
+			$sorted_hits = $this->_secondarySortHits($hits, $sorted_hits, $table, $primary_sort_field, $primary_sort_direction, $sort_fields, $sort_directions, array_merge($options, ['relationshipTypes' => $rel_types]));
+		}
+		
+		return $sorted_hits;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _parseSortOpts(string $sort) : array {
+		$tmp = explode('%', $sort);
+		$spec = array_shift($tmp);
+		$opts = join("%", $tmp);
+		
+		$tag_opt_tmp = array_filter(preg_split("![\%\&]{1}!", $opts), "strlen");
+		
+		$opts = [];
+		foreach($tag_opt_tmp as $t) {
+			$tmp2 = explode('=', $t);
+			$opts[$tmp2[0]] = $tmp2[1];
+		}
+		return ['sort' => $spec, 'options' => $opts];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function _secondarySortHits(array $hits, array $page_hits, string $table, string $primary_field, string $primary_sort_direction, array $sort_fields, array $sort_directions, array $options=null) {
+		if(!sizeof($hits)) { return []; }
+		$sort_spec = array_shift($sort_fields);
+		$sort_direction = self::sortDirection(array_shift($sort_directions));
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_spec), 3, null);
+	
+		// Extract sortable values present on results page ($page_hits)
+		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
+		// Get all ids for each key value 
+		$row_ids_by_value = $this->_getRowIDsForValues($hits, $table, $primary_field, array_keys($values));
+	
+		// Sort rows for each value
+		$sorted_rows_by_value = [];	// only includes rows with frequency > 1
+		foreach($row_ids_by_value as $value => $row_ids) {
+			if(sizeof($row_ids) === 1) { continue; }
+			if(sizeof($row_ids) < 1) { unset($row_ids_by_value[$value]); continue; }
 			
-				if ($set_id) {	// sort by set ranks
-					$sort_key_values[] = ca_sets::getRowIDRanksForSet($set_id);
-					continue;
-				} elseif ($sort_table === $table) {	// sort in primary table
-					
-					if (!$t_table->hasField($sort_field)) {
-						if($sort_keys = $this->_getSortKeysForElement($sort_subfield ? $sort_subfield : $sort_field, $table_num, $hits)) {
-							$sort_key_values[] = $sort_keys;
-						}
+			$s = $this->doSort($row_ids, $table, $sort_spec, $sort_direction, []);
+			if (is_array($s) && sizeof($s)) { 
+				$sorted_rows_by_value[$value] = $s; 
+			} else {
+				unset($sorted_rows_by_value[$value]);
+				continue;
+			}
+			
+			if(sizeof($sort_fields)) {
+				$sorted_rows_by_value[$value] = $this->_secondarySortHits($sorted_rows_by_value[$value], $sorted_rows_by_value[$value], $table, $sort_spec, $sort_direction, $sort_fields, $sort_directions, []);
+			}
+		}
+	
+		// Splice secondary sorts into page
+		$sorted_page_hits = $page_hits;
+		
+		$page_start = $s = caGetOption('start', $options, 0);
+		$l = caGetOption('limit', $options, sizeof($page_hits));
+		
+		foreach($sorted_rows_by_value as $value => $row_ids) {
+			foreach($page_hits as $index => $row_id) {
+				if (($map_index = array_search($row_id, $row_ids)) !== false) {
+					if((sizeof($hits) === sizeof($row_ids)) && (sizeof($sorted_rows_by_value) === 1)) {
+						return $row_ids;
+					} elseif ($index > 0) {	// starts after beginning of this page
+						$lr = sizeof($row_ids);
+						if (($lr + $index) >= sizeof($sorted_page_hits)) { $lr = sizeof($sorted_page_hits) - $index; }
+						array_splice($sorted_page_hits, $index, $lr, array_slice($row_ids, 0, $lr));
 					} else {
-						// is intrinsic
-						$va_field_info = $t_table->getFieldInfo($sort_field);
-						if ($va_field_info['START'] && $va_field_info['END']) {
-							$sort_field = $va_field_info['START'];
-						}
-						
-						$sql = "
-							SELECT {$table_pk}, `{$sort_field}`
-							FROM {$table}
-							WHERE
-								{$table_pk} IN (?)
-						";
-						$qr_sort = $this->opo_db->query($sql, array($hits));
-						$sort_keys = [];
-						while($qr_sort->nextRow()) {
-							$row = $qr_sort->getRow();
-							$sort_keys[$row[$table_pk]] = $row[$sort_field];
-						}
-						$sort_key_values[] = $sort_keys;
-						continue;
-					}
-				} elseif($table !== $sort_table) { // sort in related table
-					$t_sort_field_table = Datamodel::getInstanceByTableName($sort_table, true);
-					$path = Datamodel::getPath($table, $sort_table);
+						// first result is at start of page, so we need to figure out if the sequence begins on a previous page
+						$start = null;
+						if ($page_start > 0) {
+							$c = 0;
+							do {			// loop back through pages until we find the beginning
+								$c++;
+								$s -= $l;
+								$p_hits = $this->doSort($hits, $table, $primary_field, $primary_sort_direction, ['start' => $s, 'limit' => $l]); 
 					
-					$field_table_pk = $t_sort_field_table->primaryKey();
-			
-					$is_preferred_sql = null;
-					$joins = [];
-					
-					if (sizeof($path) > 1) {
-						// many-many relationship
-						$last_table = null;
-						
-						// generate joins for related tables
-						foreach(array_keys($path) as $join_table) {
-							//if ($sort_table === $join_table) { continue; }
-							$t_join = Datamodel::getInstanceByTableName($join_table, true);
-							$join_pk = $t_join->primaryKey();
-			                $has_deleted = $t_join->hasField('deleted');
-							
-							$sort_rel_type_sql = $sort_item_type_sql = null;
-							if($t_join->isRelationship() && $sort_rel_type) {
-								if(is_array($va_rel_types = caMakeRelationshipTypeIDList($join_table, explode(",", $sort_rel_type))) && sizeof($va_rel_types)) {
-									$sort_rel_type_sql = " AND {$join_table}.type_id IN (".join(",", $va_rel_types).")";
+								foreach($p_hits as $p_index => $p_row_id) {
+									if (($p_map_index = array_search($p_row_id, $row_ids)) !== false) {	// sorted rows present on this page
+										if($p_index > 0) { 		// starts on this page
+											$start = (($c-1) * $l) + $p_index;
+											break(2); 
+										} else {					// covers entire currage page. so we can't be sure this is the start... keep looking
+											continue(2);
+										}
+									} 
 								}
-							} elseif (method_exists($t_join, "getTypeFieldName") && ($vs_type_fld_name = $t_join->getTypeFieldName())) {
-							    if(($join_table !== $table) && is_array($va_item_types = caMakeTypeIDList($join_table, explode(",", $sort_item_type))) && sizeof($va_item_types)) {
-									$sort_item_type_sql = " AND {$join_table}.{$vs_type_fld_name} IN (".join(",", $va_item_types).")";
-								}
-							}
-							
-							$deleted_sql = $has_deleted ? " AND {$join_table}.deleted = 0 " : "";
-							
-							if ($last_table) {
-								$rels = Datamodel::getOneToManyRelations($last_table, $join_table);
-								if (!sizeof($rels)) {
-									$rels = Datamodel::getOneToManyRelations($join_table, $last_table);
-								}
-								if ($join_table == $rels['one_table']) {
-									$joins[$join_table] = "INNER JOIN ".$rels['one_table']." ON ".$rels['one_table'].".".$rels['one_table_field']." = ".$rels['many_table'].".".$rels['many_table_field'].$sort_rel_type_sql.$sort_item_type_sql.$deleted_sql;
-								} else {
-									$joins[$join_table] = "INNER JOIN ".$rels['many_table']." ON ".$rels['many_table'].".".$rels['many_table_field']." = ".$rels['one_table'].".".$rels['one_table_field'].$sort_rel_type_sql.$sort_item_type_sql.$deleted_sql;
-								}
-							}
-							if ($join_table !== $sort_table) { $last_table = $join_table; }
-						}
-						
-						$rels = Datamodel::getRelationships($last_table, $sort_table);
-						if (!$rels) { break; }		// field is not valid
-
-						if ($t_sort_field_table->hasField($sort_field)) { // sorting on intrinsic in related table
-							$joins[$sort_table] = 'INNER JOIN '.$sort_table.' ON '.$last_table.'.'.$rels[$last_table][$sort_table][0][0].' = '.$sort_table.'.'.$rels[$last_table][$sort_table][0][1]."\n";
-
-							// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
-							if ($t_sort_field_table->hasField('is_preferred')) {
-								$is_preferred_sql = " {$sort_table}.is_preferred = 1";
-							}
+								
+								// nothing found on page
+								$start = $l * ($c-1);
+								break;
+							} while($s > 0);
 						} else {
-							// non-intrinsic
-							$sort_table_full_pk = $t_sort_field_table->primaryKey(true);
-							$join_sql = join("\n", $joins);
-							
-							// Get list of related sortables against hits
-							$sql = "
-								SELECT {$sort_table_full_pk}, {$table}.{$table_pk}
-								FROM {$table}
-								{$join_sql}
-								WHERE
-									{$is_preferred_sql} ".($is_preferred_sql ? ' AND ' : '')." {$table}.{$table_pk} IN (?)
-							";
-						
-							$qr_sort = $this->opo_db->query($sql, array($hits));
-							
-							$acc = $rel_ids = [];
-							while($qr_sort->nextRow()) {
-								$rel_id = $qr_sort->get($sort_table_full_pk);
-								$acc[$qr_sort->get("{$table}.{$table_pk}")][$rel_id] = true;	// list of sortables per hit
-								$rel_ids[] = $rel_id;	// list of sortables
-							}
-							if(!sizeof($rel_ids)) { return $hits; }
-							if (!($qr_keys = caMakeSearchResult($sort_table, $rel_ids))) { return $hits; }
-							
-							$keys = [];	// sortable values by sort id
-							while($qr_keys->nextHit()) {	// Loop on sortables
-								$sort_id = $qr_keys->get($sort_table_full_pk);
-								$sort_values = $qr_keys->get("{$sort_table}.{$sort_field}", ['sortable' => true, 'returnAsArray' => true]);
-								
-								if(!is_array($keys[$sort_id])) { $keys[$sort_id] = []; }
-								foreach($sort_values as $i => $sort_value) {
-									$keys[$sort_id][$sort_value] = true;
-								}
-							}
-							$sort_keys = [];
-							foreach($acc as $id => $rel_ids) {
-								if(!is_array($sort_keys[$id])) { $sort_keys[$id] = []; }
-								foreach(array_keys($rel_ids) as $rel_id) {
-									$sort_keys[$id] = array_filter(array_merge($sort_keys[$id], array_keys($keys[$rel_id])), "strlen");
-								}
-							}
-							
-							$sort_keys = array_map(
-								function($v) use ($sort_direction) { 
-									sort($v); 
-									$v = array_map(function($x) { 
-										return is_numeric($x) ? str_pad(substr($x, 0, 50), 50,  '0', STR_PAD_LEFT) : str_pad(substr($x, 0, 50), 50,  ' ', STR_PAD_RIGHT); 
-									}, $v);
-									sort($v);
-									if($sort_direction === 'desc') { $v = array_reverse($v); }
-									return join("; ", $v); 
-								}, $sort_keys);
-								
-							$sort_key_values[] = $sort_keys;
+							$start = $map_index;
+						}
+					
+						if(!is_null($start)) {
+							$s_row_ids = array_slice($row_ids, $start, $l);
+							array_splice($sorted_page_hits, 0, sizeof($s_row_ids), $s_row_ids);
+						} else {
 							continue;
 						}
-					} else {
-						continue;
 					}
 					
-					$vs_join_sql = join("\n", $joins);
-					$sql = "
-						SELECT {$table}.{$table_pk}, {$sort_table}.`{$sort_field}`
-						FROM {$table}
-						{$vs_join_sql}
-						WHERE
-							{$is_preferred_sql} ".($is_preferred_sql ? ' AND ' : '')." {$table}.{$table_pk} IN (?)
-					";
 					
-					$qr_sort = $this->opo_db->query($sql, array($hits));
-				}
-					
-				if($qr_sort) {
-					$va_sort_keys = array();
-					while($qr_sort->nextRow()) {
-						$va_row = $qr_sort->getRow();
-						$va_sort_keys[$va_row[$table_pk]] = $va_row[$sort_field];
-					}
-					$sort_key_values[] = $va_sort_keys;
+					break;
 				}
 			}
-			
-			return $this->_doSort($hits, $sort_key_values, $sort_directions, $options);
 		}
-		# ------------------------------------------------------------------
-		/**
-		 * Perform sort hits using sortable values as keys
-		 * 
-		 * @param array $hits
-		 * @param array $sortable_values
-		 * @param string $directions
-		 * @param array $options
-		 *
-		 * @return array
-		 */
-		private function _doSort(&$hits, $sortable_values, $sort_directions, $options=null) {
-			$sorted_rows = [];
-			$return_index = caGetOption('returnIndex', $options, false);
+		return $sorted_page_hits;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Sort results hits.
+	 *
+	 * @param array $hits Array of row_ids to be sorted
+	 * @param string $table The table for the results being sorted
+	 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
+	 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
+	 * @param array $options No options are currently defined.
+	 *
+	 * @return array
+	 */
+	public function doSort(array $hits, string $table, string $sort_field, string $sort_direction='asc', array $options=null) {
+		if(!sizeof($hits)) { return []; }
+		if (!$t_table = Datamodel::getInstanceByTableName($table, true)) { return null; } // invalid table
+		if (!is_array($hits) || !sizeof($hits)) { return $hits; } // Don't try to sort empty results
+		$start = caGetOption('start', $options, 0);
+		$limit = caGetOption('limit', $options, null);
+		
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		list($sort_field, $sort_filter) = array_pad(explode('|', $sort_field), 2, null);
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
+		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
+			//throw new ApplicationException(_t('Invalid sort field: %1', $sort_table));
+			return $hits;
+		}
+		
+		list($sort_filter_field, $sort_field_values) = array_pad(explode('=', $sort_filter), 2, null);
+		$sort_field_values = array_map('trim', preg_split('![,;]+!', $sort_field_values));
+	
+		$hit_table = $this->_createTempTableForHits($hits);
+		if ($sort_table === $table) {	// sort in primary table
+			if (in_array($sort_field, ['history_tracking_current_value', 'ca_objects_location'])) {
+				$policy = caGetOption('policy', $options, $table::getDefaultHistoryTrackingCurrentValuePolicyForTable($sort_table));
+				$sort_key_values = $this->_sortByHistoryTrackingCurrentValue($t_table, $hit_table, $policy, $sort_direction, $hits, $options);
+			} elseif ($t_table->hasField($sort_field)) {			// sort key is intrinsic
+				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $sort_direction, $options);
+			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
+				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $sort_subfield, $sort_direction, $hits, array_merge($options, ['filter' => $sort_filter_field ,'filterValues' => $sort_field_values]));
+			} elseif($sort_field === 'preferred_labels') {
+				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
+			} elseif($sort_field === 'nonpreferred_labels') {
+				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
 			
-			if(!is_array($sort_directions)) {
-				$sort_directions = array_pad($sort_directions, sizeof($sortable_values), (strtolower($sort_directions) == 'desc') ? 'desc' : 'asc');
-			}
-			
-			$o_conf = caGetSearchConfig();
-			if (!($max_hits_for_in_memory_sort = $o_conf->get('max_hits_for_in_memory_sort'))) { $max_hits_for_in_memory_sort = 1000000; }
-			if (sizeof($hits) < $max_hits_for_in_memory_sort) {
-				$sort_mode = SORT_FLAG_CASE;
-				if (!$o_conf->get('dont_use_natural_sort')) { $sort_mode |= SORT_NATURAL; } else { $sort_mode |= SORT_STRING; }
-				
-				//
-				// Perform sort in-memory
-				//
-				$sort_buffer = [];
-				
-				foreach($hits as $idx => $hit) {
-					
-					$keys = [];
-					foreach($sortable_values as $i => $sortable_values_level) {
-						if(!sizeof($sortable_values_level)) { continue; }
-						$v = preg_replace("![^\w_]+!u", " ", caRemoveAccents($sortable_values_level[$hit]));
-						$keys[] = str_pad(substr($v, 0, 50), 50, ' ', is_numeric($v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
-					}
-					$ptr = &$sort_buffer;
-					
-					foreach($keys as $key) {
-						if (!is_array($ptr[$key])) { $ptr[$key] = []; }
-						$ptr = &$ptr[$key];
-					}
-					$ptr[] = $return_index ? $idx . '/' . $hit : $hit;
-				}
-				
-				$sort_buffer = self::_sortKeys($sort_buffer, $sort_mode, $sort_directions, 0);
-				
-				if($return_index) {
-					$return = [];
-					foreach($sort_buffer as $val) {
-						$tmp = explode('/', $val);
-						$return[$tmp[0]] = $tmp[1];
-					}
-					return $return;
-				} else {
-					$sort_buffer = array_values($sort_buffer);
-				}
-
-				return $sort_buffer;
 			} else {
-				//
-				// Use mysql memory-based table to do sorting
-				//
-				$sort_tmp_table = $this->loadListIntoTemporaryResultTable($hits, caGenerateGUID(), array('sortableValues' => $sortable_values));
-				$vs_sql = "
-					SELECT row_id, idx
-					FROM {$sort_tmp_table}
-					ORDER BY sort_key1 {$sort_directions[0]}, sort_key2 {$sort_directions[1]}, sort_key3 {$sort_directions[2]}, row_id
-				";
-				$qr_sort = $this->opo_db->query($vs_sql, []);
-				$results = $qr_sort->getAllFieldValues(array('row_id', 'idx'));
-				$this->cleanupTemporaryResultTable();
-				if($return_index) {
-					$sorted_rows = [];
-					foreach($results['row_id'] as $vn_i => $vm_row_id) {
-						$sorted_rows[$results['idx'][$vn_i]] = $vm_row_id;
-					}
-					return $sorted_rows;
-				} else {
-					return $results['row_id'];
-				}
+				//throw new ApplicationException(_t('Unhandled sort'));
+				return $hits;
 			}
-		}
-		# ------------------------------------------------------------------
-		/**
-		 *
-		 */
-		static private function _sortKeys($sort_buffer, $sort_mode, $sort_directions, $level=0) {
-			ksort($sort_buffer, $sort_mode);
-			if(strtolower($sort_directions[$level]) === 'desc') { $sort_buffer = array_reverse($sort_buffer); }
+		} elseif($t_table->getLabelTableName() == $sort_table) {
+			// is label?
+			$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_field, $sort_direction, array_merge($options, ['isPreferred' => true]));	
+		} else {
+			list($sort_field, $set_id) = array_pad(explode('/', $sort_field), 2, null);
 			
-			$ret = [];
-			foreach($sort_buffer as $key => $subkeys) {
-				if(is_array($subkeys)) {
-					$ret = array_merge($ret, self::_sortKeys($subkeys, $sort_mode, $sort_directions, $level + 1));
-				} else {
-					return $sort_buffer;
-				}
-			}
-			return $ret;
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Discards any existing temporary table on deallocation.
-		 */
-		public function __destruct() {
-			if ($this->ops_tmp_table_name) {
-				$this->cleanupTemporaryResultTable();
-			}
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * Get sort keys for list of hits from a given table
-		 *
-		 * @param string $ps_element_code
-		 * @param int $pn_table_num
-		 * @param array $pa_hits
-		 * @return array|bool
-		 */
-		private function _getSortKeysForElement($ps_element_code, $pn_table_num, $pa_hits) {
-			if (!($t_element = ca_metadata_elements::getInstance($ps_element_code))) {
-				return false;
+			// is related field
+			$t_rel_table = Datamodel::getInstance($sort_table, true);
+			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
+				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
+				list($sort_table, $sort_field, $sort_subfield) = explode(".", $sort_field);
+				$t_rel_table = Datamodel::getInstance($sort_table, true);
 			}
 			
-			$datatype = $t_element->get('datatype');
-			if ($datatype == 0) {
-			    // is container
-			    $elements = $t_element->getElementsInSet();
-			    $concatenated_keys = [];
-			    foreach($elements as $e) {
-			        if ($e['datatype'] == 0) { continue; }
-			        $keys = $this->_getSortKeysForElement($e['element_code'], $pn_table_num, $pa_hits);
-			        foreach($keys as $id => $val) {
-			            $sv = mb_substr($val, 0, 30);
-			            $concatenated_keys[$id] = str_pad($sv, 30, " ", is_numeric($sv) ? STR_PAD_LEFT : STR_PAD_RIGHT);
-			        }
-			    }
-			    return $concatenated_keys;
+			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
+			if(($sort_table === 'ca_set_items')) {
+				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $sort_direction, $options);
+			} elseif ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $sort_direction, $options);
+			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
+				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
+			} elseif($sort_field === 'nonpreferred_labels') {		// sort key is preferred labels
+				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
+			} elseif($is_attribute) {							// sort key is metadata attribute
+				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $sort_subfield, $sort_direction, $hits, array_merge($options, ['filter' => $sort_filter_field ,'filterValues' => $sort_field_values]));		
+			} else {
+				//throw new ApplicationException(_t('Unhandled sort'));
+				return $hits;
 			}
-
-			// is metadata element
-			$vn_element_id = $t_element->getPrimaryKey();
-			if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($datatype))) {
-				return false;
-			}
-
-			$vs_sql = null;
-			$pad_keys = false;
-
-			switch($vn_datatype = (int)$t_element->get('datatype')) {
-				case __CA_ATTRIBUTE_VALUE_LIST__:
-				case __CA_ATTRIBUTE_VALUE_OBJECTS__:
-				case __CA_ATTRIBUTE_VALUE_ENTITIES__:
-				case __CA_ATTRIBUTE_VALUE_PLACES__:
-				case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
-				case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
-				case __CA_ATTRIBUTE_VALUE_LOANS__:
-				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
-				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
-				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
-					$vs_sortable_value_fld = $t_auth_instance->getLabelSortField();
-					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-					$vs_sql = "
-							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.".$t_auth_instance->primaryKey()." = attr_vals.item_id
-							WHERE
-								(attr_vals.element_id = ?) AND
-								(attr.table_num = ?) AND
-								(lil.{$vs_sortable_value_fld} IS NOT NULL) AND
-								(attr.row_id IN (?))
-						";
-					break;
-				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-					$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
-					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-
-					$vs_sql = "
-							SELECT attr.row_id, {$vs_sortable_value_fld}
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							WHERE
-								(attr_vals.element_id = ?) AND
-								(attr.table_num = ?) AND
-								(attr_vals.{$vs_sort_field} IS NOT NULL) AND
-							(attr.row_id IN (?))
-						";
-					break;
-				case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-				    if (
-				        ($list_code = $t_element->getSetting('sortUsingList'))
-				        &&
-				        (($list_id = (int)caGetListID($list_code)) > 0)
-				    ) {
-                        $vs_sortable_value_fld = 'attr_vals.value_longtext2';
-                        $vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-				        
-				        $vs_sql = "
-							SELECT attr.row_id, LPAD(li.`rank`,9, '0') {$vs_sort_field}
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							LEFT JOIN ca_list_items AS li ON attr_vals.value_longtext2 = li.idno
-							WHERE
-								(attr_vals.element_id = ?) AND
-								(attr.table_num = ?) AND
-								(attr_vals.{$vs_sort_field} IS NOT NULL) AND
-								(attr.row_id IN (?)) AND
-								(li.list_id = {$list_id})
-						";
-						
-						$pad_keys = true;
-				    }
-				    break;
-				default:
-					$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
-					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-
-					$vs_sql = "
-							SELECT attr.row_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							WHERE
-								(attr_vals.element_id = ?) AND
-								(attr.table_num = ?) AND
-								(attr_vals.{$vs_sort_field} IS NOT NULL) AND
-								(attr.row_id IN (?))
-						";
-					break;
-			}
-			if(!$vs_sql) { return false; }
-
-			$qr_sort = $this->opo_db->query($vs_sql, array((int)$vn_element_id, (int)$pn_table_num, $pa_hits));
-
-			$va_sort_keys = array();
-			while($qr_sort->nextRow()) {
-				$va_row = $qr_sort->getRow();
-				$va_sort_keys[$va_row['row_id']][] = $va_row[$vs_sort_field];
-			}
-			foreach($pa_hits as $id) {
-			    if(!isset($va_sort_keys[$id])) { $va_sort_keys[$id] = [$pad_keys ? '000000000' : '']; }
-			}
-			foreach($va_sort_keys as $row_id => $keys) {
-			    if (sizeof(array_filter($keys, function($v) { return is_numeric($v); })) > 0) {
-			        sort($keys, SORT_NUMERIC);
-			    } else {
-			        sort($keys, SORT_REGULAR);
-			    }
-			    $va_sort_keys[$row_id] = join(";", $keys);
-			}
-			return $va_sort_keys;
 		}
-		# ------------------------------------------------------------------
-		private function _mapRowIDsForPathLength2($pn_original_table_num, $pn_target_table, $pa_hits, $pa_options=null) {
-			if(!($t_original_table = Datamodel::getInstanceByTableNum($pn_original_table_num, true))) { return false; }
-			if(!($t_target_table = Datamodel::getInstanceByTableNum($pn_target_table, true))) { return false; }
 
-			$va_sql_params = [];
-
-			$va_primary_ids = $vs_resolve_links_using = null;
-			if($vs_resolve_links_using = caGetOption('resolveLinksUsing', $pa_options)) {
-				$va_primary_ids = caGetOption('primaryIDs', $pa_options);
-				$va_primary_ids = $va_primary_ids[$vs_resolve_links_using];
-			}
-
-			$vs_original_table = $t_original_table->tableName();
-			$vs_target_table = $t_target_table->tableName();
-
-			$va_path = Datamodel::getPath($pn_original_table_num, $pn_target_table);
-			if(sizeof($va_path) != 2) { return false; }
-
-			// get relationships to build join
-			$va_relationships = Datamodel::getRelationships($vs_original_table, $vs_target_table);
-
-			$vs_primary_id_sql = '';
-			if(is_array($va_primary_ids) && (sizeof($va_primary_ids) > 0)) {
-				// assuming this is being used to sort on interstitials, we just need a WHERE on the keys on the other side of that target table
-				$va_tmp = Datamodel::getRelationships($vs_target_table, $vs_resolve_links_using);
-				if(isset($va_tmp[$vs_resolve_links_using][$vs_target_table][0][1])) {
-					$vs_primary_id_sql = "AND {$vs_target_table}.{$va_tmp[$vs_resolve_links_using][$vs_target_table][0][1]} IN (?)";
-					$va_sql_params[] = $va_primary_ids;
+		return array_keys($sort_key_values);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByIntrinsic($t_table, string $hit_table, string $intrinsic=null, ?string $direction='asc', ?array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		$direction = self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
+		
+		$sql = "
+			SELECT {$table}.{$table_pk}
+			FROM {$table}
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			ORDER BY {$table}.`{$intrinsic}` {$direction}
+			{$limit_sql}
+		";
+		
+		$qr_sort = $this->db->query($sql);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row[$table_pk]] = true;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByRelatedIntrinsic($t_table, $t_rel_table, string $hit_table, ?string $intrinsic=null, ?string $direction='asc', ?array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		$direction =  self::sortDirection($direction);
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic, caGetOption('relationshipTypes', $options, null));
+		$join_sql = join("\n", $joins);
+		
+		$intrinsic = array_shift(explode('/', $intrinsic));
+		$limit_sql = self::_limitSQL($options);
+		
+		$sql = "
+			SELECT t.{$table_pk}
+			FROM {$table} t
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
+			{$join_sql}
+			ORDER BY s.`{$intrinsic}` {$direction}
+			{$limit_sql}
+		";
+		
+		$qr_sort = $this->db->query($sql);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row[$table_pk]] = true;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByLabels($t_table, string $hit_table, ?string $label_field=null, ?string $direction='asc', ?array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$direction = self::sortDirection($direction);
+		
+		$is_preferred = caGetOption('isPreferred', $options, null);
+		$pref_sql = '';
+		if($t_label->hasField('is_preferred') && !is_null($is_preferred)) {
+			$pref_sql = " WHERE l.is_preferred = ".($is_preferred ? "1" : "0");
+		}
+		$limit_sql = self::_limitSQL($options);
+		
+		$sql = "
+			SELECT l.{$table_pk}
+			FROM {$label_table} l
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
+			{$pref_sql}
+			ORDER BY l.`{$label_field}` {$direction}
+			{$limit_sql}
+		";
+		$qr_sort = $this->db->query($sql);
+		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
+		
+		return array_flip($sort_keys);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByRelatedLabels($t_table, $t_rel_table, string $hit_table, ?string $rel_label_field=null, ?string $direction='asc', ?array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();
+		$rel_table_pk = $t_rel_table->primaryKey();
+		$rel_table_num = $t_rel_table->tableNum();
+		$rel_label_table = $t_rel_table->getLabelTableName();
+		
+		$rel_label_field = array_shift(explode('/', $rel_label_field));
+		
+		$t_label = $t_rel_table->getLabelTableInstance();
+		if (!$rel_label_field || !$t_label->hasField($rel_label_field)) { $rel_label_field = $t_rel_table->getLabelSortField(); }
+		
+		$direction = self::sortDirection($direction);
+		$rel_types = caGetOption('relationshipTypes', $options, null);
+		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field, $rel_types);
+		$join_sql = join("\n", $joins);
+		
+		$is_preferred = caGetOption('isPreferred', $options, null);
+		$pref_sql = '';
+		if($t_label->hasField('is_preferred') && !is_null($is_preferred)) {
+			$pref_sql = " WHERE (rl.is_preferred = ".($is_preferred ? "1" : "0")." OR rl.is_preferred IS NULL)";
+		}
+		$limit_sql = self::_limitSQL($options);
+		
+		$sql = "
+			SELECT t.{$table_pk}
+			FROM {$table} t
+			{$join_sql}
+			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
+			{$pref_sql}
+			ORDER BY rl.`{$rel_label_field}` {$direction}
+			{$limit_sql}
+		";
+		$qr_sort = $this->db->query($sql);
+		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
+		
+		return array_flip($sort_keys);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByAttribute($t_table, string $hit_table, ?string $element_code=null, ?string $subelement_code=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
+		$table_num = $t_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($e=$subelement_code ? $subelement_code : $element_code))) { 
+			throw new ApplicationException(_t('Invalid element: %1', $e));
+		}
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
+		
+		$direction = self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
+		
+		$filter_join = $filter_where = null;
+		if($filter_element = caGetOption('filter', $options, null)) {
+			$filter_values = caGetOption('filterValues', $options, []);
+			if ($t_filter_element = ca_metadata_elements::getInstance($filter_element)) {
+				$values = $filter_attr_field = null;
+				switch($t_filter_element->get('datatype')) {
+					case __CA_ATTRIBUTE_VALUE_TEXT__:
+						$values = array_filter($filter_values, 'strlen');
+						$values = array_map(function($v) { return json_encode($v); }, $filter_values);
+						$filter_attr_field = 'value_longtext1';
+						break;
+					case __CA_ATTRIBUTE_VALUE_LIST__:
+						$list_id = $t_filter_element->get('list_id');
+						$values = array_filter(array_map(function($v) use ($list_id) { return caGetListItemID($list_id, $v); }, $filter_values), 'strlen');
+						$filter_attr_field = 'item_id';
+						break;
+				
 				}
-
+				if(is_array($values) && sizeof($values)) {
+					$filter_element_id = $t_filter_element->getPrimaryKey();
+					$filter_join = "INNER JOIN ca_attribute_values AS fltr ON fltr.attribute_id = a.attribute_id";
+					$filter_where = " AND (fltr.{$filter_attr_field} IN (".join(',', $values)."))";
+				}
 			}
+		}
 
-			$va_sql = $va_params = [];
-			foreach($va_relationships[$vs_original_table][$vs_target_table] as $va_rel) {
-					$va_sql[] = "
-						SELECT * 
-						FROM {$vs_target_table}
-						INNER JOIN {$vs_original_table} AS o ON
-							o.{$va_rel[0]} = {$vs_target_table}.{$va_rel[1]}
-						WHERE 
-							o.{$t_original_table->primaryKey()} IN (?)
-							{$vs_primary_id_sql}
+		$attr_tmp_table = $this->_createTempTableForAttributeIDs();
+		$sql = "
+			INSERT INTO {$attr_tmp_table} 
+				SELECT a.attribute_id, a.row_id 
+				FROM ca_attributes a  
+				INNER JOIN ca_attribute_values as cav ON cav.attribute_id = a.attribute_id
+				INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
+				{$filter_join}
+				WHERE a.table_num = ? AND cav.element_id = ? {$filter_where}
+		";
+
+		$qr_sort = $this->db->query($sql, [$table_num, $element_id]);
+		
+		$sql = "SELECT attr_tmp.row_id, cav.value_sortable
+					FROM ca_attribute_values cav FORCE INDEX(i_sorting)
+					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = cav.attribute_id
+					WHERE cav.element_id = ? 
+					ORDER BY cav.value_sortable {$direction}
+					{$limit_sql}";
+					
+		$qr_sort = $this->db->query($sql, [$element_id]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			if(!isset($sort_keys[$row['row_id']]) || (isset($sort_keys[$row['row_id']]) && (mb_strlen($row['value_sortable']) > $sort_keys[$row['row_id']]))) {
+				unset($sort_keys[$row['row_id']]);
+				$sort_keys[$row['row_id']] = mb_strlen($row['value_sortable']);
+			}
+		}
+		
+		// Add any row without the attribute set to the end of the sort set
+		foreach($hits as $h) {
+			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortBySet($t_table, $t_rel_table, string $hit_table, ?string $intrinsic=null, ?int $set_id=null, ?string $direction='asc', ?array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		$direction =  self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
+		
+		$sql = "
+			SELECT t.{$table_pk}
+			FROM {$table} t
+			INNER JOIN ca_set_items AS csi ON csi.row_id = t.{$table_pk} AND csi.table_num = ? AND csi.set_id = ?
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
+			ORDER BY csi.`{$intrinsic}` {$direction}
+			{$limit_sql}
+		";
+		$qr_sort = $this->db->query($sql, [$t_table->tableNum(), $set_id]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row[$table_pk]] = true;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByHistoryTrackingCurrentValue($t_table, string $hit_table, ?string $policy=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
+		$table_num = $t_table->tableNum();
+		$table_name = $t_table->tableName();
+		
+		if(!method_exists($t_table, 'getPolicyConfig')) { return []; }
+		if(!is_array($policy_info = $table_name::getPolicyConfig($policy))) {
+			throw new ApplicationException(_t('Invalid policy %1', $policy));
+		}
+		
+		$direction = self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
+		
+		$sql = "SELECT htcv.row_id
+				FROM ca_history_tracking_current_values htcv
+				INNER JOIN ca_history_tracking_current_value_labels AS l ON htcv.tracking_id = l.tracking_id
+				INNER JOIN {$hit_table} AS ht ON ht.row_id = htcv.row_id
+				WHERE 
+					htcv.table_num = ? AND (is_future IS NULL OR is_future = 0) AND htcv.policy = ?
+				ORDER BY l.value_sort {$direction}
+					{$limit_sql}";
+		$qr_sort = $this->db->query($sql, [$table_num, $policy]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['row_id']] = true;
+		}
+		
+		// Add any row without the attribute set to the end of the sort set
+		foreach($hits as $h) {
+			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, ?string $element_code=null, ?string $subelement_code=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();
+		$rel_table_pk = $t_rel_table->primaryKey();
+		$rel_table_num = $t_rel_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($subelement_code ? $subelement_code : $element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
+
+		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
+		$join_sql = join("\n", $joins);
+		$limit_sql = self::_limitSQL($options);
+		
+		$filter_join = $filter_where = null;
+		if($filter_element = caGetOption('filter', $options, null)) {
+			$filter_values = caGetOption('filterValues', $options, []);
+			if ($t_filter_element = ca_metadata_elements::getInstance($filter_element)) {
+				$values = $filter_attr_field = null;
+				switch($t_filter_element->get('datatype')) {
+					case __CA_ATTRIBUTE_VALUE_TEXT__:
+						$values = array_filter($filter_values, 'strlen');
+						$values = array_map(function($v) { return json_encode($v); }, $filter_values);
+						$filter_attr_field = 'value_longtext1';
+						break;
+					case __CA_ATTRIBUTE_VALUE_LIST__:
+						$list_id = $t_filter_element->get('list_id');
+						$values = array_filter(array_map(function($v) use ($list_id) { return caGetListItemID($list_id, $v); }, $filter_values), 'strlen');
+						$filter_attr_field = 'item_id';
+						break;
+				
+				}
+				if(is_array($values) && sizeof($values)) {
+					$filter_element_id = $t_filter_element->getPrimaryKey();
+					$filter_join = "INNER JOIN ca_attribute_values AS fltr ON fltr.attribute_id = a.attribute_id";
+					$filter_where = " AND (fltr.{$filter_attr_field} IN (".join(',', $values)."))";
+				}
+			}
+		}
+		
+		$sql = "SELECT t.{$table_pk} row_id, cav.value_sortable
+					FROM {$table} t
+					{$join_sql}
+					LEFT JOIN ca_attributes AS a ON a.row_id = s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					LEFT JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
+					INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
+					{$filter_join}
+					WHERE cav.element_id = ? {$filter_where}
+					ORDER BY cav.value_sortable {$direction}
+					{$limit_sql}"; 
+		$qr_sort = $this->db->query($sql, [$element_id]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['row_id']] = true;
+		}
+		
+		// Add any row without the attribute set to the end of the sort set
+		foreach($hits as $h) {
+			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValues(array $hits, string $table, string $sort_field, string $direction='asc') {
+		if(!sizeof($hits)) { return []; }
+		$t_table = Datamodel::getInstance($table, true);
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
+		
+		$values = [];
+		
+		// Extract sort key values + frequency from hits
+		if ($sort_table === $table) {	// sort in primary table
+			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
+				$values = $this->_getSortValuesForIntrinsic($hits, $t_table, $sort_field, $direction);
+			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
+				$values = $this->_getSortValuesForAttribute($hits, $t_table, $sort_field, $direction);
+			} elseif($sort_field === 'preferred_labels') {
+				$values = $this->_getSortValuesForLabel($hits, $t_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
+			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		} elseif($t_table->getLabelTableName() == $sort_table) {
+			// is label?
+			$values = $this->_getSortValuesForLabel($hits, $t_table, $sort_field, $direction);	
+		} else {
+			// is related field
+			$t_rel_table = Datamodel::getInstance($sort_table, true);
+			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
+				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
+				list($sort_table, $sort_field, $sort_subfield) = $x=explode(".", $sort_field);
+				$t_rel_table = Datamodel::getInstance($sort_table, true);
+			}
+ 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
+ 			
+ 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$sort_key_values[] = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
+ 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
+ 				$sort_key_values[] = $this->_getRelatedSortValuesForLabel($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
+ 			} elseif($is_attribute) {							// sort key is metadata attribute
+ 				$sort_key_values[] = $this->_getRelatedSortValuesForAttribute($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);		
+ 			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValuesForIntrinsic(array $hits, $t_table, string $intrinsic, string $direction) {
+		if(!sizeof($hits)) { return []; }
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$sql = "
+			SELECT `{$intrinsic}` val
+			FROM {$table}
+			WHERE {$table}.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			
+			if(!isset($sort_keys[$row['val']])) { $sort_keys[$row['val']] = 0; }
+			$sort_keys[$row['val']]++;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedSortValuesForIntrinsic(array $hits, $t_table, $t_rel_table,  string $intrinsic, string $direction) {
+		if(!sizeof($hits)) { return []; }
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT s.`{$intrinsic}` val
+			FROM {$table} t
+			{$join_sql}
+			WHERE t.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValuesForLabel(array $hits, $t_table, string $label_field, string $direction) {
+		if (!sizeof($hits)) { return []; }
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$sql = "
+			SELECT l.{$label_field} val
+			FROM {$label_table} l
+			WHERE l.{$table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			if(!isset($sort_keys[$row['val']])) { $sort_keys[$row['val']] = 0; }
+			$sort_keys[$row['val']]++;
+		}
+		
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedSortValuesForLabel(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+		if (!sizeof($hits)) { return []; }
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$rel_label_table = $t_rel_table->getLabelTableName();
+		
+		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT rl.{$label_field} val
+			FROM {$label_table} t
+			{$join_sql}
+			INNER JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			WHERE rl.{$rel_table_pk} IN (?)
+			ORDER BY val {$direction}
+		";
+		$qr_sort = $this->db->query($sql, [$hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getSortValuesForAttribute(array $hits, $t_table, string $element_code, string $direction) {
+		if (!sizeof($hits)) { return []; }
+		$table_num = $t_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+
+		$sql = "SELECT cav.value_sortable val
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+					WHERE cav.element_id = ? AND a.row_id IN (?)
+				ORDER BY val {$direction}
 					";
-					array_unshift($va_sql_params, $pa_hits);
+		
+		$qr_sort = $this->db->query($sql, [$element_id, $hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		return $sort_keys;
+	}
+	
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+		if (!sizeof($hits)) { return []; }
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_num = $t_rel_table->tableNum();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "SELECT cav.value_sortable val
+					FROM {$table} pt
+					{$join_sql}
+					LEFT JOIN ca_attributes AS a ON a.row_id = t.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					LEFT JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
+					WHERE cav.element_id = ? AND pt.{$table_pk} IN (?)
+				ORDER BY val {$direction}
+					";
+		$qr_sort = $this->db->query($sql, [$element_id, $hits]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['val']]++;
+		}
+		
+		return $sort_keys;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForValues(array $hits, string $table, string $sort_field, array $values) {
+		if(!sizeof($hits)) { return []; }
+		$t_table = Datamodel::getInstance($table, true);
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		
+		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
+		
+		$row_ids = [];
+		
+		$hit_table = $this->_createTempTableForHits($hits);
+		
+		// Extract sort key values + frequency from hits
+		if ($sort_table === $table) {	// sort in primary table
+			if ($t_table->hasField($sort_field)) {			// sort key is intrinsic
+				$row_ids = $this->_getRowIDsForIntrinsic($values, $t_table, $hit_table, $sort_field);
+			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
+				$row_ids = $this->_getRowIDsForAttribute($values, $t_table, $hit_table, $sort_field);
+			} elseif($sort_field === 'preferred_labels') {
+				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
 			}
-
-			$qr_rel = $this->opo_db->query(join(" UNION ", $va_sql), $va_sql_params);
-			$va_return = [];
-			while($qr_rel->nextRow()) {
-				$va_return['list'][] = $qr_rel->get("{$vs_target_table}.{$t_target_table->primaryKey()}");
-
-				$va_return['reverse'][$qr_rel->get("{$vs_target_table}.{$t_target_table->primaryKey()}")] =
-					$qr_rel->get("{$vs_original_table}.{$t_original_table->primaryKey()}");
+		} elseif($t_table->getLabelTableName() == $sort_table) {
+			// is label?
+			$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_field);	
+		} else {
+			// is related field
+			$t_rel_table = Datamodel::getInstance($sort_table, true);
+			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
+				$sort_field = $t_rel_table->getSubjectTableName().'.preferred_labels.'.$sort_field.($sort_subfield ? ".{$sort_subfield}" : '');
+				list($sort_table, $sort_field, $sort_subfield) = $x=explode(".", $sort_field);
+				$t_rel_table = Datamodel::getInstance($sort_table, true);
 			}
+			
+ 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
+ 			
+ 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$sort_key_values[] = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
+ 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
+ 				$sort_key_values[] = $this->_getRelatedRowIDsForLabel($values, $t_table, $t_rel_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+ 			} elseif($is_attribute) {							// sort key is metadata attribute
+ 				$sort_key_values[] = $this->_getRelatedRowIDsForAttribute($values, $t_table, $t_rel_table, $hit_table, $sort_field);		
+ 			} else {
+				throw new ApplicationException(_t('Unhandled secondary sort'));
+			}
+		}
+		return $row_ids;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForIntrinsic(array $values, $t_table, string $hit_table, string $intrinsic) {
+		if(!sizeof($values)) { return []; }
+		
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$sql = "
+			SELECT {$table}.{$table_pk}, {$table}.{$intrinsic} val
+			FROM {$table}
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			WHERE
+				{$table}.{$intrinsic} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedRowIDsForIntrinsic(array $values, $t_table, $t_rel_table, string $hit_table, string $intrinsic) {
+		if(!sizeof($values)) { return []; }
+		
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $intrinsic);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT s.{$rel_table_pk}, s.{$intrinsic} val
+			FROM {$table}
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			{$join_sql}
+			WHERE
+				s.{$intrinsic} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
+		if (!is_array($values) || !sizeof($values)) { return []; }
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		
+		$t_label = $t_table->getLabelTableInstance();
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$sql = "
+			SELECT l.{$table_pk}, l.{$label_field} val
+			FROM {$label_table} l
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
+			WHERE
+				l.{$label_field} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedRowIDsForLabel(array $values, $t_table, $t_rel_table, string $hit_table, string $label_field) {
+		if(!sizeof($values)) { return []; }
+		
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$table_num = $t_table->tableNum();
+		$label_table = $t_table->getLabelTableName();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
+		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
+		
+		$rel_label_table = $t_rel_table->getLabelTableName();
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$join_sql = join("\n", $joins);
+		
+		$sql = "
+			SELECT rl.{$table_pk}, rl.{$label_field} val
+			FROM {$label_table} t
+			{$join_sql}
+			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
+			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
+			WHERE
+				rl.{$label_field} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row[$table_pk];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRowIDsForAttribute(array $values, $t_table, string $hit_table, string $element_code) {
+		if(!sizeof($values)) { return []; }
+		
+		$table_num = $t_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
+		
 
-			return $va_return;
+		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+					INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
+					WHERE 
+						a.table_num = ? AND cav.element_id = ? AND cav.{$attr_val_sort_field} IN (?)
+		";
+		
+		$qr_sort = $this->db->query($sql, [$table_num, $element_id, $values]);
+		$values = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$values[$row['val']][] = $row['row_id'];
+		}
+		return $values;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getRelatedRowIDsForAttribute(array $values, $t_table, $t_rel_table, string $hit_table, string $element_code=null) {
+		if(!sizeof($values)) { return []; }
+		
+		$table_num = $t_table->tableNum();
+		$rel_table_num = $t_rel_table->tableNum();
+		
+		if (!($element_id = ca_metadata_elements::getElementID($element_code))) { 
+			throw new ApplicationException(_t('Invalid element'));
+		}
+		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
+
+		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+					INNER JOIN {$hit_table} AS ht ON ht.row_id = a.row_id
+					WHERE 
+						a.table_num = ? AND cav.element_id = ? AND cav.{$attr_val_sort_field} IN (?)
+		";
+		$qr_sort = $this->db->query($sql, [$rel_table_num, $element_id, $values]);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			$sort_keys[$row['row_id']] = true;
+		}
+		return $sort_keys;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _createTempTableForHits(array $hits) {
+		$table_name = '_caSortTmp'.str_replace('-', '',caGenerateGUID());
+		$this->db->query("DROP TEMPORARY TABLE IF EXISTS {$table_name}");
+		$this->db->query("
+			CREATE TEMPORARY TABLE {$table_name} (
+				row_id int unsigned not null primary key
+			) engine=memory;
+		");
+		
+		if ($this->db->numErrors()) {
+			return false;
+		}
+		
+		while(sizeof($hits) > 0) {
+			$hits_buf = array_splice($hits, 0, 250000, []);
+			$sql = "INSERT IGNORE INTO {$table_name} VALUES ".join(',', array_map(function($v) { return '('.(int)$v.')'; }, $hits_buf));
+			if (!$this->db->query($sql)) {
+				$this->_dropTempTable($table_name);
+				return false;
+			}
+		}
+		
+		$this->temporary_tables[$table_name] = true;
+		return $table_name;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getJoins($t_table, $t_rel_table, string $sort_field, array $rel_types=null) {
+		$table = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
+		$rel_table = $t_rel_table->tableName();		
+		$rel_table_pk = $t_rel_table->primaryKey();
+		
+		$path = Datamodel::getPath($table, $rel_table);
+		$path = array_keys($path);
+
+		$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
+		
+		$joins = [];
+		switch($psize = sizeof($path)) {
+			case 3:
+				$linking_table = $path[1];
+				
+				$rel_types = caMakeRelationshipTypeIDList($linking_table, $rel_types);
+				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND (l.type_id IN (".join(',', array_map('intval', $rel_types)).") OR (l.type_id IS NULL))" : '';
+	
+				if ($table === $rel_table) {
+					$t_relation = Datamodel::getInstance($linking_table, true);
+					// self relation
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
+				} elseif ($is_attribute) {
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+				} else {							
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$table_pk} = l.{$table_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+				}
+				
+				break;
+			case 2:
+				$t = Datamodel::getInstance($table, true);
+			
+				if(method_exists($t, 'isSelfRelationship') && ($t->isSelfRelationship())) {
+					$joins[] = "INNER JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = t.".$t->getLeftTableFieldName().") OR (s.{$rel_table_pk} = t.".$t->getRightTableFieldName().")";
+				} elseif(is_array($rels = Datamodel::getRelationships($table, $rel_table))) {
+					$lfield = $rels[$table][$rel_table][0][0];
+					$rfield = $rels[$table][$rel_table][0][1];
+					$joins[] = "INNER JOIN {$rel_table} AS s ON t.{$lfield} = s.{$rfield}";
+				}
+				//
+				break;
+			default:
+				throw new ApplicationException(_t('Invalid related sort: %1', join('/', $path)));
+				break;
+		}
+		return $joins;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _createTempTableForAttributeIDs() {		
+		$table_name = '_caAttrTmp_'.str_replace('-', '',caGenerateGUID());
+		$this->db->query("DROP TEMPORARY TABLE IF EXISTS {$table_name}");
+		$this->db->query("CREATE TEMPORARY TABLE {$table_name} (attribute_id int unsigned not null primary key, row_id int unsigned not null) engine=memory");
+		$this->temporary_tables[$table_name] = true;
+		
+		return $table_name;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _dropTempTable($table_name) {
+		$this->db->query("
+			DROP TEMPORARY TABLE IF EXISTS {$table_name};
+		");
+		if ($this->db->numErrors()) {
+			return false;
+		}
+		unset($this->temporary_tables[$table_name]);
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function sortDirection($direction) {
+		return (strtolower($direction) === 'desc') ? 'desc' : 'asc';
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _limitSQL(array $options) : string {
+		$start = caGetOption('start', $options, null);
+		$limit = caGetOption('limit', $options, null);
+		
+		$limit_sql = '';
+		if ($limit > 0) {
+			$limit_sql = "LIMIT {$limit}";
+		}
+		if ($start > 0) {
+			$limit_sql .= " OFFSET {$start}";
+		}
+		return $limit_sql;
+	}	
+	# -------------------------------------------------------
+	/**
+	 * Discards any existing temporary table on deallocation.
+	 */
+	public function __destruct() {
+		if ($this->tmp_table_name) {
+			$this->cleanupTemporaryResultTable();
+		}
+		
+		foreach(array_keys($this->temporary_tables) as $t) {
+			try {
+				$this->_dropTempTable($t);	
+			} catch(Exception $e) {
+				// noop - is unrecoverable
+			}
 		}
 	}	
+	# -------------------------------------------------------
+}	

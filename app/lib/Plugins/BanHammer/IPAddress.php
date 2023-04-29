@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,50 +26,50 @@
  * ----------------------------------------------------------------------
  */
 
-	require_once(__CA_LIB_DIR__."/Plugins/BanHammer/BaseBanHammerPlugin.php");
+require_once(__CA_LIB_DIR__."/Plugins/BanHammer/BaseBanHammerPlugin.php");
 
-	class WLPlugBanHammerIPAddress Extends BaseBanHammerPlugIn  {
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static $priority = 10;
+class WLPlugBanHammerIPAddress Extends BaseBanHammerPlugIn  {
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static $priority = 10;
+	
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function evaluate($request, $options=null) {
+		self::init($request, $options);
+		$config = self::$config->get('plugins.IPAddress');
+		$banned_ip_addresses = caGetOption('banned_ip_addresses', $config, []);
 		
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function evaluate($request, $options=null) {
-			self::init($request, $options);
-			$config = self::$config->get('plugins.IPAddress');
-			$banned_ip_addresses = caGetOption('banned_ip_addresses', $config, []);
-			
-			$request_ip = RequestHTTP::ip();
- 			$request_ip_long = ip2long($request_ip);
- 			
-			foreach($banned_ip_addresses as $ip) {
-				$ip_s = ip2long(str_replace("*", "0", $ip));
-				$ip_e = ip2long(str_replace("*", "255", $ip));
-				if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
-					return 1.0;
-				}
+		$request_ip = RequestHTTP::ip();
+		$request_ip_long = ip2long($request_ip);
+		
+		foreach($banned_ip_addresses as $ip) {
+			$ip_s = ip2long(str_replace("*", "0", $ip));
+			$ip_e = ip2long(str_replace("*", "255", $ip));
+			if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
+				return 1.0;
 			}
-			
-			return 0;
 		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function shouldBanIP() {
-			return true;
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		static public function banTTL() {
-			return 60 * 60 * 24;	// ban for 1 day
-		}
-		# ------------------------------------------------------
+		
+		return 0;
 	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function shouldBanIP() {
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function banTTL() {
+		return 60 * 60 * 24;	// ban for 1 day
+	}
+	# ------------------------------------------------------
+}

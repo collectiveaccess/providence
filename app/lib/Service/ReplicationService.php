@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,7 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
-	
+		if(!defined('__CA_IS_REPLICATION__')) { define('__CA_IS_REPLICATION__', true); }
 		if (is_null(ReplicationService::$s_logger)) { 
 			ReplicationService::$s_logger = new Logger('replication');
 		}
@@ -83,6 +83,9 @@ class ReplicationService {
 				break;
 			case 'hasaccess':
 				$va_return = self::hasAccess($po_request);
+				break;
+			case 'getguidsfortable':
+				$va_return = self::getGUIDsForTable($po_request);
 				break;
 			case 'setlastlogid':	
 				$va_return = self::setLastLogID($po_request);
@@ -536,6 +539,19 @@ class ReplicationService {
 			}
 		}
 		return $va_results;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get GUIDs for table. Used to get full list of guids from base tables such as ca_locales 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getGUIDsForTable($po_request) {
+		$table = $po_request->getParameter('table', pString);
+		
+		return ca_guids::guidsForTable($table, ['limit' => 500]);
 	}
 	# -------------------------------------------------------
 }

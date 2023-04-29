@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,12 +144,32 @@ abstract class AttributeValue extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Returns name of field in ca_attribute_values to use for sort operations
 	 *
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
 		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1'];
 	}
 	# ------------------------------------------------------------------
 	/**

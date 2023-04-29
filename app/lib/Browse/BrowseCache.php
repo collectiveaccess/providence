@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,8 +71,14 @@ class BrowseCache {
 	 * @return bool
 	 */
 	public function load($ps_cache_key, $pa_options=null) {
-		if (ExternalCache::contains($ps_cache_key, 'Browse')) {
-			$this->opa_browse = ExternalCache::fetch($ps_cache_key, 'Browse');
+		if (ExternalCache::contains($ps_cache_key, 'BrowseFacets') && ExternalCache::contains($ps_cache_key, 'BrowseResults')) {
+			$this->opa_browse = [];
+			$this->opa_browse['facets'] = ExternalCache::fetch($ps_cache_key, 'BrowseFacets');
+			$this->opa_browse['results'] = ExternalCache::fetch($ps_cache_key, 'BrowseResults');
+			$this->opa_browse['params'] = ExternalCache::fetch($ps_cache_key, 'BrowseParams');
+			$this->opa_browse['type_restrictions'] = ExternalCache::fetch($ps_cache_key, 'BrowseTypeRestrictions');
+			$this->opa_browse['source_restrictions'] = ExternalCache::fetch($ps_cache_key, 'BrowseSourceRestrictions');
+			
 			$this->ops_cache_key = $ps_cache_key;
 			
 			if (caGetOption('removeDeletedItems', $pa_options, true)) {
@@ -116,7 +122,11 @@ class BrowseCache {
 	 */
 	public function save() {
 		$this->ops_cache_key = $this->getCurrentCacheKey();
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse, 'Browse');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['facets'], 'BrowseFacets');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['results'], 'BrowseResults');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['params'], 'BrowseParams');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['type_restrictions'], 'BrowseTypeRestrictions');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['source_restrictions'], 'BrowseSourceRestrictions');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -250,17 +260,29 @@ class BrowseCache {
 	# ------------------------------------------------------
 	public function getCurrentCacheKey() {
 		if(!is_array($va_params = $this->getParameters())) { $va_params = array(); }
-		if (!is_array($va_params['criteria'])) { $va_params['criteria'] = array(); }
+		if(!is_array($va_params['criteria'])) { $va_params['criteria'] = array(); }
 		if(!is_array($va_type_restrictions = $this->getTypeRestrictions())) { $va_type_restrictions = array(); }
 		if(!is_array($va_source_restrictions = $this->getSourceRestrictions())) { $va_source_restrictions = array(); }
 
-		return BrowseCache::makeCacheKey($va_params, $va_type_restrictions,$va_source_restrictions);
+		unset($va_params['created_on']);
+		unset($va_params['context']);
+		unset($va_params['sort']);
+		unset($va_params['sort_direction']);
+		unset($va_params['criteria_display_strings']);
+		unset($va_params['facet_html']);
+		unset($va_params['filterDeaccessionedRecords']);
+		foreach(['criteria', 'table_num'] as $k) {
+			if(!is_array($va_params[$k])) { $va_params[$k] = []; }
+		}
+
+		return BrowseCache::makeCacheKey($va_params, $va_type_restrictions,$va_source_restrictions);	
 	}
 	# ------------------------------------------------------
 	public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {
+		global $g_ui_locale;
 		if (!is_array($pa_params['criteria'])) { $pa_params['criteria'] = array(); }
 
-		return md5($pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.$pa_params['filterDeaccessionedRecords'].'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
+		return md5($g_ui_locale.'/'.$pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.$pa_params['filterDeaccessionedRecords'].'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all browses
@@ -270,7 +292,7 @@ class BrowseCache {
 	 */
 	public function getGlobalParameter($ps_param) {
 		if(ExternalCache::contains("browse_global_{$ps_param}", 'Browse')) {
-			return ExternalCache::fetch("browse_global_{$ps_param}", 'Browse');
+			return ExternalCache::fetch("browse_global_{$ps_param}", 'BrowseGlobals');
 		}
 		return false;
 	}
@@ -279,7 +301,7 @@ class BrowseCache {
 	 *
 	 */
 	public function setGlobalParameter($ps_param, $pm_value) {
-		ExternalCache::save("browse_global_{$ps_param}", $pm_value, 'Browse');
+		ExternalCache::save("browse_global_{$ps_param}", $pm_value, 'BrowseGlobals');
 	}
 	# ------------------------------------------------------
 	/**

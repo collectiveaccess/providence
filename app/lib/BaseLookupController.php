@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -307,6 +307,7 @@ class BaseLookupController extends ActionController {
 				$va_items = array();
 				
 				$vs_rank_fld = $t_item->getProperty('RANK');
+				$has_is_default_fld = $t_item->hasField('is_default');
 				
 				if (is_array($va_item_ids = $t_item->getHierarchyChildren($t_item->getPrimaryKey(), array('idsOnly' => true))) && sizeof($va_item_ids)) {
 					$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids, ['sort' => $va_sorts, 'sortDirection' => $vs_sort_dir]);
@@ -337,6 +338,10 @@ class BaseLookupController extends ActionController {
 						$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]), array('requireLinkTags' => true));
 						if(!$va_tmp['name']) { $va_tmp['name'] = '??? '.$va_tmp[$vs_pk]; }
 
+						if($has_is_default_fld && $qr_children->get($this->ops_table_name.'.is_default')) {
+							$va_tmp['name'] .= ' ◉';
+						}
+						
 						// Child count is only valid if has_children is not null
 						$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
 
