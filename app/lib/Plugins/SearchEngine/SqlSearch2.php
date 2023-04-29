@@ -618,7 +618,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			$results_temp_table = array_pop($temp_tables);
 							
-			$this->db->query("UPDATE {$results_temp_table} SET row_id = row_id - 1");
+			$this->db->query("UPDATE IGNORE {$results_temp_table} SET row_id = row_id - 1");
 			
 			$params = [];
 			if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
