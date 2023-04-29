@@ -27,8 +27,8 @@
  */
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/BrowseSchema.php');
-require_once(__CA_APP_DIR__.'/helpers/BrowseHelpers.php');
-require_once(__CA_APP_DIR__.'/helpers/ThemeHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -166,7 +166,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$ret = array_map(function($f, $n) use ($browse) { 
 							$facet_values = $browse->getFacet($n, ['checkAccess' => $user_access_values]);
 						
-							$ret = array_map(function($v) {
+							$vret = array_map(function($v) {
 								return [
 									'id' => $v['id'],
 									'value' => $v['label'],
@@ -181,7 +181,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 								'labelPlural' => caGetOption('label_plural', $f, $n),
 								'description' => caGetOption('description', $f, null),
 								'type' => caGetOption('type', $f, null),
-								'values' => $ret
+								'values' => $vret
 							];
 						}, $facets, array_keys($facets));
 						return [
@@ -230,6 +230,11 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$u = self::authenticate($args['jwt']);
 						
 						list($browse_info, $browse) = self::browseParams($args);
+						
+						if($browse->numCriteria() == 0) {
+							$browse->addCriteria("_search", array("*"));
+							$browse->execute(['checkAccess' => caGetUserAccessValues()]);	
+						}
 						return self::getMutationResponse($browse, $browse_info, $args);
 					}
 				],
@@ -612,7 +617,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		$restrict_to_types = caGetOption('restrictToTypes', $browse_info, null);
 		if (is_array($restrict_to_types) && sizeof($restrict_to_types)) { $browse->setTypeRestrictions($restrict_to_types); }
 		
-		if($criteria = caGetOption('baseCriteria', $options, null)) {
+		if($criteria = caGetOption('baseCriteria', $browse_info, null)) {
 			foreach($criteria as $k => $c) {
 				$browse->addCriteria($k, is_array($c) ? $c : [$c]);
 			}

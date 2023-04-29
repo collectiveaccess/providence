@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,9 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 							
 					switch($vn_status = $va_checkout_status['status']) {
 						case __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__:
+							break;
+						case __CA_OBJECTS_CHECKOUT_STATUS_RETURNED_PENDING_CONFIRMATION__:
+							print _t('<strong>Mark as returned</strong>: %1', caHTMLCheckboxInput("{$vs_id_prefix}confirm_return", ['value' => 1], []));
 							break;
 						case __CA_OBJECTS_CHECKOUT_STATUS_OUT__:
 						case __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__:

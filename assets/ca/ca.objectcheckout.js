@@ -170,7 +170,7 @@ var caUI = caUI || {};
 		// Methods
 		// --------------------------------------------------------------------------------
 		that.addInitialValues = function() {
-			if(that.initialValueList.length  === 0) { return; }
+			if(that.initialValueList && (that.initialValueList.length === 0)) { return; }
 			
 			jQuery.getJSON(
 				that.getInfoURL,
@@ -214,7 +214,7 @@ var caUI = caUI || {};
 					// add note field
 					_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + data.object_id + '" rows="2" cols="80"></textarea></div>';
 		
-					if (((data.status == 0) || (data.status == 3)) && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
+					if (((data.status == 0) || (data.status == 3)) && !data.config.dont_use_due_dates && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
 						_disp += '<div class="caLibraryTransactionListItemDueDateContainer"><div class="caLibraryTransactionListItemDueDateLabel">' + data.due_on_display_label + '</div><input type="text" name="due_date" id="dueDate_' + data.object_id + '" value="' + data.config.default_checkout_date + '" size="10"/></div>';
 					}
 				}

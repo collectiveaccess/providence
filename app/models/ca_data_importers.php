@@ -1362,7 +1362,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		forceImportForPrimaryKeys = list of primary key ids to force mapped source data into. The number of keys passed should equal or exceed the number of rows in the source data. [Default is empty] 
 	 *		transaction = transaction to perform import within. Will not be used if noTransaction option is set. [Default is to create a new transaction]
 	 *		noTransaction = don't wrap the import in a transaction. [Default is false]
-	 *		importAllDatasets = for data formats (such as Excel/XLSX) that support multiple data sets in a single file (worksheets in Excel), indicated that all data sets should be imported; otherwise only the default data set is imported [Default=false]
+	 *		importAllDatasets = for data formats (such as Excel/XLSX) that support multiple data sets in a single file (worksheets in Excel), indicates that all data sets should be imported; otherwise only the default data set is imported [Default=false]
+	 *		dataset = for data formats (such as Excel/XLSX) that support multiple data sets in a single file (worksheets in Excel) import specified data set. [Default is the first data set]
 	 *		addToSet = identifier for set to add all imported items to. [Default is null]
 	 *		detailedLogName = [Default is null]
 	 *		reader = Reader instance preloaded with data for import. If set reader content will be used rather than reading the file pointed to by $ps_source. [Default is null]
@@ -1485,6 +1486,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$merge_only = (bool)$t_mapping->getSetting('mergeOnly');	// If set we only merge; no new records will be created.
 		
 		$vb_import_all_datasets = caGetOption('importAllDatasets', $pa_options, false);
+		$import_dataset = $vb_import_all_datasets ? null : caGetOption('dataset', $pa_options, null);
 		
 		$o_progress->start(_t('Reading %1', $ps_source));
 		
@@ -1522,6 +1524,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	$vn_dataset_count = $vb_import_all_datasets ? (int)$o_reader->getDatasetCount() : 1;
 
 	for($vn_dataset=0; $vn_dataset < $vn_dataset_count; $vn_dataset++) {
+		if($import_dataset) {
+			$vn_dataset = $import_dataset;
+		}
 		if (!$o_reader->setCurrentDataset($vn_dataset)) { continue; }
 		
 		$va_log_import_error_opts['dataset'] = $vn_dataset;
@@ -3982,7 +3987,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	
 		if($log_general) { $o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), $this->num_records_processed, $this->num_records_skipped, $this->num_import_errors)); }
 		
-		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => $this->num_records_processed, 'table' => $t_subject->tableName(), 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
+		$o_progress->setDataForJobID(null, _t('Import complete'), ['numRecordsProcessed' => $this->num_records_processed, 'table' => $t_subject ? $t_subject->tableName() : null, 'created' => $va_ids_created, 'updated' => $va_ids_updated]);
 		$o_progress->finish();
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
@@ -4366,7 +4371,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$regex_opts = null;
 				if((substr($regex_match, 0, 1) === '/') && preg_match("!/([A-Za-z]*)$!", $regex_match, $m)) {
 					$regex_opts = $m[1] ?? null;
-					$regex_match = preg_replace('!'.preg_quote($m[0],' !').'!', '', substr($regex_match, 1));
+					$regex_match = preg_replace('!'.preg_quote($m[0],' !').'!', '', substr($regex_match, 1), 1);
 				} else {
 					$regex_opts = "u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
 				}

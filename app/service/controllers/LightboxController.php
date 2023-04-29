@@ -27,7 +27,6 @@
  */
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/LightboxSchema.php');
-require_once(__CA_APP_DIR__.'/service/traits/BrowseServiceTrait.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -36,8 +35,6 @@ use GraphQLServices\Schemas\LightboxSchema;
 
 
 class LightboxController extends \GraphQLServices\GraphQLServiceController {
-	# -------------------------------------------------------
-	use BrowseServiceTrait;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -286,6 +283,12 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('New values for lightbox')
 						],
 						[
+							'name' => 'content',
+							'type' => Type::string(),
+							'description' => _t('Table code for content type of lightbox (ex. ca_objects)'),
+							'default' => 'ca_objects'
+						],
+						[
 							'name' => 'items',
 							'type' => LightboxSchema::get('LightboxItemListInputType'),
 							'description' => _t('IDs to add to lightbox, separated by ampersands, commas or semicolons')
@@ -314,7 +317,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						$t_set->set([
 							'type_id' => $type_id,
 							'set_code' => $code,
-							'table_num' => (int)Datamodel::getTableNum('ca_objects'),
+							'table_num' => (int)Datamodel::getTableNum($args['table']),
 							'user_id' => $u->getPrimaryKey()
 						]);
 						$t_set->insert();
@@ -497,7 +500,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							$t_set->set([
 								'type_id' => $type_id,
 								'set_code' => $code,
-								'table_num' => (int)Datamodel::getTableNum('ca_objects'),
+								//'table_num' => (int)Datamodel::getTableNum('ca_objects'),
 								'user_id' => $u->getPrimaryKey()
 							]);
 							$t_set->insert();
@@ -557,54 +560,6 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						if (!$t_set->removeItems($item_ids, $u->getPrimaryKey())) {
 							throw new ServiceException(_t('Could not remove items from lightbox: %1', join($t_set->getErrors())));
 						}
-						
- 						return ['id' => $args['id'], 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'count' => $t_set->getItemCount()];
-					}
-				],
-				'transferItems' => [
-					'type' => LightboxSchema::get('LightboxMutationStatus'),
-					'description' => _t('Transfer items from lightbox to lightbox'),
-					'args' => [
-						[
-							'name' => 'id',
-							'type' => Type::int(),
-							'description' => _t('ID of lightbox to transfer items from'),
-							'defaultValue' => null
-						],
-						[
-							'name' => 'toId',
-							'type' => Type::int(),
-							'description' => _t('ID of lightbox to transfer items to'),
-							'defaultValue' => null
-						],
-						[
-							'name' => 'items',
-							'type' => LightboxSchema::get('LightboxItemListInputType'),
-							'description' => _t('Items ids to transfer, separated by ampersands, commas or semicolons')
-						],
-						[
-							'name' => 'jwt',
-							'type' => Type::string(),
-							'description' => _t('JWT'),
-							'defaultValue' => self::getBearerToken()
-						]
-					],
-					'resolve' => function ($rootValue, $args) {
-						if (!($u = self::authenticate($args['jwt']))) {
-							throw new ServiceException(_t('Invalid JWT'));
-						}
-						
-						if (!is_array($item_ids = preg_split('![&,;]+!', $args['items']['ids'])) || !sizeof($item_ids)) {
-							throw new ServiceException(_t('No item ids set'));
-						}
-					
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
-						if(!$t_set->isLoaded()) {
-							throw new ServiceException(_t('Could not load lightbox: %1', join($t_set->getErrors())));
-						}
-						
-						$t_set->transferItemsTo($args['toId'], $item_ids, $u->getPrimaryKey());
 						
  						return ['id' => $args['id'], 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'count' => $t_set->getItemCount()];
 					}
