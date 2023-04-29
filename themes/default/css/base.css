@@ -6849,6 +6849,11 @@ div.caRepresentationMediaReplicationControls {
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #ededed;
 }
+
+.caAnnoEditorPanelContentArea {
+    margin-top: 40px;
+}
+
 .caAnnoEditorTlContainer {		/* timeline container */
     width:100%;
     height: 130px;
@@ -6949,12 +6954,7 @@ div.caRepresentationMediaReplicationControls {
 	width: 500px;
     margin: auto auto 0 auto;
 }
-.caAnnoEditorAudioMediaPlayer {
-	margin-top: 343px;
-}
-.caAnnoEditorVideoMediaPlayer {
 
-}
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
