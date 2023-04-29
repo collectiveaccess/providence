@@ -736,7 +736,7 @@ class BaseFindEngine extends BaseObject {
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h] = true; }
 		}
 		return $sort_keys;
 	}
