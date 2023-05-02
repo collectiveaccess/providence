@@ -1448,21 +1448,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$words = \Binaryoung\Jieba\Jieba::cut($content);
 					$words = array_map(function($v) {
 						$w = str_replace('·', ' ', html_entity_decode($v, null, 'UTF-8'));
-						$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', $w);
-						return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+						$w = preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', $w);
+						return mb_strtolower($w);
 					}, $words);
 					break;
 				}
 			default:
 				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
 				$words = array_map(function($v) {
-					$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
-					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8')));
 				}, $words);
 				break;
 		}
 		
-		return self::filterStopWords($words);
+		$words = self::filterStopWords($words);
+		return $words;
 	}
 	# --------------------------------------------------
 	/**
