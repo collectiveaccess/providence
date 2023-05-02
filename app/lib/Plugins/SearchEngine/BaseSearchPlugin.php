@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -97,6 +97,11 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 * Terms used for matching in search
 	 */
 	protected $searched_terms = [];
+	
+	/**
+	 * Description of matches by return row_id
+	 */
+	protected $seach_result_desc = [];
 	
 	# -------------------------------------------------------
 	/**
@@ -232,6 +237,13 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 */
 	public function getSearchedTerms() : array {
 		return $this->searched_terms ?? [];
+	}
+	# --------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getSearchResultDesc() : array {
+		return $this->seach_result_desc ?? [];
 	}
 	# --------------------------------------------------
 }

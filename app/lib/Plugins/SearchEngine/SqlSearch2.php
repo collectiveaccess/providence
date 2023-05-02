@@ -84,6 +84,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	static protected $filter_stop_words = null;
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($db=null) {
 		global $g_ui_locale;
 		
@@ -209,12 +212,17 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$this->initSearch($subject_tablenum, $search_expression, $filters, $rewritten_query);
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
-			$this->_processQuery($subject_tablenum, $rewritten_query), 
+			$z=$this->_processQuery($subject_tablenum, $rewritten_query), 
 			$filters
 		);
 		if(!is_array($hits)) { $hits = []; }
+		
 		$hits = caSortArrayByKeyInValue($hits, ['boost'], 'desc', ['mode' => SORT_NUMERIC]); // sort by boost
 
+		// Stash list of hits with matching data
+		$this->seach_result_desc = $this->_resolveHitInformation($z);
+		
+		// Return list of hits
 		return new WLPlugSearchEngineSqlSearchResult(array_keys($hits), $subject_tablenum);
 	}
 	# -------------------------------------------------------
@@ -275,15 +283,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				
 	 				$acc = array_intersect_key($acc, $hits);
+	 				
+	 				foreach($acc as $k => $v) {
+	 					if(isset($hits[$k])) {
+	 						$acc[$k]['index_ids'] = array_unique(array_merge($acc[$k]['index_ids'], $hits[$k]['index_ids']));
+	 					}
+	 				}
 	 				foreach($acc as $row_id => $boost) {
-	 					$acc[$row_id] += $hits[$row_id];	// add boost
+	 					$acc[$row_id]['boost'] += $hits[$row_id]['boost'];	// add boost
 	 				}
 	 				break;
 	 			case 'OR':
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				$acc = array_replace($hits, $acc);
 	 				foreach($acc as $row_id => $boost) {
-	 					$acc[$row_id] += $hits[$row_id];	// add boost
+	 					$acc[$row_id]['boost'] += $hits[$row_id]['boost'];	// add boost
 	 				}
 	 				break;
 	 			case 'NOT':
@@ -308,16 +322,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 				} else {
 	 					$acc = array_diff_key($acc, $hits);	
 	 					foreach($acc as $row_id => $boost) {
-							$acc[$row_id] += $hits[$row_id];	// add boost
+							$acc[$row_id]['boost'] += $hits[$row_id]['boost'];	// add boost
 						}
 	 				}
 	 				break;
 	 			default:
 	 				throw new ApplicationException(_t('Invalid boolean operator: %1', $op));
 	 				break;	
-	 		}
-	 		
+	 		}	
 	 	}
+	 	
 	 	return $acc;
 	}
 	# -------------------------------------------------------
@@ -533,10 +547,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$ret = array_shift($results);
 		foreach($results as $r) {
 			if(!is_array($r)) { continue; }
-			$ret = array_intersect($ret, $r);
+			$ret = array_intersect_key($ret, $r);
 		}
-		$ret = $this->_resolveHitInformation($ret);
-		//print_R($ret);
 		return $ret;
 	}
 	# -------------------------------------------------------
@@ -1860,21 +1872,26 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$ids = array_filter($v['index_ids'], 'is_numeric');
 			return array_merge($c, $ids);
 		}, []));
-		$qr_res = $this->db->query("
-			SELECT swi.index_id, sw.word, swi.row_id, swi.field_table_num, swi.field_num, swi.field_row_id, swi.rel_type_id, swi.field_container_id FROM ca_sql_search_word_index swi 
-			INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
-			WHERE swi.index_id in (?)
-		", [$index_ids]);
 		
-		$index_id_info = [];
-		while($qr_res->nextRow()) {
-			$row = $qr_res->getRow();
-			$row['table'] = Datamodel::getTableName($row['field_table_num']);
-			$res[$row['row_id']]['info'] = $row;
-			unset($res[$row['row_id']]['info']['row_id']);
-			unset($res[$row['row_id']]['index_ids']);
-		}
+		if(sizeof($index_ids)) {
+			$qr_res = $this->db->query("
+				SELECT swi.index_id, sw.word, swi.row_id, swi.field_table_num, swi.field_num, swi.field_row_id, swi.rel_type_id, swi.field_container_id FROM ca_sql_search_word_index swi 
+				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
+				WHERE swi.index_id in (?)
+			", [$index_ids]);
 	
+			$index_id_info = [];
+			while($qr_res->nextRow()) {
+				$row = $qr_res->getRow();
+				$row['table'] = Datamodel::getTableName($row['field_table_num']);
+		
+				$row_id = $row['row_id'];
+				unset($row['row_id']);
+		
+				$res[$row_id]['desc'][] = $row;
+				unset($res[$row_id]['index_ids']);
+			}
+		}
 		return $res;
 	}
 	# -------------------------------------------------------

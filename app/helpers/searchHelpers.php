@@ -2287,3 +2287,18 @@
 		return $search_expression;
 	}
 	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caFormatSearchResultDesc(int $id, array $result_desc_data) : ?string {
+		if(is_array($result_desc_data[$id] ?? null)) {
+			$m = $result_desc_data[$id];
+			$s = '';
+			foreach($m['desc'] as $d) {
+				$s .= _t("Matched word '%1' on %2 in %3", $d['word'] ?? null, $d['field_num'] ?? null, $d['table'] ?? null)."<br/>\n";
+			}
+			return $s;
+		}
+		return null;
+	}
+	# ---------------------------------------
