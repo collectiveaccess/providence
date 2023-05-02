@@ -805,8 +805,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 
 				SET is_default = 0 
-				WHERE table_num = ?
-			", (int)$t_root_rel_type->get('table_num'));
+				WHERE table_num = ? AND type_id <> ?
+			",[(int)$t_root_rel_type->get('table_num'), $this->getPrimaryKey()]);
 		}
 		if (!($vn_rc = parent::update($pa_options))) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }
