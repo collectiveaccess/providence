@@ -151,7 +151,7 @@ class ExcelDataReader extends BaseDataReader {
 					}
 					
 					if(sizeof($this->headers) && isset($this->headers[$vn_col])) {
-						$this->opa_row_buf[$this->headers[$vn_col]] = $vs_val;	
+						$this->opa_row_buf[$this->headers[$vn_col]] = $this->opa_row_buf['/'.$this->headers[$vn_col]] = $vs_val;	
 					}
 
 					$vn_col++;
