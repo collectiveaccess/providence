@@ -129,7 +129,6 @@ abstract class BaseRefinery {
 	public function supportsRelationships() {
 		return $this->opb_supports_relationships;
 	}
-
 	# -------------------------------------------------------
 	/**
 	 * Process template expression, replacing "^" prefixed placeholders with data values.
@@ -157,7 +156,7 @@ abstract class BaseRefinery {
 	 *
 	 * @return mixed An array or string
 	 */
-	public static function parsePlaceholder(string $placeholder, array $source_data, array $item, ?int $value_index=null, ?array $options=null) {
+	public static function parsePlaceholder(?string $placeholder, array $source_data, array $item, ?int $value_index=null, ?array $options=null) {
 		$reader = caGetOption('reader', $options, null);
 		$return_as_string = caGetOption("returnAsString", $options, false);
 		$get_at_index = caGetOption('returnDelimitedValueAt', $options, null);

@@ -1409,6 +1409,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t('Import of %1 failed because mapping %2 does not exist.', $ps_source, $ps_mapping));
 			return null;
 		}
+		$vn_num_initial_rows_to_skip = $t_mapping->getSetting('numInitialRowsToSkip');
 		
 		// Path to use for logging
 		$this->log_path = $log_path = caGetOption('logDirectory', $pa_options, caGetLogPath(null, 'batch_metadata_import_log_directory'));
@@ -1510,7 +1511,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($o_trans) { $o_trans->rollback(); }
 				return false;
 			}
-			$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
+			$va_reader_opts = array('headers' => ($vn_num_initial_rows_to_skip > 0), 'basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
 		
 			if (!$o_reader->read($ps_source, $va_reader_opts)) {
 				$this->logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
@@ -1574,7 +1575,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Mapping-level settings
 		//
 		$vs_type_mapping_setting = $t_mapping->getSetting('type');
-		$vn_num_initial_rows_to_skip = $t_mapping->getSetting('numInitialRowsToSkip');
 		if (!in_array($vs_import_error_policy = $t_mapping->getSetting('errorPolicy'), array('ignore', 'stop'))) {
 			$vs_import_error_policy = 'ignore';
 		}
@@ -1676,7 +1676,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_env_tmp = explode("|", $va_environment_item['value']);
 			
 				if (!($o_env_reader = $t_mapping->getDataReader($ps_source, $ps_format))) { break; }
-				if(!$o_env_reader->read($ps_source, array('basePath' => '', 'originalFilename' => caGetOption('originalFilename', $pa_options, null)))) { break; }
+				if(!$o_env_reader->read($ps_source, array('headers' => ($vn_num_initial_rows_to_skip > 0), 'basePath' => '', 'originalFilename' => caGetOption('originalFilename', $pa_options, null)))) { break; }
 				$o_env_reader->setCurrentDataset($vn_dataset);
 				$o_env_reader->nextRow();
 				switch(sizeof($va_env_tmp)) {
@@ -3195,8 +3195,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Process data in subject record
 				//
-				// print_r($va_content_tree);
-//  				die("END\n\n");
+				//print_r($va_content_tree);
+ 				//die("END\n\n");
 				//continue;
 				if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 					continue;
