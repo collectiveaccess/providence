@@ -901,7 +901,8 @@
 									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
 									
 									foreach($match_on as $m) {
-									    $va_val[$m] = BaseRefinery::parsePlaceholder($va_p[$m] ?? $va_p['attributes'][$m], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
+										if(is_null($vx = $va_p[$m] ?? $va_p['attributes'][$m] ?? null)) { continue; }
+									    $va_val[$m] = BaseRefinery::parsePlaceholder($vx, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
 										$va_val['_matchOn'][] = $m;
 									}
 									break;

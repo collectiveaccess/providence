@@ -620,7 +620,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		if(!($new_parent_id = $this->get('parent_id'))) { return null; }
 		if(!($id = $this->getPrimaryKey())) { return null; }
 		
-		$policies = HistoryTrackingCurrentValueTrait::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), array_merge($options, ['type_id' => $this->getTypeID()]));
+		$policies = HistoryTrackingCurrentValueTrait::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), array_merge($options ?? [], ['type_id' => $this->getTypeID()]));
 		if(!is_array($policies)) { return null; }
 		$type_code = $this->getTypeCode();
 		foreach($policies as $policy => $policy_info) {

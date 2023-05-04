@@ -458,14 +458,6 @@ class BaseFindEngine extends BaseObject {
 		$start = caGetOption('start', $options, 0);
 		$limit = caGetOption('limit', $options, null);
 		
-		$limit_sql = '';
-		if ($limit > 0) {
-			$limit_sql = "LIMIT {$limit}";
-		}
-		if ($start > 0) {
-			$limit_sql .= " OFFSET {$start}";
-		}
-		
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		list($sort_field, $sort_filter) = array_pad(explode('|', $sort_field), 2, null);
@@ -482,15 +474,15 @@ class BaseFindEngine extends BaseObject {
 		if ($sort_table === $table) {	// sort in primary table
 			if (in_array($sort_field, ['history_tracking_current_value', 'ca_objects_location'])) {
 				$policy = caGetOption('policy', $options, $table::getDefaultHistoryTrackingCurrentValuePolicyForTable($sort_table));
-				$sort_key_values = $this->_sortByHistoryTrackingCurrentValue($t_table, $hit_table, $policy, $limit_sql, $sort_direction, $hits);
+				$sort_key_values = $this->_sortByHistoryTrackingCurrentValue($t_table, $hit_table, $policy, $sort_direction, $hits, $options);
 			} elseif ($t_table->hasField($sort_field)) {			// sort key is intrinsic
-				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction);
+				$sort_key_values = $this->_sortByIntrinsic($t_table, $hit_table, $sort_field, $sort_direction, $options);
 			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
-				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $sort_subfield, $limit_sql, $sort_direction, $hits, ['filter' => $sort_filter_field ,'filterValues' => $sort_field_values]);
+				$sort_key_values = $this->_sortByAttribute($t_table, $hit_table, $sort_field, $sort_subfield, $sort_direction, $hits, array_merge($options, ['filter' => $sort_filter_field ,'filterValues' => $sort_field_values]));
 			} elseif($sort_field === 'preferred_labels') {
-				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction, ['isPreferred' => true]);	
+				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
 			} elseif($sort_field === 'nonpreferred_labels') {
-				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction, ['isPreferred' => false]);	
+				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
 			
 			} else {
 				//throw new ApplicationException(_t('Unhandled sort'));
@@ -498,7 +490,7 @@ class BaseFindEngine extends BaseObject {
 			}
 		} elseif($t_table->getLabelTableName() == $sort_table) {
 			// is label?
-			$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_field, $limit_sql, $sort_direction, ['isPreferred' => true]);	
+			$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_field, $sort_direction, array_merge($options, ['isPreferred' => true]));	
 		} else {
 			list($sort_field, $set_id) = array_pad(explode('/', $sort_field), 2, null);
 			
@@ -512,15 +504,15 @@ class BaseFindEngine extends BaseObject {
 			
 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 			if(($sort_table === 'ca_set_items')) {
-				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $limit_sql, $sort_direction, $options);
+				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $sort_direction, $options);
 			} elseif ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
-				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $limit_sql, $sort_direction, $options);
+				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $sort_direction, $options);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
-				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction, array_merge($options, ['isPreferred' => true]));	
+				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
 			} elseif($sort_field === 'nonpreferred_labels') {		// sort key is preferred labels
-				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $limit_sql, $sort_direction, array_merge($options, ['isPreferred' => false]));	
+				$sort_key_values = $this->_sortByRelatedLabels($t_table, $t_rel_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
 			} elseif($is_attribute) {							// sort key is metadata attribute
-				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $sort_subfield, $limit_sql, $sort_direction, $hits, ['filter' => $sort_filter_field ,'filterValues' => $sort_field_values]);		
+				$sort_key_values = $this->_sortByRelatedAttribute($t_table, $t_rel_table, $hit_table, $sort_field, $sort_subfield, $sort_direction, $hits, array_merge($options, ['filter' => $sort_filter_field ,'filterValues' => $sort_field_values]));		
 			} else {
 				//throw new ApplicationException(_t('Unhandled sort'));
 				return $hits;
@@ -533,12 +525,13 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByIntrinsic($t_table, string $hit_table, string $intrinsic=null, string $limit_sql=null, $direction='asc') {
+	private function _sortByIntrinsic($t_table, string $hit_table, string $intrinsic=null, ?string $direction='asc', ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
 		$direction = self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
 			SELECT {$table}.{$table_pk}
@@ -560,7 +553,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByRelatedIntrinsic($t_table, $t_rel_table, string $hit_table, string $intrinsic=null, string $limit_sql=null, $direction='asc', array $options=null) {
+	private function _sortByRelatedIntrinsic($t_table, $t_rel_table, string $hit_table, ?string $intrinsic=null, ?string $direction='asc', ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -571,6 +564,7 @@ class BaseFindEngine extends BaseObject {
 		$join_sql = join("\n", $joins);
 		
 		$intrinsic = array_shift(explode('/', $intrinsic));
+		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
 			SELECT t.{$table_pk}
@@ -593,7 +587,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByLabels($t_table, string $hit_table, string $label_field=null, string $limit_sql=null, $direction='asc', ?array $options=null) {
+	private function _sortByLabels($t_table, string $hit_table, ?string $label_field=null, ?string $direction='asc', ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -609,6 +603,8 @@ class BaseFindEngine extends BaseObject {
 		if($t_label->hasField('is_preferred') && !is_null($is_preferred)) {
 			$pref_sql = " WHERE l.is_preferred = ".($is_preferred ? "1" : "0");
 		}
+		$limit_sql = self::_limitSQL($options);
+		
 		$sql = "
 			SELECT l.{$table_pk}
 			FROM {$label_table} l
@@ -626,7 +622,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByRelatedLabels($t_table, $t_rel_table, string $hit_table, string $rel_label_field=null, string $limit_sql=null, $direction='asc', array $options=null) {
+	private function _sortByRelatedLabels($t_table, $t_rel_table, string $hit_table, ?string $rel_label_field=null, ?string $direction='asc', ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -648,8 +644,9 @@ class BaseFindEngine extends BaseObject {
 		$is_preferred = caGetOption('isPreferred', $options, null);
 		$pref_sql = '';
 		if($t_label->hasField('is_preferred') && !is_null($is_preferred)) {
-			$pref_sql = " WHERE rl.is_preferred = ".($is_preferred ? "1" : "0");
+			$pref_sql = " WHERE (rl.is_preferred = ".($is_preferred ? "1" : "0")." OR rl.is_preferred IS NULL)";
 		}
+		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
 			SELECT t.{$table_pk}
@@ -670,7 +667,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByAttribute($t_table, string $hit_table, string $element_code=null, string $subelement_code=null, string $limit_sql=null, $direction='asc', array $hits=null, ?array $options=null) {
+	private function _sortByAttribute($t_table, string $hit_table, ?string $element_code=null, ?string $subelement_code=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
 		$table_num = $t_table->tableNum();
 		
 		if (!($element_id = ca_metadata_elements::getElementID($e=$subelement_code ? $subelement_code : $element_code))) { 
@@ -679,6 +676,7 @@ class BaseFindEngine extends BaseObject {
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
 		
 		$direction = self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
 		
 		$filter_join = $filter_where = null;
 		if($filter_element = caGetOption('filter', $options, null)) {
@@ -746,12 +744,13 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortBySet($t_table, $t_rel_table, string $hit_table, string $intrinsic=null, int $set_id=null, string $limit_sql=null, $direction='asc', array $options=null) {
+	private function _sortBySet($t_table, $t_rel_table, string $hit_table, ?string $intrinsic=null, ?int $set_id=null, ?string $direction='asc', ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
 		$direction =  self::sortDirection($direction);
+		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
 			SELECT t.{$table_pk}
@@ -773,7 +772,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByHistoryTrackingCurrentValue($t_table, string $hit_table, string $policy=null, string $limit_sql=null, $direction='asc', array $hits=null) {
+	private function _sortByHistoryTrackingCurrentValue($t_table, string $hit_table, ?string $policy=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
 		$table_num = $t_table->tableNum();
 		$table_name = $t_table->tableName();
 		
@@ -783,7 +782,7 @@ class BaseFindEngine extends BaseObject {
 		}
 		
 		$direction = self::sortDirection($direction);
-
+		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "SELECT htcv.row_id
 				FROM ca_history_tracking_current_values htcv
@@ -810,7 +809,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, string $element_code=null, string $subelement_code=null, string $limit_sql=null, $direction='asc', array $hits=null, array $options=null) {
+	private function _sortByRelatedAttribute($t_table, $t_rel_table, string $hit_table, ?string $element_code=null, ?string $subelement_code=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -825,6 +824,7 @@ class BaseFindEngine extends BaseObject {
 
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
+		$limit_sql = self::_limitSQL($options);
 		
 		$filter_join = $filter_where = null;
 		if($filter_element = caGetOption('filter', $options, null)) {
@@ -860,7 +860,8 @@ class BaseFindEngine extends BaseObject {
 					INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 					{$filter_join}
 					WHERE cav.element_id = ? {$filter_where}
-					ORDER BY cav.value_sortable {$direction}"; 
+					ORDER BY cav.value_sortable {$direction}
+					{$limit_sql}"; 
 		$qr_sort = $this->db->query($sql, [$element_id]);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
@@ -1404,7 +1405,7 @@ class BaseFindEngine extends BaseObject {
 				$linking_table = $path[1];
 				
 				$rel_types = caMakeRelationshipTypeIDList($linking_table, $rel_types);
-				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND l.type_id IN (".join(',', array_map('intval', $rel_types)).")" : '';
+				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND (l.type_id IN (".join(',', array_map('intval', $rel_types)).") OR (l.type_id IS NULL))" : '';
 	
 				if ($table === $rel_table) {
 					$t_relation = Datamodel::getInstance($linking_table, true);
@@ -1471,6 +1472,23 @@ class BaseFindEngine extends BaseObject {
 	private static function sortDirection($direction) {
 		return (strtolower($direction) === 'desc') ? 'desc' : 'asc';
 	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _limitSQL(array $options) : string {
+		$start = caGetOption('start', $options, null);
+		$limit = caGetOption('limit', $options, null);
+		
+		$limit_sql = '';
+		if ($limit > 0) {
+			$limit_sql = "LIMIT {$limit}";
+		}
+		if ($start > 0) {
+			$limit_sql .= " OFFSET {$start}";
+		}
+		return $limit_sql;
+	}	
 	# -------------------------------------------------------
 	/**
 	 * Discards any existing temporary table on deallocation.

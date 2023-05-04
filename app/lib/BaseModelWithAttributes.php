@@ -2761,7 +2761,10 @@
 					continue;
 				}
 
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				$bundle_code = "{$vs_table}.{$vs_element_code}";
+				$dt = ca_metadata_elements::getDataTypeForElementCode($vs_element_code);
+				if($dt === __CA_ATTRIBUTE_VALUE_MEDIA__) { $bundle_code .= '.path'; }
+				$va_vals = $this->get($bundle_code, array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {

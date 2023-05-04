@@ -6892,6 +6892,7 @@ create table ca_object_checkouts (
    checkout_date			int unsigned null,
    due_date					int unsigned null,
    return_date				int unsigned null,
+   return_confirmation_date	int unsigned null,
    checkout_notes			text not null,
    return_notes				text not null,
    last_sent_coming_due_email int unsigned null,
@@ -6907,6 +6908,7 @@ create table ca_object_checkouts (
    index i_checkout_date (checkout_date),
    index i_due_date (due_date),
    index i_return_date (return_date),
+   index i_return_confirmation_date (return_confirmation_date),
    index i_last_sent_coming_due_email (last_sent_coming_due_email),
    index i_last_reservation_available_email (last_reservation_available_email),
    
@@ -7835,4 +7837,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (183, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (184, unix_timestamp());

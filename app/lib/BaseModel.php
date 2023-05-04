@@ -1479,7 +1479,7 @@ class BaseModel extends BaseObject {
 						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
-									
+									$t_list = new ca_lists();
 									if (($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) || ($vn_id = $t_list->getItemIDFromListByLabel($vs_list_code, $vm_value))) { // 
 										$vm_value = $vn_id;
 									} else {
@@ -13219,11 +13219,25 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Evaluate expression in the context of the currently loaded row
+	 *
+	 * @param string $expression
+	 *
+	 * @return mixed Return value of expression
+	 */
+	public function evaluateExpression(string $expression) {
+		$tags = caGetTemplateTags($expression);
+		$data = [];
+		foreach($tags as $t) {
+			$data[$t] = $this->get($t);
+		}
+		return ExpressionParser::evaluate($expression, $data);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
 		unset($this->o_db);
 		unset($this->_CONFIG);
 		unset($this->_MEDIA_VOLUMES);

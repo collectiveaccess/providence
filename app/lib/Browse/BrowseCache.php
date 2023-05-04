@@ -71,7 +71,7 @@ class BrowseCache {
 	 * @return bool
 	 */
 	public function load($ps_cache_key, $pa_options=null) {
-		if (ExternalCache::contains($ps_cache_key, 'BrowseResults')) {
+		if (ExternalCache::contains($ps_cache_key, 'BrowseFacets') && ExternalCache::contains($ps_cache_key, 'BrowseResults')) {
 			$this->opa_browse = [];
 			$this->opa_browse['facets'] = ExternalCache::fetch($ps_cache_key, 'BrowseFacets');
 			$this->opa_browse['results'] = ExternalCache::fetch($ps_cache_key, 'BrowseResults');

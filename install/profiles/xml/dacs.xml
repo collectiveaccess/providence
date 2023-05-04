@@ -4184,7 +4184,7 @@
           <labels>
             <label locale="en_US">
               <typename>has format</typename>
-              <typename_reverse>if format of</typename_reverse>
+              <typename_reverse>is format of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4342,7 +4342,7 @@
           <labels>
             <label locale="en_US">
               <typename>has format</typename>
-              <typename_reverse>if format of</typename_reverse>
+              <typename_reverse>is format of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
