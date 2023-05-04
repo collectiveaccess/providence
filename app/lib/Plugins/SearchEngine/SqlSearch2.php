@@ -534,7 +534,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$ret = array_shift($results);
 		foreach($results as $r) {
 			if(!is_array($r)) { continue; }
-			$ret = array_intersect($ret, $r);
+			$ret = array_intersect_key($ret, $r);
 		}
 		return $ret;
 	}
