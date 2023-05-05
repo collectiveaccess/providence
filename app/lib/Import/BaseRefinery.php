@@ -148,7 +148,7 @@
 		 *
 		 * @return mixed An array or string
 		 */
-		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $pn_index=null, $pa_options=null) {
+		public static function parsePlaceholder(?string $ps_placeholder, array $pa_source_data, array $pa_item, ?int $pn_index=null, ?array $pa_options=null) {
 			$o_reader = caGetOption('reader', $pa_options, null);
 			$pb_return_as_string = caGetOption("returnAsString", $pa_options, false);
 			$pn_get_at_index = caGetOption('returnDelimitedValueAt', $pa_options, null);
