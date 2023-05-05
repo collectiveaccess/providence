@@ -180,4 +180,105 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		return $ps_text;
 	}
 	# ------------------------------------------------
+
+	public function getExtendedInformation($pa_settings, $ps_url) {
+
+		$display="";
+
+		$vs_data = caQueryExternalWebservice($ps_url);
+		$va_data = json_decode($vs_data,true);
+
+		$va_identified_by = $this->getIndentifiedBy($pa_settings, $ps_url);
+
+		/* header */
+		$display = "<table class='aat_alternate'><tr><th></th>";
+		foreach($va_identified_by['identified_by']['alternatives'] as $vs_alternative) {
+			$display .= "<th>".$vs_alternative."</th>";
+		}
+		$display .= "</tr>";
+
+		/* content */
+		foreach ($va_identified_by['identified_by']['languages'] as $va_language) {
+			$language_short = reset(explode("-", $va_language));
+
+			$display .= "<tr><td class='".$language_short."' title='".$va_language."'><span>".$language_short."</span></td>";
+
+			foreach($va_identified_by['identified_by']['alternatives'] as $va_alternative) {
+				$label = $va_identified_by['identified_by'][$va_language][$va_alternative] ?? '';
+				$display .= "<td>".$label."</td>";
+			}
+			$display .= "</tr>";
+		}
+
+		$display .= "</table>";
+
+		return array('display' => $display);
+
+	}
+	# ------------------------------------------------
+
+
+	/* append data to the field */
+	public function getExtraInfo($settings, $url){
+
+
+		$vs_data = caQueryExternalWebservice($url);
+		$va_data = json_decode($vs_data,true);
+
+		$va_identified_by = $this->getIndentifiedBy($settings, $url);
+
+		return $va_identified_by;
+
+	}
+
+
+	public function getIndentifiedBy($settings, $url){
+
+		if(is_null($url))return false;
+
+		$url_metadata = $url.'.json';
+		$vs_data = caQueryExternalWebservice($url_metadata);
+		$va_data = json_decode($vs_data,true);
+		$va_data_restructured = array();
+
+		$va_alternative_keys=array();
+		$va_alternative_languages=array();
+
+		/* collect all alternate labels */
+		foreach ($va_data["identified_by"] as $key => $value) {
+			if($value['type']=='Identifier') continue;
+
+			$lang = $value['language'][0]['_label'];
+			$va_alternative_languages[]=$lang;
+			$identified_label = $value['content'];
+			$va_data_restructured['identified_by'][$lang][$value['type']] = $identified_label;
+
+			foreach ($value['alternative'] as $ka => $va) {
+				$lang = $va['language'][0]['_label'];
+				$va_alternative_keys[]=$va['type'];
+				$va_alternative_languages[]=$lang;
+				$alternative_label = $va['content'];
+
+				$va_data_restructured['identified_by'][$lang]['alternatives'][]=$va['type'];
+				$va_data_restructured['identified_by'][$lang][$va['type']] = $alternative_label;
+			}
+
+			foreach ($value["classified_as"] as $kc => $vc) {
+				$id = end(explode("/",$vc['id']));
+				$va_data_restructured['identified_by'][$lang][$id] = $alternative_label;
+				$va_data_restructured['identified_by'][$lang]['alternatives'][] = $id;
+				$va_alternative_keys[] = $id;
+				#$va_data_restructured['identified_by']['alternatives']=array_unique($va_data['identified_by']['alternatives']);
+			}
+
+		}
+		$va_data_restructured['identified_by']['alternatives'] = array_values(array_unique($va_alternative_keys));
+		$va_data_restructured['identified_by']['languages'] = array_values(array_unique($va_alternative_languages));
+
+		return $va_data_restructured;
+
+
+	}
+
+
 }
