@@ -4901,6 +4901,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
 	 */
 	function caIdentifyAlphabet(string $text) : ?string {
+		if(!strlen($text)) { return null; }
 		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {
 			return 'HIRAGANA';
 		} elseif(preg_match_all('/\p{Katakana}/u', $text, $result)) {
@@ -4912,11 +4913,11 @@ function caFileIsIncludable($ps_file) {
 		} elseif(preg_match_all('/(\p{Cyrillic}+)/u', $text, $result)) {
 			return 'CYRILLIC';
 		} elseif(preg_match_all('/(\p{Latin}+)/u', $text, $result)) {
-			return 'GREEK';
-		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
-			return 'HEBREW';
-		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
 			return 'LATIN';
+		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
+			return 'GREEK';
+		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
+			return 'HEBREW';
 		}
 		return null;
     }
