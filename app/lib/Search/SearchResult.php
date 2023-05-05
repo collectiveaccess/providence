@@ -2438,7 +2438,9 @@ class SearchResult extends BaseObject {
 											$vs_val_proc = $o_value->getUri();
 											break;
 										default:
-											$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
+											$arr = array_slice($va_path_components['components'],2);
+											$dot = implode('.',$arr);
+											$vs_val_proc = $o_value->getExtraInfo($dot);
 											break;
 									}
 									
@@ -2470,7 +2472,9 @@ class SearchResult extends BaseObject {
 											$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 											break;
 										default:
-											$vs_val_proc = $o_value->getExtraInfo($vs_final_path_key);
+											$arr = array_slice($va_path_components['components'],3);
+											$dot = implode('.',$arr);
+											$vs_val_proc = $o_value->getExtraInfo($dot);
 											break;
 									}
 
