@@ -201,6 +201,10 @@ trait CLIUtilsReplication {
 	 */
 	public static function align_guids_for_consortium_source($po_opts=null) {
 		global $g_system, $g_systems;
+		if(!isset($g_system) || !isset($g_systems)) {
+			CLIUtils::addError(_t('setup.php $g_system and $g_systems globals are not present. Please add them.'));
+			return false;
+		} 
 		
 		// TODO: rewrite to use services rather than cross-database queries
 		
@@ -211,7 +215,7 @@ trait CLIUtilsReplication {
 		}
 		
 		if(!is_array($g_systems) || !isset($g_systems[$source])) {
-			print "Invalid system\n";
+			print "Invalid system {$source}\n";
 			exit;
 		}
 		
@@ -235,8 +239,6 @@ trait CLIUtilsReplication {
 		}
 		
 		print "Rewriting guids for {$target_sys} to align with {$reference_sys}\n";
-	
-		print "--- Processing {$target_sys} ---\n\n";
 		
 		foreach($tables as $table) {
 			$t = Datamodel::getInstanceByTableName($table, true);
@@ -293,8 +295,15 @@ trait CLIUtilsReplication {
 					} else {
 						$label = $t_list_item->get('ca_list_items.preferred_labels.name_singular');
 						$tmp = preg_split("/[ ]*[,]+[ ]*/", $label);
-						$label_inverted = trim(array_pop($tmp).(sizeof($tmp) ? ' '.join(' ', $tmp) : ''));
-					//	print "TRY INVERSION [$label] => [$label_inverted]\n";
+						
+						if(sizeof($tmp) == 1) {
+							$tmp = preg_split("/[ ]+/", $label);
+							$x1 = array_pop($tmp);
+							$label_inverted = "{$x1}, ".join(' ', $tmp);
+						} else {
+							$label_inverted = trim(array_pop($tmp).(sizeof($tmp) ? ' '.join(' ', $tmp) : ''));
+						}
+						print "TRY INVERSION [$label] => [$label_inverted]\n";
 						$r = $db->query($z="SELECT {$target_sys}.{$table}.{$pk} FROM {$target_sys}.{$table} INNER JOIN {$target_sys}.ca_list_item_labels AS l ON l.item_id = {$target_sys}.{$table}.item_id WHERE l.name_singular = ? AND list_id = {$target_list_id}", [$label_inverted]);
 				
 						if($r->nextRow()) {
@@ -310,7 +319,7 @@ trait CLIUtilsReplication {
 						}
 					}
 				} else {
-					print "[NO MATCH FOR $idno\n";
+					print "[NO MATCH FOR $idno]\n";
 				}
 		
 				// rewrite label guids
@@ -359,7 +368,7 @@ trait CLIUtilsReplication {
 	public static function align_guids_for_consortium_sourceParamList() {
 		return [
 			"source|s=s" => _t('Source system'),
-			"target|t=s" => _t('Target system'),s
+			"target|t=s" => _t('Target system')
 		];
 	}
 	# -------------------------------------------------------
@@ -461,6 +470,61 @@ trait CLIUtilsReplication {
 	 *
 	 */
 	public static function force_update_with_latest_changeHelp() {
+		return _t("To come.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function sync_public_for_source($po_opts=null) {
+		require_once(__CA_LIB_DIR__.'/Sync/Replicator.php');
+
+		if (!($source = $po_opts->getOption('source'))) {
+			CLIUtils::addError(_t("You must specify a source"));
+			return false;
+		}
+		// if (!($guid = $po_opts->getOption('guid'))) {
+// 			CLIUtils::addError(_t("You must specify a guid"));
+// 			return false;
+// 		}
+		
+		$o_replicator = new Replicator();
+		
+		print "Replicating {$source}\n";
+		$o_replicator->syncPublic($source);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function sync_public_for_sourceParamList() {
+		return [
+			"source|s=s" => _t('Source system'),
+			"log_id|t=s" => _t('Log_id'),
+			"guid|g=s" => _t('GUID of record to replicate'),
+			"table|b=s" => _t('Table of records to replicate'),
+			"search|f=s" => _t('Search for records to replicate')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function sync_public_for_sourceUtilityClass() {
+		return _t('Replication');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function sync_public_for_sourceShortHelp() {
+		return _t("Force replication of last change to specific record");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function sync_public_for_sourceHelp() {
 		return _t("To come.");
 	}
 	# -------------------------------------------------------
