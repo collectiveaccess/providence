@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -244,6 +244,36 @@ class ca_guids extends BaseModel {
 		}
 
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get row id and table num for given GUID
+	 *
+	 * @param array $guids
+	 * @param array $options
+	 * @return array|null
+	 * 			keys are 'row_id' and 'table_num'
+	 */
+	public static function getInfoForGUIDs(array $guids, ?array $options=null) : ?array {
+		if(!sizeof($guids)) { return null; }
+		
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
+		}
+
+		$qr_guid = $o_db->query('
+			SELECT table_num, row_id FROM ca_guids WHERE guid IN (?)
+		', [$guids]);
+
+		$ret = [];
+		while($qr_guid->nextRow()) {
+			$ret[] = $qr_guid->getRow();
+		}
+
+		return $ret;
 	}
 	# ------------------------------------------------------
 	/**
