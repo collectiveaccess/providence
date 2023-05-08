@@ -1,6 +1,49 @@
 stages:
   - deploy
   - manual_non_deploy 
+  - push
+
+# Staging Push
+# Manual job to push the last commit to dev to staging
+push_to_staging:
+  stage: push
+  only:
+    - bmac
+  script:
+    - git clone -n https://gitlab.galileo.usg.edu/ugalibs/collective-access.git /tmp/collective-access_${CI_PIPELINE_ID}
+    - cd /tmp/collective-access_${CI_PIPELINE_ID}
+    - git checkout ${CI_COMMIT_SHA} 
+    - sudo -H -u pushbot git push origin HEAD:bmac-staging 
+    - cd /tmp
+    - rm -rf /tmp/collective-access_${CI_PIPELINE_ID}
+  tags:
+    - shell 
+
+## Code Deploy
+# Sync the local copy of the code - STAGING
+deploy_staging:
+  stage: deploy
+  only:
+    - bmac-staging
+  before_script:
+    - cd /app/providence-staging && cp $STAGING_ENV_FILE .env
+  script:
+    - cd /app/providence-staging
+    - git pull
+    - cp $SETUP_PHP_PROVIDENCE_STAGING setup.php
+    - source .env
+    - docker-compose -f docker-compose-deploy.yml pull
+    - docker-compose -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME_STAGING
+    - docker-compose -f docker-compose-deploy.yml up -d
+    - docker-compose -f docker-compose-deploy.yml exec -T providence /bin/bash -c "cd /app/apache2/htdocs && composer install"
+  after_script:
+    - cd /app/providence-staging && rm .env
+    - cd /app/providence-staging && chown gitlab-runner:daemon setup.php && chmod 640 setup.php
+  environment:
+    name: staging
+    url: https://ca-staging.libs.uga.edu
+  tags:
+    - brown-hosting-shell
 
 
 ## Code Deploy
@@ -8,7 +51,7 @@ stages:
 deploy_prod:
   stage: deploy
   only:
-    - bmac
+    - bmac-prod
   before_script:
     - cd /app/providence && cp $PROD_ENV_FILE .env
   script:
@@ -16,9 +59,10 @@ deploy_prod:
     - git pull
     - cp $SETUP_PHP_PROVIDENCE setup.php
     - source .env
-    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME  
-    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d
-    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml exec -T providence /bin/bash -c "cd /app/apache2/htdocs && composer install"
+    - docker-compose -f docker-compose-deploy.yml pull
+    - docker-compose -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME  
+    - docker-compose -f docker-compose-deploy.yml up -d
+    - docker-compose -f docker-compose-deploy.yml exec -T providence /bin/bash -c "cd /app/apache2/htdocs && composer install"
   after_script:
     - cd /app/providence && rm .env
     - cd /app/providence && chown gitlab-runner:daemon setup.php && chmod 640 setup.php
@@ -30,10 +74,10 @@ deploy_prod:
 
 # Tail the error logs
 # A hacky solution to see the error log output
-tail_providence_logs_only:
+tail_providence_logs_only_prod:
   stage: manual_non_deploy
   only:
-    - bmac
+    - bmac-prod
   script:
     - tail -f /app/apachelogs_providence/error_log
   timeout: 1h
@@ -43,10 +87,10 @@ tail_providence_logs_only:
 
 # Tail the error logs
 # A hacky solution to see the error log output
-tail_all_error_logs:
+tail_all_error_logs_prod:
   stage: manual_non_deploy
   only:
-    - bmac
+    - bmac-prod
   script:
     - tail -f /app/apachelogs_providence/error_log /app/apachelogs_pawtucket/error_log
   timeout: 1h
