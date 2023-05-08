@@ -6,6 +6,7 @@ services:
     ports:
       - ${APACHE_LOCALHOST_PORT-127.0.0.1:8098}:80
     volumes:
+      - $PWD:/app/apache2/htdocs
       - ${APACHE_LOGS_DIR:-./log}:/app/apache2/logs
       - ${CA_MEDIA_DIR:-./media}:/app/apache2/htdocs/media
       - ${CA_IMPORT_DIR:-./import}:/app/apache2/htdocs/import
