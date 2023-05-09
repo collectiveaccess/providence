@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,38 +25,50 @@
  *
  * ----------------------------------------------------------------------
  */
-$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-$vn_table_num 				= $this->getVar('table_num');
+$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+$placement_id			= $this->getVar('placement_id');
+$table_num 				= $this->getVar('table_num');
+$t_subject				= $this->getVar('t_subject');	// parent artwork
+$t_instance				= $this->getVar('t_instance');	// currently selected record (currently edited artwork or element)
+$settings 				= $this->getVar('settings');
+$read_only				= (isset($settings['readonly']) && $settings['readonly']);
 
-$t_subject					= $this->getVar('t_subject');
-$settings 					= $this->getVar('settings');
+if (!($add_label 		= $this->getVar('add_label'))) { $add_label = _t('Add component'); }
 
-$vb_read_only				= (isset($settings['readonly']) && $settings['readonly']);
+$display_template		= caGetOption('displayTemplate', $settings, null);
+if(!$display_template) { $display_template = $t_subject->getAppConfig()->get('ca_objects_component_display_settings'); }
 
-if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Add component'); }
-$vs_display_template		= caGetOption('displayTemplate', $settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
+$current_display_template		= caGetOption('currentDisplayTemplate', $settings, null);
+if(!$current_display_template) { $current_display_template = $t_subject->getAppConfig()->get('ca_objects_component_current_display_settings'); }
 
-$va_errors = array();
+$num_columns			= caGetOption('numColumns', $settings, $t_subject->getAppConfig()->get('ca_objects_component_num_columns'));
+if(!$num_columns) { $num_columns = 1; }
 
-$vn_num_components = ($qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
+$component_list  		= $this->getVar('component_list');
+$num_components  		= $this->getVar('component_count');
 
-print "({$vn_num_components})";	// print number of components next to the bundle title
-print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+$errors = [];
+print "({$num_components})";	// print number of components next to the bundle title
+print caEditorBundleShowHideControl($this->request, $id_prefix);
 ?>
 
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $id_prefix; ?>">
 	<div class="bundleContainer">
+		<div class='bundleSubLabel'>
+			<div class="button batchEdit " id="batchEdit<?= $id_prefix; ?>"><a href="#"><?= caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit'); ?></a></div>
+		</div>
+		
 		<div class="caItemList">
 			<div class="labelInfo">	
 <?php
-	if ($vn_num_components) {
+	if ($num_components) {
 ?>
-		<div style="column-count:3; -webkit-column-count:3; -moz-column-count:3;">
+		<div id="<?= $id_prefix; ?>componentList" style="column-count:<?= $num_columns; ?>; -webkit-column-count:<?= $num_columns; ?>; -moz-column-count:<?= $num_columns; ?>;">
 <?php
-		while($qr_components->nextHit()) {
+		while($component_list->nextHit()) {
 ?>
-				<div style="font-weight: normal;">
-					<?= $qr_components->getWithTemplate($vs_display_template); ?>
+				<div class="componentItem">
+					<div data-id="<?= $component_list->getPrimaryKey(); ?>"><?= $component_list->getWithTemplate(($component_list->getPrimaryKey() == $t_instance->getPrimaryKey()) ? $current_display_template : $display_template); ?></div>
 				</div>
 <?php
 		}
@@ -70,9 +82,17 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	}
 			
 ?>
-	<div class='button labelInfo caAddItemButton'><?= '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label; ?></a></div>
+	<div class='button labelInfo caAddItemButton'><?= '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label; ?></a></div>
 
 			</div>
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		jQuery('#batchEdit<?= $id_prefix; ?>').on('click', function(e) {
+			window.location = '<?= caNavUrl($this->request, '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_subject->getPrimaryKey(), 'screen' => $this->request->getActionExtra()]);?>'
+		});
+	});
+</script>
