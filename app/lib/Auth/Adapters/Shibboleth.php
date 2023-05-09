@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 */
     public function __construct(){
+    	if(caIsRunFromCLI()) { return; }
         $this->auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
         $shibSP = $this->auth_config->get('shibboleth_service_provider');
         try{
@@ -58,6 +59,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 */
 	public function authenticate($username, $password = '', $options=null) {
+    	if(caIsRunFromCLI()) { return false; }
 		try{
         	$this->opo_shibAuth->requireAuth();
 		} catch (Exception $e){
@@ -82,6 +84,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 */
 	public function getUserInfo($username, $password, $options=null) {
+    	if(caIsRunFromCLI()) { return null; }
         if(!$this->opo_shibAuth->isAuthenticated()){
             if (!$this->authenticate($username, $password)) {
                 throw new ShibbolethException(_t("User could not be authenticated."));
@@ -119,6 +122,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 * @param string $passowrd Ignored
 	 */
 	public function createUserAndGetPassword($username, $password=null) {
+    	if(caIsRunFromCLI()) { return null; }
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		if(function_exists('mcrypt_create_iv')) {
 			$password = base64_encode(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
@@ -180,6 +184,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 * @return bool True on success
 	 */
     public function deauthenticate($options=null) {
+    	if(caIsRunFromCLI()) { return false; }
         setcookie("SimpleSAML", "", time()-3600, '/');
         setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
         setcookie($this->auth_config->get('shibboleth_token_cookie'), '', time()-3600, __CA_URL_ROOT__);

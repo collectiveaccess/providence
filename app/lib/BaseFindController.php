@@ -277,6 +277,13 @@ class BaseFindController extends ActionController {
 					}
 					continue;
 				}
+				
+				// sort on history tracking values
+				if(($tmp[0] === $this->ops_tablename) && (in_array($tmp[1], ['history_tracking_current_value', 'ca_objects_location']))) {
+					$display_list[$i]['is_sortable'] = true;
+					$policy = caGetOption('policy', $va_display_item['settings'], null);
+					$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'].($policy ? '%policy='.$policy : '');
+				}
 			}
 		}
 		

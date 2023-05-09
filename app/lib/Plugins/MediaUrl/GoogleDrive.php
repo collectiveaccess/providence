@@ -110,7 +110,7 @@ class GoogleDrive Extends BaseMediaUrlPlugin {
 		$transformed_url = $format ? "{$url_stub}?format={$format}" : $url_stub;
 		
 		// Get doc title
- 		$content = file_get_contents($url);
+ 		if(!strlen($content = @file_get_contents($url))) { return false; }
  		$filename = preg_match('!<meta property="og:title" content="([^"]+)">!', $content, $m) ? preg_replace('![^A-Za-z0-9\.\-_]+!', '_', $m[1]) : 'document';
  
 		return ['url' => $transformed_url, 'originalUrl' => $url, 'format' => $format, 'plugin' => 'GoogleDrive', 'originalFilename' => "{$filename}.{$format}"];

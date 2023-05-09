@@ -139,4 +139,3 @@ class ca_application_vars extends BaseModel {
 
 	# ------------------------------------------------------
 }
-?>
