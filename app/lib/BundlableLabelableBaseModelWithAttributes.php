@@ -1969,6 +1969,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						}
 						break;
 					# -------------------------------
+					// Tools for managing hierarchy
+					case 'hierarchy_tools':
+						if ($this->isHierarchical()) {
+							$vs_element .= $this->getHierarchyToolsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						}
+						break;
+					# -------------------------------
 					// This bundle is only available when editing objects of type ca_search_forms
 					case 'ca_search_form_placements':
 						if ($vb_batch) { return null; } // not supported in batch mode
@@ -3010,6 +3017,75 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
 		$o_view->setVar('recordSet', caGetOption('recordSet', $pa_options, null));
 		return $o_view->render('hierarchy_location.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getHierarchyToolsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = $this->_getHierarchyToolsHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
+		return $o_view->render('hierarchy_tools.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getHierarchyToolsHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
+	
+		$data = $this->getHierarchyToolsBundleValues($ps_placement_code, $pa_bundle_settings, $pa_options);
+		
+		$o_view->setVar('items', $data['data']);
+		$o_view->setVar('itemCount', $data['totalCount']);
+		$o_view->setVar('downloadVersions', $data['downloadVersions']);
+		
+		return $o_view;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function getHierarchyToolsBundleValues($ps_placement_code, $pa_bundle_settings, $pa_options=null) {
+		global $g_request;
+		
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, 10));
+		
+		// get list of values in hierarchy; for now just second level.
+		$t_root = null;
+		$table = $this->tableName();
+		if (!$this->get('parent_id')) {
+			$t_root = $this;
+		} else {
+			$t_root = $table::findAsInstance($this->getHierarchyRootID());
+		}
+		if(!$t_root) {
+			return $o_view;
+		}
+		$child_ids = $t_root->getHierarchyChildren(null, ['idsOnly' => true]);
+		
+		$cur_id = $this->getPrimaryKey();
+		
+		$items = [];
+		$item_count = 0;
+		if(is_array($child_ids) && sizeof($child_ids)) {
+			$item_count = sizeof($child_ids);
+			$child_ids = array_slice($child_ids, $start, $limit);	
+			$qr = caMakeSearchResult($this->tableName(), $child_ids, ['sort' => "{$table}.rank", 'sortDirection' => 'ASC']);
+			while($qr->nextHit()) {
+				$items[$id = $qr->getPrimaryKey()] = [
+					'id' => $id,
+					'label' => $qr->get('preferred_labels'),
+					'idno' => $qr->get('idno'),
+					'media' => $qr->get('ca_object_representations.media.preview170'),		// TODO: configrable media versions
+					'url' => $g_request ? caEditorUrl($g_request, $table, $id, false, [], ['actionExtra' => $g_request->getActionExtra()]) : null,
+					'selected' => ($cur_id == $id) ? 'selected' : ''
+				];
+			}
+		}
+		
+		$versions = $this->getAppConfig()->getList('ca_object_representation_download_versions');
+		return ['data' => $items, 'totalCount' => $item_count, 'downloadVersions' => $versions ?? [_t('default')]];
 	}
 	# ------------------------------------------------------
 	/**
