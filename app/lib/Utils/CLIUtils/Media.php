@@ -142,6 +142,12 @@
 						$media_metadata = caUnserializeForDatabase($qr_reps->get('ca_object_representations.media_metadata'));
 						if($oriented_only && $media_metadata['EXIF']['IFD0']['Orientation'] == 1) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
 					
+						$rep_id = $qr_reps->get('ca_object_representations.representation_id');
+						//print "PROCESSING $rep_id\n";
+						
+						//if(isset($va_media_info['full'])) { print "HAS FULL\n";continue; }
+						
+						
 						$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 
 						if($unprocessed) {

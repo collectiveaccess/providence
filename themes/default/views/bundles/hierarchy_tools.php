@@ -57,6 +57,8 @@
 	}
 	$initial_values = $this->getVar('items');
 	$total_count = $this->getVar('itemCount');
+	
+	$download_versions = $this->getVar('downloadVersions');
 ?>
 <div id="<?= $id_prefix; ?>">
 	<div class="bundleContainer">
@@ -73,9 +75,9 @@
 				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_create_with_name" value="" id="<?= $id_prefix; ?>_create_with_name" placeholder=<?= json_encode(_t('Album name')); ?>/>
 				<a href="#"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?></a>
 			</div>
-			<div class="hierarchyToolsControlRemoveItems button labelInfo"><?= caNavIcon(__CA_NAV_ICON_DELETE__, '15px'); ?> <a href="#"><?= _t('Extract'); ?></a></div>
-			<div class="hierarchyToolsControlSetImage button labelInfo"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, '15px'); ?> <a href="#"><?= _t('Set image'); ?></a></div>
-			<div class="hierarchyToolsControlDownloadMedia button labelInfo"><?= caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '15px'); ?><a href="#"><?= _t('Download'); ?></a></div>
+			<div class="hierarchyToolsControlRemoveItems button labelInfo"><a href="#"><?= caNavIcon(__CA_NAV_ICON_DELETE__, '15px'); ?> <?= _t('Extract'); ?></a></div>
+			<div class="hierarchyToolsControlSetImage button labelInfo"><a href="#"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, '15px'); ?> <?= _t('Set image'); ?></a></div>
+			<div class="hierarchyToolsControlDownloadMedia button labelInfo"><a href="#"><?= caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '15px'); ?> <?= caHTMLSelect("{$id_prefix}_download_version", $download_versions, ['id' => "{$id_prefix}_download_version"]); ?></a></div>
 			
 			<div class="hierarchyToolsControlSelect button labelInfo">
 				<a href="#" class="hierarchyToolsControlSelectAll"><?= _t('all'); ?></a> / <a href="#" class="hierarchyToolsControlSelectNone"><?= _t('none'); ?></a>
@@ -226,7 +228,8 @@
 		
 		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlDownloadMedia a').on('click', function(e) {
 			let ids = jQuery('#<?= $id_prefix; ?>_selection').val().split(';');
-			window.location.href = '<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'downloadMedia'); ?>/t/<?= $t_subject->tableName(); ?>/download/1/ids/' + ids.join(';');
+			let version = jQuery('#<?= $id_prefix; ?>_download_version').val();
+			window.location.href = '<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'downloadMedia'); ?>/t/<?= $t_subject->tableName(); ?>/download/1/ids/' + ids.join(';') + (version ? '/version/' + version : '');
 		});
 		
 		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlSelectAll').on('click', function(e) {

@@ -2940,6 +2940,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$o_view->setVar('items', $data['data']);
 		$o_view->setVar('itemCount', $data['totalCount']);
+		$o_view->setVar('downloadVersions', $data['downloadVersions']);
 		
 		return $o_view;
 	}
@@ -2985,7 +2986,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				];
 			}
 		}
-		return ['data' => $items, 'totalCount' => $item_count];
+		
+		$versions = $this->getAppConfig()->getList('ca_object_representation_download_versions');
+		return ['data' => $items, 'totalCount' => $item_count, 'downloadVersions' => $versions ?? [_t('default')]];
 	}
 	# ------------------------------------------------------
 	/**

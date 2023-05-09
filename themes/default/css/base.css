@@ -8164,6 +8164,12 @@ span.developerBundleCode, a.developerBundleCode {
     float: left;
 }
 
+.hierarchyToolsControlDownloadMedia select {
+	width: 40px;
+	font-size: 10px;
+	margin: 0px 0px 0px 4px;
+}
+
 .hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlDownloadMedia {
     margin-top: 5px;
 }

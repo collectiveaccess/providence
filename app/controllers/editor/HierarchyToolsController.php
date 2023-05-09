@@ -254,6 +254,7 @@ class HierarchyToolsController extends ActionController {
 	 */
 	public function downloadMedia() {
 		$ids = explode(';', $this->request->getParameter('ids', pString));	// list of ids to remove
+		$selected_version = $this->request->getParameter('version', pString);
 		
 		if(!is_array($ids) || !sizeof($ids)) {
 			throw new ApplicationException(_t('ID list is empty'));
@@ -276,6 +277,9 @@ class HierarchyToolsController extends ActionController {
 			}
 			
 			$version_list = ['full', 'original', 'h264_hi', 'mp3', 'page', 'large'];
+			if($selected_version) { 
+				array_unshift($version_list, $selected_version);
+			}
 			
 			$reps = $this->subject->getRepresentations($version_list);
 			foreach($reps as $rep) {
@@ -284,6 +288,7 @@ class HierarchyToolsController extends ActionController {
 					if(isset($rep['paths'][$v])) {
 						$path = $rep['paths'][$v];
 						$version = $v;
+						break;
 					}
 				}
 				if($path) {
