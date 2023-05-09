@@ -471,6 +471,11 @@ class Replicator {
 						    }
 						    
 							$logged_exists_on_target = is_array($guid_already_exists[$source_log_entry['guid']]);
+							
+							// Skip because the one record we're trying to sync has already been sync'ed
+							if($single_log_id_mode && $logged_exists_on_target) { continue; }
+							
+							
 						    if ($filter_on_access_settings && ($access_by_guid[$source_log_entry['guid']] !== '?') && !in_array((int)$access_by_guid[$source_log_entry['guid']], $filter_on_access_settings, true) && !$logged_exists_on_target) {
 						        continue;	// skip rows for which we have no access
 						    }
@@ -1078,6 +1083,7 @@ class Replicator {
 								->setRequestBody([$attr_guid])
 								->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 								->request();
+						// TODO: check that client returned data
 						$chk_attr_existence = $o_chk_attr_existence->getRawData();
 						if ($chk_attr_existence[$attr_guid] == '???') {
 							// need to push attribute
@@ -1203,11 +1209,15 @@ class Replicator {
 			->request();
 			
 		$res = $r->getRawData();
-		foreach($res as $guid => $access) {
-			$this->guid_access_cache[$guid] = $access;
-		}
+		if(is_array($res)) {
+			foreach($res as $guid => $access) {
+				$this->guid_access_cache[$guid] = $access;
+			}
 		
-		$res = array_merge($res, $cached_res);
+			$res = array_merge($res, $cached_res);
+		} else {
+			new ApplicationException(_t('Could not get access data'));
+		}
 		
 		return $res;
 	}
