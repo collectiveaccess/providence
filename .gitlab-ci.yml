@@ -19,6 +19,23 @@ push_to_staging:
   tags:
     - shell 
 
+# Prod Push
+# Manual job to push the last commit to staging to prod
+push_to_prod:
+  stage: push
+  only:
+    - bmac-staging
+  when: manual
+  script:
+    - git clone -n https://gitlab.galileo.usg.edu/ugalibs/collective-access.git /tmp/collective-access_${CI_PIPELINE_ID}
+    - cd /tmp/collective-access_${CI_PIPELINE_ID}
+    - git checkout ${CI_COMMIT_SHA}
+    - sudo -H -u pushbot git push origin HEAD:bmac-prod
+    - cd /tmp
+    - rm -rf /tmp/collective-access_${CI_PIPELINE_ID}
+  tags:
+    - shell
+
 ## Code Deploy
 # Sync the local copy of the code - STAGING
 deploy_staging:
