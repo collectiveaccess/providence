@@ -422,6 +422,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$root = $element['NODE'];
 			} else {
 				$element_set[$element['NODE']['parent_id']][$element['NODE']['rank']][$element['NODE']['element_id']] = $element['NODE'];
+				ksort($element_set[$element['NODE']['parent_id']][$element['NODE']['rank']]);
 			}
 		}
 
