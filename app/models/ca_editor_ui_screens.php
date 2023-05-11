@@ -619,14 +619,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$deprecated = (bool)(isset($va_info['deprecated']) && $va_info['deprecated']);
 			if (isset($va_info['displayOnly']) && $va_info['displayOnly']) { continue; }	// skip bundles meant for use in displays only
 			
-			$bundle_normalized = $bundle_proc = $bundle;
-			if(preg_match("!^ca_attribute_!", $bundle_normalized)) {
-				$bundle_normalized = $bundle_proc = preg_replace('!^ca_attribute_!', '', $bundle_normalized);
-			
-				if(!preg_match('!^ca_[a-z]+!', $bundle_normalized)) {
-					$bundle_normalized = $t_instance->tableName().'.'.$bundle_normalized;
-				}
-			}
+			$bundle_normalized = $bundle_proc = caConvertBundleNameToCode($bundle, ['includeTablePrefix' => true]);
 			
 			$va_additional_settings = [];
 			switch ($va_info['type']) {

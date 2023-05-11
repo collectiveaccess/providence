@@ -1515,7 +1515,8 @@
 				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
 					foreach($va_placements as $va_placement) {
 						// Older installations have the bundle name prefixed with "ca_attribute_"
-						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
+						$vs_bundle_name = caConvertBundleNameToCode($va_placement['bundle_name'], ['convertOldStyleNamesOnly' => true]);
+						
 						$va_bundle_bits = explode('.', $vs_bundle_name);
 						if (!Datamodel::tableExists($va_bundle_bits[0])) {
 							array_unshift($va_bundle_bits, $ps_table);
