@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/views/json.php :
+ * app/service/helpers/LightboxHelpers.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
+namespace GraphQLServices\Helpers\Lightbox;
 
-header('Content-type: application/json');
-
-$return = array_replace(["ok" => !is_null($this->getVar('ok')) ? (bool)$this->getVar('ok') : true], caSanitizeArray($this->getVar('content'),['allowStdClass' => true]));
-
-if($this->getVar('pretty_print')){
-	print caFormatJson(json_encode($return, JSON_INVALID_UTF8_SUBSTITUTE));
-} else {
-	print json_encode($return, JSON_INVALID_UTF8_SUBSTITUTE);
+/**
+ *
+ */
+function getLightboxList($t_set, \ca_users $u) : ?array {
+	// TODO: check access for user
+	$lightboxes = $t_set->getSetsForUser(["table" => 'ca_objects', "user_id" => $u->getPrimaryKey(), "checkAccess" => [0,1], "parents_only" => true]);
+	
+	return array_map(function($v) {
+		return [
+			'id' => $v['set_id'],
+			'title' => $v['label'],
+			'count' => $v['count'],
+			'author_fname' => $v['fname'],
+			'author_lname' => $v['lname'],
+			'author_email' => $v['email'],
+			'type' => $v['set_type'],
+			'created' => date('c', $v['created']),
+			'content_type' => \Datamodel::getTableName($v['table_num']),
+			'content_type_singular' => \Datamodel::getTableProperty($v['table_num'], 'NAME_SINGULAR'),
+			'content_type_plural' => \Datamodel::getTableProperty($v['table_num'], 'NAME_PLURAL'),
+			
+		];
+	}, $lightboxes);	
 }

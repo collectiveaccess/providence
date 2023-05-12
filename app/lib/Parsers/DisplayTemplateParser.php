@@ -972,7 +972,7 @@ class DisplayTemplateParser {
 						$va_proc_templates = caCreateLinksFromText(
 							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
-							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
+							array_merge(['addRelParameter' => true, 'requireLinkTags' => false, 'bundle' => $o_node->bundle], $pa_options)
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
 					} elseif(strlen($vs_tag) && ($vs_tag[0] !=='~')) { 

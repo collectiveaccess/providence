@@ -113,7 +113,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param bool $pb_is_preferred
 	 * @param array $pa_options Options include:
 	 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
-	 * 		queueIndexing =
+	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
@@ -127,7 +127,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		if ($pb_is_preferred && $this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$skip_existing = caGetOption('skipExisting', $pa_options, true);
 		
@@ -139,6 +139,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vs_table_name = $this->tableName();
 		
 		if (!($t_label = Datamodel::getInstanceByTableName($label = $this->getLabelTableName()))) { return null; }
+		
+		$o_trans = null;
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 			$t_label->setTransaction($o_trans);
@@ -151,10 +153,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$label_table = $t_label->tableName();
 		
 		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
-		// if ($t_label->hasField('effective_date')) {
-// 			$dupe_check_values['effective_date'] = $effective_date;
-// 		}
-		if(($dupe_count = $label_table::find($dupe_check_values, ['transaction' => $o_trans, 'returnAs' => 'count'])) > 0) {
+
+		if(($skip_existing && ($dupe_count = $label_table::find($dupe_check_values, ['transaction' => $o_trans, 'returnAs' => 'count'])) > 0)) {
 			return false;
 		}
 		
@@ -191,12 +191,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 		
 		$t_label->set($this->primaryKey(), $vn_id);
-		
-		// Does label already exist?
-		if($skip_existing && $label::find($dupe_check_data)) {
-			return null;
-		}
-		
+
 		$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 	
 		$vn_label_id = $t_label->insert(array_merge($pa_options, ['queueIndexing' => $pb_queue_indexing, 'subject' => $this]));
@@ -229,7 +224,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param bool $pb_is_preferred
 	 * @param array $pa_options Options include:
 	 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
-	 * 		queueIndexing =
+	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
@@ -240,7 +235,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
@@ -342,10 +337,16 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	# ------------------------------------------------------------------
 	/**
 	 * Remove specified label
+	 *
+	 * @param int $pn_label_id
+	 * @param array $pa_options= Options include:
+	 *		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
+	 *
+	 * @return bool
 	 */
 	public function removeLabel($pn_label_id, $pa_options = null) {
 		if (!$this->getPrimaryKey()) { return null; }
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
 		if ($this->inTransaction()) {

@@ -1499,7 +1499,7 @@ jQuery(document).ready(function() {
 
 			$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
 			$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
+			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 
 			if (method_exists($t_item, 'getComponentCount')) {
 				if ($vn_component_count = $t_item->getComponentCount()) {
@@ -3257,9 +3257,10 @@ jQuery(document).ready(function() {
 	 * @param string $ps_class Optional CSS class to apply to links
 	 * @param string $ps_target
 	 * @param array $pa_options Supported options are:
-	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
+	 *		requireLinkTags = If set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 * 		addRelParameter =
 	 *      absolute = Return absolute urls [Default is false]
+	 *		bundle = When generating an editor link, will cause link to be to screen containing the specified bundle. If omitted or the bundle does not exist in the editor the default screen will be shown. [Default is null]
 	 *
 	 * @return array A list of HTML links
 	 */
@@ -3278,7 +3279,7 @@ jQuery(document).ready(function() {
 		}
 
 		$va_links = array();
-		$va_link_opts = ['absolute' => isset($pa_options['absolute']) ? $pa_options['absolute'] : false];
+		$va_link_opts = ['absolute' => $pa_options['absolute'] ?? false, 'bundle' => $pa_options['bundle'] ?? 'ca_object_components_list'];
 
 		global $g_request;
 		if (!$g_request) { return $pa_text; }
@@ -3569,10 +3570,12 @@ jQuery(document).ready(function() {
 		} else {
 			$sort_fields_proc = $default_sort_options = [];
 			
+			// Expand global sort list to include parents when sort is on container field
 			foreach($va_sort_fields as $sf => $n) {
 				$tmp = explode('.', $sf);
-				if(sizeof($tmp) > 2) {
-					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = ca_metadata_elements::getElementLabel($tmp[1]);
+				if((sizeof($tmp) > 2) && !in_array($tmp[1], ['preferred_labels', 'nonpreferred_labels']))  {
+					if(!($label = ca_metadata_elements::getElementLabel($tmp[1]))) { continue; }
+					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = $label;
 					$default_sort_options[$k] = true;
 				}
 				$sort_fields_proc[$sf] = $n;
@@ -5215,6 +5218,7 @@ jQuery(document).ready(function() {
 	 */
 	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
+		if(isset($data['extension']) && (in_array(strtolower($data['extension']), ['m4v', 'm4a']))) { $data['extension'] = 'mp4'; }
 		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];

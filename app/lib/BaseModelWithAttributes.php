@@ -1944,13 +1944,12 @@
 				if ($va_element['datatype'] == 0) {
 					if ($va_element['parent_id'] > 0) { 
 						if(sizeof($group_keys) > 1) { array_pop($group_keys); }
-						array_push($group_keys, $group_key = $va_element['element_id']);
 					}
+					$group_keys[] = $group_key = $va_element['element_id'];
 					continue; 
 				}
-				
-				if((sizeof($group_keys) > 1) && ($va_element['datatype'] != 0) && ($va_element['parent_id'] == $root_element_id)) {
-					$group_keys = [$group_key = $va_element['element_id']];
+				if($va_element['parent_id'] === $root_element_id) {
+					$group_key = $root_element_id;
 				}
 	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
@@ -2768,7 +2767,10 @@
 					continue;
 				}
 
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				$bundle_code = "{$vs_table}.{$vs_element_code}";
+				$dt = ca_metadata_elements::getDataTypeForElementCode($vs_element_code);
+				if($dt === __CA_ATTRIBUTE_VALUE_MEDIA__) { $bundle_code .= '.path'; }
+				$va_vals = $this->get($bundle_code, array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {

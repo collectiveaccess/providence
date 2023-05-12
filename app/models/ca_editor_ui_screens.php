@@ -619,14 +619,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$deprecated = (bool)(isset($va_info['deprecated']) && $va_info['deprecated']);
 			if (isset($va_info['displayOnly']) && $va_info['displayOnly']) { continue; }	// skip bundles meant for use in displays only
 			
-			$bundle_normalized = $bundle_proc = $bundle;
-			if(preg_match("!^ca_attribute_!", $bundle_normalized)) {
-				$bundle_normalized = $bundle_proc = preg_replace('!^ca_attribute_!', '', $bundle_normalized);
-			
-				if(!preg_match('!^ca_[a-z]+!', $bundle_normalized)) {
-					$bundle_normalized = $t_instance->tableName().'.'.$bundle_normalized;
-				}
-			}
+			$bundle_normalized = $bundle_proc = caConvertBundleNameToCode($bundle, ['includeTablePrefix' => true]);
 			
 			$va_additional_settings = [];
 			switch ($va_info['type']) {
@@ -1615,16 +1608,30 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'generic':
 							case 'ca_objects_components_list':
-								$va_additional_settings = array(
-									'displayTemplate' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_FIELD,
-										'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
-										'width' => "475px", 'height' => 5,
-										'label' => _t('Component display template'),
-										'description' => _t('Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
-									)
-								);
+								$va_additional_settings['displayTemplate'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
+									'width' => "475px", 'height' => 5,
+									'label' => _t('Component display template'),
+									'description' => _t('Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+								];
+								$va_additional_settings['currentDisplayTemplate'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
+									'width' => "475px", 'height' => 5,
+									'label' => _t('Currently selected component display template'),
+									'description' => _t('Layout for component when displayed in list and it is the currently edited record. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+								];
+								$va_additional_settings['numColumns'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => 1,
+									'width' => "20px", 'height' => 1,
+									'label' => _t('Number of columns in component display'),
+									'description' => _t('Number of columns use when displaying component list.')
+								];
 								break;
 							case 'circulation_status':
 								$va_additional_settings = array(

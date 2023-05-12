@@ -1382,6 +1382,25 @@ class BaseModel extends BaseObject {
 	}
 	# ------------------------------------------------------
 	/** 
+	 * Return instance for parent of current row. Returns null if no parent is defined.
+	 *
+	 * @param array $options Options include:
+	 *		transaction = transaction to load parent within. If omitted transaction of current instance is used. [Default is null]
+	 *
+	 * @return BaseModel
+	 */
+	public function getParentInstance(?array $options=null) : ?BaseModel {
+		if($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+			if(($parent_id = $this->get($parent_id_fld)) > 0) {
+				$o_trans = caGetOption('transaction', $options, $this->getTransaction());
+				$table = $this->tableName();
+				return $table::findAsInstance([$this->primaryKey() => $parent_id], ['transaction' => $o_trans]);
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/** 
 	 * Check is currently loaded row is a hierarchical child of another row
 	 *
 	 * @return bool
@@ -1484,7 +1503,7 @@ class BaseModel extends BaseObject {
 						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
-									
+									$t_list = new ca_lists();
 									if (($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) || ($vn_id = $t_list->getItemIDFromListByLabel($vs_list_code, $vm_value))) { // 
 										$vm_value = $vn_id;
 									} else {
@@ -12073,7 +12092,9 @@ $pa_options["display_form_field_tips"] = true;
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = $o_trans ? $o_trans->getDb() : new Db();
 			$vs_pk = $t_instance->primaryKey();
-			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ?", [$ps_idno]);
+			
+			$delete_sql = ($t_instance->hasField('deleted')) ? ' AND deleted = 0' : '';	// filter deleted
+			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ? {$delete_sql}", [$ps_idno]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
@@ -13213,11 +13234,25 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Evaluate expression in the context of the currently loaded row
+	 *
+	 * @param string $expression
+	 *
+	 * @return mixed Return value of expression
+	 */
+	public function evaluateExpression(string $expression) {
+		$tags = caGetTemplateTags($expression);
+		$data = [];
+		foreach($tags as $t) {
+			$data[$t] = $this->get($t);
+		}
+		return ExpressionParser::evaluate($expression, $data);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
 		unset($this->o_db);
 		unset($this->_CONFIG);
 		unset($this->_MEDIA_VOLUMES);

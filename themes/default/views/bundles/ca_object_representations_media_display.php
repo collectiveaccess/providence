@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
  */
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_subject 			= $this->getVar('t_subject');		// object_representation
-$settings			= $this->get('settings');
+$settings			= $this->getVar('settings');
 
 $vn_num_multifiles = $this->getVar('representation_num_multifiles');
 $vs_num_multifiles = ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : '');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,8 +104,21 @@
 ?>
 	</div>
 </div>
-
 <?php
+	$return_confirmation_list = $this->getVar('return_confirmation_list');
+	if(is_array($return_confirmation_list) && sizeof($return_confirmation_list)) {
+?>
+<div class="caLibraryDashboardPanel">
+	<div class="caLibraryDashboardCallout">
+		<?= _t('Items requiring confirmation of return:'); ?>
+		<div class="caLibraryDashboardUserList">
+			<?= join(", ", $this->getVar('return_confirmation_list')); ?>
+		</div>
+	</div>
+</div>
+<?php
+	}
+	
 	// Output configured panels
 	foreach($va_panels as $vs_panel => $va_panel_info) {
 		$va_panel_data = $this->getVar("panel_{$vs_panel}");

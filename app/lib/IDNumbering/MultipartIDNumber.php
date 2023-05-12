@@ -649,7 +649,6 @@ class MultipartIDNumber extends IDNumber {
 				case 'ALPHANUMERIC':
 					$tmp = preg_split('![^A-Za-z0-9]+!',  $v);
 
-					$zeroless_output = [];
 					$raw_output = [];
 					while(sizeof($tmp)) {
 						$piece = array_shift($tmp);
@@ -671,20 +670,19 @@ class MultipartIDNumber extends IDNumber {
 						} else {
 							$raw_output[] = $piece;
 						}
-						if ($t = preg_replace('!^[0]+!', '', $piece)) {
-							$zeroless_output[] = $t;
-						} else {
-							$zeroless_output[] = $piece;
-						}
 					}
 					$output[] = join('', $raw_output); 
 					break;
 				case 'SERIAL':
 				case 'NUMERIC':
 					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
-					$n = $padding - strlen(intval($v));
 					
-					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').intval($v);
+					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null)) {
+						$v = str_pad($v, $zeropad_to_length, "0", STR_PAD_LEFT);
+					}
+					$n = $padding - strlen($v);
+					
+					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$v;
 					break;
 				case 'YEAR':
 					$p = (($element_info['width'] == 2) ? 2 : 4) - mb_strlen($v);

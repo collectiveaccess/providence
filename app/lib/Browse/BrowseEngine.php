@@ -714,6 +714,9 @@
 						case 'available':
 							$vs_status_text = _t('Available');
 							break;
+						case 'needs_return_confirmation':
+							$vs_status_text = _t('Needs return confirmation');
+							break;
 						default:
 						case 'out':
 							$vs_status_text = _t('Out');
@@ -1686,9 +1689,9 @@
                                                         break;
 													case __CA_ATTRIBUTE_VALUE_LCSH__:
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-														if ($vs_f == 'value_longtext2') {
-															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
-															$va_attr_values[] = $va_value['value_longtext2'];
+														if (in_array($vs_f, ['value_longtext1', 'value_longtext2'], true) && isset($va_value[$vs_f]) && strlen($va_value[$vs_f])) {
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+															$va_attr_values[] = $va_value[$vs_f];
 														}
 														break;
 													default:
@@ -1730,7 +1733,6 @@
 											{$filter_join}
 											WHERE
 												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql} {$filter_where}";
-
 										$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										
 										if (!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
@@ -2577,6 +2579,13 @@
 										case 'available':
 											$vs_checkout_join_sql = '';
 											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))";
+											break;
+										case 'needs_return_confirmation':
+											$library_config = caGetLibraryServicesConfiguration();
+											if($library_config->get('require_confirmation_of_returns')) {
+												$vs_checkout_join_sql = '';
+												$vs_where = "(ca_objects.object_id IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date <= {$vn_current_time}) AND (ca_object_checkouts.return_confirmation_date IS NULL)))";
+											}
 											break;
 										case 'all':
 											$vs_where = "(ca_object_checkouts.checkout_date <= {$vn_current_time})";
@@ -5713,6 +5722,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'checkouts':
+					$library_config = caGetLibraryServicesConfiguration();
 					if ($vs_browse_table_name != 'ca_objects') { return array(); }
 					$t_item = new ca_objects();
 
@@ -5764,6 +5774,12 @@
 						case 'available':
 							$vs_checkout_join_sql = '';
 							$va_wheres[] = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))";
+							break;
+						case 'needs_return_confirmation':
+							if($library_config->get('require_confirmation_of_returns')) {
+								$vs_checkout_join_sql = '';
+								$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date <= {$vn_current_time}) AND (ca_object_checkouts.return_confirmation_date IS NULL)))";
+							}
 							break;
 						default:
 						case 'out':
@@ -5864,12 +5880,16 @@
 								break;
 							case 'all':
 							default:
-								foreach(array(
+								$status_values = array(
 									_t('Available') => 'available',
 									_t('Out') => 'out',
 									_t('Reserved') => 'reserved',
 									_t('Overdue') => 'overdue'
-								) as $vs_status_text => $vs_status) {
+								);
+								if($library_config->get('require_confirmation_of_returns')) {
+									$status_values[_t('Needs return confirmation')] = 'needs_return_confirmation';
+								}
+								foreach($status_values as $vs_status_text => $vs_status) {
 									$vs_join_sql = "INNER JOIN ca_object_checkouts ON ca_object_checkouts.object_id = ca_objects.object_id";
 									switch($vs_status) {
 										case 'overdue':
@@ -5881,6 +5901,10 @@
 										case 'available':
 											$vs_join_sql = '';
 											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))";
+											break;
+										case 'needs_return_confirmation':
+											$vs_join_sql = '';
+											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date <= {$vn_current_time}) AND (ca_object_checkouts.return_confirmation_date IS NULL)))";
 											break;
 										default:
 										case 'out':
@@ -7407,6 +7431,9 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 
 					$this->opo_ca_browse_cache->setResults($va_results);
 					$this->opo_ca_browse_cache->save();
+				}
+				if(($start = caGetOption('start', $pa_options, 0)) || ($limit = caGetOption('limit', $pa_options, null))) {
+					$va_results = array_slice($va_results, $start, $limit);
 				}
 			}
 			if (!is_array($va_results)) { $va_results = array(); }
