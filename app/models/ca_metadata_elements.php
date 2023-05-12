@@ -648,7 +648,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
 				
 				
- 				if($va_properties['showMediaElementBundles']) {
+ 				if($va_properties['showMediaElementBundles'] ?? false) {
  				    if (!is_array($va_restrictions = $this->getTypeRestrictions())) { $va_restrictions = []; }
  				    
                     $va_select_opts = ['-' => ''];
@@ -667,7 +667,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
                         }
                         $va_properties['options'] = $va_select_opts;
                     } 
-                } elseif($va_properties['showLocaleList']) {
+                } elseif($va_properties['showLocaleList'] ?? false) {
                 	$locales = ca_locales::getLocaleList();
                 	$va_properties['options'] = [];
                 	foreach($locales as $locale_id => $l) {
@@ -689,7 +689,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					$attributes['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
 				}
 				
-				if($va_properties['useList']) {
+				if($va_properties['useList'] ?? false) {
                 	$t_list = new ca_lists($va_properties['useList']);
 					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 					$vs_return .= $t_list->getListAsHTMLFormElement($va_properties['useList'], $vs_input_name, $attributes, $va_opts);
@@ -914,7 +914,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					$va_record['ui_counts'] = $va_counts_by_attribute[$t_element->get('element_code')];
 				}
 
-				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code];
+				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code] ?? null;
 			}
 			$va_return[$vn_element_id] = $va_record;
 		}
@@ -1825,7 +1825,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vs_format = str_replace('^ELEMENT', caHTMLSelect($ps_field, $va_opts, array('id' => $ps_field), array('value' => $this->get('list_id'))), $vs_format);
 
 			if (!isset($pa_options['no_tooltips']) || !$pa_options['no_tooltips']) {
-				TooltipManager::add('#list_id', "<h3>{$vs_field_label}</h3>".$this->getFieldInfo('list_id', 'DESCRIPTION'), $pa_options['tooltip_namespace']);
+				TooltipManager::add('#list_id', "<h3>{$vs_field_label}</h3>".$this->getFieldInfo('list_id', 'DESCRIPTION'), $pa_options['tooltip_namespace'] ?? null);
 			}
 			return $vs_format;
 		}

@@ -117,13 +117,12 @@ class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
 	public function Save($pa_values=null) {
 		$t_element = $this->getElementObject(false);
-		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
 		foreach($t_element->getFormFields() as $vs_f => $va_field_info) {
 			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use') && $t_element->getPrimaryKey()) { continue; }
 			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && $t_element->getPrimaryKey()) { continue; }
 			
-			$t_element->set($vs_f, $_REQUEST[$vs_f]);
+			$t_element->set($vs_f, $_REQUEST[$vs_f] ?? null);
 			unset($va_request[$vs_f]);
 			
 			if ($t_element->numErrors()) {
@@ -288,7 +287,7 @@ class ElementsController extends BaseEditorController {
 					if (isset($va_request['setting_'.$vs_setting_key.'[]'])) {
 						$vs_val = $va_request['setting_'.$vs_setting_key.'[]'];
 					} else {
-						$vs_val = $va_request['setting_'.$vs_setting_key];
+						$vs_val = $va_request['setting_'.$vs_setting_key] ?? null;
 					}
 					$vs_error = null;
 					if (!($t_element->setSetting($vs_setting_key, $vs_val, $vs_error))) {

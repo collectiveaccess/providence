@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,13 @@
  *
  * ----------------------------------------------------------------------
  */
-	$t_element 				= $this->getVar('t_element');
-	$vn_element_id 			= $this->getVar('element_id');
-	$va_sub_elements 		= $this->getVar('sub_elements');
-	$va_type_restrictions 	= $this->getVar('type_restrictions');
-	
-	$vn_parent_id 			= $this->getVar('parent_id');
-	$o_request 				= $this->request;
+$t_element 				= $this->getVar('t_element');
+$vn_element_id 			= $this->getVar('element_id');
+$va_sub_elements 		= $this->getVar('sub_elements');
+$va_type_restrictions 	= $this->getVar('type_restrictions');
+
+$vn_parent_id 			= $this->getVar('parent_id');
+$o_request 				= $this->request;
 ?>
 <div class="sectionBox">
 <?php
@@ -162,7 +162,7 @@
 			fieldNamePrefix: 'type_restrictions_',
 			templateValues: <?= json_encode(array_merge(array_keys($t_restriction->getAvailableSettings()), array('table_num', 'type_id', 'include_subtypes'))); ?>, 
 			initialValues: <?= json_encode($va_initial_values); ?>,
-			itemID: '<?= $vs_id_prefix; ?>Item_',
+			itemID: 'Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			addButtonClassName: 'caAddItemButton',
