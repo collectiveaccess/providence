@@ -244,7 +244,13 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'limit',
 							'type' => Type::int(),
 							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
+						
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -252,7 +258,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						list($browse_info, $browse) = self::browseParams($args);
 						
 						if($browse->numCriteria() == 0) {
-							$browse->addCriteria("_search", array("*"));
+							$browse->addCriteria("_search", ["*"]);
 							$browse->execute(['checkAccess' => caGetUserAccessValues()]);	
 						}
 						return self::getMutationResponse($browse, $browse_info, $args);
@@ -339,6 +345,11 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Filter values')
 						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
+						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -499,6 +510,21 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -557,6 +583,21 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -603,6 +644,21 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -686,18 +742,20 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		
 		$start = caGetOption('start', $args, 0);
 		$limit = caGetOption('limit', $args, null);
-						
+		$media_versions = caGetOption('mediaVersions', $args, null);
+		if(is_array($media_versions) && !sizeof($media_versions)) { $media_versions = null; }
+		
 		$i = 0;
 		
-		$media_versions = [];
 		$user_access_values = caGetUserAccessValues();
 		
 		// TODO: make caGetDisplayImagesForAuthorityItems() more efficient
 		$qr->seek($start);
 		$m = caGetDisplayImagesForAuthorityItems($table, $qr->getAllFieldValues($qr->primaryKey()), ['return' => 'data', 'versions' => ['small', 'medium', 'large', 'iiif', 'original', 'h264_hi', 'mp3', 'compressed'], 'useRelatedObjectRepresentations' => ($table !== 'ca_objects')]);
-		$m = array_map(function($versions) {
+		$m = array_map(function($versions) use ($media_versions) {
 		    $acc = [];
 			foreach ($versions as $v => $info) {
+				if(is_array($media_versions) && !in_array($v, $media_versions, true)) { continue; }
 				if(!strlen($info['url'])) { continue; }
 				$acc[$v] = [
 					'version' => $v,
