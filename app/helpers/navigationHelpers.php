@@ -35,6 +35,7 @@
    */
    
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	
  	# ------------------------------------------------------------------------------------------------
  	/**

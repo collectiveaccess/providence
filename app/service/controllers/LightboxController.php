@@ -68,7 +68,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 					
-						return \GraphQLServices\Helpers\Lightbox\getLightboxList($u);
+						return \GraphQLServices\Helpers\Lightbox\getLightboxList(new ca_sets(), $u);
 					}
 				],
 				'content' => [
@@ -299,8 +299,9 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						$t_set->set([
 							'type_id' => $type_id,
 							'set_code' => $code,
-							'table_num' => (int)Datamodel::getTableNum($args['table']),
-							'user_id' => $u->getPrimaryKey()
+							'table_num' => (int)Datamodel::getTableNum($args['table'] ?? 'ca_objects'),
+							'user_id' => (int)$u->getPrimaryKey(),
+							'access' => 1
 						]);
 						$t_set->insert();
 						if($t_set->numErrors()) {
@@ -314,7 +315,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						if (is_array($add_item_ids = preg_split('![&,;]+!', $args['items']['ids'])) && sizeof($add_item_ids)) {
 							$n = $t_set->addItems($add_item_ids);
 						}
-						return ['id' => $t_set->getPrimaryKey(), 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'count' => $n, 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($u)];
+						return ['id' => $t_set->getPrimaryKey(), 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'count' => $n, 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($t_set, $u)];
 					}
 				],
 				'edit' => [
@@ -351,7 +352,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						$t_set = new ca_sets($id);
 						$t_set->replaceLabel(['name' => $name], ca_locales::getDefaultCataloguingLocaleID(), null, true);
 						
-						return ['id' => $t_set->getPrimaryKey(), 'name' => $t_set->get('ca_sets.preferred_labels.name')];
+						return ['id' => $t_set->getPrimaryKey(), 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($t_set, $u)];
 					}
 				],
 				'delete' => [
@@ -382,7 +383,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Could not delete lightbox: %1', join($t_set->getErrors())));
 						}
 						
-						return ['id' => $args['id'], 'name' => 'DELETED', 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($u)];
+						return ['id' => $args['id'], 'name' => 'DELETED', 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($t_set, $u)];
 					}
 				],
 				'reorder' => [
