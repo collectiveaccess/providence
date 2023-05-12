@@ -85,6 +85,16 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'facet',
 							'type' => Type::string(),
 							'description' => _t('Name of facet')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -94,7 +104,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$facet = $args['facet'];
 						
 						$user_access_values = caGetUserAccessValues();
-						$facet_values = $browse->getFacet($facet, ['checkAccess' => $user_access_values]);
+						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 						if(!is_array($facet_values)) {
 							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
@@ -154,6 +164,16 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'key',
 							'type' => Type::string(),
 							'description' => _t('Browse key')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -163,10 +183,10 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$user_access_values = caGetUserAccessValues();
 						$facets = $browse->getInfoForAvailableFacets(['checkAccess' => $user_access_values]);
 						
-						$ret = array_map(function($f, $n) use ($browse) { 
-							$facet_values = $browse->getFacet($n, ['checkAccess' => $user_access_values]);
+						$ret = array_map(function($f, $n) use ($browse, $args) { 
+							$facet_values = $browse->getFacet($n, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
-							$ret = array_map(function($v) {
+							$vret = array_map(function($v) {
 								return [
 									'id' => $v['id'],
 									'value' => $v['label'],
@@ -181,7 +201,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 								'labelPlural' => caGetOption('label_plural', $f, $n),
 								'description' => caGetOption('description', $f, null),
 								'type' => caGetOption('type', $f, null),
-								'values' => $ret
+								'values' => $vret
 							];
 						}, $facets, array_keys($facets));
 						return [
@@ -230,6 +250,11 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$u = self::authenticate($args['jwt']);
 						
 						list($browse_info, $browse) = self::browseParams($args);
+						
+						if($browse->numCriteria() == 0) {
+							$browse->addCriteria("_search", array("*"));
+							$browse->execute(['checkAccess' => caGetUserAccessValues()]);	
+						}
 						return self::getMutationResponse($browse, $browse_info, $args);
 					}
 				],
@@ -367,6 +392,16 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'facet',
 							'type' => Type::string(),
 							'description' => _t('Name of facet')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -378,7 +413,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						
 						
 						$user_access_values = caGetUserAccessValues();
-						$facet_values = $browse->getFacet($facet, ['checkAccess' => $user_access_values]);
+						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 						if(!is_array($facet_values)) {
 							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
@@ -572,10 +607,10 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+						$args['key'] = '';
 						list($browse_info, $browse) = self::browseParams($args);
 						
-						$browse->removeAllCriteria();
+						//$browse->removeAllCriteria();
 						
 						$user_access_values = caGetUserAccessValues();
 						$browse->execute(['checkAccess' => $user_access_values]);	
@@ -612,7 +647,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		$restrict_to_types = caGetOption('restrictToTypes', $browse_info, null);
 		if (is_array($restrict_to_types) && sizeof($restrict_to_types)) { $browse->setTypeRestrictions($restrict_to_types); }
 		
-		if($criteria = caGetOption('baseCriteria', $options, null)) {
+		if($criteria = caGetOption('baseCriteria', $browse_info, null)) {
 			foreach($criteria as $k => $c) {
 				$browse->addCriteria($k, is_array($c) ? $c : [$c]);
 			}
