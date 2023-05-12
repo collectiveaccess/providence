@@ -670,7 +670,7 @@ class RequestHTTP extends Request {
 			$this->user->close();
 		}
 
-		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
 			$host_without_port = __CA_SITE_HOSTNAME__;
 			$host_port = null;
 		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {

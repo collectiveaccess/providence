@@ -219,6 +219,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
                 return false;
             }
             
+            $media_desc = $t_instance->getMediaInfo('media');
 			foreach($va_versions as $v => $va_version_settings) {
 				$vs_use_icon = null;
 								

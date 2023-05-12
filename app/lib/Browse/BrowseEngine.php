@@ -1689,9 +1689,9 @@
                                                         break;
 													case __CA_ATTRIBUTE_VALUE_LCSH__:
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-														if ($vs_f == 'value_longtext2') {
-															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
-															$va_attr_values[] = $va_value['value_longtext2'];
+														if (in_array($vs_f, ['value_longtext1', 'value_longtext2'], true) && isset($va_value[$vs_f]) && strlen($va_value[$vs_f])) {
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+															$va_attr_values[] = $va_value[$vs_f];
 														}
 														break;
 													default:
@@ -1733,7 +1733,6 @@
 											{$filter_join}
 											WHERE
 												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql} {$filter_where}";
-
 										$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										
 										if (!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
