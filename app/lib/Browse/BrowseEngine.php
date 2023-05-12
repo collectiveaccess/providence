@@ -3049,10 +3049,15 @@
 		# Get facet
 		# ------------------------------------------------------
 		/**
-		 * Return list of items from the specified facet that are related to the current browse set
+		 * Return list of values from the specified facet that are related to the current browse set
 		 *
-		 * Options:
+		 * @param string $ps_facet_name
+		 * @param array $pa_options Options:
 		 *		checkAccess = array of access values to filter facets that have an 'access' field by
+		 *		start = Start list of returned facet values at zero-based index. [Default is 0]
+		 *		limit = Maximum length of returned facet values. [Default is null; all values are returned]
+		 *
+		 * @return bool
 		 */
 		public function getFacet($ps_facet_name, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
