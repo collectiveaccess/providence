@@ -75,6 +75,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	static public $whitespace_tokenizer_regex;
 	static public $punctuation_tokenizer_regex;
+	static public $separator_tokenizer_regex;
 	
 	static private $word_cache = [];					// cached word-to-word_id values used when indexing
 	static private $metadata_elements; 					// cached metadata element info
@@ -100,10 +101,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$this->initDbStatements();
 
 		if(!(self::$whitespace_tokenizer_regex = $this->search_config->get('whitespace_tokenizer_regex'))) {
-			self::$whitespace_tokenizer_regex = '[\s\"\—\-]+';
+			self::$whitespace_tokenizer_regex = '[\\s"“”\\—]+';
 		}
 		if(!(self::$punctuation_tokenizer_regex = $this->search_config->get('punctuation_tokenizer_regex'))) {
-			self::$punctuation_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
+			self::$punctuation_tokenizer_regex = '[,;:\(\)\{\}\[\]\|\\\+_\!\&«»\'’]+';
+		}
+		if(!(self::$separator_tokenizer_regex = $this->search_config->get('separator_tokenizer_regex'))) {
+			self::$separator_tokenizer_regex = '[\._\-\/]+';
 		}
 		
 		if(self::$filter_stop_words) {
@@ -534,7 +538,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$ret = array_shift($results);
 		foreach($results as $r) {
 			if(!is_array($r)) { continue; }
-			$ret = array_intersect($ret, $r);
+			$ret = array_intersect_key($ret, $r);
 		}
 		return $ret;
 	}
@@ -1447,21 +1451,29 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$words = \Binaryoung\Jieba\Jieba::cut($content);
 					$words = array_map(function($v) {
 						$w = str_replace('·', ' ', html_entity_decode($v, null, 'UTF-8'));
-						$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', $w);
-						return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+						$w = preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', $w);
+						return mb_strtolower($w);
 					}, $words);
 					break;
 				}
 			default:
 				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
 				$words = array_map(function($v) {
+					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8')));
+				}, $words);
+				
+				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
+				$words = array_map(function($v) {
 					$w = preg_replace('!^'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
-					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w));
+					$w = preg_replace('!'.self::$punctuation_tokenizer_regex.'$!u', '', $w);
+					$w = preg_replace('!'.self::$separator_tokenizer_regex.'!u', '', $w);
+					return mb_strtolower($w);
 				}, $words);
 				break;
 		}
 		
-		return self::filterStopWords($words);
+		$words = self::filterStopWords($words);
+		return $words;
 	}
 	# --------------------------------------------------
 	/**

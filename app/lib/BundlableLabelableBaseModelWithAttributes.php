@@ -584,9 +584,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (sizeof($va_duplicate_element_settings)) {
 				$va_attrs_to_duplicate = [];
 				foreach($va_duplicate_element_settings as $vs_bundle => $vn_duplication_setting) {
-					if ((substr($vs_bundle, 0, 13) == 'ca_attribute_') && ($vn_duplication_setting)) {
-						$va_attrs_to_duplicate[] = substr($vs_bundle, 13);
-					}
+					$va_attrs_to_duplicate[] = caConvertBundleNameToCode($vs_bundle, ['includeTablePrefix' => true]);
 				}
 			}
 
@@ -1138,8 +1136,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Create instance of idno numbering plugin (if table supports it)
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
-			//$va_types = [];
-			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id]) : null;
+			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id], ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
 			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $this->getDb());
 		} else {
 			$this->opo_idno_plugin_instance = null;
@@ -1543,7 +1540,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
 		// Since various functions take straight element codes we have to strip the prefix here
-		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
+		$ps_bundle_name_proc = caConvertBundleNameToCode($ps_bundle_name, ['includeTablePrefix' => true]);
 		$va_violations = null;
 		
 		if (
@@ -1728,7 +1725,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 'attribute':
 				// Bundle names for attributes are element codes. They may be prefixed with 'ca_attribute_' in older installations.
 				// Since getAttributeHTMLFormBundle() takes a straight element code we have to strip the prefix here
-				$vs_attr_element_code = str_replace('ca_attribute_', '', $ps_bundle_name);
+				$vs_attr_element_code = caConvertBundleNameToCode($ps_bundle_name);
+ 		
 				$vs_display_format = $o_config->get('bundle_element_display_format');
 				
 				$bundle_code = $this->tableName().".{$vs_attr_element_code}";
@@ -2012,7 +2010,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_objects_components_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
-						if (!$this->canTakeComponents()) { return null; }
+						if (!$this->canTakeComponents() && !$this->isComponent()) { return null; }
 						$vs_element .= $this->getComponentListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
@@ -2208,7 +2206,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		    $keys = array_keys($bundles);
 			foreach($keys as $k) {
 				if(substr($k, 0, 13) === 'ca_attribute_') {
-					$bundles[substr($k, 13)] = $bundles[$k];
+					$k_normalized = caConvertBundleNameToCode($k, ['includeTablePrefix' => true]);
+					$bundles[$k_normalized] = $bundles[$k];
 					unset($bundles[$k]);
 				}		
 			}
@@ -2228,10 +2227,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	  */
  	public function getBundleInfo($ps_bundle_name) {
  		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
+ 		
+ 		$ps_bundle_name = caConvertBundleNameToCode($ps_bundle_name);
+ 		
  		if (isset($this->BUNDLES["ca_attribute_{$ps_bundle_name}"])) { return $this->BUNDLES["ca_attribute_{$ps_bundle_name}"]; }
  		$ps_bundle_name = str_replace($this->tableName().".", "ca_attribute_", $ps_bundle_name);
  		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
- 		$ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name);
  		return isset($this->BUNDLES[$ps_bundle_name]) ? $this->BUNDLES[$ps_bundle_name] : null;
  	}
  	# --------------------------------------------------------------------------------------------
@@ -2818,7 +2819,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
-				$va_definition_bundle_names[((!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").str_replace("ca_attribute_", "", $va_bundle['bundle_name'])] = 1;
+				$k = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
+				$va_definition_bundle_names[((!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").$k] = 1;
 			}
 			ca_metadata_dictionary_entries::preloadDefinitions(array_keys($va_definition_bundle_names));
 		
@@ -2848,18 +2850,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!is_array($va_bundle['settings'])) { $va_bundle['settings'] = []; }
 				
 				
-				if ($vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $va_bundle['bundle_name'])) {
+				if ($vs_element_set_code = caConvertBundleNameToCode($va_bundle['bundle_name'])) {
 					if (($o_element = ca_metadata_elements::getInstance($vs_element_set_code)) && ($this->hasElement($vs_element_set_code))) {
-						$va_bundle['bundle_name'] = "ca_attribute_{$vs_element_set_code}";
+						$va_bundle['bundle_name'] = $vs_element_set_code;
+						
+						if ($va_valid_element_codes && ($k = caConvertBundleNameToCode($va_bundle['bundle_name']))) {
+							if (!in_array($k, $va_valid_element_codes)) {
+								continue;
+							}
+						}
 					}
 				}
-				
-				if ($va_valid_element_codes && (substr($va_bundle['bundle_name'],0, 13) == 'ca_attribute_')) {
-					if (!in_array(substr($va_bundle['bundle_name'],13), $va_valid_element_codes)) {
-						continue;
-					}
-				}
-				
+					
 				// Test for user action restrictions on intrinsic fields
 				$vb_output_bundle = true;
 				if ($this->hasField($va_bundle['bundle_name'])) {
@@ -3603,8 +3605,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_attributes_to_delete = [];
 				$va_locales = [];
 				foreach($_REQUEST as $vs_key => $vs_val) {
-					$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
-					$vs_element_set_code = preg_replace("/^{$table_name}\./", "", $vs_element_set_code);
+					$vs_element_set_code = caConvertBundleNameToCode($vs_f);
 					
 					if (!($vn_element_id = ca_metadata_elements::getElementID($vs_element_set_code))) { continue; }
 					
@@ -3862,7 +3863,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_inserted_attributes = [];
 			$reserved_elements = [];
 			foreach($va_fields_by_type['attribute'] as $vs_placement_code => $vs_f) {
-				$vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $vs_f);
+				$vs_element_set_code = caConvertBundleNameToCode($vs_f);
 				
 				// does the attribute's datatype have a saveElement method? If so, use that instead
 				$t_element = ca_metadata_elements::getInstance($vs_element_set_code);
@@ -5781,7 +5782,7 @@ if (!$vb_batch) {
 		BaseModel::unsetChangeLogUnitID();
 		$va_bundle_names = [];
 		foreach($va_bundles as $va_bundle) {
-			$vs_bundle_name = str_replace('ca_attribute_', '', $va_bundle['bundle_name']);
+			$vs_bundle_name = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
 			if (!Datamodel::getInstanceByTableName($vs_bundle_name, true) && !preg_match("!^".$this->tableName()."\.!", $vs_bundle_name)) {
 				$vs_bundle_name = $this->tableName().'.'.$vs_bundle_name;
 			}
@@ -8358,7 +8359,9 @@ side. For many self-relations the direction determines the nature and display te
 	 	if (($screen_id = caGetOption('screen_id', $options, null)) || ($placement_id = caGetOption('placement_id', $options, null))) {
 	 		$t_screen = Datamodel::getInstance('ca_editor_ui_screens', true);
 	 		if (is_array($screen_placements = $t_screen->getPlacements($placement_id ? ['placement_id' => $placement_id] : ['screen_id' => $screen_id]))) {
-	 			$bundles_on_screen = array_map(function($v) { return preg_replace("!^ca_attribute_!", "", $v['bundle_name']); }, $screen_placements);
+	 			$bundles_on_screen = array_map(function($v) { 
+	 				return caConvertBundleNameToCode($v['bundle_name'], ['includeTablePrefix' => true]);
+	 			}, $screen_placements);
 	 		}
 	 	} 
 	 	$o_db = $this->getDb();
@@ -8366,10 +8369,7 @@ side. For many self-relations the direction determines the nature and display te
 	 	$va_sql_params = array($vn_id, $this->tableNum());
 	 	$vs_bundle_sql = '';
 	 	
-	 	if ($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) {	 
-	 	    if(!Datamodel::tableExists($ps_bundle_name) && (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name))) {
-                $ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
-            }
+	 	if ($ps_bundle_name && ($ps_bundle_name = caConvertBundleNameToCode($ps_bundle_name, ['includeTablePrefix' => true]))) {	 
 			$vs_bundle_sql = "AND cmde.bundle_name = ?";
 			$va_sql_params[] = $ps_bundle_name;
 	 	} 

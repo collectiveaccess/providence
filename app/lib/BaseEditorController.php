@@ -2832,6 +2832,15 @@ class BaseEditorController extends ActionController {
 				}
 				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
 				break;
+			case 'ca_objects_components_list':
+				$id = $this->request->getParameter('primary_id', pInteger);
+				$t_object = ca_objects::findAsInstance($id);
+				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
+					throw new ApplicationException(_('Invalid item'));
+				}
+				$ids = $t_object->getComponents(['returnAs' => 'ids']);
+				$table = "ca_objects";
+				break;
 			default:
 				// relationship bundles
 				$table = preg_replace("!(_related_list|_table)$!", "", $bundle_name);

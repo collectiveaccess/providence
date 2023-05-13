@@ -1944,13 +1944,12 @@
 				if ($va_element['datatype'] == 0) {
 					if ($va_element['parent_id'] > 0) { 
 						if(sizeof($group_keys) > 1) { array_pop($group_keys); }
-						array_push($group_keys, $group_key = $va_element['element_id']);
 					}
+					$group_keys[] = $group_key = $va_element['element_id'];
 					continue; 
 				}
-				
-				if((sizeof($group_keys) > 1) && ($va_element['datatype'] != 0) && ($va_element['parent_id'] == $root_element_id)) {
-					$group_keys = [$group_key = $va_element['element_id']];
+				if($va_element['parent_id'] === $root_element_id) {
+					$group_key = $root_element_id;
 				}
 	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);

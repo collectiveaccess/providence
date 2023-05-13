@@ -270,6 +270,11 @@ class LightboxSchema extends \GraphQLServices\GraphQLSchema {
 						'description' => 'Number of items in lightbox',
 						'default' => null
 					],
+					'list' => [
+						'type' => Type::listOf($lightboxType),
+						'description' => 'List of available lightboxes',
+						'default' => null
+					],
 				]
 			]),
 			$lightboxMutationNewCommentType = new ObjectType([
