@@ -442,7 +442,16 @@ function caExportResult($po_request, $po_result, $ps_template, $ps_output_filena
 			header('Content-Disposition:inline;filename='.$filename_stub.'.pptx');
 			
 			$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
-			$o_writer->save('php://output');
+			$o_writer->save($filepath = caGetTempFileName('caPPT', 'pptx'));
+			
+			set_time_limit(0);
+			$o_fp = @fopen($filepath, "rb");
+			while(is_resource($o_fp) && !feof($o_fp)) {
+				print(@fread($o_fp, 1024*8));
+				ob_flush();
+				flush();
+			}
+			@unlink($filepath);
 			exit;
 			break;
 		case 'pdf':

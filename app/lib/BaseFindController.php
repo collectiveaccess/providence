@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -195,7 +195,11 @@ class BaseFindController extends ActionController {
 			$vs_label_display_field = $t_label->getDisplayField();
 			foreach($display_list as $i => $va_display_item) {
 				$tmp = explode('.', $va_display_item['bundle_name']);
-				
+
+				if(!isset($tmp[1])){ 
+					$tmp[1] = null;
+				}
+
 				if (
 					(($tmp[0] === $vs_label_table_name) && ($tmp[1] === $vs_label_display_field))
 					||
@@ -214,8 +218,13 @@ class BaseFindController extends ActionController {
 
 				// if sort is set in the bundle settings, use that
 				if(isset($va_display_item['settings']['sort']) && (strlen($va_display_item['settings']['sort']) > 0)) {
+					$b = $va_display_item['settings']['sort'];
+					if($tmp[0] !== $this->ops_tablename) {
+						$types = array_filter(array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array'])), "strlen");
+						$b .= ((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
+					}
 					$display_list[$i]['is_sortable'] = true;
-					$display_list[$i]['bundle_sort'] = $va_display_item['settings']['sort'];
+					$display_list[$i]['bundle_sort'] = $b;
 					continue;
 				}
 
@@ -224,7 +233,6 @@ class BaseFindController extends ActionController {
 					if (method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
 						$display_list[$i]['is_sortable'] = true; 
 						$types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
-						
 						$display_list[$i]['bundle_sort'] = "{$tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
 					}
 					continue; 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,8 @@
  */
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/BrowseSchema.php');
+require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -64,6 +66,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'description' => _t('Information about specific facet'),
 					'args' => [
 						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
 							'name' => 'browseType',
 							'type' => Type::string(),
 							'description' => _t('Browse type')
@@ -77,21 +85,52 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'facet',
 							'type' => Type::string(),
 							'description' => _t('Name of facet')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
 						list($browse_info, $browse) = self::browseParams($args);
 						$facet = $args['facet'];
 						
-						$facet_values = $browse->getFacet($facet);
+						$user_access_values = caGetUserAccessValues();
+						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
-						$ret = array_map(function($v) {
+						if(!is_array($facet_values)) {
+							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
+						}
+						
+						$facet_info = $browse->getInfoForFacet($facet, ['checkAccess' => $user_access_values]);
+						$data_spec = caGetOption('data', $facet_info, null);
+						$facet_table = caGetOption('table', $facet_info, null);
+						$instance = Datamodel::getInstance($facet_table, true);
+						$ret = array_map(function($v) use ($data_spec, $instance, $user_access_values) {
+							$display_data = [];
+							if(is_array($data_spec) && sizeof($data_spec) && $instance && $instance->load($v['id'])) {
+								foreach($data_spec as $n => $t) {
+									$display_data[] = [
+										'name' => $n,
+										'value' => $instance->getWithTemplate($t, ['checkAccess' => $user_access_values])
+									];
+								}
+							}
 							return [
 								'id' => $v['id'],
 								'value' => $v['label'],
 								'sortableValue' => $v['label_sort_'],
 								'contentCount' => $v['content_count'],
 								'childCount' => $v['child_count'],
+								'displayData' => $display_data
 							];
 						}, $facet_values);
 						
@@ -111,6 +150,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'description' => _t('List of available facets'),
 					'args' => [
 						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
 							'name' => 'browseType',
 							'type' => Type::string(),
 							'description' => _t('Browse type')
@@ -119,16 +164,29 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'key',
 							'type' => Type::string(),
 							'description' => _t('Browse key')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
 						list($browse_info, $browse) = self::browseParams($args);
-						$facets = $browse->getInfoForAvailableFacets();
+						$user_access_values = caGetUserAccessValues();
+						$facets = $browse->getInfoForAvailableFacets(['checkAccess' => $user_access_values]);
 						
-						$ret = array_map(function($f, $n) use ($browse) { 
-							$facet_values = $browse->getFacet($n);
+						$ret = array_map(function($f, $n) use ($browse, $args) { 
+							$facet_values = $browse->getFacet($n, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
-							$ret = array_map(function($v) {
+							$vret = array_map(function($v) {
 								return [
 									'id' => $v['id'],
 									'value' => $v['label'],
@@ -143,7 +201,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 								'labelPlural' => caGetOption('label_plural', $f, $n),
 								'description' => caGetOption('description', $f, null),
 								'type' => caGetOption('type', $f, null),
-								'values' => $ret
+								'values' => $vret
 							];
 						}, $facets, array_keys($facets));
 						return [
@@ -156,6 +214,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'type' => BrowseSchema::get('BrowseResult'),
 					'description' => _t('Return browse result for key'),
 					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
 						[
 							'name' => 'browseType',
 							'type' => Type::string(),
@@ -180,10 +244,23 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'limit',
 							'type' => Type::int(),
 							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
+						
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
 						list($browse_info, $browse) = self::browseParams($args);
+						
+						if($browse->numCriteria() == 0) {
+							$browse->addCriteria("_search", ["*"]);
+							$browse->execute(['checkAccess' => caGetUserAccessValues()]);	
+						}
 						return self::getMutationResponse($browse, $browse_info, $args);
 					}
 				],
@@ -191,6 +268,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'type' => BrowseSchema::get('BrowseFilterList'),
 					'description' => _t('List of applied filters'),
 					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
 						[
 							'name' => 'browseType',
 							'type' => Type::string(),
@@ -203,6 +286,8 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
 						list($browse_info, $browse) = self::browseParams($args);
 						
 						return [
@@ -211,7 +296,176 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						];
 					}
 				],
-			],
+				
+				// -----------------
+				'activity' => [
+					'type' => BrowseSchema::get('BrowseResult'),
+					'description' => _t('Return browse result with recent activity'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'browseType',
+							'type' => Type::string(),
+							'description' => _t('Browse type')
+						],
+						[
+							'name' => 'key',
+							'type' => Type::string(),
+							'description' => _t('Browse key')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'defaultValue' => 0,
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'defaultValue' => 10,
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'facet',
+							'type' => Type::string(),
+							'description' => _t('Facet name')
+						],
+						[
+							'name' => 'value',
+							'type' => Type::string(),
+							'description' => _t('Filter value')
+						],
+						[
+							'name' => 'values',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Filter values')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						list($browse_info, $browse) = self::browseParams($args);
+						
+						$t = Datamodel::getInstance($browse_info['table'], true);
+						$args['sort'] = $t->primaryKey(true).':desc'; // always sort descending
+						
+						
+						if(isset($args['facet'])) {						
+							$facet = $args['facet'];
+							$value = $args['value'] ?? null;
+							$values = $args['values'] ?? null;
+							$browse->addCriteria($facet, is_array($values) ? $values : [$value]);
+						} elseif(isset($args['baseCriteria'])) {
+							foreach($args['baseCriteria'] as $facet => $values) {
+								$browse->addCriteria($facet, is_array($values) ? $values : [$value]);
+							}
+						} else {
+							throw new \ServiceException(_t('No criteria specified'));
+						}
+						
+						$browse->execute(['checkAccess' => caGetUserAccessValues()]);	
+						
+						return self::getMutationResponse($browse, $browse_info, $args);
+					}
+				],
+				// -----------------
+				'activityFacet' => [
+					'type' => BrowseSchema::get('BrowseFacet'),
+					'description' => _t('Information about specific facet'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'browseType',
+							'type' => Type::string(),
+							'description' => _t('Browse type')
+						],
+						[
+							'name' => 'key',
+							'type' => Type::string(),
+							'description' => _t('Browse key')
+						],
+						[
+							'name' => 'facet',
+							'type' => Type::string(),
+							'description' => _t('Name of facet')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
+						list($browse_info, $browse) = self::browseParams($args, ['baseCriteria' => ['modified:"after '.date('Y-m-d').'"']]);
+						$facet = $args['facet'];
+						
+						
+						
+						$user_access_values = caGetUserAccessValues();
+						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
+						
+						if(!is_array($facet_values)) {
+							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
+						}
+						
+						$facet_info = $browse->getInfoForFacet($facet, ['checkAccess' => $user_access_values]);
+						$data_spec = caGetOption('data', $facet_info, null);
+						$facet_table = caGetOption('table', $facet_info, null);
+						$instance = Datamodel::getInstance($facet_table, true);
+						$ret = array_map(function($v) use ($data_spec, $instance, $user_access_values) {
+							$display_data = [];
+							if(is_array($data_spec) && sizeof($data_spec) && $instance && $instance->load($v['id'])) {
+								foreach($data_spec as $n => $t) {
+									$display_data[] = [
+										'name' => $n,
+										'value' => $instance->getWithTemplate($t, ['checkAccess' => $user_access_values])
+									];
+								}
+							}
+							return [
+								'id' => $v['id'],
+								'value' => $v['label'],
+								'sortableValue' => $v['label_sort_'],
+								'contentCount' => $v['content_count'],
+								'childCount' => $v['child_count'],
+								'displayData' => $display_data
+							];
+						}, $facet_values);
+						
+						if(!($facet_info = self::facetInfo($browse_info['table'], $facet))) {
+							throw new \ServiceException(_t('No facets defined for table '.$browse_info['table']));
+						}
+						return [
+							'name' => $facet,
+							'type' => caGetOption('type', $facet_info, null),
+							'description' => caGetOption('description', $facet_info, null),
+							'values' => $ret
+						];
+					}
+				],
+			]
 		]);
 		
 		$mt = new ObjectType([
@@ -221,6 +475,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'type' => BrowseSchema::get('BrowseResult'),
 					'description' => _t('Add filter value to browse.'),
 					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
 						[
 							'name' => 'browseType',
 							'type' => Type::string(),
@@ -250,9 +510,26 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
 						list($browse_info, $browse) = self::browseParams($args);
 					
 						$facet = $args['facet'];
@@ -260,7 +537,9 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$values = $args['values'] ?? null;
 						
 						$browse->addCriteria($facet, is_array($values) ? $values : [$value]);
-						$browse->execute();	
+						
+						$user_access_values = caGetUserAccessValues();
+						$browse->execute(['checkAccess' => $user_access_values]);	
 						
 						return self::getMutationResponse($browse, $browse_info, $args);
 					}
@@ -269,6 +548,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'type' => BrowseSchema::get('BrowseResult'),
 					'description' => _t('Remove filter value from browse. If value is omitted all values for the specified facet are removed.'),
 					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
 						[
 							'name' => 'browseType',
 							'type' => Type::string(),
@@ -298,9 +583,26 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						
 						list($browse_info, $browse) = self::browseParams($args);
 					
 						$facet = $args['facet'];
@@ -311,7 +613,9 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							throw new \ServiceException(_t('No values passed'));
 						}
 						$browse->removeCriteria($facet, $values);
-						$browse->execute();	
+						
+						$user_access_values = caGetUserAccessValues();
+						$browse->execute(['checkAccess' => $user_access_values]);	
 						
 						return self::getMutationResponse($browse, $browse_info, $args);
 					}
@@ -320,6 +624,12 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 					'type' => BrowseSchema::get('BrowseResult'),
 					'description' => _t('Remove all filters from browse, resetting to start state.'),
 					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
 						[
 							'name' => 'browseType',
 							'type' => Type::string(),
@@ -334,13 +644,32 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						$args['key'] = '';
 						list($browse_info, $browse) = self::browseParams($args);
 						
-						$browse->removeAllCriteria();
-						$browse->execute();	
+						//$browse->removeAllCriteria();
+						
+						$user_access_values = caGetUserAccessValues();
+						$browse->execute(['checkAccess' => $user_access_values]);	
 						
 						return self::getMutationResponse($browse, $browse_info, $args);
 					}
@@ -356,7 +685,8 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 	 *
 	 * @param array $args Request aruguments
 	 * @param array $options Options include:
-	 *		dontExecute = Call execute() on browse instance before returning. [Default is true]
+	 *		execute = Call execute() on browse instance before returning. [Default is true]
+	 *		baseCriteria = 
 	 */
 	private static function browseParams(array $args, array $options=null) {
 		$browse_type = trim($args['browseType']);
@@ -370,7 +700,17 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		if ($key = trim($args['key'])) {
 			$browse->reload($key);
 		}
-		if (caGetOption('execute', $options, true)) { $browse->execute(); }
+		$restrict_to_types = caGetOption('restrictToTypes', $browse_info, null);
+		if (is_array($restrict_to_types) && sizeof($restrict_to_types)) { $browse->setTypeRestrictions($restrict_to_types); }
+		
+		if($criteria = caGetOption('baseCriteria', $browse_info, null)) {
+			foreach($criteria as $k => $c) {
+				$browse->addCriteria($k, is_array($c) ? $c : [$c]);
+			}
+		}	
+		$user_access_values = caGetUserAccessValues();
+		if (caGetOption('execute', $options, true)) { $browse->execute(['checkAccess' => $user_access_values]); }
+		
 		return [
 			$browse_info, $browse
 		];
@@ -402,22 +742,24 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		
 		$start = caGetOption('start', $args, 0);
 		$limit = caGetOption('limit', $args, null);
-						
+		$media_versions = caGetOption('mediaVersions', $args, null);
+		if(is_array($media_versions) && !sizeof($media_versions)) { $media_versions = null; }
+		
 		$i = 0;
 		
-		$media_versions = [];
+		$user_access_values = caGetUserAccessValues();
 		
 		// TODO: make caGetDisplayImagesForAuthorityItems() more efficient
 		$qr->seek($start);
-		$m = caGetDisplayImagesForAuthorityItems($table, $qr->getAllFieldValues($qr->primaryKey()), ['return' => 'data', 'versions' => ['small', 'medium', 'large'], 'useRelatedObjectRepresentations' => ($table !== 'ca_objects')]);
-		
-		$m = array_map(function($versions) {
+		$m = caGetDisplayImagesForAuthorityItems($table, $qr->getAllFieldValues($qr->primaryKey()), ['return' => 'data', 'versions' => ['small', 'medium', 'large', 'iiif', 'original', 'h264_hi', 'mp3', 'compressed'], 'useRelatedObjectRepresentations' => ($table !== 'ca_objects')]);
+		$m = array_map(function($versions) use ($media_versions) {
 		    $acc = [];
 			foreach ($versions as $v => $info) {
-				$acc[] = [
+				if(is_array($media_versions) && !in_array($v, $media_versions, true)) { continue; }
+				if(!strlen($info['url'])) { continue; }
+				$acc[$v] = [
 					'version' => $v,
 					'url' => $info['url'],
-					'tag' => $info['tag'],
 					'width' => $info['width'],
 					'height' => $info['height'],
 					'mimetype' => $info['mimetype'],
@@ -428,14 +770,52 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		$qr->seek($start);
 		while($qr->nextHit()) {
 			$id = $qr->getPrimaryKey();
+			
+			$data = [];
+			
+			// TODO: only execute this if 'data' is in the query
+			if(is_array($browse_info['additionalData'])) {
+				foreach($browse_info['additionalData'] as $k => $f) {
+					if (strpos($f, '^') !== false) {
+						$v = $qr->getWithTemplate($f, ['checkAccess' => $user_access_values]);
+					} else {
+						$t = caParseTagOptions($f);
+						$v = $qr->get($t['tag'], array_merge($t['options'], ['checkAccess' => $user_access_values]));
+					}
+					$data[] = ['name' => $k, 'value' => $v];
+				}
+			}
+			
+			
+			$viewer_class = caGetMediaClass($m[$id]['original']['mimetype']);
+			
+			switch($viewer_class) {
+				case 'image':
+					$viewer_url = $m[$id]['iiif']['url'];
+					break;
+				case 'video':
+					$viewer_url = isset($m[$id]['h264_hi']) ? $m[$id]['h264_hi']['url'] : $m[$id]['original']['url'];
+					break;
+				case 'audio':
+					$viewer_url = isset($m[$id]['mp3']) ? $m[$id]['mp3']['url'] : $m[$id]['original']['url'];
+					break;
+				case 'document':
+					$viewer_url = isset($m[$id]['compressed']) ? $m[$id]['compressed']['url'] : $m[$id]['original']['url'];
+					break;
+				default:
+					$viewer_url = $m[$id]['original']['url'];
+					break;
+			}
+			unset($m[$id]['iiif']);
 			$ret[] = [
 				'id' => $id,
-				'title' => $qr->get("{$table}.preferred_labels"),
-				'detailUrl' => caDetailUrl($table, $id),
-				'identifier' => $qr->get("{$table}.idno"),
+				'title' => $qr->get("{$table}.preferred_labels", ['checkAccess' => $user_access_values]),
+				'viewerUrl' => $viewer_url,
+				'viewerClass' => $viewer_class,
+				'identifier' => $qr->get("{$table}.idno", ['checkAccess' => $user_access_values]),
 				'rank' => $i,
-				'media' => $m[$id],
-				'data' => []
+				'media' => is_array($m[$id]) ? array_values($m[$id]) : null,
+				'data' => $data
 			];
 			$i++;
 			if(($limit > 0) && ($i >= $limit)) { break; }
@@ -449,7 +829,9 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 	 */
 	private static function getMutationResponse(BrowseEngine $browse, array $browse_info, array $args) {
 		list($sort, $sort_direction) = self::processSortSpec($args['sort']);
-		if(!($qr = $browse->getResults(['sort' => $sort, 'sort_direction' => $sort_direction]))) { 
+		
+		$user_access_values = caGetUserAccessValues();
+		if(!($qr = $browse->getResults(['sort' => $sort, 'sort_direction' => $sort_direction, 'checkAccess' => $user_access_values]))) { 
 			throw new \ServiceException(_t('Browse execution failed'));
 		}
 		
@@ -471,7 +853,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 			'content_type_display' => mb_strtolower($browse_info[($n == 1) ? 'labelSingular' : 'labelPlural']),
 			'item_count' => $n,
 			'items' => self::getResultsForResponse($browse, $qr, $browse_info, $args),
-			'facets' => [],
+			'facets' => [],	// TODO: return facet list here?
 			'filters' => self::getFiltersForResponse($browse, $browse_info),
 			'available_sorts' => $available_sorts
 		];

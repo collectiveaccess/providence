@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2019 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,10 +66,10 @@
 					<?= _t('URL path'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?= _t('Description'); ?>
+					<?= _t('Template'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?= _t('Template'); ?>
+					<?= _t('Locale'); ?>
 				</th>
 				<th class="list-header-unsorted">
 					<?= _t('Access'); ?>
@@ -93,10 +93,10 @@
 					<div><?= ($va_page['path'] === 'PROVIDENCE_HELP_MENU') ? _t('<em>Providence help menu</em>') : $va_page['path']; ?></div>
 				</td>
 				<td>
-					<div><?= $va_page['description']; ?></div>
+					<div><?= $va_page['template_title']; ?></div>
 				</td>
 				<td>
-					<div><?= $va_page['template_title']; ?></div>
+					<div><?= $va_page['locale']; ?></div>
 				</td>
 				<td>
 					<div><?= $t_page->getChoiceListValue('access', $va_page['access']); ?></div>

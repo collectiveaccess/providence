@@ -151,6 +151,13 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
 		),
+		'checked' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Checked'), 'DESCRIPTION' => _t('Indicates if components of name have been verified')
+		),
 		'effective_date' => array(
 				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
@@ -379,7 +386,17 @@ class ca_entity_labels extends BaseLabel {
 	 */
 	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
 		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
-		return DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+		
+		$n =  DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+		
+		if((isset($label_values['suffix']) && strlen($label_values['suffix'])) || (isset($label_values['prefix']) && strlen($label_values['prefix']))) {
+			if(!($label_values['displayname'] ?? null)) {
+				$label_values['displayname'] = $n['displayname'];
+			}
+			// assume name is already split if suffix or prefix is set
+			return $label_values;
+		}
+		return $n;
 	}
 	# ------------------------------------------------------
 	/**

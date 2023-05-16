@@ -155,8 +155,12 @@ class MediaInfoDataReader extends BaseXMLDataReader {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
 		
-		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
-
+		if(!is_array($this->ops_xpath )) { $this->ops_xpath  = [$this->ops_xpath]; }
+		foreach($this->ops_xpath as $xp) {
+			$this->opo_handle = $this->opo_xpath->query($xp, null, $this->opb_register_root_tag);
+			if($this->opo_handle && ($this->opo_handle->count() > 0)) { break; }
+		}
+		
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;
 	}

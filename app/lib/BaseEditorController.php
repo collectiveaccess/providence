@@ -1985,7 +1985,7 @@ class BaseEditorController extends ActionController {
 		// Does user have access to row?
 		//
 		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $pt_subject->getPrimaryKey()) {
-			if ($pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
+			if (method_exists($pt_subject, 'checkACLAccessForUser') && $pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return false;
 			}
@@ -2831,6 +2831,15 @@ class BaseEditorController extends ActionController {
 					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
 				}
 				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
+				break;
+			case 'ca_objects_components_list':
+				$id = $this->request->getParameter('primary_id', pInteger);
+				$t_object = ca_objects::findAsInstance($id);
+				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
+					throw new ApplicationException(_('Invalid item'));
+				}
+				$ids = $t_object->getComponents(['returnAs' => 'ids']);
+				$table = "ca_objects";
 				break;
 			default:
 				// relationship bundles

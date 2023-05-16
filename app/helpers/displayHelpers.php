@@ -799,11 +799,19 @@ jQuery(document).ready(function() {
 
 		$vs_buf = '';
 		if (is_array($va_found_ids) && sizeof($va_found_ids)) {
+			$default_to_summary_view_conf = $po_request->config->getList("{$vs_table_name}_editor_defaults_to_summary_view");
+			if(is_array($default_to_summary_view_conf) && sizeof($default_to_summary_view_conf)) {
+				$t_table = Datamodel::getInstance($vs_table_name, true);
+				$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $po_request, $t_table->getTypeID($pn_id));
+				$default_to_summary_view = $t_ui ? in_array($t_ui->get('editor_code'), $default_to_summary_view_conf, true) : false;
+			} else {
+				$default_to_summary_view = (bool)$po_request->config->get("{$vs_table_name}_editor_defaults_to_summary_view");
+			}
 			if ($vn_prev_id > 0) {
 				if(
 					$po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_prev_id))
 					&&
-					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
+					!$default_to_summary_view
 				){
 					$vs_buf .= caNavLink($po_request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
 				} else {
@@ -821,7 +829,7 @@ jQuery(document).ready(function() {
 				if(
 					$po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_next_id))
 					&&
-					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
+					!$default_to_summary_view
 				){
 					$vs_buf .= '&nbsp;'.caNavLink($po_request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
 				} else {
@@ -1491,7 +1499,7 @@ jQuery(document).ready(function() {
 
 			$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
 			$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
+			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 
 			if (method_exists($t_item, 'getComponentCount')) {
 				if ($vn_component_count = $t_item->getComponentCount()) {
@@ -3249,9 +3257,10 @@ jQuery(document).ready(function() {
 	 * @param string $ps_class Optional CSS class to apply to links
 	 * @param string $ps_target
 	 * @param array $pa_options Supported options are:
-	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
+	 *		requireLinkTags = If set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 * 		addRelParameter =
 	 *      absolute = Return absolute urls [Default is false]
+	 *		bundle = When generating an editor link, will cause link to be to screen containing the specified bundle. If omitted or the bundle does not exist in the editor the default screen will be shown. [Default is null]
 	 *
 	 * @return array A list of HTML links
 	 */
@@ -3270,7 +3279,7 @@ jQuery(document).ready(function() {
 		}
 
 		$va_links = array();
-		$va_link_opts = ['absolute' => isset($pa_options['absolute']) ? $pa_options['absolute'] : false];
+		$va_link_opts = ['absolute' => $pa_options['absolute'] ?? false, 'bundle' => $pa_options['bundle'] ?? 'ca_object_components_list'];
 
 		global $g_request;
 		if (!$g_request) { return $pa_text; }
@@ -3561,10 +3570,12 @@ jQuery(document).ready(function() {
 		} else {
 			$sort_fields_proc = $default_sort_options = [];
 			
+			// Expand global sort list to include parents when sort is on container field
 			foreach($va_sort_fields as $sf => $n) {
 				$tmp = explode('.', $sf);
-				if(sizeof($tmp) > 2) {
-					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = ca_metadata_elements::getElementLabel($tmp[1]);
+				if((sizeof($tmp) > 2) && !in_array($tmp[1], ['preferred_labels', 'nonpreferred_labels']))  {
+					if(!($label = ca_metadata_elements::getElementLabel($tmp[1]))) { continue; }
+					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = $label;
 					$default_sort_options[$k] = true;
 				}
 				$sort_fields_proc[$sf] = $n;
@@ -4836,7 +4847,7 @@ jQuery(document).ready(function() {
 			if ($pb_barcodes && ($vs_barcode_file = caParseBarcodeViewTag($vs_tag, $po_view, $pm_subject, $pa_options))) {
 				$va_barcode_files_to_delete[] = $vs_barcode_file;
 			} elseif ((strpos($vs_tag, "^") !== false) || (strpos($vs_tag, "<") !== false)) {
-				$po_view->setVar($vs_tag, $pm_subject->getWithTemplate($vs_tag, array('checkAccess' => $pa_access_values)));
+				$po_view->setVar($vs_tag, $pm_subject->getWithTemplate($vs_tag, array('autoConvertLineBreaks' => true, 'checkAccess' => $pa_access_values)));
 			} elseif (strpos($vs_tag, ".") !== false) {
 				$po_view->setVar($vs_tag, $pm_subject->get($vs_tag, array('checkAccess' => $pa_access_values)));
 			} else {
@@ -5207,6 +5218,7 @@ jQuery(document).ready(function() {
 	 */
 	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
+		if(isset($data['extension']) && (in_array(strtolower($data['extension']), ['m4v', 'm4a']))) { $data['extension'] = 'mp4'; }
 		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
@@ -5427,5 +5439,40 @@ jQuery(document).ready(function() {
 			;
 			return $rec_label;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetTextExcerpt(?string $content, array $search_terms, ?array $options=null) : ?string {
+		$before = caGetOption('before', $options, 100);
+		$after = caGetOption('after', $options, 100);
+		$search_terms = array_map(function($v) {
+			$t = preg_replace('![i]{0,1}\*!', '', $v);
+			return $t;
+		}, $search_terms);
+		
+		$excerpts = [];
+		for($s=0; $s < sizeof($search_terms); $s++) {
+			$n = sizeof($search_terms) - $s;
+			while($n > 0) {
+				$terms = array_map(function($v) {
+					return preg_quote($v, '!')."[^\s]*";
+				}, array_slice($search_terms, $s, $n));
+				$regex = trim(join('[ ]+', $terms));
+				if(preg_match("/(?<![A-Za-z0-9]){$regex}/iu", $content, $m)) {
+					if($m[0]){
+						$index = mb_strpos($content, $m[0]);
+						$start = (($index-$before) > 0) ? ($index-$before) : 0;
+						$length = $before + $after + mb_strlen($m[0]);
+						if($length > (mb_strlen($content) - $start)) { $length = (mb_strlen($content) - $start); }
+						$extext = mb_substr($content, $start, $length);
+						$excerpts[] = "<p>... {$extext} ...</p>";
+					}
+				}
+				$n--;
+			}
+		}
+		return join('', array_unique($excerpts));
 	}
 	# ------------------------------------------------------------------

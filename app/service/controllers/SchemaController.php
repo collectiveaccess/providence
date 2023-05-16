@@ -256,6 +256,67 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 						];
 					}
 				],
+				'validateBundleCodes' => [
+					'type' => SchemaSchema::get('BundleValidityList'),
+					'description' => _t('Check validity of bundle codes'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table'),
+							'defaultValue' => null
+						],
+						[
+							'name' => 'type',
+							'type' => Type::string(),
+							'description' => _t('Check bundles for a specific type. If omitted codes valid for any type are considered valid.'),
+							'defaultValue' => null
+						],
+						[
+							'name' => 'bundles',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Bundle codes to check'),
+							'defaultValue' => null
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						$table = $args['table'];
+						$type = $args['type'];
+						$bundles_to_check = $args['bundles'];
+						if(!is_array($bundles_to_check) || !sizeof($bundles_to_check)) { 
+							throw new \ServiceException(_t('No bundles specified'));
+						}
+						
+						if(!\GraphQLServices\Helpers\Schema\tableIsValid($table)) {
+							throw new \ServiceException(_t('Invalid table: %1', $table));
+						}
+						
+						$t = Datamodel::getInstance($table, true);
+						$bundles = $t->getBundleList(['includeBundleInfo' => true, 'rewriteKeys' => true]);
+						
+						$validity = [];
+						foreach($bundles_to_check as $b) {
+							$b = preg_replace("!^{$table}\.!", '', $b);
+							$valid = isset($bundles[$b]);
+							
+							$validity[] = [
+								'name' => $b,
+								'isValid' => $valid
+							]; 
+						}
+						
+						return [
+							'bundles' => $validity
+						];
+					}
+				],
 				// ------------------------------------------------------------
 				// Relationship types
 				// ------------------------------------------------------------
@@ -298,13 +359,22 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 						}
 						
 						if($related_table) {
-							if(is_array($path = \Datamodel::getPath($table, $related_table)) && (sizeof($path) === 3)) {
+							if(is_array($path = \Datamodel::getPath($table, $related_table))) {
 								$path = array_keys($path);
-								$linking_table = $path[1];
-								$t = \Datamodel::getInstance($linking_table, true);
 								
-								if(!$t || !$t->isRelationship()) {
-									throw new \ServiceException(_t('Invalid table pair'));
+								switch(sizeof($path)) {
+									case 3:
+									case 2:
+										$linking_table = $path[1];
+										$t = \Datamodel::getInstance($linking_table, true);
+								
+										if(!$t || !$t->isRelationship()) {
+											throw new \ServiceException(_t('Invalid table pair'));
+										}
+										break;
+									default:
+										throw new \ServiceException(_t('Invalid table pair'));
+										break;
 								}
 							} else {
 								throw new \ServiceException(_t('Invalid table pair'));

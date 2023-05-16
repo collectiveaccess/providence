@@ -113,10 +113,13 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param bool $pb_is_preferred
 	 * @param array $pa_options Options include:
 	 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
-	 * 		queueIndexing =
+	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
-	 *		aourceInfo = Source for label. [Default is null]
+	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
+	 *		sourceInfo = Source for label. [Default is null]
+	 *		skipExisting = Don't add labels that already exist on this record. [Default is true]
+	 *
 	 * @return int id for newly created label, false on error or null if no row is loaded
 	 */ 
 	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -124,15 +127,20 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		if ($pb_is_preferred && $this->preferredLabelExistsForLocale($pn_locale_id)) { return false; }
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
+		
+		$skip_existing = caGetOption('skipExisting', $pa_options, true);
 		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+		$label_checked = caGetOption(['checked', 'label_checked', 'labelChecked'], $pa_options, 0);
 		$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 		
 		$vs_table_name = $this->tableName();
 		
-		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
+		if (!($t_label = Datamodel::getInstanceByTableName($label = $this->getLabelTableName()))) { return null; }
+		
+		$o_trans = null;
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 			$t_label->setTransaction($o_trans);
@@ -140,6 +148,15 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$t_label->purify($this->purify());
 		$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+		
+		// Does label exist?
+		$label_table = $t_label->tableName();
+		
+		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
+
+		if(($skip_existing && ($dupe_count = $label_table::find($dupe_check_values, ['transaction' => $o_trans, 'returnAs' => 'count'])) > 0)) {
+			return false;
+		}
 		
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			if ($t_label->hasField($vs_field)) { 
@@ -157,16 +174,24 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		
+		$dupe_check_data = array_merge($pa_label_values, ['locale_id' => $pn_locale_id, $this->primaryKey() => $vn_id]);
 		
 		$t_label->set('locale_id', $pn_locale_id);
-		if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
-		if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
-		if ($t_label->hasField('effective_date')) { $t_label->set('effective_date', $effective_date); }
+		if ($t_label->hasField('type_id')) { $dupe_check_data['type_id'] = $pn_type_id; $t_label->set('type_id', $pn_type_id); }
+		if ($t_label->hasField('is_preferred')) { $dupe_check_data['is_preferred'] = ($pb_is_preferred ? 1 : 0); $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
+		if ($t_label->hasField('effective_date')) { 
+			if(is_array($date = caDateToHistoricTimestamps($effective_date)) && ($date['start'] ?? null) && ($date['start'] > 0)) {
+				$dupe_check_data['sdatetime'] = $date['start']; 
+				$dupe_check_data['edatetime'] = $date['end']; 
+			}
+			$t_label->set('effective_date', $effective_date); 
+		}
 		if ($t_label->hasField('access')) { $t_label->set('access', $label_access); }
+		if ($t_label->hasField('checked')) { $t_label->set('checked', $label_checked); }
 		if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 		
 		$t_label->set($this->primaryKey(), $vn_id);
-		
+
 		$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 	
 		$vn_label_id = $t_label->insert(array_merge($pa_options, ['queueIndexing' => $pb_queue_indexing, 'subject' => $this]));
@@ -199,9 +224,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param bool $pb_is_preferred
 	 * @param array $pa_options Options include:
 	 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
-	 * 		queueIndexing =
+	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
+	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
 	 *		aourceInfo = Source for label. [Default is null]
 	 * @return int id for the edited label, false on error or null if no row is loaded
 	 */
@@ -209,10 +235,11 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		
 		$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+		$label_checked = caGetOption(['checked', 'label_checked', 'labelChecked'], $pa_options, 0);
 		$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 		
 		$vs_table_name = $this->tableName();
@@ -269,6 +296,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$t_label->set('access', $label_access); 
 			if ($t_label->changed('access')) { $vb_has_changed = true; }
 		}
+		if ($t_label->hasField('checked')) { 
+			$t_label->set('checked', $label_checked); 
+			if ($t_label->changed('checked')) { $vb_has_changed = true; }
+		}
 		if ($t_label->hasField('source_info')) { 
 			$t_label->set('source_info', $source_info); 
 			if ($t_label->changed('source_info')) { $vb_has_changed = true; }
@@ -306,10 +337,16 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	# ------------------------------------------------------------------
 	/**
 	 * Remove specified label
+	 *
+	 * @param int $pn_label_id
+	 * @param array $pa_options= Options include:
+	 *		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
+	 *
+	 * @return bool
 	 */
 	public function removeLabel($pn_label_id, $pa_options = null) {
 		if (!$this->getPrimaryKey()) { return null; }
-		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, true);
 		
 		if (!($t_label = Datamodel::getInstanceByTableName($this->getLabelTableName()))) { return null; }
 		if ($this->inTransaction()) {
@@ -740,6 +777,21 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 								$pa_values[$vs_type_field_name][$vn_i] = [$vs_op, $vn_id];
 							}
 						}
+					}
+				}
+			}
+			
+			//
+			// Convert dates
+			//
+			foreach($pa_values as $vs_field => $va_field_values) {
+				if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+					$d = $va_field_values[0][1];
+					if($dt = caDateToHistoricTimestamps($d)) {
+						$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+						$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+						unset($pa_values[$vs_field]);
 					}
 				}
 			}
@@ -2493,7 +2545,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if(is_array($label_locales = $po_request->config->get(["{$table}_{$type}_preferred_label_locales", "{$table}_preferred_label_locales", "preferred_label_locales"])) && sizeof($label_locales)) {
 			$label_locales = array_map(function($v) { return (int)ca_locales::codeToID($v); }, $label_locales);
 		}
-		$locale_list = $t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
+		$locale_list = $t_label->htmlFormElement('locale_id', ($t_label->tableName() === 'ca_entity_labels') ? "^LABEL<br/>^ELEMENT" : "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
 	
 		$o_view->setVar('locale_list', $locale_list);
 		
@@ -2596,7 +2648,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if(is_array($label_locales = $po_request->config->get(["{$table}_{$type}_nonpreferred_label_locales", "{$table}_nonpreferred_label_locales", "nonpreferred_label_locales"])) && sizeof($label_locales)) {
 			$label_locales = array_map(function($v) { return (int)ca_locales::codeToID($v); }, $label_locales);
 		}
-		$locale_list = $t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
+		$locale_list = $t_label->htmlFormElement('locale_id', ($t_label->tableName() === 'ca_entity_labels') ? "^LABEL<br/>^ELEMENT" : "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
 
 		$o_view->setVar('locale_list', $locale_list);
 		

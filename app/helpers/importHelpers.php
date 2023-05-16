@@ -485,6 +485,10 @@
 							$va_attr_vals[$vs_element_code][] = $vs_path;
 						}
 					}
+				} elseif(is_string($va_attrs)) {
+					$va_attr_vals[$vs_element_code] = $va_attrs;
+				} else {
+					 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 				}
 			}
 			return $va_attr_vals;
@@ -806,7 +810,7 @@
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
 		
-		$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
+		$pm_value = (!isset($pa_source_data[$pa_item['source']]) && $o_reader) ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item) : $pa_source_data[$pa_item['source']];
 
 		if (is_array($pm_value)) {
 			if (isset($pm_value[$pn_value_index])) {
@@ -823,7 +827,7 @@
 		if (!is_array($va_delimiter)) { $va_delimiter = [$va_delimiter]; }
 		if (sizeof($va_delimiter)) {
 			foreach($va_delimiter as $vn_index => $vs_delim) {
-				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
+				if (($vs_delim !== ' ') && !trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
 				$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
 			}
 		}
@@ -861,7 +865,6 @@
 		) {		
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
-
                 $va_items = array_map("trim", $va_items);
                 
                 if($text_transform) {
@@ -871,9 +874,10 @@
                 }
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
-					
+					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item, ['skipRegularExpressions' => true]); // do replacement values on split values
 					// Set label
 					$va_val = [];       // values for current item
+					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item);	// apply replacement values
 					
 					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
@@ -902,7 +906,8 @@
 									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
 									
 									foreach($match_on as $m) {
-									    $va_val[$m] = BaseRefinery::parsePlaceholder($va_p[$m] ?? $va_p['attributes'][$m], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
+										if(is_null($vx = $va_p[$m] ?? $va_p['attributes'][$m] ?? null)) { continue; }
+									    $va_val[$m] = BaseRefinery::parsePlaceholder($vx, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnAsString' => true, 'returnDelimitedValueAt' => $vn_x, 'applyImportItemSettings' => $apply_import_item_settings));
 										$va_val['_matchOn'][] = $m;
 									}
 									break;
@@ -913,11 +918,11 @@
 							continue; 
 						}
 					}
-					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
-						if ($o_log) { $o_log->logDebug(_t('[%1] Skipped %2 because it was in the skipIfValue list', $ps_refinery_name, $vs_item)); }
+					
+					if(caSkipValueIf($vs_item, $ps_refinery_name, $pa_item, ['log' => $o_log])) {
 						continue;
 					}
-				
+					
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
 						$va_val = array_merge($va_val, caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true, 'refinery' => $po_refinery_instance))));
@@ -1461,13 +1466,14 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * used by refineries to apply regular expressions to values get()'ed from reader class
 	 *
 	 * @param mixed $pm_value
-	 * @param array $pa_item_settings
+	 * @param array $pa_item
 	 * @param array $options Options include:
 	 *		skipRegularExpressions = don't apply configured regular expressions. [Default is false]
 	 *
 	 * @return mixed
 	 */
-	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings, array $options=null) {
+	function caProcessImportItemSettingsForValue($pm_value, $pa_item, array $options=null) {
+		$pa_item_settings = $pa_item['settings'] ?? [];
 		if (!caGetOption('skipRegularExpressions', $options, false) && isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
@@ -1493,10 +1499,10 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		
 		if(is_array($pm_value)) {
 			foreach($pm_value as $vn_i => $vs_value) {
-				$pm_value[$vn_i] = ca_data_importers::replaceValue($vs_value, $pa_item_settings, []);
+				$pm_value[$vn_i] = ca_data_importers::replaceValue($vs_value, $pa_item, []);
 			}
 		} else {
-			$pm_value = ca_data_importers::replaceValue($pm_value, $pa_item_settings, []);
+			$pm_value = ca_data_importers::replaceValue($pm_value, $pa_item, []);
 		}
 		return $pm_value;
 	}
@@ -1802,5 +1808,30 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				break;
 		}
 		return $value;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if refinery value should be skipped based upon refinery skipIfValue and skioIfNotValue options.
+	 *
+	 * @param mixed $value Refinery value to test
+	 * @param string $refinery_name
+	 * @param array $item Mapping item information, including refinery settings in 'settings' key.
+	 * @param array $options Options for check. Options include:
+	 *		log = logging instance [Default is null]
+	 *
+	 * @return bool
+	 */
+	function caSkipValueIf($value, string $refinery_name, array $item, ?array $options=null){
+		$log = caGetOption('log', $options, null);
+		if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfValue"]) && in_array($value, $skip_values)) {
+			if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in the skipIfValue list', $refinery_name, $value)); }
+			return true;
+		}
+		if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfNotValue"]) && !in_array($value, $skip_values)) {
+			if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in not in the skipIfNotValue list', $refinery_name, $value)); }
+			return true;
+		}
+	
+		return false;
 	}
 	# ---------------------------------------------------------------------

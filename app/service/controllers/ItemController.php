@@ -29,10 +29,12 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQLServices\Schemas\ItemSchema;
+use GraphQLServices\Helpers\Item;
 
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/ItemSchema.php');
 require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
+require_once(__CA_APP_DIR__.'/service/helpers/ItemHelpers.php');
 
 class ItemController extends \GraphQLServices\GraphQLServiceController {
 	# -------------------------------------------------------
@@ -70,6 +72,16 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Table name. (Eg. ca_objects)')
 						],
 						[
+							'name' => 'id',
+							'type' => Type::int(),
+							'description' => _t('Numeric database id value of record.')
+						],
+						[
+							'name' => 'idno',
+							'type' => Type::string(),
+							'description' => _t('Alphanumeric idno value of record.')
+						],
+						[
 							'name' => 'identifier',
 							'type' => Type::string(),
 							'description' => _t('Record identifier. Either a integer primary key or alphanumeric idno value.')
@@ -83,7 +95,8 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
 						
-						$rec = self::resolveIdentifier($table = $args['table'], $args['identifier']);
+						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
+						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
@@ -139,6 +152,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Restrict returned records to specified relationship types.')
 						],
 						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Zero-based start index for returned relationships. If omitted starts from the first relationship.')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of relationships to return. If omitted all relationships are returned.')
+						],
+						[
+							'name' => 'targets',
+							'type' => Type::listOf(ItemSchema::get('TargetListInputItem')),
+							'description' => _t('List of tables (with options) to return relationships for')
+						],
+						[
 							'name' => 'checkAccess',
 							'type' => Type::listOf(Type::int()),
 							'description' => _t('Filter results by access values')
@@ -147,6 +175,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return.')
+						],
+						[
+							'name' => 'includeMedia',
+							'type' => Type::boolean(),
+							'description' => 'Include representations linked to related items?'
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => 'If including representations, which versions to return'
+						],
+						[
+							'name' => 'restrictMediaToTypes',
+							'type' => Type::listOf(Type::string()),
+							'description' => 'If including representations, which restrict to specified types'
 						],
 						[
 							'name' => 'resolveRelativeToRelated',
@@ -168,47 +211,37 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						
 						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
 						
-						$target = $args['target'];
-						if(!\Datamodel::tableExists($target)) { 
-							throw new \ServiceException(_t('Invalid target'));
-						}
-						if(!($linking_table = \Datamodel::getLinkingTableName($table, $target))) {
-							throw new \ServiceException(_t('Cannot resolve relationship'));
+						$targets = [];
+						if(is_array($args['targets'])) {
+							$targets = $args['targets'];
+						} elseif($target = $args['target']) {
+							$targets[] = [
+								'table' => $target,
+								'restrictToTypes' => $args['restrictToTypes'] ?? null,
+								'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes'] ?? null,
+								'bundles' => $args['bundles'] ?? [],
+								'start' => $args['start'] ?? null,
+								'limit' => $args['limit'] ?? null,
+								'includeMedia' => $args['includeMedia'] ?? null,
+								'mediaVersions' => $args['mediaVersions'] ?? null,
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+							];
+						} else {
+							throw new \ServiceException(_t('No target specified'));
 						}
 						
-						$target_pk = \Datamodel::primaryKey($target);
-						$rels = $rec->getRelatedItems($target, ['checkAccess' => $check_access, 'restrictToTypes' => $args['restrictToTypes'], 'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes']]);
-					
-						$rel_list = [];
-						if (sizeof($rel_ids = array_map(function($v) use ($resolve_to_related, $target_pk) { return $v[$resolve_to_related ? $target_pk : 'relation_id']; }, $rels)) > 0) {
-							$rel_types = array_values(array_map(function($v) {
-								return [
-									'relationship_typename' => $v['relationship_typename'],
-									'relationship_typecode' => $v['relationship_type_code'],
-									'relationship_type_id' => $v['relationship_type_id']
-								];
-							}, $rels));
-							$qr = caMakeSearchResult($resolve_to_related ? $target : $linking_table, $rel_ids);
-							while($qr->nextHit()) {
-								$r = $qr->getInstance();
-							
-								$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $args);
-								$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, []);
-								
-								$rel_type = array_shift($rel_types);
-								
-								if(is_array($rel_ids = $r->get("{$linking_table}.relation_id", ['returnAsArray' => true]))) {
-									foreach($rel_ids as $rel_id) {
-										$rel_list[] = array_merge([
-											'id' => $rel_id,
-											'table' => $linking_table,
-											'bundles' => $data
-										], $rel_type);
-									}
-								}
-							}
+						$rels_by_target = [];
+						foreach($targets as $t) {
+							$rels_by_target[] = \GraphQLServices\Helpers\Item\processTarget($rec, $table, $t, ['resolveRelativeToRelated' => $resolve_to_related]);
 						}
-						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'relationships' => $rel_list];
+						return [
+							'table' => $rec->tableName(), 
+							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 
+							'identifier' => $args['identifier'], 
+							'id' => $rec->getPrimaryKey(), 
+							'targets' => $rels_by_target,
+							'relationships' => $rels_by_target[0]['relationships'] ?? null
+						];
 					}
 				]
 			]

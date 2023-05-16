@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -282,10 +282,12 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			templateValues: ['label', 'id', 'type_id'],
+			templateValues: ['label', 'id', 'type_id', , 'typename', 'idno_sort'],
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		};
 
 		// only init bundle if there are no values, otherwise we do it after the content is loaded

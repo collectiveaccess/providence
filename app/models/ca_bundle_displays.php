@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1003,7 +1003,7 @@ if (!$pb_omit_editing_info) {
 			'format' => [
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 35, 'height' => 5,
+				'width' => '490px', 'height' => 20,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Display format'),
@@ -1045,7 +1045,7 @@ if (!$pb_omit_editing_info) {
 			'format' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 35, 'height' => 5,
+				'width' => '490px', 'height' => 20,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Display format'),
@@ -1089,7 +1089,7 @@ if (!$pb_omit_editing_info) {
 			'format' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 35, 'height' => 5,
+				'width' => '490px', 'height' => 20,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Display format'),
@@ -1249,7 +1249,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1326,7 +1326,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1360,7 +1360,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1417,7 +1417,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1480,7 +1480,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1524,7 +1524,7 @@ if (!$pb_omit_editing_info) {
 				'display_template' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1558,7 +1558,7 @@ if (!$pb_omit_editing_info) {
 				'display_template' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -1697,7 +1697,7 @@ if (!$pb_omit_editing_info) {
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 5,
+					'width' => '490px', 'height' => 20,
 					'takesLocale' => false,
 					'default' => '',
 					'label' => _t('Display format'),
@@ -2189,9 +2189,45 @@ if (!$pb_omit_editing_info) {
 	 */
 	public function getDisplayValue($po_result, $pn_placement_id, $options=null) {
 		if (!is_array($options)) { $options = []; }
+		
+		$vb_return_info =	caGetOption('returnInfo', $options, false);
+		
 		if (!is_numeric($pn_placement_id)) {
 			$vs_bundle_name = $pn_placement_id;
 			$va_placement = [];
+		} elseif($pn_placement_id < 0) {	// default display
+			$val = $bundle = null;
+			switch((int)$pn_placement_id) {
+				case -1:	// idno
+					if($instance = $po_result->getInstance()) {
+						$val = $po_result->get($bundle = $instance->tableName().'.'.$instance->getProperty('ID_NUMBERING_ID_FIELD'));
+					}
+					$bundle_type =  'intrinsic';
+					break;
+				case -2:	// display name	
+					if($instance = $po_result->getInstance()) {
+						$val = $po_result->get($bundle = $instance->tableName().'.preferred_labels');
+					}
+					$bundle_type =  'preferred_labels';
+					break;
+				default:
+					return null;
+					break;
+			}
+			if($vb_return_info) {
+				return [
+					'value' => $val,
+					'bundle' => $bundle,
+					'type' => $bundle_type,
+					'minCount' => 1,
+					'maxCount' => 1,
+					'count' => 1,
+					'ids' => $po_result->getPrimaryKey(),
+					'inlineEditable' => true
+				];
+			} else {
+				return $val;
+			}
 		} else {
 			$placements = $this->getPlacements(['settingsOnly' => true, 'omitEditingInfo' => true]);
 			$va_placement = $placements[$pn_placement_id];
@@ -2200,7 +2236,6 @@ if (!$pb_omit_editing_info) {
 		$va_settings = 		caGetOption('settings', $va_placement, [], array('castTo' => 'array'));
 		$o_request = 		caGetOption('request', $options, null);
 		
-		$vb_return_info =	caGetOption('returnInfo', $options, false);
 		$vb_include_nonprimary_media = caGetOption('show_nonprimary', $options, false);
 		
 		if(method_exists($po_result, 'filterNonPrimaryRepresentations')) { $po_result->filterNonPrimaryRepresentations(!$vb_include_nonprimary_media); }
@@ -2346,8 +2381,8 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			// policy passed for history tracking current value
-			// returnPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
-			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'] ?? null, 'returnPath' => $options['forReport']]));	
+			// returnTagWithPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
+			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'] ?? null, 'returnTagWithPath' => $options['forReport']]));	
 		}
 		
 		if (isset($options['purify']) && $options['purify']) {
@@ -2467,7 +2502,7 @@ if (!$pb_omit_editing_info) {
 		}
 		if(($options['maximumLength'] > 0) && (mb_strlen($vs_val) > $options['maximumLength'])) {
 			$doc = new DOMDocument();
-			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr($vs_val, 0, $options['maximumLength']));
+			@$doc->loadHTML('<?xml encoding="utf-8" ?>'.mb_substr(caEscapeForXML($vs_val), 0, $options['maximumLength']));
 			return $doc->saveHTML();
 		}
 		
@@ -2883,7 +2918,11 @@ if (!$pb_omit_editing_info) {
 			$label_display_field = $t_label ? $t_label->getDisplayField() : null;
 			foreach($display_list as $i => $display_item) {
 				$tmp = explode('.', $display_item['bundle_name']);
-				
+
+				if(!isset($tmp[1])){
+					$tmp[1] = null;
+				}
+
 				if (
 					(($tmp[0] === $label_table_name) && ($tmp[1] === $label_display_field))
 					||

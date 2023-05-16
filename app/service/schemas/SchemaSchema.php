@@ -206,7 +206,30 @@ class SchemaSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::listOf($subelementType),
 						'description' => 'Sub-elements'
 					]
-					
+				]
+			]),
+			$bundleValidType = new ObjectType([
+				'name' => 'BundleValid',
+				'description' => 'Result of bundle validity check',
+				'fields' => [
+					'name' => [
+						'type' => Type::string(),
+						'description' => 'Name of bundle'
+					],
+					'isValid' => [
+						'type' => Type::boolean(),
+						'description' => 'Is valid?'
+					]
+				]
+			]),
+			$bundleValidityListType = new ObjectType([
+				'name' => 'BundleValidityList',
+				'description' => 'List of bundle validity checks',
+				'fields' => [
+					'bundles' => [
+						'type' => Type::listOf($bundleValidType),
+						'description' => 'Bundles'
+					],
 				]
 			]),
 			$bundleListType = new ObjectType([

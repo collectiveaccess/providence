@@ -79,6 +79,7 @@ class DataMigrationUtils {
 	 * @see DataMigrationUtils::_getID()
 	 */
 	static function getEntityID($pa_entity_name, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
+		$pa_entity_name = ca_entity_labels::normalizeLabel($pa_entity_name, $options);
 		return DataMigrationUtils::_getID('ca_entities', $pa_entity_name, null, $pn_type_id, $locale_id, $pa_values, $options);
 	}
 	# -------------------------------------------------------
@@ -146,7 +147,7 @@ class DataMigrationUtils {
 		if (!is_array($options)) { $options = array(); }
 
 		$pb_output_errors 			= caGetOption('outputErrors', $options, false);
-		$pa_match_on 				= caGetOption('matchOn', $options, array('label', 'idno'), array('castTo' => "array"));
+		$pa_match_on 				= caGetOption('matchOn', $options, array('label', 'labels', 'idno'), array('castTo' => "array"));
 		$vn_parent_id 				= caGetOption('parent_id', $pa_values, false);
 
 		$vs_singular_label 			= (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
@@ -558,12 +559,12 @@ class DataMigrationUtils {
 					$bits = preg_split('![·]+!u', $text);
 					$forename = array_shift($bits);
 					$surname = array_shift($bits);
-					$suffix = join(' ', $bits);
+					$suffix = mb_substr(join(' ', $bits), 0, 100);
 				} elseif(preg_match('![ ]!', $text)) {	// if name has spaces in it split on that as surname-forname
 					$bits = preg_split('![ ]+!u', $text);
 					$surname = array_shift($bits);
 					$forename = array_shift($bits);
-					$suffix = join(' ', $bits);
+					$suffix = mb_substr(join(' ', $bits), 0, 100);
 				} else {						// assume first character is surname, everything else is forename
 					$surname = mb_substr($text, 0, 1);
 					$forename = mb_substr($text, 1);
@@ -579,7 +580,7 @@ class DataMigrationUtils {
 					$bits = preg_split('![ ·]+!u', $text);
 					$surname = array_shift($bits);
 					$forename = array_shift($bits);
-					$suffix = join(' ', $bits);
+					$suffix = mb_substr(join(' ', $bits), 0, 100);
 				} else {						// assume surname=displayname
 					$surname = $text;
 					$forename = '';
@@ -630,7 +631,10 @@ class DataMigrationUtils {
 		}
 		$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
 	
-		if ($suffix_for_name && $is_corporation) {
+		if($class === 'ORG') {
+			$name['displayname'] = $name['surname'] = $text;
+			$name['suffix'] = mb_substr($suffix_for_name, 0, 100);
+		} elseif ($suffix_for_name && $is_corporation) {
 			// is corporation
 			$tmp = preg_split('![, ]+!', trim($text));
 			if (strpos($tmp[0], '.') !== false) {
@@ -760,7 +764,6 @@ class DataMigrationUtils {
 				'suffix' => $name['suffix']
 			];
 		}
-		
 		return $name;
 	}
 	
@@ -805,8 +808,8 @@ class DataMigrationUtils {
 			}
 		}
 		
-		// Treat parentheticals at end of string as suffixes
-		if (preg_match("![,]*[ ]*([\(]+[^\)]*[ \)]+)$!i", $text, $matches)) {
+		// Treat parentheticals as suffixes
+		if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!si", $text, $matches) && (mb_strlen($matches[1]) <= 30)) {	// max parenthetical length = 30
 			$name['suffix'] = $matches[1];
 			$text = str_replace($matches[0], '', $text);
 		}
@@ -885,7 +888,7 @@ class DataMigrationUtils {
 										(caGetOption('skipExistingValues', $options, true) 
 										|| 
 										caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
+									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])]);
 						} else {
 							foreach($va_expanded_values as $va_v) {
 								if($source_value = caGetOption('_source', $va_v, null)) {
@@ -900,7 +903,7 @@ class DataMigrationUtils {
 											caGetOption('skipExistingValues', $options, true) 
 											|| 
 											caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])]);
+										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])]);
 							}
 						}
 					} else {
@@ -915,7 +918,7 @@ class DataMigrationUtils {
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
-								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'labels'])
+								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])
 							]);
 						}
 					}
@@ -958,6 +961,14 @@ class DataMigrationUtils {
 			}
 			foreach($va_labels as $va_label) {
 				$label_locale = (isset($va_label['locale']) && $va_label['locale']) ? $va_label['locale'] : $locale_id;
+				
+				$empty = true;
+				foreach($va_label as $k => $v) {
+					if(in_array($k, ['locale', 'locale_id'])) { continue; }
+					if(strlen(trim($v))) { $empty = false; break; }
+				}
+				
+				if($empty) { continue; } 
 				
 				$pt_instance->addLabel($va_label, $label_locale, null, false);
 
@@ -1067,7 +1078,7 @@ class DataMigrationUtils {
 		
 		$pb_output_errors 				= caGetOption('outputErrors', $options, false);
 		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, false);
-		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'idno', 'displayname'), array('castTo' => "array"));
+		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'displayname'), array('castTo' => "array"));
 		$ps_event_source 				= caGetOption('importEventSource', $options, '?'); 
 		$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $options, false);
 		$pb_ignore_parent			 	= caGetOption('ignoreParent', $options, false);
@@ -1389,7 +1400,15 @@ class DataMigrationUtils {
 			if ($o_log) { $o_log->logDebug(_t("%3Found existing %1 %2 in DataMigrationUtils::_getID()", $vs_table_display_name, $pa_label[$vs_label_display_fld], $log_reference_str)); }
 
 			$vb_attr_errors = false;
-			if (($vb_force_update = caGetOption('forceUpdate', $options, false)) || ($vb_return_instance = caGetOption('returnInstance', $options, false))) {
+			
+			$vb_force_update = caGetOption('forceUpdate', $options, false);
+			$vb_return_instance = caGetOption('returnInstance', $options, false);
+			$va_nonpreferred_labels = caGetOption("nonPreferredLabels", $options, null);
+			
+			if (
+				$vb_force_update || $vb_return_instance ||
+				(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels))
+			) {
 				if (!$t_instance = Datamodel::getInstanceByTableName($vs_table_class, false))  { return null; }
 				if (isset($options['transaction']) && $options['transaction'] instanceof Transaction) { $t_instance->setTransaction($options['transaction']); }
 				
@@ -1399,12 +1418,14 @@ class DataMigrationUtils {
 						if ($t_instance->hasElement($vs_element)) { $vb_has_attr = true; break; }
 					}
 				}
-				
-				if ($vb_return_instance || ($vb_force_update && $vb_has_attr)) {
+				if ($vb_return_instance || ($vb_force_update && $vb_has_attr) || is_array($va_nonpreferred_labels)) {
 					$vn_rc = $t_instance->load($vn_id);
 				} else {
 					$vn_rc = true;
 				}
+				
+				// TODO: when to run this?
+				DataMigrationUtils::_setNonPreferredLabels($t_instance, $locale_id, $options);
 				
 				if (!$vn_rc) {
 					if ($o_log) { $o_log->logError(_t("%4Could not load existing %1 with id %2 (%3) in DataMigrationUtils::_getID() [THIS SHOULD NOT HAPPEN]", $vs_table_display_name, $vn_id, $pa_label[$vs_label_display_fld], $log_reference_str)); }

@@ -84,11 +84,20 @@ class ReplicationService {
 			case 'hasaccess':
 				$va_return = self::hasAccess($po_request);
 				break;
+			case 'getguidsfortable':
+				$va_return = self::getGUIDsForTable($po_request);
+				break;
 			case 'setlastlogid':	
 				$va_return = self::setLastLogID($po_request);
 				break;
+			case 'getlastlogidsforguids':
+				$va_return = self::getLastLogIDsForGUIDs($po_request);
+				break;
+			case 'getpublicguids':
+				$va_return = self::getPublicGUIDs($po_request);
+				break;
 			default:
-				throw new Exception('Unknown endpoint');
+				throw new Exception('Unknown endpoint '.$ps_endpoint);
 
 		}
 		return $va_return;
@@ -536,6 +545,77 @@ class ReplicationService {
 			}
 		}
 		return $va_results;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get GUIDs for table. Used to get full list of guids from base tables such as ca_locales 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getGUIDsForTable($po_request) {
+		$table = $po_request->getParameter('table', pString);
+		
+		return ca_guids::guidsForTable($table, ['limit' => 500]);
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getLastLogIDsForGUIDs($po_request) {
+		if($po_request->getRequestMethod() === 'POST') { 
+			$guids = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$guids = explode(";", $po_request->getParameter('guids', pString));
+		}
+		if ((!is_array($guids) || !sizeof($guids)) && ($guid = $po_request->getParameter('guid', pString))) {
+			$guids = [$guid];
+		}
+		
+		$db = new Db();
+		$ret = array_map(function($v) use ($db) {
+			$qr = $db->query("SELECT max(log_id) log_id, logged_table_num, logged_row_id FROM ca_change_log WHERE logged_table_num = ? AND logged_row_id = ?", [$v['table_num'], $v['row_id']]);
+			if($qr->nextRow()) {
+				$v['log_id'] = $qr->get('log_id');	
+			} else {
+				$v['log_id'] = null;
+			}
+			return $v;
+		}, ca_guids::getInfoForGUIDs($guids));
+		return $ret;
+		
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getPublicGUIDs($po_request) {
+		$table = $po_request->getParameter('table', pString);
+		if(!sizeof($access = explode(";", $po_request->getParameter('access', pString)))) {
+			$access = [1];
+		}
+		
+		if(!($table_num = Datamodel::getTableNum($table))) {
+			return null;
+		}
+		
+		$pk = Datamodel::primaryKey($table);
+		
+		$db = new Db();
+		$qr = $db->query("
+			SELECT g.guid 
+			FROM ca_guids g
+			INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+			WHERE t.access IN (?)
+		", [$table_num, $access]);
+		
+		
+		return $qr->getAllFieldValues('guid');	
 	}
 	# -------------------------------------------------------
 }

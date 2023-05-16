@@ -117,7 +117,5 @@ $formats 				= $this->getVar('formats');
 			</div>
 	</div>
 </div>
-<?php
-    print caHTMLHiddenInput($t_item->primaryKey(), ['value' => $t_item->getPrimaryKey()]);
-?>
+<?= caHTMLHiddenInput($t_item->primaryKey(), ['value' => $t_item->getPrimaryKey()]); ?>
 </form>

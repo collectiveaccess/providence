@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@ class BrowseCache {
 	 * @return bool
 	 */
 	public function load($ps_cache_key, $pa_options=null) {
-		if (ExternalCache::contains($ps_cache_key, 'BrowseResults')) {
+		if (ExternalCache::contains($ps_cache_key, 'BrowseFacets') && ExternalCache::contains($ps_cache_key, 'BrowseResults')) {
 			$this->opa_browse = [];
 			$this->opa_browse['facets'] = ExternalCache::fetch($ps_cache_key, 'BrowseFacets');
 			$this->opa_browse['results'] = ExternalCache::fetch($ps_cache_key, 'BrowseResults');
@@ -279,9 +279,10 @@ class BrowseCache {
 	}
 	# ------------------------------------------------------
 	public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {
+		global $g_ui_locale;
 		if (!is_array($pa_params['criteria'] ?? null)) { $pa_params['criteria'] = array(); }
 
-		return md5(print_R($pa_params['context'] ?? '', true).'/'.print_R($pa_params['table_num'] ?? '', true).'/'.print_r(($pa_params['criteria'] ?? null), true).'/'.($pa_params['filterDeaccessionedRecords'] ?? '').'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
+		return md5($g_ui_locale.'/'.print_R($pa_params['context'] ?? '', true).'/'.print_R($pa_params['table_num'] ?? '', true).'/'.print_r(($pa_params['criteria'] ?? null), true).'/'.($pa_params['filterDeaccessionedRecords'] ?? '').'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all browses

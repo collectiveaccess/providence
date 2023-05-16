@@ -40,7 +40,7 @@ interface IWLPlugLanguageTranslation {
 	public function getDescription();
 	public function checkStatus();
 	
-	public function translate(string $text, string $to_lang, ?array $options=null) : string;
+	public function translate(string $text, string $to_lang, ?array $options=null) : ?string;
 	public function translateList(array $text, string $to_lang, ?array $options=null) : array;
 	
 	public function getSourceLanguages() : array;

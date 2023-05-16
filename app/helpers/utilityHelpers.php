@@ -4204,7 +4204,7 @@ function caFileIsIncludable($ps_file) {
 			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!", $t, $m)) {
 				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
 			} else {
-				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_LEFT);
+				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
 		}
 		$display_value = join(' ', $padded);
@@ -4901,6 +4901,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Alphabet designator or null. Designators are HIRAGANA|KATAKANA|HAN|HANGUL|CYRILLIC|GREEK|HEBREW|LATIN
 	 */
 	function caIdentifyAlphabet(string $text) : ?string {
+		if(!strlen($text)) { return null; }
 		if(preg_match_all('/\p{Hiragana}/u', $text, $result)) {
 			return 'HIRAGANA';
 		} elseif(preg_match_all('/\p{Katakana}/u', $text, $result)) {
@@ -4912,12 +4913,59 @@ function caFileIsIncludable($ps_file) {
 		} elseif(preg_match_all('/(\p{Cyrillic}+)/u', $text, $result)) {
 			return 'CYRILLIC';
 		} elseif(preg_match_all('/(\p{Latin}+)/u', $text, $result)) {
-			return 'GREEK';
-		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
-			return 'HEBREW';
-		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
 			return 'LATIN';
+		} elseif(preg_match_all('/(\p{Greek}+)/u', $text, $result)) {
+			return 'GREEK';
+		} elseif(preg_match_all('/(\p{Hebrew}+)/u', $text, $result)) {
+			return 'HEBREW';
 		}
 		return null;
     }
+	# ----------------------------------------
+	/**
+	 * Convert a bundle name from configuration/profile into a usable bundle code.
+	 * In older (pre v1.7.9) versions of CollectiveAccess  attribute editor, search form 
+	 * and display placements consisted of a "ca_attribute_" prefix + the code of the
+	 * attribute (Eg. ca_attribute_description). This syntax is still supported, but
+	 * standard <table>.<element code> (Eg. ca_objects.descriotion) is now encouraged
+	 * for consistency and readability. 
+	 *
+	 * This helper will convert a name into a code. By default names old style
+	 * names are stripped of their ca_attribute_ prefix and the remainder returned.
+	 * <table>.<element code> names are stripped of their table specifiers and returned. 
+	 * <table>.<element code>.<subelement code> names are stripped of both table and subelement
+	 * code, with only element code returned. All other name forms are returned without
+	 * modification.
+	 *
+	 * If the 'convertOldStyleNamesOnly' option is set only old-style names are converted,
+	 * with all other forms returned without modification. 
+	 *
+	 * If the 'includeTablePrefix' option is set table codes will be returned with element codes
+	 * for new-style names in the form <table>.<element code>. Sub-element codes are stripped 
+	 * regardless of how 'includeTablePrefix' is set.
+	 *
+	 * @param string $name
+	 * @param array $options Options include:
+	 *		convertOldStyleNamesOnly = only convert old style 'ca_attribute_' prefixed names. [Default is false]
+	 *		includeTablePrefix = Include table in returned value when converting new-style names .[Default is false]
+	 *
+	 * @return string
+	 */
+	function caConvertBundleNameToCode(string $name, ?array $options=null) : string {
+		if(substr($name, 0, 13) === 'ca_attribute_') {
+			return str_replace('ca_attribute_', '', $name);
+		}
+		if(!($options['convertOldStyleNamesOnly'] ?? false)) {
+			$tmp = explode('.', $name);
+			if(sizeof($tmp) > 1) {
+				if(Datamodel::tableExists($tmp[0])) {
+					if($options['includeTablePrefix'] ?? false) {
+						return $tmp[0].'.'.$tmp[1];
+					}
+					return $tmp[1];
+				}
+			}
+		}
+ 		return $name;
+	}
 	# ----------------------------------------

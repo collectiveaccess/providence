@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,6 +47,24 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 		
 		$item = array_shift(array_filter($schema, function($v) { return $v->name === 'Item';}));
 		
+		$schema[] = $resultSet = new ObjectType([
+			'name' => 'ResultSet',
+			'description' => 'List of result sets',
+			'fields' => [
+				'name' => [
+					'type' => Type::string(),
+					'description' => 'Name of result set'
+				],
+				'count' => [
+					'type' => Type::int(),
+					'description' => 'Number of items found'
+				],
+				'result' => [
+					'type' => Type::listOf($item),
+					'description' => 'Items found'
+				]
+			]
+		]);
 		$schema[] = $tableTypeType = new ObjectType([
 			'name' => 'Result',
 			'description' => 'Search result',
@@ -63,8 +81,12 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 					'type' => Type::int(),
 					'description' => 'Number of items found'
 				],
-				'results' => [
+				'result' => [
 					'type' => Type::listOf($item),
+					'description' => 'Items found'
+				],
+				'results' => [
+					'type' => Type::listOf($resultSet),
 					'description' => 'Items found'
 				]
 			]
@@ -233,6 +255,113 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 				]
 			]
 		]);
+		
+		$schema[] = $searchesInputType = new InputObjectType([
+				'name' => 'SearchesInput',
+				'description' => '.',
+				'fields' => [
+					[
+						'name' => 'table',
+						'type' => Type::string(),
+						'description' => _t('Table to search')
+					],
+					[
+						'name' => 'name',
+						'type' => Type::string(),
+						'description' => _t('Name of search')
+					],
+					[
+						'name' => 'search',
+						'type' => Type::string(),
+						'description' => _t('Search expression')
+					],
+					[
+						'name' => 'filterByAncestors',
+						'type' => Type::listOf($ancestorCriteriaList),
+						'description' => _t('Filter results by ancestors')
+					],
+					[
+						'name' => 'checkAccess',
+						'type' => Type::listOf(Type::int()),
+						'description' => _t('Filter results by access values')
+					],
+					[
+						'name' => 'bundles',
+						'type' => Type::listOf(Type::string()),
+						'description' => _t('Bundles to return')
+					],
+					[
+						'name' => 'start',
+						'type' => Type::int(),
+						'description' => _t('Start index'),
+						'defaultValue' => 0
+					],
+					[
+						'name' => 'limit',
+						'type' => Type::int(),
+						'description' => _t('Maximum number of records to return'),
+						'defaultValue' => null
+					],
+					[
+						'name' => 'restrictToTypes',
+						'type' => Type::listOf(Type::string()),
+						'description' => _t('Type restrictions')
+					]
+				]
+			]);
+		$schema[] = $findsInputType = new InputObjectType([
+				'name' => 'FindsInput',
+				'description' => '.',
+				'fields' => [
+					[
+						'name' => 'table',
+						'type' => Type::string(),
+						'description' => _t('Table to search')
+					],
+					[
+						'name' => 'name',
+						'type' => Type::string(),
+						'description' => _t('Name of search')
+					],
+					[
+						'name' => 'criteria',
+						'type' => Type::listOf($criterionType),
+						'description' => _t('Search criteria')
+					],
+					[
+						'name' => 'filterByAncestors',
+						'type' => Type::listOf($ancestorCriteriaList),
+						'description' => _t('Filter results by ancestors')
+					],
+					[
+						'name' => 'checkAccess',
+						'type' => Type::listOf(Type::int()),
+						'description' => _t('Filter results by access values')
+					],
+					[
+						'name' => 'bundles',
+						'type' => Type::listOf(Type::string()),
+						'description' => _t('Bundles to return')
+					],
+					[
+						'name' => 'start',
+						'type' => Type::int(),
+						'description' => _t('Start index'),
+						'defaultValue' => 0
+					],
+					[
+						'name' => 'limit',
+						'type' => Type::int(),
+						'description' => _t('Maximum number of records to return'),
+						'defaultValue' => null
+					],
+					[
+						'name' => 'restrictToTypes',
+						'type' => Type::listOf(Type::string()),
+						'description' => _t('Type restrictions')
+					]
+				]
+			]);
 		
 		return $schema;
 	}

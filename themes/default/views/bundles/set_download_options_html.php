@@ -95,6 +95,11 @@ $url = caNavUrl($this->request, 'manage', 'sets', 'setEditor/ExportSetItems', ['
 		var s = jQuery('#caSummaryDisplaySelector').val();
 		var x = jQuery('#caSummaryFormatSelector').val();
 		
+		if(s.match(/^_/)) {
+			x = s;
+			s = -1;
+		}
+		
 		var f = jQuery('<form id="caTempExportForm" action="<?= $url; ?>/export_format/' + x + '/display_id/' + s + '" method="post" style="display:none;"></form>');
 		jQuery('body #caTempExportForm').replaceWith(f).hide();
 		

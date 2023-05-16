@@ -33,6 +33,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
+define('__CA_ITEM_SERVICE_RELATIONSHIP_TARGET_MAXIMUM_DEPTH__', 3);
+
 /**
  * Ensure all checkAccess values are valid
  */
@@ -110,14 +112,14 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				
 				$id = $sresult->getPrimaryKey();
 				
-				$ancestor_ids = $rec->getHierarchyAncestors($id, ['idsOnly' => true, 'checkAccess' => $check_access]);
+				$ancestor_ids = $rec->getHierarchyAncestors($id, ['idsOnly' => true, 'checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)]);
 				if(is_array($ancestor_ids) && sizeof($ancestor_ids)) {
 					$qr_ancestors = caMakeSearchResult($table, $ancestor_ids);
 					while($qr_ancestors->nextHit()) {
 						$af = array_shift($ancestor_filter_list);	
 						if(is_array($af['criteria'])) {
 							foreach($af['criteria'] as $c) {
-								$cv = $qr_ancestors->get($c['name'], ['checkAccess' => $check_access]);
+								$cv = $qr_ancestors->get($c['name'], ['checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)]);
 								if(!compare($c['operator'], $cv, $c['value'])) { continue(3); }
 							}
 						}
@@ -139,8 +141,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				
 				$values = [];
 				
-				$d = $sresult->get($f, array_merge(['checkAccess' => $check_access, 'returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], $pt['options']));
-	
+				$d = $sresult->get($f, array_merge(['checkAccess' => $check_access, 'returnWithStructure' => true, 'useLocaleCodes' => true, 'returnAllLocales' => true, 'convertCodesToIdno' => true, 'includeValueIDs' => true], ['primaryIDs' => caGetOption('primaryIDs', $options, null)], $pt['options']));
+
 				if(!$is_template && (!is_array($d) || (sizeof($d) === 0))) { continue; }
 		
 				if($is_template) {
@@ -151,7 +153,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							'dataType' => "Text",
 							'values' => [
 								[
-									'value' => $sresult->getWithTemplate($f, ['checkAccess' => $check_access]),
+									'value' => $sresult->getWithTemplate($f, ['checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)]),
 									'locale' => null,
 									'subvalues' => null,
 									'id' => null,
@@ -506,6 +508,102 @@ function itemSchemaDefinitions() {
 				]
 			]
 		]),
+		$mediaVersionType = new ObjectType([
+			'name' => 'MediaVersionType',
+			'description' => 'Data for specific version of a media item',
+			'fields' => [
+				'version' => [
+					'type' => Type::string(),
+					'description' => 'Media version'
+				],
+				'url' => [
+					'type' => Type::string(),
+					'description' => 'Media URL'
+				],
+				'tag' => [
+					'type' => Type::string(),
+					'description' => 'Media tag'
+				],
+				'mimetype' => [
+					'type' => Type::string(),
+					'description' => 'Media MIME type'
+				],
+				'mimetype' => [
+					'type' => Type::string(),
+					'description' => 'Media MIME type'
+				],
+				'width' => [
+					'type' => Type::int(),
+					'description' => 'Media width (in pixels)'
+				],
+				'height' => [
+					'type' => Type::int(),
+					'description' => 'Media height (in pixels)'
+				],
+				'duration' => [
+					'type' => Type::int(),
+					'description' => 'Media duration (in seconds)'
+				],
+				'filesize' => [
+					'type' => Type::int(),
+					'description' => 'Media filesize (in bytes)'
+				]
+			]
+		]),
+		$mediaItemType = new ObjectType([
+			'name' => 'MediaItem',
+			'description' => 'Data for a media item',
+			'fields' => [
+				'id' => [
+					'type' => Type::string(),
+					'description' => 'Media representation id'
+				],
+				'idno' => [
+					'type' => Type::string(),
+					'description' => 'Media idno'
+				],
+				'name' => [
+					'type' => Type::string(),
+					'description' => 'Name of media'
+				],
+				'type' => [
+					'type' => Type::string(),
+					'description' => 'Type of media'
+				],
+				'versions' => [
+					'type' => Type::listOf($mediaVersionType),
+					'description' => 'Media versions'
+				],
+				'mimetype' => [
+					'type' => Type::string(),
+					'description' => 'Media MIME type'
+				],
+				'originalFilename' => [
+					'type' => Type::string(),
+					'description' => 'Original filename of media'
+				],
+				'width' => [
+					'type' => Type::int(),
+					'description' => 'Media width (in pixels)'
+				],
+				'height' => [
+					'type' => Type::int(),
+					'description' => 'Media height (in pixels)'
+				],
+				'duration' => [
+					'type' => Type::int(),
+					'description' => 'Media duration (in seconds)'
+				],
+				'filesize' => [
+					'type' => Type::int(),
+					'description' => 'Media filesize (in bytes)'
+				],
+				'isPrimary' => [
+					'type' => Type::boolean(),
+					'description' => 'Is primary media?'
+				],
+			]
+		]),
 		$itemType = new ObjectType([
 			'name' => 'Item',
 			'description' => 'A record',
@@ -524,7 +622,11 @@ function itemSchemaDefinitions() {
 				],
 				'bundles' => [
 					'type' => Type::listOf($bundleValueListType),
-					'description' => ''
+					'description' => 'Data for related item'
+				],
+				'media' => [
+					'type' => Type::listOf($mediaItemType),
+					'description' => 'Media for related item'
 				],
 				'relationship_type_id' => [
 					'type' => Type::string(),
@@ -540,6 +642,25 @@ function itemSchemaDefinitions() {
 				],
 			]
 		]),
+		// $targetList = new ObjectType([
+// 			'name' => 'TargetList',
+// 			'description' => 'A list of related items',
+// 			'fields' => [
+// 				'name' => [
+// 					'type' => Type::string(),
+// 					'description' => 'Name of target'
+// 				],
+// 				'table' => [
+// 					'type' => Type::string(),
+// 					'description' => 'Related table'
+// 				],
+// 				'relationships' => [
+// 					'type' => Type::listOf($itemType),
+// 					'description' => 'List of related records'
+// 				]
+// 			]
+// 		]),
+		$targetList = _targetListType(0, $bundleValueListType, $mediaItemType),
 		$relationshipList = new ObjectType([
 			'name' => 'RelationshipList',
 			'description' => 'A list of relationships',
@@ -556,14 +677,146 @@ function itemSchemaDefinitions() {
 					'type' => Type::string(),
 					'description' => 'Item identifier'
 				],
+				'targets' => [
+					'type' => Type::listOf($targetList),
+					'description' => ''
+				],
 				'relationships' => [
 					'type' => Type::listOf($itemType),
-					'description' => ''
+					'description' => 'List of related records'
 				]
 			]
-		])
-		
+		]),
+		$targetListItem = _targetListInputType(0)
 	];
+}
+
+/**
+ *
+ */
+function _targetListType(int $level=0, $bundleValueListType, $mediaItemType) : ObjectType {
+	$fields = [
+		'id' => [
+			'type' => Type::int(),
+			'description' => 'ID of item'
+		],
+		'table' => [
+			'type' => Type::string(),
+			'description' => 'Table of item'
+		],
+		'idno' => [
+			'type' => Type::string(),
+			'description' => 'Item identifier'
+		],
+		'bundles' => [
+			'type' => Type::listOf($bundleValueListType),
+			'description' => 'Data for related item'
+		],
+		'media' => [
+			'type' => Type::listOf($mediaItemType),
+			'description' => 'Media for related item'
+		],
+		'relationship_type_id' => [
+			'type' => Type::string(),
+			'description' => 'Relationship type_id'
+		],
+		'relationship_typename' => [
+			'type' => Type::string(),
+			'description' => 'Relationship type name'
+		],
+		'relationship_typecode' => [
+			'type' => Type::string(),
+			'description' => 'Relationship type code'
+		]
+	];
+	if($level < __CA_ITEM_SERVICE_RELATIONSHIP_TARGET_MAXIMUM_DEPTH__) {
+		$fields['targets'] = [
+			'type' => Type::listOf(_targetListType($level + 1, $bundleValueListType, $mediaItemType)),
+			'description' => 'Targets'
+		];
+	}
+	$itemType = new ObjectType([
+		'name' => str_repeat("Sub", $level + 1).'Item',
+		'description' => 'A record',
+		'fields' => $fields
+	]);
+	return new ObjectType([
+		'name' => str_repeat("Sub", $level).'TargetList',
+		'description' => 'A list of related items',
+		'fields' => [
+			'name' => [
+				'type' => Type::string(),
+				'description' => 'Name of target'
+			],
+			'table' => [
+				'type' => Type::string(),
+				'description' => 'Related table'
+			],
+			'relationships' => [
+				'type' => Type::listOf($itemType),
+				'description' => 'List of related records'
+			]
+		]
+	]);
+}
+
+/**
+ *
+ */
+function _targetListInputType(int $level=0) : InputObjectType {
+	$fields = [
+		'name' => [
+			'type' => Type::string(),
+			'description' => 'Name of target'
+		],
+		'table' => [
+			'type' => Type::string(),
+			'description' => 'Related table'
+		],
+		'restrictToTypes' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'Restrict relationships to enumerated related record types'
+		],
+		'restrictToRelationshipTypes' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'Restrict relationships to enumerated relationship types'
+		],
+		'start' => [
+			'type' => Type::int(),
+			'description' => 'Zero-based start index for returned relationships. If omitted starts from the first relationship.'
+		],
+		'limit' => [
+			'type' => Type::int(),
+			'description' => 'Maximum number of relationships to return. If omitted all relationships are returned.'
+		],
+		'bundles' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => _t('Bundles to return.')
+		],
+		'includeMedia' => [
+			'type' => Type::boolean(),
+			'description' => 'Include representations linked to related items?'
+		],
+		'mediaVersions' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'If including representations, which versions to return'
+		],
+		'restrictMediaToTypes' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => 'If including representations, which restrict to specified types'
+		]
+	];
+	if($level < __CA_ITEM_SERVICE_RELATIONSHIP_TARGET_MAXIMUM_DEPTH__) {
+		$fields['targets'] = [
+			'type' => Type::listOf(_targetListInputType($level + 1)),
+			'description' => 'Targets'
+		];
+	}
+	return new InputObjectType([
+		'name' => str_repeat("Sub", $level).'TargetListInputItem',
+		'description' => 'A list of targets (table + options) to return relationships for',
+		'fields' => $fields
+	]);
 }
 
 /**

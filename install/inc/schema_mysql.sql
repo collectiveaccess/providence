@@ -2918,6 +2918,7 @@ create table ca_entity_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   checked                        tinyint unsigned               not null default 0,
    
    primary key (label_id),
    constraint fk_ca_entity_labels_type_id foreign key (type_id)
@@ -2944,6 +2945,7 @@ create unique index u_all on ca_entity_labels
 create index i_locale_id on ca_entity_labels(locale_id);
 create index i_type_id on ca_entity_labels(type_id);
 create index i_name_sort on ca_entity_labels(name_sort(128));
+create index i_checked on ca_entity_labels(checked);
 create index i_effective_date ON ca_entity_labels(sdatetime, edatetime);
 
 
@@ -6890,6 +6892,7 @@ create table ca_object_checkouts (
    checkout_date			int unsigned null,
    due_date					int unsigned null,
    return_date				int unsigned null,
+   return_confirmation_date	int unsigned null,
    checkout_notes			text not null,
    return_notes				text not null,
    last_sent_coming_due_email int unsigned null,
@@ -6905,6 +6908,7 @@ create table ca_object_checkouts (
    index i_checkout_date (checkout_date),
    index i_due_date (due_date),
    index i_return_date (return_date),
+   index i_return_confirmation_date (return_confirmation_date),
    index i_last_sent_coming_due_email (last_sent_coming_due_email),
    index i_last_reservation_available_email (last_reservation_available_email),
    
@@ -7833,4 +7837,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (182, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (184, unix_timestamp());

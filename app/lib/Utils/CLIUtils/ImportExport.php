@@ -438,6 +438,11 @@ trait CLIUtilsImportExport {
 			CLIUtils::addError(_t('You must specify a mapping'));
 			return false;
 		}
+		if ($dataset = (int)$po_opts->getOption('dataset')) {
+			if($dataset < 0) { 
+				$dataset = 0;
+			}
+		}
 		if (!($t_mapping = ca_data_importers::mappingExists($vs_mapping))) {
 			CLIUtils::addError(_t('Mapping %1 does not exist', $vs_mapping));
 			return false;
@@ -473,7 +478,8 @@ trait CLIUtilsImportExport {
 		$t_importer = new ca_data_importers();
 		if (!$t_importer->importDataFromSource($vs_data_source, $vs_mapping, 
 			[	'dryRun' => $vb_dryrun, 'noTransaction' => $vb_direct, 
-				'format' => $vs_format, 'showCLIProgressBar' => true, 
+				'format' => $vs_format, 'showCLIProgressBar' => true,
+				'dataset' => $dataset,
 				'logDirectory' => $vs_log_dir, 'logLevel' => $po_opts->getOption('log-level'), 
 				'limitLogTo' => $po_opts->getOption('limit-log-to'), 
 				'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
@@ -496,6 +502,7 @@ trait CLIUtilsImportExport {
 	public static function import_dataParamList() {
 		return array(
 			"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
+			"dataset|w=s" => _t('Dataset to import. For XLSX files this is equivalent to worksheets. Dataset indexes are zero-based. For example, in Excel to import the first worksheet set this option to zero (or omit it, as the defalt is zero).'),
 			"mapping|m=s" => _t('Mapping to import data with.'),
 			"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 			"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
@@ -817,46 +824,6 @@ trait CLIUtilsImportExport {
 	public static function load_ULANHelp() {
 		return _t("Loads the ULAN from a Getty-provided XML file.");
 	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_data($po_opts=null) {
-		require_once(__CA_LIB_DIR__.'/Sync/Replicator.php');
-
-		$o_replicator = new Replicator();
-		$o_replicator->replicate();
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataParamList() {
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataUtilityClass() {
-		return _t('Import/Export');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataShortHelp() {
-		return _t("Replicate data from one CollectiveAccess system to another.");
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function replicate_dataHelp() {
-		return _t("Replicates data in one CollectiveAccess instance based upon data in another instance, subject to configuration in replication.conf.");
-	}
-
-
 	# -------------------------------------------------------
 	/**
 	 * Load metadata dictionary

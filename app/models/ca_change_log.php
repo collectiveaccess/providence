@@ -586,9 +586,9 @@ class ca_change_log extends BaseModel {
 										$va_snapshot[$vs_fld . '_guid'] = $vs_left_guid;
 
 										// don't sync relationships involving deleted records
-										//if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
-										//	continue 3;
-										//}
+										if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
+											continue 3;
+										}
 									}
 
 									if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
@@ -596,9 +596,9 @@ class ca_change_log extends BaseModel {
 										$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
 
 										// don't sync relationships involving deleted records
-										//if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
-										//	continue 3;
-										//}
+										if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+											continue 3;
+										}
 									}
 								}
 								if (!isset($va_snapshot[$vs_fld . '_guid'])) { $va_snapshot[$vs_fld . '_guid'] = null; }
@@ -615,7 +615,17 @@ class ca_change_log extends BaseModel {
 								// handle 1:n foreign keys like ca_representation_annotations.representation_id
 								// @todo: don't use hardcoded field names!? -- another case would be ca_objects.lot_id
 								if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
-									$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
+									$guid = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
+									$va_snapshot['representation_guid'] = ca_guids::isDeleted($guid) ? null : $guid;
+								}
+								if(($t_instance instanceof \ca_objects) && ($vs_fld == 'lot_id')) {
+									$guid = ca_guids::getForRow(Datamodel::getTableNum('ca_object_lots'), $vm_val);
+									
+									if(ca_guids::isDeleted($guid)) {
+										$va_snapshot['lot_id_guid'] = $va_snapshot['lot_id'] = null;
+									} else {
+										$va_snapshot['lot_id_guid'] = $guid;
+									}
 								}
 							} elseif($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 								$va_snapshot[$vs_fld . '_guid'] = null;
