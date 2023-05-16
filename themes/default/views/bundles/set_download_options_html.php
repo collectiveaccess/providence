@@ -93,9 +93,9 @@ $url = caNavUrl($this->request, 'manage', 'sets', 'setEditor/ExportSetItems', ['
 	function caGetExport() {
 		caSummaryDownloadOptionsPanel.hidePanel();
 		var s = jQuery('#caSummaryDisplaySelector').val();
-		if(s.match(/^[\d]+$/)) { s = '_display_' + s; }	// TODO: get rid of this?
+		var x = jQuery('#caSummaryFormatSelector').val();
 		
-		var f = jQuery('<form id="caTempExportForm" action="<?= $url; ?>/export_format/' + s + '" method="post" style="display:none;"></form>');
+		var f = jQuery('<form id="caTempExportForm" action="<?= $url; ?>/export_format/' + x + '/display_id/' + s + '" method="post" style="display:none;"></form>');
 		jQuery('body #caTempExportForm').replaceWith(f).hide();
 		
 		jQuery('#caSummaryDownloadOptionsPanelOptions').find('select,textarea,input').each(function(k, v) {
