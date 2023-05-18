@@ -4349,9 +4349,9 @@ if (!$vb_batch) {
 			}
 		}
 	}	
-		// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
-		// This ensures at least one label is present for the record. If no labels are present then the 
-		// record may not be found in queries
+	// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
+	// This ensures at least one label is present for the record. If no labels are present then the 
+	// record may not be found in queries
 	if ($this->getProperty('LABEL_TABLE_NAME')) {
 		if ($vb_error_inserting_pref_label || !$this->addDefaultLabel($vn_new_label_locale_id)) {
 			if (!$vb_error_inserting_pref_label) { $po_request->addActionErrors($this->errors(), 'preferred_labels'); }
