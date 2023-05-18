@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -345,6 +345,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					$va_attributes = $t_instance->getAttributesByElement($va_parts[1]);
 
 					$va_source_map = caGetOption('sourceMap', $va_rule, null);
+					$omit_from_isset_check = caGetOption('omitFromIsSetCheck', $va_rule, []);
 
 					if (($datatype == 0) && $vs_source) { // full container clone using "source" rather than template
 						if (is_array($source_values = $t_instance->get($vs_source, ['returnWithStructure' => true]))) {
@@ -352,9 +353,13 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							$isset = false;
 							foreach($va_attributes as $attr) {
 								foreach($attr->getValues() as $v) {
-									if(is_array($va_source_map) && sizeof($va_source_map) && !array_key_exists($v->getElementCode(), $va_source_map)) { continue; }
+									$element_code = $v->getElementCode();
+									$element_value = trim($v->getDisplayValue());
+									
+									if(in_array($element_code, $omit_from_isset_check, true)) { continue; }
+									if(is_array($va_source_map) && sizeof($va_source_map) && !array_key_exists($element_code, $va_source_map)) { continue; }
 
-									if (strlen($v->getDisplayValue()) > 0) { $isset = true; break(2); }
+									if (strlen($element_value) > 0) { $isset = true; break(2); }
 								}
 							}
 							if (($vs_mode == 'addifempty') && $isset) { continue; }
@@ -519,9 +524,10 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					if (!($t_label = Datamodel::getInstanceByTableName($t_instance->getLabelTableName(), true))) { continue; }
 					if(!$t_label->hasField($va_parts[2])) { continue; }
 
-					switch($t_instance->getLabelCount($vb_preferred)) {
+					$c = $t_instance->getLabelCount($vb_preferred, $g_ui_locale_id, ['omitBlanks' => true]);
+					switch($c) {
 						case 0: // if no value exists, always add it (ignoring mode)
-							$t_instance->addLabel(array(
+							$t_instance->replaceLabel(array(	// use replaceLabel() in case a blank label exists
 								$va_parts[2] => $vs_value,
 							), $g_ui_locale_id, null, $vb_preferred);
 							break;

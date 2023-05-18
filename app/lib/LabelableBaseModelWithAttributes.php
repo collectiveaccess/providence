@@ -2269,7 +2269,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$omit_blanks_sql = '';
 		if (caGetOption('omitBlanks', $options, false)) {
 			$omit_blanks_sql = " AND (l.".$this->getLabelDisplayField()." <> ?)";
-			$va_params[] = '['._t('BLANK').']';
+			$va_params[] = '['.caGetBlankLabelText($this->tableName()).']';
 		}
 		
 		if (!$t_label->hasField('is_preferred')) { 
@@ -2331,6 +2331,28 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		return true;
+	}
+	# ------------------------------------------------------------------
+	/** 
+	 * Check if currently loaded row uses a default label 
+	 *
+	 * @param int $pn_locale_id Locale id to use for default label. If not set the user's current locale is used.
+	 * @return boolean True if only label for the record is a default label
+	 */
+	public function isDefaultLabel($locale_id=null) {
+		global $g_ui_locale_id;
+		
+		if(!is_null($locale_id) && !is_numeric($locale_id)) {
+			$locale_id = ca_locales::codeToID($locale_id);
+		}
+		if(!$locale_id) { $locale_id = $g_ui_locale_id; }
+		
+		$table = $this->tableName();
+		$label_table = $this->getLabelTableName();
+		if($label_table::find([$this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']', 'locale_id' => $locale_id], ['returnAs' => 'count']) > 0) {
+			return true;
+		}
+		return false;
 	}
 	# ------------------------------------------------------------------
 	/** 
