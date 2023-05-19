@@ -445,16 +445,29 @@ class BaseFindController extends ActionController {
 		//
 		// PDF output
 		//
-		$va_template_info = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
-		if (!is_array($va_template_info)) {
+		$tinfo = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
+		if (!is_array($tinfo)) {
 			$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genPDF()");
 			return;
+		}
+		
+		$this->view->setVar('template_info', $tinfo);
+		if(is_array($tinfo) && is_array($tinfo['params'])) {
+			$values = [];
+			foreach($tinfo['params'] as $n => $p) {
+				if((bool)$p['multiple'] ?? false) {
+					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pArray));
+				} else {
+					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
+				}
+			}
+			Session::setVar("print_labels_options_{$m[2]}", $values);
 		}
 		
 		try {
 			$this->view->setVar('title', $ps_title);
 			
-			$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
+			$this->view->setVar('base_path', $vs_base_path = pathinfo($tinfo['path'], PATHINFO_DIRNAME).'/');
 			$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 		
 			$o_pdf = new PDFRenderer();
@@ -462,18 +475,18 @@ class BaseFindController extends ActionController {
 		
 			
 			// render labels
-			$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
-			$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');
+			$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $tinfo, null), 'mm');
+			$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $tinfo, null), 'mm');
 			
-			$vn_top_margin = 			caConvertMeasurement(caGetOption('marginTop', $va_template_info, null), 'mm');
-			$vn_bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $va_template_info, null), 'mm');
-			$vn_left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $va_template_info, null), 'mm');
-			$vn_right_margin = 			caConvertMeasurement(caGetOption('marginRight', $va_template_info, null), 'mm');
+			$vn_top_margin = 			caConvertMeasurement(caGetOption('marginTop', $tinfo, null), 'mm');
+			$vn_bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $tinfo, null), 'mm');
+			$vn_left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $tinfo, null), 'mm');
+			$vn_right_margin = 			caConvertMeasurement(caGetOption('marginRight', $tinfo, null), 'mm');
 			
-			$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $va_template_info, null), 'mm');
-			$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $va_template_info, null), 'mm');
+			$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $tinfo, null), 'mm');
+			$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $tinfo, null), 'mm');
 			
-			$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+			$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $tinfo, 'letter'), 'mm', caGetOption('pageOrientation', $tinfo, 'portrait'));
 			$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 			
 			$vn_label_count = 0;
@@ -483,24 +496,24 @@ class BaseFindController extends ActionController {
 			
 			$this->view->setVar('pageWidth', "{$vn_page_width}mm");
 			$this->view->setVar('pageHeight', "{$vn_page_height}mm");				
-			$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
-			$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
-			$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
-			$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+			$this->view->setVar('marginTop', caGetOption('marginTop', $tinfo, '0mm'));
+			$this->view->setVar('marginRight', caGetOption('marginRight', $tinfo, '0mm'));
+			$this->view->setVar('marginBottom', caGetOption('marginBottom', $tinfo, '0mm'));
+			$this->view->setVar('marginLeft', caGetOption('marginLeft', $tinfo, '0mm'));
 			
 			
 			$vs_content = $this->render("pdfStart.php");
 			
 			
 			$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
-			$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
+			$va_tag_list = $this->getTagListForView($tinfo['path']);				// get list of tags in view
 			
 			$vn_page_count = 0;
 			while($po_result->nextHit()) {
-				caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+				caDoPrintViewTagSubstitution($this->view, $po_result, $tinfo['path'], array('checkAccess' => $this->opa_access_values));
 				
 				$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
-				$vs_content .= $this->render($va_template_info['path']);
+				$vs_content .= $this->render($tinfo['path']);
 				$vs_content .= "</div>\n";
 				
 				$vn_label_count++;
@@ -533,8 +546,8 @@ class BaseFindController extends ActionController {
 			}
 			
 			$vs_content .= $this->render("pdfEnd.php");
-			$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'labels.pdf')));
+			$o_pdf->setPage(caGetOption('pageSize', $tinfo, 'letter'), caGetOption('pageOrientation', $tinfo, 'portrait'));
+			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $tinfo, 'labels.pdf')));
 
 			$vb_printed_properly = true;
 			exit;
@@ -599,12 +612,12 @@ class BaseFindController extends ActionController {
 					$vs_mimetype = "text/tab-separated-values";
 				default:
 					if(substr($ps_output_type, 0, 5) === '_docx') {
-						$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
-						if (!is_array($va_template_info)) {
+						$tinfo = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
+						if (!is_array($tinfo)) {
 							$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
 							return;
 						}
-						$this->render($va_template_info['path']);
+						$this->render($tinfo['path']);
 						return;	
 					}
 					break;
@@ -655,35 +668,48 @@ class BaseFindController extends ActionController {
 				$this->_getDisplayList((int)$va_matches[1]);
 				$ps_output_type = '_pdf_display';
 			}
-			$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 5));
+			$tinfo = caGetPrintTemplateDetails('results', substr($ps_output_type, 5));
 			
-			if (!is_array($va_template_info)) {
+			$this->view->setVar('template_info', $tinfo);
+			if(is_array($tinfo) && is_array($tinfo['params'])) {
+				$values = [];
+				foreach($tinfo['params'] as $n => $p) {
+					if((bool)$p['multiple'] ?? false) {
+						$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pArray));
+					} else {
+						$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
+					}
+				}
+				Session::setVar("print_results_options_{$m[2]}", $values);
+			}
+			
+			if (!is_array($tinfo)) {
 				$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
 				return;
 			}
 			
 			try {
-				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($tinfo['path'], PATHINFO_DIRNAME).'/');
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 				
 				$o_pdf = new PDFRenderer();
 				
-				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $tinfo, 'letter'), 'mm', caGetOption('pageOrientation', $tinfo, 'portrait'));
 				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 			
 				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
 				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
-				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
-				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
-				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
-				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+				$this->view->setVar('marginTop', caGetOption('marginTop', $tinfo, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $tinfo, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $tinfo, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $tinfo, '0mm'));
 				
 				$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
-				$vs_content = $this->render($va_template_info['path']);
+				$vs_content = $this->render($tinfo['path']);
 				
-				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+				$o_pdf->setPage(caGetOption('pageSize', $tinfo, 'letter'), caGetOption('pageOrientation', $tinfo, 'portrait'), caGetOption('marginTop', $tinfo, '0mm'), caGetOption('marginRight', $tinfo, '0mm'), caGetOption('marginBottom', $tinfo, '0mm'), caGetOption('marginLeft', $tinfo, '0mm'));
 				
-				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $va_template_info, 'export_results.pdf')));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $tinfo, 'export_results.pdf')));
 				exit;
 			} catch (Exception $e) {
 				die($e->getMessage());
@@ -1241,6 +1267,33 @@ class BaseFindController extends ActionController {
 		$this->view->setVar('placement_id', $placement_id);
 				
 		$this->render("Results/ajax_results_editable_complex_data_form_html.php");
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generates options form for printable template
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function PrintSummaryOptions(?array $options=null) {
+		$type = $this->request->getParameter('type', pString);
+		if(!in_array($type, ['results', 'labels'], true)) { $type = 'results'; }
+		$form = $this->request->getParameter('form', pString);
+		
+		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
+			throw new ApplicationException(_t('Invalid template'));
+		}
+		$values = Session::getVar("print_results_options_{$m[2]}");
+		
+		$form_options = caEditorPrintParametersForm($type, $m[2], $values);
+		
+		$this->view->setVar('form', $m[2]);
+		$this->view->setVar('options', $form_options);
+		
+		if(sizeof($form_options) === 0) {
+			$this->response->setHTTPResponseCode(204, _t('No options available'));
+		}
+		
+		$this->render("Results/ajax_print_options_form_html.php");
 	}
 	# ------------------------------------------------------------------
 	/**
