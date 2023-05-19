@@ -667,8 +667,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
                         }
                         $va_properties['options'] = $va_select_opts;
                     } 
-                } elseif($va_properties['showLocaleList'] ?? false) {
-                	$locales = ca_locales::getLocaleList();
+                } elseif(($va_properties['showLocaleList'] ?? false)) {
+                	// showLocaleList = list all available locales
+                	$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => false]);
+                	$va_properties['options'] = [];
+                	foreach($locales as $locale_id => $l) {
+                		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
+                	}
+                } elseif($va_properties['useLocaleList'] ?? false) {
+                	// useLocaleList = show cataloguing locales only
+                	$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => true]);
                 	$va_properties['options'] = [];
                 	foreach($locales as $locale_id => $l) {
                 		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];

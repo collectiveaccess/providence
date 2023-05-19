@@ -361,6 +361,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				if ($pa_fields === 'table_num') { return false; }
 			}
 		}
+		
+		if($id_numberer = IDNumbering::newIDNumberer('ca_sets', [$this->getTypeID()], null, $this->getDb())) {
+			if(method_exists($id_numberer, 'isSerialFormat') && $id_numberer->isSerialFormat()) {
+				$v = $id_numberer->htmlFormValue('x');
+				parent::set('set_code', $v);
+			}
+		}
+		
 		return parent::set($pa_fields, $pm_value, $pa_options);
 	}
 	# ------------------------------------------------------
