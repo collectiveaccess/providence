@@ -246,7 +246,7 @@ class RequestDispatcher extends BaseObject {
 							// service auth requests for deprecated service API are allowed to go through to
 							// dispatch because in that case logging in requires running actual controller code. 
 							// this is bad practice and should be removed once the old API is no longer supported.
-							if(!in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) || !$this->request->isServiceAuthRequest()) {
+							if(in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) || !$this->request->isServiceAuthRequest()) {
 								$this->response->setHTTPResponseCode(401,_t("Access denied"));
 								$this->response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
 								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!
