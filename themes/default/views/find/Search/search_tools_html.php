@@ -27,6 +27,7 @@
  */
  
 $t_subject = $this->getVar('t_subject');
+$table = $t_subject->tableName();
 ?>
 <div id="searchToolsBox">
 	<div class="bg">
@@ -87,16 +88,9 @@ $t_subject = $this->getVar('t_subject');
 	<br class='clear'/>
 <?php
 	if($this->request->user->canDoAction('can_download_ca_object_representations')) {
-?>	
-	<div class="col">
-<?php
-		print _t("Download media as").":<br/>";
-?>
-		<form id="caDownloadMediaFromSearchResult">
-<?php
 		$options = []; 
 		
-		if($this->request->user->canDoAction('can_download_ca_object_representations') && in_array($t_subject->tableName(), $this->request->config->get('allow_representation_downloads_from_find_for'))) {
+		if($this->request->user->canDoAction('can_download_ca_object_representations') && in_array($table, $this->request->config->get('allow_representation_downloads_from_find_for'))) {
 			foreach($this->getVar('ca_object_representation_download_versions') as $version) {
 				foreach([
 					'selected' => _t('Selected results: %1 (representation)', $version),
@@ -121,12 +115,17 @@ $t_subject = $this->getVar('t_subject');
 		
 		ksort($options);
 		
-		print caHTMLSelect('mode', $options, array('id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'), array('value' => null, 'width' => '150px'))."\n";
-?>
+		if(sizeof($options)) {
+?>	
+	<div class="col">
+		<?= _t("Download media as"); ?>:<br/>
+		<form id="caDownloadMediaFromSearchResult">
+			<?= caHTMLSelect('mode', $options, ['id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'], ['value' => null, 'width' => '150px']); ?>
 			<a href='#' onclick="caDownloadRepresentations(jQuery('#caDownloadRepresentationMode').val());" class="button"><?= caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 	</div>
 <?php
+		}
 	}
 ?>
 
@@ -146,6 +145,8 @@ $t_subject = $this->getVar('t_subject');
 	});
 	function caUpdateResultsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#resultsSelect").val();
+		console.log("resultsSelect", val);
+		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { return; }
 		jQuery("#caResultsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintSummaryOptions'); ?>/type/results/form/' + val, function(t, r, x) {
 			if(x.status == 200) {
 				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
@@ -162,6 +163,8 @@ $t_subject = $this->getVar('t_subject');
 	}
 	function caUpdateLabelsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#labelsSelect").val();
+		console.log("labelsSelect", val);
+		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { return; }
 		jQuery("#caLabelsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintSummaryOptions'); ?>/type/labels/form/' + val, function(t, r, x) {
 			if(x.status == 200) {
 				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
@@ -179,9 +182,9 @@ $t_subject = $this->getVar('t_subject');
 	function caDownloadRepresentations(mode) {
 		var tmp = mode.split('_');
 		if(tmp[0] == 'all') {	// download all search results
-			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/all/version/' + tmp[1] + '/download/1');
 		} else {
-			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
 		}
 	}
 </script>
