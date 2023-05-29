@@ -174,7 +174,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 				$i++;
 			}
-			$element_vals = array_map(function($v) { return ($v === '_PARENT_') ? '' : $v; }, $element_vals);
+			$element_vals = array_map(function($v) { return preg_replace("!^_PARENT_!", '', $v); }, $element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
