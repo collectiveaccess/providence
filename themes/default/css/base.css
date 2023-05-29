@@ -6972,7 +6972,7 @@ div.caHistoryTrackingButtonBarDelete {
 	float: right;
 }
 
-.caChangeLocationButton, .caReturnToHomeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton, .caAddObjectButton, .caAddEntityButton, .caAddMovementButton, .caAddLoanButton {
+.caChangeLocationButton, .caReturnToHomeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton, .caAddObjectButton, .caAddEntityButton, .caAddMovementButton, .caAddLoanButton, .caInventoryButton {
 	margin-top: 5px;
 }
 

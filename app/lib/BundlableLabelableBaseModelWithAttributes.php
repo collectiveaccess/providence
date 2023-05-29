@@ -5227,6 +5227,38 @@ if (!$vb_batch) {
 							}
 						}
 						
+						if (!caGetOption('hide_inventory_controls', $va_bundle_settings, false)) {
+							$inventory_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_inventory_idnew_0", pInteger);
+							
+							if ($inventory_id) {
+								$t_loc = Datamodel::getInstance('ca_storage_locations', true);
+								
+								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+								if ($t_loc->load($inventory_id)) {
+									if ($policy) {
+										$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_storage_locations', $t_loc->getTypeCode());
+										$relationship_type_id = caGetOption('inventoryRelationshipType', $policy_info, null);
+									}
+									
+									if ($relationship_type_id) {
+										// is effective date set?
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations__effective_datenew_0", pString);
+						
+										$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $relationship_type_id, $vs_effective_date);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											ca_storage_locations::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_inventory', $t_item_rel, $inventory_id, $processed_bundle_settings);							
+										}									
+								
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_storage_locations', $inventory_id);
+										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+									}
+								}
+							}
+						}
+						
 						if (!caGetOption('hide_add_to_loan_controls', $va_bundle_settings, false)) {
 							// set loan
 							if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_loans_idnew_0", pInteger)) {

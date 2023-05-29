@@ -211,6 +211,9 @@
 									}
 								}
 							}
+							if ((sizeof($path) === 3) && ($inv_type = caGetOption('inventoryRelationshipType', $config, null)) && $path[1]) { 
+								$bundle_settings["{$table}_inventoryRelationshipType"] = $inv_type;
+							}
 						}
 						if ($exit) { break; }
 					}
@@ -1814,9 +1817,6 @@
 					if ($this->inTransaction()) { $t_location->setTransaction($this->getTransaction()); }
 					$va_location_type_info = $t_location->getTypeList(); 
 			
-					$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
-					$vs_name_plural = $t_location->getProperty('NAME_PLURAL');
-			
 					$qr_locations = caMakeSearchResult($linking_table, $va_locations, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
 			
 					$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
@@ -1826,7 +1826,11 @@
 			
 					$loc_table_num = Datamodel::getTableNum('ca_storage_locations');
 					$rel_table_num = Datamodel::getTableNum($linking_table);
-				
+					
+					if($inv_type = caGetOption('ca_storage_locations_inventoryRelationshipType', $pa_bundle_settings, null)) {
+						$inv_type = caMakeRelationshipTypeIDList($path[1], [$inv_type]);
+					}
+					
 					$unsortable = [];
 					while($qr_locations->nextHit()) {
 						if ((string)$qr_locations->get('ca_storage_locations.deleted') !== '0') { continue; }	// filter out deleted
@@ -1837,6 +1841,11 @@
 						$vn_location_id = $qr_locations->get("{$linking_table}.location_id");
 						$relation_id = $qr_locations->get("{$linking_table}.relation_id");
 						$vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id");
+						
+						$is_inv = in_array($vn_rel_type_id, $inv_type);
+						
+						$vs_name_singular = $is_inv ? _t('Inventory') : $t_location->getProperty('NAME_SINGULAR');
+						$vs_name_plural = $is_inv ? _t('Inventory') : $t_location->getProperty('NAME_PLURAL');
 				
 				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 					

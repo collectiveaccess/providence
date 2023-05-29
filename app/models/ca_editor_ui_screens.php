@@ -1805,6 +1805,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('"Return to home location" control label text'),
 										'description' => _t('Text to label "Return to home location" control with. If omitted a default label will be used.')
 									),
+									'hide_inventory_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Inventory" controls'),
+										'hideOnSelect' => ['inventory_control_label'],
+										'description' => _t('Check this option if you want to hide the "Inventory" controls in this bundle placement.')
+									),
+									'inventory_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Update location" control label text'),
+										'description' => _t('Text to label "Update location" control with. If omitted a default label will be used.')
+									),
 									'hide_add_to_occurrence_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,

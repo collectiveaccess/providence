@@ -75,7 +75,7 @@
 	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
 	}
 	
-	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
+	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = $show_inventory_controls = false;
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">
@@ -108,6 +108,13 @@
 			if(!$read_only && $show_return_home_controls && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
 ?>
 				<div style='float: left;' class='button caReturnToHomeLocationButton <?= $vs_id_prefix; ?>caReturnToHomeLocationButton'><a href="#" id="<?= $vs_id_prefix; ?>ReturnToHomeLocation"><?= caNavIcon(__CA_NAV_ICON_HOME__, '15px'); ?> <?= caGetOption('return_to_home_location_control_label', $settings, _t('Return to home location'), ['defaultOnEmptyString' => true]); ?></a></div>
+<?php
+			}
+			
+			if(!$read_only && !caGetOption('hide_inventory_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
+                $show_inventory_controls = true;
+?>
+				<div style='float: left;' class='button caInventoryButton <?= $vs_id_prefix; ?>caInventoryButton'><a href="#" id="<?= $vs_id_prefix; ?>Inventory"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('inventory_control_label', $settings, _t('Inventory'), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php
 			}
 			
@@ -155,9 +162,10 @@
 			</div>
 					
 		<div class="<?= $vs_id_prefix; ?>caLocationList"> </div>
-		<div class="caLoanList"> </div>
-		<div class="caMovementList"> </div>
-		<div class="caObjectList"> </div>
+		<div class="<?= $vs_id_prefix; ?>caLoanList"> </div>
+		<div class="<?= $vs_id_prefix; ?>caMovementList"> </div>
+		<div class="<?= $vs_id_prefix; ?>caObjectList"> </div>
+		<div class="<?= $vs_id_prefix; ?>caInventoryList">  </div>
 <?php
 if($show_occurrence_controls) {
 	foreach($occ_types as $vn_type_id => $va_type_info) {
@@ -171,7 +179,7 @@ if($show_collection_controls) {
 	foreach($coll_types as $vn_type_id => $va_type_info) {
 		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_collections', $va_type_info['idno'])) { continue; }
 ?>
-		<div class="caCollectionList<?= $vn_type_id; ?>"> </div>
+		<div class="<?= $vs_id_prefix; ?>caCollectionList<?= $vn_type_id; ?>"> </div>
 <?php
 	}
 }
@@ -179,7 +187,7 @@ if($show_entity_controls) {
 	foreach($entity_types as $vn_type_id => $va_type_info) {
 		if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_entities', $va_type_info['idno'])) { continue; }
 ?>
-		<div class="caEntityList<?= $vn_type_id; ?>"> </div>
+		<div class="<?= $vs_id_prefix; ?>caEntityList<?= $vn_type_id; ?>"> </div>
 <?php
 	}
 }
@@ -418,6 +426,103 @@ switch($display_mode) {
 				});
 			</script>
 <?php
+		}
+	}
+	if ($show_inventory_controls) {
+?>	
+	<textarea class='<?= $vs_id_prefix; ?>caHistoryTrackingInventoryTemplate' style='display: none;'>
+		<div class="clear"><!-- empty --></div>
+		<div id="<?= $vs_id_prefix; ?>_inventory_{n}" class="labelInfo caRelatedInventory <?= $vs_id_prefix; ?>caRelatedInventory">
+			<h2 class="caHistoryTrackingInventoryHeading"><?= caGetOption('update_location_control_label', $settings, _t('Update location')); ?></h2>
+<?php
+	if (!(bool)$settings['useHierarchicalBrowser']) {
+?>
+		<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteInventoryButton <?= $vs_id_prefix; ?>caDeleteInventoryButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+			
+		<input type="text" size="60" name="<?= $vs_id_prefix; ?>_inventory_autocomplete{n}" value="{{label}}" id="<?= $vs_id_prefix; ?>_inventory_autocomplete{n}" class="lookupBg"/>
+		<input type="hidden" name="<?= $vs_id_prefix; ?>_inventory_id{n}" id="<?= $vs_id_prefix; ?>_inventory_id{n}" value="{id}"/>
+	
+		<?= ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
+<?php
+	} else {
+?>
+			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteInventoryButton <?= $vs_id_prefix; ?>caDeleteInventoryButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+			
+			<div style='width: 700px; height: 200px;'>				
+				<div style="float: right;">
+					<div class='hierarchyBrowserSearchBar'><?= _t('Search'); ?>: <input type='text' id='<?= $vs_id_prefix; ?>_inventoryHierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40'/></div>
+				</div>
+				
+				<div class="clear"><!-- empty --></div>
+				
+				<div id='<?= $vs_id_prefix; ?>_inventoryHierarchyBrowser{n}' style='width: 100%; height: 165px;' class='hierarchyBrowser'>
+					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+				</div><!-- end hierarchyBrowser -->	
+				
+				<div class="hierarchyBrowserCurrentSelectionText">
+					<input type="hidden" name="<?= $vs_id_prefix; ?>_inventory_id{n}" id="<?= $vs_id_prefix; ?>_inventory_id{n}" value="{id}"/>
+				
+					<span class="hierarchyBrowserCurrentSelectionText" id="<?= $vs_id_prefix; ?>_inventoryCurrentSelectionText{n}"> </span>
+				</div>
+				
+				<div style="clear: both; width: 1px; height: 5px;"><!-- empty --></div>
+			</div>
+			
+			<div class="clear" style="height: 20px;"><!-- empty --></div>
+
+			<?= ca_storage_locations::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
+
+			<div class="clear"><!-- empty --></div>
+		
+			<script type='text/javascript'>
+				jQuery(document).ready(function() { 
+					var <?= $vs_id_prefix; ?>oInventoryHierBrowser{n} = caUI.initHierBrowser('<?= $vs_id_prefix; ?>_inventoryHierarchyBrowser{n}', {
+						uiStyle: 'horizontal',
+						levelDataUrl: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'GetHierarchyLevel', array()); ?>',
+						initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'GetHierarchyAncestorList'); ?>',
+					
+						selectOnLoad : true,
+						browserWidth: '100%',
+					
+						dontAllowEditForFirstLevel: false,
+					
+						className: 'hierarchyBrowserLevel',
+						classNameContainer: 'hierarchyBrowserContainer',
+						currentSelectionIDID: '<?= $vs_id_prefix; ?>_inventory_id{n}',
+					
+						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+						editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+						disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
+					
+						displayCurrentSelectionOnLoad: false,
+						currentSelectionDisplayID: '<?= $vs_id_prefix; ?>_inventoryCurrentSelectionText{n}',
+						onSelection: function(item_id, parent_id, name, display, type_id) {
+							caRelationBundle<?= $vs_id_prefix; ?>_inventory.select('{n}', {id: item_id, type_id: type_id}, display);
+						}
+					});
+				
+					jQuery('#<?= $vs_id_prefix; ?>_inventoryHierarchyBrowserSearch{n}').autocomplete({
+							source: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
+							minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									<?= $vs_id_prefix; ?>oInventoryHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
+								}
+								event.preventDefault();
+								jQuery('#<?= $vs_id_prefix; ?>_inventoryHierarchyBrowserSearch{n}').val('');
+							}
+						}
+					);
+<?php
+    if (caGetOption('ca_storage_locations_useDatePicker', $settings, false)) {
+?>
+					jQuery('#<?= $vs_id_prefix; ?>_inventory__effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
+<?php
+    }
+?>
+				});
+			</script>
+<?php
 	}
 ?>
 		</div>
@@ -430,7 +535,7 @@ if($show_loan_controls) {
 	<textarea class='caHistoryTrackingSetLoanTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
 		
-		<div id="<?= $vs_id_prefix; ?>_ca_loans_{n}" class="labelInfo caRelatedLoan">
+		<div id="<?= $vs_id_prefix; ?>_ca_loans_{n}" class="labelInfo caRelatedLoan <?= $vs_id_prefix; ?>caRelatedLoan">
 			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteLoanButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			<table class="caListItem">
 				<tr>
@@ -455,8 +560,8 @@ if($show_loan_controls) {
 	<textarea class='caHistoryTrackingSetMovementTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
 	
-		<div id="<?= $vs_id_prefix; ?>_ca_movements_{n}" class="labelInfo caRelatedMovement">
-			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteMovementButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+		<div id="<?= $vs_id_prefix; ?>_ca_movements_{n}" class="labelInfo caRelatedMovement <?= $vs_id_prefix; ?>caRelatedMovement">
+			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="c<?= $vs_id_prefix; ?>aDeleteMovementButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			<table class="caListItem">
 				<tr>
 					<td><h2><?= caGetOption('movement_control_label', $settings, _t('Add to movement')); ?></h2></td>
@@ -480,8 +585,8 @@ if($show_loan_controls) {
 	<textarea class='caHistoryTrackingSetObjectTemplate' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
 		
-		<div id="<?= $vs_id_prefix; ?>_ca_objects_{n}" class="labelInfo caRelatedObject">
-			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteObjectButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+		<div id="<?= $vs_id_prefix; ?>_ca_objects_{n}" class="labelInfo caRelatedObject <?= $vs_id_prefix; ?>caRelatedObject">
+			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="<?= $vs_id_prefix; ?>caDeleteObjectButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			<table class="caListItem">
 				<tr>
 					<td><h2><?= caGetOption('object_control_label', $settings, _t('Add to object')); ?></h2></td>
@@ -533,8 +638,8 @@ if($show_collection_controls) {
 	<textarea class='caHistoryTrackingSetCollectionTemplate<?= $vn_type_id; ?>' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
 		
-		<div id="<?= $vs_id_prefix; ?>_ca_collections_<?= $vn_type_id; ?>_{n}" class="labelInfo caRelatedCollection">
-			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteCollectionButton<?= $vn_type_id; ?>"><?= caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a></div>
+		<div id="<?= $vs_id_prefix; ?>_ca_collections_<?= $vn_type_id; ?>_{n}" class="labelInfo caRelatedCollection <?= $vs_id_prefix; ?>caRelatedCollection">
+			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="<?= $vs_id_prefix; ?>caDeleteCollectionButton<?= $vn_type_id; ?>"><?= caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a></div>
 			<table class="caListItem">
 				<tr>
 					<td><h2><?= _t(caGetOption('collection_control_label', $settings, _t('Add to %1')), $va_type_info['name_singular']); ?></h2></td>
@@ -560,8 +665,8 @@ if($show_entity_controls) {
 	<textarea class='caHistoryTrackingSetEntityTemplate<?= $vn_type_id; ?>' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
 		
-		<div id="<?= $vs_id_prefix; ?>_ca_entities_<?= $vn_type_id; ?>_{n}" class="labelInfo caRelatedEntity">
-			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeleteEntityButton<?= $vn_type_id; ?>"><?= caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a></div>
+		<div id="<?= $vs_id_prefix; ?>_ca_entities_<?= $vn_type_id; ?>_{n}" class="labelInfo caRelatedEntity <?= $vs_id_prefix; ?>caRelatedEntity">
+			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="<?= $vs_id_prefix; ?>caDeleteEntityButton<?= $vn_type_id; ?>"><?= caNavIcon($this->request, __CA_NAV_ICON_DEL_BUNDLE__); ?></a></div>
 			<table class="caListItem">
 				<tr>
 					<td><h2><?= _t(caGetOption('entity_control_label', $settings,_t('Add to %1')), $va_type_info['name_singular']); ?></h2></td>
@@ -747,6 +852,44 @@ if($show_entity_controls) {
 <?php
 		}	
     }
+
+	if($show_inventory_controls) {
+?>	
+		caRelationBundle<?= $vs_id_prefix; ?>_inventory = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
+			fieldNamePrefix: '<?= $vs_id_prefix; ?>_inventory_',
+			templateValues: ['label', 'type_id', 'id'],
+			initialValues: [],
+			initialValueOrder: [],
+			itemID: '<?= $vs_id_prefix; ?>_inventory_',
+			placementID: '<?= $vn_placement_id; ?>',
+			templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingInventoryTemplate',
+			initialValueTemplateClassName: null,
+			itemListClassName: '<?= $vs_id_prefix; ?>caInventoryList',
+			listItemClassName: '<?= $vs_id_prefix; ?>caRelatedInventory',
+			addButtonClassName: '<?= $vs_id_prefix; ?>caInventoryButton',
+			deleteButtonClassName: '<?= $vs_id_prefix; ?>caDeleteInventoryButton',
+			showEmptyFormsOnLoad: 0,
+			relationshipTypes: <?= json_encode($this->getVar('location_relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', []); ?>',
+			minChars:<?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
+			readonly: false,
+			isSortable: false,
+			listSortItems: 'div.roundedRel',			
+			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
+			minRepeats: 0,
+			maxRepeats: 2,
+			addMode: 'prepend',
+			useAnimation: 1,
+			onAddItem: function(id, options, isNew) {
+				jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
+			},
+			onDeleteItem: function(id) {
+				jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
+			}
+		});
+<?php
+	}
+
 	if($show_loan_controls) {
 ?>			
 			caRelationBundle<?= $vs_id_prefix; ?>_ca_loans = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
@@ -758,10 +901,10 @@ if($show_entity_controls) {
 				placementID: '<?= $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetLoanTemplate',
 				initialValueTemplateClassName: null,
-				itemListClassName: 'caLoanList',
-				listItemClassName: 'caRelatedLoan',
-				addButtonClassName: 'caAddLoanButton',
-				deleteButtonClassName: 'caDeleteLoanButton',
+				itemListClassName: '<?= $vs_id_prefix; ?>caLoanList',
+				listItemClassName: '<?= $vs_id_prefix; ?>caRelatedLoan',
+				addButtonClassName: '<?= $vs_id_prefix; ?>caAddLoanButton',
+				deleteButtonClassName: '<?= $vs_id_prefix; ?>caDeleteLoanButton',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
@@ -805,10 +948,10 @@ if($show_entity_controls) {
 				placementID: '<?= $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetMovementTemplate',
 				initialValueTemplateClassName: null,
-				itemListClassName: 'caMovementList',
-				listItemClassName: 'caRelatedMovement',
-				addButtonClassName: 'caAddMovementButton',
-				deleteButtonClassName: 'caDeleteMovementButton',
+				itemListClassName: '<?= $vs_id_prefix; ?>caMovementList',
+				listItemClassName: '<?= $vs_id_prefix; ?>caRelatedMovement',
+				addButtonClassName: '<?= $vs_id_prefix; ?>caAddMovementButton',
+				deleteButtonClassName: '<?= $vs_id_prefix; ?>caDeleteMovementButton',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_movements_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
@@ -852,10 +995,10 @@ if($show_entity_controls) {
 				placementID: '<?= $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetObjectTemplate',
 				initialValueTemplateClassName: null,
-				itemListClassName: 'caObjectList',
-				listItemClassName: 'caRelatedObject',
-				addButtonClassName: 'caAddObjectButton',
-				deleteButtonClassName: 'caDeleteObjectButton',
+				itemListClassName: '<?= $vs_id_prefix; ?>caObjectList',
+				listItemClassName: '<?= $vs_id_prefix; ?>caRelatedObject',
+				addButtonClassName: '<?= $vs_id_prefix; ?>caAddObjectButton',
+				deleteButtonClassName: '<?= $vs_id_prefix; ?>caDeleteObjectButton',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_objects_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
@@ -942,10 +1085,10 @@ if($show_entity_controls) {
 				placementID: '<?= $vn_placement_id; ?>',
 				templateClassName: 'caHistoryTrackingSetCollectionTemplate<?= $vn_type_id; ?>',
 				initialValueTemplateClassName: null,
-				itemListClassName: 'caCollectionList<?= $vn_type_id; ?>',
-				listItemClassName: 'caRelatedCollection',
-				addButtonClassName: 'caAddCollectionButton<?= $vn_type_id; ?>',
-				deleteButtonClassName: 'caDeleteCollectionButton<?= $vn_type_id; ?>',
+				itemListClassName: '<?= $vs_id_prefix; ?>caCollectionList<?= $vn_type_id; ?>',
+				listItemClassName: '<?= $vs_id_prefix; ?>caRelatedCollection',
+				addButtonClassName: '<?= $vs_id_prefix; ?>caAddCollectionButton<?= $vn_type_id; ?>',
+				deleteButtonClassName: '<?= $vs_id_prefix; ?>caDeleteCollectionButton<?= $vn_type_id; ?>',
 				hideOnNewIDList: [],
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_collections_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
