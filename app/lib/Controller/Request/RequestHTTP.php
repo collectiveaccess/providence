@@ -822,6 +822,11 @@ class RequestHTTP extends Request {
 			$pa_options["dont_redirect_to_welcome"] = true;
 		}
 		
+		if(isset($_SERVER['PHP_AUTH_USER']) && !$pa_options["user_name"]) {
+			$pa_options["user_name"] = $_SERVER['PHP_AUTH_USER'];
+			$pa_options["password"] = $_SERVER['PHP_AUTH_PW'];
+		}
+		
 		$vb_login_successful = false;
 		if (!$pa_options["user_name"]) {		// no incoming login
 			//
