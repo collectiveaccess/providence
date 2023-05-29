@@ -622,7 +622,7 @@ class DisplayTemplateParser {
 					$va_get_options['maxLevelsFromBottom'] = (int)$o_node->maxLevelsFromBottom ?: null;
 					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
 					$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_reps;
-					
+
 					$locale = caGetOption('locale', $o_node->locale, null);
 					if($o_node->locale) {
 						$va_get_options['locale'] = $locale = $o_node->locale;

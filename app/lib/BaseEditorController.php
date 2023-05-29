@@ -2979,6 +2979,69 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Set media from 
+	 */
+	public function setRepresentation(?array $options=null) {
+		list($vn_subject_id, $t_subject) = $this->_initView($options);
+		
+		if(!$t_subject->isSaveable($this->request)) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$id = $this->request->getParameter('id', pString);	// id of item to set as root media
+		if(!$id) {
+			throw new ApplicationException(_t('ID is not defined'));
+		}
+		$table = $this->request->getParameter('t', pString);
+		$path = Datamodel::getPath($t_subject->tableName(), $table);
+	
+		if(!is_array($path) || (sizeof($path) < 2)) {
+			throw new ApplicationException(_t('Invalid target'));
+		}
+		$path = array_keys($path);
+		if(!($t_rel = Datamodel::getInstance($path[1])) && method_exists($t_rel, 'isRelationship') && $t_rel->isRelationship()) {
+			throw new ApplicationException(_t('Relationship does not exist'));
+		}
+		if(!$t_rel->load($id)) {
+			throw new ApplicationException(_t('ID does not exist'));
+		}
+		
+		if($t_rel->isSelfRelationship()) {
+			$rel_ids = $t_rel->getRelatedIDsForSelfRelationship([$t_subject->getPrimaryKey()]);
+			$t_target = Datamodel::getInstance($table, true, $rel_ids[0]);
+		} else {
+			$t_target = Datamodel::getInstance($table, true);
+			$rel_id = $t_rel->get($t_target->primaryKey());
+			$t_target->load($rel_id);
+		}
+
+		$rep_ids = $t_target->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
+		if(!is_array($rep_ids) || !sizeof($rep_ids)) {
+			throw new ApplicationException(_t('ID has no associated media'));
+		}
+		$selected_rep_id = $rep_ids[0];
+		$existing_reps = $t_subject->getRepresentations() ?? [];
+		
+		if(sizeof($selected_reps = array_filter($existing_reps, function($v) use ($selected_rep_id) {
+			return $v['representation_id'] == $selected_rep_id;
+		}))) {
+			$selected_rep = array_shift($selected_reps);
+			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
+				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
+			} else {
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlimk media')];;
+			}
+		} elseif($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
+			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
+		} else {
+			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
+		}
+		
+		$this->view->setVar('response', $resp);
+		$this->render('../generic/return_to_home_locations.php');
+	}
+	# -------------------------------------------------------
+	/**
 	 * Handle sort requests from form editor.
 	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
 	 *

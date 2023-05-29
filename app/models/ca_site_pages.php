@@ -267,7 +267,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		foreach($pages as $i => $page) {
 			$pages[$i]['template_title'] = $templates_by_id[$pages[$i]['template_id']]; 
-			$pages[$i]['locale'] = ca_locales::localeIDToCode($pages[$i]['locale_id']); 
+			$pages[$i]['locale'] = ca_locales::IDToCode($pages[$i]['locale_id']); 
 		}
 		
 		return $pages;
