@@ -93,7 +93,9 @@ var caUI = caUI || {};
 			listSortItems: null, // if set, limits sorting to items specified by selector
 			
 			loadedSort: null,			// Dynamically loaded sort order
-			loadedSortDirection: null
+			loadedSortDirection: null,
+			
+			buttons: []
 		}, options);
 		
 		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
@@ -392,6 +394,15 @@ var caUI = caUI || {};
 				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).on('click', null, {}, function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
 			} else {
 				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).css("display", "none");
+			}
+			
+			// attach other buttons
+			if(this.buttons) {
+				for(var i in this.buttons) {
+					let b = this.buttons[i];
+					//console.log('button', this.buttons[i]);
+					jQuery("#" +this.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
+				}
 			}
 
 			// set default locale for new
