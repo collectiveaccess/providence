@@ -374,6 +374,13 @@
 			}
 			
 			$va_nav_info = $this->getNavInfo(2); // get third-level navigation (zero-indexed); first two levels are in top-level nav bar
+
+			// fire hook
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			if ($va_revised_nav_info = $o_app_plugin_manager->hookRenderSideNav($va_nav_info)) {
+				$va_nav_info = $va_revised_nav_info;
+			}
+			
 			$vs_buf = '';
 			if (is_array($va_nav_info)) {
 				$vs_cur_selection = $this->getDestinationAsNavigationPath();
