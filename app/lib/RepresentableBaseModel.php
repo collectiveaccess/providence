@@ -620,7 +620,7 @@
 					}
 				}
 				if (is_array($pa_values)) {
-					if (isset($pa_values['idno'])) {
+					if (isset($pa_values['idno']) && !empty($pa_values['idno']) && empty($t_rep->get('idno')) ) {
 						$t_rep->set('idno', $pa_values['idno']);
 						unset($pa_values['idno']);
 					}
