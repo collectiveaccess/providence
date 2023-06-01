@@ -387,7 +387,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	$words = [$term->text];
 	 	if($field && !is_array($ap)) {
-	 		array_unshift($words, $field);
+	 		$words[0] = $field.':'.$words[0];
 	 		$field = null;
 	 	}
 	 	$indexing_options = caGetOption('indexing_options', $ap, null);
