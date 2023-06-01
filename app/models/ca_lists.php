@@ -1138,7 +1138,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemForDisplayByItemID($pn_item_id, $pa_options=null) {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pn_item_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions(is_array($pa_options) ? $pa_options : [], "{$pn_item_id}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
 			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
