@@ -311,7 +311,14 @@ class BaseFindEngine extends BaseObject {
 		$parsed_sort_spec = self::_parseSortOpts(array_shift($sort_fields));
 		$primary_sort_field = $parsed_sort_spec['sort'];
 		$options = array_merge($options, $parsed_sort_spec['options']);
-		if ($primary_sort_field === '_natural') { return $hits; }
+		if ($primary_sort_field === '_natural') { 
+			$start = caGetOption('start', $options, 0);
+			$limit = caGetOption('limit', $options, null);
+			if($start || $limit) {
+				$hits = array_slice($hits, (int)$start, $limit);
+			}
+			return $hits; 
+		}
 		$primary_sort_direction = self::sortDirection(array_shift($sort_directions));
 		
 		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, array_merge($options, ['relationshipTypes' => array_shift($rel_types)]));
