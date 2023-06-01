@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,8 +91,6 @@
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			
- 			
- 			
  			//
  			// Enforce type restriction, if defined
  			// 
@@ -136,6 +134,13 @@
  				$vs_view = array_shift($va_tmp); 
  			}
  			
+ 			$va_criteria = $this->opo_browse->getCriteria() ?? [];
+ 			
+ 			if((sizeof($va_criteria) === 0) && ($default_sort = $this->request->config->get($this->ops_tablename.'_reset_sort_on_new_browse'))) {
+				$this->opo_result_context->setCurrentSort($default_sort);
+				$this->opo_result_context->setCurrentSortDirection('ASC');
+			}
+ 			
  			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
  				$va_tmp = array_keys($this->opa_sorts);
  				$vs_sort = array_shift($va_tmp); 
@@ -150,7 +155,7 @@
  			if (
  				$this->opo_browse->criteriaHaveChanged() 
  				&& 
- 				(is_array($va_criteria = $this->opo_browse->getCriteria()) && (sizeof($va_criteria) == 1))
+ 				(is_array($va_criteria) && (sizeof($va_criteria) == 1))
  			) {
  				$va_tmp = array_keys($va_criteria);
   				
