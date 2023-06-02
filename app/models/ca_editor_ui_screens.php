@@ -1170,7 +1170,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => 10, 'height' => 1,
 								'takesLocale' => false,
 								'default' => false,
-								'label' => _t('Show set representtion button?'),
+								'label' => _t('Show set representation button?'),
 								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
 							)
 						);
