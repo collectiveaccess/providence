@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -142,14 +142,25 @@
 					$va_force_new_label[$vs_fld] = '';
 				}
 				
-				// Populate secondary display fields for lists items (name_plural)
-				if($t_subject->tableName() === 'ca_list_items') {
-					if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
-						foreach($sec as $s) {
-							$va_force_new_label[$s] = $v;
+				switch($t_subject->tableName()) {
+					case 'ca_list_items':
+						// Populate secondary display fields for lists items (name_plural)
+						if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
+							foreach($sec as $s) {
+								$va_force_new_label[$s] = $v;
+							}
+						}	
+						break;
+					case 'ca_entities':
+						if(caGetListItemSettingValue('entity_types', caGetListItemIdno($vn_type_id), 'entity_class') === 'ORG') {
+							// Force surname to text to ensure organization name is visible
+							$va_force_new_label['surname'] = $v;
+						} elseif($this->request->config->get('ca_entities_split_name_on_quickadd_load')) {
+							// Prepopulate with split name
+							$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($v));
 						}
-					}	
-				}				
+						break;
+				}			
 				$this->view->setVar('forceLabel', $va_force_new_label);
 			}
 			
