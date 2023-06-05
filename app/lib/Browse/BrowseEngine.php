@@ -1672,9 +1672,9 @@
                                                         break;
 													case __CA_ATTRIBUTE_VALUE_LCSH__:
 													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-														if ($vs_f == 'value_longtext2') {
-															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
-															$va_attr_values[] = $va_value['value_longtext2'];
+														if (in_array($vs_f, ['value_longtext1', 'value_longtext2'], true) && isset($va_value[$vs_f]) && strlen($va_value[$vs_f])) {
+															$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+															$va_attr_values[] = $va_value[$vs_f];
 														}
 														break;
 													default:
@@ -1716,7 +1716,6 @@
 											{$filter_join}
 											WHERE
 												(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql} {$filter_where}";
-
 										$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										
 										if (!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
@@ -7383,7 +7382,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 			if(is_array($va_results =  $this->opo_ca_browse_cache->getResults()) && sizeof($va_results)) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction);
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, array_merge($pa_options, ['start' => 0, 'limit' => null]));
 
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
@@ -7393,8 +7392,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$this->opo_ca_browse_cache->save();
 				}
 				if(($start = caGetOption('start', $pa_options, 0)) || ($limit = caGetOption('limit', $pa_options, null))) {
-					$va_results = array_slice($va_results, $start, $limit);
-				}
+ 					$va_results = array_slice($va_results, $start, $limit);
+ 				}
 			}
 			if (!is_array($va_results)) { $va_results = array(); }
 

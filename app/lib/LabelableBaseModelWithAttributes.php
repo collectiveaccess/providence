@@ -139,6 +139,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vs_table_name = $this->tableName();
 		
 		if (!($t_label = Datamodel::getInstanceByTableName($label = $this->getLabelTableName()))) { return null; }
+		
+		$o_trans = null;
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 			$t_label->setTransaction($o_trans);
@@ -146,6 +148,15 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$t_label->purify($this->purify());
 		$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+		
+		// Does label exist?
+		$label_table = $t_label->tableName();
+		
+		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
+
+		if(($skip_existing && ($dupe_count = $label_table::find($dupe_check_values, ['transaction' => $o_trans, 'returnAs' => 'count'])) > 0)) {
+			return false;
+		}
 		
 		foreach($pa_label_values as $vs_field => $vs_value) {
 			if ($t_label->hasField($vs_field)) { 
@@ -180,12 +191,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 		
 		$t_label->set($this->primaryKey(), $vn_id);
-		
-		// Does label already exist?
-		if($skip_existing && $label::find($dupe_check_data)) {
-			return null;
-		}
-		
+
 		$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 	
 		$vn_label_id = $t_label->insert(array_merge($pa_options, ['queueIndexing' => $pb_queue_indexing, 'subject' => $this]));
@@ -2263,7 +2269,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$omit_blanks_sql = '';
 		if (caGetOption('omitBlanks', $options, false)) {
 			$omit_blanks_sql = " AND (l.".$this->getLabelDisplayField()." <> ?)";
-			$va_params[] = '['._t('BLANK').']';
+			$va_params[] = '['.caGetBlankLabelText($this->tableName()).']';
 		}
 		
 		if (!$t_label->hasField('is_preferred')) { 
@@ -2325,6 +2331,28 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		return true;
+	}
+	# ------------------------------------------------------------------
+	/** 
+	 * Check if currently loaded row uses a default label 
+	 *
+	 * @param int $pn_locale_id Locale id to use for default label. If not set the user's current locale is used.
+	 * @return boolean True if only label for the record is a default label
+	 */
+	public function isDefaultLabel($locale_id=null) {
+		global $g_ui_locale_id;
+		
+		if(!is_null($locale_id) && !is_numeric($locale_id)) {
+			$locale_id = ca_locales::codeToID($locale_id);
+		}
+		if(!$locale_id) { $locale_id = $g_ui_locale_id; }
+		
+		$table = $this->tableName();
+		$label_table = $this->getLabelTableName();
+		if($label_table::find([$this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']', 'locale_id' => $locale_id], ['returnAs' => 'count']) > 0) {
+			return true;
+		}
+		return false;
 	}
 	# ------------------------------------------------------------------
 	/** 

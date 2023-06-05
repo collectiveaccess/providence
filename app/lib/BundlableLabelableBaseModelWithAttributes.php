@@ -1132,7 +1132,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
 			//$va_types = [];
-			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id]) : null;
+			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id], ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
 			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
 		} else {
 			$this->opo_idno_plugin_instance = null;
@@ -1987,7 +1987,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_objects_components_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
-						if (!$this->canTakeComponents()) { return null; }
+						if (!$this->canTakeComponents() && !$this->isComponent()) { return null; }
 						$vs_element .= $this->getComponentListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
@@ -4318,9 +4318,9 @@ if (!$vb_batch) {
 			}
 		}
 	}	
-		// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
-		// This ensures at least one label is present for the record. If no labels are present then the 
-		// record may not be found in queries
+	// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
+	// This ensures at least one label is present for the record. If no labels are present then the 
+	// record may not be found in queries
 	if ($this->getProperty('LABEL_TABLE_NAME')) {
 		if ($vb_error_inserting_pref_label || !$this->addDefaultLabel($vn_new_label_locale_id)) {
 			if (!$vb_error_inserting_pref_label) { $po_request->addActionErrors($this->errors(), 'preferred_labels'); }

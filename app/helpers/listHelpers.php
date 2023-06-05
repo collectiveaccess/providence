@@ -286,7 +286,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
 		$v = caGetListItemForValue($ps_list_code, $ps_value, $pa_options);
-		return is_array($v) ? array_shift(array_keys()) : null;
+		return is_array($v) ? array_shift(array_keys($v)) : null;
 	}
 	# ---------------------------------------
 	/**

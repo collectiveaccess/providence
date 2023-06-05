@@ -286,7 +286,7 @@
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
-			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			isSelfRelationship:<?= ($t_item_rel && method_exists($t_item_rel, "isSelfRelationship") && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
 			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		};
 

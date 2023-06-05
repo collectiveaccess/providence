@@ -1767,7 +1767,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 									if(is_array($va_action['regexes'])) {
 										foreach($targets as $target) {
-											$va_rule_set_values[$target] = self::_processAppliedRegexes(null, null, 0, $va_action['regexes'], $va_raw_row[$target], $row, $row_with_replacements);
+											$va_rule_set_values[$target] = $va_rule_set_values[mb_strtolower($target)] = self::_processAppliedRegexes(null, null, 0, $va_action['regexes'], $va_raw_row[$target] ?? $va_raw_row[mb_strtolower($target)], $row, $row_with_replacements);
 										}
 									} else {
 										$o_log->logDebug(_t('Invalid transform rule: %1', print_r($va_action, true)));
@@ -4386,12 +4386,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$regex_match = $regex_info['match'];
 				$regex_opts = null;
 				if((substr($regex_match, 0, 1) === '/') && preg_match("!/([A-Za-z]*)$!", $regex_match, $m)) {
-					$regex_opts = $m[1] ?? null;
-					$regex_match = preg_replace('!'.preg_quote($m[0],' !').'!', '', substr($regex_match, 1), 1);
+					$regex = $regex_match;
 				} else {
 					$regex_opts = "u".((isset($regex_info['caseSensitive']) && (bool)$regex_info['caseSensitive']) ? '' : 'i');
+					$regex = "/".str_replace("/", "\\/", $regex_match)."/{$regex_opts}";
 				}
-				$regex = "!".str_replace("!", "\\!", $regex_match)."!{$regex_opts}";
 
 				foreach($val as $i => $x) {
 					if (!preg_match($regex, $x, $matches)) { continue; }
