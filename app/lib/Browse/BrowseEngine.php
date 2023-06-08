@@ -1636,7 +1636,7 @@
 										
 										if (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_LIST__]) && !is_numeric($vn_row_id)) {
 											$va_value = ['item_id' => caGetListItemID($t_element->get('list_id'), $vn_row_id)];
-										} elseif (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
+										} elseif (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_ENTITIES__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
 										    $va_value = $o_attr->parseValue($vn_row_id, $t_element->getFieldValuesArray());
 										} else {
 											
