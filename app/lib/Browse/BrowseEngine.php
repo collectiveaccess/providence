@@ -7217,13 +7217,13 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
 									
-									$l = $va_fetched_row[$vs_label_display_field];
+									$l = trim($va_fetched_row[$vs_label_display_field]);
 									if($idno_fld && $va_facet_info['include_idno'] && $va_fetched_row[$idno_fld]) { $l .= " (".$va_fetched_row[$idno_fld].")"; }
 									$label_values = ['label' => $l];
 									if ($natural_sort) {
-										$label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_label_display_field]);
+										$label_values['label_sort_'] = caSortableValue($l);
 									}else{
-										$label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_sort_by_field]);
+										$label_values['label_sort_'] = caSortableValue(trim($va_fetched_row[$vs_sort_by_field]));
 									}
 									
 									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], $label_values);
