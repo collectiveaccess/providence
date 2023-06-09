@@ -198,6 +198,17 @@ class MultipartIDNumber extends IDNumber {
 					case 'CONSTANT':
 						// The element has an implicit width because it is a constant, so read the width of the constant
 						$width = mb_strlen($element_info['value']);
+						// find the constant in the value - for the case when a constant comes after a PARENT with no separator char
+						$strpos = strpos($value, $element_info['value']);
+						if (sizeof($element_vals) > 0) {
+							// if the previous value in the exploded array is equal to the string, it hasn't been parsed and should be = the substring from 0 - the constant
+							$last_element = array_values(array_slice($element_vals, -1))[0];
+							if (strcmp($last_element, $value) == 0 || strcmp($last_element, '') == 0) {
+								// remove the previous element and add the new substring
+								array_pop($element_vals);
+								$element_vals[] = substr($value, 0, $strpos);
+							}
+						}
 						break;
 					case 'SERIAL':
 					case 'YEAR':
