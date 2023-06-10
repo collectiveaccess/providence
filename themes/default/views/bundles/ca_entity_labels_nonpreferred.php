@@ -258,6 +258,7 @@ $show_checked 			= $t_subject->getTypeSetting('show_checked_for_nonpreferred_lab
 		deleteButtonClassName: 'caDeleteLabelButton',
 		bundlePreview: <?= caEscapeForBundlePreview($this->getVar('bundle_preview')); ?>,
 		readonly: <?= $read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		defaultAccess: <?= json_encode(caGetDefaultItemValue('access_statuses')); ?>
 	});
 </script>
