@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,6 +99,15 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 					_t('Tours') => 153,
 					_t('Tour stops') => 155
 				)
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'set_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of set. This value is often used to indicate the administrative sub-division or legacy database from which the set originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
