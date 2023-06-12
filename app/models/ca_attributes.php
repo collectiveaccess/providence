@@ -829,7 +829,7 @@ class ca_attributes extends BaseModel {
 			SELECT 
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
-				caav.value_decimal1, caav.value_decimal2, caav.value_integer1,,
+				caav.value_decimal1, caav.value_decimal2, caav.value_integer1,
 				caav.value_sortable,
 				cme.element_id, cme.datatype, cme.settings, cme.element_code
 			FROM ca_attributes caa
