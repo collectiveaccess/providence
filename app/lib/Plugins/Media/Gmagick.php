@@ -1026,7 +1026,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->handle->setimageindex(0);
 		$num_previews = 0;
 		do {
-			if ($i > 1) { $this->handle->nextImage(); }
+			if ($i > 0) { $this->handle->nextImage(); }
 			$num_previews++;
 			$i++;
 		} while($this->handle->hasnextimage());
@@ -1036,7 +1036,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($num_previews > 1) {
 			$i = 0;
 			do {
-				if ($i > 1) { $this->handle->nextImage(); }
+				if ($i > 0) { $this->handle->nextImage(); }
 			
 				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
 				$file_cleanup_list[] = $files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';
