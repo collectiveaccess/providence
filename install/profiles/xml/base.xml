@@ -4056,11 +4056,11 @@
         <type code="borrower" default="1">
           <labels>
             <label locale="en_US">
-              <typename>is borrowed from</typename>
+              <typename>is borrowed by</typename>
               <typename_reverse>is borrower of</typename_reverse>
             </label>
             <label locale="en_CA">
-              <typename>is borrowed from</typename>
+              <typename>is borrowed by</typename>
               <typename_reverse>is borrower of</typename_reverse>
             </label>
             <label locale="fr_FR">
