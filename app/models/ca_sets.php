@@ -104,7 +104,7 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
-				'DEFAULT' => '',
+				'DEFAULT' => null,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LIST_CODE' => 'set_sources',
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of set. This value is often used to indicate the administrative sub-division or legacy database from which the set originates, but can also be re-tasked for use as a simple classification tool if needed.')
@@ -265,7 +265,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_set_items"
 		)
 	);
 	
