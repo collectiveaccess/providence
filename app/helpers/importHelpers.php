@@ -1218,6 +1218,14 @@
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
 						}
+						
+						if (
+							(!isset($va_val['_relationship_orientation']) || !$va_val['_relationship_orientation']) 
+							&&
+							($vs_rel_orientation_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipOrientation"])
+						) {
+							$va_val['_relationship_orientation'] = BaseRefinery::parsePlaceholder($vs_rel_orientation_opt, $pa_source_data, $pa_item, $vn_x, array( 'returnDelimitedValueAt' => $vn_i, 'reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings, 'delimiter' => $vs_rel_type_delimiter_opt ?? $va_delimiter));
+						}
 	
 						$label_is_not_set = (!isset($va_val['preferred_labels']) || (is_array($va_val['preferred_labels']) && !sizeof($va_val['preferred_labels'])) || (!is_array($va_val['preferred_labels']) && !strlen($va_val['preferred_labels'])));
 						switch($ps_table) {

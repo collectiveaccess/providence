@@ -715,6 +715,7 @@ jQuery(document).ready(function() {
 				if (isset($va_metadata_data) && is_array($va_metadata_data)) {
 					$vs_buf .= "<tr><th>".preg_replace('!^METADATA_!', '', $vs_metadata_type)."</th><th colspan='2'><!-- empty --></th></tr>\n";
 					foreach($va_metadata_data as $vs_key => $vm_value) {
+						if(!in_array($vs_key, ['FILE', 'IFD0', 'EXIF'])) { continue; }
 						$vs_buf .=  "<tr valign='top'><td><!-- empty --></td><td>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vm_value, 0, $vs_key)."</td></tr>\n";
 						$vn_metadata_rows++;
 					}

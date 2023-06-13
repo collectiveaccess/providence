@@ -1636,7 +1636,7 @@
 										
 										if (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_LIST__]) && !is_numeric($vn_row_id)) {
 											$va_value = ['item_id' => caGetListItemID($t_element->get('list_id'), $vn_row_id)];
-										} elseif (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
+										} elseif (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_ENTITIES__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
 										    $va_value = $o_attr->parseValue($vn_row_id, $t_element->getFieldValuesArray());
 										} else {
 											
@@ -7217,13 +7217,13 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
 									
-									$l = $va_fetched_row[$vs_label_display_field];
+									$l = trim($va_fetched_row[$vs_label_display_field]);
 									if($idno_fld && $va_facet_info['include_idno'] && $va_fetched_row[$idno_fld]) { $l .= " (".$va_fetched_row[$idno_fld].")"; }
 									$label_values = ['label' => $l];
 									if ($natural_sort) {
-										$label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_label_display_field]);
+										$label_values['label_sort_'] = caSortableValue($l);
 									}else{
-										$label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_sort_by_field]);
+										$label_values['label_sort_'] = caSortableValue(trim($va_fetched_row[$vs_sort_by_field]));
 									}
 									
 									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], $label_values);
