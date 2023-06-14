@@ -30,27 +30,27 @@ $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object
 $t_item_rel 		= $this->getVar('t_item_rel');
 $t_subject 			= $this->getVar('t_subject');
-$va_settings 		= $this->getVar('settings');
+$settings 			= $this->getVar('settings');
 $vs_add_label 		= $this->getVar('add_label');
 $va_rel_types		= $this->getVar('relationship_types');
 $vs_placement_code 	= $this->getVar('placement_code');
-$vn_placement_id	= (int)$va_settings['placement_id'];
+$vn_placement_id	= (int)$settings['placement_id'];
 $vb_batch			= $this->getVar('batch');
 
-$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
+$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
 
-$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
-$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 
-$vs_color 			= 	((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
-$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
-$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
+$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
+$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
 
 $vb_quick_add_enabled = $this->getVar('quickadd_enabled');
 
-$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
 
-$show_set_representation_button = caGetOption('showSetRepresentationButton', $va_settings, false); 
+$show_set_representation_button = caGetOption('showSetRepresentationButton', $settings, false); 
 
 $force_values = $this->getVar('forceValues');
 
@@ -61,8 +61,8 @@ $loaded_sort_direction 	= $this->getVar('sortDirection');
 
 // params to pass during object lookup
 $va_lookup_params = array(
-	'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
-	'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
+	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
 	'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 );
@@ -73,17 +73,17 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 }
 
 $count = $this->getVar('relationship_count');
-$num_per_page = caGetOption('numPerPage', $va_settings, 10);
+$num_per_page = caGetOption('numPerPage', $settings, 10);
 
 if (!RequestHTTP::isAjax()) {
-	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {		
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 }	
 
 $count = $this->getVar('relationship_count');
