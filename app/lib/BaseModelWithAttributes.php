@@ -1926,8 +1926,10 @@
 			}
 			
 			$element_datatype = $t_element->get('datatype');
-			$t_element_code = $t_element->get('element_code');
+			$element_code = $t_element->get('element_code');
+			$element_id = $t_element->get('element_id');
 			$table_name = $this->tableName();
+			
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
 			$root_element_id = $group_key = $t_element->getPrimaryKey();
@@ -1973,7 +1975,7 @@
 				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
 				
 				if($element_datatype == 0){ //Only show field level bundle codes inside containers    
-					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
+					$bundle_code = "{$table_name}.{$element_code}.{$va_element['element_code']}";
 					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
 				}
 				
@@ -2041,17 +2043,17 @@
 			$o_view->setVar('t_element', $t_element);
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('request', $po_request);
-			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));
+			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$element_id);
 			$o_view->setVar('elements', $va_elements_by_container);
-			$o_view->setVar('error_source_code', $this->tableName().'.'.$t_element->get('element_code'));
+			$o_view->setVar('error_source_code', $this->tableName().'.'.$element_code);
 			$o_view->setVar('element_ids', $va_element_ids);
 			$o_view->setVar('element_info', $va_element_info);
-			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
+			$o_view->setVar('element_set_label', $this->getAttributeLabel($element_id));
 			$o_view->setVar('element_code', $t_element->get('element_code'));
 			$o_view->setVar('placement_code', $ps_placement_code);
 			$o_view->setVar('render_mode', ($element_datatype == 3) ? $t_element->getSetting('render') : null);	// only set for list attributes (as of 26 Sept 2010 at least)
 			
-			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
+			if ($t_restriction = $this->getTypeRestrictionInstance($element_id)) {
 				// If batch mode force minimums to zero
 				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
 				
@@ -2062,18 +2064,36 @@
 				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
+			// Convert any forced values to use element_id keys required by failed_insert_attribute_list
+			$forced_values_proc = [];
+			if(is_array($forced_values = caGetOption('forcedValues', $pa_options, null)) && isset($forced_values[$t_element->get('element_code')])) {
+				foreach($forced_values[$element_code] as $v) {
+					if(!is_array($v)) { continue; }
+					$v_proc = [];
+					foreach($v as $kk => $vv) {
+						$e_id = ($kk === 'locale_id')  ? 'locale_id' : ca_metadata_elements::getElementID($kk);
+						if(!$e_id) { continue; }
+						$v_proc[$e_id] = $vv;
+					}
+					$forced_values_proc[$element_id] = $v_proc;
+				}
+			}
+			
 			// These are lists of associative arrays representing attributes that were rejected in a save() action
 			// during the current request. They are used to maintain the state of the form so the user can modify the
-			// input that caused the error
-			$o_view->setVar('failed_insert_attribute_list', $this->getFailedAttributeInserts($pm_element_code_or_id));
+			// input that caused the error. The inserts list is also used to force values into forms for new not-yet-saved
+			// records. Forced values do not include error messages and appear as default values.
+			$fi = $this->getFailedAttributeInserts($pm_element_code_or_id) ?? [];
+			$o_view->setVar('failed_insert_attribute_list', array_merge($fi, $forced_values_proc));
 			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
 		
 			// Set the list of existing attributes for the current row
 			$vs_sort = $pa_bundle_settings['sort'];
 			$vs_sort_dir = $pa_bundle_settings['sortDirection'];
-			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
+			$va_attribute_list = $this->getAttributesByElement($element_id, array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
 			
 			$o_view->setVar('attribute_list', $va_attribute_list);
+			
 			
 			// Pass list of element default values
 			$o_view->setVar('element_value_defaults', $va_element_value_defaults);

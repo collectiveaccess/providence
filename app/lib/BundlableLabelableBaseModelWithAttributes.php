@@ -290,7 +290,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
+			$this->opo_app_plugin_manager->hookInsertItem(
+				[
+					'id' => $this->getPrimaryKey(), 
+					'table_num' => $this->tableNum(), 
+					'table_name' => $this->tableName(), 
+					'instance' => $this, 
+					'is_insert' => true, 
+					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+				]
+			);
 		}
 		return $vn_rc;
 	}
@@ -388,7 +397,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
+			$this->opo_app_plugin_manager->hookUpdateItem(
+				[
+					'id' => $this->getPrimaryKey(), 
+					'table_num' => $this->tableNum(), 
+					'table_name' => $this->tableName(), 
+					'instance' => $this, 'is_insert' => false, 
+					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+				]
+			);
 		}
 		return $vn_rc;
 	}	
@@ -1132,7 +1149,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
 			//$va_types = [];
-			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id]) : null;
+			$va_types = $vn_type_id ? caMakeTypeList($this->tableName(), [$vn_type_id], ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
 			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
 		} else {
 			$this->opo_idno_plugin_instance = null;
@@ -1437,10 +1454,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * @param string $ps_placement_code
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Supported options are:
-	 *		config
-	 *		viewPath
-	 *		graphicsPath
-	 *		request
+	 *		config = 
+	 *		viewPath = 
+	 *		graphicsPath = 
+	 *		request = 
+	 *		forcedValues = 
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null, &$ps_bundle_label=null) {
 		global $g_ui_locale, $g_ui_locale_id;
@@ -1452,6 +1470,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_NONE__) {
 			return;
 		}
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
 		
 		$bundle_code = $ps_bundle_name;
 		
@@ -1616,6 +1636,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_additional_field_options['height'] = $vn_height;
 					}
 					
+					// Force intrinsic to value?
+					if(isset($forced_values[$ps_bundle_name]) && strlen($forced_values[$ps_bundle_name])) { 
+						$this->set($ps_bundle_name, $forced_values[$ps_bundle_name]);
+					}
 					$o_view->setVar('form_element', $this->htmlFormElement($ps_bundle_name, ($this->getProperty('ID_NUMBERING_ID_FIELD') == $ps_bundle_name) ? $o_config->get('idno_element_display_format_without_label') : $o_config->get('bundle_element_display_format_without_label'), 
 						array_merge(
 							[	
@@ -1625,7 +1649,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
 								
 								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
-								'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
+								'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor'] ?? false
 							],
 							$pa_options,
 							$va_additional_field_options
@@ -1642,7 +1666,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
 								
 									'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name,
-									'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor']
+									'usewysiwygeditor' 			=> $pa_bundle_settings['usewysiwygeditor'] ?? false
 								),
 								$pa_options,
 								$va_additional_field_options
@@ -3396,7 +3420,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('defaultRepresentationUploadType', $po_request->user->getVar('defaultRepresentationUploadType'));
 
 		$o_view->setVar('initialValues', $va_initial_values);
-		$o_view->setVar('forceNewValues', $va_force_new_values);
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, []);
+		$forced_values = $forced_values[$ps_related_table] ?? [];
+		$forced_values_proc = [];
+		foreach($forced_values as $fv) {
+			$forced_values_proc[] = [
+				'id' => $fv['entity_id'],
+				'label' => $fv['label'],
+				'type_id' => $fv['item_type_id'],
+				'relationship_type_id' => $fv['relationship_type_id']
+			];
+		}
+		
+		$o_view->setVar('forceValues', array_merge($va_force_new_values, $forced_values_proc));
+		
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 		
 		return $o_view->render($ps_related_table.'.php');
@@ -4318,9 +4356,9 @@ if (!$vb_batch) {
 			}
 		}
 	}	
-		// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
-		// This ensures at least one label is present for the record. If no labels are present then the 
-		// record may not be found in queries
+	// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
+	// This ensures at least one label is present for the record. If no labels are present then the 
+	// record may not be found in queries
 	if ($this->getProperty('LABEL_TABLE_NAME')) {
 		if ($vb_error_inserting_pref_label || !$this->addDefaultLabel($vn_new_label_locale_id)) {
 			if (!$vb_error_inserting_pref_label) { $po_request->addActionErrors($this->errors(), 'preferred_labels'); }

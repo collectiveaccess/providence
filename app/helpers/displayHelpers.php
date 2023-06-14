@@ -3569,10 +3569,12 @@ jQuery(document).ready(function() {
 		} else {
 			$sort_fields_proc = $default_sort_options = [];
 			
+			// Expand global sort list to include parents when sort is on container field
 			foreach($va_sort_fields as $sf => $n) {
 				$tmp = explode('.', $sf);
-				if(sizeof($tmp) > 2) {
-					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = ca_metadata_elements::getElementLabel($tmp[1]);
+				if((sizeof($tmp) > 2) && !in_array($tmp[1], ['preferred_labels', 'nonpreferred_labels']))  {
+					if(!($label = ca_metadata_elements::getElementLabel($tmp[1]))) { continue; }
+					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = $label;
 					$default_sort_options[$k] = true;
 				}
 				$sort_fields_proc[$sf] = $n;

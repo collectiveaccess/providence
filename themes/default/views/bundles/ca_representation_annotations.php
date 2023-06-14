@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,65 +25,65 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_subject 			= $this->getVar('t_subject');		// object representation
 
-	$va_media_props		= $t_subject->getMediaInfo('media', 'original');
-	$vn_timecode_offset	= isset($va_media_props['PROPERTIES']['timecode_offset']) ? (float)$va_media_props['PROPERTIES']['timecode_offset'] : 0;
-	
-	if (	// don't show bundle if this representation doesn't use bundles to edit annotations
-		!method_exists($t_subject, "getAnnotationType") || 
-		!$t_subject->getAnnotationType() ||
-		!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
-		!$t_subject->useBundleBasedAnnotationEditor()
-	) { 	
+$t_subject 			= $this->getVar('t_subject');		// object representation
+
+$va_media_props		= $t_subject->getMediaInfo('media', 'original');
+$vn_timecode_offset	= isset($va_media_props['PROPERTIES']['timecode_offset']) ? (float)$va_media_props['PROPERTIES']['timecode_offset'] : 0;
+
+if (	// don't show bundle if this representation doesn't use bundles to edit annotations
+	!method_exists($t_subject, "getAnnotationType") || 
+	!$t_subject->getAnnotationType() ||
+	!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
+	!$t_subject->useBundleBasedAnnotationEditor()
+) { 	
 ?>
 		<span class='heading'><?php print _t('Annotations are not supported for this type of media'); ?></span>
 <?php
 			return; 
+}
+	
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_item 			= $this->getVar('t_item');				// object representation annotation
+$t_item_label 		= $this->getVar('t_item_label');	// object representation annotation_labels
+
+$vs_annotation_type = $t_subject->getAnnotationType();
+if ($o_properties 		= $t_subject->getAnnotationPropertyCoderInstance($vs_annotation_type)) {
+	$vs_goto_property 	= $o_properties->getAnnotationGotoProperty();
+	$va_prop_list 		= $va_init_props = array();
+	if(!is_array($va_initial_values	= $this->getVar('initialValues'))) { $va_initial_values = array(); }
+
+	foreach(($va_properties = $o_properties->getPropertyList()) as $vs_property) { 
+		$va_prop_list[] = "'".$vs_property."'"; $va_init_props[$vs_property] = ''; 
 	}
+}
 	
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_item 			= $this->getVar('t_item');				// object representation annotation
-	$t_item_label 		= $this->getVar('t_item_label');	// object representation annotation_labels
-	
-	$vs_annotation_type = $t_subject->getAnnotationType();
-	if ($o_properties 		= $t_subject->getAnnotationPropertyCoderInstance($vs_annotation_type)) {
-		$vs_goto_property 	= $o_properties->getAnnotationGotoProperty();
-		$va_prop_list 		= $va_init_props = array();
-		if(!is_array($va_initial_values	= $this->getVar('initialValues'))) { $va_initial_values = array(); }
-	
-		foreach(($va_properties = $o_properties->getPropertyList()) as $vs_property) { 
-			$va_prop_list[] = "'".$vs_property."'"; $va_init_props[$vs_property] = ''; 
-		}
-	}
-		
-	// get existing annotations
-	$va_inital_values = $this->getVar('initialValues');
-	$va_errors = array();
-	
-	if (sizeof($va_inital_values)) {
-		foreach ($va_inital_values as $vn_annotation_id => $va_info) {
-			if(is_array($va_action_errors = $this->request->getActionErrors('ca_representation_annotations', $vn_annotation_id))) {
-				foreach($va_action_errors as $o_error) {
-					$va_errors[$vn_annotation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
-				}
-			}
-		}
-	}
-	
-	$va_failed_inserts = array();
-	foreach($this->request->getActionErrorSubSources('ca_representation_annotations') as $vs_error_subsource) {
-		if (substr($vs_error_subsource, 0, 4) === 'new_') {
-			$va_action_errors = $this->request->getActionErrors('ca_representation_annotations', $vs_error_subsource);
+// get existing annotations
+$va_inital_values = $this->getVar('initialValues');
+$va_errors = array();
+
+if (sizeof($va_inital_values)) {
+	foreach ($va_inital_values as $vn_annotation_id => $va_info) {
+		if(is_array($va_action_errors = $this->request->getActionErrors('ca_representation_annotations', $vn_annotation_id))) {
 			foreach($va_action_errors as $o_error) {
-				$va_failed_inserts[] = array_merge($va_init_props, array('_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber()))));
+				$va_errors[$vn_annotation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 			}
 		}
 	}
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations', $va_settings);
+}
+
+$va_failed_inserts = array();
+foreach($this->request->getActionErrorSubSources('ca_representation_annotations') as $vs_error_subsource) {
+	if (substr($vs_error_subsource, 0, 4) === 'new_') {
+		$va_action_errors = $this->request->getActionErrors('ca_representation_annotations', $vs_error_subsource);
+		foreach($va_action_errors as $o_error) {
+			$va_failed_inserts[] = array_merge($va_init_props, array('_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber()))));
+		}
+	}
+}
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations');
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations', $va_settings);
 ?>
 <!-- BEGIN Media Player -->
 <div class="bundleContainer" style="text-align:center; padding:5px;">
