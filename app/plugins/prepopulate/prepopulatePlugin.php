@@ -375,6 +375,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 					$va_source_map = caGetOption('sourceMap', $va_rule, null);
 					$omit_from_isset_check = caGetOption('omitFromIsSetCheck', $va_rule, []);
+
 					if($force_values) { $vs_source = str_replace(".parent.", ".", $vs_source); }
 
 					if (($datatype == 0) && $vs_source) { // full container clone using "source" rather than template

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,6 +99,15 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 					_t('Tours') => 153,
 					_t('Tour stops') => 155
 				)
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'set_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of set. This value is often used to indicate the administrative sub-division or legacy database from which the set originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -361,6 +370,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				if ($pa_fields === 'table_num') { return false; }
 			}
 		}
+		
+		if($id_numberer = IDNumbering::newIDNumberer('ca_sets', [$this->getTypeID()], null, $this->getDb())) {
+			if(method_exists($id_numberer, 'isSerialFormat') && $id_numberer->isSerialFormat()) {
+				$v = $id_numberer->htmlFormValue('x');
+				parent::set('set_code', $v);
+			}
+		}
+		
 		return parent::set($pa_fields, $pm_value, $pa_options);
 	}
 	# ------------------------------------------------------
@@ -405,7 +422,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
 				$vb_we_set_transaction = false;
 				if (!$this->inTransaction()) {
-					$this->setTransaction($o_t = new Transaction($this->getDb()));
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
 					$vb_we_set_transaction = true;
 				}
 				$this->set('set_code', $this->get('set_code') . '_' . time());
@@ -427,7 +445,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function duplicate($pa_options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
@@ -454,7 +473,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				foreach($va_items as $vn_item_id => $va_item) {
 					$t_item = new ca_set_items();
 					$t_item->setTransaction($o_trans);
-					$t_item->setMode(ACCESS_WRITE);
 					$va_item['set_id'] = $t_dupe->getPrimaryKey();
 					$t_item->set($va_item);
 					$t_item->insert();
@@ -566,7 +584,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!is_array($pa_public_access)) { $pa_public_access = []; }
 		for($vn_i=0; $vn_i < sizeof($pa_public_access); $vn_i++) { $pa_public_access[$vn_i] = intval($pa_public_access[$vn_i]); }
 		
-		
+		$vn_table_num = null;
 		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$va_extra_joins = array();
@@ -776,7 +794,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
 				
-				$extras = ['item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type];
+				$extras = ['item_count' => (int)($va_item_counts[$qr_res->get('set_id')] ?? 0), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type];
 				
 				if ($include_items) {
 				    $extras['items'] = caExtractValuesByUserLocale(ca_sets::getItemsForSet($set_id, $pa_options));
@@ -847,7 +865,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
 				
-				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')] ?? null), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
 			}
 
 			return $va_sets;
@@ -1800,7 +1818,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getItems($pa_options=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		if ($pa_options['user_id'] && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+		if (($pa_options['user_id'] ?? null) && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$o_db = $this->getDb();
 		
@@ -2023,7 +2041,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 					$va_row['selected_representations'] = array();
 				}
 				
-				$va_row['representation_count'] = (int)$va_representation_counts[$qr_res->get('row_id')];
+				$va_row['representation_count'] = (int)($va_representation_counts[$qr_res->get('row_id')] ?? 0);
 			}	
 			
 			if (is_array($va_labels[$vn_item_id = $qr_res->get('item_id')])) {
@@ -2137,7 +2155,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	public function getTypesForItems($pa_options=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		if ($pa_options['user_id'] && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+		if (($pa_options['user_id'] ?? null) && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$o_db = $this->getDb();
 		
@@ -2177,7 +2195,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			foreach($va_type_ids as $vn_type_id => $vs_type) {
 				if (is_array($va_parents = $t_item->getHierarchyAncestors($vn_type_id, array('idsOnly' => true)))) {
 					foreach($va_parents as $vn_parent_id) {
-						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id];
+						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id] ?? null;
 					}
 				}
 			}

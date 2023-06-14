@@ -544,8 +544,10 @@ var caUI = caUI || {};
 		}
 		jQuery.each(that.initialValueOrder, function(i, k) {
 			var v = that.initialValues[k];
-			v['_key'] = k;
-			initialValuesSorted.push(v);
+			if(v) {
+				v['_key'] = k;
+				initialValuesSorted.push(v);
+			}
 		});
 
 		// perform configured sort

@@ -114,7 +114,8 @@ require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
 require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
-
+require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 require_once(__CA_LIB_DIR__."/Datamodel.php");
 Datamodel::load();

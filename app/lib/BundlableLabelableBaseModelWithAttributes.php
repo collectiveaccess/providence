@@ -4043,7 +4043,10 @@ if (!$vb_batch) {
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
 			$parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
-			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), 'is_numeric');
+			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
+				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
+				return false;
+			});
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
 			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
@@ -4051,16 +4054,24 @@ if (!$vb_batch) {
 			$target_table = $this->tableName();
 			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
 			
+			if(!is_array($multiple_move_selection) || !sizeof($multiple_move_selection)) {
+				$multiple_move_selection = [$vn_parent_id];
+			}
 			
 			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
-			
-				if ($parent_table == $target_table) {	
-					// moving a record under another record in the same table
-					if(sizeof($multiple_move_selection) > 0) {
-						if($qr = $table::findAsSearchResult([$this->primaryKey() => ['IN', $multiple_move_selection]])) {
-							if($qr->getPrimaryKey() ==  $this->getPrimaryKey()) { continue; }
-							while($qr->nextHit()) {
-								$t = $qr->getInstance();
+				if(sizeof($multiple_move_selection) > 0) {
+					foreach($multiple_move_selection as $t_id) {
+						$target_tmp = explode('-', $t_id);
+						if(sizeof($target_tmp) > 1) {
+							list($tt, $target_id) = $target_tmp;
+						} else {
+							$tt = $target_table;
+							$target_id = $t_id;
+						}
+						
+						if ($parent_table == $tt) {	
+							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
+								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { continue; }
 								if(!$t->isSaveable($po_request)) { continue; }
 								
 								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
@@ -4069,24 +4080,13 @@ if (!$vb_batch) {
 									$po_request->addActionErrors($this->errors());
 								}
 							}
-						}
-					} else {
-						$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
-					}
-				} elseif(
-					(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
-					($parent_table == 'ca_collections') && ($target_table == 'ca_objects') &&
-					($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
-				) { 
-					if(sizeof($multiple_move_selection) > 0) {
-						$object_selection = array_map(
-							function($v) { return (int)substr($v, 11); },
-							array_filter($multiple_move_selection, function($v) { return preg_match("!^ca_objects\-!", $v); })
-						);
-						
-						if($qr = ca_objects::findAsSearchResult(['object_id' => ['IN', $object_selection]])) {
-							while($qr->nextHit()) {
-								$t = $qr->getInstance();
+						} elseif(
+							(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
+							($parent_table == 'ca_collections') && ($tt == 'ca_objects') &&
+							($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
+						) { 
+							
+							if($t = ca_objects::findAsInstance(['object_id' => $target_id])) {
 								$t->removeRelationships('ca_collections', $coll_rel_type);
 								$t->set($t->HIERARCHY_PARENT_ID_FLD, null);
 								$t->set($t->HIERARCHY_ID_FLD, $t->getPrimaryKey());
@@ -4098,19 +4098,10 @@ if (!$vb_batch) {
 									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
 									$po_request->addActionErrors($this->errors());
 								}
-							}
-						}
-					} else {
-						// link object to collection
-						$this->removeRelationships('ca_collections', $coll_rel_type);
-						$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
-						$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
-						if (!($this->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
-							$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-							$po_request->addActionErrors($this->errors());
+							}						
 						}
 					}
-				}
+				} 
 			} else {
 				// Move record to root of adhoc hierarchy (Eg. Take object out of hierarchy and make top-level)
 				if (

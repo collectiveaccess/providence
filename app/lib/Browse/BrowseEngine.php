@@ -7176,13 +7176,13 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								while($qr_labels->nextRow()) {
 									$va_fetched_row = $qr_labels->getRow();
 									
-									$l = $va_fetched_row[$vs_label_display_field];
+									$l = trim($va_fetched_row[$vs_label_display_field]);
 									if($idno_fld && $va_facet_info['include_idno'] && $va_fetched_row[$idno_fld]) { $l .= " (".$va_fetched_row[$idno_fld].")"; }
 									$label_values = ['label' => $l];
 									if ($natural_sort) {
-										$label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_label_display_field]);
+										$label_values['label_sort_'] = caSortableValue($l);
 									}else{
-										$label_values['label_sort_'] = caSortableValue($va_fetched_row[$vs_sort_by_field]);
+										$label_values['label_sort_'] = caSortableValue(trim($va_fetched_row[$vs_sort_by_field]));
 									}
 									
 									$va_facet_item = array_merge($va_facet_items[$va_fetched_row[$vs_rel_pk]], $label_values);
@@ -7382,7 +7382,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 			if(is_array($va_results =  $this->opo_ca_browse_cache->getResults()) && sizeof($va_results)) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction);
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, array_merge($pa_options, ['start' => 0, 'limit' => null]));
 
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
@@ -7392,8 +7392,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$this->opo_ca_browse_cache->save();
 				}
 				if(($start = caGetOption('start', $pa_options, 0)) || ($limit = caGetOption('limit', $pa_options, null))) {
-					$va_results = array_slice($va_results, $start, $limit);
-				}
+ 					$va_results = array_slice($va_results, $start, $limit);
+ 				}
 			}
 			if (!is_array($va_results)) { $va_results = array(); }
 

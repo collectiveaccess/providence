@@ -31,7 +31,7 @@ $menu_color = $this->request->config->get('menu_color');
 <div><div id="topNavContainer">
 	<div id="topNav" style="background-color:#<?= $menu_color; ?>;">
 		<div class="roundedNav" >
-			<div id="logo" onclick='document.location="<?= $this->request->getBaseUrlPath().'/'; ?>";'><?= caGetMenuBarLogo(); ?>></div>
+			<div id="logo" onclick='document.location="<?= $this->request->getBaseUrlPath().'/'; ?>";'><?= caGetMenuBarLogo(); ?></div>
 				<div id="navWrapper">
 <?php
 		if ($this->request->isLoggedIn()) {

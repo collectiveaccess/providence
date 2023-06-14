@@ -85,7 +85,7 @@
 	 */
 	function caGetLogPath($options=null, $opt_name=null) {
 		$config = Configuration::load();
-		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($opt_name)))) {
+		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $opt_name ? $config->get($opt_name) : null))) {
 			$log_dir = '.';
 		}
 		
