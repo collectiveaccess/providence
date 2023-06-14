@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
 */
+
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');				// loan
@@ -36,6 +37,8 @@ $va_rel_types		= $this->getVar('relationship_types');
 $vs_placement_code 	= $this->getVar('placement_code');
 $vn_placement_id	= (int)$settings['placement_id'];
 $vb_batch			= $this->getVar('batch');
+
+$force_values = $this->getVar('forceValues');
 
 $vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
 $vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_loans') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -320,7 +323,8 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 		});
 	});
 </script>

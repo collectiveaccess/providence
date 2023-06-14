@@ -52,6 +52,8 @@ $dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_sett
 
 $show_set_representation_button = caGetOption('showSetRepresentationButton', $va_settings, false); 
 
+$force_values = $this->getVar('forceValues');
+
 // Dyamically loaded sort ordering
 $loaded_sort 			= $this->getVar('sort');
 $loaded_sort_direction 	= $this->getVar('sortDirection');
@@ -99,6 +101,7 @@ if (!RequestHTTP::isAjax()) {
 }	
 
 $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
+
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -437,7 +440,8 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && method_exists($t_item_rel, "isSelfRelationship") && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 <?php
 	}
 ?>
