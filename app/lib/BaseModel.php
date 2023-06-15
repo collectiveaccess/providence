@@ -6084,7 +6084,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$t_list = Datamodel::getInstance('ca_lists', true);
 						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
 							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
-							print_R($item);
 							$v = $item['item_value'] ?? null;
 						}
 					}

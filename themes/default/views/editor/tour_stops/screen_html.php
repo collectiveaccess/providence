@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,8 @@
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	$t_ui 				= $this->getVar('t_ui');
 	$vs_context_id 		= $this->getVar('_context_id');	// used to restrict idno uniqueness checking to within the current list
 	
@@ -58,7 +60,8 @@
 			$va_form_elements = $t_stop->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'TourStopEditorForm',
-									'context_id' => $vs_context_id
+									'context_id' => $vs_context_id,
+									'forcedValues' => $forced_values
 								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);

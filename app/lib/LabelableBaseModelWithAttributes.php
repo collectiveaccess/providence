@@ -2474,7 +2474,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
-	 *			forceLabelForNew = 
+	 *			forceLabelForNew = Value to force into bundle. Used to set default label for new unsaved records. [Default is null]
+	 *			forceValues = An array of form values to display in the editing form. Used to prepopulate forms for new records prior to save. Array is key'ed on bundle. Values with key 'preferred_labels' will be displayed in the returned bundle. [Default is null]
 	 * @return string Rendered HTML bundle
 	 */
 	public function getPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
@@ -2549,7 +2550,9 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		}
 		
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
-		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
+		$o_view->setVar('new_labels', array_merge($va_new_labels_to_force_due_to_error, $forced_values['preferred_labels'] ?? []));
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		
 		$bundle_preview = '';
@@ -2580,6 +2583,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			forceValues = An array of form values to display in the editing form. Used to prepopulate forms for new records prior to save. Array is key'ed on bundle. Values with key 'nonpreferred_labels' will be displayed in the returned bundle. [Default is null]
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -2650,7 +2654,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 		}
 		
-		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
+		$o_view->setVar('new_labels', array_merge($va_new_labels_to_force_due_to_error, $forced_values['nonpreferred_labels'] ?? []));
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 		

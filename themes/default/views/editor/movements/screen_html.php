@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_movement 			= $this->getVar('t_subject');
-	$vn_movement_id 		= $this->getVar('subject_id');
+ 	$t_movement 		= $this->getVar('t_subject');
+	$vn_movement_id 	= $this->getVar('subject_id');
 
 	$vb_can_edit	 	= $t_movement->isSaveable($this->request);
 	$vb_can_delete		= $t_movement->isDeletable($this->request);
@@ -34,6 +34,8 @@
 	$vs_rel_table		= $this->getVar('rel_table');
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
+	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
 	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_movement_id ? array('movement_id' => $vn_movement_id) : array('type_id' => $t_movement->getTypeID()));
@@ -52,7 +54,8 @@
 			
 			$va_form_elements = $t_movement->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'MovementEditorForm'), $va_bundle_list);
+									'formName' => 'MovementEditorForm',
+									'forcedValues' => $forced_values), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
