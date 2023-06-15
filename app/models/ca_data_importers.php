@@ -2833,6 +2833,30 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (isset($va_item['settings']['replace'])) {
 								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
 							}
+							
+							if ( isset( $va_item['settings']['replaceIfExpression'] )
+							     && strlen( trim( $va_item['settings']['replaceIfExpression'] ) )
+							) {
+								try {
+									if ( $vm_ret
+										= ExpressionParser::evaluate( $va_item['settings']['replaceIfExpression'],
+										$use_raw ? $va_raw_row : $va_row_with_replacements )
+									) {
+										if ( $log_skip ) {
+											$o_log->logInfo( _t( '[%1] Replaced data for %2 because replaceIfExpression %3 is true',
+												$vs_idno, $vn_group_id,
+												$va_item['settings']['replaceIfExpression'] ) );
+										}
+										$va_group_buf[$vn_c]['_replace'] = 1;
+									}
+									$o_log->logDebug( _t( '[%1] Did not replace %2 because replaceIfExpression %3 is false (data was %4)',
+												$vs_idno, $vn_group_id,
+												$va_item['settings']['replaceIfExpression'], print_R($use_raw ? $va_raw_row : $va_row_with_replacements, true) ) );
+								} catch ( Exception $e ) {
+									$o_log->logDebug( _t( "[%1] Could not evaluate replaceIfExpression expression %2: %3", $vs_idno,
+										$va_item['settings']['replaceIfExpression'], $e->getMessage() ) );
+								}
+							}
 
 							if($va_item['settings']['skipIfDataPresent']) {
 								$va_group_buf[ $vn_c ]['_skipIfDataPresent'] = true;
