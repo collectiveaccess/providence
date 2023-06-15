@@ -125,12 +125,17 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 * @return bool success or not
 	 */
 	public function prepopulateFields(&$params, $pa_options=null) {
+		global $g_ui_locale_id;
+		
 		if(!($t_instance = caGetOption('instance', $params, null))) { return false; }
 		
 		//
 		$t_parent = null;
 		if($force_values = !$t_instance->getPrimaryKey()) {
-			$t_parent = new ca_objects($params['request']->getParameter('parent_id', pInteger));
+			if($parent_id = $params['request']->getParameter('parent_id', pInteger)) {
+				$table = $t_instance->tableName();
+				$t_parent = $table::findAsInstance($parent_id);
+			}
 		}
 		$forced_values = caGetOption('forced_values', $params, []);
 		
@@ -168,8 +173,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
         // Check again that, after filters, $va_rules array is not empty. This time will return true, because it's just skipping a record
         if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return true; }
-
-		global $g_ui_locale_id;
 
 		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
 		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
