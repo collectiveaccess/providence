@@ -71,7 +71,7 @@ class StatusController extends \GraphQLServices\GraphQLServiceController {
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
-						$u = self::authenticate($args['jwt']);
+						$u = self::authenticate($args['jwt'], ['throw' => false]); // valud auth is optional
 						
 						return ['status' => 'OK', 'datetime' => date('c'), 'timezone' => date_default_timezone_get(),'apiversion' => '1.0', 'echo' => $args['echo'] ?? null];
 					}

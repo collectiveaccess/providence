@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,10 +103,16 @@ class BaseSearchController extends BaseRefineableSearchController {
 			$vs_view = array_shift($va_tmp); 
 		}
 		
+		if($vb_is_new_search && ($default_sort = $this->request->config->get($this->ops_tablename.'_reset_sort_on_new_search'))) {
+			$this->opo_result_context->setCurrentSort($default_sort);
+			$this->opo_result_context->setCurrentSortDirection('ASC');
+		}
+		
 		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
 			$va_tmp = array_keys($this->opa_sorts);
 			$vs_sort = array_shift($va_tmp);
 		}
+		
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
 		$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();

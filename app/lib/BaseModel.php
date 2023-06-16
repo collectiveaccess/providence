@@ -1382,6 +1382,25 @@ class BaseModel extends BaseObject {
 	}
 	# ------------------------------------------------------
 	/** 
+	 * Return instance for parent of current row. Returns null if no parent is defined.
+	 *
+	 * @param array $options Options include:
+	 *		transaction = transaction to load parent within. If omitted transaction of current instance is used. [Default is null]
+	 *
+	 * @return BaseModel
+	 */
+	public function getParentInstance(?array $options=null) : ?BaseModel {
+		if($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+			if(($parent_id = $this->get($parent_id_fld)) > 0) {
+				$o_trans = caGetOption('transaction', $options, $this->getTransaction());
+				$table = $this->tableName();
+				return $table::findAsInstance([$this->primaryKey() => $parent_id], ['transaction' => $o_trans]);
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/** 
 	 * Check is currently loaded row is a hierarchical child of another row
 	 *
 	 * @return bool
@@ -6073,7 +6092,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$t_list = Datamodel::getInstance('ca_lists', true);
 						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
 							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
-							print_R($item);
 							$v = $item['item_value'] ?? null;
 						}
 					}
@@ -9476,6 +9494,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_item_rel->clear();
 		if ($this->inTransaction()) { $o_trans = $this->getTransaction(); $t_item_rel->setTransaction($o_trans); }
 		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
+		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
@@ -9637,6 +9658,9 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -12073,7 +12097,9 @@ $pa_options["display_form_field_tips"] = true;
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = $o_trans ? $o_trans->getDb() : new Db();
 			$vs_pk = $t_instance->primaryKey();
-			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ?", [$ps_idno]);
+			
+			$delete_sql = ($t_instance->hasField('deleted')) ? ' AND deleted = 0' : '';	// filter deleted
+			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ? {$delete_sql}", [$ps_idno]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
@@ -12296,6 +12322,21 @@ $pa_options["display_form_field_tips"] = true;
 							$pa_values['parent_id'][$i][1] = $ids[$v[1]];
 						}
 					}
+				}
+			}
+		}
+		
+		//
+		// Convert dates
+		//
+		foreach($pa_values as $vs_field => $va_field_values) {
+			if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+				$d = $va_field_values[0][1];
+				if($dt = caDateToHistoricTimestamps($d)) {
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+					unset($pa_values[$vs_field]);
 				}
 			}
 		}

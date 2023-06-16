@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,8 @@
 	
 	$t_ui = $this->getVar('t_ui');
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 ?>
 <div class="sectionBox">
 <?php
@@ -45,7 +47,8 @@
 		
 		$va_form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 								'request' => $this->request, 
-								'formName' => 'SetItemEditorForm'));
+								'formName' => 'SetItemEditorForm',
+								'forcedValues' => $forced_values));
 										
 		print join("\n", $va_form_elements);
 		

@@ -670,7 +670,7 @@ class RequestHTTP extends Request {
 			$this->user->close();
 		}
 
-		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
 			$host_without_port = __CA_SITE_HOSTNAME__;
 			$host_port = null;
 		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
@@ -820,6 +820,11 @@ class RequestHTTP extends Request {
 		if ($pa_options["dont_redirect"]) {
 			$pa_options["dont_redirect_to_login"] = true;
 			$pa_options["dont_redirect_to_welcome"] = true;
+		}
+		
+		if(isset($_SERVER['PHP_AUTH_USER']) && !$pa_options["user_name"]) {
+			$pa_options["user_name"] = $_SERVER['PHP_AUTH_USER'];
+			$pa_options["password"] = $_SERVER['PHP_AUTH_PW'];
 		}
 		
 		$vb_login_successful = false;

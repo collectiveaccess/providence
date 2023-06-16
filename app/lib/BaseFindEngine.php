@@ -311,7 +311,14 @@ class BaseFindEngine extends BaseObject {
 		$parsed_sort_spec = self::_parseSortOpts(array_shift($sort_fields));
 		$primary_sort_field = $parsed_sort_spec['sort'];
 		$options = array_merge($options, $parsed_sort_spec['options']);
-		if ($primary_sort_field === '_natural') { return $hits; }
+		if ($primary_sort_field === '_natural') { 
+			$start = caGetOption('start', $options, 0);
+			$limit = caGetOption('limit', $options, null);
+			if($start || $limit) {
+				$hits = array_slice($hits, (int)$start, $limit);
+			}
+			return $hits; 
+		}
 		$primary_sort_direction = self::sortDirection(array_shift($sort_directions));
 		
 		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, array_merge($options, ['relationshipTypes' => array_shift($rel_types)]));
@@ -494,6 +501,9 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			list($sort_field, $set_id) = array_pad(explode('/', $sort_field), 2, null);
 			
+			if(strpos($sort_field, ":") !== false) {
+				list($sort_field, $set_id) = array_pad(explode(':', $sort_field), 2, null);
+			}
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
@@ -503,8 +513,8 @@ class BaseFindEngine extends BaseObject {
 			}
 			
 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
-			if(($sort_table === 'ca_set_items')) {
-				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $sort_direction, $options);
+			if((in_array($sort_table, ['ca_sets', 'ca_set_items']))) {
+				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, 'rank', $set_id, $sort_direction, $options);
 			} elseif ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $sort_direction, $options);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
@@ -755,7 +765,7 @@ class BaseFindEngine extends BaseObject {
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
-			INNER JOIN ca_set_items AS csi ON csi.row_id = t.{$table_pk} AND csi.table_num = ? AND csi.set_id = ?
+			LEFT JOIN ca_set_items AS csi ON t.{$table_pk} = csi.row_id AND csi.table_num = ? AND csi.set_id = ?
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 			ORDER BY csi.`{$intrinsic}` {$direction}
 			{$limit_sql}

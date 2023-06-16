@@ -620,7 +620,7 @@
 					}
 				}
 				if (is_array($pa_values)) {
-					if (isset($pa_values['idno'])) {
+					if (isset($pa_values['idno']) && !empty($pa_values['idno']) && empty($t_rep->get('idno')) ) {
 						$t_rep->set('idno', $pa_values['idno']);
 						unset($pa_values['idno']);
 					}
@@ -924,7 +924,7 @@
 				// Only delete the related representation if nothing else is related to it
 				//
 
-				$va_rels = $this->_checkRepresentationReferences($t_rep);
+				$va_rels = $this->_checkRepresentationReferences($this->tableName(), $this->getTypeCode(), $t_rep);
 
 				if (!is_array($va_rels) || (sizeof($va_rels) == 0)) {
 					$t_rep->delete(true, $pa_options);
@@ -942,9 +942,22 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Check if representation has references that should prevent its deletion.
 		 *
+		 * @param string $table Table of record being deleted to which representation is related
+		 * @param string $type_code Type code for record being deleted to which representation is related
+		 * @param BaseModel $t_rep Model instance for object representation to check
+		 *
+		 * @param array list of relationships. Will return empty array even if relationships exist if deleted record meets criteria defined in app.conf always_delete_representation_when_relationship_removed_to directive. 
 		 */
-		private function _checkRepresentationReferences($t_rep) {
+		private function _checkRepresentationReferences(string $table, string $type_code, BaseModel $t_rep) {
+			$always_remove_config = $this->getAppConfig()->getAssoc('always_delete_representation_when_relationship_removed_to');
+			if(is_array($always_remove_config) && isset($always_remove_config[$table]) && is_array($always_remove_config[$table]) && sizeof($always_remove_config[$table])) {
+				if(in_array($type_code, $always_remove_config[$table])) {
+					return [];	// trigger delete
+				}
+			}
+			
 			$rels = $t_rep->hasRelationships();
 
 			if(is_array($rels)) {
@@ -1618,14 +1631,17 @@
 			$path = array_keys(Datamodel::getPath($this->tableName(), 'ca_object_representations'));
 			$linking_table = $path[1];
 			
+			$table = $this->tableName();
+			$type_code = $this->getTypeCode();
+			
 			if($rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 				if(is_array($rep_ids) && sizeof($rep_ids)) {
 					// delete any representations that are not referenced by some other primary type
 					$qr = caMakeSearchResult('ca_object_representations', array_keys($rep_ids));
 					while($qr->nextHit()) {
 						$t_rep = $qr->getInstance();
-						$rels = $this->_checkRepresentationReferences($t_rep);
-						if((sizeof($rels) === 1) && isset($rels[$linking_table]) && ($rels[$linking_table] == 1)) {
+						$rels = $this->_checkRepresentationReferences($table, $type_code, $t_rep);
+						if(!is_array($rels) || !sizeof($rels) || ((sizeof($rels) === 1) && isset($rels[$linking_table]) && ($rels[$linking_table] == 1))) {
 							$t_rep->delete(true);
 							if($t_rep->numErrors()) {
 								$this->errors = $t_rep->errors;

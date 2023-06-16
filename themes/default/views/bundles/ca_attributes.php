@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -194,7 +194,6 @@ if ($vb_batch) {
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 }
 print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
-
 
 if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], false)) {
 	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));

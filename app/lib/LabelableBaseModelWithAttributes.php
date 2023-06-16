@@ -139,6 +139,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vs_table_name = $this->tableName();
 		
 		if (!($t_label = Datamodel::getInstanceByTableName($label = $this->getLabelTableName()))) { return null; }
+		
+		$o_trans = null;
 		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 			$t_label->setTransaction($o_trans);
@@ -151,10 +153,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$label_table = $t_label->tableName();
 		
 		$dupe_check_values = array_merge($pa_label_values, [$this->primaryKey() => $this->getPrimaryKey(), 'locale_id' => ca_locales::codeToID($pn_locale_id), 'type_id' => $pn_type_id]);
-		// if ($t_label->hasField('effective_date')) {
-// 			$dupe_check_values['effective_date'] = $effective_date;
-// 		}
-		if(($dupe_count = $label_table::find($dupe_check_values, ['transaction' => $o_trans, 'returnAs' => 'count'])) > 0) {
+
+		if(($skip_existing && ($dupe_count = $label_table::find($dupe_check_values, ['transaction' => $o_trans, 'returnAs' => 'count'])) > 0)) {
 			return false;
 		}
 		
@@ -191,12 +191,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 		
 		$t_label->set($this->primaryKey(), $vn_id);
-		
-		// Does label already exist?
-		if($skip_existing && $label::find($dupe_check_data)) {
-			return null;
-		}
-		
+
 		$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 	
 		$vn_label_id = $t_label->insert(array_merge($pa_options, ['queueIndexing' => $pb_queue_indexing, 'subject' => $this]));
@@ -2276,7 +2271,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$omit_blanks_sql = '';
 		if (caGetOption('omitBlanks', $options, false)) {
 			$omit_blanks_sql = " AND (l.".$this->getLabelDisplayField()." <> ?)";
-			$va_params[] = '['._t('BLANK').']';
+			$va_params[] = '['.caGetBlankLabelText($this->tableName()).']';
 		}
 		
 		if (!$t_label->hasField('is_preferred')) { 
@@ -2338,6 +2333,28 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		return true;
+	}
+	# ------------------------------------------------------------------
+	/** 
+	 * Check if currently loaded row uses a default label 
+	 *
+	 * @param int $pn_locale_id Locale id to use for default label. If not set the user's current locale is used.
+	 * @return boolean True if only label for the record is a default label
+	 */
+	public function isDefaultLabel($locale_id=null) {
+		global $g_ui_locale_id;
+		
+		if(!is_null($locale_id) && !is_numeric($locale_id)) {
+			$locale_id = ca_locales::codeToID($locale_id);
+		}
+		if(!$locale_id) { $locale_id = $g_ui_locale_id; }
+		
+		$table = $this->tableName();
+		$label_table = $this->getLabelTableName();
+		if($label_table::find([$this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']', 'locale_id' => $locale_id], ['returnAs' => 'count']) > 0) {
+			return true;
+		}
+		return false;
 	}
 	# ------------------------------------------------------------------
 	/** 
@@ -2459,7 +2476,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
-	 *			forceLabelForNew = 
+	 *			forceLabelForNew = Value to force into bundle. Used to set default label for new unsaved records. [Default is null]
+	 *			forceValues = An array of form values to display in the editing form. Used to prepopulate forms for new records prior to save. Array is key'ed on bundle. Values with key 'preferred_labels' will be displayed in the returned bundle. [Default is null]
 	 * @return string Rendered HTML bundle
 	 */
 	public function getPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
@@ -2534,7 +2552,9 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		}
 		
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
-		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
+		$o_view->setVar('new_labels', array_merge($va_new_labels_to_force_due_to_error, $forced_values['preferred_labels'] ?? []));
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		
 		$bundle_preview = '';
@@ -2566,6 +2586,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			forceValues = An array of form values to display in the editing form. Used to prepopulate forms for new records prior to save. Array is key'ed on bundle. Values with key 'nonpreferred_labels' will be displayed in the returned bundle. [Default is null]
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -2636,7 +2657,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 		}
 		
-		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
+		$o_view->setVar('new_labels', array_merge($va_new_labels_to_force_due_to_error, $forced_values['nonpreferred_labels'] ?? []));
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 		

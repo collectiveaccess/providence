@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object_lot
@@ -36,6 +37,9 @@ $va_rel_types		= $this->getVar('relationship_types');
 $vs_placement_code 	= $this->getVar('placement_code');
 $vn_placement_id	= (int)$settings['placement_id'];
 $vb_batch			= $this->getVar('batch');
+
+$force_values = $this->getVar('forceValues');
+
 $vb_dont_show_del	=((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 $vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
 $vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
@@ -88,7 +92,6 @@ $num_per_page = caGetOption('numPerPage', $settings, 10);
 
 if (!RequestHTTP::isAjax()) {
 	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
-
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
@@ -423,6 +426,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_object_lots')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 <?php } ?>
 		});
 	});

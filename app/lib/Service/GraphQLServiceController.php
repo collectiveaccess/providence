@@ -173,7 +173,7 @@ class GraphQLServiceController extends \BaseServiceController {
 	 * @param array $options Options include:
 	 *		returnAs = Format of return value. If set to 'array' an array with user information will be returned on success. Default is boolean signalling successful authentication. 
 	 *		actions = List of actions user must have to authenticate. [Default is null]
-	 *		requireActions = Determine whether user requires all specified actions (set to 'all') or any action (set to 'any') to authenticate. Only used is the 'actions' option is set. [Default is 'all']
+	 *		requireActions = Determine whether user requires all specified actions (set to 'all') or any action (set to 'any') to authenticate. Only used if the 'actions' option is set. [Default is 'all']
 	 *		throw = Throw exception on authentication failure. [Default is true]
 	 *
 	 * @return mixed Boolean unless returnAs option is set to 'array'
