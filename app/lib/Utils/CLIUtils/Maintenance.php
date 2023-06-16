@@ -48,7 +48,7 @@
 					'ca_objects', 'ca_object_lots', 'ca_places', 'ca_entities',
 					'ca_occurrences', 'ca_collections', 'ca_storage_locations',
 					'ca_object_representations', 'ca_representation_annotations',
-					'ca_list_items'
+					'ca_list_items', 'ca_sets'
 				];
 			}
 			

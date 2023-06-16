@@ -42,7 +42,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 <?php
 		return; 
 }
-
+	
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_item 			= $this->getVar('t_item');				// object representation annotation
 $t_item_label 		= $this->getVar('t_item_label');	// object representation annotation_labels

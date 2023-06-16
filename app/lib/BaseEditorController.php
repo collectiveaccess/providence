@@ -92,7 +92,15 @@ class BaseEditorController extends ActionController {
 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
 			// Trigger "before duplicate" hook
-			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(
+				[
+					'id' => $vn_subject_id, 
+					'table_num' => $t_subject->tableNum(),
+					'table_name' => $t_subject->tableName(), 
+					'instance' => $t_subject,
+					'request' => $this->request
+				]
+			);
 
 			if ($t_dupe = $t_subject->duplicate(array(
 				'user_id' => $this->request->getUserID(),
@@ -109,7 +117,16 @@ class BaseEditorController extends ActionController {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
 				// Trigger duplicate hook
-				$this->opo_app_plugin_manager->hookDuplicateItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'duplicate' => $t_dupe));
+				$this->opo_app_plugin_manager->hookDuplicateItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $t_subject->tableName(), 
+						'instance' => $t_subject, 
+						'duplicate' => $t_dupe,
+						'request' => $this->request
+					]
+				);
 
 				// redirect to edit newly created dupe.
 				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
@@ -170,7 +187,7 @@ class BaseEditorController extends ActionController {
 
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 			[],
-			[]
+			['forceValues' => $for]
 		);
 		if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
@@ -187,8 +204,19 @@ class BaseEditorController extends ActionController {
 			Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
 		}
 
-		# trigger "EditItem" hook
-		$this->opo_app_plugin_manager->hookEditItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+		// Trigger "EditItem" hook on form load
+		$params = $this->opo_app_plugin_manager->hookEditItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => $t_subject,
+				'request' => $this->request
+			]
+		);
+		
+		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
+		$this->view->setVar('forced_values', $params['forced_values']);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {
 			$vs_view = 'screen_html';
@@ -296,7 +324,16 @@ class BaseEditorController extends ActionController {
 		$t_subject->isChild();	// sets idno "child" flag
 		
 		# trigger "BeforeSaveItem" hook
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => &$t_subject, 
+				'is_insert' => $vb_is_insert,
+				'request' => $this->request
+			]
+		);
 
 		$vb_save_rc = false;
 		$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
@@ -400,9 +437,18 @@ class BaseEditorController extends ActionController {
 			$this->opo_result_context->invalidateCache();	// force new search in case changes have removed this item from the results
 			$this->opo_result_context->saveContext();
 		}
+		
 		# trigger "SaveItem" hook
-
-		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => &$t_subject, 
+				'is_insert' => $vb_is_insert, 
+				'request' => $this->request
+			]
+		);
 
 		if (method_exists($this, "postSave")) {
 			$this->postSave($t_subject, $vb_is_insert);
@@ -603,7 +649,15 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
 
 				# trigger "DeleteItem" hook
-				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $subject_table, 'instance' => $t_subject));
+				$this->opo_app_plugin_manager->hookDeleteItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $subject_table, 
+						'instance' => $t_subject,
+						'request' => $this->request
+					]
+				);
 
 				# redirect
 				$this->redirectAfterDelete($t_subject);
@@ -716,7 +770,15 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
-		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+		$this->opo_app_plugin_manager->hookSummarizeItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => $t_subject, 
+				'request' => $this->request
+			]
+		);
 
 		$this->render('summary_html.php');
 	}
@@ -1138,12 +1200,15 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
-		$this->opo_app_plugin_manager->hookSaveItem(array(
-			'id' => $vn_subject_id,
-			'table_num' => $t_subject->tableNum(),
-			'table_name' => $t_subject->tableName(),
-			'instance' => &$t_subject,
-			'is_insert' => false)
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $vn_subject_id,
+				'table_num' => $t_subject->tableNum(),
+				'table_name' => $t_subject->tableName(),
+				'instance' => &$t_subject,
+				'is_insert' => false,
+				'request' => $this->request
+			]
 		);
 
 		$this->Access();
@@ -1174,7 +1239,16 @@ class BaseEditorController extends ActionController {
 				} else {
 					$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
 				}
-				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookSaveItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $t_subject->tableName(), 
+						'instance' => &$t_subject, 
+						'is_insert' => false,
+						'request' => $this->request
+					]
+				);
 
 			}
 		} else {

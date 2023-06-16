@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2022 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,8 @@ if ($use_classic_interface || $is_batch) {
 	print $this->render('ca_object_representations_classic.php');
 	return;
 }
+
+$force_values = $this->getVar('forceValues');
 
 $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
@@ -487,8 +489,8 @@ if (!RequestHTTP::isAjax()) {
 			},
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
-		
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 		});
 		if (caUI.initPanel) {
 			<?= $id_prefix; ?>MediaBrowserPanel = caUI.initPanel({ 

@@ -817,7 +817,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		foreach($this->getScreens($type_id, $pa_options) as $va_screen) {
 			$vn_screen_id = $va_screen['screen_id'];
-			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id, $type_id);
+			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id, $type_id, $pa_options);
 			
 			foreach($va_placements as $va_placement) {
 				if ($va_placement['bundle_name'] === $ps_bundle_name) {

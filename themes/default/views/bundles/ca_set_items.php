@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,7 +42,6 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor
 print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
 
 if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
-	
 ?>
 <div id="<?= $vs_id_prefix; ?>" class='setItemEditor'>
 <?php

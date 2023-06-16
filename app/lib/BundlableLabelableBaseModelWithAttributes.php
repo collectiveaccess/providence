@@ -289,7 +289,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookInsertItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => true, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
+			$this->opo_app_plugin_manager->hookInsertItem(
+				[
+					'id' => $this->getPrimaryKey(), 
+					'table_num' => $this->tableNum(), 
+					'table_name' => $this->tableName(), 
+					'instance' => $this, 
+					'is_insert' => true, 
+					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+				]
+			);
 		}
 		return $vn_rc;
 	}
@@ -387,7 +396,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 
 		if(caGetOption('hooks', $pa_options, true)) {
-			$this->opo_app_plugin_manager->hookUpdateItem(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'is_insert' => false, 'for_duplication' => caGetOption('forDuplication', $pa_options, true)));
+			$this->opo_app_plugin_manager->hookUpdateItem(
+				[
+					'id' => $this->getPrimaryKey(), 
+					'table_num' => $this->tableNum(), 
+					'table_name' => $this->tableName(), 
+					'instance' => $this, 'is_insert' => false, 
+					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+				]
+			);
 		}
 		return $vn_rc;
 	}	
@@ -1458,10 +1475,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * @param string $ps_placement_code
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Supported options are:
-	 *		config
-	 *		viewPath
-	 *		graphicsPath
-	 *		request
+	 *		config = 
+	 *		viewPath = 
+	 *		graphicsPath = 
+	 *		request = 
+	 *		forcedValues = 
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null, &$ps_bundle_label=null) {
 		global $g_ui_locale, $g_ui_locale_id;
@@ -1474,6 +1492,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_NONE__) {
 			return;
 		}
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
 		
 		$bundle_code = $ps_bundle_name;
 		
@@ -1638,6 +1658,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_additional_field_options['height'] = $vn_height;
 					}
 					
+					// Force intrinsic to value?
+					if(isset($forced_values[$ps_bundle_name]) && strlen($forced_values[$ps_bundle_name])) { 
+						$this->set($ps_bundle_name, $forced_values[$ps_bundle_name]);
+					}
 					$o_view->setVar('form_element', $this->htmlFormElement($ps_bundle_name, ($this->getProperty('ID_NUMBERING_ID_FIELD') == $ps_bundle_name) ? $o_config->get('idno_element_display_format_without_label') : $o_config->get('bundle_element_display_format_without_label'), 
 						array_merge(
 							[	
@@ -3426,7 +3450,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('defaultRepresentationUploadType', $po_request->user->getVar('defaultRepresentationUploadType'));
 
 		$o_view->setVar('initialValues', $va_initial_values);
-		$o_view->setVar('forceNewValues', $va_force_new_values);
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, []);
+		$forced_values = $forced_values[$ps_related_table] ?? [];
+		$forced_values_proc = [];
+		foreach($forced_values as $fv) {
+			$forced_values_proc[] = [
+				'id' => $fv['entity_id'],
+				'label' => $fv['label'],
+				'type_id' => $fv['item_type_id'],
+				'relationship_type_id' => $fv['relationship_type_id']
+			];
+		}
+		
+		$o_view->setVar('forceValues', array_merge($va_force_new_values, $forced_values_proc));
+		
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 		
 		return $o_view->render($ps_related_table.'.php');
@@ -6492,9 +6530,8 @@ if (!$vb_batch) {
 				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 
 				if ($vb_uses_relationship_types) { $va_rel_types = $t_rel->getRelationshipInfo($va_path[1]); }
-				if (($pn_start > 0) && !is_array($pa_sort_fields)) { $qr_res->seek($pn_start); }
 				while($qr_res->nextRow()) {
-					if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
+					if ((sizeof($va_rels) >= ($pn_limit + $pn_start)) && !is_array($pa_sort_fields)) { break; }
 					
 					if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
@@ -6556,6 +6593,8 @@ if (!$vb_batch) {
 				$vn_i++;
 			}
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
+			
+			if(($pn_start > 0) && !is_array($pa_sort_fields)) { $va_rels = array_slice($va_rels, $pn_start); }
 
 			// Set 'label' entry - display label in current user's locale
 			$va_sorted_rels = [];
@@ -6642,9 +6681,8 @@ if (!$vb_batch) {
 				}
 				
 				$vn_c = 0;
-				if (($pn_start > 0) && !is_array($pa_sort_fields)) { $qr_res->seek($pn_start); }
 				while($qr_res->nextRow()) {
-					if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
+					if ((sizeof($va_rels) >= ($pn_limit + $pn_start)) && !is_array($pa_sort_fields)) { break; }
 					
 					if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 						if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
@@ -6715,6 +6753,8 @@ if (!$vb_batch) {
 					}
 				}
 			}
+			
+			if(($pn_start > 0) && !is_array($pa_sort_fields)) { $va_rels = array_slice($va_rels, $pn_start); }
 			
 			if ($ps_return_as !== 'data') {
 				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, ($ps_return_as === 'relationids') ? 'relation_id' : $t_rel_item->primaryKey());
@@ -6901,12 +6941,11 @@ if (!$vb_batch) {
 			$va_rels_by_date = [];
 			
 			$vn_c = 0;
-			if (($pn_start > 0) && !is_array($pa_sort_fields)) { $qr_res->seek($pn_start); }
 			$va_seen_row_ids = [];
 			$va_relation_ids = $va_rels_for_id_by_date = [];
 			while($qr_res->nextRow()) {
 				$va_rels_for_id = [];
-				if (($vn_c >= $pn_limit) && !is_array($pa_sort_fields)) { break; }
+				if ((sizeof($va_rels) >= ($pn_limit + $pn_start)) && !is_array($pa_sort_fields)) { break; }
 				
 				if (is_array($pa_primary_ids) && is_array($pa_primary_ids[$vs_related_table])) {
 					if (in_array($qr_res->get($vs_key), $pa_primary_ids[$vs_related_table])) { continue; }
@@ -6970,6 +7009,8 @@ if (!$vb_batch) {
 				
 				$va_seen_row_ids[$va_row['row_id']] = true;
 			}
+			
+			if(($pn_start > 0) && !is_array($pa_sort_fields)) { $va_rels = array_slice($va_rels, $pn_start); }
 							
 			if ($ps_return_as !== 'data') {
 				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, ($ps_return_as === 'relationids') ? 'relation_id' : $t_rel_item->primaryKey());
