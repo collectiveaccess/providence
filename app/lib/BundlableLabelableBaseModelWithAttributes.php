@@ -1495,7 +1495,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$forced_values = caGetOption('forcedValues', $pa_options, null);
 		
-		$bundle_code = $ps_bundle_name;
+		$tmp = explode('.', $ps_bundle_name);
+		$bundle_code = (($this->tableName() === ($tmp[0] ?? null)) && isset($tmp[1])) ? $tmp[1] : $ps_bundle_name;
 		
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 		if($vb_read_only_because_deaccessioned && ($ps_bundle_name != 'ca_objects_deaccession')) {
