@@ -1635,7 +1635,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$pa_options['label'] = $this->getFieldInfo($ps_bundle_name, 'LABEL');
 				}
 				
-				$bundle_code = $this->tableName().".{$bundle_code}";
+				//$bundle_code = $this->tableName().".{$bundle_code}";
 						
 				$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath();
 				$o_view = new View($pa_options['request'], "{$vs_view_path}/bundles/");
