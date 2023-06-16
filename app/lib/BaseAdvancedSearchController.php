@@ -172,6 +172,11 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			} else {
 				$vo_result = $po_search->search($vs_search, $va_search_opts);
 			}
+			
+			$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDescription($result_desc);
+			
 			$this->opo_result_context->validateCache();
 
 			// Only prefetch what we need
