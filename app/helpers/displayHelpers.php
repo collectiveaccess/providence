@@ -2024,7 +2024,11 @@ jQuery(document).ready(function() {
 
 			$vs_buf .= "</script>\n";
 		}
-
+		
+		// Search results debug
+		if($po_view->request->user->getPreference('show_search_result_desc') === 'show') {
+			$vs_buf .= "<div class='searchResultDesc'><span class='searchResultDescHeading'>"._t('Search <em>%1</em> matched on', $o_result_context->getSearchExpression()).':</span><br/>'.caFormatSearchResultDesc($t_item->getPrimaryKey(), $o_result_context->getResultDescription() ?? [], ['maxTitleLength' => 20, 'request' => $po_view->request])."</div>\n";
+		}
         $o_app_plugin_manager = new ApplicationPluginManager();
         $va_hookAppend = $o_app_plugin_manager->hookAppendToEditorInspector(array("t_item"=>$t_item));
         if (is_string($va_hookAppend["caEditorInspectorAppend"] ?? null)) {

@@ -72,9 +72,17 @@ $result_desc			= $this->getVar('result_desc');
 					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$vn_object_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
 					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
 					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $vn_object_id; ?>"><a class='qlButton' data-id="<?= $vn_object_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
-					<div><?= $result_desc  ? caFormatSearchResultDesc($vn_object_id, $result_desc) : null ?></div>
 				</div>
-				<div class="thumbCaption"><?= $vs_caption; ?></div>
+				<div class="thumbCaption">
+<?php
+	if($result_desc) {
+?>
+					<div class='searchResultDesc'><span class='searchResultDescHeading'><?= _t('Matched on'); ?>:</span><?= caFormatSearchResultDesc($vn_object_id, $result_desc, ['maxTitleLength' => 20, 'request' => $this->request]) ?></div>
+<?php
+	}
+?>			
+					<?= $vs_caption; ?>
+				</div>
 			</td>
 <?php
 			$vn_col++;
