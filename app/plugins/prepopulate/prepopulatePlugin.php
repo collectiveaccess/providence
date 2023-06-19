@@ -132,7 +132,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		//
 		$t_parent = null;
 		if($force_values = !$t_instance->getPrimaryKey()) {
-			if($parent_id = $params['request']->getParameter('parent_id', pInteger)) {
+			if(isset($params['request']) && ($parent_id = $params['request']->getParameter('parent_id', pInteger))) {
 				$table = $t_instance->tableName();
 				$t_parent = $table::findAsInstance($parent_id);
 			}
