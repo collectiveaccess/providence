@@ -2305,8 +2305,7 @@ class ca_users extends BaseModel {
 				
 				TooltipManager::add('#'.$vs_field_id, "<h3>".$va_pref_info["label"]."</h3>".$va_pref_info["description"]);
 			}
-			
-			
+				
 			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			return $vs_format;
 
