@@ -6933,7 +6933,8 @@
         </label>
       </labels>
       <settings>
-        <setting name="restrictToTypes">87</setting>
+        <setting name="restrictToTypes">87
+        </setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -9066,9 +9067,6 @@
             <placement code="ca_attribute_institution3">
               <bundle>ca_attribute_institution</bundle>
             </placement>
-            <placement code="ca_attribute_maintenance_report">
-              <bundle>ca_attribute_maintenance_report</bundle>
-            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -9296,6 +9294,28 @@
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Reportes de Condición relacionados</setting>
+                <setting name="label" locale="en_US">Maintenance Report</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="restrict_to_types">maintenance</setting>
+                <setting name="restrict_to_relationship_types">relation</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_adminbiohist">

@@ -21,3 +21,4 @@ setup.php
 /themes/default/views/bundles/inspector_info.php
 /support/scripts/*.php
 /support/scripts/*.sh
+vendor/
