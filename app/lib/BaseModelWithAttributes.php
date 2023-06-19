@@ -1981,7 +1981,7 @@
 				
 				if($element_datatype == 0){ //Only show field level bundle codes inside containers    
 					$bundle_code = "{$table_name}.{$element_code}.{$va_element['element_code']}";
-					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
+					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode' data-code='{$bundle_code}'>{$va_element['element_code']}</a>)</span>" : $label;
 				}
 				
 				if(!is_array($va_element['settings'])) { $va_element['settings'] = []; }

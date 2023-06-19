@@ -578,6 +578,7 @@ class ca_attributes extends BaseModel {
 		$ps_formatted_element = str_replace("^ELEMENT", $vs_element, $ps_formatted_element);
 		$ps_formatted_element = str_replace("^DESCRIPTION", "", $ps_formatted_element);
 		$ps_formatted_element = str_replace("^EXTRA", "", $ps_formatted_element);
+		$ps_formatted_element = str_replace("^BUNDLECODE", "", $ps_formatted_element);
 	
 		if ($vs_description) {
 			// don't use TooltipManager to make sure the tooltip is also displayed when this element is added dynamically (via "add" button)

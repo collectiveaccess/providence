@@ -899,6 +899,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1203,6 +1204,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1576,6 +1578,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -2303,6 +2306,8 @@ class ca_users extends BaseModel {
 				
 				TooltipManager::add('#'.$vs_field_id, "<h3>".$va_pref_info["label"]."</h3>".$va_pref_info["description"]);
 			}
+				
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			return $vs_format;
 
 		} else {

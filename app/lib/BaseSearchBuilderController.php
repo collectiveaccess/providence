@@ -212,7 +212,11 @@
 			return $this->Index(['error' => true]);
 		}
 				$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
-
+			
+				$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
+				$this->view->setVar('result_desc', $result_desc);
+				$this->opo_result_context->setResultDescription($result_desc);
+			
 				$this->opo_result_context->validateCache();
 				
 				// Only prefetch what we need

@@ -2024,7 +2024,14 @@ jQuery(document).ready(function() {
 
 			$vs_buf .= "</script>\n";
 		}
-
+		
+		// Search results debug
+		if($po_view->request->user->getPreference('show_search_result_desc') === 'show') {
+			$result_desc = $o_result_context->getResultDescription() ?? null;
+			if(is_array($result_desc) && sizeof($result_desc)) {
+				$vs_buf .= "<div class='searchResultDesc'><span class='searchResultDescHeading'>"._t('Search <em>%1</em> matched on', $o_result_context->getSearchExpression()).':</span><br/>'.caFormatSearchResultDesc($t_item->getPrimaryKey(), $result_desc, ['maxTitleLength' => 20, 'request' => $po_view->request])."</div>\n";
+			}
+		}
         $o_app_plugin_manager = new ApplicationPluginManager();
         $va_hookAppend = $o_app_plugin_manager->hookAppendToEditorInspector(array("t_item"=>$t_item));
         if (is_string($va_hookAppend["caEditorInspectorAppend"] ?? null)) {
@@ -4117,6 +4124,8 @@ jQuery(document).ready(function() {
  		$pb_dont_show_placeholder 			= caGetOption('dontShowPlaceholder', $pa_options, false);
  		$ps_display_annotations	 			= caGetOption('displayAnnotations', $pa_options, false);
  		$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
+		$default_annotation_id		 		= caGetOption('defaultAnnotationID', $pa_options, null);
+		$start_timecode		 				= caGetOption('startTimecode', $pa_options, null);
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 
  		
@@ -4252,6 +4261,9 @@ jQuery(document).ready(function() {
 		$o_view->setVar('placeholder', $vs_placeholder);
 		$o_view->setVar('slides', $vs_slides);
 		$o_view->setVar('display_annotations', $ps_display_annotations);
+		$o_view->setVar('default_annotation_id', $default_annotation_id);
+		$o_view->setVar('start_timecode', $start_timecode);
+
 		return $o_view->render('representation_viewer_html.php');
  	}
  	# ---------------------------------------
@@ -5477,3 +5489,34 @@ jQuery(document).ready(function() {
 		return join('', array_unique($excerpts));
 	}
 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caHighlightText($content, $highlight_words) {
+		if(is_array($content)) { return $content; }
+
+		if(!is_array($highlight_words)) { return $content; }	// use global directly, if possible, for performance
+		
+		$highlight_words = array_reduce($highlight_words, function($c, $v) {
+			if(mb_substr($v, -1, 1) == '*') {
+				$v = mb_substr($v, 0, mb_strlen($v) - 1);
+				if($v[-1] == 'i') { $v = mb_substr($v, 0, mb_strlen($v) - 1); }
+				array_push($c, preg_quote($v, '/').'[A-Za-z0-9]*');
+			}
+			if(!strlen($v)) { array_pop($c); return $c; }
+			if(mb_substr($v, -1, 1) == 's') {
+				array_push($c, (mb_substr($v, 0, mb_strlen($v) - 1)."'s"));
+				array_push($c, (mb_substr($v, 0, mb_strlen($v) - 1)."’s"));
+			}
+			array_push($c, $v);
+			return $c;
+		}, []);
+		if(!sizeof($highlight_words)) { return $content; }
+		usort($highlight_words, function($a, $b) {
+			return strlen($b) <=> strlen($a);
+		});
+		
+		$content = preg_replace("/(?<![A-Za-z0-9])(".join('|', $highlight_words).")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		
+		return $content;
+	}

@@ -295,6 +295,29 @@ class ResultContext {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Returns a description of search results, including which fields caused the item to be included.
+	 *
+	 * @return array
+	 */
+	public function getResultDescription() : ?array {
+		if ($context = $this->getContext()) {
+			return $context['result_desc'] ?? null;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Sets the result description the current context. The result description includes matching
+	 * information from the search engine detailing which fields matched for each item in the resultset.
+	 *
+	 * @param array $result_desc 
+	 * @return array 
+	 */
+	public function setResultDescription(array $result_desc) {
+		return $this->setContextValue('result_desc', $result_desc);
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Returns list of type_ids used by items in result list
 	 *
 	 * @return array

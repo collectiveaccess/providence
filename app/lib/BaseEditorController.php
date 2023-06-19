@@ -187,7 +187,7 @@ class BaseEditorController extends ActionController {
 
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 			[],
-			['forceValues' => $for]
+			[]
 		);
 		if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
@@ -216,7 +216,7 @@ class BaseEditorController extends ActionController {
 		);
 		
 		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
-		$this->view->setVar('forced_values', $params['forced_values']);
+		$this->view->setVar('forced_values', $params['forced_values'] ?? null);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {
 			$vs_view = 'screen_html';

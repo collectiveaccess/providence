@@ -133,6 +133,11 @@
 		 * Terms used for matching in search
 		 */
 		protected $searched_terms = [];
+
+		/**
+		 * Description of matches by return row_id
+		 */
+		protected $seach_result_desc = [];
 		# ------------------------------------------------------
 		/**
 		 * @var Type_id cache
@@ -1131,6 +1136,7 @@
 		 */
 		public function execute($pa_options=null) {
 			$this->searched_terms = [];
+			$this->seach_result_desc = [];
 			
 			global $AUTH_CURRENT_USER_ID;
 			if (!is_array($this->opa_browse_settings)) { return null; }
@@ -2724,6 +2730,7 @@
 										}
 										$qr_res = $o_search->search(join(" AND ", $va_row_ids), $va_options);
 										$this->searched_terms = $o_search->getSearchedTerms();
+										$this->seach_result_desc = $o_search->getSearchResultDesc();
 										
 										$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
 										$vn_i++;
@@ -8133,6 +8140,13 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		 */
 		public function getSearchedTerms() {
 			return $this->searched_terms ?? [];
+		}		
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getSearchResultDesc() {
+			return $this->seach_result_desc ?? [];
 		}
 		# ------------------------------------------------------
 	}

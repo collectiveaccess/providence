@@ -6870,6 +6870,11 @@ div.caRepresentationMediaReplicationControls {
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #ededed;
 }
+
+.caAnnoEditorPanelContentArea {
+    margin-top: 40px;
+}
+
 .caAnnoEditorTlContainer {		/* timeline container */
     width:100%;
     height: 130px;
@@ -6970,12 +6975,7 @@ div.caRepresentationMediaReplicationControls {
 	width: 500px;
     margin: auto auto 0 auto;
 }
-.caAnnoEditorAudioMediaPlayer {
-	margin-top: 343px;
-}
-.caAnnoEditorVideoMediaPlayer {
 
-}
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
@@ -8229,4 +8229,34 @@ ul.caPrintOptions {
 
 li.caPrintOptionItem {
     margin-right: 10px;
+}
+
+/* Search debugging */
+div.searchResultDesc {
+	display: block;
+	font-size: 9px;
+	
+	text-align: left;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    
+    height: 60px;
+    overflow-y: auto;
+}
+
+div.searchResultDesc ul {
+	display: block !important;
+	font-size: 9px;
+	text-align: left;
+	list-style: none;
+	padding: 1px;
+	margin: 0px;
+}
+
+.searchResultDescHeading {
+	font-weight: bold;
+	text-align: left;
 }

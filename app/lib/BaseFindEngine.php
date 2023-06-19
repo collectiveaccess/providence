@@ -490,7 +490,6 @@ class BaseFindEngine extends BaseObject {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
 			} elseif($sort_field === 'nonpreferred_labels') {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
-			
 			} else {
 				//throw new ApplicationException(_t('Unhandled sort'));
 				return $hits;
@@ -746,7 +745,7 @@ class BaseFindEngine extends BaseObject {
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h] = true; }
 		}
 		return $sort_keys;
 	}

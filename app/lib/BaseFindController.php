@@ -36,13 +36,10 @@
 require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
 require_once(__CA_LIB_DIR__.'/Visualizer.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
-require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
 class BaseFindController extends ActionController {
@@ -58,6 +55,7 @@ class BaseFindController extends ActionController {
 	protected $opn_type_restriction_id = null;
 	
 	protected $opo_app_plugin_manager;
+	
 	/**
 	 * List of available search-result sorting fields
 	 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
