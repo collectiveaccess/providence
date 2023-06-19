@@ -314,7 +314,7 @@ var caUI = caUI || {};
 			//
 			// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 			//
-			caUI.utils.hexToRgb = function(hex, format) {
+			caUI.utils.hexToRgb = function(hex, format=null) {
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 var colors = result ? {
                     r: parseInt(result[1], 16),
