@@ -125,12 +125,17 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 * @return bool success or not
 	 */
 	public function prepopulateFields(&$params, $pa_options=null) {
+		global $g_ui_locale_id;
+		
 		if(!($t_instance = caGetOption('instance', $params, null))) { return false; }
 		
 		//
 		$t_parent = null;
 		if($force_values = !$t_instance->getPrimaryKey()) {
-			$t_parent = new ca_objects($params['request']->getParameter('parent_id', pInteger));
+			if(isset($params['request']) && ($parent_id = $params['request']->getParameter('parent_id', pInteger))) {
+				$table = $t_instance->tableName();
+				$t_parent = $table::findAsInstance($parent_id);
+			}
 		}
 		$forced_values = caGetOption('forced_values', $params, []);
 		
@@ -146,7 +151,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
-        if ($pa_options['restrictToRules']) {
+        if (is_array($pa_options['restrictToRules'] ?? null)) {
             $restrictToRules = explode(",", $pa_options['restrictToRules']);
             // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -154,9 +159,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                 if (is_array($va_rules[$res_rules]))
                     $va_rules_filtered[] = $va_rules[$res_rules];
             }
-            $va_rules = $va_rules_filtered;
-        }
-        else if ($pa_options['excludeRules']) {
+            $va_rules=$va_rules_filtered;
+        } elseif(is_array($pa_options['excludeRules'] ?? null)) {
             $excludeRules = explode(",", $pa_options['excludeRules']);
             // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -169,8 +173,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
         // Check again that, after filters, $va_rules array is not empty. This time will return true, because it's just skipping a record
         if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return true; }
-
-		global $g_ui_locale_id;
 
 		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
 		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
@@ -217,7 +219,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
             $vs_context = caGetOption('context', $va_rule, null);
 
 			// respect restrictToTypes option
-			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
+			if(($va_rule['restrictToTypes'] ?? null) && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
 				if(!in_array($t_instance->getTypeCode(), $va_rule['restrictToTypes'])) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$t_instance->getTypeCode()." is not in restrictToTypes");
 					continue;
@@ -225,7 +227,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			}
 
 			// skip this rule if expression is true
-			if($va_rule['skipIfExpression'] && (strlen($va_rule['skipIfExpression'])>0)) {
+			if(($va_rule['skipIfExpression'] ?? null) && (strlen($va_rule['skipIfExpression'])>0)) {
 				$va_tags = caGetTemplateTags($va_rule['skipIfExpression']);
 
 				foreach($va_tags as $vs_tag) {
@@ -234,7 +236,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 					}
 				}
 
-				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
+				if(ExpressionParser::evaluate($va_rule['skipIfExpression'] ?? null, $va_expression_vars)) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
 				}
