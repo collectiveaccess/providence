@@ -281,7 +281,8 @@ class BaseFindEngine extends BaseObject {
 	 * @param string $table The table for the results being sorted
 	 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
 	 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
-	 * @param array $options No options are currently defined.
+	 * @param array $options Options include:
+	 *		context = Array with interstitial fields and values to restrict sort values to; used to constrain relationships when sorting on interstitial rank. [Default is null]
 	 *
 	 * @return array
 	 */
@@ -454,8 +455,11 @@ class BaseFindEngine extends BaseObject {
 	 * @param string $table The table for the results being sorted
 	 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
 	 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
-	 * @param array $options No options are currently defined.
-	 *
+	 * @param array $options Options include:
+	 *		start = Starting index of returned hits. [Default is 0]
+	 *		limit = Maximum number of hits to return. [Default is null; no limit]
+	 *		context = Array with interstitial fields and values to restrict sort values to; used to constrain relationships when sorting on interstitial rank. [Default is null]
+	 *		policy = History tracking policy to sort by. [Default is null]
 	 * @return array
 	 */
 	public function doSort(array $hits, string $table, string $sort_field, string $sort_direction='asc', array $options=null) {
@@ -490,7 +494,6 @@ class BaseFindEngine extends BaseObject {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
 			} elseif($sort_field === 'nonpreferred_labels') {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
-			
 			} else {
 				//throw new ApplicationException(_t('Unhandled sort'));
 				return $hits;
@@ -572,16 +575,26 @@ class BaseFindEngine extends BaseObject {
 		
 		$intrinsic = array_shift(explode('/', $intrinsic));
 		$limit_sql = self::_limitSQL($options);
-		
+	
+		// If sorting on interstitial intrinsic (usually rank) we set context so sort works as expected 
+		// (eg. sorting only on relationships to the browsed upon related record)
+		$context_sql = '';
+		if(is_array($context = caGetOption('context', $options, null)) && isset($context[$t_rel_table->tableName()])) {
+			$wheres = [];
+			foreach($context[$t_rel_table->tableName()] as $t => $f) {
+				$wheres[] = "s.{$t} = ".(int)$f;
+			}
+			$context_sql = "WHERE ".join(" AND ", $wheres);
+		}
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 			{$join_sql}
+			{$context_sql}
 			ORDER BY s.`{$intrinsic}` {$direction}
 			{$limit_sql}
 		";
-		
 		$qr_sort = $this->db->query($sql);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
