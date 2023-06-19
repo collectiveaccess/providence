@@ -2289,7 +2289,15 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Format search result description data for debugging
 	 *
+	 * @param int $id row_id to display data for
+	 * @array $result_desc_data 
+	 * @array $options Options include:
+	 *		request = 
+	 *		maxTitleLength = 
+	 *
+	 * @return string
 	 */
 	function caFormatSearchResultDesc(int $id, array $result_desc_data, ?array $options=null) : ?string {
 		$request = caGetOption('request', $options, null);
@@ -2334,6 +2342,57 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Get text excerpt for search hit
+	 *
+	 * @param int $id row_id to display data for
+	 * @array $result_desc_data 
+	 * @array $options Options include: 
+	 *		maxExcerpts = Maximum number of excerpts to be returned. Searches matching on multiple fields may return different excepts for each. [Default is null]
+	 *
+	 * @return array
+	 */
+	function caTextExcerptForSearchResult(int $id, array $result_desc_data, ?array $options=null) : ?array {
+		$max_excerpts = caGetOption('maxExcerpts', $options, null);
+		if(is_array($result_desc_data[$id] ?? null)) {
+			$m = $result_desc_data[$id];
+			$s = "";
+			$by_table = $by_table_counts = [];
+			foreach($m['desc'] as $d) {
+				$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+				$by_table_counts[$d['table']]++;
+			}
+			asort($by_table_counts, SORT_NUMERIC);
+			$by_table_counts = array_reverse($by_table_counts);
+			
+			$word_list = $excerpts = [];
+			foreach($by_table_counts as $t => $c) {
+				$by_row_id = $by_table[$t];
+				$t_instance = Datamodel::getInstance($t);
+				foreach($by_row_id as $row_id => $by_field) {
+					$t_instance->load($row_id);
+					$t_subject = method_exists($t_instance, 'getSubjectTableInstance') ? $t_instance->getSubjectTableInstance() : $t_instance;
+					
+					foreach($by_field as $field_num => $words) {
+						$word_list = array_unique(array_merge($word_list, array_keys($words)));
+						$bundle_code = caFieldNumToBundleCode($t, $field_num);
+						if(!($excerpt = trim(caGetTextExcerpt($t_subject->get($bundle_code), array_keys($words))))) { continue; }
+						$excerpts[] = $excerpt;
+						
+						if(($max_excerpts > 0) && (sizeof($excerpts) >= $max_excerpts)) { break(3); }
+					}
+				}
+			}
+			
+			$excerpts = array_map(function($v) use ($word_list) {
+				return caHighlightText($v, $word_list);
+			}, $excerpts);
+			
+			return array_unique($excerpts);
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
 	 *
 	 */
 	function caFieldNumToDisplayText($table_name_or_num, string $field_num) : ?string {
@@ -2352,6 +2411,31 @@
 				break;
 			default:
 				return $field_num;
+				break;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caFieldNumToBundleCode($table_name_or_num, string $field_num) : ?string {
+		$prefix = strtoupper(substr($field_num, 0, 1));
+		
+		$table = Datamodel::getTableName($table_name_or_num);
+		switch($prefix) {
+			case 'A':
+				$element_code = ca_metadata_elements::getElementCodeForId(substr($field_num, 1));
+				$parent_code = ca_metadata_elements::getParentCode($element_code);
+				return $parent_code ? "{$table}.{$parent_code}.{$element_code}" : "{$table}.{$element_code}";
+				break;
+			case 'I':
+				if($t_instance = Datamodel::getInstance($table_name_or_num)) {
+					$field_name = $t_instance->fieldName(substr($field_num, 1));
+					return "{$table}.{$field_name}";
+				}
+				break;
+			default:
+				return null;
 				break;
 		}
 	}

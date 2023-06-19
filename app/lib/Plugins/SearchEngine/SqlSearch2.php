@@ -216,7 +216,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$this->initSearch($subject_tablenum, $search_expression, $filters, $rewritten_query);
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
-			$z=$this->_processQuery($subject_tablenum, $rewritten_query), 
+			$this->_processQuery($subject_tablenum, $rewritten_query), 
 			$filters
 		);
 		if(!is_array($hits)) { $hits = []; }
@@ -224,7 +224,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$hits = caSortArrayByKeyInValue($hits, ['boost'], 'desc', ['mode' => SORT_NUMERIC]); // sort by boost
 
 		// Stash list of hits with matching data
-		$this->seach_result_desc = $this->_resolveHitInformation($z);
+		$this->seach_result_desc = $this->_resolveHitInformation($hits);
 		
 		// Return list of hits
 		return new WLPlugSearchEngineSqlSearchResult(array_keys($hits), $subject_tablenum);
