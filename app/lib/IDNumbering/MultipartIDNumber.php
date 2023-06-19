@@ -697,7 +697,7 @@ class MultipartIDNumber extends IDNumber {
 					$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$v;
 					break;
 				case 'PARENT':
-					$tmp = explode($separator, $v);
+					$tmp = $separator ? explode($separator, $v) : [$v];
 					
 					foreach($tmp as $t) {
 						$n = $padding - mb_strlen($t);
