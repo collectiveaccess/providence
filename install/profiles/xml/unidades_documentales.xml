@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>collectiveaccess</profileName>
-  <profileDescription>Profile created on June 3 2023 at 23:29:53 by CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Profile created on June 20 2023 at 9:48:47 by CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -1287,6 +1287,15 @@
             </label>
           </labels>
         </item>
+        <item idno="visu" enabled="1" default="0" value="visu" rank="69">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>visu</name_singular>
+              <name_plural>visu</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="object_lot_sources" hierarchical="1" system="0" vocabulary="0">
@@ -1359,6 +1368,11 @@
             <label locale="sv_SE" preferred="1">
               <name_singular>nyförvärvad</name_singular>
               <name_plural>nyförvärvad</name_plural>
+              <description/>
+            </label>
+            <label locale="es_ES" preferred="1">
+              <name_singular>accedido</name_singular>
+              <name_plural>accedidos</name_plural>
               <description/>
             </label>
           </labels>
@@ -2050,7 +2064,7 @@
         </label>
       </labels>
       <items>
-        <item idno="event" enabled="1" default="1" value="event" rank="111">
+        <item idno="event" enabled="1" default="0" value="event" rank="111">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>event</name_singular>
@@ -2066,14 +2080,14 @@
         </item>
         <item idno="maintenance" enabled="1" default="1" value="maintenance" rank="112">
           <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>maintenance</name_singular>
-              <name_plural>maintenance</name_plural>
-              <description/>
-            </label>
             <label locale="es_ES" preferred="1">
               <name_singular>conservación</name_singular>
               <name_plural>conservación</name_plural>
+              <description/>
+            </label>
+            <label locale="en_US" preferred="1">
+              <name_singular>maintenance</name_singular>
+              <name_plural>maintenance</name_plural>
               <description/>
             </label>
           </labels>
@@ -2664,6 +2678,9 @@
         <label locale="en_US">
           <name>Dublin Core Date Types</name>
         </label>
+        <label locale="es_ES">
+          <name>Tipo de Fecha</name>
+        </label>
       </labels>
       <items>
         <item idno="available" enabled="1" default="0" value="available" rank="151">
@@ -2673,6 +2690,11 @@
               <name_plural>Date available</name_plural>
               <description/>
             </label>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Fecha de producción</name_singular>
+              <name_plural>Fechas de producción</name_plural>
+              <description>Fecha en la que un documento/fondo/colección fue reunido por el productor en el desarrollo de sus actividades;  es decir, la fecha en que los documentos fueron incorporados dentro del fondo del productor. Estas fechas no pueden ser anteriores a la fecha de inicio de la existencia del productor o de la actividad desarrollada por él</description>
+            </label>
           </labels>
         </item>
         <item idno="creation" enabled="1" default="1" value="creation" rank="152">
@@ -2681,6 +2703,11 @@
               <name_singular>Date(s) of creation</name_singular>
               <name_plural>Date(s) creation</name_plural>
               <description/>
+            </label>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Fecha de creación</name_singular>
+              <name_plural>Fechas de creación</name_plural>
+              <description> Fecha en que la que el documento/fondo/colección fue originalmente generado sobre el soporte en que se ha conservado </description>
             </label>
           </labels>
         </item>
@@ -2708,6 +2735,11 @@
               <name_singular>Date(s) broadcast</name_singular>
               <name_plural>Date(s) broadcast</name_plural>
               <description/>
+            </label>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Fecha de emision</name_singular>
+              <name_plural>Fechas de emisión</name_plural>
+              <description>Fecha en que un documento de video fue emitido por primera vez. Se puede utilizar para el registro de emisión de billetes, monedas, estampillas, etc.</description>
             </label>
           </labels>
         </item>
@@ -3109,6 +3141,699 @@
             <label locale="es_ES" preferred="1">
               <name_singular>Muy Malo</name_singular>
               <name_plural>Muy Malos</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="date_near_list" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="es_ES">
+          <name>Proximidad</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="date_near_exact" enabled="1" default="0" value="exacta" rank="201" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Exacta</name_singular>
+              <name_plural>Exactas</name_plural>
+              <description>Se utiliza cuando se tiene certeza total de la fecha indicada</description>
+            </label>
+          </labels>
+        </item>
+        <item idno="date_near_circa" enabled="1" default="0" value="circa" rank="202" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Circa</name_singular>
+              <name_plural>Circas</name_plural>
+              <description>Se utiliza cuando no se tiene certeza absoluta de la fecha indicada pero puede ser atribuída una fecha </description>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="script_types_list" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Tipos de Escritura</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="script_type_manuscrito" enabled="1" default="0" value="Manuscrito" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Manuscrito</name_singular>
+              <name_plural>Manuscritos</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="script_types_mecanografiados" enabled="1" default="0" value="Mecanografiado" rank="203" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Mecanografiado</name_singular>
+              <name_plural>Mecanografiado</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="script_types_impreso" enabled="1" default="0" value="Impreso" rank="204" type="concept">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Impreso</name_singular>
+              <name_plural>Impresos</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="vocabulary_list" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Vocabulary List</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="retrato_ricardo_rojas" enabled="1" default="0" value="Retrato Ricardo Rojas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Retrato Ricardo Rojas</name_singular>
+              <name_plural>Retrato Ricardo Rojas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="antropologia" enabled="1" default="0" value="Antropologia" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Antropologia</name_singular>
+              <name_plural>Antropologia</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="educacion" enabled="1" default="0" value="Educación" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Educación</name_singular>
+              <name_plural>Educación</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="amistad" enabled="1" default="0" value="Amistad" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Amistad</name_singular>
+              <name_plural>Amistad</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="familia" enabled="1" default="0" value="Familia" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Familia</name_singular>
+              <name_plural>Familia</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="historia_argentina" enabled="1" default="0" value="Historia Argentina" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Historia Argentina</name_singular>
+              <name_plural>Historia Argentina</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="topografia" enabled="1" default="0" value="Topografía" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Topografía</name_singular>
+              <name_plural>Topografía</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="confinamiento_ricardo_roj" enabled="1" default="0" value="Confinamiento Ricardo Rojas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Confinamiento Ricardo Rojas</name_singular>
+              <name_plural>Confinamiento Ricardo Rojas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="pedido_de_autografo" enabled="1" default="0" value="Pedido de autógrafo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Pedido de autógrafo</name_singular>
+              <name_plural>Pedido de autógrafo</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="historia_hasta_1810" enabled="1" default="0" value="Historia hasta 1810" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Historia hasta 1810</name_singular>
+              <name_plural>Historia hasta 1810</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="museo_britanico" enabled="1" default="0" value="Museo Británico" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Museo Británico</name_singular>
+              <name_plural>Museo Británico</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="literatura_universal" enabled="1" default="0" value="Literatura Universal" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Literatura Universal</name_singular>
+              <name_plural>Literatura Universal</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="ex_libris" enabled="1" default="0" value="Ex libris" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Ex libris</name_singular>
+              <name_plural>Ex libris</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="periodismo" enabled="1" default="0" value="Periodismo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Periodismo</name_singular>
+              <name_plural>Periodismo</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="ciencias_naturales" enabled="1" default="0" value="Ciencias naturales" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Ciencias naturales</name_singular>
+              <name_plural>Ciencias naturales</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="arte_visual" enabled="1" default="0" value="Arte visual" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Arte visual</name_singular>
+              <name_plural>Arte visual</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="fotografia" enabled="1" default="0" value="Fotografía" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Fotografía</name_singular>
+              <name_plural>Fotografía</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="etnologia" enabled="1" default="0" value="Etnología" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Etnología</name_singular>
+              <name_plural>Etnología</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="rerato_ricardo_rojas" enabled="1" default="0" value="Rerato Ricardo Rojas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Rerato Ricardo Rojas</name_singular>
+              <name_plural>Rerato Ricardo Rojas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="arquitectura" enabled="1" default="0" value="Arquitectura" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Arquitectura</name_singular>
+              <name_plural>Arquitectura</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="museo_colonial_e_historic" enabled="1" default="0" value="Museo Colonial e Histórico de la Provincia de Buenos Aires" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Museo Colonial e Histórico de la Provincia de Buenos Aires</name_singular>
+              <name_plural>Museo Colonial e Histórico de la Provincia de Buenos Aires</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="argentina" enabled="1" default="0" value="Argentina" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Argentina</name_singular>
+              <name_plural>Argentina</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="zoologia" enabled="1" default="0" value="Zoología" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Zoología</name_singular>
+              <name_plural>Zoología</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="paleontologia" enabled="1" default="0" value="Paleontología" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Paleontología</name_singular>
+              <name_plural>Paleontología</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="galeria_witcomb" enabled="1" default="0" value="Galería Witcomb" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Galería Witcomb</name_singular>
+              <name_plural>Galería Witcomb</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="arquitectura_mudejar" enabled="1" default="0" value="Arquitectura mudéjar" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Arquitectura mudéjar</name_singular>
+              <name_plural>Arquitectura mudéjar</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="bibliotecas" enabled="1" default="0" value="Bibliotecas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Bibliotecas</name_singular>
+              <name_plural>Bibliotecas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="retrato" enabled="1" default="0" value="Retrato" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Retrato</name_singular>
+              <name_plural>Retrato</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="pintura" enabled="1" default="0" value="Pintura" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Pintura</name_singular>
+              <name_plural>Pintura</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="bellas_artes" enabled="1" default="0" value="Bellas Artes" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Bellas Artes</name_singular>
+              <name_plural>Bellas Artes</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="arqueologia" enabled="1" default="0" value="Arqueología" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Arqueología</name_singular>
+              <name_plural>Arqueología</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="literatura_argentina" enabled="1" default="0" value="Literatura argentina" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Literatura argentina</name_singular>
+              <name_plural>Literatura argentina</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="historia__1817_1860" enabled="1" default="0" value="Historia  1817-1860" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Historia  1817-1860</name_singular>
+              <name_plural>Historia  1817-1860</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="musica" enabled="1" default="0" value="Música" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Música</name_singular>
+              <name_plural>Música</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="urbanismo" enabled="1" default="0" value="Urbanismo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Urbanismo</name_singular>
+              <name_plural>Urbanismo</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="ollantay" enabled="1" default="0" value="Ollantay" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Ollantay</name_singular>
+              <name_plural>Ollantay</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="monumentos" enabled="1" default="0" value="Monumentos" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Monumentos</name_singular>
+              <name_plural>Monumentos</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="indigenismo" enabled="1" default="0" value="Indigenismo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Indigenismo</name_singular>
+              <name_plural>Indigenismo</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="historia_cultural" enabled="1" default="0" value="Historia Cultural" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Historia Cultural</name_singular>
+              <name_plural>Historia Cultural</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="museo_del_prado" enabled="1" default="0" value="Museo del Prado" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Museo del Prado</name_singular>
+              <name_plural>Museo del Prado</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="cristo" enabled="1" default="0" value="Cristo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Cristo</name_singular>
+              <name_plural>Cristo</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="eurindia" enabled="1" default="0" value="Eurindia" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Eurindia</name_singular>
+              <name_plural>Eurindia</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="mayas" enabled="1" default="0" value="Mayas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Mayas</name_singular>
+              <name_plural>Mayas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="saludo_de_fin_de_ano" enabled="1" default="0" value="Saludo de fin de año" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Saludo de fin de año</name_singular>
+              <name_plural>Saludo de fin de año</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="geografia" enabled="1" default="0" value="Geografía" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Geografía</name_singular>
+              <name_plural>Geografía</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="cincuentenario_museo_de_l" enabled="1" default="0" value="Cincuentenario Museo de La Plata" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Cincuentenario Museo de La Plata</name_singular>
+              <name_plural>Cincuentenario Museo de La Plata</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="artes_del_espectaculo" enabled="1" default="0" value="Artes del espectáculo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Artes del espectáculo</name_singular>
+              <name_plural>Artes del espectáculo</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="cartas" enabled="1" default="0" value="Cartas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Cartas</name_singular>
+              <name_plural>Cartas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="botanica" enabled="1" default="0" value="Botanica" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Botanica</name_singular>
+              <name_plural>Botanica</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="expedicion_cientifica" enabled="1" default="0" value="Expedicion científica" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Expedicion científica</name_singular>
+              <name_plural>Expedicion científica</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="primera_guerra_mundial" enabled="1" default="0" value="Primera Guerra Mundial" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Primera Guerra Mundial</name_singular>
+              <name_plural>Primera Guerra Mundial</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="monumentos_historicos" enabled="1" default="0" value="Monumentos Históricos" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Monumentos Históricos</name_singular>
+              <name_plural>Monumentos Históricos</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="pintura_rupestre" enabled="1" default="0" value="Pintura rupestre" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Pintura rupestre</name_singular>
+              <name_plural>Pintura rupestre</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="pueblos_originarios" enabled="1" default="0" value="Pueblos originarios" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Pueblos originarios</name_singular>
+              <name_plural>Pueblos originarios</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="actividades_nauticas" enabled="1" default="0" value="Actividades náuticas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Actividades náuticas</name_singular>
+              <name_plural>Actividades náuticas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="folklore" enabled="1" default="0" value="Folklore" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Folklore</name_singular>
+              <name_plural>Folklore</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="homenajes" enabled="1" default="0" value="Homenajes" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Homenajes</name_singular>
+              <name_plural>Homenajes</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="paisajes_rurales" enabled="1" default="0" value="Paisajes rurales" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Paisajes rurales</name_singular>
+              <name_plural>Paisajes rurales</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="construccion" enabled="1" default="0" value="Construcción" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Construcción</name_singular>
+              <name_plural>Construcción</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="viajes" enabled="1" default="0" value="Viajes" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Viajes</name_singular>
+              <name_plural>Viajes</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="xxvii_congreso_internacio" enabled="1" default="0" value="XXVII Congreso Internacional de Americanistas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>XXVII Congreso Internacional de Americanistas</name_singular>
+              <name_plural>XXVII Congreso Internacional de Americanistas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="teatro" enabled="1" default="0" value="Teatro" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Teatro</name_singular>
+              <name_plural>Teatro</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="historia" enabled="1" default="0" value="Historia" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Historia</name_singular>
+              <name_plural>Historia</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="guerras_de_la_independenc" enabled="1" default="0" value="Guerras de la Independencia 1810-1817" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Guerras de la Independencia 1810-1817</name_singular>
+              <name_plural>Guerras de la Independencia 1810-1817</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="escultura" enabled="1" default="0" value="Escultura" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Escultura</name_singular>
+              <name_plural>Escultura</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="vida_cotidiana" enabled="1" default="0" value="Vida cotidiana" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Vida cotidiana</name_singular>
+              <name_plural>Vida cotidiana</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="colonia_escuela_vitel" enabled="1" default="0" value="Colonia Escuela Vitel" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Colonia Escuela Vitel</name_singular>
+              <name_plural>Colonia Escuela Vitel</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="casa_de_ricardo_rojas" enabled="1" default="0" value="Casa de Ricardo Rojas" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Casa de Ricardo Rojas</name_singular>
+              <name_plural>Casa de Ricardo Rojas</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="americanismo" enabled="1" default="0" value="Americanismo" rank="202" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Americanismo</name_singular>
+              <name_plural>Americanismo</name_plural>
               <description/>
             </label>
           </labels>
@@ -4657,12 +5382,20 @@
           <description>Record at least one of the following types of dates for the unit of description, as
             appropriate to the materials and the level of description</description>
         </label>
+        <label locale="es_ES">
+          <name>Fecha/s</name>
+          <description> campos referidos a la fecha o rango de fechas asociadas con la creación, diseño, producción, presentación, ejecución, construcción o alteración de un documento/fondo/colección]</description>
+        </label>
       </labels>
       <elements>
         <metadataElement code="date_value" datatype="DateRange">
           <labels>
             <label locale="en_US">
               <name>Date</name>
+            </label>
+            <label locale="es_ES">
+              <name>Fecha</name>
+              <description>Se utiliza para indicar las fechas en las que el productor acumuló los documentos en el ejercicio o desarrollo de su actividad. Consignar fechas extremas. Las fechas indicadas deben ser inclusivas. Ej. 1784 - 1888</description>
             </label>
           </labels>
           <settings>
@@ -4690,6 +5423,10 @@
             <label locale="en_US">
               <name>Type</name>
             </label>
+            <label locale="es_ES">
+              <name>Tipo de fecha</name>
+              <description>Se utiliza para consignar el tipo de fecha indicado en el campo Fecha. Campo cerrado en el que se debe elegir entre una de las opciones</description>
+            </label>
           </labels>
           <settings>
             <setting name="listWidth">40</setting>
@@ -4700,7 +5437,7 @@
             <setting name="nullOptionText">Not set</setting>
             <setting name="useDefaultWhenNull">0</setting>
             <setting name="canBeUsedInSort">1</setting>
-            <setting name="render">1</setting>
+            <setting name="render">select</setting>
             <setting name="auto_shrink">0</setting>
             <setting name="maxColumns">3</setting>
             <setting name="canBeUsedInSearchForm">1</setting>
@@ -4708,8 +5445,36 @@
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
             <setting name="displayDelimiter">; </setting>
+            <setting name="restrictToTypes">2</setting>
             <setting name="displayTemplate"/>
-            <setting name="restrictToTypes"/>
+          </settings>
+        </metadataElement>
+        <metadataElement code="date_near" datatype="List" list="date_near_list">
+          <labels>
+            <label locale="en_US">
+              <name>Proximidad</name>
+              <description>Se utiliza para consignar la proximidad de la fecha indicada en el campo Fecha. Campo cerrado en el que se debe elegir entre una de las opciones</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight">200px</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="implicitNullOption">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="useDefaultWhenNull">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">select</setting>
+            <setting name="auto_shrink">0</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayDelimiter">; </setting>
+            <setting name="restrictToTypes">2</setting>
+            <setting name="displayTemplate"/>
           </settings>
         </metadataElement>
       </elements>
@@ -5286,12 +6051,20 @@
           <description>Record the language(s) and/or script(s) of the materials comprising the unit of description.
             Note any distinctive alphabets, scripts, symbol systems or abbreviations employed.</description>
         </label>
+        <label locale="es_ES">
+          <name>Lengua / Escritura(s) de los Docuemntos</name>
+          <description>campos referidos a la información sobre la lengua y la escritura</description>
+        </label>
       </labels>
       <elements>
         <metadataElement code="langmaterialline1" datatype="Container">
           <labels>
             <label locale="en_US">
               <name>Material</name>
+            </label>
+            <label locale="es_ES">
+              <name>Material</name>
+              <description>Refiere al material del documento/fondo/colección al que corresponde la descripción del idioma/escritura. Ej. Marginalia ; Título ; Tabla de contenido ; Texto principal</description>
             </label>
           </labels>
           <settings>
@@ -5338,52 +6111,95 @@
             </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="langmaterialline2" datatype="Container">
+        <metadataElement code="language" datatype="List" list="language_types">
           <labels>
             <label locale="en_US">
               <name>Language</name>
             </label>
+            <label locale="es_ES">
+              <name>Lengua</name>
+              <description>Se utiliza para consignar la lengua presente en el documento/fondo/colección. Campo cerrado en el que se debe elegir entre una de las opciones</description>
+            </label>
           </labels>
           <settings>
             <setting name="doesNotTakeLocale">0</setting>
-            <setting name="lineBreakAfterNumberOfElements">0</setting>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
             <setting name="displayDelimiter">; </setting>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight">200px</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="implicitNullOption">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="useDefaultWhenNull">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">select</setting>
+            <setting name="auto_shrink">0</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="restrictToTypes">2</setting>
             <setting name="displayTemplate"/>
-            <setting name="readonlyTemplate"/>
           </settings>
-          <elements>
-            <metadataElement code="language" datatype="List" list="language_types">
-              <labels>
-                <label locale="en_US">
-                  <name>Language</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="listWidth">40</setting>
-                <setting name="listHeight">200px</setting>
-                <setting name="doesNotTakeLocale">1</setting>
-                <setting name="requireValue">0</setting>
-                <setting name="implicitNullOption">0</setting>
-                <setting name="nullOptionText">Not set</setting>
-                <setting name="useDefaultWhenNull">0</setting>
-                <setting name="canBeUsedInSort">1</setting>
-                <setting name="render">1</setting>
-                <setting name="auto_shrink">0</setting>
-                <setting name="maxColumns">3</setting>
-                <setting name="canBeUsedInSearchForm">1</setting>
-                <setting name="canBeUsedInDisplay">1</setting>
-                <setting name="canMakePDF">0</setting>
-                <setting name="canMakePDFForValue">0</setting>
-                <setting name="displayDelimiter">; </setting>
-                <setting name="displayTemplate"/>
-                <setting name="restrictToTypes"/>
-              </settings>
-            </metadataElement>
-          </elements>
+        </metadataElement>
+        <metadataElement code="languagesystem" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Sistema de Escritura</name>
+              <description>Se utiliza para consignar el sistema de escritura/alfabeto presente en el documento/fondo/colección. Campo cerrado en el que se debe elegir entre una de las opciones</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayDelimiter">; </setting>
+            <setting name="isDependentValue">0</setting>
+            <setting name="mustBeUnique">0</setting>
+            <setting name="regex"/>
+            <setting name="default_text"/>
+            <setting name="displayTemplate"/>
+            <setting name="dependentValueTemplate"/>
+            <setting name="referenceMediaIn"/>
+          </settings>
+        </metadataElement>
+        <metadataElement code="script_type" datatype="List" list="script_types_list">
+          <labels>
+            <label locale="en_US">
+              <name>Tipo de Escritura</name>
+              <description>Se utiliza para consignar el tipo de escritura presente en el documento/fondo/colección. Campo cerrado en el que se debe elegir entre una de las opciones</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight">200px</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="implicitNullOption">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="useDefaultWhenNull">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">select</setting>
+            <setting name="auto_shrink">0</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayDelimiter">; </setting>
+            <setting name="restrictToTypes">2</setting>
+            <setting name="displayTemplate"/>
+          </settings>
         </metadataElement>
       </elements>
       <typeRestrictions>
@@ -6933,8 +7749,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="restrictToTypes">87
-        </setting>
+        <setting name="restrictToTypes">87</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -6974,7 +7789,7 @@
     </metadataElement>
     <metadataElement code="group_name" datatype="Text">
       <labels>
-          <label locale="en_US">
+        <label locale="en_US">
           <name>Colección</name>
           <description>Nombre de la colección a la que pertenece</description>
         </label>
@@ -6983,30 +7798,7 @@
           <description>Nombre de la colección a la que pertenece</description>
         </label>
       </labels>
-      <settings>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="usewysiwygeditor">0</setting>
-        <setting name="doesNotTakeLocale">0</setting>
-        <setting name="canBeUsedInSort">1</setting>
-        <setting name="suggestExistingValues">0</setting>
-        <setting name="suggestExistingValueSort">value</setting>
-        <setting name="canBeUsedInSearchForm">1</setting>
-        <setting name="canBeUsedInDisplay">1</setting>
-        <setting name="canMakePDF">0</setting>
-        <setting name="canMakePDFForValue">0</setting>
-        <setting name="displayDelimiter">; </setting>
-        <setting name="isDependentValue">0</setting>
-        <setting name="mustBeUnique">0</setting>
-        <setting name="regex"/>
-        <setting name="default_text"/>
-        <setting name="displayTemplate"/>
-        <setting name="dependentValueTemplate"/>
-        <setting name="referenceMediaIn"/>
-      </settings>
-          <typeRestrictions>
+      <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
           <settings>
@@ -7017,11 +7809,7 @@
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="maintenance_report" datatype="Occurrences">
-    <labels>
-          <label locale="es_ES">
-          <name>Maintenance report</name>
-          <description>It is used to record the data of the conservation of the document.</description>
-        </label>
+      <labels>
         <label locale="es_ES">
           <name>Reportes de Condición Relacionados</name>
           <description> Se utiliza para consignar los datos que se poseen sobre la conservación del bien </description>
@@ -7029,7 +7817,6 @@
       </labels>
       <settings>
         <setting name="requireValue">0</setting>
-        <setting name="allowDuplicateValues">1</setting>
         <setting name="displayDelimiter">|</setting>
       </settings>
       <typeRestrictions>
@@ -7039,6 +7826,27 @@
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="origination" datatype="Entities">
+      <labels>
+        <label locale="es_ES">
+          <name>Productor</name>
+          <description>Entidad, familia o persona que ha producido, acumulado y conservado los documentos en el desarrollo de su propia actividad. No debe confundirse con el/la donante, propietario/a y/o albacea [normalizado por control de autoridades]</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="restrictToTypes">86</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -9066,6 +9874,13 @@
             </placement>
             <placement code="ca_attribute_institution3">
               <bundle>ca_attribute_institution</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
@@ -9218,6 +10033,28 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_entities_productor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Productor</setting>
+                <setting name="label" locale="en_US">Productor</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="restrict_to_relationship_types">origination</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_scopecontent">
               <bundle>ca_attribute_scopecontent</bundle>
               <settings>
@@ -9281,6 +10118,7 @@
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Entidades Relacionadas</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
@@ -9304,6 +10142,8 @@
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="restrict_to_relationship_types">relation</setting>
+                <setting name="restrict_to_types">maintenance</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
@@ -9314,8 +10154,6 @@
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-                <setting name="restrict_to_types">maintenance</setting>
-                <setting name="restrict_to_relationship_types">relation</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_adminbiohist">
@@ -9800,6 +10638,48 @@
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="process" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Process</name>
+            </label>
+            <label locale="es_ES">
+              <name>Procesos</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse">bubbles</setting>
+                <setting name="open_hierarchy">1</setting>
+                <setting name="auto_shrink"/>
+              </settings>
+            </placement>
+            <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Visu relacionados</setting>
+                <setting name="label" locale="en_US">Related visu</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="restrict_to_types">visu</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -12267,6 +13147,7 @@
             </label>
           </labels>
         </type>
+
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_objects">
