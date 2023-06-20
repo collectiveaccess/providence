@@ -57,7 +57,7 @@ $loaded_sort_direction 	= $this->getVar('sortDirection');
 
 $t_item->load($vn_lot_id = $t_subject->get('lot_id'));
 
-$va_force_new_values = $this->getVar('forceNewValues');
+$va_force_new_values = $this->getVar('forceNewValues') ?? [];
 $va_initial_values = $this->getVar('initialValues');
 
 // put brackets around idno_stub for presentation

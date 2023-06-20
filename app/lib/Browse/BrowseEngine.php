@@ -7430,7 +7430,26 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 
 			if(is_array($va_results =  $this->opo_ca_browse_cache->getResults()) && sizeof($va_results)) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, array_merge($pa_options, ['start' => 0, 'limit' => null]));
+					$opts = [];
+					
+					// If sorting on interstitial intrinsic (usually rank) we set context so sort works as expected 
+					// (eg. sorting only on relationships to the browsed upon related record)
+					$sort_tmp = explode('.', $vs_sort);
+					if(Datamodel::isRelationship($sort_tmp[0])) {
+						$criteria = $this->getCriteria();
+						
+						foreach($criteria as $facet => $values) {
+							$fi = $this->getInfoForFacet($facet);
+							if(is_array($fi) && ($fi['type'] === 'authority') && ($fi['table'] ?? null) && (sizeof($values) === 1)) {	
+								// use first found authority facet as context, but only if a single value is set
+								$v = array_shift(array_keys($values));
+								$opts['context'] = [$sort_tmp[0] => [Datamodel::primaryKey($fi['table']) => $v]];
+								break;
+							}
+						}	
+					}
+				
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction, array_merge($pa_options, $opts, ['start' => 0, 'limit' => null]));
 
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
