@@ -4058,7 +4058,7 @@ if (!$vb_batch) {
 				$multiple_move_selection = [$vn_parent_id];
 			}
 			
-			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
+			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0) && ($vn_parent_id !== $this->get($this->HIERARCHY_PARENT_ID_FLD))) {
 				if(sizeof($multiple_move_selection) > 0) {
 					foreach($multiple_move_selection as $t_id) {
 						$target_tmp = explode('-', $t_id);
