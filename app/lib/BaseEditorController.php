@@ -689,32 +689,24 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Generates display summary of record data based upon a bundle display for screen (HTML)
+	 * Render Summary
 	 *
 	 * @param array $pa_options Array of options passed through to _initView
-	 * @return bool
+	 *
+	 * @throws ApplicationException
 	 */
 	public function Summary($pa_options=null) {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
-
+		
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		
+		$vb_ajax_load_displays = $t_subject->getAppConfig()->get('enable_ajax_summary_displays');
+		session_write_close();
+		$this->SummaryInfo($pa_options, !$vb_ajax_load_displays);
 
 		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger') || ($this->request->user->getPreference('show_template_debugger') !== 'hide')) {
-			$this->render('../template_test_html.php');
-		}
-		
-
-		$t_display = new ca_bundle_displays();
-		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
-
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
-			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
-		}
-		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
-		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
+			$this->renderGeneric('template_test_html.php');
 		}
 
 		// save where we are in session, for "Save and return" button
@@ -729,57 +721,133 @@ class BaseEditorController extends ActionController {
 
 		Session::setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 
-		$this->view->setVar('bundle_displays', $va_displays);
-		$this->view->setVar('t_display', $t_display);
-
-		// Check validity and access of specified display
-		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-			$this->view->setVar('display_id', $vn_display_id);
-
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
-       
-			$va_display_list = array();
-			foreach($va_placements as $vn_placement_id => $va_display_item) {
-				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
-
-				// get column header text
-				$vs_header = $va_display_item['display'];
-				if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-					$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
-					if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
-				}
-
-				$va_display_list[$vn_placement_id] = array(
-					'placement_id' => $vn_placement_id,
-					'bundle_name' => $va_display_item['bundle_name'],
-					'display' => $vs_header,
-					'settings' => $va_settings
-				);
-			}
-
-			$this->view->setVar('placements', $va_display_list);
-
-			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-		} else {
-            $va_display_list = $t_display->getDisplayListForResultsEditor($t_subject->tableName(), ['user_id' => $this->request->getUserID()]);
-            
-			$this->view->setVar('display_id', 0);
-			$this->view->setVar('placements', $va_display_list['displayList']);
-			
-		}
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
-		
+
 		$this->opo_app_plugin_manager->hookSummarizeItem(
 			[
-				'id' => $vn_subject_id, 
-				'table_num' => $t_subject->tableNum(), 
-				'table_name' => $t_subject->tableName(), 
-				'instance' => $t_subject, 
+				'id' => $vn_subject_id,
+				'table_num' => $t_subject->tableNum(),
+				'table_name' => $t_subject->tableName(),
+				'instance' => $t_subject,
 				'request' => $this->request
 			]
 		);
 
+		$this->view->setVar('ajax_display', $vb_ajax_load_displays);
 		$this->render('summary_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generates display for summary of record data
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 *
+	 * @throws ApplicationException
+	 */
+	public function SummaryDisplay($pa_options=null) {
+		$this->SummaryInfo($pa_options, TRUE);
+		$this->renderGeneric('summary_ajax_display_html.php');
+	}
+	# -------------------------------------------------------
+
+	/**
+	 * Generates summary of record data based upon a bundle display for screen (HTML)
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 *
+	 * @throws ApplicationException
+	 */
+	public function SummaryData($pa_options=null) {
+		$this->SummaryInfo($pa_options, TRUE);
+
+		$ajax_placement_id = $this->getRequest()->getParameter('placement_id', pInteger);
+		if (isset($ajax_placement_id)) {
+			$this->view->setVar('ajax_item', $ajax_placement_id);
+		}
+		$this->renderGeneric('summary_ajax_data_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render a "generic" template.
+	 *
+	 * @param string $ps_view path to view file
+	 */
+	public function renderGeneric($ps_view) {
+		$oldViewsPaths = $this->getViewPaths();
+		$this->setViewPath('generic');
+		$this->render($ps_view);
+		$this->setViewPath($oldViewsPaths);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generates summary of record data based upon a bundle display for screen (HTML)
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 * @param bool $pb_load_placement_info Load placement information
+	 *
+	 * @throws ApplicationException
+	 */
+	public function SummaryInfo($pa_options=null, $pb_load_placement_info=TRUE) {
+		ini_set('display_errors', 0);
+		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+
+		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		
+		$t_display = new ca_bundle_displays();
+		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
+
+		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
+		}
+		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
+		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
+		}
+
+		$this->view->setVar('bundle_displays', $va_displays);
+		$this->view->setVar('t_display', $t_display);
+
+		if ($pb_load_placement_info) {
+			if ($this->request->isAjax()) {
+				session_write_close();
+			}
+			// Check validity and access of specified display
+			if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
+				$this->view->setVar('display_id', $vn_display_id);
+
+				$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
+
+				$va_display_list = array();
+				foreach ($va_placements as $vn_placement_id => $va_display_item) {
+					$va_settings = caUnserializeForDatabase($va_display_item['settings']);
+
+					// get column header text
+					$vs_header = $va_display_item['display'];
+					if (isset($va_settings['label']) && is_array($va_settings['label'])) {
+						$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
+						if ($vs_tmp = array_shift($va_tmp)) {
+							$vs_header = $vs_tmp;
+						}
+					}
+
+					$va_display_list[$vn_placement_id] = array(
+						'placement_id' => $vn_placement_id,
+						'bundle_name' => $va_display_item['bundle_name'],
+						'display' => $vs_header,
+						'settings' => $va_settings
+					);
+				}
+
+				$this->view->setVar('placements', $va_display_list);
+
+				$this->request->user->setVar($t_subject->tableName() . '_summary_display_id', $vn_display_id);
+			} else {
+				$va_display_list = $t_display->getDisplayListForResultsEditor($t_subject->tableName(), ['user_id' => $this->request->getUserID()]);
+
+				$this->view->setVar('display_id', 0);
+				$this->view->setVar('placements', $va_display_list['displayList']);
+			}
+		}
 	}
 	# -------------------------------------------------------
 	/**
