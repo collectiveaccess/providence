@@ -5810,6 +5810,11 @@ if (!$vb_batch) {
 		}
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+
+		$this->opo_app_plugin_manager->hookPostSaveBundlesForScreen(array(
+			'instance' => $this,
+			'is_insert' => $vb_is_insert)
+		);
 		
 		$this->triggerMetadataAlerts();
 		return true;
