@@ -2317,6 +2317,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						}
 						break;
 					# --------------------
+					case 'custom_display_component':
+						return _t('Custom Display Component: ' . $va_tmp[2]);
+						break;
+					# --------------------
 					default:
 						if ($va_tmp[0] !== $this->tableName()) {
 							return caUcFirstUTF8Safe($t_instance->getDisplayLabel($ps_field, $options)).$vs_suffix;
