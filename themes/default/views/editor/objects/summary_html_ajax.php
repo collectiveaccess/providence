@@ -25,12 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
-$t_item 				= $this->getVar('t_subject');
-$item_id 				= $this->getVar('subject_id');
+	$t_item 				= $this->getVar('t_subject');
+	$item_id 				= $this->getVar('subject_id');
 
-$t_display 				= $this->getVar('t_display');
-$placements 			= $this->getVar("placements");
-$reps 					= $t_item->getRepresentations(array("thumbnail", "small", "medium"));
+	$t_display 				= $this->getVar('t_display');
+	$placements 			= $this->getVar("placements");
+	$reps 					= $t_item->getRepresentations(array("thumbnail", "small", "medium"));
 ?>
     <div id="summary" style="clear: both;">
 <?php
