@@ -79,10 +79,7 @@
 						<img src='<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif'/>
 						Loading...
 					</div>
-					<div class="content_wrapper">
-						<?php // This looks in the wrong place now, $this is of class View not ActionController (maybe 'Search/ObjectSearch/summary_html_ajax_placements.php'?) ?>
-						<?php // print $this->render('summary_html_ajax_placements.php'); ?>
-					</div>
+					<div class="content_wrapper"></div>
 				</div>
 			</td>
 		</tr>
