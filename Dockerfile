@@ -27,7 +27,7 @@ ENV PATH /app/apache2/bin:$PATH
 RUN sed -i "s/\/snap\/bin/\/snap\/bin:\/app\/apache2\/bin/" /etc/sudoers
 
 #PHP
-ARG PHP_VERSION=7.4.33
+ARG PHP_VERSION=8.2.7
 RUN apt -qq update && apt-get -qq install libcurl4-gnutls-dev pkg-config libpng-dev libonig-dev libsqlite3-dev libxml2-dev libzip-dev libmemcached-dev memcached && wget https://www.php.net/distributions/php-$PHP_VERSION.tar.gz && tar xzf php-$PHP_VERSION.tar.gz && cd php-$PHP_VERSION && './configure'  '--prefix=/usr/local' '--with-apxs2=/app/apache2/bin/apxs' '--with-mysqli' '--enable-mbstring' '--with-pdo-mysql' '--with-openssl' '--with-zlib' '--enable-gd' '--enable-opcache' '--with-curl' '--enable-exif' '--with-zip' '--with-readline' '--enable-intl' '--enable-bcmath' && make -j$(nproc) && make install && cp php.ini-production /usr/local/lib/php.ini && cd .. && rm -rf php-$PHP_VERSION*
 
 RUN apt-get -qq install autoconf && wget https://pecl.php.net/get/memcached-3.1.5.tgz && tar xzf memcached-3.1.5.tgz && cd memcached-3.1.5 && phpize && ./configure && make && make install && echo "extension=memcached.so" >> /usr/local/lib/php.ini && cd .. && rm -rf memcached-3.1.5*
@@ -41,7 +41,7 @@ RUN git clone https://github.com/vitoc/gmagick.git && cd gmagick && phpize && ./
 RUN echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 
 #FFMPEG
-ARG FFMPEG_VERSION=4.3.3
+ARG FFMPEG_VERSION=4.3.6
 RUN apt-get -qq update && apt-get install -qq autoconf automake build-essential cmake git-core libass-dev libfreetype6-dev libgnutls28-dev libsdl2-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev meson ninja-build pkg-config texinfo wget yasm zlib1g-dev nasm libx264-dev libx265-dev libnuma-dev libvpx-dev libfdk-aac-dev libmp3lame-dev libopus-dev libaom-dev && wget https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.gz && tar xzf ffmpeg-$FFMPEG_VERSION.tar.gz && cd ffmpeg-$FFMPEG_VERSION && ./configure --enable-gpl --enable-gnutls --enable-libaom --enable-libass --enable-libfdk-aac --enable-libfreetype --enable-nonfree --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 && make -j$(nproc) && make install && cd .. && rm -rf ffmpeg-$FFMPEG_VERSION*
 
 #Config changes for apache/php
