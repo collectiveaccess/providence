@@ -97,8 +97,6 @@ TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
 <?php $display_url = $this->request->getControllerUrl() . '/SummaryDisplay'; ?>
 
 <script type="text/javascript">
-    let error_msg = '<strong>Error: process timed out.</strong> For large series and consignments, please refer to the reports under the Statistics > Records menu for viewing this information.';
-
     $(document).ready(function () {
         <?php // Show/hide the loading spinner div. ?>
         $(document).ajaxStart(() => {
@@ -116,15 +114,15 @@ TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
             type: 'POST',
             url: '<?php print $display_url; ?>',
             data: $('#caSummaryDisplaySelectorForm').serialize(),
-            error: (data, exc, oth) => {
-                $('#summary-html-data-page ._error').html(error_msg);
+            error: (jqXHR, textStatus, errorThrown) => {
+	            $('#summary-html-data-page ._error').html('Error: ' + textStatus);
             },
             success: (data) => {
                 $('#summary-html-data-page .content_wrapper').empty();
                 $('#summary-html-data-page .content_wrapper').html(data);
 
                 loadData();
-            }
+            },
         });
     }
 
@@ -136,12 +134,12 @@ TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
                 $.ajax({
                     url: '<?php print $data_url; ?>',
                     data: $('#caSummaryDisplaySelectorForm').serialize() + '&va_placement_id=' + id,
-                    error: (data, exc, oth) => {
-                        $('#summary-html-data-page ._error').html(error_msg);
+	                error: (jqXHR, textStatus, errorThrown) => {
+                        $('#summary-html-data-page ._error').html('Error: ' + textStatus);
                     },
                     success: (data) => {
                         $('#summary-html-data-page ._content[placementid="' + id + '"]').html(data);
-                    }
+                    },
                 });
             }
         );
