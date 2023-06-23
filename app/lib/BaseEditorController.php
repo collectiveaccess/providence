@@ -697,10 +697,10 @@ class BaseEditorController extends ActionController {
 	public function Summary($pa_options=null) {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-		$ajax_load_displays = $t_subject->getAppConfig()->get('enable_ajax_summary_displays');
+		$vb_ajax_load_displays = $t_subject->getAppConfig()->get('enable_ajax_summary_displays');
 		session_write_close();
-		$this->SummaryData($pa_options, $ajax_load_displays);
-		if ($ajax_load_displays) {
+		$this->SummaryData($pa_options, $vb_ajax_load_displays);
+		if ($vb_ajax_load_displays) {
 			$this->render('summary_html_ajax.php');
 		}
 		else {
@@ -717,8 +717,8 @@ class BaseEditorController extends ActionController {
 	public function SummaryDisplay($pa_options=null) {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-		$ajax_load_displays = $t_subject->getAppConfig()->get('enable_ajax_summary_displays');
-		$this->SummaryData($pa_options, $ajax_load_displays);
+		$vb_ajax_load_displays = $t_subject->getAppConfig()->get('enable_ajax_summary_displays');
+		$this->SummaryData($pa_options, $vb_ajax_load_displays);
 		$this->render('summary_html_ajax_placements.php');
 	}
 	# -------------------------------------------------------
