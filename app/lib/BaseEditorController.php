@@ -700,6 +700,19 @@ class BaseEditorController extends ActionController {
 		$vb_ajax_load_displays = $t_subject->getAppConfig()->get('enable_ajax_summary_displays');
 		session_write_close();
 		$this->SummaryData($pa_options, $vb_ajax_load_displays);
+
+		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
+
+		$this->opo_app_plugin_manager->hookSummarizeItem(
+			[
+				'id' => $vn_subject_id,
+				'table_num' => $t_subject->tableNum(),
+				'table_name' => $t_subject->tableName(),
+				'instance' => $t_subject,
+				'request' => $this->request
+			]
+		);
+
 		if ($vb_ajax_load_displays) {
 			$this->render('summary_html_ajax.php');
 		}
