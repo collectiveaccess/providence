@@ -218,6 +218,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
+
+	# ------------------------------------------------------
+	private $op_custom_display_components_dirs = [];
 	
 	# cache for haveAccessToDisplay()
 	static $s_have_access_to_display_cache = [];
@@ -270,6 +273,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				'description' => _t('Restrict display to use in specific contexts. If no contexts are selected the display will be shown in all contexts.')
 			]
 		]);
+
+		// Let application plugins add their own display component plugin directories
+		$va_tmp = $this->opo_app_plugin_manager->hookRegisterCustomDisplayComponentsDirectories(array('custom_display_components_directories' => $this->op_custom_display_components_dirs, 'instance' => $this));
+		$this->op_custom_display_components_dirs = $va_tmp['custom_display_components_directories'];
 	}
 	# ------------------------------------------------------
 	/**
@@ -1931,6 +1938,8 @@ if (!$pb_omit_editing_info) {
 				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
+
+		$this->getCustomDisplayComponents($va_available_bundles, $t_instance, $vs_table, $vb_show_tooltips, $vs_format);
 		
 		uksort($va_available_bundles, function($a, $b) {
 			return strcasecmp(strip_tags($a), strip_tags($b));
@@ -2001,6 +2010,56 @@ if (!$pb_omit_editing_info) {
 		}
 		
 		return $placements_in_display;
+	}
+	# ------------------------------------------------------
+	private function getCustomDisplayComponents(&$va_available_bundles, $t_instance, $vs_table, $vb_show_tooltips, $vs_format) {
+		$va_additional_settings = [];
+		$va_file_list = [];
+		if (sizeof($this->op_custom_display_components_dirs)) {
+			foreach($this->op_custom_display_components_dirs as $vs_display_components_dir) {
+				if (is_dir($vs_display_components_dir . $vs_table)) {
+					$va_file_list += caGetDirectoryContentsAsList($vs_display_components_dir . $vs_table, false, false);
+				}
+				if (!array_filter($va_file_list)) {
+					// No matching custom display components found
+					return;
+				}
+				$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+				if ($this->inTransaction()) {
+					$vo_transaction = $this->getTransaction();
+					$t_placement->setTransaction($vo_transaction);
+				}
+
+				foreach ($va_file_list as $fn_id =>  $filepath) {
+					$va_path_info = pathinfo($filepath);
+					$vs_re = "|{$vs_display_components_dir}{$vs_table}/?|";
+					$vs_directory = preg_replace($vs_re, '', $va_path_info['dirname']);
+					$vs_name = $va_path_info['filename'];
+					$vs_bundle_name = $vs_directory ? str_replace(DIRECTORY_SEPARATOR, '_', $vs_directory) . '_' . $vs_name : $vs_name;
+					$vs_bundle = "{$vs_table}.custom_display_component_{$vs_bundle_name}";
+					$vs_id = str_replace('.', '_', $vs_bundle);
+					$vs_settings_form = $t_placement->getHTMLSettingForm(['id' => $vs_bundle . '_0']);
+					$vs_label = $vs_bundle_name;
+					$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_bundle}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+					$vs_description = _t('Use this custom %1 display. Templates are stored in the directory %2', $t_instance->getProperty('NAME_SINGULAR'), $vs_display_components_dir);
+					$va_bundle = [
+						'bundle' => $vs_bundle,
+						'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+						'description' => $vs_description,
+						'settingsForm' => $vs_settings_form,
+						'settings' => $va_additional_settings,
+					];
+					$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = $va_bundle;
+
+					if ($vb_show_tooltips) {
+						TooltipManager::add(
+							"#bundleDisplayEditorBundle_$vs_id",
+							$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+						);
+					}
+				}
+			}
+		}
 	}
 	# ------------------------------------------------------
 	private function _formatBundleTooltip($ps_label, $ps_bundle, $ps_description) {
@@ -2276,6 +2335,25 @@ if (!$pb_omit_editing_info) {
 		// Use configured default template when available
 		if(!($vs_template = trim($options['template'])) && (sizeof($va_bundle_bits) == 1) && ($t_instance = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
 			$vs_template = $this->getAppConfig()->get($va_bundle_bits[0]."_default_bundle_display_template");
+		}
+
+		if (preg_match('/^custom_display_component/', $va_bundle_bits[1])) {
+			$vs_component = str_replace('custom_display_component_', '', $va_bundle_bits[1]);
+
+			if (sizeof($this->op_custom_display_components_dirs)) {
+				foreach ( $this->op_custom_display_components_dirs as $vs_display_components_dir ) {
+					$vs_filename = "{$vs_display_components_dir}/{$va_bundle_bits[0]}/{$vs_component}.php";
+					if ( file_exists( $vs_filename ) ) {
+						$vs_template = file_get_contents($vs_filename);
+						$file_found = true;
+						break;
+					}
+				}
+			}
+
+			if (!$file_found) {
+				$vs_template = 'ERROR - missing display component template ' . $va_bundle_bits[1];
+			}
 		}
 		
 		if ((!$vs_template) && ($t_element = ca_metadata_elements::getInstance($va_bundle_bits[sizeof($va_bundle_bits)-1]))) { 
