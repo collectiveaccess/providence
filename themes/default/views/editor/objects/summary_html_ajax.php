@@ -76,7 +76,7 @@
 				<div id="summary-html-data-page">
 					<div class="_error"></div>
 					<div class="_indicator">
-						<img src='<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif'/>
+						<img src='<?php print $this->request->getUrlPathForThemeFile('/graphics/icons/indicator.gif'); ?>'/>
 						Loading...
 					</div>
 					<div class="content_wrapper"></div>
