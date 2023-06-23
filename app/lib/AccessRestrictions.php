@@ -111,7 +111,7 @@ class AccessRestrictions {
 			foreach($pa_module_path as $vs_module) {
 				$va_modules_to_check[] = $vs_module;
 				$vs_module_part_path = join("/",$va_modules_to_check);
-				if(is_array($this->opa_acr[$vs_module_part_path])) {
+				if(is_array($this->opa_acr[$vs_module_part_path] ?? null)) {
 					foreach($this->opa_acr[$vs_module_part_path] as $va_group){
 						$va_groups_to_check[] = $va_group;
 					}
@@ -121,7 +121,7 @@ class AccessRestrictions {
 
 		// check controller
 		$vs_controller_path = join("/",(is_array($pa_module_path) ? $pa_module_path : array()))."/".ucfirst($ps_controller).'Controller';
-		if(is_array($this->opa_acr[$vs_controller_path])){
+		if(is_array($this->opa_acr[$vs_controller_path] ?? null)){
 			foreach($this->opa_acr[$vs_controller_path] as $va_group){
 				$va_groups_to_check[] = $va_group;
 			}
@@ -129,7 +129,7 @@ class AccessRestrictions {
 
 		// check action
 		$vs_action_path = join("/",(is_array($pa_module_path) ? $pa_module_path : array()))."/".ucfirst($ps_controller)."Controller/".$ps_action;
-		if(is_array($this->opa_acr[$vs_action_path])){
+		if(is_array($this->opa_acr[$vs_action_path] ?? null)){
 			foreach($this->opa_acr[$vs_action_path] as $va_group){
 				$va_groups_to_check[] = $va_group;
 			}

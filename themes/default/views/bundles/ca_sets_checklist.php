@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vn_table_num 				= $this->getVar('table_num');
 	$t_set 						= $this->getVar('t_set');
@@ -36,10 +35,10 @@
 	$va_set_options 			= array_flip($this->getVar('set_options'));
 	natcasesort($va_set_options);
 	
-	$va_settings 				= $this->getVar('settings');
+	$settings 					= $this->getVar('settings');
 	$va_initial_values 			= $this->getVar('initial_values');
 	
-	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_read_only				= (isset($settings['readonly']) && $settings['readonly']);
 	$vb_batch					= $this->getVar('batch');
 
 	$va_errors = array();
@@ -47,18 +46,18 @@
 	if ($vb_batch) {
 		print caBatchEditorSetsModeControl($vn_table_num, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
-<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 			<table class="objectRepresentationListItem" width="90%"><?php 
 					$vn_c = 0;
@@ -95,17 +94,17 @@
 </div>
 			
 <script type="text/javascript">
-	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+	caUI.initChecklistBundle('#<?= $vs_id_prefix; ?>', {
+		fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
 		templateValues: ['set_id'],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
+		initialValues: <?= json_encode($va_initial_values); ?>,
+		initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
+		errors: <?= json_encode($va_errors); ?>,
+		itemID: '<?= $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',
 		minRepeats: 0,
-		maxRepeats: <?php print sizeof($va_sets); ?>,
-		readonly: <?php print $vb_read_only ? "true" : "false"; ?>
+		maxRepeats: <?= sizeof($va_sets); ?>,
+		readonly: <?= $vb_read_only ? "true" : "false"; ?>
 	});
 </script>

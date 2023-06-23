@@ -910,6 +910,7 @@ class HTML_Node {
 	 }
 	protected function toString_attributes() {
 		$s = '';
+		if(!is_array($this->attributes)) { $this->attributes = []; }
 		foreach($this->attributes as $a => $v) {
 			$s .= ' '.$a.(((!$this->attribute_shorttag) || ($this->attributes[$a] !== $a)) ? '="'.htmlspecialchars($this->attributes[$a], ENT_QUOTES, '', false).'"' : '');
 		}
@@ -2868,4 +2869,3 @@ class HTML_Formatter {
 }
 //END gan_formatter.php
 
-?>

@@ -219,6 +219,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
                 return false;
             }
             
+            $media_desc = $t_instance->getMediaInfo('media');
 			foreach($va_versions as $v => $va_version_settings) {
 				$vs_use_icon = null;
 								
@@ -317,7 +318,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 					);
 				} else {
 					$o_media->set('version', $v);
-					while(list($operation, $pa_parameters) = each($va_rules)) {
+					foreach($va_rules as $operation => $pa_parameters){
 						if ($operation === 'SET') {
 							foreach($pa_parameters as $pp => $pv) {
 								if ($pp == 'format') {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -148,7 +148,7 @@ class BaseLabel extends BaseModel {
 	 * Returns name of single field to use for sort of label content
 	 **/
 	public function getSortField() {
-		return $this->LABEL_SORT_FIELD;
+		return property_exists($this, 'LABEL_SORT_FIELD') ? $this->LABEL_SORT_FIELD : null;
 	}
 	# -------------------------------------------------------
 	/**
@@ -195,6 +195,8 @@ class BaseLabel extends BaseModel {
 	 *
 	 */
 	public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
+		global $g_request;
+		
 		if (($ps_field == $this->getDisplayField()) && (is_array($va_use_list = caGetOption('use_list', $pa_options, false))) && ($po_request = caGetOption('request', $pa_options, null))) {
 			$vn_list_id = array_shift($va_use_list);
 			if ($vn_list_id > 0) {
@@ -211,6 +213,20 @@ class BaseLabel extends BaseModel {
 				}
 			}
 		}
+		
+		$show_bundle_codes = ($g_request && $g_request->isLoggedIn() && $g_request->user->getPreference('show_bundle_codes_in_editor'));
+			
+		if($show_bundle_codes) {
+			// Only output codes if we're being called from a bundle rendering view. Determine whether this is 
+			// a preferred or nonpreferred label from the file name.
+			$trace = debug_backtrace();
+			$key = array_search(__FUNCTION__, array_column($trace, 'function'));
+			if(($key !== false) && preg_match("!_labels_(nonpreferred|preferred)\.php$!", $trace[$key]['file'], $m)) {
+				$bundle_code = $this->getSubjectTableName().'.'.$m[1].'_labels'.'.'.$ps_field;
+				$pa_options['bundleCode'] = ($show_bundle_codes !== 'hide') ? "<span class='developerBundleCode'>(<a href='#' class='developerBundleCode' data-code={$bundle_code}>{$ps_field}</a>)</span>" : "";
+			}
+		}
+		
 		return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
 	}
 	# ------------------------------------------------------

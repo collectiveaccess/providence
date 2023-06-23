@@ -109,8 +109,12 @@ class EHiveDataReader extends BaseXMLDataReader {
 		}
 		
 		// get rows
-		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath);
-
+		if(!is_array($this->ops_xpath )) { $this->ops_xpath  = [$this->ops_xpath]; }
+		foreach($this->ops_xpath as $xp) {
+			$this->opo_handle = $this->opo_xpath[0]->query($xp);
+			if($this->opo_handle && ($this->opo_handle->count() > 0)) { break; }
+		}
+		
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;
 	}
@@ -128,7 +132,7 @@ class EHiveDataReader extends BaseXMLDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		$ps_spec = strtolower(str_replace("/", "", $ps_spec));
+		$ps_spec = strtolower($ps_spec);
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
 			if($vb_return_as_array) {
@@ -184,8 +188,12 @@ class EHiveDataReader extends BaseXMLDataReader {
 						}
 					}
 					if ($field_name) {
-						$key = ($field_set_name == $field_name) ? "/{$field_name}" : "/{$field_set_name}/{$field_name}";
+						$key = "/{$field_set_name}/{$field_name}";
 						$row_with_labels[$key][] = $field_value;
+						
+						if($field_set_name == $field_name) {
+							$row_with_labels["/{$field_name}"][] = $field_value;
+						}
 					}
 				}
 			}

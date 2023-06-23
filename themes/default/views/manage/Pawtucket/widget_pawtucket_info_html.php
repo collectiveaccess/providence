@@ -34,7 +34,7 @@
  		print caEditorInspector($this);
  	} else {
 ?>
-<h3 class='pawtucketStats'><?php print _t('Site content'); ?>:
+<h3 class='pawtucketStats'><?= _t('Site content'); ?>:
 <div><?php 
 	print (($vn_num_pages == 1) ? _t('%1 page', $vn_num_pages) : _t('%1 pages', $vn_num_pages))."<br/>\n"; 
 	print (($vn_num_public_pages == 1) ? _t('%1 public page', $vn_num_public_pages) : _t('%1 public pages', $vn_num_public_pages))."<br/>\n"; 

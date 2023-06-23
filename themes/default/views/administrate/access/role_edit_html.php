@@ -61,21 +61,21 @@
 ?>
 	<div id="role_tabs"  class="tabContainer">
 		<ul>
-			<li><a href="#role_actions" class='formLabel'><?php print _t('Actions'); ?></a></li>
-			<li><a href="#role_bundles" class='formLabel'><?php print _t('Metadata'); ?></a></li>
+			<li><a href="#role_actions" class='formLabel'><?= _t('Actions'); ?></a></li>
+			<li><a href="#role_bundles" class='formLabel'><?= _t('Metadata'); ?></a></li>
 <?php
 	if ($t_role->getAppConfig()->get('perform_type_access_checking')) { 
 ?>
-			<li><a href="#type_list" class='formLabel'><?php print _t('Types'); ?></a></li>
+			<li><a href="#type_list" class='formLabel'><?= _t('Types'); ?></a></li>
 <?php
 	}
 	if ($t_role->getAppConfig()->get('perform_source_access_checking')) { 
 ?>
-			<li><a href="#source_list" class='formLabel'><?php print _t('Sources'); ?></a></li>
+			<li><a href="#source_list" class='formLabel'><?= _t('Sources'); ?></a></li>
 <?php
 	}
 ?>
-			<li><a href="#pawtucket" class='formLabel'><?php print _t('Pawtucket'); ?></a></li>
+			<li><a href="#pawtucket" class='formLabel'><?= _t('Pawtucket'); ?></a></li>
 		</ul>
 		<div id="role_actions">
 			<table>
@@ -230,17 +230,17 @@
 	print "<p>"._t('Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to "Use Pawtucket default."')."</p>\n";
 ?>
 			<table width='100%'>
-				<tr align='center' valign='middle'><th width='180' align='left'><?php print _t('Access status'); ?></th><th width='180'><?php print _t('No access'); ?></th><th width='180'><?php print _t('Read access'); ?></th><th><?php print _t('Use Pawtucket default'); ?></th></tr>
+				<tr align='center' valign='middle'><th width='180' align='left'><?= _t('Access status'); ?></th><th width='180'><?= _t('No access'); ?></th><th width='180'><?= _t('Read access'); ?></th><th><?= _t('Use Pawtucket default'); ?></th></tr>
 <?php
 			foreach($va_access_status_list as $vn_id => $va_access_status) {
 				print "<tr align='center' valign='middle'>";
-				if (($vn_indent = 5*((int)$va_access_status_list['access_status_info']['level'])) < 0) { $vn_indent = 0; }
-				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).$va_access_status['access_status_info']['name_plural']."</td>";
+				if (($vn_indent = 5*((int)($va_access_status_list['access_status_info']['level'] ?? 0))) < 0) { $vn_indent = 0; }
+				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).($va_access_status['access_status_info']['name_plural'] ?? null)."</td>";
 				
 				$vn_access = !strlen($va_access_status['access']) ? null : (int)$va_access_status['access'];
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => 0), array('checked' => ($vn_access === 0)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => 1), array('checked' => ($vn_access === 1)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => null), array('checked' => (is_null($vn_access))))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => 0), array('checked' => ($vn_access === 0)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => 1), array('checked' => ($vn_access === 1)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => null), array('checked' => (is_null($vn_access))))."</td>\n";
 			}
 ?>			
 				</tr>

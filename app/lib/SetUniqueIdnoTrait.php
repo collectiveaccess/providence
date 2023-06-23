@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,12 +62,29 @@
 			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_prefix = preg_replace("![^a-z0-9]+!", "_", strtolower($this->getProperty('NAME_SINGULAR')));
 			
-			if (!strlen(trim($this->get($vs_idno_fld)))) {
+			$cur_idno_val = trim($this->get($vs_idno_fld));
+			$id_numberer = IDNumbering::newIDNumberer($this->tableName(), [$this->getTypeID()], null, $this->getDb());
+			if(
+				$id_numberer
+				&&
+				(
+					!strlen($cur_idno_val)
+					||
+					(method_exists($id_numberer, "validateValue") && sizeof($id_numberer->validateValue($cur_idno_val)))
+				)
+			) {
+				if(method_exists($id_numberer, 'isSerialFormat') && $id_numberer->isSerialFormat()) {
+					$cur_idno_val = $id_numberer->htmlFormValue('x');
+					$this->set($vs_idno_fld, $cur_idno_val);
+					return $this->update();
+				}
+			}
+			
+			if (!strlen($cur_idno_val)) {
 				if (!($vn_len = (is_array($va_len = $this->getFieldInfo($vs_idno_fld, 'BOUNDS_LENGTH')) && sizeof($va_len) > 1) ? (int)$va_len[1] : 0)) {
 					$vn_len = 20;
 				}
 				
-				$this->setMode(ACCESS_WRITE);
 				if(!($vs_label = strtolower($this->getLabelForDisplay()))) { $vs_label = "{$vs_prefix}_".$this->getPrimaryKey(); }
 				$vs_new_code = substr(preg_replace('![^a-z0-9]+!', '_', $vs_label), 0, $vn_len);
 				if (call_user_func_array($this->tableName().'::find', [$x=array($vs_idno_fld => $vs_new_code), array('returnAs' => 'firstId')]) > 0) {

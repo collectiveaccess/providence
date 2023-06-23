@@ -140,14 +140,14 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '1',
+				'DEFAULT' => 1,
 				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t('If checked this item is selectable and can be used in cataloguing.')
 		),
 		'is_default' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => 0,
 				'LABEL' => _t('Is default?'), 'DESCRIPTION' => _t('If checked this item will be the default selection for the list.')
 		),
 		'validation_format' => array(
@@ -286,6 +286,32 @@ $_ca_list_items_settings = array(
 			'default' => 0,
 			'label' => _t('Include source entry for non-preferred labels?'),
 			'description' => _t('Include source entry field for non-preferred labels')
+		),
+		'show_checked_for_preferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include checked indicator for preferred labels?'),
+			'description' => _t('Include "checked" checkbox for preferred labels')
+		),
+		'show_checked_for_nonpreferred_labels' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Include checked indicator for non-preferred labels?'),
+			'description' => _t('Include "checked" checkbox for non-preferred labels')
 		),
 		'render_in_new_menu' => array(
 			'formatType' => FT_BIT,
@@ -972,6 +998,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 		}
 		return $vn_rc;
 	}
@@ -1001,6 +1028,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->_setSettingsForList();
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 		}
 		return $vn_rc;
 	}
@@ -1051,6 +1079,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			}
 			
 			if ($o_trans) { $o_trans->commit(); }
+			
+			ExternalCache::flush('listItems');
+			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
+			CompositeCache::flush('typeListCodes');
 				
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return true;
@@ -1248,7 +1280,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 *
 	 * @return array
 	 */
-	public function rewriteFindCriteria(array $criteria) : array {
+	static public function rewriteFindCriteria(array $criteria) : array {
 		if (isset($criteria['list_id']) && !is_numeric($criteria['list_id'])) {
 						
 			$list_id_vals = $criteria['list_id'];

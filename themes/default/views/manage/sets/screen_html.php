@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,8 @@
 	$vn_set_id = $this->getVar('subject_id');
 	$can_delete = $this->getVar('can_delete');
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	$t_ui = $this->getVar('t_ui');	
 ?>
 	<div class="sectionBox">
@@ -44,7 +46,8 @@
 			
 			$va_form_elements = $t_set->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'SetEditorForm'));
+									'formName' => 'SetEditorForm',
+									'forcedValues' => $forced_values));
 									
 			if (!$vn_set_id) {
 				// For new sets, show mandatory fields...
@@ -65,7 +68,7 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='set_id' value='<?php print $vn_set_id; ?>'/>
+			<input type='hidden' name='set_id' value='<?= $vn_set_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

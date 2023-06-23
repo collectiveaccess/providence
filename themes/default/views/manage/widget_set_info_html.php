@@ -33,7 +33,7 @@
 	
 	if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
 ?>
-<h3 class='setStats'><?php print _t('%1 Statistics', $vs_type_name_singular); ?>:
+<h3 class='setStats'><?= _t('%1 Statistics', $vs_type_name_singular); ?>:
 <div><?php
 		print _t("%1 available to you", sizeof($va_sets['mine']));
 		print "<br/>\n";
@@ -41,7 +41,7 @@
 		print "<br/>\n";
 		print _t("%1 created by the public", sizeof($va_sets['public']));
 ?></div>
-</h3><h3 class='setStats'><?php print _t('Show %1', $vs_type_name_plural); ?>:
+</h3><h3 class='setStats'><?= _t('Show %1', $vs_type_name_plural); ?>:
 <div><?php
 			print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 	
@@ -61,7 +61,7 @@
 <?php	
 	} else {
 ?>
-<h3><?php print _t('Your %1', $vs_type_name_plural); ?>:
+<h3><?= _t('Your %1', $vs_type_name_plural); ?>:
 <div><?php
 		if (sizeof($va_sets['mine']) == 1) {
 			print _t("1 %1 is available", $vs_type_name_singular);

@@ -28,7 +28,7 @@
  
 	$vn_form_count 	= $this->getVar('form_count');
 ?>
-<h3 class='searchForms'><?php print _t('Your search forms'); ?>:
+<h3 class='searchForms'><?= _t('Your search forms'); ?>:
 <div><?php
 	if ($vn_form_count == 1) {
 		print _t("1 form is available for editing");

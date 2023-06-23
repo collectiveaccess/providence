@@ -47,13 +47,13 @@
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">
-						<?php print _t('Name'); ?>
+						<?= _t('Name'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Code'); ?>
+						<?= _t('Code'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Description'); ?>
+						<?= _t('Description'); ?>
 					</th>
 					<th class="{sorter: false} list-header-nosort listtableEditDelete">&nbsp;</th>
 				</tr>
@@ -65,17 +65,17 @@
 ?>
 				<tr>
 					<td>
-						<?php print $va_group['name']; ?>
+						<?= $va_group['name']; ?>
 					</td>
 					<td>
-						<?php print $va_group['code']; ?>
+						<?= $va_group['code']; ?>
 					</td>
 					<td>
-						<?php print $va_group['description']; ?>
+						<?= $va_group['description']; ?>
 					</td>
 					<td class="listtableEditDelete">
-						<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					</td>
 				</tr>
 <?php
@@ -87,7 +87,7 @@
 				<tr>
 					<td colspan='4'>
 						<div align="center">
-							<?php print _t('No groups have been configured'); ?>
+							<?= _t('No groups have been configured'); ?>
 						</div>
 					</td>
 				</tr>

@@ -49,9 +49,9 @@
 	<script type="text/javascript">
 		var caUIBrowsePanel = caUI.initBrowsePanel({ 
 			useStaticDiv: true,
-			facetUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet'); ?>',
-			addCriteriaUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria'); ?>',
-			singleFacetValues: <?php print json_encode($this->getVar('single_facet_values')); ?>
+			facetUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet'); ?>',
+			addCriteriaUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria'); ?>',
+			singleFacetValues: <?= json_encode($this->getVar('single_facet_values')); ?>
 		});
 	</script>
 
@@ -62,7 +62,7 @@
 				print "<div id='browseControls'>";
 				if (sizeof($va_facets)) { 
 ?>			
-					<div id="refineBrowse"><span class='refineHeading'><?php print _t('Refine results by'); ?>:</span>
+					<div id="refineBrowse"><span class='refineHeading'><?= _t('Refine results by'); ?>:</span>
 <?php
 
 						$va_available_facets = $this->getVar('available_facets');

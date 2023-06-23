@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -354,6 +354,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @params string $ps_type_code
 	 * @params array $options Options include:
 	 *      includeTypeCodesAsKeys = Also set type codes are keys in the returned array. [Default is false]
+	 *		returnAllLocales = 
 	 *
 	 * Returns array keyed on relationship type_id; values are associative arrays keys on ca_relationship_types/ca_relationship_type_labels field names
 	 */
@@ -390,7 +391,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;
 			}
 		}
-		return caExtractValuesByUserLocale($va_relationships);
+		return caGetOption('returnAllLocales', $options, false)  ? $va_relationships : caExtractValuesByUserLocale($va_relationships);
 	}
 	# ------------------------------------------------------
 	/**
@@ -406,7 +407,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
 		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
-		if(!sizeof($match_on)) { $match_on = ['type_code']; }
+		if(!sizeof($match_on)) { $match_on = ['type_code', 'label']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
@@ -709,6 +710,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$vn_type_id = $qr_res->get('type_id');
 			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
+			$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');
 			
 			$qr_children = $o_db->query("
 				SELECT count(*) children
@@ -760,7 +762,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
@@ -795,7 +798,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
@@ -805,8 +809,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 
 				SET is_default = 0 
-				WHERE table_num = ?
-			", (int)$t_root_rel_type->get('table_num'));
+				WHERE table_num = ? AND type_id <> ?
+			",[(int)$t_root_rel_type->get('table_num'), $this->getPrimaryKey()]);
 		}
 		if (!($vn_rc = parent::update($pa_options))) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,88 +25,96 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object_lot
-	$t_subject 			= $this->getVar('t_subject');		// object
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_rel_types		= $this->getVar('relationship_types');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
-	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
-	
-	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
-	
-	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	$t_item->load($vn_lot_id = $t_subject->get('lot_id'));
-	
-	$va_force_new_values = $this->getVar('forceNewValues');
-	$va_initial_values = $this->getVar('initialValues');
-	
-	// put brackets around idno_stub for presentation
-	foreach($va_initial_values as $vn_i => $va_lot_info) {
-		if ($va_initial_values[$vn_i]['idno_stub']) {
-			$va_initial_values[$vn_i]['idno_stub'] = '['.$va_initial_values[$vn_i]['idno_stub'].'] ';
-		}
-	}
-	
-	// put brackets around idno_stub for presentation
-	foreach($va_force_new_values as $vn_i => $va_lot_info) {
-		if ($va_force_new_values[$vn_i]['idno_stub']) {
-			$va_force_new_values[$vn_i]['idno_stub'] = '['.$va_force_new_values[$vn_i]['idno_stub'].'] ';
-		}
-	}
-	
-	$va_errors = [];
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
-	}
 
-	// params to pass during lookup
-	$va_lookup_params = array(
-		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$vb_quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
-	);
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// object_lot
+$t_subject 			= $this->getVar('t_subject');		// object
+$t_item_rel 		= $this->getVar('t_item_rel');
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$va_rel_types		= $this->getVar('relationship_types');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
 
-	$count = $this->getVar('relationship_count');
-	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
-	
-	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
-	
-		if ($vb_batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-		} else {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+$force_values = $this->getVar('forceValues');
+
+$vb_dont_show_del	=((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+
+
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+$t_item->load($vn_lot_id = $t_subject->get('lot_id'));
+
+$va_force_new_values = $this->getVar('forceNewValues') ?? [];
+$va_initial_values = $this->getVar('initialValues');
+
+// put brackets around idno_stub for presentation
+foreach($va_initial_values as $vn_i => $va_lot_info) {
+	if ($va_initial_values[$vn_i]['idno_stub'] ?? null) {
+		$va_initial_values[$vn_i]['idno_stub'] = '['.$va_initial_values[$vn_i]['idno_stub'].'] ';
 	}
+}
+
+// put brackets around idno_stub for presentation
+foreach($va_force_new_values as $vn_i => $va_lot_info) {
+	if ($va_force_new_values[$vn_i]['idno_stub'] ?? null) {
+		$va_force_new_values[$vn_i]['idno_stub'] = '['.$va_force_new_values[$vn_i]['idno_stub'].'] ';
+	}
+}
+
+$va_errors = [];
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
+
+// params to pass during lookup
+$va_lookup_params = array(
+	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (!$vb_quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+);
+
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+}
+
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";	
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
-		print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings);
+		print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $settings);
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 		
-		if(caGetOption('showReturnToHomeLocations', $va_settings, false) && caHomeLocationsEnabled('ca_object_lots', null, ['enableIfAnyTypeSet' => true])) {
+		if(caGetOption('showReturnToHomeLocations', $settings, false) && caHomeLocationsEnabled('ca_object_lots', null, ['enableIfAnyTypeSet' => true])) {
 			print caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
 		}
 	
 		if(!$vb_read_only && ($t_subject->tableName() !== 'ca_objects')) {
-			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
@@ -119,7 +127,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($va_settings['list_format']) {
+	switch($settings['list_format']) {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -131,7 +139,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -189,7 +197,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($va_settings['list_format']) {
+	switch($settings['list_format']) {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -204,7 +212,7 @@
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -217,7 +225,7 @@
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => $t_item_rel->hasField('type_id') ? $dont_show_relationship_type : 'none'));
 ?>
 			</span>
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -368,9 +376,9 @@
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_related_'],
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'ObjectLot', 'Get', $va_lookup_params); ?>',
-			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 <?php
 	if ($t_subject->tableName() == 'ca_objects') {
@@ -397,8 +405,8 @@
 			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
-			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
 			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
@@ -412,12 +420,13 @@
 			listSortItems: 'div.roundedRel,div.listRel',
 <?php if($vb_quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $va_settings['prepopulateQuickaddFields']))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 			
 			totalValueCount: <?= (int)$count; ?>,
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_object_lots')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 <?php } ?>
 		});
 	});

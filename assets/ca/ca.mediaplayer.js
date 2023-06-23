@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@ var caUI = caUI || {};
 					break;
 				case 'Plyr':
 					that.players[playerName].play();
-
+					
 					const c = that.players[playerName].currentTime;
 					if (t > c) {
 						that.players[playerName].forward(t - c);
@@ -109,6 +109,15 @@ var caUI = caUI || {};
 						that.players[playerName].rewind(c - t);
 					} 
 					that.isPlaying[playerName] = true;
+					
+					that.players[playerName].on('canplay', (event) => {
+						that.players[playerName].play();
+						if (t > c) {
+							that.players[playerName].forward(t - c);
+						} else {
+							that.players[playerName].rewind(c - t);
+						} 
+					});
 					break;
 				case 'MediaElement':
 					that.players[playerName][0].play();

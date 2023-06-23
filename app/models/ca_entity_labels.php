@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -150,6 +150,13 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
+		),
+		'checked' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Checked'), 'DESCRIPTION' => _t('Indicates if components of name have been verified')
 		),
 		'effective_date' => array(
 				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -338,7 +345,8 @@ class ca_entity_labels extends BaseLabel {
 			} elseif($this->get('displayname') && $this->get('forename')) {
 				$this->set('surname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 				$this->set('displayname', $this->get('surname'));
-			} elseif(!$this->get('displayname')) {	
+				$this->set('forename', '');
+			} else {	
 				$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 				$this->set('surname', $this->get('displayname'));
 			}
@@ -378,7 +386,17 @@ class ca_entity_labels extends BaseLabel {
 	 */
 	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
 		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
-		return DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+		
+		$n =  DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+		
+		if((isset($label_values['suffix']) && strlen($label_values['suffix'])) || (isset($label_values['prefix']) && strlen($label_values['prefix']))) {
+			if(!($label_values['displayname'] ?? null)) {
+				$label_values['displayname'] = $n['displayname'];
+			}
+			// assume name is already split if suffix or prefix is set
+			return $label_values;
+		}
+		return $n;
 	}
 	# ------------------------------------------------------
 	/**
@@ -388,7 +406,7 @@ class ca_entity_labels extends BaseLabel {
 	 *
 	 * @return string
 	 */
-	public static function labelAsString(array $label_values) : string {
+	public static function labelAsString(array $label_values) : ?string {
 		$n = trim(preg_replace('![ ]+!', ' ', ($label_values['prefix'] ?? null).' '.($label_values['forename'] ?? null).' '.($label_values['other_forenames'] ?? null).' '.($label_values['middlename'] ?? null).' '.($label_values['surname'] ?? null).' '.($label_values['suffix'] ?? null)));
 		if(!$n) { $n = $label_values['displayname'] ?? null; }
 		return $n;
@@ -401,12 +419,17 @@ class ca_entity_labels extends BaseLabel {
 	 * @return bool
 	 */
 	public function update($options=null) {
+		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
 			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
 			return false;
 		}
-		if (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
-			$this->set('displayname', $this->get('surname'));
+		if (($t_entity = caGetOption('subject', $options, null)) && $is_org) {
+			if($this->changed('displayname') && !$this->changed('surname')) {
+				$this->set('surname', $this->get('displayname'));
+			} else {
+				$this->set('displayname', $this->get('surname'));
+			}
 		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}

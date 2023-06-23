@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,7 +93,9 @@ var caUI = caUI || {};
 			listSortItems: null, // if set, limits sorting to items specified by selector
 			
 			loadedSort: null,			// Dynamically loaded sort order
-			loadedSortDirection: null
+			loadedSortDirection: null,
+			
+			buttons: []
 		}, options);
 		
 		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
@@ -288,13 +290,13 @@ var caUI = caUI || {};
 			var fieldRegex = new RegExp(this.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < selects.length; i++) {
 				var element_id = selects[i].id;
-
 				var info = element_id.match(fieldRegex);
-				if (info && info[2] && (parseInt(info[2]) == id)) {
-					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
+				if (info && info[2] && ((parseInt(info[2]) == id) || ('new_' + info[2] ==  id))) {
+					if (this.initialValues[id] && typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + " option[value='" + this.initialValues[id][info[1]] +"']").prop('selected', true);
+					let iv = this.initialValues[id] ? this.initialValues[id][info[1]] : initialValues[info[1].replace('_new', '')];
+					jQuery(this.container + " #" + element_id + " option[value='" + iv +"']").prop('selected', true);
 				}
 			}
 
@@ -393,11 +395,20 @@ var caUI = caUI || {};
 			} else {
 				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).css("display", "none");
 			}
+			
+			// attach other buttons
+			if(this.buttons) {
+				for(var i in this.buttons) {
+					let b = this.buttons[i];
+					//console.log('button', this.buttons[i]);
+					jQuery("#" +this.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
+				}
+			}
 
 			// set default locale for new
 			if (isNew) {
 				if (defaultLocaleSelectedIndex !== false) {
-					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
+					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
 						// There's a locale drop-down to mess with
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
@@ -406,7 +417,7 @@ var caUI = caUI || {};
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				} else {
-					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").length) {
+					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
 						// There's a locale drop-down to mess with
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
 					} else {
@@ -415,8 +426,6 @@ var caUI = caUI || {};
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				}
-				
-				
 			}
 
 			// Add bundle preview value text
@@ -546,8 +555,10 @@ var caUI = caUI || {};
 		}
 		jQuery.each(that.initialValueOrder, function(i, k) {
 			var v = that.initialValues[k];
-			v['_key'] = k;
-			initialValuesSorted.push(v);
+			if(v) {
+				v['_key'] = k;
+				initialValuesSorted.push(v);
+			}
 		});
 
 		// perform configured sort

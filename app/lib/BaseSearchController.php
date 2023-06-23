@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,6 @@
  */
 require_once(__CA_LIB_DIR__."/BaseRefineableSearchController.php");
 require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
-require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
 
@@ -82,6 +81,8 @@ class BaseSearchController extends BaseRefineableSearchController {
 		$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
 		$vb_is_new_search		= $this->opo_result_context->isNewSearch();
 		
+		$vo_result = null;
+		
 		if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
 			$vs_search = '';
 			$vb_is_new_search = true;
@@ -102,10 +103,16 @@ class BaseSearchController extends BaseRefineableSearchController {
 			$vs_view = array_shift($va_tmp); 
 		}
 		
+		if($vb_is_new_search && ($default_sort = $this->request->config->get($this->ops_tablename.'_reset_sort_on_new_search'))) {
+			$this->opo_result_context->setCurrentSort($default_sort);
+			$this->opo_result_context->setCurrentSortDirection('ASC');
+		}
+		
 		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
 			$va_tmp = array_keys($this->opa_sorts);
 			$vs_sort = array_shift($va_tmp);
 		}
+		
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
 		$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
@@ -116,13 +123,13 @@ class BaseSearchController extends BaseRefineableSearchController {
 		MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
 		
 		$vs_append_to_search = '';
-		if ($pa_options['appendToSearch']) {
+		if ($pa_options['appendToSearch'] ?? false) {
 			$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
 		}
 		//
 		// Execute the search
 		//
-		$vs_search_suffix = (caGetSearchConfig()->get('match_on_stem') && caIsSearchStem($vs_search)) ? '*' : '';
+		$vs_search_with_suffix = caMatchOnStem($vs_search);
 		
 		if($vs_search){ /* any request? */
 			if(is_array($va_set_ids = caSearchIsForSets($vs_search))) {
@@ -154,7 +161,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 				$vs_browse_classname = get_class($po_search);
 				$po_search = new $vs_browse_classname;
 				if (is_subclass_of($po_search, "BrowseEngine")) {
-					$po_search->addCriteria('_search', $vs_search.$vs_search_suffix);
+					$po_search->addCriteria('_search', $vs_search_with_suffix);
 					
 					if (method_exists($this, "hookBeforeNewSearch")) {
 						$this->hookBeforeNewSearch($po_search);
@@ -201,13 +208,17 @@ class BaseSearchController extends BaseRefineableSearchController {
 				}
 				
 			} elseif($po_search) {
-				$vo_result = $po_search->search($vs_search.$vs_search_suffix, $va_search_opts);
+				$vo_result = $po_search->search($vs_search_with_suffix, $va_search_opts);
 			}
 	} catch (SearchException $e) {
 		$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
 		return $this->Index(['error' => true]);
 	}
-
+	
+			$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDescription($result_desc);
+			
 			$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
 
 			$this->opo_result_context->validateCache();
@@ -283,7 +294,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 		
 		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 		
-		switch($pa_options['output_format']) {
+		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
 				$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);

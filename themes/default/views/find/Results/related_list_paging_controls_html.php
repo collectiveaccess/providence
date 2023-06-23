@@ -79,11 +79,11 @@
 ?>
 
 <script type="text/javascript">
-	function caRelatedPageNav<?php print $vs_id_prefix; ?>(next) {
+	function caRelatedPageNav<?= $vs_id_prefix; ?>(next) {
 		if (next) {
-			jQuery("#<?= $vs_id_prefix; ?>resultBox").load("<?php print caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction()); ?>", <?php print json_encode($va_next_link_params); ?>, function() { if(typeof caHackSearchResultForm == "function") { caHackSearchResultForm(false); }}); 
+			jQuery("#<?= $vs_id_prefix; ?>resultBox").load("<?= caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction()); ?>", <?= json_encode($va_next_link_params); ?>, function() { if(typeof caHackSearchResultForm == "function") { caHackSearchResultForm(false); }}); 
 		} else {
-			jQuery("#<?= $vs_id_prefix; ?>resultBox").load("<?php print caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction()); ?>", <?php print json_encode($va_previous_link_params); ?>, function() { if(typeof caHackSearchResultForm == "function") { caHackSearchResultForm(false); }}); 
+			jQuery("#<?= $vs_id_prefix; ?>resultBox").load("<?= caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction()); ?>", <?= json_encode($va_previous_link_params); ?>, function() { if(typeof caHackSearchResultForm == "function") { caHackSearchResultForm(false); }}); 
 		}
 	}
 </script>

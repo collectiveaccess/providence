@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -92,7 +92,15 @@ class BaseEditorController extends ActionController {
 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
 			// Trigger "before duplicate" hook
-			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(
+				[
+					'id' => $vn_subject_id, 
+					'table_num' => $t_subject->tableNum(),
+					'table_name' => $t_subject->tableName(), 
+					'instance' => $t_subject,
+					'request' => $this->request
+				]
+			);
 
 			if ($t_dupe = $t_subject->duplicate(array(
 				'user_id' => $this->request->getUserID(),
@@ -109,7 +117,16 @@ class BaseEditorController extends ActionController {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
 				// Trigger duplicate hook
-				$this->opo_app_plugin_manager->hookDuplicateItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'duplicate' => $t_dupe));
+				$this->opo_app_plugin_manager->hookDuplicateItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $t_subject->tableName(), 
+						'instance' => $t_subject, 
+						'duplicate' => $t_dupe,
+						'request' => $this->request
+					]
+				);
 
 				// redirect to edit newly created dupe.
 				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
@@ -176,7 +193,7 @@ class BaseEditorController extends ActionController {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
 				// jump to screen containing url-specified bundle
 				$this->request->setActionExtra($vs_bundle_screen);
-			} else {
+			} elseif(isset($va_nav['defaultScreen'])) {
 				$this->request->setActionExtra($va_nav['defaultScreen']);
 			}
 		}
@@ -187,8 +204,19 @@ class BaseEditorController extends ActionController {
 			Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
 		}
 
-		# trigger "EditItem" hook
-		$this->opo_app_plugin_manager->hookEditItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+		// Trigger "EditItem" hook on form load
+		$params = $this->opo_app_plugin_manager->hookEditItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => $t_subject,
+				'request' => $this->request
+			]
+		);
+		
+		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
+		$this->view->setVar('forced_values', $params['forced_values'] ?? null);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {
 			$vs_view = 'screen_html';
@@ -250,11 +278,11 @@ class BaseEditorController extends ActionController {
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
 				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
-				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				if(!$t_subject->relationshipExists($vs_rel_table, $vn_rel_id, $vn_rel_type_id)) { 
+					$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+				}
 			}
 			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
-			$this->render('screen_html.php');
-			return;
 		}
 
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
@@ -296,7 +324,16 @@ class BaseEditorController extends ActionController {
 		$t_subject->isChild();	// sets idno "child" flag
 		
 		# trigger "BeforeSaveItem" hook
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => &$t_subject, 
+				'is_insert' => $vb_is_insert,
+				'request' => $this->request
+			]
+		);
 
 		$vb_save_rc = false;
 		$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
@@ -305,6 +342,9 @@ class BaseEditorController extends ActionController {
 				$this->_afterSave($t_subject, $vb_is_insert);
 			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
 				$vb_no_save_error = true;
+			}
+			if($t_subject->numErrors() > 0) {
+				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
 			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
@@ -397,9 +437,18 @@ class BaseEditorController extends ActionController {
 			$this->opo_result_context->invalidateCache();	// force new search in case changes have removed this item from the results
 			$this->opo_result_context->saveContext();
 		}
+		
 		# trigger "SaveItem" hook
-
-		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => &$t_subject, 
+				'is_insert' => $vb_is_insert, 
+				'request' => $this->request
+			]
+		);
 
 		if (method_exists($this, "postSave")) {
 			$this->postSave($t_subject, $vb_is_insert);
@@ -513,7 +562,8 @@ class BaseEditorController extends ActionController {
 	        
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$t_subject->setTransaction($o_t = new Transaction());
+				$o_t = new Transaction();
+				$t_subject->setTransaction($o_t);
 				$vb_we_set_transaction = true;
 			}
 			
@@ -553,7 +603,9 @@ class BaseEditorController extends ActionController {
 						}
 						$vn_child_count++;
 					}
-					$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+					if($vn_child_count > 0) {
+						$this->notification->addNotification(($vn_child_count == 1) ? _t("Deleted %1 child", $vn_child_count) : _t("Deleted %1 children", $vn_child_count), __NOTIFICATION_TYPE_INFO__);
+					}
 				}
 			}
 		
@@ -597,7 +649,15 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
 
 				# trigger "DeleteItem" hook
-				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $subject_table, 'instance' => $t_subject));
+				$this->opo_app_plugin_manager->hookDeleteItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $subject_table, 
+						'instance' => $t_subject,
+						'request' => $this->request
+					]
+				);
 
 				# redirect
 				$this->redirectAfterDelete($t_subject);
@@ -653,7 +713,7 @@ class BaseEditorController extends ActionController {
 		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
-		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in'] ?? null) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
 		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
@@ -710,7 +770,15 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
-		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+		$this->opo_app_plugin_manager->hookSummarizeItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => $t_subject, 
+				'request' => $this->request
+			]
+		);
 
 		$this->render('summary_html.php');
 	}
@@ -1092,12 +1160,15 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
-		$this->opo_app_plugin_manager->hookSaveItem(array(
-			'id' => $vn_subject_id,
-			'table_num' => $t_subject->tableNum(),
-			'table_name' => $t_subject->tableName(),
-			'instance' => &$t_subject,
-			'is_insert' => false)
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $vn_subject_id,
+				'table_num' => $t_subject->tableNum(),
+				'table_name' => $t_subject->tableName(),
+				'instance' => &$t_subject,
+				'is_insert' => false,
+				'request' => $this->request
+			]
 		);
 
 		$this->Access();
@@ -1128,7 +1199,16 @@ class BaseEditorController extends ActionController {
 				} else {
 					$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
 				}
-				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookSaveItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $t_subject->tableName(), 
+						'instance' => &$t_subject, 
+						'is_insert' => false,
+						'request' => $this->request
+					]
+				);
 
 			}
 		} else {
@@ -1170,6 +1250,8 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+		$vn_above_id = $vn_after_id = null;
+		
 		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
@@ -1205,6 +1287,7 @@ class BaseEditorController extends ActionController {
         
 		// pass relationship parameters to Save() action from Edit() so
 		// that we can create a relationship for a newly created object
+		$vs_rel_table = $vn_rel_type_id = $vn_rel_id = null;
 		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
 			$vn_rel_type_id = $this->getRequest()->getParameter('rel_type_id', pString);
 			$vn_rel_id = $this->getRequest()->getParameter('rel_id', pInteger);
@@ -1214,8 +1297,6 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('rel_type_id', $vn_rel_type_id);
 				$this->view->setVar('rel_id', $vn_rel_id);
 			}
-
-			return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
@@ -1248,10 +1329,10 @@ class BaseEditorController extends ActionController {
 					$t_subject->set('idno', $t_parent->get('idno'));
 				}
 			}
-			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id);
+			return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 		}
 
-		return array($vn_subject_id, $t_subject, $t_ui);
+		return array($vn_subject_id, $t_subject, $t_ui, null, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
 	}
 	# -------------------------------------------------------
 	# Dynamic navigation generation
@@ -1488,8 +1569,7 @@ class BaseEditorController extends ActionController {
 		$limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
 		$exclude_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_exclude_types');
 		
-        $va_limit_to_type_ids = (is_array($va_limit_to_types) && sizeof($va_limit_to_types)) ? caMakeTypeIDList($this->ops_table_name, $va_limit_to_types, ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
-		foreach($va_subtypes as $vs_sort_key => $va_type) {
+        foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
 				if (is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_item['parameters']['type_id'], $limit_to_types)) { continue; }
@@ -1938,8 +2018,8 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $vn_subject_id) {
-			if ($pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
+		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $pt_subject->getPrimaryKey()) {
+			if (method_exists($pt_subject, 'checkACLAccessForUser') && $pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return false;
 			}
@@ -2321,7 +2401,7 @@ class BaseEditorController extends ActionController {
 
 		$pa_annotations = $this->request->getParameter('save', pArray);
 
-		$va_annotation_ids = array();
+		$va_annotation_ids = [];
 		if (is_array($pa_annotations)) {
 			foreach($pa_annotations as $vn_i => $va_annotation) {
 				$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : '';
@@ -2764,20 +2844,48 @@ class BaseEditorController extends ActionController {
 		if (!$placement->isLoaded()) {
 			throw new ApplicationException(_('Invalid placement_id'));
 		}
-		$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
+		$editor_table = $placement->getEditorType();
+		$t_instance = Datamodel::getInstance($editor_table, true);
 		$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
 		if (!($t_instance->load($vn_primary_id))) { 
 			throw new ApplicationException(_('Invalid id'));
 		}
 		
-		$table = preg_replace("!_related_list$!", "", $placement->get('bundle_name'));
+		$bundle_name = $placement->get('bundle_name');
 		
-		if($ids = $this->request->getParameter('ids', pString)) {
-			$ids = explode(";", $ids);
-		} else {
-			$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'policy' => $placement->getSetting('policy'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+		switch($bundle_name) {
+			case 'history_tracking_current_contents':
+				if(!($policy = $placement->getSetting('policy'))) {
+					throw new ApplicationException(_('No policy set'));
+				}
+				if(!is_array($policy_config = $editor_table::getPolicyConfig($policy))) {
+					throw new ApplicationException(_('Could not get policy configuration for policy %1', $policy));
+				}
+				if(!($table = $policy_config['table']) || !Datamodel::tableExists($table)) {
+					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
+				}
+				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
+				break;
+			case 'ca_objects_components_list':
+				$id = $this->request->getParameter('primary_id', pInteger);
+				$t_object = ca_objects::findAsInstance($id);
+				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
+					throw new ApplicationException(_('Invalid item'));
+				}
+				$ids = $t_object->getComponents(['returnAs' => 'ids']);
+				$table = "ca_objects";
+				break;
+			default:
+				// relationship bundles
+				$table = preg_replace("!(_related_list|_table)$!", "", $bundle_name);
+				if($ids = $this->request->getParameter('ids', pString)) {
+					$ids = explode(";", $ids);
+				} else {
+					$ids = $t_instance->getRelatedItems($table, ['showCurrentOnly' => $placement->getSetting('showCurrentOnly'), 'policy' => $placement->getSetting('policy'), 'returnAs' => 'ids', 'restrictToTypes' => $placement->getSetting('restrict_to_types'), 'restrictToRelationshipTypes' => $placement->getSetting('restrict_to_relationship_types'), ]);
+				}
+				break;
 		}
-
+	
 		if(!$ids || !sizeof($ids)) { 
 			throw new ApplicationException(_('No related items'));
 		}
@@ -2900,6 +3008,69 @@ class BaseEditorController extends ActionController {
 		} else {
 			$resp = ['ok' => 0, 'message' => _t('Invalid target'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 		}
+		$this->view->setVar('response', $resp);
+		$this->render('../generic/return_to_home_locations.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set media from 
+	 */
+	public function setRepresentation(?array $options=null) {
+		list($vn_subject_id, $t_subject) = $this->_initView($options);
+		
+		if(!$t_subject->isSaveable($this->request)) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		
+		$id = $this->request->getParameter('id', pString);	// id of item to set as root media
+		if(!$id) {
+			throw new ApplicationException(_t('ID is not defined'));
+		}
+		$table = $this->request->getParameter('t', pString);
+		$path = Datamodel::getPath($t_subject->tableName(), $table);
+	
+		if(!is_array($path) || (sizeof($path) < 2)) {
+			throw new ApplicationException(_t('Invalid target'));
+		}
+		$path = array_keys($path);
+		if(!($t_rel = Datamodel::getInstance($path[1])) && method_exists($t_rel, 'isRelationship') && $t_rel->isRelationship()) {
+			throw new ApplicationException(_t('Relationship does not exist'));
+		}
+		if(!$t_rel->load($id)) {
+			throw new ApplicationException(_t('ID does not exist'));
+		}
+		
+		if($t_rel->isSelfRelationship()) {
+			$rel_ids = $t_rel->getRelatedIDsForSelfRelationship([$t_subject->getPrimaryKey()]);
+			$t_target = Datamodel::getInstance($table, true, $rel_ids[0]);
+		} else {
+			$t_target = Datamodel::getInstance($table, true);
+			$rel_id = $t_rel->get($t_target->primaryKey());
+			$t_target->load($rel_id);
+		}
+
+		$rep_ids = $t_target->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
+		if(!is_array($rep_ids) || !sizeof($rep_ids)) {
+			throw new ApplicationException(_t('ID has no associated media'));
+		}
+		$selected_rep_id = $rep_ids[0];
+		$existing_reps = $t_subject->getRepresentations() ?? [];
+		
+		if(sizeof($selected_reps = array_filter($existing_reps, function($v) use ($selected_rep_id) {
+			return $v['representation_id'] == $selected_rep_id;
+		}))) {
+			$selected_rep = array_shift($selected_reps);
+			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
+				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
+			} else {
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlimk media')];;
+			}
+		} elseif($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
+			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
+		} else {
+			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
+		}
+		
 		$this->view->setVar('response', $resp);
 		$this->render('../generic/return_to_home_locations.php');
 	}

@@ -89,22 +89,22 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Date/time'); ?>
+					<?= _t('Date/time'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('User'); ?>
+					<?= _t('User'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Change'); ?>
+					<?= _t('Change'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Type'); ?>
+					<?= _t('Type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Item'); ?>
+					<?= _t('Item'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Changes'); ?>
+					<?= _t('Changes'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -120,16 +120,16 @@
 ?>
 				<tr>
 					<td>
-						<?php print caGetLocalizedDate($va_log_entry_list[0]['timestamp']); ?>
+						<?= caGetLocalizedDate($va_log_entry_list[0]['timestamp']); ?>
 					</td>
 					<td>
-						<?php print $va_log_entry_list[0]['user']; ?>
+						<?= $va_log_entry_list[0]['user']; ?>
 					</td>
 					<td>
-						<?php print $va_log_entry_list[0]['changetype_display']; ?>
+						<?= $va_log_entry_list[0]['changetype_display']; ?>
 					</td>
 					<td>
-						<?php print Datamodel::getTableProperty($va_log_entry_list[0]['subject_table_num'], 'NAME_SINGULAR'); ?>
+						<?= Datamodel::getTableProperty($va_log_entry_list[0]['subject_table_num'], 'NAME_SINGULAR'); ?>
 					</td>
 					<td>
 						<?php
@@ -163,7 +163,7 @@
 		<tr>
 			<td colspan='6'>
 				<div align="center">
-					<?php print $params_set ? _t('No log entries found') : _t('Choose display criteria to display matching log entries'); ?>
+					<?= $params_set ? _t('No log entries found') : _t('Choose display criteria to display matching log entries'); ?>
 				</div>
 			</td>
 		</tr>

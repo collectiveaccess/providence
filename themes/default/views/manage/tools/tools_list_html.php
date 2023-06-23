@@ -73,10 +73,10 @@ if (!$this->request->isAjax()) {
 ?>
 			<tr>
 				<td>
-					<?php print $o_tool->getToolName(); ?>
+					<?= $o_tool->getToolName(); ?>
 				</td>
 				<td>
-					<?php print $o_tool->getToolDescription(); ?>
+					<?= $o_tool->getToolDescription(); ?>
 				</td>
 				<td>
 <?php
@@ -87,14 +87,14 @@ if (!$this->request->isAjax()) {
 ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Run"), '', 'manage', 'Tools', 'Settings', array('tool' => $o_tool->getToolIdentifier()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Run"), '', 'manage', 'Tools', 'Settings', array('tool' => $o_tool->getToolIdentifier()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
 		}
 	} else {
 ?>
-	<tr><td colspan="4" align="center"><?php print _t('No tools are available'); ?></td></tr>
+	<tr><td colspan="4" align="center"><?= _t('No tools are available'); ?></td></tr>
 <?php
 	}
 ?>
@@ -113,7 +113,7 @@ if (!$this->request->isAjax()) {
 		
 		jQuery('#exporterUploadArea').fileupload({
 			dataType: 'json',
-			url: '<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
+			url: '<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
 			dropZone: jQuery('#exporterUploadArea'),
 			singleFileUploads: false,
 			done: function (e, data) {
@@ -138,7 +138,7 @@ if (!$this->request->isAjax()) {
 							jQuery("#batchProcessingTableProgressGroup").hide(250);
 						}, 3000);
 				}
-				jQuery("#caToolListContainer").load("<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'Index'); ?>");
+				jQuery("#caToolListContainer").load("<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'Index'); ?>");
 			},
 			progressall: function (e, data) {
 				jQuery("#exporterUploadArea").hide(150);
@@ -148,7 +148,7 @@ if (!$this->request->isAjax()) {
 				var progress = parseInt(data.loaded / data.total * 100, 10);
 				jQuery('#progressbar').progressbar("value", progress);
 			
-				var msg = "<?php print _t("Progress: "); ?>%1";
+				var msg = "<?= _t("Progress: "); ?>%1";
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
 				
 			}

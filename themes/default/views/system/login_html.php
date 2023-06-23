@@ -31,7 +31,7 @@
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 	<head>
-		<title><?php print $this->request->config->get("app_display_name"); ?></title>
+		<title><?= $this->request->config->get("app_display_name"); ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
 		<link href="<?= caGetThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
@@ -49,7 +49,7 @@
 					<?= caGetDefaultLogo(); ?>
 				</div>
 				<div id="systemTitle">
-					<?php print $this->request->config->get("app_display_name"); ?>
+					<?= $this->request->config->get("app_display_name"); ?>
 							
 <?php 
 			if ($va_notifications = $this->getVar('notifications')) {  
@@ -60,21 +60,21 @@
 ?>
 				</div><!-- end  systemTitle -->
 				<div id="loginForm">
-					<?php print caFormTag($this->request, 'DoLogin', 'login'); ?>
-						<div class="loginFormElement"><?php print _t("User Name"); ?>:<br/>
+					<?= caFormTag($this->request, 'DoLogin', 'login'); ?>
+						<div class="loginFormElement"><?= _t("User Name"); ?>:<br/>
 							<input type="text" name="username" size="25"/>
 						</div>
-						<div class="loginFormElement"><?php print _t("Password"); ?>:<br/>
+						<div class="loginFormElement"><?= _t("Password"); ?>:<br/>
 							<input type="password" name="password" size="25"/>
 						</div>
 						<input name="redirect" type="hidden" value="<?php echo htmlspecialchars($this->getVar('redirect'), ENT_QUOTES); ?>" />
-						<input name="local" type="hidden" value="<?php echo (bool)$_REQUEST['local'] ? 1 : 0; ?>" />
-						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
+						<input name="local" type="hidden" value="<?php echo (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
+						<div class="loginSubmitButton"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
 					</form>
 <?php if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { ?>
-					<div id="forgotLink"><?php print caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>
+					<div id="forgotLink"><?= caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>
 <?php } else if($vs_adapter_account_link = AuthenticationManager::getAccountManagementLink()) { ?>
-	<div id="forgotLink"><a href="<?php print $vs_adapter_account_link; ?>" target="_blank"><?php print _t("Manage your account"); ?></a></div>
+	<div id="forgotLink"><a href="<?= $vs_adapter_account_link; ?>" target="_blank"><?= _t("Manage your account"); ?></a></div>
 <?php } ?>
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->

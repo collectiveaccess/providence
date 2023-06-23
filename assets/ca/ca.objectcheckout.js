@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,8 @@ var caUI = caUI || {};
 			getInfoURL : null,
 			saveTransactionURL: null,
 			loadWidgetURL: null,
+			
+			initialValueList: [],
 			
 			removeButtonIcon: '(X)',
 			
@@ -90,84 +92,8 @@ var caUI = caUI || {};
 						// get object info
 						jQuery.getJSON(
 							that.getInfoURL,
-							{object_id: object_id, user_id: that.user_id}, function(data) {
-								// on success add to transactionList display
-								
-								var _disp = '<div class="caLibraryTransactionListItemContainer"><div class="caLibraryTransactionListItemMedia">' + data.media + '</div><div class="caLibraryTransactionListItemName">' + data.title + "</div>";
-								
-								
-								// Status values:
-								// 	0 = available; 1 = out; 2 = out with reservations; 3 = available with reservations
-								//
-								_disp += '<div>Status: ' + data.status_display + '</div>';
-								
-								if (data.storage_location) {
-									_disp += '<div>Location: ' + data.storage_location + '</div>';
-								}
-								
-								// Show reservation details if item is not available and reserved by user other than the current one or not out with current user
-								if (
-									((data.status == 1) || (data.status == 2))
-									&&
-									!data.isOutWithCurrentUser && !data.isReservedByCurrentUser
-								) {
-									if ((that.user_id != data.current_user_id) && ((data.status == 1) || (data.status == 2))) {
-										_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + ' (' + data.holder_display_label + ')</div>';
-									}
-									if ((that.user_id != data.current_user_id) && (data.status == 3)) {
-										_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + '</div>';
-									}
-								}
-								
-								// Show notes and due date if item is available
-								if ((data.status == 0) || (data.status == 3)) {
-									// add note field
-									_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + object_id + '" rows="2" cols="80"></textarea></div>';
-								
-									if (((data.status == 0) || (data.status == 3)) && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
-										_disp += '<div class="caLibraryTransactionListItemDueDateContainer"><div class="caLibraryTransactionListItemDueDateLabel">' + data.due_on_display_label + '</div><input type="text" name="due_date" id="dueDate_' + object_id + '" value="' + data.config.default_checkout_date + '" size="10"/></div>';
-									}
-								} else {
-									_disp += '<br style="clear: both;"/>';
-								}
-								
-								// remove button
-								_disp += '<div class="caLibraryTransactionListItemRemoveButton"><a href="#" id="itemRemove_' + object_id + '" data-object_id="' + object_id + '">' + that.removeButtonIcon + '</a></div>';
-								
-								// support removal of items
-								jQuery('#' + that.transactionListContainerID + ' .transactionList').append("<li id='item_" + object_id + "'>" + _disp + "</li>");
-								jQuery('#itemRemove_' + object_id).on('click', function() {
-									var object_id_to_delete = jQuery(this).data('object_id');
-									jQuery('li#item_' + object_id_to_delete).remove();
-									
-									var newItemList = [];
-									jQuery.each(that.itemList, function(k, v) {
-										if (v['object_id'] != object_id_to_delete) {
-											newItemList.push(v);
-										}
-									});
-									that.itemList = newItemList;
-									if (that.itemList.length == 0) {
-										jQuery('#' + that.transactionSubmitContainerID).hide();
-										jQuery('#' + that.transactionListContainerID).hide();
-									}
-								});
-								that.itemList.push({
-									object_id: object_id, due_date: null
-								});
-								jQuery('#dueDate_' + object_id).datepicker({minDate: 0, dateFormat: 'yy-mm-dd'});
-								
-								if(that.itemList.length > 0) {
-									jQuery('#' + that.transactionSubmitContainerID).show();
-									jQuery('#' + that.transactionListContainerID).show();
-								} else {
-									jQuery('#' + that.transactionSubmitContainerID).hide();
-									jQuery('#' + that.transactionListContainerID).hide();
-								}
-								
-								// reset autocomplete to blank
-								jQuery('#' + that.autocompleteID).val('');
-							}
+							{object_id: object_id, user_id: that.user_id}, 
+							that.addToList
 						);
 					}
 				}
@@ -198,8 +124,6 @@ var caUI = caUI || {};
 						dataType: 'json',
 						data: { user_id: that.user_id, item_list: JSON.stringify(that.itemList) },
 						success: function(data) {
-								//console.log('Success', data);
-						
 								// clear item list
 								jQuery('#' + that.transactionListContainerID + ' .transactionList li').remove();
 								that.itemList = [];
@@ -243,14 +167,102 @@ var caUI = caUI || {};
 		});
 		
 		// --------------------------------------------------------------------------------
-		// Define methods
+		// Methods
 		// --------------------------------------------------------------------------------
-		that.xxx = function(id) {
+		that.addInitialValues = function() {
+			if(that.initialValueList && (that.initialValueList.length === 0)) { return; }
 			
-		}
+			jQuery.getJSON(
+				that.getInfoURL,
+				{object_ids: that.initialValueList, user_id: that.user_id}, 
+				that.addToList
+			);
+		};
+		
+		that.addToList = function(itemList) {
+			// on success add to transactionList display
+			for(var i in itemList) {
+				var data = itemList[i];
+				
+				var _disp = '<div class="row caLibraryTransactionListItemContainer"><div class="col-md-3 caLibraryTransactionListItemMedia">' + data.media + '</div><div class="col-md-9"><div class="caLibraryTransactionListItemName">' + data.title + "</div>";
+		
+				// Status values:
+				// 	0 = available; 1 = out; 2 = out with reservations; 3 = available with reservations
+				//
+				_disp += '<div>Status: ' + data.status_display + '</div>';
+		
+				if (data.storage_location) {
+					_disp += '<div>Location: ' + data.storage_location + '</div>';
+				}
+		
+				// Show reservation details if item is not available and reserved by user other than the current one or not out with current user
+				if (
+					((data.status == 1) || (data.status == 2))
+					&&
+					!data.isOutWithCurrentUser && !data.isReservedByCurrentUser
+				) {
+					if ((that.user_id != data.current_user_id) && ((data.status == 1) || (data.status == 2))) {
+						_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + ' (' + data.holder_display_label + ')</div>';
+					}
+					if ((that.user_id != data.current_user_id) && (data.status == 3)) {
+						_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + '</div>';
+					}
+				}
+		
+				// Show notes and due date if item is available
+				if ((data.status == 0) || (data.status == 3)) {
+					// add note field
+					_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + data.object_id + '" rows="2" cols="80"></textarea></div>';
+		
+					if (((data.status == 0) || (data.status == 3)) && !data.config.dont_use_due_dates && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
+						_disp += '<div class="caLibraryTransactionListItemDueDateContainer"><div class="caLibraryTransactionListItemDueDateLabel">' + data.due_on_display_label + '</div><input type="text" name="due_date" id="dueDate_' + data.object_id + '" value="' + data.config.default_checkout_date + '" size="10"/></div>';
+					}
+				}
+				_disp += '</div>';
+		
+				// remove button
+				_disp += '<div class="caLibraryTransactionListItemRemoveButton"><a href="#" id="itemRemove_' + data.object_id + '" data-object_id="' + data.object_id + '">' + that.removeButtonIcon + '</a></div>';
+		
+				// support removal of items
+				jQuery('#' + that.transactionListContainerID + ' .transactionList').append("<li id='item_" + data.object_id + "'>" + _disp + "</li>");
+				jQuery('#itemRemove_' + data.object_id).on('click', function() {
+					var object_id_to_delete = jQuery(this).data('object_id');
+					jQuery('li#item_' + object_id_to_delete).remove();
+			
+					var newItemList = [];
+					jQuery.each(that.itemList, function(k, v) {
+						if (v['object_id'] != object_id_to_delete) {
+							newItemList.push(v);
+						}
+					});
+					that.itemList = newItemList;
+					if (that.itemList.length == 0) {
+						jQuery('#' + that.transactionSubmitContainerID).hide();
+						jQuery('#' + that.transactionListContainerID).hide();
+					}
+				});
+				that.itemList.push({
+					object_id: data.object_id, due_date: null
+				});
+				jQuery('#dueDate_' + data.object_id).datepicker({minDate: 0, dateFormat: 'yy-mm-dd'});
+			}
+		
+			if(that.itemList.length > 0) {
+				jQuery('#' + that.transactionSubmitContainerID).show();
+				jQuery('#' + that.transactionListContainerID).show();
+			} else {
+				jQuery('#' + that.transactionSubmitContainerID).hide();
+				jQuery('#' + that.transactionListContainerID).hide();
+			}
+		
+			// reset autocomplete to blank
+			jQuery('#' + that.autocompleteID).val('');
+		};
 		
 		
 		// --------------------------------------------------------------------------------
+		
+		that.addInitialValues();
 		
 		return that;
 	};

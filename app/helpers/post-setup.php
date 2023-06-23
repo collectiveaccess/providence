@@ -36,9 +36,46 @@
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
+	$base_dir = ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3));
+	if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) { $base_dir = preg_replace('!/service$!', '', $base_dir); }
+	define("__CA_BASE_DIR__", $base_dir);
 }
 
+# Path to CollectiveAccess 'app' directory 
+if (!defined("__CA_APP_DIR__")) {
+	define("__CA_APP_DIR__", __CA_BASE_DIR__."/app");
+}
+
+# Path to CollectiveAccess 'models' directory containing database table model classes
+if (!defined("__CA_MODELS_DIR__")) {
+	define("__CA_MODELS_DIR__", __CA_APP_DIR__."/models");
+}
+
+# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
+if (!defined("__CA_LIB_DIR__")) {
+	define("__CA_LIB_DIR__", __CA_APP_DIR__."/lib");
+}
+
+# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
+if (!defined("__CA_CONF_DIR__")) {
+	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
+}
+
+#
+# When running from CLI it is usually not possible to reliable infer the current system URL and protocol
+# If it's not explicitly set in setup.php when try to grab it out of the cache here
+#
+if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) { 	// is CLI
+	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer for cache components
+	require_once(__CA_BASE_DIR__."/app/lib/Cache/ExternalCache.php");
+	if(ExternalCache::contains('system_url', 'system')) {
+		$system_url = ExternalCache::fetch('system_url', 'system');
+		
+		if (!defined("__CA_SITE_HOSTNAME__")) { define("__CA_SITE_HOSTNAME__", $system_url['hostname']); }
+		if (!defined("__CA_SITE_PROTOCOL__")) { define("__CA_SITE_PROTOCOL__", $system_url['protocol']); }
+		if (!defined("__CA_URL_ROOT__")) { define("__CA_URL_ROOT__", $system_url['url_root']); }
+	}
+}
 #
 # __CA_URL_ROOT__ = the root-relative URL path to your CollectiveAccess installation
 #
@@ -76,26 +113,6 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 #
 if (!defined("__CA_SITE_PROTOCOL__")) {
 	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&  ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http'));
-}
-
-# Path to CollectiveAccess 'app' directory 
-if (!defined("__CA_APP_DIR__")) {
-	define("__CA_APP_DIR__", __CA_BASE_DIR__."/app");
-}
-
-# Path to CollectiveAccess 'models' directory containing database table model classes
-if (!defined("__CA_MODELS_DIR__")) {
-	define("__CA_MODELS_DIR__", __CA_APP_DIR__."/models");
-}
-
-# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
-if (!defined("__CA_LIB_DIR__")) {
-	define("__CA_LIB_DIR__", __CA_APP_DIR__."/lib");
-}
-
-# Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
-if (!defined("__CA_CONF_DIR__")) {
-	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 }
 
 #

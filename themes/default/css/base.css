@@ -854,6 +854,10 @@ a.sf-menu-disabled {
     margin: 0px;
 }
 
+.sfHover ul li a.spacer:hover {
+    background-color: #fff;
+}
+
 /*** arrows **/
 .sf-menu a.sf-with-ul, .sf-menu a.sf-with-ul:focus, .sf-menu a.sf-with-ul:active {
     padding-right: 	1em;
@@ -1185,6 +1189,8 @@ li.notification-error-box ul.errorList {
     margin-top: 8px;
 }
 
+
+
 div.hint {
     color: black;
     border: 2px solid #000000;
@@ -1268,7 +1274,7 @@ div.formLabelUploadSizeNote {
 .bundleSubLabel{
 	clear:both;
 	background-color:#fbfbfb;
-	padding:12px 7px 0px 7px;
+	padding:  8px 7px 0px 7px;
 	position:relative;
 	font-weight:normal;
 	font-size:11px;
@@ -1303,6 +1309,19 @@ div.formLabelUploadSizeNote {
 	vertical-align:top;
 	padding:0px;
 	margin:-6px 0px 0px 0px;
+}
+
+.bundleMessage {
+	display: none;
+	clear:both;
+	background-color:#fbfbfb;
+	padding:  8px 7px 0px 7px;
+	position:relative;
+	font-weight:normal;
+	font-size:14px;
+	line-height:1em;
+	margin-top: 0px;
+	text-align: center;
 }
 
 .editorBundleReturnToHomeControls {
@@ -1981,6 +2000,10 @@ td.listtableAggregateTotals {
 	text-align: left;
 }
 
+table.caListItem {
+	width: 100%;
+}
+
 /* misc */
 
 #caSetList img.deleteIcon, #caSetList img.editIcon {
@@ -2151,7 +2174,7 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     /*border-top: 1px solid #e9e9e9;*/
     margin-left: 0px;
-    padding: 7px 5px 3px 5px;
+    padding: 4px 5px 3px 5px;
     border-bottom: 1px solid #e9e9e9;
     
     position: relative;
@@ -2160,19 +2183,15 @@ div.search-hier-browser-box {
 .labelInfo #image{
     text-align:center;
 }
-.labelInfo div{
-    /*margin-top:5px;*/
-}
-/* 
-	.labelInfo .form-button{
-	float:right;
-	margin: 0px;
-	padding: 0px;
-}
-*/
 
 .labelLocale {
-    font-size: 8px;
+    font-size: 11px;
+}
+
+.labelOption {
+    font-size: 12px;
+    max-width: 130px;
+    padding: 2px;
 }
 
 .labelDisplay {
@@ -2804,6 +2823,7 @@ table.representationAnnotationListItem {
     width: 100%;
     height: 100%;
     background-color: #000;
+	margin-top: 40px;
 }
 
 #caMediaOverlayTileViewer {
@@ -2973,13 +2993,88 @@ img.caRepToolsRotateControlButton:hover {
 }
 
 .caAudioPlayer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 600px;
-    height: 32px;
-    margin-top: 16px;
-    margin-left: -300px;
+	position: relative;
+	top: 50%;
+	left:0;
+	right:0;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	
+	width: 100%;
+	height: 120px;
+}
+
+.caAudioPlayerEmbedded {
+	position: absolute;
+	bottom: 0;
+	left:0;
+	right:0;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	width: 100%;
+	height: 40px;
+}
+
+#caMediaOverlayContent {
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	text-align: center;
+	background-color: #000;
+}
+
+div.caMediaOverlayControls {
+	background-color: rgba(0,0,0,.5);
+	color:#FFF;
+	font-size: 11px;
+	text-align:center;
+	position:absolute;
+	padding: 10px 0px 10px 0px;
+	width:100%;
+	height: 20px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	top:0px;
+	left:0px;
+	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+	opacity:1;	
+}
+
+.plyr {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+.plyr .plyr__video-wrapper {
+    width: 100%;
+    height: 100%;
+}
+.plyr video {
+    height: 100%;
+    width: 100%;
+    object-fit: fill;
+}
+.plyr__poster {
+    background-size: contain;
+}
+.video-responsive {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.audio-responsive {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    top: 100px;
+    left: 0;
+    right: 0;
 }
 
 .annotation_media_player {
@@ -3660,6 +3755,7 @@ div.hierarchyBrowser {
     width: 100%;
     height: 300px;
     margin: 5px 0px 2px 0px;
+    clear: both;
 }
 #browse.hierarchyWindow {
 	background-color: #f7f7f7;
@@ -3802,24 +3898,41 @@ div.hierarchyBrowseTab {
 }
 
 div.hierarchyBrowserCurrentSelection {
-    padding: 6px;
-    margin-bottom: 5px;
-}
-
-div.hierarchyBrowserCurrentSelectionText {
-	width: 100%;
+	float: right;
+	width: calc(100% - 135px);
+	padding: 0;
+	margin: 5px 0px 5px 0px;
 	text-align: right;
 }
 
-span.hierarchyBrowserCurrentSelectionText {
+span.hierarchyBrowserCurrentSelectionText {                
+    overflow: hidden;
+    text-overflow: ellipsis;  
+    
     font-weight: normal;
-    font-style: italic;
+    font-size: 10px;
+}
+
+div.hierarchyBrowserRelationshipTypeSelection {
+	float: left;
+	width: 125px;
+	padding: 0px;
+	margin: 5px 0px 5px 0px;
+}
+
+div.hierarchyBrowserRelationshipTypeSelection select {
+	width: 120px;
+	padding: 2px;
+}
+
+span.hierarchyBrowserCurrentSelectionHeader {
+	font-weight: bold;
 }
 
 div.hierarchyBrowserSearchBar {
 	float: right;
 	padding: 0;
-	margin: 5px 0 5px 10px;
+	margin: 5px -2px 5px 0px;
 }
 
 input.hierarchyBrowserSearchBar, textarea.hierarchyBrowserSearchBar {
@@ -5875,12 +5988,12 @@ a.caItemLoadNextBundles {
 	margin-left: 12px;
 }
 
-.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
+.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton, .roundedRel .caSetRepresentationButton {
     position: relative;
     margin: 0 3px 0 3px;
 }
 
-.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
+.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton, .listRel .caSetRepresentationButton {
     float: right;
     margin: 0 3px 0 3px;
 }
@@ -6736,6 +6849,11 @@ div.caRepresentationMediaReplicationControls {
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #ededed;
 }
+
+.caAnnoEditorPanelContentArea {
+    margin-top: 40px;
+}
+
 .caAnnoEditorTlContainer {		/* timeline container */
     width:100%;
     height: 130px;
@@ -6836,12 +6954,7 @@ div.caRepresentationMediaReplicationControls {
 	width: 500px;
     margin: auto auto 0 auto;
 }
-.caAnnoEditorAudioMediaPlayer {
-	margin-top: 343px;
-}
-.caAnnoEditorVideoMediaPlayer {
 
-}
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
@@ -6938,6 +7051,10 @@ div.caHistoryTracking {
 	border-top: 1px dotted #e6e6e6;
 	padding: 10px;
 	min-height: 60px;
+}
+
+div.caHistoryTrackingContent {
+	width: 90%;
 }
 
 div.caHistoryTrackingTab {
@@ -8065,4 +8182,46 @@ div.genericEditorContent {
 	font-size: 12px;
 	color: #000;
 	font-weight: initial;
+}
+
+div.typePill {
+	display: inline;
+	color: #fff;
+	background-color: #aaa;
+	padding: 2px 4px 2px 4px;
+	border-radius: 4px;
+	
+	font-size: 10px;
+	font-weight: normal;
+	margin: 3px 3px 6px 0;
+}
+
+/* Search debugging */
+div.searchResultDesc {
+	display: block;
+	font-size: 9px;
+	
+	text-align: left;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    
+    height: 60px;
+    overflow-y: auto;
+}
+
+div.searchResultDesc ul {
+	display: block !important;
+	font-size: 9px;
+	text-align: left;
+	list-style: none;
+	padding: 1px;
+	margin: 0px;
+}
+
+.searchResultDescHeading {
+	font-weight: bold;
+	text-align: left;
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,9 @@
 	
 	$history					= $this->getVar('history');
 	$current_value 				= $t_subject->getCurrentValue();
+	
+	$placement_code 			= $this->getVar('placement_code');
+	$placement_id				= (int)($settings['placement_id'] ?? null);
 	
 	$show_return_home_controls = false;
 	if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
@@ -73,6 +76,7 @@
 	
     if (!$this->request->isAjax()) {
 	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 	}
 	
 	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
@@ -201,13 +205,13 @@ switch($display_mode) {
 						    }
 						    return $c;
 						}, [])) && ($current_value = array_shift($current_value))) { 
-							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'>{$current_value['icon']} {$current_value['display']}<div class=\"caHistoryTrackingEntryDate\">{$current_value['date']}</div>";
+							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'><div class='caHistoryTrackingContent'>{$current_value['icon']} {$current_value['display']}<div class='caHistoryTrackingEntryDate'>{$current_value['date']}</div></div>";
 							
                                 if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request)) {
 ?>
                                     <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($current_value['current_table_num']); ?>" data-primary_id="<?= $current_value['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                 }
-                                if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+                                if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
                                     <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
                                 }
@@ -240,12 +244,12 @@ switch($display_mode) {
 											break;	
 									}
 
-                                    print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div>";
+                                    print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'><div class='caHistoryTrackingContent'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>";
                                     if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
 ?>
                                         <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                     }
-                                    if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+                                    if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
                                         <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
                                     }
@@ -281,19 +285,21 @@ switch($display_mode) {
 				}	
 ?>
 				<div id="caHistoryTrackingEntry<?= $vs_id_prefix.Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']; ?>" class="caHistoryTrackingEntry <?= ($vn_i == 0) ? 'caHistoryTrackingEntryFirst' : ''; ?>" style="background-color:#<?= $color; ?>">
-					<?= $history_entry['icon']; ?>
-					<div><?= $history_entry['display']; ?></div>					
+					<div class='caHistoryTrackingContent'>
+						<?= $history_entry['icon']; ?>
+						<div><?= $history_entry['display']; ?></div>					
 <?php
 					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
 ?>
 						<div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
 					}
-					if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+					if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
 						<div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
 					}
 ?>
-					<div class="caHistoryTrackingEntryDate"><?= $history_entry['date']; ?></div>
+						<div class="caHistoryTrackingEntryDate"><?= $history_entry['date']; ?></div>
+					</div>
 					<br class="clear"/>
 				</div>
 <?php
@@ -345,7 +351,7 @@ switch($display_mode) {
 			
 			<div style='width: 700px; height: 200px;'>				
 				<div style="float: right;">
-					<div class='hierarchyBrowserSearchBar'><?= _t('Search'); ?>: <input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40'/></div>
+					<div class='hierarchyBrowserSearchBar'><input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder=<?= json_encode(_t('Search')); ?>/></div>
 				</div>
 				
 				<div class="clear"><!-- empty --></div>
@@ -384,6 +390,7 @@ switch($display_mode) {
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						currentSelectionIDID: '<?= $vs_id_prefix; ?>_ca_storage_locations_id{n}',
+						currentSelectionDisplayPrefix: <?= json_encode('<span class="hierarchyBrowserCurrentSelectionHeader">'._t('Selected').'</span>: '); ?>,
 					
 						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
@@ -677,7 +684,7 @@ if($show_entity_controls) {
 				initialValues: [],
 				initialValueOrder: [],
 				itemID: '<?= $vs_id_prefix; ?>_ca_storage_locations_',
-				placementID: '<?= $vn_placement_id; ?>',
+				placementID: '<?= $placement_id; ?>',
 				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetLocationTemplate',
 				initialValueTemplateClassName: null,
 				itemListClassName: '<?= $vs_id_prefix; ?>caLocationList',
@@ -693,7 +700,7 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false))); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				addMode: 'prepend',
@@ -788,8 +795,10 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddLoan<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+				jQuery('#<?= $vs_id_prefix; ?>AddLoan').on('click', function(e) {
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+					e.preventDefault();
+					return false;
 				});
 <?php
 			}
@@ -835,8 +844,10 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddMovement<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+				jQuery('#<?= $vs_id_prefix; ?>AddMovement').on('click', function(e) {
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+					e.preventDefault();
+					return false;
 				});
 <?php
 			}
@@ -890,7 +901,7 @@ if($show_entity_controls) {
 				initialValues: [],
 				initialValueOrder: [],
 				itemID: '<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>_',
-				placementID: '<?= $vn_placement_id; ?>',
+				placementID: '<?= $placement_id; ?>',
 				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetOccurrenceTemplate<?= $vn_type_id; ?>',
 				initialValueTemplateClassName: null,
 				itemListClassName: '<?= $vs_id_prefix; ?>caOccurrenceList<?= $vn_type_id; ?>',
@@ -902,14 +913,14 @@ if($show_entity_controls) {
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_occurrences_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Occurrence', 'Get', array_merge($occ_lookup_params, ['types' => $vn_type_id])); ?>',
-				types: <?= json_encode($settings['restrict_to_types']); ?>,
+				types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
-				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
+				isSortable: false,
 				listSortOrderID: '<?= $vs_id_prefix; ?>OccurrenceBundleList',
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_occurrence_<?= $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? null))); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
@@ -924,7 +935,9 @@ if($show_entity_controls) {
 			if(caGetOption('always_create_new_occurrence', $settings, false)) {
 ?>
 				jQuery('#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>').on('click', function(e) { 
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true }); 
+					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+					e.preventDefault();
+					return false;
 				});
 <?php
 			}

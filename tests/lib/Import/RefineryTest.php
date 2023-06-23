@@ -34,7 +34,7 @@
 require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
 require_once(__CA_LIB_DIR__.'/Import/DataReaders/ExcelDataReader.php');
 
-class RefineryText extends TestCase {
+class RefineryTest extends TestCase {
     protected $data;
     protected $item;
     

@@ -45,7 +45,7 @@
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 			</th>
 			<th class='list-header-nosort'>
-				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
+				<?= ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
 			</th>
 <?php
 			// output headers
@@ -89,10 +89,10 @@
 				
 				($i == 2) ? $i = 0 : "";
 ?>
-				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
+				<tr <?= ($i ==1) ? "class='odd'" : ""; ?>>
 					<td class="addItemToSetControl">
-						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_stop_id; ?>' class="addItemToSetControl" />
-						<div><?php print $vn_start + $vn_item_count + 1; ?></div>
+						<input type='checkbox' name='add_to_set_ids' value='<?= (int)$vn_stop_id; ?>' class="addItemToSetControl" />
+						<div><?= $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_tour_stops', $vn_stop_id, array())."</td>";
@@ -112,7 +112,7 @@
 ?>
 				<tfoot>
 					<tr>
-						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+						<td colspan="2" class="listtableTotals"><?= _t('Totals'); ?></td>
 <?php
 						foreach($va_bottom_line as $placement_id => $vs_bottom_line_value) {
 							print "<td>{$vs_bottom_line_value}</td>";
@@ -125,7 +125,7 @@
 			if ($vs_bottom_line_totals = $this->getVar('bottom_line_totals')) {
 ?>				
 					<tr>
-						<td colspan="<?php print sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?php print $vs_bottom_line_totals; ?></td>
+						<td colspan="<?= sizeof($va_display_list) + 2; ?>" class="listtableAggregateTotals"><?= $vs_bottom_line_totals; ?></td>
 					</tr>
 <?php		
 			}

@@ -29,7 +29,7 @@
  	$vo_result					= $this->getVar('result');
 ?>
 <h3 class='occurrences'>
-	<?php print _t("Search %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
+	<?= _t("Search %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>
 <?php
 	$va_search_history = $this->getVar('search_history');
@@ -37,7 +37,7 @@
 	if (is_array($va_search_history) && sizeof($va_search_history) > 0) {
 ?>
 
-<h3><?php print _t("History"); ?>:
+<h3><?= _t("History"); ?>:
 	<div>
 <?php
 		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchOccurrences', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
@@ -60,7 +60,7 @@
 	
 	$va_saved_searches = $this->request->user->getSavedSearches($this->getVar('table_name'), $this->getVar('find_type'));
 ?>
-<h3 class="tools"><?php print _t("Saved searches"); ?>:
+<h3 class="tools"><?= _t("Saved searches"); ?>:
 	<div>
 <?php
 		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
@@ -87,7 +87,7 @@
 <?php
 if(sizeof($this->getVar("available_sets")) > 0){
 ?>
-	<h3 class="tools"><?php print _t("Search by set"); ?>:
+	<h3 class="tools"><?= _t("Search by set"); ?>:
 	<div>
 <?php
 		print caFormTag($this->request, 'Index', 'caSearchSetsForm', 'find/SearchOccurrences', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
@@ -112,14 +112,14 @@ if(sizeof($this->getVar("available_sets")) > 0){
 ?>
 			<div class='visualize'>
 				<div id='vizLink'>
-					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
+					<?= "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
 					<div class='clear:both;'></div>
 				</div>
 				<div id='caSearchVizOptsContainer' style="display:none;">
-					<?php print $vs_viz_list; ?>
-					<?php print "<a href='#'  onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, "18px")."</a>"; ?>
+					<?= $vs_viz_list; ?>
+					<?= "<a href='#'  onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, "18px")."</a>"; ?>
 					
-					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
 					<div class='clear'></div>
 				</div>
 

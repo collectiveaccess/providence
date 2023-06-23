@@ -74,7 +74,7 @@ if (!defined("__CA_ADMIN_EMAIL__")) {
 # __CA_SMTP_USER__, __CA_SMTP_PASSWORD__ and __CA_SMTP_SSL__
 #
 # __CA_SMTP_AUTH__ = authentication method for outgoing mail connection (set to PLAIN, LOGIN or CRAM-MD5; leave blank if no authentication is used.)
-# __CA_SMTP_SSL__ = SSL method to use for outgoing mail connection (set to SSL or TLS; leave blank if not authentication is used.)
+# __CA_SMTP_SSL__ = SSL method to use for outgoing mail connection (set to SSL or TLS; leave blank if no authentication is used.)
 
 
 # Set your preferred time zone here. The default is to use US Eastern Standard Time. 
@@ -193,6 +193,16 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 # __CA_REDIS_DB__ = redis database index (typically a number between 0 and 15) 
 
 # --------------------------------------------------------------------------------------------
+
+# Machine translation API keys. If you are using automated language translation uncomment 
+# and set the API key for your preferred service below. Currently Deepl and 
+# GoogleTranslate are supported.
+# 
+# __DEEPL_API_KEY__ = DeepL translation service API key (sew https://www.deepl.com) 
+# __GOOGLE_TRANSLATE_API_KEY__ = Google API key with access to Translation API 
+#
+#define('__DEEPL_API_KEY__', '<API KEY>');
+#define('__GOOGLE_TRANSLATE_API_KEY__', '<API KEY>');
 
 # __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__
 #

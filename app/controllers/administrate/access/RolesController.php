@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,7 +54,7 @@
 				
 				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
 				
-				$va_available_bundles = $t_screen->getAvailableBundles($vs_table);
+				$va_available_bundles = $t_screen->getAvailableBundles($vs_table, ['omitSettingsForms' => true]);
 				foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
 					
 					$vn_access = isset($va_bundle_access_settings[$vs_table.'.'.$vs_bundle_name]) ? $va_bundle_access_settings[$vs_table.'.'.$vs_bundle_name] : $vn_default_bundle_access_level;
@@ -70,7 +70,7 @@
 			$vn_default_type_access_level = (int)$this->request->config->get('default_type_access_level');
 			
 			$va_type_list = array();
-			$va_type_access_settings = $va_role_vars['type_access_settings'];
+			$va_type_access_settings = $va_role_vars['type_access_settings'] ?? null;
 			
 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
 				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
@@ -96,7 +96,7 @@
 			$vn_default_source_access_level = (int)$this->request->config->get('default_source_access_level');
 			
 			$va_source_list = array();
-			$va_source_access_settings = $va_role_vars['source_access_settings'];
+			$va_source_access_settings = $va_role_vars['source_access_settings'] ?? null;
 			
 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
 				$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
@@ -107,14 +107,14 @@
 				
 				if (is_array($va_sources)) {
 					foreach($va_sources as $vn_i => $va_source_info) {
-						$vn_item_id = $va_source_info['NODE']['item_id'];
+						$vn_item_id = $va_source_info['NODE']['item_id'] ?? null;
 						$vn_access = isset($va_source_access_settings[$vs_table.'.'.$vn_item_id]) ? $va_source_access_settings[$vs_table.'.'.$vn_item_id] : $vn_default_source_access_level;
-						$va_source_info['NODE']['level'] = $va_source_info['LEVEL'];
+						$va_source_info['NODE']['level'] = $va_source_info['LEVEL'] ?? null;
 						
 						$va_source_list[$vs_table][$vn_item_id] = array(
-							'source_info' => $va_source_info['NODE'],
+							'source_info' => $va_source_info['NODE'] ?? null,
 							'access' => $vn_access,
-							'default' => ($vn_item_id == $va_source_access_settings[$vs_table.'_default_id'])
+							'default' => ($vn_item_id == ($va_source_access_settings[$vs_table.'_default_id'] ?? null))
 						);
 					}
 				}

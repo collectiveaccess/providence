@@ -43,20 +43,20 @@
 ?>	
 <script type="text/javascript">
 	var caQuickAddFormHandler = caUI.initQuickAddFormHandler({
-		formID: '<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>',
-		formErrorsPanelID: '<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>',
-		formTypeSelectID: '<?php print $vs_form_name; ?>TypeID<?php print $vs_field_name_prefix.$vs_n; ?>', 
+		formID: '<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>',
+		formErrorsPanelID: '<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>',
+		formTypeSelectID: '<?= $vs_form_name; ?>TypeID<?= $vs_field_name_prefix.$vs_n; ?>', 
 		
-		formUrl: '<?php print caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form'); ?>',
-		fileUploadUrl: '<?php print caNavUrl($this->request, "manage/sets", "SetEditor", "UploadFiles"); ?>',
-		saveUrl: '<?php print caNavUrl($this->request, "manage/sets", "SetQuickAdd", "Save"); ?>',
+		formUrl: '<?= caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form'); ?>',
+		fileUploadUrl: '<?= caNavUrl($this->request, "manage/sets", "SetEditor", "UploadFiles"); ?>',
+		saveUrl: '<?= caNavUrl($this->request, "manage/sets", "SetQuickAdd", "Save"); ?>',
 		
-		headerText: '<?php print addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>',
-		saveText: '<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
-		busyIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>'
+		headerText: '<?= addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>',
+		saveText: '<?= addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
+		busyIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>'
 	});
 </script>	
-<form action="#" class="quickAddSectionForm" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
+<form action="#" class="quickAddSectionForm" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='quickAddDialogHeader'><?php 
 		print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
 		if ($vb_can_edit) {
@@ -68,8 +68,8 @@
 	</div>
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
-	<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
-	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
+	<div class="quickAddErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"> </div>
+	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?= $vs_field_name_prefix.$vs_n; ?>">
 <?php
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
@@ -80,10 +80,10 @@
 			
 			print join("\n", $va_form_elements);
 ?>
-		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
-		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
-		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
-		<input type='hidden' name='types' value='<?php print htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
-		<input type='hidden' name='table_num' value='<?php print $this->request->getParameter('table_num', pInteger); ?>'/>
+		<input type='hidden' name='_formName' value='<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
+		<input type='hidden' name='q' value='<?= htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
+		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
+		<input type='hidden' name='types' value='<?= htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
+		<input type='hidden' name='table_num' value='<?= $this->request->getParameter('table_num', pInteger); ?>'/>
 	</div>
 </form>

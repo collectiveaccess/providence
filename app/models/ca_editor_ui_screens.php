@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,10 +30,9 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-   *
-   */
-
+/**
+ *
+ */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
@@ -552,12 +551,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
-				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
 				if (!$pb_settings_only) {
-					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
-					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
+					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings'] ?? null);
+					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'] ?? null;
 					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $table_name, 'relatedTable' => Datamodel::getTableNum($vs_bundle_name) ? $vs_bundle_name : null));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
@@ -583,6 +581,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_table_name_or_num The table name or number specifying the content type to fetch bundles for. If omitted the content table of the currently loaded display will be used.
 	 * @param array $pa_options Supported options are:
 	 *		dontCache = disable caching when fetching model properties
+	 *		omitSettingsForms = don't return settings forms. [Default is false]
 	 * @return array And array of bundles keyed on display label. Each value is an array with these keys:
 	 *		bundle = The bundle name (eg. ca_objects.idno)
 	 *		display = Display label for each available bundle
@@ -592,6 +591,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
+		$omit_settings_forms = caGetOption('omitSettingsForms', $pa_options, false);
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		$vs_cache_key = md5($pm_table_name_or_num . serialize($pa_options));
 
@@ -615,21 +615,29 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_available_bundles = array();
 		
 		$va_elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, null, !$pb_dont_cache, false, true);
-		foreach($va_defined_bundles as $vs_bundle => $va_info) {
+		foreach($va_defined_bundles as $bundle => $va_info) {
 			$deprecated = (bool)(isset($va_info['deprecated']) && $va_info['deprecated']);
 			if (isset($va_info['displayOnly']) && $va_info['displayOnly']) { continue; }	// skip bundles meant for use in displays only
 			
-			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $vs_bundle);
+			$bundle_normalized = $bundle_proc = $bundle;
+			if(preg_match("!^ca_attribute_!", $bundle_normalized)) {
+				$bundle_normalized = $bundle_proc = preg_replace('!^ca_attribute_!', '', $bundle_normalized);
+			
+				if(!preg_match('!^ca_[a-z]+!', $bundle_normalized)) {
+					$bundle_normalized = $t_instance->tableName().'.'.$bundle_normalized;
+				}
+			}
+			
 			$va_additional_settings = [];
 			switch ($va_info['type']) {
 				case 'intrinsic':
-					$va_field_info = $t_instance->getFieldInfo($vs_bundle);
+					$va_field_info = $t_instance->getFieldInfo($bundle);
 					if (isset($va_field_info['DONT_ALLOW_IN_UI']) && $va_field_info['DONT_ALLOW_IN_UI']) { continue(2); }
 					if (is_subclass_of($t_instance, 'BaseRelationshipModel')) {
 						if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue(2); }
-						if ($t_instance->getTypeFieldName() == $vs_bundle) { continue(2); }
-						if ($t_instance->getLeftTableFieldName() == $vs_bundle) { continue(2); }
-						if ($t_instance->getRightTableFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getTypeFieldName() == $bundle) { continue(2); }
+						if ($t_instance->getLeftTableFieldName() == $bundle) { continue(2); }
+						if ($t_instance->getRightTableFieldName() == $bundle) { continue(2); }
 					}
 					$va_additional_settings = array(
 						'documentation_url' => array(
@@ -641,7 +649,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
 						)
 					);
-					if ($t_instance->getFieldInfo($vs_bundle, 'FIELD_TYPE') == FT_TEXT) {
+					if ($t_instance->getFieldInfo($bundle, 'FIELD_TYPE') == FT_TEXT) {
 						$va_additional_settings['usewysiwygeditor'] = array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,
@@ -733,7 +741,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '1',
 							'multiple' => true,
 							'label' => _t('Sort using'),
-							'showSortableElementsFor' => $va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['element_id'],
+							'showSortableElementsFor' => $va_elements[$bundle_proc]['element_id'],
 							'description' => _t('Method used to sort repeating values.')
 						),
 						'sortDirection' => array(
@@ -784,7 +792,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('URL pointing to documentation for this field. Leave blank if you wish to use the default URL for this metadata element.')
 						)
 					);
-					if ($va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['datatype'] == 1) {		// 1=text
+					if ($va_elements[$bundle_proc]['datatype'] == 1) {		// 1=text
 						$va_additional_settings['usewysiwygeditor'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
@@ -801,7 +809,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'related_table':
-					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $vs_bundle, $va_matches)) {
+					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $bundle, $va_matches)) {
 						$vs_rel_table = $va_matches[1];
 						$t_rel = Datamodel::getInstanceByTableName($vs_rel_table, true);
 						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $vs_rel_table));
@@ -881,7 +889,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show batch editing button?'),
-								'description' => _t('If checked an option to batch edit related records will be displaye.')
+								'description' => _t('If checked an option to batch edit related records will be displayed.')
 							)
 						);	
 						
@@ -902,8 +910,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						}
 						break;
 					} else {
-						if (!($t_rel = Datamodel::getInstanceByTableName($vs_bundle, true))) { continue(2); }
-						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $vs_bundle));
+						if (!($t_rel = Datamodel::getInstanceByTableName($bundle, true))) { continue(2); }
+						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $bundle));
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -1155,13 +1163,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => false,
 								'label' => _t('Show batch editing button?'),
 								'description' => _t('If checked an option to batch edit related records will be displayed.')
+							),
+							'showSetRepresentationButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => false,
+								'label' => _t('Show set representation button?'),
+								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
 							)
 						);
 				
 						if(
 							!($policies = array_merge(
-								ca_objects::getHistoryTrackingCurrentValuePolicies($vs_bundle, ['uses' => [$t_instance->tableName()]]),
-								ca_objects::getDependentHistoryTrackingCurrentValuePolicies($vs_bundle, ['usedBy' => [$t_instance->tableName()]])
+								ca_objects::getHistoryTrackingCurrentValuePolicies($bundle, ['uses' => [$t_instance->tableName()]]),
+								ca_objects::getDependentHistoryTrackingCurrentValuePolicies($bundle, ['usedBy' => [$t_instance->tableName()]])
 							))
 							||
 							!sizeof($policies)	
@@ -1171,7 +1188,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 											
-                    if ($vs_bundle == 'ca_object_representations') {
+                    if ($bundle == 'ca_object_representations') {
                         unset($va_additional_settings['restrict_to_search']);
                         unset($va_additional_settings['restrict_to_access_point']);
                         unset($va_additional_settings['disableQuickadd']);
@@ -1304,12 +1321,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						];
                     }
 
-					if($vs_bundle == 'ca_sets') {
+					if($bundle == 'ca_sets') {
 						unset($va_additional_settings['restrict_to_relationship_types']);
 						unset($va_additional_settings['restrict_to_search']);
 					}
 					
-					if ($vs_bundle == 'ca_list_items') {
+					if ($bundle == 'ca_list_items') {
 						$va_additional_settings['restrict_to_lists'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
@@ -1323,7 +1340,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
-					if (in_array($vs_bundle, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
+					if (in_array($bundle, ['ca_objects', 'ca_collections', 'ca_object_lots', 'ca_object_representations'], true)) {
 						$va_additional_settings['showReturnToHomeLocations'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
@@ -1333,7 +1350,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('If checked a control will be displayed allowing all related objects to be returned to their home locations (if set).')
 						);
 					}
-					if ($vs_bundle == 'ca_object_lots') {
+					if ($bundle == 'ca_object_lots') {
 						$va_additional_settings['display_template'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_FIELD,
@@ -1344,13 +1361,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 
-					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
+					if (in_array($bundle, array('ca_collections', 'ca_places', 'ca_list_items', 'ca_storage_locations'))) {
 						$va_additional_settings['useHierarchicalBrowser'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
 							'width' => 10, 'height' => 1,
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => ($bundle === 'ca_collections') ? '0' : '1',
 							'label' => _t('Use hierarchy browser?'),
 							'description' => _t('If checked a hierarchical browser will be used to select related items instead of an auto-complete lookup.')
 						);
@@ -1367,7 +1384,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 					
-					if (($t_instance->tableName() == 'ca_objects') && in_array($vs_bundle, array('ca_list_items'))) {
+					if (($t_instance->tableName() == 'ca_objects') && in_array($bundle, array('ca_list_items'))) {
 						$va_additional_settings['restrictToTermsRelatedToCollection'] = array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
@@ -1410,7 +1427,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'special':
-					if (in_array($vs_bundle, array('hierarchy_location', 'hierarchy_navigation'))) {
+					if (in_array($bundle, array('hierarchy_location', 'hierarchy_navigation'))) {
 						$va_additional_settings = array(
 							// no 'classic' expand/collapse for these bundles
 							'expand_collapse_value' => false,
@@ -1478,8 +1495,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('URL pointing to documentation for this hierarchy browser. Leave blank if no documentation URL exists.')
 							)
 						);
+						if($bundle === 'hierarchy_location') {
+							$va_additional_settings['headerDisplayTemplate'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "475px", 'height' => "100px",
+								'label' => _t('Header display template'),
+								'description' => _t('Layout for item in hierarchy browser header. The template is evaluated relative to item being edited.')
+							];
+						}
 					} else {
-						switch($vs_bundle) {
+						switch($bundle) {
 							case 'authority_references_list':
 								$va_additional_settings = array(
 									'maxReferencesToDisplay' => array(
@@ -1588,16 +1615,30 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'generic':
 							case 'ca_objects_components_list':
-								$va_additional_settings = array(
-									'displayTemplate' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_FIELD,
-										'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
-										'width' => "475px", 'height' => 5,
-										'label' => _t('Component display template'),
-										'description' => _t('Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
-									)
-								);
+								$va_additional_settings['displayTemplate'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
+									'width' => "475px", 'height' => 5,
+									'label' => _t('Component display template'),
+									'description' => _t('Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+								];
+								$va_additional_settings['currentDisplayTemplate'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
+									'width' => "475px", 'height' => 5,
+									'label' => _t('Currently selected component display template'),
+									'description' => _t('Layout for component when displayed in list and it is the currently edited record. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+								];
+								$va_additional_settings['numColumns'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => 1,
+									'width' => "20px", 'height' => 1,
+									'label' => _t('Number of columns in component display'),
+									'description' => _t('Number of columns use when displaying component list.')
+								];
 								break;
 							case 'circulation_status':
 								$va_additional_settings = array(
@@ -1625,7 +1666,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											_t('Current value + history') => 'tabs'
 										),
 										'takesLocale' => false,
-										'default' => ($vs_bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
+										'default' => ($bundle == 'ca_objects_location') ? 'tabs' : 'chronology',
 										'width' => "200px", 'height' => 1,
 										'label' => _t('Display'),
 										'description' => _t('Display format for chronology.')
@@ -1955,6 +1996,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_storage_locations_contents':
 							case 'history_tracking_current_contents':
+								$t_object = new ca_objects();
 								$va_additional_settings = array(
 									'list_format' => array(
 										'formatType' => FT_TEXT,
@@ -1976,7 +2018,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'useHistoryTrackingReferringPolicyList' => true,
 										'label' => _t('Use history tracking policy'),
 										'description' => ''
-									),						
+									),	
+									'restrict_to_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,	// TODO: make dynamic list of relevant types based upon policy
+										'useList' => $t_object->getTypeListCode(),	// hardcode to objects for now
+										'width' => "475px", 'height' => "75px",
+										'takesLocale' => false,
+										'default' => '',
+										'multiple' => true,
+										'label' => _t('Restrict to types'),
+										'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
+									),					
 									'colorItem' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
@@ -1986,6 +2039,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Object color'),
 										'description' => _t('If set object in list will use this color.')
 									),
+									'expandHierarchically' => array(
+                                        'formatType' => FT_TEXT,
+                                        'displayType' => DT_CHECKBOXES,
+                                        'width' => 10, 'height' => 1,
+                                        'takesLocale' => false,
+                                        'default' => '0',
+                                        'label' => _t('Include contents of sub-%1', $t_instance->getProperty('NAME_PLURAL')),
+                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                    ),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -1993,6 +2055,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "475px", 'height' => "100px",
 										'label' => _t('Display template'),
 										'description' => _t('Layout for each object in the storage location (can include HTML). The template is evaluated relative to each object-movement or object-location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+									),									
+									'showBatchEditorButton' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => false,
+										'label' => _t('Show batch editing button?'),
+										'description' => _t('If checked an option to batch edit contents will be displayed.')
 									)
 								);
 								break;
@@ -2085,8 +2156,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
-			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
-			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
+			$vs_label = $t_instance->getDisplayLabel($bundle_normalized) ?: $va_info['label'];
+			$vs_display = "<div id='uiEditorBundle_{$bundle_normalized}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
 
 			if ($t_instance->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
 				$va_additional_settings['bundleTypeRestrictions'] = [
@@ -2109,19 +2180,19 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				];
 			}
 			
-			$va_available_bundles[$vs_display][$vs_bundle] = array(
-				'bundle' => $vs_bundle,
+			$va_available_bundles[$vs_display][$bundle_normalized] = array(
+				'bundle' => $bundle,
 				'display' => $vs_display,
-				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),
-				'settingsForm' => $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0_', 'table' => $vs_table, 'relatedTable' => Datamodel::getTableNum($vs_bundle) ? $vs_bundle : null]),
+				'description' => $vs_description = $t_instance->getDisplayDescription($bundle_normalized),
+				'settingsForm' => $omit_settings_forms ? null : $t_placement->getHTMLSettingForm(['id' => $bundle.'_0_', 'table' => $vs_table, 'relatedTable' => Datamodel::getTableNum($bundle) ? $bundle : null]),
 				'settings' => $va_additional_settings,
 				'deprecated' => $deprecated
 			);
 			
 			TooltipManager::add(
-				"#uiEditorBundle_{$vs_table}_{$vs_bundle_proc}",
+				"#uiEditorBundle_{$bundle_normalized}",
 				"<h2>{$vs_label}</h2>".
-				_t("Bundle name").": {$vs_bundle_proc}<br />".
+				_t("Bundle name").": {$bundle_normalized}<br />".
 				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);
 		}
@@ -2358,7 +2429,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace("!^(ca_attribute_|{$table}\.)!", '', $va_placement['bundle_name']);
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($table.'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
-			if(is_array($va_placement['settings']['label'])){
+			if(is_array($va_placement['settings']['label'] ?? null)){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
@@ -2500,18 +2571,17 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if($vn_placement_id === 0) {
-					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id], $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
 					if ($t_screen->numErrors()) {
 						$this->errors = $t_screen->errors;
 						return false;
 					}
 				} else {
-					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings'] ?? []);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 					
-					if (is_array($va_settings[$vn_placement_id])) {
+					if (is_array($va_settings[$vn_placement_id] ?? null)) {
 						foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
 							$vs_val = isset($va_settings[$vn_placement_id][$vs_setting]) ? $va_settings[$vn_placement_id][$vs_setting] : null;
 						

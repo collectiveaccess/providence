@@ -49,33 +49,33 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 <div id="caTypeChangePanelControlButtons">
 	<table>
 		<tr>
-			<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caUserSortForm'); ?></td>
-			<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
+			<td align="right"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caUserSortForm'); ?></td>
+			<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
 		</tr>
 	</table>
 </div>
-<?php print caFormTag($this->request, 'Save', 'caUserSortForm'); ?>
+<?= caFormTag($this->request, 'Save', 'caUserSortForm'); ?>
 
-	<?php print $t_sort->htmlFormElement('name') ?>
+	<?= $t_sort->htmlFormElement('name') ?>
 	<?php if(!$vn_sort_id) { print $t_sort->htmlFormElement('table_num'); } ?>
 
 
 	<table>
 		<tr>
-			<td><?php print _t("Sort field %1", 1); ?></td>
-			<td><?php print caHTMLSelect('sort_item_1', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_1_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
+			<td><?= _t("Sort field %1", 1); ?></td>
+			<td><?= caHTMLSelect('sort_item_1', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_1_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
 		</tr>
 
 		<tr>
-			<td><?php print _t("Sort field %1", 2); ?></td>
-			<td><?php print caHTMLSelect('sort_item_2', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_2_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
+			<td><?= _t("Sort field %1", 2); ?></td>
+			<td><?= caHTMLSelect('sort_item_2', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_2_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
 		</tr>
 		<tr>
-			<td><?php print _t("Sort field %1", 3); ?></td>
-			<td><?php print caHTMLSelect('sort_item_3', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_3_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
+			<td><?= _t("Sort field %1", 3); ?></td>
+			<td><?= caHTMLSelect('sort_item_3', $va_sort_element_list, ['style' => 'width: 370px'], array('value' => $vs_select_3_val, 'contentArrayUsesKeysForValues' => true)); ?></td>
 		</tr>
 	</table>
-	<?php print caHTMLHiddenInput('sort_id', array('value' => $vn_sort_id)); ?>
+	<?= caHTMLHiddenInput('sort_id', array('value' => $vn_sort_id)); ?>
 </form>
 
 <script type="text/javascript">
@@ -83,7 +83,7 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 		jQuery('select#table_num').change(function() {
 			var table_num = jQuery(this).val();
 			jQuery.getJSON(
-				'<?php print caNavUrl($this->request, 'manage', 'UserSort', 'GetBundlesForTable');?>/table_num/' + table_num,
+				'<?= caNavUrl($this->request, 'manage', 'UserSort', 'GetBundlesForTable');?>/table_num/' + table_num,
 				function(data) {
 					var item1 = jQuery('select[name=sort_item_1]');
 					var item2 = jQuery('select[name=sort_item_2]');
