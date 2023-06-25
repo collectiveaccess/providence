@@ -71,7 +71,7 @@ if (!$form_id) {
 			$va_flds[] = "'".$va_element['name']."'";
 		}
 ?>
-<?= caFormTag($this->request, 'Index', "AdvancedSearchForm_{$widget_id}", "find/{$controller_name}", 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
+<?= caFormTag($this->request, 'Index/page/1', "AdvancedSearchForm_{$widget_id}", "find/{$controller_name}", 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 <?php 
 		print "<div style='float: right;'>".caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), "AdvancedSearchForm_{$widget_id}").'<br/>'.
 			caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), "AdvancedSearchForm_{$widget_id}", array('onclick' => "caAdvancedSearchFormReset{$widget_id}()"))."</div>\n";
