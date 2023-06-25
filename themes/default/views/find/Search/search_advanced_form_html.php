@@ -63,7 +63,7 @@
 				$va_flds[] = "'".$va_element['name']."'";
 			}
 ?>
-	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
+	<?php print caFormTag($this->request, 'Index/page/1', 'AdvancedSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 		<div class="control-box rounded">
 			<div class="simple-search-box">
 				<?php print $this->render('Search/search_forms/search_form_table_html.php'); ?>

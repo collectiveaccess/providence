@@ -181,6 +181,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed || $this->type_restriction_has_changed) {
 				$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 
+				$vn_page_num = 1;
+
 				if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
 			}
 

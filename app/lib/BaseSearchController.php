@@ -243,6 +243,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 				$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 				$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				//if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
+				$this->opo_result_context->setCurrentResultsPageNumber(1);
 				$vn_page_num = 1; 
 			}
 			$this->view->setVar('num_hits', $vo_result->numHits());
