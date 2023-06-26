@@ -350,6 +350,8 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path."/"], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 			||
 			($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
+			||
+			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path."/"], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 		) {
 			$o_content_view = new View($po_controller->request, $po_controller->request->getViewsDirectoryPath());
 	

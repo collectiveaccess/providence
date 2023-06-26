@@ -497,6 +497,30 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch value for default item in list
+	 *
+	 * @param string $ps_list_code List code
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
+	 * @return string value of list item or null if no default item was found
+	 */
+	$g_default_list_item_value_cache = [];
+	function caGetDefaultItemValue($ps_list_code, $pa_options=null) {
+		global $g_default_list_item_value_cache;
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_list_code);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_default_list_item_value_cache[$vs_cache_key])) { return $g_default_list_item_value_cache[$vs_cache_key]; }
+		}
+		
+		$default_item_id = caGetDefaultItemID($ps_list_code, $pa_options);
+		return $g_default_list_item_value_cache[$vs_cache_key] = caGetListItemValueForID($default_item_id, $pa_options);
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch setting value for list item
 	 *
 	 * @param string $list_code List code

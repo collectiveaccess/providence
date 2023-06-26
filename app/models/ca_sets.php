@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -117,6 +117,15 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'BOUNDS_LENGTH' => array(0, 100),
 				'UNIQUE_WITHIN' => array()
 		),
+		'set_code_sort' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Set code sortable value'), 'DESCRIPTION' => _t('Sortable value for set code.'),
+				'BOUNDS_LENGTH' => array(0, 100),
+				'UNIQUE_WITHIN' => array()
+		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -173,6 +182,15 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),	
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'set_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of set. This value is often used to indicate the administrative sub-division or legacy database from which the set originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		)
  	)
 );
@@ -256,7 +274,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_set_items"
 		)
 	);
 	
@@ -281,7 +299,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	# ID numbering
 	# ------------------------------------------------------
 	protected $ID_NUMBERING_ID_FIELD = 'set_code';		// name of field containing user-defined identifier
-	protected $ID_NUMBERING_SORT_FIELD = null;			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
+	protected $ID_NUMBERING_SORT_FIELD = 'set_code_sort';			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
 	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
 
 	# ------------------------------------------------------
@@ -334,6 +352,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	/**
 	 * Overrides default implementation with code to ensure consistency of set contents
 	 */
+	public function insert($pa_options=null) {
+		$this->_setUniqueIdno(['noUpdate' => true]);
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Overrides default implementation with code to ensure consistency of set contents
+	 */
 	public function update($pa_options=null) {
 		$this->_setUniqueIdno(['noUpdate' => true]);
 		if ($vn_rc = parent::update($pa_options)) {
@@ -361,14 +387,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				if ($pa_fields === 'table_num') { return false; }
 			}
 		}
-		
-		if($id_numberer = IDNumbering::newIDNumberer('ca_sets', [$this->getTypeID()], null, $this->getDb())) {
-			if(method_exists($id_numberer, 'isSerialFormat') && $id_numberer->isSerialFormat()) {
-				$v = $id_numberer->htmlFormValue('x');
-				parent::set('set_code', $v);
-			}
-		}
-		
+	
 		return parent::set($pa_fields, $pm_value, $pa_options);
 	}
 	# ------------------------------------------------------

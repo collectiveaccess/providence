@@ -35,7 +35,6 @@
  */
 require_once(__CA_LIB_DIR__."/BaseRefineableSearchController.php");
 require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
-require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
 
@@ -215,7 +214,11 @@ class BaseSearchController extends BaseRefineableSearchController {
 		$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
 		return $this->Index(['error' => true]);
 	}
-
+	
+			$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDescription($result_desc);
+			
 			$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
 
 			$this->opo_result_context->validateCache();

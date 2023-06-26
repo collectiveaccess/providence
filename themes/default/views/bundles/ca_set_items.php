@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,24 +25,24 @@
  *
  * ----------------------------------------------------------------------
  */ 
- 	AssetLoadManager::register('setEditorUI');
- 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_items 				= caSanitizeArray($this->getVar('items'), ['removeNonCharacterData' => false]);
-	$t_set 					= $this->getVar('t_set');
-	$vn_set_id 				= $t_set->getPrimaryKey();
-	$t_row 					= $this->getVar('t_row');
-	$vs_type_singular 		= $this->getVar('type_singular');
-	$vs_type_plural 		= $this->getVar('type_plural');
-	$va_lookup_urls 		= $this->getVar('lookup_urls');
-	$settings				= $this->getVar('settings');
-	$vn_table_num 			= $t_set->get('table_num');
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
-	
-	if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
-	
+AssetLoadManager::register('setEditorUI');
+
+$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$va_items 				= caSanitizeArray($this->getVar('items'), ['removeNonCharacterData' => false]);
+$t_set 					= $this->getVar('t_set');
+$vn_set_id 				= $t_set->getPrimaryKey();
+$t_row 					= $this->getVar('t_row');
+$vs_type_singular 		= $this->getVar('type_singular');
+$vs_type_plural 		= $this->getVar('type_plural');
+$va_lookup_urls 		= $this->getVar('lookup_urls');
+$settings				= $this->getVar('settings');
+$vn_table_num 			= $t_set->get('table_num');
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $settings);
+
+if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items)) ? "({$count})" : ''; }
+
 ?>
 <div id="<?= $vs_id_prefix; ?>" class='setItemEditor'>
 <?php

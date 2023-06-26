@@ -38,8 +38,8 @@ require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_representation_annotation_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('representation annotation title'),
- 	'NAME_PLURAL' 		=> _t('representation annotation titles'),
+ 	'NAME_SINGULAR' 	=> _t('annotation title'),
+ 	'NAME_PLURAL' 		=> _t('annotation titles'),
  	'FIELDS' 			=> array(
  		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 

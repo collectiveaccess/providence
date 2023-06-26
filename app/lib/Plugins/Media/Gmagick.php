@@ -1019,7 +1019,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		@unlink($output_file_prefix);
 		
 		$files = [];
-		$i = 0;
+		$i = 1;
 		
 		$dont_import_pages_for_tiffs = $this->opo_config->get("dont_import_additional_pages_for_tiffs");
 		
@@ -1030,11 +1030,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$num_previews++;
 			$i++;
 		} while($this->handle->hasnextimage());
-		
 		$this->handle->setimageindex(0);
 		
 		if ($num_previews > 1) {
-			$i = 0;
+			$i = 1;
 			do {
 				if ($i > 1) { $this->handle->nextImage(); }
 			

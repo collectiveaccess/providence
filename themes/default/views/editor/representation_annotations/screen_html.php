@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,8 @@
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_annotation_id ? array('annotation_id' => $vn_annotation_id) : array('type_id' => $t_representation_annotation->getTypeID()));
 		print $vs_control_box = caFormControlBox(
@@ -52,7 +54,8 @@
 		
 			$va_form_elements = $t_representation_annotation->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'RepresentationAnnotationEditorForm'), $va_bundle_list);
+									'formName' => 'RepresentationAnnotationEditorForm',
+									'forcedValues' => $forced_values), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			

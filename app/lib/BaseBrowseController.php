@@ -254,6 +254,10 @@
 				$vo_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction, 'start' => ($vn_page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page));
 			}
 			
+			$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $this->opo_browse->getSearchResultDesc() : [];
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDescription($result_desc);
+			
 			// Only prefetch what we need
 			$vo_result->setOption('prefetch', $vn_items_per_page);
 			

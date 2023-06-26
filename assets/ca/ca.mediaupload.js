@@ -150,15 +150,15 @@ var caUI = caUI || {};
 			jQuery('#' + that.fieldNamePrefix + '_center_y_' + that.index).val(center_y);
 		}
 		
-		that.showAnnotationEditor = function() {
+		that.showAnnotationEditor = function(e) {
 			caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix].showPanel(that.annotationEditorURL);
-			e.preventDefault();
+			if(e) { e.preventDefault(); }
 			return false;
 		}
 		
-		that.showEmbeddedMetadata = function() {
+		that.showEmbeddedMetadata = function(e) {
 			jQuery('#' + that.fieldNamePrefix + '_media_metadata_' + that.index).slideToggle(300);
-			e.preventDefault();
+			if(e) { e.preventDefault(); }1
 			return false;
 		}
 		
