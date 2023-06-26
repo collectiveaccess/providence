@@ -4917,3 +4917,31 @@ function caFileIsIncludable($ps_file) {
 		return null;
     }
 	# ----------------------------------------
+	/**
+	 * Verify that path relative to a base directory is valid and doesn't include
+	 * path traversal that takes it out of the base directory.
+	 *
+	 * @param string $relative_filepath
+	 * @param string $base_directory
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception is path is invalid. [Default is false]
+	 *
+	 * @return string Return absolute path or null if path is invalid
+	 */
+	function caSanitizeRelativeFilepath(string $relative_filepath, string $base_directory, ?array $options=null) : ?string {
+		$f = realpath($base_directory.'/'.$relative_filepath);
+		
+		if(!is_null($f)) {
+			$bd = realpath($base_directory);
+		
+			if(is_null($bd) || !preg_match("!^{$bd}/!u", $f)) { 
+				$f = null;
+			}
+		}
+		
+		if(is_null($f) && caGetOption('throwException', $options, false)) {
+			throw new ApplicationException(_t('Relative file path is invalid'));
+		}
+		return $f;
+	}
+	# ----------------------------------------
