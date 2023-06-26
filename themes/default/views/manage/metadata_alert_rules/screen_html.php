@@ -65,8 +65,8 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='table_num' value='<?php print $vn_table_num; ?>'/>
-			<input type='hidden' name='rule_id' value='<?php print $vn_rule_id; ?>'/>
+			<input type='hidden' name='table_num' value='<?= $vn_table_num; ?>'/>
+			<input type='hidden' name='rule_id' value='<?= $vn_rule_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

@@ -28,7 +28,7 @@
  
 	$vn_exporter_count 	= $this->getVar('exporter_count');
 ?>
-<h3 class='export'><?php print _t('Your data exporters'); ?>:
+<h3 class='export'><?= _t('Your data exporters'); ?>:
 <div><?php
 	if ($vn_exporter_count == 1) {
 		print "<div>"._t("1 mapping is available for export")."<div>";

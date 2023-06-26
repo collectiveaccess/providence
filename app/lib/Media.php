@@ -100,7 +100,11 @@ class Media extends BaseObject {
 	 *
 	 */
 	 private $tmp_files = [];
-	
+	 
+	 /*
+	  *
+	  */
+	 private $filepath = null;
 	# ----------------------------------------------------------
 	# Methods
 	# ----------------------------------------------------------
@@ -223,7 +227,7 @@ class Media extends BaseObject {
 		$va_plugin_names = $this->getPluginNames();
 
 		// take an educated guess at which plugins to try, and put those at the head of the list
-		if ($vs_plugin_name = Media::$s_file_extension_to_plugin_map[pathinfo($ps_filepath, PATHINFO_EXTENSION)]) {
+		if ($vs_plugin_name = (Media::$s_file_extension_to_plugin_map[pathinfo($ps_filepath, PATHINFO_EXTENSION)] ?? null)) {
 			unset($va_plugin_names[array_search($vs_plugin_name, $va_plugin_names)]);
 			array_unshift($va_plugin_names, $vs_plugin_name);
 		}
@@ -725,7 +729,7 @@ class Media extends BaseObject {
 		// Clean up tmp files
 		if(is_array($this->tmp_files)) {
 			foreach($this->tmp_files as $f) {
-				@unlink($f);
+				if(file_exists($f)) { @unlink($f); }
 			}
 		}
 	}

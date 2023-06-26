@@ -30,6 +30,8 @@
  * ----------------------------------------------------------------------
  */
  
+ use \Firebase\JWT\JWT;
+ 
  /**
   *
   */
@@ -112,7 +114,7 @@ class Session {
 			if (!$session_id) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				$secure = (__CA_SITE_PROTOCOL__ === 'https');
-				if (!caIsRunFromCLI()) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
+				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__)) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
@@ -344,6 +346,45 @@ class Session {
 		list($em, $et) = explode(" ",microtime());
 
 		return sprintf("%4.{$pn_decimal_places}f", (($et+$em) - ($st+$sm)));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public static function encodeJWT(array $data, string $key=null, array $options=null) {
+		$config = Configuration::load();
+		if(!$key) { $key = $config->get('jwt_token_key'); }
+		$exp_offset = caGetOption('refresh', $options, false) ? 
+			caGetOption('lifetime', $options, (int)$config->get('jwt_refresh_token_lifetime'))
+			: 
+			caGetOption('lifetime', $options, (int)$config->get('jwt_access_token_lifetime'));
+			
+		if ($exp_offset <= 0) { $exp_offset = 900; }
+		
+		$payload = array_merge([
+			'iss' => __CA_SITE_HOSTNAME__,
+			'aud' => __CA_SITE_HOSTNAME__,
+			'iat' => $t=time(),
+			'nbf' => $t,
+			'exp' => ($exp_offset > 0) ? $t + $exp_offset : null
+		], $data);
+		return JWT::encode($payload, $key, 'HS256');
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public static function encodeJWTRefresh(array $data, string $key=null, array $options=null) {
+		if(!is_array($options)) { $options = []; }
+		return self::encodeJWT($data, $key, array_merge($options, ['refresh' => true]));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public static function decodeJWT(string $jwt, string $key) {
+		if (!$key) { $key = Configuration::load()->get('jwt_token_key'); }
+		return JWT::decode($jwt, new Firebase\JWT\Key($key, 'HS256'));
 	}
 	# ----------------------------------------
 }

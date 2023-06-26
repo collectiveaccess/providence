@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,9 +33,9 @@
 	$vs_form_id = 			$this->getVar('form_id');
 	$va_last_settings =		$this->getVar('last_settings');
 ?>
-<h1><?php print $o_tool->getToolName(); ?></h1>
+<h1><?= $o_tool->getToolName(); ?></h1>
 <div class="toolPluginHelpText">
-	<p><?php print $o_tool->getToolDescription(); ?></p>
+	<p><?= $o_tool->getToolDescription(); ?></p>
 </div>
 <?php
 	print caFormTag($this->request, 'Run', $vs_form_id, null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
@@ -49,7 +49,7 @@
 	// Print command <select>
 ?>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Command'); ?></span> 
+			<span class="formLabelText"><?= _t('Command'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList">
 					<p>
@@ -66,7 +66,7 @@
 	foreach($va_settings as $vs_setting => $va_setting_info) {
 ?>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print $va_setting_info['label']; ?></span> 
+			<span class="formLabelText"><?= _t('Settings'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -81,7 +81,7 @@
 	}
 ?>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
+			<span class="formLabelText"><?= _t('Log level'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
@@ -106,7 +106,7 @@
 	
 <script type="text/javascript">
 	function caShowConfirmToolExecutionPanel() {
-		var msg = '<?php print addslashes(_t("You are about to run <em>%2</em> in <em>%1</em>", $o_tool->getToolName())); ?>';
+		var msg = '<?= addslashes(_t("You are about to run <em>%2</em> in <em>%1</em>", $o_tool->getToolName())); ?>';
 		msg = msg.replace("%2", jQuery('#caToolCommand').val());
 		caConfirmBatchExecutionPanel.showPanel();
 		jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);

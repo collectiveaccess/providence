@@ -263,27 +263,28 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 			$tmp = explode('|', $value);
 			if (is_array($tmp) && (sizeof($tmp) > 1)) {
 			
-				$url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $tmp[1]);
+				$url = trim(str_replace('info:lc/', 'http://id.loc.gov/authorities/', $tmp[1]));
 			
 				$tmp1 = explode('/', $tmp[1]);
 				$id = array_pop($tmp1);
 				LCSHAttributeValue::$s_term_cache[$value] = array(
-					'value_longtext1' => trim($tmp[0]),						// text
-					'value_longtext2' => trim($url),							// uri
+					'value_longtext1' => trim($tmp[0])." [{$url}]",						// text
+					'value_longtext2' => $url,							// uri
 					'value_decimal1' => is_numeric($id) ? $id : null	// id
 				);
 			} elseif (preg_match('!\[(http://[^\]]+)\]!', $value, $matches)) {
 				// parse <text> [<url>] format
-				$uri = $matches[1];
+				$url = trim($matches[1]);
 				$text = preg_replace('!\[http://([^\]]+)\]!', '', $value);
 				
-				$tmp1 = explode('/', $uri);
+				$tmp1 = explode('/', $url);
 				$id = array_pop($tmp1);
 				
 				LCSHAttributeValue::$s_term_cache[$value] = array(
-					'value_longtext1' => trim($text),						// text
-					'value_longtext2' => trim($uri),							// uri
-					'value_decimal1' => is_numeric($id) ? $id : null		// id
+					'value_longtext1' => trim($text)." [{$url}]",						// text
+					'value_longtext2' => $url,							// url
+					'value_decimal1' => is_numeric($id) ? $id : null,		// id
+					'value_sortable' => $this->sortableValue($tmp[0])
 				);
 			} else {
 				// try to match on text using id.loc.gov service
@@ -312,7 +313,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 					$headers = $o_response->getHeaders();
 		
 					if ((isset($headers['X-preflabel'])) && $headers['X-preflabel']) {
-						$url = $headers['X-uri'];
+						$url = trim($headers['X-uri']);
 						$url_bits = explode("/", $url);
 						$id = array_pop($url_bits);
 						$label = $headers['X-preflabel'];
@@ -322,8 +323,9 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 						if ($url) {
 							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => trim($label)." [{$url}]",						// text
-								'value_longtext2' => trim($url),							// uri
-								'value_decimal1' => is_numeric($id) ? $id : null	// id
+								'value_longtext2' => $url,							// url
+								'value_decimal1' => is_numeric($id) ? $id : null,	// id
+								'value_sortable' => $this->sortableValue($label)
 							);
 						} else {
 							$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $value, $service_url), 'LCSHAttributeValue->parseValue()');
@@ -361,8 +363,9 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 						
 							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => "{$title} [{$url}]",			// text
-								'value_longtext2' => $url,							// uri
-								'value_decimal1' => is_numeric($id) ? $id : null	// id
+								'value_longtext2' => $url,							// url
+								'value_decimal1' => is_numeric($id) ? $id : null,	// id
+								'value_sortable' => $this->sortableValue($title)
 							);
 							break;
 						}
@@ -478,7 +481,27 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1', 'value_longtext2'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return mb_strtolower(substr(trim($value), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

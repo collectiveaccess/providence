@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -712,6 +712,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Always replace values?'),
 			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
 		);	
+		$settings['replaceIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Replace if expression'),
+			'description' => _t('Replace existing data with imported data if the expression is true.')
+		);
 		$settings['source'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -736,7 +745,23 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Code of element to use for parent_id lookups when importing hierarchical data. If not set the identifier will be used.'),
-		);	
+		);
+		$settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale of data. If not set the mapping locale default is used.'),
+		);
+		$settings['useAsExistingRecordPolicyIdno'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
+		);
 		
 		$this->setAvailableSettings($settings);
 	}

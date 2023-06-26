@@ -48,13 +48,13 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Name'); ?>
+					<?= _t('Name'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Code'); ?>
+					<?= _t('Code'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Available for cataloguing?'); ?>
+					<?= _t('Available for cataloguing?'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
@@ -65,17 +65,17 @@
 ?>
 			<tr>
 				<td>
-					<?php print $va_locale['name']; ?>
+					<?= $va_locale['name']; ?>
 				</td>
 				<td>
-					<?php print $va_locale['language']."_".$va_locale['country']; ?>
+					<?= $va_locale['language']."_".$va_locale['country']; ?>
 				</td>
 				<td>
-					<?php print (bool)$va_locale['dont_use_for_cataloguing'] ? _t('no') : _t('yes') ; ?>
+					<?= (bool)$va_locale['dont_use_for_cataloguing'] ? _t('no') : _t('yes') ; ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Locales', 'Edit', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Locales', 'Edit', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 
 				</td>
 			</tr>

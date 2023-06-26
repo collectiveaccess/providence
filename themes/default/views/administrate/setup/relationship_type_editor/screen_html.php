@@ -57,13 +57,13 @@
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
-			<input type='hidden' name='type_id' value='<?php print $vn_type_id; ?>'/>
-			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
-			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+			<input type='hidden' name='_context_id' value='<?= $this->getVar('_context_id'); ?>'/>
+			<input type='hidden' name='type_id' value='<?= $vn_type_id; ?>'/>
+			<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 		</form>
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_item, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_item, $va_bundle_list); ?>

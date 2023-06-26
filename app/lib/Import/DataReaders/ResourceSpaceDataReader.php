@@ -65,7 +65,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 
         $this->opa_api_credentials = array();
         foreach($va_api_credentials as $vs_instance => $va_instance_api){
-            $rs_api = array('rsInstance' => $vs_instance, 'apiURL' => $va_instance_api['resourcespace_base_api_url'], 'apiKey' => $va_instance_api['resourcespace_api_key'], 'user' => $va_instance_api['resourcespace_user']);
+            $rs_api = array('rsInstance' => $vs_instance, 'apiURL' => $va_instance_api['resourcespace_base_api_url'] ?? null, 'apiKey' => $va_instance_api['resourcespace_api_key']?? null, 'user' => $va_instance_api['resourcespace_user']?? null);
             array_push($this->opa_api_credentials, $rs_api);
         }
     }

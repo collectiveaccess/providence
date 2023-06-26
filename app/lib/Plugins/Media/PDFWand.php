@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2022 Whirl-i-Gig
+ * Copyright 2006-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -254,8 +254,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function get($property) {
 		if ($this->handle) {
-			if ($this->info["PROPERTIES"][$property]) {
-				return $this->properties[$property];
+			if ($this->info["PROPERTIES"][$property] ?? null) {
+				return $this->properties[$property] ?? null;
 			} else {
 				return '';
 			}
@@ -353,9 +353,19 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 					
 		// Try to extract text
 		if ($this->ops_pdftotext_path) {
+			if(($page_start = (int)$this->opo_config->get("document_text_extraction_start_page")) <= 0) { $page_start = 1; }
+			if(($num_pages = (int)$this->opo_config->get("document_text_extraction_max_number_of_pages")) <= 0) { $num_pages = null; }
+			if(($num_chars = (int)$this->opo_config->get("document_text_extraction_max_characters")) <= 0) { $num_chars = null; }
+			
+			$page_limits = " -f {$page_start} ";
+			if($num_pages > 0) { $page_limits .= "-l ".($page_start + $num_pages)." "; }
+			
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.$page_limits.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
+			
+			if($num_chars > 0) { $vs_extracted_text = mb_substr($vs_extracted_text, 0, $num_chars, 'UTF-8'); }
+			
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
 		}
@@ -373,14 +383,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 
 		# get parameters for this operation
-		$this->properties["version_width"] = $w = $pa_parameters["width"];
-		$this->properties["version_height"] = $h = $pa_parameters["height"];
+		$this->properties["version_width"] = $w = $pa_parameters["width"] ?? null;
+		$this->properties["version_height"] = $h = $pa_parameters["height"] ?? null;
 		$cw = $this->get("width");
 		$ch = $this->get("height");
 		switch($ps_operation) {
 			# -----------------------
 			case "SET":
-				while(list($k, $v) = each($pa_parameters)) {
+				foreach($pa_parameters as $k => $v){
 					$this->set($k, $v);
 				}
 				break;
@@ -402,7 +412,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 						break;
 					# ----------------
 					case "fill_box":
-						$crop_from = $pa_parameters["crop_from"];
+						$crop_from = $pa_parameters["crop_from"] ?? null;
 						if (!in_array($crop_from, array('center', 'north_east', 'north_west', 'south_east', 'south_west', 'random'))) {
 							$crop_from = '';
 						}
@@ -469,6 +479,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$va_files = [];
 		
+		$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
+		
 		# write the file
 		if ($ps_mimetype == "application/pdf") {
 			if($this->ops_ghostscript_path && ($compress = strtolower($this->get("compress")))) {
@@ -515,8 +527,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if(!$pb_write_all_pages) {
 				$vn_end_page = $vn_start_page;
 			}
-			
-			$vs_antialiasing = ($this->get("antialiasing") || $pb_antialiasing) ?  "-dTextAlphaBits=4 -dGraphicsAlphaBits=4" : "";
 		
 			$vb_processed_preview = false;
 			switch($ps_mimetype) {
@@ -612,7 +622,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		if (!$pb_write_all_pages) {	
 			$this->properties["mimetype"] = $ps_mimetype;
-			$this->properties["filesize"] = filesize($ps_filepath.".".$vs_ext);
+			$this->properties["filesize"] = file_exists($ps_filepath.".".$vs_ext) ?filesize($ps_filepath.".".$vs_ext) : null;
 			$this->properties["typename"] = $this->typenames[$ps_mimetype];
 		}
 		return $pb_write_all_pages ? $va_files : array_shift($va_files);
@@ -695,16 +705,16 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function mimetype2extension($ps_mimetype) {
-		return $this->info["EXPORT"][$ps_mimetype];
+		return $this->info["EXPORT"][$ps_mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function mimetype2typename($ps_mimetype) {
-		return $this->typenames[$ps_mimetype];
+		return $this->typenames[$ps_mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function extension2mimetype($ps_extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){
 			if ($v === $ps_extension) {
 				return $k;
 			}
@@ -720,14 +730,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->errors = array();
 		$this->handle = $this->ohandle;
 		$this->properties = array(
-			"width" => $this->ohandle["width"],
-			"height" => $this->ohandle["height"],
-			"mimetype" => $this->ohandle["mimetype"],
+			"width" => $this->ohandle["width"] ?? null,
+			"height" => $this->ohandle["height"] ?? null,
+			"mimetype" => $this->ohandle["mimetype"] ?? null,
 			"quality" => 75,
-			"pages" => $this->ohandle["pages"],
+			"pages" => $this->ohandle["pages"] ?? null,
 			"page" => 1,
 			"resolution" => 72,
-			"filesize" => $this->ohandle["filesize"],
+			"filesize" => $this->ohandle["filesize"] ?? null,
 			"typename" => "PDF"
 		);
 	}
@@ -745,7 +755,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		
 		if(preg_match("/\.pdf\$/", $ps_url)) {
-			if ($vs_poster_frame_url =	$pa_options["poster_frame_url"]) {
+			if ($vs_poster_frame_url = ($pa_options["poster_frame_url"] ?? null)) {
 				$vs_poster_frame = "<img src='{$vs_poster_frame_url}'/ alt='"._t("Click to download document")." title='"._t("Click to download document")."''>";
 			} else {
 				$vs_poster_frame = _t("View PDF document");

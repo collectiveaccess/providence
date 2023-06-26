@@ -31,7 +31,7 @@
  	if (!$t_item->getPrimaryKey()) {
  		$vn_element_count = ca_metadata_elements::getElementCount(true);
 ?>
-<h3 class='metalist'><?php print _t('Metadata elements'); ?>:
+<h3 class='metalist'><?= _t('Metadata elements'); ?>:
 <div><?php
 	if ($vn_element_count == 1) {
 		print "<div>"._t("1 element is defined")."</div>";

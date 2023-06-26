@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2021 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,14 +188,14 @@
 			return null; 
 		}
 		
-		$find_type = $m[1];
+		$find_type = $m[1] ?? null;
 		$is_advanced = false;
-		if(preg_match("!^([A-Z]{1}[a-z]+)Advanced$!", $m[2], $madm)) { 
-			$table_desc = $madm[1];
+		if(preg_match("!^([A-Z]{1}[a-z]+)Advanced$!", $m[2] ?? null, $madm)) { 
+			$table_desc = $madm[1] ?? null;
 			$is_advanced = true;
 			$find_type .= 'Advanced';
 		} else {
-			$table_desc = $m[2];
+			$table_desc = $m[2] ?? null;
 		}
 		
 		$table_map = [
@@ -408,7 +408,7 @@
 		$va_aps = array();
 		foreach($va_tables as $vs_table) {
 			$va_config = $o_search_indexing_config->getAssoc($vs_table);
-			if(is_array($va_config) && is_array($va_config['_access_points'])) {
+			if(is_array($va_config ?? null) && is_array($va_config['_access_points'] ?? null)) {
 				if (array_intersect($pa_access_points, array_keys($va_config['_access_points']))) {
 					$va_aps[$vs_table] = true;	
 				}
@@ -437,18 +437,18 @@
 	 * @return array|string
 	 */
 	function caPuppySearch($po_request, $ps_search_expression, $pa_blocks, $pa_options=null) {
+		$o_search_config = caGetSearchConfig();
+		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$va_access_values = caGetUserAccessValues($po_request);
- 		if(is_array($va_access_values) && sizeof($va_access_values)){
+ 		if(is_array($va_access_values ?? null) && sizeof($va_access_values)){
  			$pa_options["checkAccess"] = $va_access_values;
  		}	
 		$vn_items_per_page_default = caGetOption('itemsPerPage', $pa_options, 10);
 		$vn_items_per_column_default = caGetOption('itemsPerColumn', $pa_options, 1);
-		$vb_match_on_stem = caGetOption('matchOnStem', $pa_options, false);
 		
 		$va_contexts = caGetOption('contexts', $pa_options, array(), array('castTo' => 'array'));
 		unset($pa_options['contexts']);
-		
 		
 		if ($purifier = RequestHTTP::getPurifier()) { $ps_search_expression = $purifier->purify($ps_search_expression); }
 		
@@ -470,7 +470,7 @@
 		
 		$va_table_counts = array();
 		foreach($pa_blocks as $vs_block => $va_block_info) {
-			if (!($o_search = caGetSearchInstance($va_block_info['table']))) { continue; }
+			if (!($o_search = caGetSearchInstance($va_block_info['table'] ?? null))) { continue; }
 			
 			if (!is_array($va_block_info['options'])) { $va_block_info['options'] = array(); }
 			$va_options = array_merge($pa_options, $va_block_info['options']);
@@ -506,6 +506,8 @@
  			
  			$va_contexts[$vs_block]->setCurrentSortDirection($ps_sort_direction); 
  			
+ 			$search_expression_for_display = $va_contexts[$vs_block]->getSearchExpressionForDisplay($ps_search_expression);
+ 			
  			$va_options['sort'] = $va_sorts[$ps_sort];
  			$va_options['sort_direction'] = $ps_sort_direction;
  			
@@ -527,19 +529,26 @@
 				foreach($base_criteria as $facet => $value){
 					$o_browse->addCriteria($facet, $value);
 				}
-				$o_browse->addCriteria('_search', [$ps_search_expression]);
-				$o_browse->execute();
+				$o_browse->addCriteria("_search", [caMatchOnStem($ps_search_expression)], [$search_expression_for_display]);
+				$o_browse->execute($va_options);
+
 				$qr_res = $o_browse->getResults($va_options);
+				
+				if($vn_i == 0) { MetaTagManager::setHighlightText($o_browse->getSearchedTerms() ?? $ps_search_expression); }
 			} else {
-				$qr_res = $o_search->search(trim($ps_search_expression).(($vb_match_on_stem && !preg_match('![\*\"\']$!', $ps_search_expression)) ? '*' : ''), $va_options);
+				$qr_res = $o_search->search(caMatchOnStem($ps_search_expression), $va_options);
+				
+				if($vn_i == 0) { MetaTagManager::setHighlightText($o_search->getSearchedTerms() ?? $ps_search_expression); }
 			}
+			
+			$qr_res->doHighlighting($o_search_config->get('do_highlighting'));
 			$va_contexts[$vs_block]->setSearchExpression($ps_search_expression);
 			$va_contexts[$vs_block]->setResultList($qr_res->getPrimaryKeyValues());
 			
 			// In Ajax mode we scroll to an offset
 			$vn_start = 0;
 			if ($vb_ajax_mode) {
-				if (($vn_start = $po_request->getParameter('s', pInteger)) < $qr_res->numHits()) {
+				if (($vn_start = (int)$po_request->getParameter('s', pInteger)) < $qr_res->numHits()) {
 					$qr_res->seek($vn_start);
 					if (isset($va_contexts[$vs_block])) {
 						$va_contexts[$vs_block]->setParameter('start', $vn_start);
@@ -579,6 +588,8 @@
 			
 			
 			$o_view = new View($po_request, $po_request->getViewsDirectoryPath());
+			
+			$qr_res->doHighlighting($o_search_config->get("do_highlighting"));
 			$o_view->setVar('result', $qr_res);
 			$o_view->setVar('count', $vn_count);
 			$o_view->setVar('block', $vs_block);
@@ -652,6 +663,8 @@
 	function caSplitSearchResultByType($pr_res, $pa_options=null) {
 		if (!($t_instance = Datamodel::getInstanceByTableName($pr_res->tableName(), true))) { return null; }
 		
+		$o_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+		
 		if (!($vs_type_fld = $t_instance->getTypeFieldName())) { return null; }
 		$vs_table = $t_instance->tableName();
 		$va_types = $t_instance->getTypeList();
@@ -667,6 +680,7 @@
 			$qr_res = $pr_res->getClone();
 			$qr_res->filterResult("{$vs_table}.{$vs_type_fld}", array($vn_type_id));
 			$qr_res->seek(0);
+			$qr_res->doHighlighting($o_search_config->get('do_highlighting'));
 			$va_results[$vn_type_id] = array(
 				'type' => $va_types[$vn_type_id],
 				'result' =>$qr_res
@@ -793,8 +807,6 @@
 	
 	 	$va_query_elements = $va_query_booleans = array();
 	 	
-	 	$vb_match_on_stem = caGetOption(['matchOnStem', 'match_on_stem'], $pa_options, false);
-	 	
 	 	if (is_array($va_values) && sizeof($va_values)) {
 			foreach($va_values as $vs_element => $va_value_list) {
 				foreach($va_value_list as $vn_i => $vs_value) {
@@ -805,7 +817,7 @@
 						$vs_query_element = $vs_value;
 					}
 					
-					$vs_query_element .= ($vb_match_on_stem && caIsSearchStem($vs_query_element)) ? '*' : '';
+					$vs_query_element = caMatchOnStem($vs_query_element, $pa_options);
 					
 					$va_query_booleans[$vs_element][] = (isset($va_booleans["{$vs_element}:boolean"][$vn_i]) && $va_booleans["{$vs_element}:boolean"][$vn_i]) ? $va_booleans["{$vs_element}:boolean"][$vn_i] : 'AND';
 					switch($vs_element){
@@ -1495,15 +1507,16 @@
 			}
 		} 
 		
-		// Try to use customer user interface labels for fields when set
+		// Try to use custom user interface labels for fields when set
 		$ui_bundle_label_map = [];
 		if (isset($options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $options['request'], $pn_type_id))) {
-			$va_screens = $t_ui->getScreens();
+			$va_screens = $t_ui->getScreens($pn_type_id);
 			foreach($va_screens as $va_screen) {
-				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
+				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id'], $pn_type_id))) {
 					foreach($va_placements as $va_placement) {
 						// Older installations have the bundle name prefixed with "ca_attribute_"
-						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
+						$vs_bundle_name = caConvertBundleNameToCode($va_placement['bundle_name'], ['convertOldStyleNamesOnly' => true]);
+						
 						$va_bundle_bits = explode('.', $vs_bundle_name);
 						if (!Datamodel::tableExists($va_bundle_bits[0])) {
 							array_unshift($va_bundle_bits, $ps_table);
@@ -1713,7 +1726,7 @@
 			
 			foreach($sortable_elements as $element_id => $sortable_element) {
 				$va_base_fields[$ps_table.'.'.$sortable_element['element_code']] = $sortable_element['display_label'];
-				if(is_array($sortable_element['elements'])) {
+				if(is_array($sortable_element['elements'] ?? null)) {
 					foreach($sortable_element['elements'] as $e) {
 						$va_base_fields[$ps_table.'.'.$sortable_element['element_code'].'.'.$e['element_code']] = str_repeat("&nbsp;", 5).'↳ '.$e['display_label'];
 					}	
@@ -2042,12 +2055,12 @@
 		);
 		if ($va_field_info) {
 			// Get the list code and display type for further processing below.
-			$vs_list_code = $va_field_info['LIST'] ?: $va_field_info['LIST_CODE'];
-			$vn_display_type = $va_field_info['DISPLAY_TYPE'];
+			$vs_list_code = $va_field_info['LIST'] ?? $va_field_info['LIST_CODE'] ?? null;
+			$vn_display_type = $va_field_info['DISPLAY_TYPE'] ?? null;
 			// The "hardcoded" options are `label` => `id` so this needs to be flipped for the query builder.
-			$va_select_options = is_array($va_field_info['OPTIONS']) ? array_flip($va_field_info['OPTIONS']) : null;
+			$va_select_options = is_array($va_field_info['OPTIONS'] ?? null) ? array_flip($va_field_info['OPTIONS']) : null;
 			// Convert CA field type to query builder type and operators.
-			switch ($va_field_info['FIELD_TYPE']) {
+			switch ($va_field_info['FIELD_TYPE'] ?? null) {
 				case FT_NUMBER:
 					$va_result['type'] = 'integer';
 					break;
@@ -2091,9 +2104,12 @@
 						$va_result['type'] = 'time';
 						break;
 				}
-		} elseif(preg_match("!^count[/\.]{1}!", $va_name[1]))  {
+		} elseif(preg_match("!^count[/\.]{1}!", ($va_name[1] ?? null)))  {
 			// counts are always ints
 			$va_result['type'] = 'integer';
+		} elseif ($vs_name === '_fulltext') {
+			# Mark type as fulltext so that correct operator(s) get made available.
+			$va_result['type'] = 'fulltext';
 		}
 		
 		// Use the relevant input field type and operators based on type.
@@ -2117,9 +2133,13 @@
 			$va_result['values'] = $va_select_options;
 			$va_result['operators'] = $va_operators_by_type['select'];
 		} elseif($vs_name === "{$vs_table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
-			$va_result['operators'] = array_merge($va_operators_by_type['select'], ['between']);
+			$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 		} else {
 			$va_result['input'] = 'text';
+		}
+		if ($va_result['type'] === 'fulltext') {
+			// Now mark type to be a valid type that is supported by Query Builder
+			$va_result['type'] = 'string';
 		}
 		
 		// Set up option groups
@@ -2246,6 +2266,177 @@
 		} else {	// Any plugin that doesn't define its own tokenizer (like ElasticSearch) uses the SqlSearch2 tokenizer by default
 			require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearch2.php');
 			return WLPlugSearchEngineSqlSearch2::tokenize($value);
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * Check if matchOnStem mode is enable and suitable for search. If true, a wildcard should be appened onto the search.
+	 *
+	 * @param string $search_expression
+	 * @param array $options Options include:
+	 *		matchOnStem = Add wildcard to search expression is expression is suitable as a stem. [Default is to use search.conf value]
+	 *		match_on_stem = Synonym for matchOnStem.
+	 *
+	 * @return string Search string with wildcard appended if suitable
+	 */
+	function caMatchOnStem(string $search_expression, ?array $options=null) : string {
+		$config = caGetSearchConfig();
+		$search_expression = trim($search_expression);
+		if(strlen($search_expression) && (caGetOption(['matchOnStem', 'match_on_stem'], $options, false) || $config->get(['matchOnStem', 'match_on_stem'])) && caIsSearchStem($search_expression) && !caSearchIsForSets($search_expression)) {
+			return $search_expression.'*';
+		}
+		return $search_expression;
+	}
+	# ---------------------------------------
+	/**
+	 * Format search result description data for debugging
+	 *
+	 * @param int $id row_id to display data for
+	 * @array $result_desc_data 
+	 * @array $options Options include:
+	 *		request = 
+	 *		maxTitleLength = 
+	 *
+	 * @return string
+	 */
+	function caFormatSearchResultDesc(int $id, array $result_desc_data, ?array $options=null) : ?string {
+		$request = caGetOption('request', $options, null);
+		$max_title_length = caGetOption('maxTitleLength', $options, 40);
+		if(is_array($result_desc_data[$id] ?? null)) {
+			$m = $result_desc_data[$id];
+			$s = "";
+			
+			$by_table = [];
+			foreach($m['desc'] as $d) {
+				$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+			}
+			
+			$lines = $titles = [];
+			foreach($by_table as $t => $by_row_id) {
+				$t_instance = Datamodel::getInstance($t);
+				foreach($by_row_id as $row_id => $by_field) {
+					$t_instance->load($row_id);
+					$t_subject = method_exists($t_instance, 'getSubjectTableInstance') ? $t_instance->getSubjectTableInstance() : $t_instance;
+					
+					$title = caTruncateStringWithEllipsis($t_subject->get("preferred_labels"), $max_title_length);
+					if(!($subject_name = $request ? caEditorLink($request, $title, '', $t_subject->tableName(), $t_subject->getPrimaryKey()) : $title)) {
+						$subject_name = $title;
+					}
+					$titles[$row_id] = "<em>".caUcFirstUTF8Safe(method_exists($t_instance, 'getTypeName') ? $t_instance->getTypeName() : $t_instance->getProperty('NAME_SINGULAR'))."</em> {$subject_name}";
+					
+					foreach($by_field as $field_num => $words) {
+						$lines[$row_id][] = _t("<em>%1</em>: %2",  mb_strtolower(caFieldNumToDisplayText($t, $field_num)), caMakeCommaListWithConjunction(array_keys($words)));
+					}
+				}
+			}
+			if(!sizeof($lines)) { return null; }
+			$s .= "<ul>";
+			foreach($lines as $row_id => $m) {
+				$s .= "<li>{$titles[$row_id]}</li>\n";
+				$s .= join("\n", array_map(function($v) { return "<li>{$v}</li>\n"; }, $m));
+			}
+			$s .= "</ul>";
+			return $s;
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get text excerpt for search hit
+	 *
+	 * @param int $id row_id to display data for
+	 * @array $result_desc_data 
+	 * @array $options Options include: 
+	 *		maxExcerpts = Maximum number of excerpts to be returned. Searches matching on multiple fields may return different excepts for each. [Default is null]
+	 *
+	 * @return array
+	 */
+	function caTextExcerptForSearchResult(int $id, array $result_desc_data, ?array $options=null) : ?array {
+		$max_excerpts = caGetOption('maxExcerpts', $options, null);
+		if(is_array($result_desc_data[$id] ?? null)) {
+			$m = $result_desc_data[$id];
+			$s = "";
+			$by_table = $by_table_counts = [];
+			foreach($m['desc'] as $d) {
+				$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+				$by_table_counts[$d['table']]++;
+			}
+			asort($by_table_counts, SORT_NUMERIC);
+			$by_table_counts = array_reverse($by_table_counts);
+			
+			$word_list = $excerpts = [];
+			foreach($by_table_counts as $t => $c) {
+				$by_row_id = $by_table[$t];
+				$t_instance = Datamodel::getInstance($t);
+				foreach($by_row_id as $row_id => $by_field) {
+					$t_instance->load($row_id);
+					$t_subject = method_exists($t_instance, 'getSubjectTableInstance') ? $t_instance->getSubjectTableInstance() : $t_instance;
+					
+					foreach($by_field as $field_num => $words) {
+						$word_list = array_unique(array_merge($word_list, array_keys($words)));
+						$bundle_code = caFieldNumToBundleCode($t, $field_num);
+						if(!($excerpt = trim(caGetTextExcerpt($t_subject->get($bundle_code), array_keys($words))))) { continue; }
+						$excerpts[] = $excerpt;
+						
+						if(($max_excerpts > 0) && (sizeof($excerpts) >= $max_excerpts)) { break(3); }
+					}
+				}
+			}
+			
+			$excerpts = array_map(function($v) use ($word_list) {
+				return caHighlightText($v, $word_list);
+			}, $excerpts);
+			
+			return array_unique($excerpts);
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caFieldNumToDisplayText($table_name_or_num, string $field_num) : ?string {
+		$prefix = strtoupper(substr($field_num, 0, 1));
+		
+		switch($prefix) {
+			case 'A':
+				return ca_metadata_elements::getElementLabel(substr($field_num, 1));
+				break;
+			case 'I':
+				if($t_instance = Datamodel::getInstance($table_name_or_num)) {
+					$field_name = $t_instance->fieldName(substr($field_num, 1));
+					$field_info = $t_instance->getFieldInfo($field_name);
+					return $field_info['LABEL'];
+				}
+				break;
+			default:
+				return $field_num;
+				break;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caFieldNumToBundleCode($table_name_or_num, string $field_num) : ?string {
+		$prefix = strtoupper(substr($field_num, 0, 1));
+		
+		$table = Datamodel::getTableName($table_name_or_num);
+		switch($prefix) {
+			case 'A':
+				$element_code = ca_metadata_elements::getElementCodeForId(substr($field_num, 1));
+				$parent_code = ca_metadata_elements::getParentCode($element_code);
+				return $parent_code ? "{$table}.{$parent_code}.{$element_code}" : "{$table}.{$element_code}";
+				break;
+			case 'I':
+				if($t_instance = Datamodel::getInstance($table_name_or_num)) {
+					$field_name = $t_instance->fieldName(substr($field_num, 1));
+					return "{$table}.{$field_name}";
+				}
+				break;
+			default:
+				return null;
+				break;
 		}
 	}
 	# ---------------------------------------

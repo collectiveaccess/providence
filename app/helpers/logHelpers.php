@@ -61,6 +61,8 @@
 	 *
 	 * @param array $options Options include:
 	 *
+	 *						 logName = Filename for log
+	 *
 	 *                       logDirectory = Directory containing logs. [Default is to use app.conf $opt_name value]
 	 *						 logName = Optional log name. [Default is to use a generic log name]
 	 *
@@ -68,7 +70,7 @@
 	 *                       are DEBUG, NOTICE, WARN, ERR, CRIT, ALERT and INFO. [Default is INFO]
 	 *
 	 *                       logToTempDirectoryIfLogDirectoryIsNotWritable = Log to system temporary directory if
-	 *                       configured log directory is not writable. [Default is false]
+	 *                       configured log directory is not writable. [Default is true]
 	 *
 	 * @param string $opt_name Name of app.conf configuration entry to use for log directory. [Default is null - use current working directory]
 	 *
@@ -85,13 +87,13 @@
 	 */
 	function caGetLogPath($options=null, $opt_name=null) {
 		$config = Configuration::load();
-		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $config->get($opt_name)))) {
+		if(!trim($log_dir = $orig_log_dir = caGetOption('logDirectory', $options, $opt_name ? $config->get($opt_name) : null))) {
 			$log_dir = '.';
 		}
 		
 		$tmp_dir = null;
 		if (!is_writeable($log_dir)) {
-			if (!caGetOption('logToTempDirectoryIfLogDirectoryIsNotWritable', $options, false)) {
+			if (!caGetOption('logToTempDirectoryIfLogDirectoryIsNotWritable', $options, true)) {
 				throw new ApplicationException(_t("Cannot write log to %1. Please check the directory's permissions and retry.", $log_dir));
 			} elseif(is_writable($tmp_dir = caGetTempDirPath())) {
 				$log_dir = $tmp_dir;

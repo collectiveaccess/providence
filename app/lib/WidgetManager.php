@@ -173,7 +173,7 @@
 		 */
 		public function renderWidget($ps_widget_name, $ps_widget_id, $pa_settings=null) {
 			WidgetManager::initWidgets();
-			if (WidgetManager::$s_widget_instances[$ps_widget_name] && is_object(WidgetManager::$s_widget_instances[$ps_widget_name])) {
+			if ((WidgetManager::$s_widget_instances[$ps_widget_name] ?? null)&& is_object(WidgetManager::$s_widget_instances[$ps_widget_name])) {
 				return WidgetManager::$s_widget_instances[$ps_widget_name]->renderWidget($ps_widget_id, $pa_settings);
 			}
 			return null;

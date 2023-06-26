@@ -37,7 +37,7 @@
 	if (!$this->request->isAjax()) {
 		if (!$this->getVar('uses_hierarchy_browser')) {
 ?>
-		<?php print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
+		<?= caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 <?php 
 			print caFormControlBox(
 				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.'</div>',
@@ -59,7 +59,7 @@
 ?>
 			</form>
 			<div id="browse" class="hierarchyWindow">
-				<div class='subTitle'><?php print _t("Hierarchy"); ?></div>
+				<div class='subTitle'><?= _t("Hierarchy"); ?></div>
 
 				<!--- BEGIN HIERARCHY BROWSER TYPE MENU --->
 				<div id='browseTypeMenu'>
@@ -71,7 +71,7 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_ADD__, "30px").' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?= caNavLink($this->request, caNavIcon(__CA_NAV_ICON_ADD__, "30px").' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
@@ -88,7 +88,7 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_ADD__, 1).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?= caNavLink($this->request, caNavIcon(__CA_NAV_ICON_ADD__, 1).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
@@ -112,16 +112,16 @@
 				<div id="hierarchyBrowser" class='hierarchyBrowser'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->
-						<?php print _t("◉ = Default"); ?>
+						<?= _t("◉ = Default"); ?>
 <?php
 	if ($vs_table == 'ca_list_items') {
 ?>
 						&nbsp;&nbsp;&nbsp;
-						<?php print _t("⨂ = Disabled"); ?>
+						<?= _t("⨂ = Disabled"); ?>
 						&nbsp;&nbsp;&nbsp;
-						<?php print _t("⧩ = Vocabulary list"); ?>
+						<?= _t("⧩ = Vocabulary list"); ?>
 						&nbsp;&nbsp;&nbsp;
-						<?php print _t("⟗ = System list"); ?>
+						<?= _t("⟗ = System list"); ?>
 <?php
 	}
 ?>
@@ -138,38 +138,38 @@
 					});	
 					
 					oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
-						levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
-						initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
+						levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
+						initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
 						
-						editUrl: '<?php print caEditorUrl($this->request, $vs_table); ?>',
-						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1);?>",
-						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
+						editUrl: '<?= caEditorUrl($this->request, $vs_table); ?>',
+						editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1);?>",
+						disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 						
 						disabledItems: 'full',
 						
-						allowDragAndDropSorting: <?php print is_array($vm_ret = caGetDragAndDropSortingAvailabilityMap($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey())) ? json_encode($vm_ret) : ($vm_ret ? "true" : "false"); ?>,
-						sortSaveUrl: '<?php print $va_lookup_urls['sortSave']; ?>',
+						allowDragAndDropSorting: <?= is_array($vm_ret = caGetDragAndDropSortingAvailabilityMap($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey())) ? json_encode($vm_ret) : ($vm_ret ? "true" : "false"); ?>,
+						sortSaveUrl: '<?= $va_lookup_urls['sortSave']; ?>',
 						dontAllowDragAndDropSortForFirstLevel: true,
 						
-						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+						initItemID: '<?= $this->getVar('browse_last_id'); ?>',
+						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						typeMenuID: 'browseTypeMenu',
 						
 						currentSelectionDisplayID: 'browseCurrentSelection',
 						
-						editUrlForFirstLevel: '<?php print caEditorUrl($this->request, 'ca_lists'); ?>',
+						editUrlForFirstLevel: '<?= caEditorUrl($this->request, 'ca_lists'); ?>',
 						editDataForFirstLevel: 'list_id',
-						dontAllowEditForFirstLevel: <?php print ($vs_table == 'ca_relationship_types') ? 'true' : 'false'; ?>
+						dontAllowEditForFirstLevel: <?= ($vs_table == 'ca_relationship_types') ? 'true' : 'false'; ?>
 					});
 					
 					jQuery('#browseSearch').autocomplete(
 						{
 							minLength: 3, delay: 800, html: true,
-							source: '<?php print $va_lookup_urls['search']; ?>',
+							source: '<?= $va_lookup_urls['search']; ?>',
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {
 									oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
-									if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+									if (stateCookieJar.get('<?= $vs_table; ?>BrowserIsClosed') == 1) {
 										jQuery("#browseToggle").click();
 									}
 								}
@@ -180,34 +180,34 @@
 					).click(function() { this.select(); });
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
-							stateCookieJar.set('<?php print $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 
-							jQuery("#browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'.addslashes(_t('Close hierarchy viewer')).'</span>';?>' : '<?php print '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
+							stateCookieJar.set('<?= $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 
+							jQuery("#browseToggle").html((this.style.display == 'block') ? '<?= '<span class="form-button">'.addslashes(_t('Close hierarchy viewer')).'</span>';?>' : '<?= '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
 						}); 
 						return false;
 					});
 				
-					if (<?php print ($this->getVar('force_hierarchy_browser_open') ? 'true' : "!stateCookieJar.get('".$vs_table."BrowserIsClosed')"); ?>) {
-						jQuery("#browseToggle").html('<?php print '<span class="form-button">'.addslashes(_t('Close hierarchy viewer')).'</span>';?>');
+					if (<?= ($this->getVar('force_hierarchy_browser_open') ? 'true' : "!stateCookieJar.get('".$vs_table."BrowserIsClosed')"); ?>) {
+						jQuery("#browseToggle").html('<?= '<span class="form-button">'.addslashes(_t('Close hierarchy viewer')).'</span>';?>');
 					} else {
 						jQuery("#browse").hide();
-						jQuery("#browseToggle").html('<?php print '<span class="form-button">'.addslashes(_t('Open hierarchy viewer')).'</span>';?>');
+						jQuery("#browseToggle").html('<?= '<span class="form-button">'.addslashes(_t('Open hierarchy viewer')).'</span>';?>');
 					}
 				});
 				
 					
 				function caOpenBrowserWith(id) {
-					if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+					if (stateCookieJar.get('<?= $vs_table; ?>BrowserIsClosed') == 1) {
 						jQuery("#browseToggle").click();
 					}
 					oHierBrowser.setUpHierarchy(id);
 				}
 				function caCloseBrowser() {
-					if (!stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed')) {
+					if (!stateCookieJar.get('<?= $vs_table; ?>BrowserIsClosed')) {
 						jQuery("#browseToggle").click();
 					}
 				}
 				function _navigateToNewForm(type_id) {
-					document.location = '<?php print caEditorUrl($this->request, $vs_table, 0); ?>/type_id/' + type_id + '/parent_id/' + oHierBrowser.getSelectedItemID();
+					document.location = '<?= caEditorUrl($this->request, $vs_table, 0); ?>/type_id/' + type_id + '/parent_id/' + oHierBrowser.getSelectedItemID();
 				}
 			</script>
 				<!--- END HIERARCHY BROWSER --->

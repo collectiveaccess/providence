@@ -174,7 +174,7 @@
  				'fileImportPath' => $this->request->getParameter("fileImportPath", pString), // path relative to import directory when fileInput='import'
  				
  				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger), 
- 				'originalFilename' => $vs_name,
+ 				'originalFilename' => null,
  				
  				'importer_id' => $this->request->getParameter("importer_id", pInteger),
  				'inputFormat' => $this->request->getParameter("inputFormat", pString),

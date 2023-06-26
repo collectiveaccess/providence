@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -260,6 +260,14 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'label' => _t('Separate disabled values?'),
 		'description' => _t('Group disabled entries after active entries.')
 	),
+	'hideDisabledValues' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Hide disabled values?'),
+		'description' => _t('Omit disabled entries from list.')
+	),
 );
 
 
@@ -342,7 +350,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			$pa_options['showHierarchy'] = true;
 		}
 
-        if(!$pa_options['showHierarchy']) {
+        if(!($pa_options['showHierarchy'] ?? false)) {
             if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
                 return caGetListItemIdno($this->opn_item_id, $pa_options);
             }
@@ -358,7 +366,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
         }
 
 		$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
-		if ($pa_options['showHierarchy'] && !$vn_list_id) {
+		
+		$t_item = null;
+		if (($pa_options['showHierarchy'] ?? false) && !$vn_list_id) {
 			$t_item = new ca_list_items();
 		    $t_item->load((int)$this->opn_item_id);
 		    $vn_list_id = $t_item->get('list_id');
@@ -371,14 +381,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				$t_list->setTransaction($o_trans);
 			}
 			if (!$t_item) { $t_item = new ca_list_items(); }
-			if ($pa_options['showHierarchy'] || $vb_return_idno) {
+			if (($pa_options['showHierarchy'] ?? false) || $vb_return_idno) {
 				if ($o_trans) { $t_item->setTransaction($o_trans); }
 			}
 
 			$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
 
 			// do we need to get the hierarchy?
-			if ($pa_options['showHierarchy']) {
+			if ($pa_options['showHierarchy'] ?? false) {
 				if (!$t_item->isLoaded()) { $t_item->load((int)$this->opn_item_id); }
 				
 				if (is_array($pa_options['filterTypes'])) {
@@ -426,7 +436,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		$o_trans = caGetOption('transaction', $pa_options, null);
 
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? null)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
 
 		$ps_orig_value = $ps_value;
 
@@ -481,10 +491,19 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		if (!$vb_require_value && !$vn_id) {
-			return array(
-				'value_longtext1' => null,
-				'item_id' => null
-			);
+			if(
+				(is_null($ps_value) || !strlen($ps_value ?? '')) 
+				&& 
+				(!in_array(caGetOption('render', $pa_element_info['settings'] ?? [], null), ['horiz_hierbrowser', 'horiz_hierbrowser_with_search', 'vert_hierbrowser', 'vert_hierbrowser_down'], true))) {
+				// value is blank
+				return [
+					'value_longtext1' => null,
+					'item_id' => null
+				];
+			} else {
+				// value was set and is invalid
+				return null;
+			}
 		} elseif ($vb_require_value && !$vn_id && !strlen($ps_value)) {
 			$this->postError(1970, _t('Value for %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
 			return false;
@@ -495,7 +514,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		return array(
 			'value_longtext1' => (int)$vn_id,
-			'item_id' => (int)$vn_id
+			'item_id' => (int)$vn_id,
+			'value_sortable' => $this->sortableValue((int)$vn_id)
 		);
 	}
 	# ------------------------------------------------------------------
@@ -511,8 +531,13 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		/** @var RequestHTTP $o_request */
 		$o_request = $pa_options['request'];
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
-		if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
+
+		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? false)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
+		
+		$render_as = $pa_element_info['settings']['render'] ?? null;
+		
+		if (($pa_element_info['parent_id']) && ($render_as == 'checklist')) { $render_as = ''; }	// checklists can only be top-level
+		
 		if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
 		if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
@@ -520,7 +545,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
 			$vb_null_option = $pa_options['nullOption'];
 		} else {
-			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ? $pa_element_info['settings']['nullOptionText'] : _t('Not set')) : null;
+			$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ?? _t('Not set')) : null;
 		}
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
@@ -532,8 +557,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
 		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
+		$hide_disabled_values = caGetOption('hideDisabledValues', $pa_options, caGetOption('hideDisabledValues', $pa_element_info['settings'], false));
 		
-		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
+		$vn_max_columns = $pa_element_info['settings']['maxColumns'] ?? 1;
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
@@ -554,15 +580,24 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
 					'currentSelectionDisplayFormat' => $current_selection_display_format,
 					'separateDisabledValues' => $separate_disabled_values,
-					'deferHierarchyLoad' => (bool)$pa_element_info['settings']['deferHierarchyLoad']
+					'hideDisabledValues' => $hide_disabled_values,
+					'deferHierarchyLoad' => (bool)($pa_element_info['settings']['deferHierarchyLoad'] ?? false)
 				]
 			)
 		);
 
 		// dependant field visibility
 		$vs_show_hide_js = '';
+		$cases = $all_ids =  [];
 		if(Configuration::load()->get('enable_dependent_field_visibility')) {
-		    $vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+			switch($render_as) {
+				case 'radio_buttons':
+					$vs_select = "jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+					break;
+				default:
+		    		$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+		    		break;
+		    }
 			// only get into outputting all the JS below if hideIfSelected is set for at least one list item for this element
 			$vb_print_js = false;
 			if(is_array($pa_element_info['settings'])) {
@@ -577,8 +612,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				$t_list = new ca_lists();
 				$vb_yes_was_set = false;
 				
-				$cases = $all_ids =  [];
-				if(!$pa_element_info['settings']['requireValue'] && is_array($pa_element_info['settings']['hideIfSelected___null__']) && sizeof($pa_element_info['settings']['hideIfSelected___null__'])) {
+				if(!($pa_element_info['settings']['requireValue'] ?? false) && is_array($pa_element_info['settings']['hideIfSelected___null__'] ?? null) && sizeof($pa_element_info['settings']['hideIfSelected___null__'])) {
 				    $va_hideif_for_null = $pa_element_info['settings']['hideIfSelected___null__'];
 				    foreach($va_hideif_for_null as $vs_key) {
                         $va_tmp = self::resolveHideIfSelectedKey($vs_key);
@@ -586,10 +620,21 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
                         $ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
                     }
-				    $cases[] = [
-                        'condition' => "{$vs_select}.val() == ''",
-                        'ids' => $ids
-                    ]; 
+                    
+                    switch($render_as) {
+						case 'radio_buttons':
+							$cases[] = [
+								'condition' => "((jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').length == 0) || (jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val() == ''))",
+								'ids' => $ids
+							]; 
+							break;
+						default:
+							$cases[] = [
+								'condition' => "{$vs_select}.val() == ''",
+								'ids' => $ids
+							]; 
+							break;
+					}
 				}
 				if (is_array($va_list_items = $t_list->getItemsForList($pa_element_info['list_id']))) {
 					foreach($va_list_items as $va_items_by_locale) {
@@ -611,7 +656,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								}
 							}
 
-							switch($pa_element_info['settings']['render']) {
+							switch($render_as) {
 								case 'radio_buttons':
 									$vs_condition = "jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]:checked').val() === '".$va_item['item_id']."'";
 									break;
@@ -781,7 +826,27 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1', 'item_id'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return mb_strtolower(substr(trim(preg_replace('![^A-Za-z0-9 ]+!', '', caGetListItemIdno((int)$value))), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

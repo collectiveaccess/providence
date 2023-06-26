@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,70 +26,70 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	/** @var BundlableLabelableBaseModelWithAttributes $t_item */
-	$t_item 			= $this->getVar('t_item');			// related item
-	/** @var BaseRelationshipModel $t_item_rel */
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_rel_types		= $this->getVar('relationship_types');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	/** @var BaseSearchResult $vo_result */
-	$vo_result			= $this->getVar('result');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
-	$t_display 			= $this->getVar('display');
-	$va_display_list	= $this->getVar('display_list');
-	$va_initial_values	= $this->getVar('initialValues');
-	$vs_bundle_name		= $this->getVar('bundle_name');
-	$vs_interstitial_selector = $vs_id_prefix . 'Item_';
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+/** @var BundlableLabelableBaseModelWithAttributes $t_item */
+$t_item 			= $this->getVar('t_item');			// related item
+/** @var BaseRelationshipModel $t_item_rel */
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');
+$va_settings 		= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$va_rel_types		= $this->getVar('relationship_types');
+$vs_placement_code 	= $this->getVar('placement_code');
+/** @var BaseSearchResult $vo_result */
+$vo_result			= $this->getVar('result');
+$vn_placement_id	= (int)$va_settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
+$t_display 			= $this->getVar('display');
+$va_display_list	= $this->getVar('display_list');
+$va_initial_values	= $this->getVar('initialValues');
+$vs_bundle_name		= $this->getVar('bundle_name');
+$vs_interstitial_selector = $vs_id_prefix . 'Item_';
 
-	$va_ids = array();
-	foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
-		if(array_search($va_rel_info['id'], $va_ids, true)) { continue; }
-		$va_ids[$vn_rel_id] = $va_rel_info['id'];
-	}
+$va_ids = array();
+foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
+	if(array_search($va_rel_info['id'], $va_ids, true)) { continue; }
+	$va_ids[$vn_rel_id] = $va_rel_info['id'];
+}
 
-	$va_additional_search_controller_params = array(
-		'ids' => json_encode($va_ids),
-		'interstitialPrefix' => $vs_interstitial_selector,
-		'relatedRelTable' => $t_item_rel->tableName(),
-		'primaryTable' => $t_subject->tableName(),
-		'primaryID' => $t_subject->getPrimaryKey(),
-		'relatedTable' => $t_item->tableName(),
-		'idPrefix' => $vs_id_prefix
-	);
+$va_additional_search_controller_params = array(
+	'ids' => json_encode($va_ids),
+	'interstitialPrefix' => $vs_interstitial_selector,
+	'relatedRelTable' => $t_item_rel->tableName(),
+	'primaryTable' => $t_subject->tableName(),
+	'primaryID' => $t_subject->getPrimaryKey(),
+	'relatedTable' => $t_item->tableName(),
+	'idPrefix' => $vs_id_prefix
+);
 
-	$vs_url_string = '';
-	foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
-		if ($vs_key == 'ids') { continue; }
-		$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
-	}
+$vs_url_string = '';
+foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+	if ($vs_key == 'ids') { continue; }
+	$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
+}
 
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), $vs_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__));
-	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
+$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), $vs_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
+
+// params to pass during related item lookup
+$va_lookup_params = array(
+	'type' => $va_settings['restrict_to_type'] ?? '',
+	'noSubtypes' => (int)($va_settings['dont_include_subtypes_in_type_restriction'] ?? 0),
+	'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+);
 	
-	// params to pass during related item lookup
-	$va_lookup_params = array(
-		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
-		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
-	);
-		
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix.$t_item->tableNum().'_rel');
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
-	
-	$va_errors = array();
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
-	}
+if ($vb_batch) {
+	print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix.$t_item->tableNum().'_rel');
+} else {
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
+}
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+
+$va_errors = array();
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
 ?>
 <script type="text/javascript">
 	function caAsyncSearchResultForm<?= $vs_id_prefix; ?>(data) {
@@ -265,9 +265,9 @@
 			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?= $vs_navurl = caNavUrl($this->request, 'lookup', ucfirst(str_replace(" ", "", ucwords($t_item->getProperty('NAME_SINGULAR'), ' '))), 'Get', $va_lookup_params); ?>',
-			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			types: <?= json_encode($va_settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($va_settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: false,
@@ -282,10 +282,12 @@
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			templateValues: ['label', 'id', 'type_id'],
+			templateValues: ['label', 'id', 'type_id', , 'typename', 'idno_sort'],
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			isSelfRelationship:<?= ($t_item_rel && method_exists($t_item_rel, "isSelfRelationship") && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		};
 
 		// only init bundle if there are no values, otherwise we do it after the content is loaded

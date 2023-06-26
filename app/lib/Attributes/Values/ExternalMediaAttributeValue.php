@@ -161,7 +161,7 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
     public function getDisplayValue($options=null) {
         if(caGetOption('embed', $options, false)) {
         	$t_element = ca_metadata_elements::getInstance($this->getElementCode());
-        	return caGetExternalMediaEmbedCode($this->url_value, ['width' => caGetOption('width', $options, $t_element->getSetting('mediaWidth')), 'height' => caGetOption('height', $options, $t_element->getSetting('mediaHeight'))]);
+        	return (is_string($this->url_value) && strlen($this->url_value)) ? caGetExternalMediaEmbedCode($this->url_value, ['width' => caGetOption('width', $options, $t_element->getSetting('mediaWidth')), 'height' => caGetOption('height', $options, $t_element->getSetting('mediaHeight'))]) : '';
         }
         return $this->url_value;
     }
@@ -256,8 +256,28 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
      * @return string Name of sort field
      */
     public function sortField() {
-        return 'value_longtext1';
+        return 'value_sortable';
     }
+    # ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1'];
+	}
+    # ------------------------------------------------------------------
+		/**
+		 * Returns sortable value for metadata value
+		 *
+		 * @param string $value
+		 * 
+		 * @return string
+		 */
+		public function sortableValue(?string $value) {
+			return mb_strtolower(substr(trim(preg_replace('!^[A-Za-z]+://!', '', $value)), 0, 100));
+		}
     # ------------------------------------------------------------------
     /**
      * Returns constant for length attribute value

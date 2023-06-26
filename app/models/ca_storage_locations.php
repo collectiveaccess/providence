@@ -400,11 +400,14 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function insert($pa_options=null) {
-		$vb_web_set_transaction = false;
+		$we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_web_set_transaction = true;
+			$we_set_transaction = true;
 		}
 
 		$o_trans = $this->getTransaction();
@@ -414,13 +417,37 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		}
 		$vn_rc = parent::insert($pa_options);
 
+		$this->handleMove($pa_options);
 		if ($this->numErrors()) {
-			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+			if ($we_set_transaction) { $o_trans->rollback(); }
 		} else {
-			if ($vb_web_set_transaction) { $o_trans->commit(); }
+			if ($we_set_transaction) { $o_trans->commit(); }
 		}
 
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($pa_options=null) {
+		$we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$we_set_transaction = true;
+		}
+		$o_trans = $this->getTransaction();
+		
+		$parent_changed = $this->changed('parent_id');
+		$rc = parent::update($pa_options);
+		if($parent_changed) { $this->handleMove($pa_options); }
+		
+		if ($this->numErrors()) {
+			if ($we_set_transaction) { $o_trans->rollback(); }
+		} else {
+			if ($we_set_transaction) { $o_trans->commit(); }
+		}
+		return $rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -568,7 +595,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 						foreach($content_ids as $content_id) {
 							if(!$t_movement->addRelationship($policy['table'], $content_id, $policy_config['trackingRelationshipType'])) {
 								if($this->inTransaction()) { $this->removeTransaction(false); }
-								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', $policy['table'], join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
+								$this->postError(3625, _t('Could not create movement - %1 relationship for history tracking: %2', Datamodel::getTableProperty($policy['table'], 'NAME_SINGULAR'), join($t_movement->getErrors())), 'ca_storage_locations::saveBundlesForScreen()');
 								return false;
 							}
 						}
@@ -577,7 +604,50 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 				}
 			}
 		}
+		
 		if($we_set_transaction) { $this->removeTransaction(true); }
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set move information for contained items if configured to do so
+	 *
+	 * @param array $options 
+	 *
+	 * @return bool
+	 */
+	public function handleMove($options=null) {
+		if(!($new_parent_id = $this->get('parent_id'))) { return null; }
+		if(!($id = $this->getPrimaryKey())) { return null; }
+		
+		$policies = HistoryTrackingCurrentValueTrait::getDependentHistoryTrackingCurrentValuePolicies($this->tableName(), array_merge($options ?? [], ['type_id' => $this->getTypeID()]));
+		if(!is_array($policies)) { return null; }
+		$type_code = $this->getTypeCode();
+		foreach($policies as $policy => $policy_info) {
+			$dtls = $policy_info['elements']['ca_storage_locations'][$type_code] ?? $policy_info['elements']['ca_storage_locations']['__default__'] ?? null;
+			if(!is_array($dtls)) { continue; }
+			
+			if(!is_array($container_types = $dtls['containerTypes'] ?? null)) { continue; }
+			$container_ref_element_code = $dtls['containerReferenceElementCode'] ?? null;
+			if(in_array($type_code, $container_types)) {
+				// We're moving a container, so apply move to all enclosed items
+				if($qr_contents = $this->getContents($policy, ['expandHierarchically' => true])) {
+					while($qr_contents->nextHit()) {
+						$t_instance = $qr_contents->getInstance();
+						$t_rel = $t_instance->addRelationship('ca_storage_locations', $id, 'related', _t('now'));
+						if($container_ref_element_code) {
+							$t_rel->addAttribute([$container_ref_element_code => $new_parent_id], $container_ref_element_code);
+							$t_rel->update();
+							
+							if($this->numErrors()) {
+								$this->errors = $t_rel->errors;
+								return false;
+							}
+						}
+					}
+				}
+			}
+		}
 		return true;
 	}
 	# ------------------------------------------------------

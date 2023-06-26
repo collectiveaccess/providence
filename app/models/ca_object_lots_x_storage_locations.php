@@ -35,6 +35,7 @@
    */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
+require_once(__CA_LIB_DIR__."/LocationRelationshipBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_object_lots_x_storage_locations'] = array(
@@ -94,7 +95,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots_x_storage_locations'] = arra
  	)
 );
 
-class ca_object_lots_x_storage_locations extends BaseRelationshipModel {
+class ca_object_lots_x_storage_locations extends LocationRelationshipBaseModel {
 
 	use HistoryTrackingCurrentValueTrait;
 	

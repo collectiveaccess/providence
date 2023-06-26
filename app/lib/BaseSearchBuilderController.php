@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,8 @@
  			}
  			parent::Index($pa_options);
  			
+ 			$vo_result = null;
+ 			
  			AssetLoadManager::register('hierBrowser');
  			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
@@ -109,6 +111,10 @@
  				$vs_view = array_shift($va_tmp); 
  			}
  			
+ 			if($vb_is_new_search && ($default_sort = $this->request->config->get($this->ops_tablename.'_reset_sort_on_new_search'))) {
+				$this->opo_result_context->setCurrentSort($default_sort);
+				$this->opo_result_context->setCurrentSortDirection('ASC');
+			}
  			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
  				$va_tmp = array_keys($this->opa_sorts);
  				$vs_sort = array_shift($va_tmp);
@@ -123,7 +129,7 @@
  			MetaTagManager::setWindowTitle(_t('%1 search', $this->searchName('plural')));
  			
 			$vs_append_to_search = '';
- 			if ($pa_options['appendToSearch']) {
+ 			if ($pa_options['appendToSearch'] ?? false) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
  			}
 			//
@@ -206,7 +212,11 @@
 			return $this->Index(['error' => true]);
 		}
 				$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
-
+			
+				$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
+				$this->view->setVar('result_desc', $result_desc);
+				$this->opo_result_context->setResultDescription($result_desc);
+			
 				$this->opo_result_context->validateCache();
 				
 				// Only prefetch what we need
@@ -280,7 +290,7 @@
 			
 			$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 			
- 			switch($pa_options['output_format']) {
+ 			switch($pa_options['output_format'] ?? null) {
  				# ------------------------------------
  				case 'LABELS':
  					$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,7 +32,7 @@
 	if(!is_array($site_links = $this->getVar('site_links'))) { $site_links = []; }
 	if(!is_array($group_links = $this->getVar('group_links'))) { $group_links = []; }
 	
-	if (sizeof($group_links) > 1) {
+	if (sizeof($group_links) > 0) {
 ?>
 	<div class="statisticsDashboardGroupList">
 <?php
@@ -51,11 +51,11 @@
 <?php
 	}
 ?>
-	<h2><?php print $this->getVar('message'); ?>
+	<h2><?= $this->getVar('message'); ?>
 <?php
     if ($last_update = $this->getVar('last_update')) {
 ?>
-	(<?php print _t('Last updated %1', $last_update); ?>)
+	(<?= _t('Last updated %1', $last_update); ?>)
 <?php
     }
 ?>

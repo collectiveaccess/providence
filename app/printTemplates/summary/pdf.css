@@ -2,14 +2,14 @@
 	font-family: "DejaVuSans";
 	font-style: normal;
 	font-weight: bold;
-	src: url('../../fonts/DejaVuSans-Bold.ttf') format('truetype');
+	src: url('./fonts/DejaVuSans-Bold.ttf') format('truetype');
 }
 
 @font-face {
 	font-family: "DejaVuSans";
 	font-style: italic;
 	font-weight: normal;
-	src: url('../../fonts/DejaVuSans-Oblique.ttf') format('truetype');
+	src: url('./fonts/DejaVuSans-Oblique.ttf') format('truetype');
 }
 
 #header { 

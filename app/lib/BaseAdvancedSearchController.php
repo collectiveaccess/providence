@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,22 +56,16 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		AssetLoadManager::register('advancedsearch');
 		AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
 
+		$vo_result = null;
+		
 		// Get elements of result context
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
-		//$vs_search 				= $this->opo_result_context->getSearchExpression();
 		if (!$vn_items_per_page = $this->opo_result_context->getItemsPerPage()) { $vn_items_per_page = $this->opa_items_per_page[0]; }
 		if (!$vs_view 			= $this->opo_result_context->getCurrentView()) {
 			$va_tmp = array_keys($this->opa_views);
 			$vs_view = array_shift($va_tmp);
 		}
-		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
-			$va_tmp = array_keys($this->opa_sorts);
-			$vs_sort = array_shift($va_tmp);
-		}
-		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-
-		$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
-
+		
 		if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
 		$this->view->setVar('type_id', $this->opn_type_restriction_id);
 
@@ -101,7 +95,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		}
 
 		$vs_append_to_search = '';
-		if ($pa_options['appendToSearch']) {
+		if ($pa_options['appendToSearch'] ?? null) {
 			$vs_append_to_search = " AND (".$pa_options['appendToSearch'].")";
 		}
 
@@ -132,6 +126,18 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			$vs_search = '';
 			$vb_is_new_search = true;
 		}
+		
+		if($vb_is_new_search && ($default_sort = $this->request->config->get($this->ops_tablename.'_reset_sort_on_new_search'))) {
+			$this->opo_result_context->setCurrentSort($default_sort);
+			$this->opo_result_context->setCurrentSortDirection('ASC');
+		}
+		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
+			$va_tmp = array_keys($this->opa_sorts);
+			$vs_sort = array_shift($va_tmp);
+		}
+		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
+
+		$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
 
 		$va_access_values = caGetUserAccessValues($this->request);
 
@@ -166,6 +172,11 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			} else {
 				$vo_result = $po_search->search($vs_search, $va_search_opts);
 			}
+			
+			$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDescription($result_desc);
+			
 			$this->opo_result_context->validateCache();
 
 			// Only prefetch what we need
@@ -223,7 +234,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
 		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 
-		switch($pa_options['output_format']) {
+		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
 				$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);

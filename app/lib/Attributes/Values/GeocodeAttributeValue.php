@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -387,6 +387,8 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 			array('mustNotBeBlank')
 		);
 		
+		$vs_point = $vn_angle = null;
+		
 		if (is_array($ps_value) && $ps_value['_uploaded_file']) {
 			$o_kml = new KmlParser($ps_value['tmp_name']);
 			$va_placemarks = $o_kml->getPlacemarks();
@@ -428,13 +430,12 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 
 		// is it direct input (decimal lat, decimal long)?
 		if(
-			preg_match("!^([^\[]*)[\[]{0,1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
+			preg_match("!^([^\[]*)[\[]{1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
 			||
 			preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
 		) {
 
 			$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
-			
 			$va_feature_list_proc = array();
 			foreach($va_feature_list as $vs_feature) {
 				$va_point_list = preg_split("/[;]+/", $vs_feature);
@@ -442,9 +443,9 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_first_lat = $vs_first_long = '';
 				
 				foreach($va_point_list as $vs_point) {
-					list($vs_point, $vn_radius) = explode('~', $vs_point);
+					list($vs_point, $vn_radius) = array_pad(explode('~', $vs_point), 2, null);
 					if (!$vn_radius) {
-						list($vs_point, $vn_angle) = explode('*', $vs_point);
+						list($vs_point, $vn_angle) = array_pad(explode('*', $vs_point), 2, null);
 					}
 					
 					// is it UTM?
@@ -575,6 +576,15 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function sortField() {
 		return 'value_decimal1';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1', 'value_longtext2'];
 	}
 	# ------------------------------------------------------------------
 	/**

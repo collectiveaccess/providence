@@ -118,7 +118,7 @@ function caExtractMediaMetadataWithOggParser($ps_filepath) {
 
 	$va_ogg_info = $o_ogg->Streams;
 	$va_ogg_info['mime_type'] = 'video/ogg';
-	$va_ogg_info['playtime_seconds'] = $va_ogg_info['duration'];
+	$va_ogg_info['playtime_seconds'] = $va_ogg_info['duration'] ?? null;
 
 	MemoryCache::save($ps_filepath, $va_ogg_info, 'OggParserMediaMetadata');
 

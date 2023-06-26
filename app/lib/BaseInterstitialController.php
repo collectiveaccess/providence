@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2020 Whirl-i-Gig
+ * Copyright 2013-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,7 +66,7 @@ class BaseInterstitialController extends BaseEditorController {
 	 */
 	public function Form($pa_values=null, $options=null) {
 		if(!is_array($options)) { $options = array(); }
-		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
+		@list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
 		
 		if (!$t_subject) {
 			$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
@@ -118,7 +118,7 @@ class BaseInterstitialController extends BaseEditorController {
 		$this->app_plugin_manager->hookEditItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
 	
 		// Set form unique identifiers
-		$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
+		$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName'] ?? null);
 		$this->view->setVar('n', $pn_n);
 	
 		$this->view->setVar('q', $this->request->getParameter('q', pString));
@@ -137,7 +137,7 @@ class BaseInterstitialController extends BaseEditorController {
 	 */
 	public function Save($options=null) {
 		if(!is_array($options)) { $options = array(); }
-		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
+		@list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
 		
 		if (!$t_subject) {
 			$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
@@ -217,7 +217,7 @@ class BaseInterstitialController extends BaseEditorController {
 				$vn_left_id = $t_subject->get($t_subject->getLeftTableFieldName());
 				$vn_right_id = $t_subject->get($t_subject->getRightTableFieldName());
 				
-				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($vn_left_id == $pn_primary_id) ? 'ltol' : 'rtol');
+				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($vn_left_id == $pn_primary_id) ? 'ltor' : 'rtol');
 			} else {
 				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_editor_table) ? 'rtol' : 'ltor');
 			}

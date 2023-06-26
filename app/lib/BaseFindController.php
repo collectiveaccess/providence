@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,13 +36,10 @@
 require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
 require_once(__CA_LIB_DIR__.'/Visualizer.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
-require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 
 class BaseFindController extends ActionController {
@@ -58,6 +55,7 @@ class BaseFindController extends ActionController {
 	protected $opn_type_restriction_id = null;
 	
 	protected $opo_app_plugin_manager;
+	
 	/**
 	 * List of available search-result sorting fields
 	 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
@@ -158,9 +156,9 @@ class BaseFindController extends ActionController {
 			$va_show_only_in = [];
 			
 			$show_only_settings = [];
-			if(is_array($va_display['settings']['show_only_in'])) {
+			if(is_array($va_display['settings']['show_only_in'] ?? null)) {
 				 $show_only_settings = $va_display['settings']['show_only_in'];
-			} elseif($va_display['settings']['show_only_in']) {
+			} elseif($va_display['settings']['show_only_in'] ?? null) {
 				$show_only_settings = [$va_display['settings']['show_only_in']];
 			}
 			foreach($show_only_settings as $k => $v) {
@@ -195,7 +193,11 @@ class BaseFindController extends ActionController {
 			$vs_label_display_field = $t_label->getDisplayField();
 			foreach($display_list as $i => $va_display_item) {
 				$tmp = explode('.', $va_display_item['bundle_name']);
-				
+
+				if(!isset($tmp[1])){ 
+					$tmp[1] = null;
+				}
+
 				if (
 					(($tmp[0] === $vs_label_table_name) && ($tmp[1] === $vs_label_display_field))
 					||
@@ -214,8 +216,13 @@ class BaseFindController extends ActionController {
 
 				// if sort is set in the bundle settings, use that
 				if(isset($va_display_item['settings']['sort']) && (strlen($va_display_item['settings']['sort']) > 0)) {
+					$b = $va_display_item['settings']['sort'];
+					if($tmp[0] !== $this->ops_tablename) {
+						$types = array_filter(array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array'])), "strlen");
+						$b .= ((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
+					}
 					$display_list[$i]['is_sortable'] = true;
-					$display_list[$i]['bundle_sort'] = $va_display_item['settings']['sort'];
+					$display_list[$i]['bundle_sort'] = $b;
 					continue;
 				}
 
@@ -224,13 +231,12 @@ class BaseFindController extends ActionController {
 					if (method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
 						$display_list[$i]['is_sortable'] = true; 
 						$types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
-						
 						$display_list[$i]['bundle_sort'] = "{$tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
 					}
 					continue; 
 				}
 				
-				if ($t_instance->hasField($b = $tmp[1]) || $t_instance->hasField($b = $va_display_item['bundle_name'])) {
+				if ($t_instance->hasField($b = ($tmp[1] ?? null)) || $t_instance->hasField($b = ($va_display_item['bundle_name'] ?? null))) {
 					if ($tmp[0] === $va_display_item['bundle_name']) { $va_display_item['bundle_name'] = $this->ops_tablename.".{$b}"; }
 					if($t_instance->getFieldInfo($b, 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
 						continue;
@@ -245,7 +251,7 @@ class BaseFindController extends ActionController {
 					continue;
 				}
 				
-				if (isset($va_attribute_list[$tmp[1]]) && $va_sortable_elements[$va_attribute_list[$tmp[1]]]) {
+				if (isset($va_attribute_list[$tmp[1]]) && ($va_sortable_elements[$va_attribute_list[$tmp[1]]] ?? null)) {
 					$display_list[$i]['is_sortable'] = true;
 					$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];
 					if(ca_metadata_elements::getElementDatatype($tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
@@ -276,6 +282,13 @@ class BaseFindController extends ActionController {
 						}
 					}
 					continue;
+				}
+				
+				// sort on history tracking values
+				if(($tmp[0] === $this->ops_tablename) && (in_array($tmp[1], ['history_tracking_current_value', 'ca_objects_location']))) {
+					$display_list[$i]['is_sortable'] = true;
+					$policy = caGetOption('policy', $va_display_item['settings'], null);
+					$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'].($policy ? '%policy='.$policy : '');
 				}
 			}
 		}
@@ -575,13 +588,13 @@ class BaseFindController extends ActionController {
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
 					$vs_file_extension = 'csv';
-					$vs_mimetype = "text/plain";
+					$vs_mimetype = "text/csv";
 					break;
 				case '_tab':
 					$vs_delimiter = "\t";	
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
 					$vs_file_extension = 'tsv';
-					$vs_mimetype = "text/plain";
+					$vs_mimetype = "text/tab-separated-values";
 				default:
 					if(substr($ps_output_type, 0, 5) === '_docx') {
 						$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
@@ -1272,7 +1285,7 @@ class BaseFindController extends ActionController {
 			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
 			$hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
 		
-			if (!($name = ($mode == 'singular') ? $hier[$type_id]['name_singular'] : $hier[$type_id]['name_plural'])) {
+			if (!($name = ($mode == 'singular') ? $hier[$type_id]['name_singular'] ?? '' : $hier[$type_id]['name_plural'] ?? '')) {
 				$name = mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
 			}
 			return mb_strtolower($name);

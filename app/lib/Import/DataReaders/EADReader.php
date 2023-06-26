@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,6 +96,29 @@ class EADReader extends BaseXMLDataReader {
 		$this->ops_description = _t('Reads Encoded Archival Description Schema (EAD) XML files');
 		
 		$this->opa_formats = array('ead');	// must be all lowercase to allow for case-insensitive matching
+	}
+	
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param string $ps_source
+	 * @param array $pa_options Options include:
+	 *		basePath = 
+	 *		fromString = XML string to parse if $ps_source is set to null. [Default is null]
+	 *
+	 * @return bool
+	 */
+	public function read($ps_source, $pa_options=null) {
+		if(!($r = parent::read($ps_source, $pa_options)) || ($this->numRows() == 0)) {
+			// If nothing is read try it as old EAD (no namespace)
+			$this->ops_xml_namespace = null;
+			$this->ops_xml_namespace_prefix = null;
+			$this->ops_xpath = '//ead';
+			$this->ops_root_tag = 'ead';
+			$r = parent::read($ps_source, $pa_options);
+		}
+		return $r;
 	}
 	# -------------------------------------------------------
 }

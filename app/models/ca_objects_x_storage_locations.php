@@ -35,7 +35,7 @@
    */
 require_once(__CA_LIB_DIR__.'/ObjectRelationshipBaseModel.php');
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
-
+require_once(__CA_LIB_DIR__."/LocationRelationshipBaseModel.php");
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
  	'NAME_SINGULAR' 	=> _t('object ⇔ storage location relationship'),
@@ -95,8 +95,7 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
  	)
 );
 
-class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
-
+class ca_objects_x_storage_locations extends LocationRelationshipBaseModel {
 	/**
 	 * Update location of dependent objects when changing values
 	 */
@@ -202,28 +201,5 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	# of field specifiers.
 	protected $FIELDS;
 	
-
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function insert($options=null) {
-		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) {  
-			$this->set('effective_date', _t('now')); 
-		}
-		
-		return parent::insert($options);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function update($options=null) {
-		if (!caGetOption('dontAutomaticallySetEffectiveDate', $options, false) && !$this->get('effective_date', array('getDirectDate' => true))) { 
-			$this->set('effective_date', _t('now')); 
-		}
-		
-		return parent::update($options);
-	}	
 	# ------------------------------------------------------
 }

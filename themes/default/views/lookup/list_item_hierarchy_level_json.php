@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,27 +26,27 @@
  * ----------------------------------------------------------------------
  */
  
- 	$va_list = $this->getVar('list_item_list');
- 	foreach($va_list as $vs_level => $va_level_content) {
- 		foreach($va_level_content as $vs_key => $va_info) {
-			if (!is_array($va_info)) { continue; }
-		
-			if (!$this->getVar('dontShowSymbols')) {
-				if ($va_info['use_as_vocabulary']) {
-					$va_level_content[$vs_key]['name'] .= ' ⧩';
-				}
-				if ($va_info['is_system_list']) {
-					$va_level_content[$vs_key]['name'] .= ' ⟗';
-				}
-				if ($va_info['is_default']) {
-					$va_level_content[$vs_key]['name'] .= ' ◉';
-				}
-				if (isset($va_info['is_enabled']) && !$va_info['is_enabled']) {
-					$va_level_content[$vs_key]['name'] .= ' ⨂';
-				}
+$list = $this->getVar('list_item_list');
+foreach($list as $level => $level_content) {
+	foreach($level_content as $key => $info) {
+		if (!is_array($info)) { continue; }
+		if(!isset($level_content[$key]['name'])) { $level_content[$key]['name'] = ''; }
+	
+		if (!$this->getVar('dontShowSymbols')) {
+			if ($info['use_as_vocabulary'] ?? false) {
+				$level_content[$key]['name'] .= ' ⧩';
+			}
+			if ($info['is_system_list'] ?? false) {
+				$level_content[$key]['name'] .= ' ⟗';
+			}
+			if ($info['is_default'] ?? false) {
+				$level_content[$key]['name'] .= ' ◉';
+			}
+			if (!($info['is_enabled'] ?? false)) {
+				$level_content[$key]['name'] .= ' ⨂';
 			}
 		}
-		$va_list[$vs_level] = $va_level_content;
- 	}
-	print json_encode($va_list);
-?>
+	}
+	$list[$level] = $level_content;
+}
+print json_encode($list);

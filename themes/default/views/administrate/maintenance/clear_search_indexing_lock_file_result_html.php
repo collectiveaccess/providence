@@ -26,11 +26,11 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1><?php print _t('Clear search indexing queue lock file'); ?></h1>
+<h1><?= _t('Clear search indexing queue lock file'); ?></h1>
 
 
 <div class="searchReindexTableProgressGroup">
-	<div id="searchReindexTableStatus" class="searchReindexStatus"><?php print _t('
+	<div id="searchReindexTableStatus" class="searchReindexStatus"><?= _t('
 	    The lock file has been removed.
 	'); ?></div>
 </div>

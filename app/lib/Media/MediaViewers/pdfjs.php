@@ -72,7 +72,7 @@ class pdfjs extends BaseMediaViewer implements IMediaViewer {
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			
 			$o_context = $t_subject ? ResultContext::getResultContextForLastFind($po_request, $t_subject->tableName()) : null;
-			$o_view->setVar('search', $o_context ? $o_context->getSearchExpression() : null);
+			$o_view->setVar('search', trim(preg_replace("![\(\)\*\"]+!", "", $o_context ? $o_context->getSearchExpression() : null)));
 		}
 		
 		return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data, $pa_options);

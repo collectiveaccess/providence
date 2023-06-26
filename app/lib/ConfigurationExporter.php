@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -132,9 +132,6 @@ final class ConfigurationExporter {
 		$vo_root->appendChild($o_exporter->getLocalesAsDOM());
 		$vo_root->appendChild($o_exporter->getListsAsDOM());
 		$vo_root->appendChild($o_exporter->getElementsAsDOM());
-		if($o_dict = $o_exporter->getMetadataDictionaryAsDOM()) {
-			$vo_root->appendChild($o_dict);
-		}
 		$vo_root->appendChild($o_exporter->getUIsAsDOM());
 		$vo_root->appendChild($o_exporter->getRelationshipTypesAsDOM());
 		$vo_root->appendChild($o_exporter->getRolesAsDOM());
@@ -146,6 +143,10 @@ final class ConfigurationExporter {
 		$o_exporter->getDOM()->getElementsByTagName('profile')->item(0)->appendChild($vo_fragment);
 
 		$vo_root->appendChild($o_exporter->getSearchFormsAsDOM());
+		
+		if($o_dict = $o_exporter->getMetadataDictionaryAsDOM()) {
+			$vo_root->appendChild($o_dict);
+		}
 		
 		if($users = $o_exporter->getUsersAsDOM()) {
 			$vo_root->appendChild($users);
@@ -221,7 +222,7 @@ final class ConfigurationExporter {
 		$vn_exclude_lists_larger_than = $this->opo_config->get('configuration_export_exclude_lists_larger_than');
 
 		while($qr_lists->nextRow()) {
-			// skip excluded lists (in diff exports only)
+			// skip excluded lists entirely (diff exports only)
 			if($this->opn_modified_after && is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0)) {
 				if(in_array($qr_lists->get('list_code'), $va_exclude_lists)) {
 					continue;
@@ -276,7 +277,10 @@ final class ConfigurationExporter {
 				$this->printStatus(_t("Exporting changes for list %1", $qr_lists->get("list_code")));
 			}
 
-			if($vo_items) {
+			// skip items in excluded lists
+			if(is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0) && (in_array($qr_lists->get('list_code'), $va_exclude_lists))) {
+				$vo_list->appendChild($this->opo_dom->createElement("items"));
+			} elseif($vo_items) {
 				$vo_list->appendChild($vo_items);
 			}
 
@@ -311,7 +315,7 @@ final class ConfigurationExporter {
 		$va_used_codes = [];
 		while($qr_items->nextRow()) {
 			$vo_item = $this->opo_dom->createElement("item");
-			$vs_idno = $this->makeIDNOFromInstance($qr_items, 'ca_list_items', 'idno', $va_used_codes);
+			$vs_idno = $this->makeIDNOFromInstance($qr_items, 'ca_list_items/'.$pn_list_id, 'idno', $va_used_codes);
 			$va_used_codes[$vs_idno] = true;
 
 			$vo_item->setAttribute("idno", $vs_idno);
@@ -660,6 +664,21 @@ final class ConfigurationExporter {
 				foreach($t_entry->getSettings() as $vs_setting => $va_value) {
 					if(is_array($va_value)) {
 						foreach($va_value as $vs_key => $vs_value) {
+							switch($vs_setting) {
+								case 'restrictToTypes':
+								case 'restrict_to_types':
+									$t_item = new ca_list_items($vs_value);
+									if ($t_item->getPrimaryKey()) {
+										$vs_value = $t_item->get('idno');
+									}
+									break;						
+								case 'restrictToRelationshipTypes':		
+								case 'restrict_to_relationship_types':
+									$t_rel_type = new ca_relationship_types($vs_value);
+									if ($t_rel_type->getPrimaryKey()) {
+										$vs_value = $t_rel_type->get('type_code');
+									}
+							}
 							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
 								$va_settings[$vs_setting][$vs_key] = $vs_value;
 								continue;
@@ -1318,8 +1337,8 @@ final class ConfigurationExporter {
 			$vo_role = $this->opo_dom->createElement("role");
 			$vo_role->setAttribute("code", $this->makeIDNO($t_role->get("code")));
 
-			$vo_role->appendChild($this->opo_dom->createElement("name", $t_role->get("name")));
-			$vo_role->appendChild($this->opo_dom->createElement("description", $t_role->get("description")));
+			$vo_role->appendChild($this->opo_dom->createElement("name", caEscapeForXML($t_role->get("name"))));
+			$vo_role->appendChild($this->opo_dom->createElement("description", caEscapeForXML($t_role->get("description"))));
 
 			if(is_array($va_actions = $t_role->getRoleActions())) {
 				$vo_actions = $this->opo_dom->createElement("actions");

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022  Whirl-i-Gig
+ * Copyright 2009-2023  Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,13 +30,12 @@
  * ----------------------------------------------------------------------
  */
  	
-  /**
-   *
-   */ 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/View.php');
-require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 
 # ------------------------------------------------------------------------------------------------
 /**
@@ -44,25 +43,25 @@ require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
  *
  * Parameters are:
  *
- * 	$pa_to: 	Email address(es) of message recipients. Can be a string containing a single email address or
+ * 	$to: 	Email address(es) of message recipients. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable recipient name.
- *	$pa_from:	The email address of the message sender. Can be a string containing a single email address or
+ *	$from:	The email address of the message sender. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable sender name.
- *	$ps_subject:	The subject line of the message
- *	$ps_body_text:	The text of the message				(optional)
- *	$ps_html_text:	The HTML-format text of the message (optional)
- * 	$pa_cc: 	Email address(es) of cc'ed message recipients. Can be a string containing a single email address or
+ *	$subject:	The subject line of the message
+ *	$body_text:	The text of the message				(optional)
+ *	$html_text:	The HTML-format text of the message (optional)
+ * 	$cc: 	Email address(es) of cc'ed message recipients. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable recipient name. (optional)
- * 	$pa_bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
+ * 	$bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable recipient name. (optional)
- * 	$pa_attachments: 	array of arrays, each containing file path, name and mimetype of file to attach.
+ * 	$attachments: 	array of arrays, each containing file path, name and mimetype of file to attach.
  *				keys are "path", "name", "mimetype"
  *
- *  $pa_options:	Array of options. Options include:
+ *  $options:	Array of options. Options include:
  *					log = Log activity? [Default is true]
  *					logSuccess = Log successful sends? [Default is true]
  *					logFailure = Log failed sends? [Default is true]
@@ -70,145 +69,166 @@ require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
  *					successMessage = Message to use for logging on successful send of email. Use %1 as a placeholder for a list of recipient email addresses. [Default is 'Email was sent to %1']
  *					failureMessage = Message to use for logging on failure of send. Use %1 as a placeholder for a list of recipient email addresses; %2 for the error message. [Default is 'Could not send email to %1: %2']
  *
- * While both $ps_body_text and $ps_html_text are optional, at least one should be set and both can be set for a 
+ * While both $body_text and $html_text are optional, at least one should be set and both can be set for a 
  * combination text and HTML email
  */
-function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachments=null, $pa_options=null) {
+function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $bcc=null, $attachments=null, $options=null) {
 	global $g_last_email_error;
 	$o_config = Configuration::load();
-	$o_log = new Eventlog();
-
-	if($o_config->get('smtp_auth')){
-		$vs_smtp_auth = $o_config->get('smtp_auth');
+	
+	$log = caGetLogger(['logLevel' => 'INFO']);
+	
+	$smtp_auth = $o_config->get('smtp_auth');
+	$ssl = $o_config->get('smtp_ssl');
+	if($smtp_uname = $o_config->get('smtp_username')) {
+		if(!$smtp_auth) { $smtp_auth = 'LOGIN'; }
 	} else {
-		$vs_smtp_auth = '';
+		$smtp_uname = '';
 	}
-	if($o_config->get('smtp_username')){
-		$vs_smtp_uname = $o_config->get('smtp_username');
-		$vs_smtp_auth = 'login';
+	if($smtp_pw = $o_config->get('smtp_password')){
+		if(!$smtp_auth) { $smtp_auth = 'LOGIN'; }
 	} else {
-		$vs_smtp_uname = '';
+		$smtp_pw = '';
 	}
-	if($o_config->get('smtp_password')){
-		$vs_smtp_pw = $o_config->get('smtp_password');
-		$vs_smtp_auth = 'login';
-	} else {
-		$vs_smtp_pw = '';
-	}
-	$va_smtp_config = array(
-		'username' => $vs_smtp_uname,
-		'password' => $vs_smtp_pw
+	$smtp_config = array(
+		'username' => $smtp_uname,
+		'password' => $smtp_pw,
+		'port' => 587,
+		'ssl' => null,
+		'auth' => $smtp_auth
 	);
 	
-	if($vs_smtp_auth){
-		$va_smtp_config['auth'] = $vs_smtp_auth;
+	if($smtp_auth && in_array(strtoupper($smtp_auth), ['PLAIN', 'LOGIN', 'CRAM-MD5'])){
+		$smtp_config['auth'] = strtoupper($smtp_auth);	
 	}
-	if($vs_ssl = $o_config->get('smtp_ssl')){
-		$va_smtp_config['ssl'] = $vs_ssl;
+	if($ssl && in_array(strtoupper($ssl), ['SSL', 'TLS'])){
+		$smtp_config['ssl'] = strtoupper($ssl);	
 	}
-	if($vs_port = $o_config->get('smtp_port')){
-		$va_smtp_config['port'] = $vs_port;
+	if(($port = (int)$o_config->get('smtp_port')) > 0){
+		$smtp_config['port'] = $port;
 	}
 	
+	$o_mail = new PHPMailer(true);
+
 	try {
 		if($o_config->get('smtp_use_sendmail_transport')){
-			$vo_tr = new Zend_Mail_Transport_Sendmail($va_smtp_config);
+			$o_mail->isSendmail();
 		} else {
-			$vo_tr = new Zend_Mail_Transport_Smtp($o_config->get('smtp_server'), $va_smtp_config);
+			$o_mail->isSMTP();
+			if($o_config->get('smtp_debug')) { $o_mail->SMTPDebug = SMTP::DEBUG_SERVER;  }       
 		}
 		
-		$o_mail = new Zend_Mail('UTF-8');
-		
-		if (is_array($pa_from)) {
-			foreach($pa_from as $vs_from_email => $vs_from_name) {
-				$o_mail->setFrom($vs_from_email, $vs_from_name);
-			}
-		} else {
-			$o_mail->setFrom($pa_from);
+		$o_mail->Host       = $h=$o_config->get('smtp_server');
+		$o_mail->SMTPSecure = null;
+		switch($ssl) {
+			case 'TLS':
+				$o_mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+				break;
+			case 'SSL':
+				$o_mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+				break;
 		}
-		
-		if (!is_array($pa_to)) {
-			$pa_to = array($pa_to => $pa_to);
+		$o_mail->SMTPAutoTLS = (bool)($ssl ?? false);
+		$o_mail->SMTPAuth   = (bool)$smtp_auth;
+		$o_mail->AuthType	= $smtp_auth;
+		$o_mail->Username   = $smtp_config['username'];
+		$o_mail->Password   = $smtp_config['password'];
+		$o_mail->Port       = $smtp_config['port']; 
+
+		if (!is_array($from) && $from) {
+			$from = preg_split('![,;\|]!', $from);
 		}
-		
-		foreach($pa_to as $vs_to_email => $vs_to_name) {
-			if (is_numeric($vs_to_email)) {
-				$o_mail->addTo($vs_to_name, $vs_to_name);
-			} else {
-				$o_mail->addTo($vs_to_email, $vs_to_name);
-			}
-		}
-		
-		if (is_array($pa_cc) && sizeof($pa_cc)) {
-			foreach($pa_cc as $vs_to_email => $vs_to_name) {
-				if (is_numeric($vs_to_email)) {
-					$o_mail->addCc($vs_to_name, $vs_to_name);
+		if (is_array($from)) {
+			foreach($from as $from_email => $from_name) {
+				if (is_numeric($from_email)) {
+					$o_mail->setFrom($from_name, $from_name);
 				} else {
-					$o_mail->addCc($vs_to_email, $vs_to_name);
+					$o_mail->setFrom($from_email, $from_name);
+				}
+				break;
+			}
+		}
+		
+		if (!is_array($to) && $to) {
+			$to = preg_split('![,;\|]!', $to);
+		}
+		
+		foreach($to as $to_email => $to_name) {
+			if (is_numeric($to_email)) {
+				$o_mail->addAddress($to_name, $to_name);
+			} else {
+				$o_mail->addAddress($to_email, $to_name);
+			}
+		}
+		
+		if (!is_array($cc) && $cc) {
+			$cc = preg_split('![,;\|]!', $cc);
+		}
+		if (is_array($cc) && sizeof($cc)) {
+			foreach($cc as $to_email => $to_name) {
+				if (is_numeric($to_email)) {
+					$o_mail->addCC($to_name, $to_name);
+				} else {
+					$o_mail->addCC($to_email, $to_name);
 				}
 			}
 		}
 		
-		if (is_array($pa_bcc) && sizeof($pa_bcc)) {
-			foreach($pa_bcc as $vs_to_email => $vs_to_name) {
-				$o_mail->addBcc(is_numeric($vs_to_email) ? $vs_to_name : $vs_to_email);
+		if (is_array($bcc) && sizeof($bcc)) {
+			foreach($bcc as $to_email => $to_name) {
+				$o_mail->addBCC(is_numeric($to_email) ? $to_name : $to_email);
 			}
 		}
-		
-		if(is_array($pa_attachments)) {
-			if (isset($pa_attachments["path"])) { $pa_attachments = [$pa_attachments]; }
-			foreach($pa_attachments as $a) {
-				if(!isset($a['path'])) { continue; }
-				$attachment_url = $a["path"];
-				# --- only attach media if it is less than 50MB
-				if(filesize($attachment_url) < 419430400){
-					$file_contents = file_get_contents($attachment_url);
-					$o_attachment = $o_mail->createAttachment($file_contents);
-					if($a["name"]){
-						$o_attachment->filename = $a["name"];
-					}
-					if($a["mimetype"]){
-						$o_attachment->type = $a["mimetype"];
-					}
+
+		if(is_array($attachments)) {
+			if (isset($attachments["path"])) { $attachments = [$attachments]; }
+			foreach($attachments as $a) {
+				if(($attachment_path = ($a['path'] ?? null)) && file_exists($attachment_path) && (filesize($attachment_path) < 419430400)) {
+					# Only attach media if it is less than 50MB
+					$o_mail->addAttachment($attachment_path, $a['name'] ?? null, 'base64', $a['mimetype'] ?? null);
 				}
 			}
 		}
 
-		$o_mail->setSubject($ps_subject);
-		if ($ps_body_text) {
-			$o_mail->setBodyText($ps_body_text);
+		$o_mail->Subject = $subject;
+		if ($body_text && !$body_html) {
+			$o_mail->Body = $body_text;
+		} elseif($body_text && $body_html) {
+			$o_mail->AltBody = $body_text;
 		}
-		if ($ps_body_html) {
-			$o_mail->setBodyHtml($ps_body_html);
+		if ($body_html) {
+			$o_mail->isHTML(true);  
+			$o_mail->Body = $body_html;
 		}
-		$o_mail->send($vo_tr);
-		
-		if (caGetOption('log', $pa_options, true) && caGetOption('logSuccess', $pa_options, true)) {
-			$o_log->log(array('CODE' => 'SYS', 'SOURCE' => caGetOption('source', $pa_options, 'Registration'), 'MESSAGE' => _t(caGetOption('successMessage', $pa_options, 'Email was sent to %1'), join(';', array_keys($pa_to)))));
+		$o_mail->send();
+			print_r($options);
+		if(caGetOption('logSuccess', $options, true)) {
+			$log->logInfo('['.caGetOption('source', $options, 'Registration').'] '._t(caGetOption('successMessage', $options, 'Email was sent to %1'), join(';', $to)));
 		}
 		return true;
 	} catch (Exception $e) {
 		$g_last_email_error = $e->getMessage();
-		if (caGetOption('log', $pa_options, true) && caGetOption('logDFailure', $pa_options, true)) {
-			$o_log->log(array('CODE' => 'ERR', 'SOURCE' => caGetOption('source', $pa_options, 'Registration'),  'MESSAGE' => _t(caGetOption('failureMessage', $pa_options, 'Could not send email to %1: %2'), join(';', array_keys($pa_to)), $e->getMessage())));
+		
+		if(caGetOption('logSuccess', $options, true)) {
+			$log->logError('['.caGetOption('source', $options, 'Registration').'] '._t(caGetOption('failureMessage', $options, 'Could not send email to %1: %2'), join(';', $to), $e->getMessage()));
 		}
 		return false;
 	}
 }
 # ------------------------------------------------------------------------------------------------
 /**
- * Verifies the $ps_address is a properly formatted email address
+ * Verifies the $address is a properly formatted email address
  * by passing it through a regular expression pattern check and then
  * verifying that the domain exists. This is not a foolproof check but
  * will catch most data entry errors
  */ 
-function caCheckEmailAddress($ps_address) {
-	if (!caCheckEmailAddressRegex($ps_address)) { return false; }
+function caCheckEmailAddress($address) {
+	if (!caCheckEmailAddressRegex($address)) { return false; }
 	
 	if (!function_exists('checkdnsrr')) { return true; }
 	
-	//list($vs_username, $vs_domain) = split('@', $ps_address);
-	//if(!checkdnsrr($vs_domain,'MX')) {
+	//list($username, $domain) = split('@', $address);
+	//if(!checkdnsrr($domain,'MX')) {
 		///return false;
 	//}
 	
@@ -216,11 +236,11 @@ function caCheckEmailAddress($ps_address) {
 }
 # ------------------------------------------------------------------------------------------------
 /**
- * Verifies using a regular expression the $ps_address looks like a valid email address
- * Returns true if $ps_address looks like an email address, false if it doesn't
+ * Verifies using a regular expression the $address looks like a valid email address
+ * Returns true if $address looks like an email address, false if it doesn't
  */
-function caCheckEmailAddressRegex($ps_address) {
-	if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+\'])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $ps_address)) {
+function caCheckEmailAddressRegex($address) {
+	if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+\'])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $address)) {
 		return false;
 	}
 	return true;
@@ -231,46 +251,46 @@ function caCheckEmailAddressRegex($ps_address) {
  *
  * Parameters are:
  *
- * 	$pa_to: 	Email address(es) of message recipients. Can be a string containing a single email address or
+ * 	$to: 	Email address(es) of message recipients. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable recipient name.
- *	$pa_from:	The email address of the message sender. Can be a string containing a single email address or
+ *	$from:	The email address of the message sender. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable sender name.
- *	$ps_subject:	The subject line of the message
- *	$ps_view:	The name of a view in the 'mailTemplates' view directory
- * 	$pa_values:	An array of values
- * 	$pa_cc: 	Email address(es) of cc'ed message recipients. Can be a string containing a single email address or
+ *	$subject:	The subject line of the message
+ *	$view:	The name of a view in the 'mailTemplates' view directory
+ * 	$values:	An array of values
+ * 	$cc: 	Email address(es) of cc'ed message recipients. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable recipient name. (optional)
- * 	$pa_bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
+ * 	$bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
  *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  *				a human-readable recipient name. (optional)
  *
  * @return string True if send, false if error
  */
-function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null, $pa_options=null) {
-	$view_paths = (is_object($po_request)) ? [$po_request->getViewsDirectoryPath().'/mailTemplates'] : array_unique([__CA_BASE_DIR__.'/themes/'.__CA_THEME__.'/views/mailTemplates', __CA_BASE_DIR__.'/themes/default/views/mailTemplates']);
-	if(!is_object($po_request)) { $po_request = null; }
+function caSendMessageUsingView($request, $to, $from, $subject, $view, $values, $cc=null, $bcc=null, $options=null) {
+	$view_paths = (is_object($request)) ? [$request->getViewsDirectoryPath().'/mailTemplates'] : array_unique([__CA_BASE_DIR__.'/themes/'.__CA_THEME__.'/views/mailTemplates', __CA_BASE_DIR__.'/themes/default/views/mailTemplates']);
+	if(!is_object($request)) { $request = null; }
 	
-	$o_view = new View($po_request, $view_paths, 'UTF8', array('includeDefaultThemePath' => false));
+	$o_view = new View($request, $view_paths, 'UTF8', array('includeDefaultThemePath' => false));
 	
-	$tag_list = $o_view->getTagList($ps_view);		// get list of tags in view
+	$tag_list = $o_view->getTagList($view);		// get list of tags in view
 
 	foreach($tag_list as $tag) {
 		if ((strpos($tag, "^") !== false) || (strpos($tag, "<") !== false)) {
-			$o_view->setVar($tag, caProcessTemplate($tag, $pa_values, []) );
-		} elseif (array_key_exists($tag, $pa_values)) {
-			$o_view->setVar($tag, $pa_values[$tag]);
+			$o_view->setVar($tag, caProcessTemplate($tag, $values, []) );
+		} elseif (array_key_exists($tag, $values)) {
+			$o_view->setVar($tag, $values[$tag]);
 		} else {
 			$o_view->setVar($tag, "?{$tag}");
 		}
-		unset($pa_values[$tag]);
+		unset($values[$tag]);
 	}
 	
-	foreach($pa_values as $k => $v) {
+	foreach($values as $k => $v) {
 		$o_view->setVar($k, $v);
 	}
-	return caSendmail($pa_to, $pa_from, $ps_subject, null, $o_view->render($ps_view), $pa_cc, $pa_bcc, caGetOption(['attachment', 'attachments'], $pa_options, null), $pa_options);
+	return caSendmail($to, $from, $subject, null, $o_view->render($view), $cc, $bcc, caGetOption(['attachment', 'attachments'], $options, null), $options);
 }
 # ------------------------------------------------------------------------------------------------

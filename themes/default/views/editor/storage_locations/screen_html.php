@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,8 @@
 	$vs_rel_table		= $this->getVar('rel_table');
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
+	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
 
 ?>
 	<div class="sectionBox">
@@ -56,19 +58,20 @@
 			
 			$va_form_elements = $t_location->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'StorageLocationEditorForm'), $va_bundle_list);
+									'formName' => 'StorageLocationEditorForm',
+									'forcedValues' => $forced_values), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='location_id' value='<?php print $vn_location_id; ?>'/>
-			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+			<input type='hidden' name='location_id' value='<?= $vn_location_id; ?>'/>
+			<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
-			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>
@@ -81,4 +84,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_location, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_location, $va_bundle_list); ?>

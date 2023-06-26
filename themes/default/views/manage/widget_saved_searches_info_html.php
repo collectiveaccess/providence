@@ -28,7 +28,7 @@
  
  $vn_search_count 	= $this->getVar('search_count');
 ?>
-	<h3 class='savedSearches'><?php print _t('Your saved searches'); ?>
+	<h3 class='savedSearches'><?= _t('Your saved searches'); ?>
 <div><?php
 	if ($vn_search_count == 1) {
 		print _t("1 saved search");
