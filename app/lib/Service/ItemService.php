@@ -1107,6 +1107,14 @@ class ItemService extends BaseJSONService {
                 }
             }
         }
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+		$this->opo_app_plugin_manager->hookItemServiceSaveItem(array(
+				'id' => $this->opn_id,
+				'table_num' => $t_instance->tableNum(),
+				'table_name' => $t_instance->tableName(),
+				'instance' => $t_instance,
+				'is_insert' => false)
+		);
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {
