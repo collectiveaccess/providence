@@ -55,7 +55,7 @@ function caDisplayException(Exception $e) {
 	}
 
 	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
-	$o_log->logDebug(print_r($e->getTrace(), true));
+	$o_log->logDebug($e->getTraceAsString());
 	require_once(fatalErrorHtmlView());
 	exit;
 }
