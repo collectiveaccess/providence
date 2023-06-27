@@ -78,7 +78,7 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 	public function process($parameters) {
 		
 		$resp = new ResponseHTTP();
-		$req = new RequestHTTP($o_response, array('simulateWith' => array(
+		$req = new RequestHTTP($resp, array('simulateWith' => array(
 				'POST' => $parameters['values'],
 				'SCRIPT_NAME' => join('/', array(__CA_URL_ROOT__, 'index.php')), 'REQUEST_METHOD' => 'POST',
 				'REQUEST_URI' => join('/', array(__CA_URL_ROOT__, 'index.php', 'batch', 'MetadataImport', 'Run')), 
@@ -89,7 +89,7 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 			)
 		));
 		
-		$o_app = AppController::getInstance($req, $rep);
+		$o_app = AppController::getInstance($req, $resp);
 		
 		set_time_limit(3600*72); // if it takes more than 72 hours we're in trouble
 	
