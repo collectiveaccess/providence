@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1471,30 +1471,34 @@
 
 									$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_row_ids);
 
-									if ($browse_by_first_letter) {
-										$letter = trim(mb_strtolower($vn_row_id));
-										if(preg_match("!^[^a-z]+$!", $letter)) {
-											$wheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} RLIKE '^[^A-Za-z]'";
+									foreach($va_row_ids as $vn_row_id) {
+										if ($browse_by_first_letter) {
+											$letter = trim(mb_strtolower($vn_row_id));
+											if(preg_match("!^[^a-z]+$!", $letter)) {
+												$wheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} RLIKE '^[^A-Za-z]'";
+											} else {
+												$wheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} LIKE ?";
+												$params[] = trim($vn_row_id)."%";
+											}
 										} else {
-											$wheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} LIKE ?";
-											$params[] = trim($vn_row_id)."%";
-										}
-									} else {
-										$wheres[] = "{$vs_label_table_name}.{$vs_label_display_field} IN (?)";
-										$params[] = array_values($va_labels);
-									}	
-					
-									$vs_sql = "
-										SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
-										FROM ".$this->ops_browse_table_name."
-										{$vs_relative_to_join}
-										WHERE
-											".join(" AND ", $wheres);
-									$qr_res = $this->opo_db->query($vs_sql, $params);
-								
-									if(!is_array($va_acc[$vn_i] ?? null)) { $va_acc[$vn_i] = []; }
-									$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
+											$wheres[] = "{$vs_label_table_name}.{$vs_label_display_field} = ?";
+											$params[] = trim($va_labels[$vn_row_id] ?? null);
+										}	
 									
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											{$vs_relative_to_join}
+											WHERE
+												".join(" AND ", $wheres);
+										//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
+										$qr_res = $this->opo_db->query($vs_sql, $params);
+									
+										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
+										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
+
+										if (!caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
+									}
 									if (caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
 									break;
 								# -----------------------------------------------------
@@ -1638,7 +1642,7 @@
 										
 										if (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_LIST__]) && !is_numeric($vn_row_id)) {
 											$va_value = ['item_id' => caGetListItemID($t_element->get('list_id'), $vn_row_id)];
-										} elseif (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_ENTITIES__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
+										} elseif (in_array($vn_datatype, [__CA_ATTRIBUTE_VALUE_ENTITIES__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
 										    $va_value = $o_attr->parseValue($vn_row_id, $t_element->getFieldValuesArray());
 										} else {
 											
@@ -1710,9 +1714,11 @@
 										}
 										
 										$vs_container_sql = '';
-										if (!caGetOption('multiple', $va_facet_info, false) && is_array($va_element_code) && (sizeof($va_element_code) == 1) && is_array($va_container_ids[$va_element_code[0]]) && sizeof($va_container_ids[$va_element_code[0]])) {
+										
+										$container_element_code = (sizeof($va_element_code) >= 1) ? (ca_metadata_elements::getElementID($e = $va_element_code[sizeof($va_element_code) - 1]) ? $e : null) : null;
+										if (!caGetOption('multiple', $va_facet_info, false) && $container_element_code && sizeof($va_container_ids[$container_element_code] ?? [])) {
 										    $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
-										    $va_attr_values[] = $va_container_ids[$va_element_code[0]];
+										    $va_attr_values[] = $va_container_ids[$container_element_code];
 										}
 										
 										$vs_where_sql = '';
@@ -1742,8 +1748,8 @@
 										
 										if (is_array($va_element_code) && sizeof($va_element_code) == 1) {
 										    // is sub-element in container
-										    $va_container_ids[$va_element_code[0]] = array_unique($qr_res->getAllFieldValues('attribute_id'));
-										    $this->opo_ca_browse_cache->setParameter('container_ids', $va_container_ids[$va_element_code[0]]);
+										    $va_container_ids[$container_element_code] = array_unique($qr_res->getAllFieldValues('attribute_id'));
+										    $this->opo_ca_browse_cache->setParameter('container_ids', $va_container_ids[$container_element_code]);
 										}
 										if (!caGetOption('multiple', $va_facet_info, false)) {
 											$vn_i++;
@@ -1810,10 +1816,12 @@
 
 										if ($vb_is_element) {
 										    $vs_container_sql = '';
+											$container_element_code = (sizeof($va_element_code) >= 1) ? (ca_metadata_elements::getElementID($e = $va_element_code[sizeof($va_element_code) - 1]) ? $e : null) : null;
+										
 										    $va_attr_values = null;
-                                            if (is_array($va_element_code) && (sizeof($va_element_code) == 1) && is_array($va_container_ids[$va_element_code[0]]) && sizeof($va_container_ids[$va_element_code[0]])) {
+                                            if (is_array($va_element_code) && $container_element_code && sizeof($va_container_ids[$container_element_code] ?? [])) {
                                                 $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
-                                                $va_attr_values = $va_container_ids[$va_element_code[0]];
+                                                $va_attr_values = $va_container_ids[$container_element_code];
                                             }
                                             
                                             $filter_join = $filter_where = null;
@@ -1915,7 +1923,7 @@
 
 										if ($vb_is_element && is_array($va_element_code) && (sizeof($va_element_code) == 1)) {
 										    // is sub-element in container
-										    $va_container_ids[$va_element_code[0]] = array_unique($qr_res->getAllFieldValues('attribute_id'));
+										    $va_container_ids[$container_element_code] = array_unique($qr_res->getAllFieldValues('attribute_id'));
 										    $this->opo_ca_browse_cache->setParameter('container_ids', $va_container_ids);
 										}
 										
@@ -1983,9 +1991,11 @@
 										
 										$va_params = [intval($vs_target_browse_table_num), $vn_element_id, $vn_start_in_meters, $vn_end_in_meters];
 										$vs_container_sql = '';
-                                        if (is_array($va_element_code) && (sizeof($va_element_code) == 1) && is_array($va_container_ids[$va_element_code[0]]) && sizeof($va_container_ids[$va_element_code[0]])) {
+										$container_element_code = (sizeof($va_element_code) >= 1) ? (ca_metadata_elements::getElementID($e = $va_element_code[sizeof($va_element_code) - 1]) ? $e : null) : null;
+										
+                                        if (is_array($va_element_code) && $container_element_code && sizeof($va_container_ids[$container_element_code] ?? [])) {
                                             $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
-                                            $va_params[] = $va_container_ids[$va_element_code[0]];
+                                            $va_params[] = $va_container_ids[$container_element_code];
                                         }
 
 										$vs_sql = "
@@ -2006,7 +2016,7 @@
 										
 										if ($vb_is_element && is_array($va_element_code) && (sizeof($va_element_code) == 1)) {
 										    // is sub-element in container
-										    $va_container_ids[$va_element_code[0]] = array_unique($qr_res->getAllFieldValues('attribute_id'));
+										    $va_container_ids[$container_element_code] = array_unique($qr_res->getAllFieldValues('attribute_id'));
 										    $this->opo_ca_browse_cache->setParameter('container_ids', $va_container_ids);
 										}
 										
@@ -2072,9 +2082,11 @@
 										
 										$va_params = [intval($vs_target_browse_table_num), $vn_element_id, $vn_start_in_meters, $vn_end_in_meters];
 										$vs_container_sql = '';
-                                        if (is_array($va_element_code) && (sizeof($va_element_code) == 1) && is_array($va_container_ids[$va_element_code[0]]) && sizeof($va_container_ids[$va_element_code[0]])) {
+										$container_element_code = (sizeof($va_element_code) >= 1) ? (ca_metadata_elements::getElementID($e = $va_element_code[sizeof($va_element_code) - 1]) ? $e : null) : null;
+										
+                                        if (is_array($va_element_code) && sizeof($va_container_ids[$container_element_code] ?? [])) {
                                             $vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
-                                            $va_params[] = $va_container_ids[$va_element_code[0]];
+                                            $va_params[] = $va_container_ids[$container_element_code];
                                         }
 
 										$vs_sql = "
@@ -2095,7 +2107,7 @@
 										
 										if ($vb_is_element && is_array($va_element_code) && (sizeof($va_element_code) == 1)) {
 										    // is sub-element in container
-										    $va_container_ids[$va_element_code[0]] = array_unique($qr_res->getAllFieldValues('attribute_id'));
+										    $va_container_ids[$container_element_code] = array_unique($qr_res->getAllFieldValues('attribute_id'));
 										    $this->opo_ca_browse_cache->setParameter('container_ids', $va_container_ids);
 										}
 										
@@ -7433,10 +7445,12 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 					$sort_tmp = explode('.', $vs_sort);
 					if(Datamodel::isRelationship($sort_tmp[0])) {
 						$criteria = $this->getCriteria();
-						
+						$t_rel = Datamodel::getInstance($sort_tmp[0], true);
+						$rel_tables = [$t_rel->getLeftTableName(), $t_rel->getRightTableName()];
 						foreach($criteria as $facet => $values) {
 							$fi = $this->getInfoForFacet($facet);
-							if(is_array($fi) && ($fi['type'] === 'authority') && ($fi['table'] ?? null) && (sizeof($values) === 1)) {	
+							
+							if(is_array($fi) && ($fi['type'] === 'authority') && ($fi['table'] ?? null) && in_array($fi['table'], $rel_tables, true) && (sizeof($values) === 1)) {	
 								// use first found authority facet as context, but only if a single value is set
 								$v = array_shift(array_keys($values));
 								$opts['context'] = [$sort_tmp[0] => [Datamodel::primaryKey($fi['table']) => $v]];

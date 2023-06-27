@@ -4087,7 +4087,7 @@ if (!$vb_batch) {
 			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
 			
 			if(!is_array($multiple_move_selection) || !sizeof($multiple_move_selection)) {
-				$multiple_move_selection = [$vn_parent_id];
+				$multiple_move_selection = [$this->getPrimaryKey()];
 			}
 			
 			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0) && ($vn_parent_id !== $this->get($this->HIERARCHY_PARENT_ID_FLD))) {
@@ -4103,8 +4103,13 @@ if (!$vb_batch) {
 						
 						if ($parent_table == $tt) {	
 							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
-								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { continue; }
+								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { 
+									$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+									continue; 
+								}
 								if(!$t->isSaveable($po_request)) { continue; }
+								
+								$t->setTransaction($this->getTransaction());
 								
 								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
 								if(!$t->update()) {
@@ -4653,13 +4658,13 @@ if (!$vb_batch) {
                                     );
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
                                     $va_file_list[$vs_key] = array(
-                                        'tmp_name' => escapeshellcmd($vs_value),
+                                        'tmp_name' => $vs_value,
                                         'name' => $vs_value,
                                         'index' => (int)$va_matches[1]
                                     );
                                 } elseif(preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches)){
 									$va_file_list[$vs_key] = array(
-										'tmp_name' => escapeshellcmd($vs_value),
+										'tmp_name' => $vs_value,
 										'name' => $vs_value,
                                         'index' => (int)$va_matches[1]
 									);
@@ -4668,7 +4673,7 @@ if (!$vb_batch) {
 									foreach($files as $f) {
 										if(!$f) { continue; }
 										$va_file_list["{$vs_key}_{$file_index}"] = [		// Add numeric suffix to allow for multiple uploads in a single request
-											'tmp_name' => escapeshellcmd($f),
+											'tmp_name' => $f,
 											'name' => $f,
                                         	'index' => (int)$va_matches[1]
 										];
@@ -4721,17 +4726,17 @@ if (!$vb_batch) {
                                     	// Is remote URL
                                         $va_tmp = explode('/', $vs_path);
                                         $vs_original_name = array_pop($va_tmp);
-                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!", $va_values['tmp_name'], $m)) {
+                                    } elseif(preg_match("!^".($u = caGetUserDirectoryName($po_request->getUserID()))."/(.*)$!u", $va_values['tmp_name'], $m)) {
                                     	foreach($import_directory_paths as $p) {
-                                    		if(file_exists($vs_path = "{$p}/{$m[1]}")) {
+                                    		if(file_exists($vs_path = caSanitizeRelativeFilepath($m[1], $p))) {
                                     			$vs_original_name = pathinfo($va_values['tmp_name'], PATHINFO_BASENAME);
                                     			break;
                                     		}
                                     	}
                                     } elseif(!$is_form_upload && !$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
-                                    	// Is user-selected file from s media import directory
+                                    	// Is user-selected file from media import directory
                                     	foreach($import_directory_paths as $p) {
-											if(file_exists($vs_path = "{$p}/{$va_values['tmp_name']}")) {
+											if(file_exists($vs_path = caSanitizeRelativeFilepath($va_values['tmp_name'], $p))) {
 												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
 												break;
 											}

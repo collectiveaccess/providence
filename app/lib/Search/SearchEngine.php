@@ -67,8 +67,8 @@ class SearchEngine extends SearchBase {
 		parent::__construct($opo_db);
 		if ($ps_tablename != null) { $this->ops_tablename = $ps_tablename; }
 		
-		$this->opa_options = array();
-		$this->opa_result_filters = array();
+		$this->opa_options = [];
+		$this->opa_result_filters = [];
 		
 		$this->opn_tablenum = Datamodel::getTableNum($this->ops_tablename);
 		
@@ -281,7 +281,7 @@ class SearchEngine extends SearchBase {
 			$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_rewrite_results['terms'], $va_rewrite_results['signs']);
 
 			$vs_search = $this->_queryToString($o_rewritten_query);
-			
+
 			// Filter deleted records out of final result
 			if ((isset($options['deletedOnly']) && $options['deletedOnly']) && $t_table->hasField('deleted')) {
 				$this->addResultFilter($this->ops_tablename.'.deleted', '=', '1');
@@ -360,7 +360,7 @@ class SearchEngine extends SearchBase {
 				}
 				$o_res->seek(0);
 			} else {
-				$va_hits = array();
+				$va_hits = [];
 			}
 
 			if (isset($options['sets']) && $options['sets']) {
@@ -464,10 +464,10 @@ class SearchEngine extends SearchBase {
 		$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 		
 		if ($po_result) {
-			$po_result->init($o_res, array());
+			$po_result->init($o_res, []);
 			return $po_result;
 		} else {
-			return new SearchResult($o_res, array());
+			return new SearchResult($o_res, []);
 		}
 	}
 	# ------------------------------------------------------------------
@@ -475,8 +475,8 @@ class SearchEngine extends SearchBase {
 	 *
 	 */
 	private function _rewriteQuery($po_query) {
-		$va_terms = array();
-		$va_signs = array();
+		$va_terms = [];
+		$va_signs = [];
 		switch(get_class($po_query)) {
 			case 'Zend_Search_Lucene_Search_Query_Boolean':
 				$va_items = $po_query->getSubqueries();
@@ -485,7 +485,7 @@ class SearchEngine extends SearchBase {
 				$va_items = $po_query->getTerms();
 				break;
 			default:
-				$va_items = array();
+				$va_items = [];
 				break;
 		}
 		
@@ -506,13 +506,10 @@ class SearchEngine extends SearchBase {
 					$va_rewritten_terms = $this->_rewriteTerm($o_term, $va_old_signs[$vn_i]);
 					if (sizeof($va_rewritten_terms['terms']) == 1) {
 						$va_terms[] = new Zend_Search_Lucene_Search_Query_Term(array_shift($va_rewritten_terms['terms']));
-						$va_signs[] = array_shift($va_rewritten_terms['signs']);
 					} else { 
-						for($vn_j = 0; $vn_j < sizeof($va_rewritten_terms['terms']); $vn_j++) {
-							$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm(array($va_rewritten_terms['terms'][$vn_j]), array($va_rewritten_terms['signs'][$vn_j]));
-							$va_signs[] = ($va_rewritten_terms['signs'][$vn_j] ? true : is_null($va_rewritten_terms['signs'][$vn_j])) ? null : false;
-						}
+						$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm($va_rewritten_terms['terms'], $va_rewritten_terms['signs']);
 					}
+					$va_signs[] = $va_old_signs[$vn_i];	
 					break;
 				case 'Zend_Search_Lucene_Index_Term':
 					$va_rewritten_terms = $this->_rewriteTerm(new Zend_Search_Lucene_Search_Query_Term($o_term), $va_old_signs[$vn_i]);
@@ -522,13 +519,13 @@ class SearchEngine extends SearchBase {
 						$o_mt = new Zend_Search_Lucene_Search_Query_MultiTerm($va_rewritten_terms['terms'], $va_rewritten_terms['signs']);
 					}
 					$va_terms[] = $o_mt;
-					$va_signs[] = sizeof($va_rewritten_terms['signs']) ? array_shift($va_rewritten_terms['signs']): true;
+					$va_signs[] = $va_old_signs[$vn_i];
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Wildcard':
 					$va_rewritten_terms = $this->_rewriteTerm(new Zend_Search_Lucene_Search_Query_Term($o_term->getPattern()), $va_old_signs[$vn_i]);
 					$o_mt = new Zend_Search_Lucene_Search_Query_MultiTerm($va_rewritten_terms['terms'], $va_rewritten_terms['signs']);
 					$va_terms[] = $o_mt;
-					$va_signs[] = sizeof($va_rewritten_terms['signs']) ? array_shift($va_rewritten_terms['signs']): true;
+					$va_signs[] = $va_old_signs[$vn_i];
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 					$va_phrase_items = $o_term->getTerms();
@@ -592,7 +589,7 @@ class SearchEngine extends SearchBase {
 					$vs_bool = 'OR';
 				}
 				
-				$va_terms = array();
+				$va_terms = [];
 				$vs_term = (string)$po_term->getTerm()->text;
 				foreach($va_fields as $vs_field) {
 					$va_tmp = explode(".", $vs_field);
@@ -615,15 +612,15 @@ class SearchEngine extends SearchBase {
 						$vs_term .= '|';
 					}
 					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field.($vs_rel_types ? "/{$vs_rel_types}" : ''));
-					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
-					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
+					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : false;
+					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : [];
 				}
 				
 				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_criterion);
-						$va_terms['signs'][] = $vs_bool;
-						$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
+						$va_terms['signs'][] = ($vs_bool == 'AND') ? true : false;
+						$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : [];
 					}
 				}
 				
@@ -641,7 +638,7 @@ class SearchEngine extends SearchBase {
 						return array(
 							'terms' => array(new Zend_Search_Lucene_Index_Term((string)((sizeof($va_matches) > 1) ? $va_matches[1] : $va_matches[0]), "{$vs_table_name}.{$vs_idno_fld}")),
 							'signs' => array($pb_sign),
-							'options' => array()
+							'options' => []
 						);
 					}
 				}
@@ -657,13 +654,13 @@ class SearchEngine extends SearchBase {
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.((isset($va_tmp2[2]) && $va_tmp2[2]) ? $va_tmp2[2] : $t_instance->getLabelDisplayField()).($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
 						'signs' => array($pb_sign),
-						'options' => array()
+						'options' => []
 					);
 				}
 			}
 		}
 		
-		return array('terms' => array($po_term->getTerm()), 'signs' => array($pb_sign), 'options' => array());
+		return array('terms' => [$po_term->getTerm()], 'signs' => [$pb_sign], 'options' => []);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -672,7 +669,7 @@ class SearchEngine extends SearchBase {
 	 * @return array - rewritten phrases are *** Zend_Search_Lucene_Search_Query_Phrase *** objects
 	 */
 	private function _rewritePhrase($po_term, $pb_sign) {		
-		$va_index_term_strings = array();
+		$va_index_term_strings = [];
 		$va_phrase_terms = $po_term->getTerms();
 		foreach($va_phrase_terms as $o_phrase_term) {
 			$va_index_term_strings[] = $o_phrase_term->text; 
@@ -695,14 +692,14 @@ class SearchEngine extends SearchBase {
 				foreach($va_fields as $vs_field) {
 					$va_terms['terms'][] = new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
-					$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : array();
+					$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : [];
 				}
 				
 				if (is_array($va_additional_criteria = ($va_ap_info['additional_criteria'] ?? null))) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_criterion);
 						$va_terms['signs'][] = $vs_bool;
-						$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : array();
+						$va_terms['options'][] = is_array($va_ap_info['options'] ?? null) ? $va_ap_info['options'] : [];
 					}
 				}
 				
@@ -719,7 +716,7 @@ class SearchEngine extends SearchBase {
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
 						'signs' => array($pb_sign),
-						'options' => array()
+						'options' => []
 					);
 				}
 			}
@@ -740,7 +737,7 @@ class SearchEngine extends SearchBase {
 				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean'] ?? 'OR'), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
-				$va_tmp = array();
+				$va_tmp = [];
 				foreach($va_fields as $vs_field) {
 					$po_range->getLowerTerm()->field = $vs_field;
 					$po_range->getUpperTerm()->field = $vs_field;
@@ -785,7 +782,7 @@ class SearchEngine extends SearchBase {
 				$va_signs = null;
 				break;
 			default:
-				$va_items = array();
+				$va_items = [];
 				$va_signs = null;
 				break;
 		}
@@ -797,11 +794,11 @@ class SearchEngine extends SearchBase {
 			}
 		
 			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
-				$vs_query .= ' AND ';
-			} else if ((($va_signs[$id] ?? false) === false) && $id) {
-				$vs_query .= ' NOT ';
+				$vs_query .= 'AND ';
+			} else if ((is_null($va_signs[$id] ?? null) === true) && $id) {
+				$vs_query .= 'OR ';
 			} else {
-				if ($id) { $vs_query .= ' OR '; }
+				if ($id) { $vs_query .= 'NOT '; }
 			}
 			switch(get_class($subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
@@ -885,7 +882,7 @@ class SearchEngine extends SearchBase {
 	 *
 	 */
 	public function clearResultFilters() {
-		$this->opa_result_filters = array();
+		$this->opa_result_filters = [];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -928,7 +925,7 @@ class SearchEngine extends SearchBase {
 			$pa_type_codes_or_ids = array_keys($va_type_list);
 		}
 		
-		$this->opa_search_type_ids = array();
+		$this->opa_search_type_ids = [];
 		foreach($pa_type_codes_or_ids as $vs_code_or_id) {
 			if (!strlen($vs_code_or_id)) { continue; }
 			if (!is_numeric($vs_code_or_id)) {
@@ -984,7 +981,7 @@ class SearchEngine extends SearchBase {
 			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {
-				$va_filtered_types = array();
+				$va_filtered_types = [];
 				foreach($this->opa_search_type_ids as $vn_id) {
 					if (in_array($vn_id, $va_pervasive_types)) {
 						$va_filtered_types[] = $vn_id;
@@ -1032,7 +1029,7 @@ class SearchEngine extends SearchBase {
 		if (!($vs_list_name = $t_instance->getSourceListCode())) { return false; }
 		$va_source_list = $t_instance->getSourceList();
 		
-		$this->opa_search_source_ids = array();
+		$this->opa_search_source_ids = [];
 		foreach($pa_source_codes_or_ids as $vs_code_or_id) {
 			if (!strlen($vs_code_or_id)) { continue; }
 			if (!is_numeric($vs_code_or_id)) {
@@ -1068,7 +1065,7 @@ class SearchEngine extends SearchBase {
 			if (!is_array($va_pervasive_sources)) { return $this->opa_search_source_ids; }
 				
 			if (is_array($this->opa_search_source_ids) && sizeof($this->opa_search_source_ids)) {
-				$va_filtered_sources = array();
+				$va_filtered_sources = [];
 				foreach($this->opa_search_source_ids as $vn_id) {
 					if (in_array($vn_id, $va_pervasive_sources)) {
 						$va_filtered_sources[] = $vn_id;
@@ -1155,7 +1152,7 @@ class SearchEngine extends SearchBase {
 	
 		$va_ids = $o_engine->quickSearch($pn_tablenum, $ps_search, $options);
 		
-		if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
+		if (!is_array($va_ids) || !sizeof($va_ids)) { return []; }
 		$t_instance = Datamodel::getInstanceByTableNum($pn_tablenum, true);
 		
 		$t_label_instance = 		$t_instance->getLabelTableInstance();
@@ -1201,7 +1198,7 @@ class SearchEngine extends SearchBase {
 				{$vs_delete_sql}
 			{$vs_limit_sql}
 		");
-		$va_hits = array();
+		$va_hits = [];
 		while($qr_res->nextRow()) {
 			$va_hits[$qr_res->get($vs_pk)][$qr_res->get('locale_id')] = array(
 				'type_id' => $qr_res->get('type_id'),
@@ -1266,7 +1263,7 @@ class SearchEngine extends SearchBase {
 	 * @return array 
 	 */
 	static private function _getFieldList($po_query) {
-		$va_fields = array();
+		$va_fields = [];
 		
 		switch(get_class($po_query)) {
 			case 'Zend_Search_Lucene_Search_Query_Boolean':
@@ -1276,7 +1273,7 @@ class SearchEngine extends SearchBase {
 				$va_items = $po_query->getTerms();
 				break;
 			default:
-				$va_items = array();
+				$va_items = [];
 				break;
 		}
 		
