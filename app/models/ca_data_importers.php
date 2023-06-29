@@ -2039,7 +2039,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								));
 							}
 							if (empty($va_ids)) {
-								$o_log->logInfo(_t('[%1] Skipped import because could not find existing record matched on identifier %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy));
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because could not find existing record matched on identifier %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy)); }
 								$this->num_records_skipped++;
 								continue(2);	// skip because idno not matched
 							}
