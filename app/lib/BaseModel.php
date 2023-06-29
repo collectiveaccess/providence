@@ -2398,7 +2398,7 @@ class BaseModel extends BaseObject {
 		// Set any auto-set hierarchical fields (eg. HIERARCHY_LEFT_INDEX_FLD and HIERARCHY_RIGHT_INDEX_FLD indexing for all and HIERARCHY_ID_FLD for ad-hoc hierarchies) here
 		//
 		$vn_hier_left_index_value = $vn_hier_right_index_value = 0;
-		if (($vb_is_hierarchical = $this->isHierarchical()) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
+		if (($vb_is_hierarchical = $this->isHierarchical()) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) && !defined('__CA_DONT_DO_HIERARCHICAL_INDEXING__')) {
 			$vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'));
 			$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
 			
@@ -3046,7 +3046,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				
-if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
+if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'] && !defined('__CA_DONT_DO_HIERARCHICAL_INDEXING__')) {
 					if ($va_parent_info) {
 						$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 					} else {
@@ -3356,7 +3356,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$this->doSearchIndexing(null, false, $va_index_options);
 				}
 													
-				if (is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
+				if (is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) && !defined('__CA_DONT_DO_HIERARCHICAL_INDEXING__')) {
 					$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 					if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 					foreach($va_rebuild_hierarchical_index as $vn_child_id) {
