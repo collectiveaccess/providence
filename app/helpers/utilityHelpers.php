@@ -2928,6 +2928,7 @@ function caFileIsIncludable($ps_file) {
 		if(!$locale) { $locale = $g_ui_locale; }
 		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
 		
+		$currency_specifier = $decimal_value = null;
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
 		try {
 			// either
