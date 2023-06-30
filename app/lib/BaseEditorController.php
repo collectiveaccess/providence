@@ -862,7 +862,14 @@ class BaseEditorController extends ActionController {
 		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
-		
+		$vb_exit = $this->request->getParameter('exit', pInteger);
+		if ($vb_exit === '' || $vb_exit){
+			// If no parameter was passed then default to the old behavior.
+			$vb_exit = true;
+		} else {
+			$vb_exit = false;
+		}
+
 		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
 		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
@@ -984,7 +991,9 @@ class BaseEditorController extends ActionController {
             Session::setVar($t_subject->tableName().'_summary_last_settings', $last_settings);
 
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
-			exit;
+			if ($vb_exit){
+				exit;
+			}
 		} catch (Exception $e) {
 			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			$vb_printed_properly = false;
