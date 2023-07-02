@@ -154,7 +154,6 @@ function caDisplayException(Exception $e, ?array $options=null) : void {
 	}
 
 	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
-	//$o_log->logDebug(print_r($e->getTrace(), true));
 	
 	if(defined("__CA_IS_SERVICE_REQUEST__")) {
 		$show_debugging = ((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || $config->get('graphql_services_debug'));

@@ -184,7 +184,7 @@ class TimeExpressionParser {
 		$this->opo_datetime_settings = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 		
 		if (!$ps_iso_code) { $ps_iso_code = $g_ui_locale; }
-		if (!$ps_iso_code) { $ps_iso_code = 'en_US'; }
+		if (!$ps_iso_code) { $ps_iso_code = $o_config->get('locale_default'); }
 		
 		$this->opa_error_messages = array(
 			_t("No error"), _t("Start must be before date in range"), _t("Invalid date"), _t("Invalid time"), 

@@ -348,7 +348,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$acc = [];
 	 	foreach($terms as $i => $term) {
-	 		$hits = $this->_processQueryTerm($subject_tablenum, $term);
+	 		$hits = $this->_processQueryTerm($subject_tablenum, $term) ?? [];
 	 		$op = $this->_getBooleanOperator($signs, $i);
 
 	 		switch($op) {
@@ -356,15 +356,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				
 	 				$acc = array_intersect_key($acc, $hits);
-	 				foreach($acc as $row_id => $boost) {
-						$acc[$row_id] += $hits[$row_id];	// add boost
+	 				foreach($acc as $row_id => $b) {
+						$acc[$row_id]['boost'] += $b['boost'];	// add boost
 					}
 	 				break;
 	 			case 'OR':
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				$acc = array_replace($hits, $acc);
-	 				foreach($acc as $row_id => $boost) {
-	 					$acc[$row_id] += $hits[$row_id];	// add boost
+	 				foreach($acc as $row_id => $b) {
+	 					$acc[$row_id]['boost'] += $b['boost'];	// add boost
 	 				}
 	 				break;
 	 			case 'NOT':
@@ -372,8 +372,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 					// invert set
 	 				} else {
 	 					$acc = array_diff_key($acc, $hits);	
-	 					foreach($acc as $row_id => $boost) {
-							$acc[$row_id] += $hits[$row_id];	// add boost
+	 					foreach($acc as $row_id => $b) {
+							$acc[$row_id]['boost'] += $b['boost'];	// add boost
 						}
 	 				}
 	 				break;
@@ -522,7 +522,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$table = $t->tableName();
 			
 				$qr_res = $this->db->query("
-					SELECT {$pk} row_id, 100 boost
+					SELECT 0 index_id, {$pk} row_id, 100 boost
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
 			} elseif($use_boost) {
