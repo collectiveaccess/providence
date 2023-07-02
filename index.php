@@ -116,10 +116,7 @@
 		//
 		// PageFormat plug-in generates header/footer shell around page content
 		//
-		require_once(__CA_APP_DIR__.'/lib/PageFormat.php');
-		if (!$req->isAjax() && !$req->isDownload()) {
-			$app->registerPlugin(new PageFormat());
-		}
+		$app->registerPlugin(new PageFormat());
 
 		//
 		// Dispatch the request
