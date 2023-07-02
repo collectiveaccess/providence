@@ -567,6 +567,15 @@ class BaseFindController extends ActionController {
 			//die("do background processing");
 			$o_tq = new TaskQueue();
 			
+			if($this->ops_find_type === 'basic_browse') {
+				$o_browse = caGetBrowseInstance($this->ops_tablename);
+				$o_browse->reload($this->opo_result_context->getSearchExpression());
+				$exp = $exp_display = print_R($o_browse->getCriteria(), true);
+			} else {
+				$exp =  $this->opo_result_context->getSearchExpression();
+				$exp_display = $this->opo_result_context->getSearchExpressionForDisplay();
+			}
+			
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -577,8 +586,8 @@ class BaseFindController extends ActionController {
 					'results' => $this->opo_result_context->getResultList(),
 					'sort' => $this->opo_result_context->getCurrentSort(),
 					'sortDirection' => $this->opo_result_context->getCurrentSortDirection(),
-					'searchExpression' => $this->opo_result_context->getSearchExpression(),
-					'searchExpressionForDisplay' => $this->opo_result_context->getSearchExpressionForDisplay(),
+					'searchExpression' => $exp,
+					'searchExpressionForDisplay' => $exp_display,
 					'user_id' => $this->request->getUserID()
 				],
 				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
