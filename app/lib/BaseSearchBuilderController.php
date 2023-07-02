@@ -297,7 +297,7 @@
  					break;
  				# ------------------------------------
  				case 'EXPORT':
- 					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
+ 					caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM']);
  					break;
  				# ------------------------------------
  				case 'HTML': 

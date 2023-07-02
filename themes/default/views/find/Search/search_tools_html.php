@@ -35,14 +35,15 @@ $table = $t_subject->tableName();
 	if(is_array($export_mappings = $this->getVar('exporter_list')) && sizeof($export_mappings)>0) {
 ?>
 		<div class="col">
-			<?php
+<?php
 			print _t("Export results with mapping") . ":<br/>";
 			print caFormTag($this->request, 'ExportData', 'caExportWithMappingForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]);
 			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList', 'class' => 'searchToolsSelect'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', ['value' => 1]);
 			print caHTMLHiddenInput('find_type', ['value' => $this->getVar('find_type')]);
+			print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caExportWithMappingInBackground']);
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm', null, ['aria-label' => _t('Export')]);
-			?>
+?>
 			</form>
 		</div>
 		<br class='clear'/>
@@ -51,20 +52,22 @@ $table = $t_subject->tableName();
 	if (is_array($forms = $this->getVar('label_formats')) && sizeof($forms)) {
 ?>
 		<div class="col">
-		<?= _t("Print results as labels"); ?>: <br/>
-		<?= caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]); ?>
+			<?= _t("Print results as labels"); ?>: <br/>
+			<?= caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]); ?>
 <?php
-			$options = [];
-			foreach($this->getVar('label_formats') as $form_info) {
-				$options[$form_info['name']] = $form_info['code'];
-			}
-			uksort($options, 'strnatcasecmp');
+				$options = [];
+				foreach($this->getVar('label_formats') as $form_info) {
+					$options[$form_info['name']] = $form_info['code'];
+				}
+				uksort($options, 'strnatcasecmp');
 			
-			print caHTMLSelect('label_form', $options, ['id' => 'labelsSelect', 'class' => 'searchToolsSelect'], ['value' => $this->getVar('current_label_form'), 'width' => '150px'])."\n";
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm', null, ['aria-label' => _t('Download labels')]);
+				print caHTMLSelect('label_form', $options, ['id' => 'labelsSelect', 'class' => 'searchToolsSelect'], ['value' => $this->getVar('current_label_form'), 'width' => '150px'])."\n";
+				print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caPrintLabelsFormInBackground']);
+				print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm', null, ['aria-label' => _t('Download labels')]);
 ?>
-			<div class="caLabelsDownloadOptionsPanelOptions" id="caLabelsDownloadOptionsPanelOptions"></div>
-			<input type='hidden' name='download' value='1'/></form>
+				<div class="caLabelsDownloadOptionsPanelOptions" id="caLabelsDownloadOptionsPanelOptions"></div>
+				<input type='hidden' name='download' value='1' id='caPrintLabelsFormDownloadFlag'/>
+			</form>
 		</div><!-- end col -->
 		<br class='clear'/>
 <?php
@@ -74,16 +77,18 @@ $table = $t_subject->tableName();
 		<?= _t("Download results using"); ?>: <br/>
 		<?= caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true)); ?>
 <?php
-		$options = [];
-		foreach($this->getVar('export_formats') as $format_info) {
-			$options[$format_info['name']] = $format_info['code'];
-		}
-		print caHTMLSelect('export_format', $options, array('id' => 'resultsSelect', 'class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm', null, ['aria-label' => _t('Download results')]);
+			$options = [];
+			foreach($this->getVar('export_formats') as $format_info) {
+				$options[$format_info['name']] = $format_info['code'];
+			}
+			print caHTMLSelect('export_format', $options, array('id' => 'resultsSelect', 'class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
+		
+			print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caExportInBackground']);
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm', null, ['aria-label' => _t('Download results')]);
 ?>
 		<div class="caResultsDownloadOptionsPanelOptions" id="caResultsDownloadOptionsPanelOptions"></div>	
 			
-		<input type='hidden' name='download' value='1'/></form>
+		<input type='hidden' name='download' value='1' id='caExportFormDownloadFlag'/></form>
 	</div>
 	<br class='clear'/>
 <?php
@@ -132,6 +137,11 @@ $table = $t_subject->tableName();
 		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
+	
+	<div style="position: absolute; bottom: 15px; left: 15px;">
+		<?= caHTMLCheckBoxInput('background', ['id' => 'caProcessInBackground']); ?>
+		<?= _t('Process in background'); ?>
+	</div>
 </div><!-- end searchToolsBox -->
 
 <script type="text/javascript">
@@ -142,6 +152,17 @@ $table = $t_subject->tableName();
 		
 		jQuery('#labelsSelect').on('change', caUpdateLabelsOptionsForm);
 		caUpdateLabelsOptionsForm();
+		
+		jQuery('#caProcessInBackground').on('click', function(e) {
+			jQuery('#caExportWithMappingInBackground, #caPrintLabelsFormInBackground, #caExportInBackground').val(jQuery(this).is(':checked') ? 1 : 0);
+		});
+<?php
+		if(Session::getVar($t_subject->tableName().'_search_export_in_background')) {
+?>
+			jQuery('#caProcessInBackground').click();		
+<?php
+		}
+?>
 	});
 	function caUpdateResultsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#resultsSelect").val();

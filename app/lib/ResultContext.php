@@ -205,7 +205,7 @@ class ResultContext {
 		if ($ps_search_expression) { return $ps_search_expression; }				// return specified search expression if passed and no display expression is available
 		
 		// Try to return display expression for current search expression if no expression has been passed as a parameter
-		if ($vs_display_expression = $va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)]) { 
+		if ($vs_display_expression = ($va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)] ?? null)) { 
 			return $vs_display_expression; 
 		}
 		

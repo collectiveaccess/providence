@@ -341,7 +341,7 @@
  					break;
  				# ------------------------------------
  				case 'EXPORT':
- 					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), _t('Browse'));
+ 					caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), ['output' => 'STREAM']);
  					break;
 				# ------------------------------------
 				case 'EXPORTWITHMAPPING':

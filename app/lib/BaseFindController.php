@@ -41,6 +41,7 @@ require_once(__CA_LIB_DIR__.'/Visualizer.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
+require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
 
 class BaseFindController extends ActionController {
 	# ------------------------------------------------------------------
@@ -445,7 +446,7 @@ class BaseFindController extends ActionController {
 		//
 		$tinfo = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
 		if (!is_array($tinfo)) {
-			$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genPDF()");
+			$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genLabels()");
 			return;
 		}
 		
@@ -562,159 +563,39 @@ class BaseFindController extends ActionController {
 	 * Action to trigger export of current find result set
 	 */
 	public function export() {
+		if($this->request->getParameter('background', pInteger) === 1) {
+			//die("do background processing");
+			$o_tq = new TaskQueue();
+			
+			if ($o_tq->addTask(
+				'dataExport',
+				[
+					'request' => $_REQUEST,
+					'mode' => 'EXPORT',
+					'findType' => $this->ops_find_type,
+					'table' => $this->ops_tablename,
+					'results' => $this->opo_result_context->getResultList(),
+					'sort' => $this->opo_result_context->getCurrentSort(),
+					'sortDirection' => $this->opo_result_context->getCurrentSortDirection(),
+					'searchExpression' => $this->opo_result_context->getSearchExpression(),
+					'searchExpressionForDisplay' => $this->opo_result_context->getSearchExpressionForDisplay(),
+					'user_id' => $this->request->getUserID()
+				],
+				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
+			{
+				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
+				$this->request->isDownload(false);
+				$this->notification->addNotification(_t("Report is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
+				
+				$this->Index();
+				return;
+			} else {
+				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
+			}
+		}
+		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
 		set_time_limit(7200);
 		return $this->Index(array('output_format' => 'EXPORT'));
-	}
-	# -------------------------------------------------------
-	/**
-	 * Generate  export file of current result
-	 */
-	protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
-		$this->view->setVar('criteria_summary', $vs_criteria_summary = $this->getCriteriaForDisplay());	// add displayable description of current search/browse parameters
-		$this->view->setVar('criteria_summary_truncated', mb_substr($vs_criteria_summary, 0, 60).((mb_strlen($vs_criteria_summary) > 60) ? '...' : ''));
-		$po_result->seek(0); // reset result before exporting anything
-		
-		$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
-		$this->opo_result_context->saveContext();
-		
-		$primary_table = $this->request->getParameter('primaryTable', pString);
-		$primary_id = $this->request->getParameter('primaryID', pInteger);
-		
-		
-		// Pass prmary record, if defined into view
-		if ($t_primary = Datamodel::getInstance($primary_table, true)) {
-			$t_primary->load($primary_id);
-			$this->view->setVar('primary', $t_primary);
-		} else {
-			$this->view->setVar('primary', null);
-		}
-		
-		if(substr($ps_output_type, 0, 4) !== '_pdf') {
-			switch($ps_output_type) {
-				case '_xlsx':
-					$this->render('Results/xlsx_results.php');
-					return;
-				case '_docx':
-					$this->render('Results/docx_results.php');
-					return;						
-				case '_csv':
-					$vs_delimiter = ",";
-					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
-					$vs_file_extension = 'csv';
-					$vs_mimetype = "text/csv";
-					break;
-				case '_tab':
-					$vs_delimiter = "\t";	
-					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
-					$vs_file_extension = 'tsv';
-					$vs_mimetype = "text/tab-separated-values";
-				default:
-					if(substr($ps_output_type, 0, 5) === '_docx') {
-						$tinfo = caGetPrintTemplateDetails('results', substr($ps_output_type, 6));
-						if (!is_array($tinfo)) {
-							$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
-							return;
-						}
-						$this->render($tinfo['path']);
-						return;	
-					}
-					break;
-			}
-
-			header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
-			header("Content-type: ".$vs_mimetype);
-						
-			// get display list
-			self::Index(null, null);
-			$display_list = $this->view->getVar('display_list');
-		
-			$va_rows = array();
-		
-			// output header
-		
-			$va_row = array();
-			foreach($display_list as $va_display_item) {
-				$va_row[] = $va_display_item['display'];
-			}
-			$va_rows[] = join($vs_delimiter, $va_row);
-		
-			$po_result->seek(0);
-		
-			$t_display = $this->view->getVar('t_display');
-			while($po_result->nextHit()) {
-				$va_row = array();
-				foreach($display_list as $placement_id => $va_display_item) {
-					$vs_value = html_entity_decode($t_display->getDisplayValue($po_result, $placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
-					$vs_value = preg_replace("![\r\n\t]+!", " ", $vs_value);
-					
-					// quote values as required
-					if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
-						$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
-					}
-					$va_row[] = $vs_value;
-				}
-				$va_rows[] = join($vs_delimiter, $va_row);
-			}
-		
-			$this->opo_response->addContent(join("\n", $va_rows), 'view');	
-		} else {
-			//
-			// PDF output
-			//
-			
-			if (preg_match("!^_pdf__display_([\d]+)$!", $ps_output_type, $va_matches)) {
-				$this->_getDisplayList((int)$va_matches[1]);
-				$ps_output_type = '_pdf_display';
-			}
-			$tinfo = caGetPrintTemplateDetails('results', substr($ps_output_type, 5));
-			
-			$this->view->setVar('template_info', $tinfo);
-			if(is_array($tinfo) && is_array($tinfo['params'])) {
-				$values = [];
-				foreach($tinfo['params'] as $n => $p) {
-					if((bool)$p['multiple'] ?? false) {
-						$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pArray));
-					} else {
-						$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
-					}
-				}
-				Session::setVar("print_results_options_{$m[2]}", $values);
-			}
-			
-			if (!is_array($tinfo)) {
-				$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
-				return;
-			}
-			
-			try {
-				$this->view->setVar('base_path', $vs_base_path = pathinfo($tinfo['path'], PATHINFO_DIRNAME).'/');
-				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-				
-				$o_pdf = new PDFRenderer();
-				
-				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $tinfo, 'letter'), 'mm', caGetOption('pageOrientation', $tinfo, 'portrait'));
-				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-			
-				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
-				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
-				$this->view->setVar('marginTop', caGetOption('marginTop', $tinfo, '0mm'));
-				$this->view->setVar('marginRight', caGetOption('marginRight', $tinfo, '0mm'));
-				$this->view->setVar('marginBottom', caGetOption('marginBottom', $tinfo, '0mm'));
-				$this->view->setVar('marginLeft', caGetOption('marginLeft', $tinfo, '0mm'));
-				
-				$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
-				$vs_content = $this->render($tinfo['path']);
-				
-				$o_pdf->setPage(caGetOption('pageSize', $tinfo, 'letter'), caGetOption('pageOrientation', $tinfo, 'portrait'), caGetOption('marginTop', $tinfo, '0mm'), caGetOption('marginRight', $tinfo, '0mm'), caGetOption('marginBottom', $tinfo, '0mm'), caGetOption('marginLeft', $tinfo, '0mm'));
-				
-				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $tinfo, 'export_results.pdf')));
-				exit;
-			} catch (Exception $e) {
-				die($e->getMessage());
-				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
-			}
-			return;			
-		}		
 	}
 	# ------------------------------------------------------------------
 	# Sets

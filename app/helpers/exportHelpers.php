@@ -37,6 +37,31 @@ require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
 # ----------------------------------------
 /**
+ *
+ */
+function caExportFormatForTemplate($table, $template) {
+	if (substr($template, 0, 5) === '_pdf_') {
+		return 'PDF';
+	} else {		
+		$o_config = Configuration::load();
+		$export_config = $o_config->getAssoc('export_formats');
+		
+		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
+			
+			switch($export_config[$table][$template]['type']) {
+				case 'xlsx':
+					return 'Excel';
+					break;
+				case 'pptx':
+					return 'Powerpoint';
+					break;
+			}
+		}
+	}
+	return null;
+}
+# ----------------------------------------
+/**
  * Export instance as PDF using template
  * 
  * @param RequestHTTP $po_request
@@ -129,106 +154,111 @@ function caExportItemAsPDF($po_request, $pt_subject, $ps_template, $ps_output_fi
 }
 # ----------------------------------------
 /**
+ * Export search result set as a PDF, XLSX or PPTX file.
  * 
  * @param RequestHTTP $po_request
  * @param SearchResult $po_result
  * @param string $ps_template
- * @param string $ps_output_filename
- * @param array $pa_options
- * @return bool
+ * @param string $output_filename
+ * @param array $pa_options Options include:
+ *		output = where to output data. Values may be FILE (write to file) or STREAM. [Default is stream]
+ *
+ * @return ?array|bool If output is FILE, path to file or null if file could not be generated. If output is STREAM null returned on error; true returned on success
  *
  * @throws ApplicationException
  */
-function caExportResult($po_request, $po_result, $ps_template, $ps_output_filename, $pa_options=null) {
+function caExportResult($request, $result, $template, $output_filename, $options=null) {
+	$output = caGetOption('output', $options, 'STREAM');
+	
 	$o_config = Configuration::load();
-	$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/');
+	$o_view = new View($request, $request->getViewsDirectoryPath().'/');
 	
-	$o_view->setVar('result', $po_result);
-	$o_view->setVar('t_set', caGetOption('set', $pa_options, null));
-	$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $pa_options, ''));
+	$o_view->setVar('result', $result);
+	$o_view->setVar('t_set', caGetOption('set', $options, null));
+	$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $options, ''));
 	
-	$vs_table = $po_result->tableName();
+	$table = $result->tableName();
 	
-	$vs_type = null;
-	$va_export_config = $va_template_info = null;
+	$type = null;
+	$export_config = $template_info = null;
 	
-	if (!(bool)$o_config->get('disable_pdf_output') && substr($ps_template, 0, 5) === '_pdf_') {
-		$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), substr($ps_template, 5));
-		$vs_type = 'pdf';
-	} elseif (!(bool)$o_config->get('disable_pdf_output') && (substr($ps_template, 0, 9) === '_display_')) {
-		$vn_display_id = substr($ps_template, 9);
-		$t_display = new ca_bundle_displays($vn_display_id);
+	if (!(bool)$o_config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
+		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), substr($template, 5));
+		$type = 'pdf';
+	} elseif (!(bool)$o_config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
+		$display_id = substr($template, 9);
+		$t_display = new ca_bundle_displays($display_id);
 		$o_view->setVar('display', $t_display);
 		
-		if ($vn_display_id && ($t_display->haveAccessToDisplay($po_request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
+		if ($display_id && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$o_view->setVar('display', $t_display);
 			
-			$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
-			$o_view->setVar('display_list', $va_placements);
-			foreach($va_placements as $vn_placement_id => $va_display_item) {
-				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
+			$placements = $t_display->getPlacements(array('settingsOnly' => true));
+			$o_view->setVar('display_list', $placements);
+			foreach($placements as $placement_id => $display_item) {
+				$settings = caUnserializeForDatabase($display_item['settings']);
 			
 				// get column header text
-				$vs_header = $va_display_item['display'];
-				if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-					$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
-					if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
+				$header = $display_item['display'];
+				if (isset($settings['label']) && is_array($settings['label'])) {
+					$tmp = caExtractValuesByUserLocale(array($settings['label']));
+					if ($tmp = array_shift($tmp)) { $header = $tmp; }
 				}
 			
-				$va_display_list[$vn_placement_id] = array(
-					'placement_id' => $vn_placement_id,
-					'bundle_name' => $va_display_item['bundle_name'],
-					'display' => $vs_header,
-					'settings' => $va_settings
+				$display_list[$placement_id] = array(
+					'placement_id' => $placement_id,
+					'bundle_name' => $display_item['bundle_name'],
+					'display' => $header,
+					'settings' => $settings
 				);
 			}
-			$o_view->setVar('display_list', $va_display_list);
+			$o_view->setVar('display_list', $display_list);
 		} else {
-			throw new ApplicationException(_t("Invalid format %1", $ps_template));
+			throw new ApplicationException(_t("Invalid format %1", $template));
 		}
-		$va_template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $pa_options, 'results'), 'display');
-		$vs_type = 'pdf';
+		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), 'display');
+		$type = 'pdf';
 	} elseif(!(bool)$o_config->get('disable_export_output')) {
 		// Look it up in app.conf export_formats
-		$va_export_config = $o_config->getAssoc('export_formats');
-		if (is_array($va_export_config) && is_array($va_export_config[$vs_table]) && is_array($va_export_config[$vs_table][$ps_template])) {
+		$export_config = $o_config->getAssoc('export_formats');
+		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
 			
-			switch($va_export_config[$vs_table][$ps_template]['type']) {
+			switch($export_config[$table][$template]['type']) {
 				case 'xlsx':
-					$vs_type = 'xlsx';
+					$type = 'xlsx';
 					break;
 				case 'pptx':
-					$vs_type = 'pptx';
+					$type = 'pptx';
 					break;
 			}
 		} else {
-			throw new ApplicationException(_t("Invalid format %1", $ps_template));
+			throw new ApplicationException(_t("Invalid format %1", $template));
 		}
 	}
 	
-	if(!$vs_type) { throw new ApplicationException(_t('Invalid export type')); }
+	if(!$type) { throw new ApplicationException(_t('Invalid export type')); }
 	
-	if(!($filename_stub = caGetOption('filename', $pa_options, null))) { 
-		if(is_array($va_template_info)) {
-			$filename_stub = caGetOption('filename', $va_template_info, 'export_results').'_'.date("Y-m-d");
-		} elseif(is_array($va_export_config)) {
-			$filename_stub = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results').'_'.date("Y-m-d");
+	if(!($filename_stub = caGetOption('filename', $options, null))) { 
+		if(is_array($template_info)) {
+			$filename_stub = caGetOption('filename', $template_info, 'export_results').'_'.date("Y-m-d");
+		} elseif(is_array($export_config)) {
+			$filename_stub = caGetOption('filename', $export_config[$table][$template], 'export_results').'_'.date("Y-m-d");
 		} else {
 			$filename_stub = 'export_results'.'_'.date("Y-m-d");
 		}
 	}
 	$filename_stub = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $filename_stub);
 	
-	switch($vs_type) {
+	switch($type) {
 		case 'xlsx':
 
-			$vn_ratio_pixels_to_excel_height = 0.85;
-			$vn_ratio_pixels_to_excel_width = 0.135;
+			$ratio_pixels_to_excel_height = 0.85;
+			$ratio_pixels_to_excel_width = 0.135;
 
-			$va_supercol_a_to_z = range('A', 'Z');
-			$vs_supercol = '';
+			$supercol_a_to_z = range('A', 'Z');
+			$supercol = '';
 
-			$va_a_to_z = range('A', 'Z');
+			$a_to_z = range('A', 'Z');
 
 			$workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
@@ -264,204 +294,241 @@ function caExportResult($po_request, $po_result, $ps_template, $ps_output_filena
 			$o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
 			$o_sheet->setTitle("CollectiveAccess");
 
-			$vn_line = 1;
+			$line = 1;
 
-			$vs_column = reset($va_a_to_z);
+			$column = reset($a_to_z);
 
 			// Column headers
-			$o_sheet->getRowDimension($vn_line)->setRowHeight(30);
-			foreach($va_export_config[$vs_table][$ps_template]['columns'] as $vs_title => $vs_template) {
-				if($vs_column) {
-					$o_sheet->setCellValue($vs_supercol.$vs_column.$vn_line,$vs_title);
-					$o_sheet->getStyle($vs_supercol.$vs_column.$vn_line)->applyFromArray($columntitlestyle);
-					if (!($vs_column = next($va_a_to_z))) {
-						$vs_supercol = array_shift($va_supercol_a_to_z);
-						$vs_column = reset($va_a_to_z);
+			$o_sheet->getRowDimension($line)->setRowHeight(30);
+			foreach($export_config[$table][$template]['columns'] as $title => $template) {
+				if($column) {
+					$o_sheet->setCellValue($supercol.$column.$line,$title);
+					$o_sheet->getStyle($supercol.$column.$line)->applyFromArray($columntitlestyle);
+					if (!($column = next($a_to_z))) {
+						$supercol = array_shift($supercol_a_to_z);
+						$column = reset($a_to_z);
 					}
 				}
 			}
 
 
-			$vn_line = 2 ;
+			$line = 2 ;
 
-			while($po_result->nextHit()) {
-				$vs_column = reset($va_a_to_z);
+			while($result->nextHit()) {
+				$column = reset($a_to_z);
 
-				$va_supercol_a_to_z = range('A', 'Z');
-				$vs_supercol = '';
+				$supercol_a_to_z = range('A', 'Z');
+				$supercol = '';
 
 				// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
-				$o_sheet->getRowDimension($vn_line)->setRowHeight(-1);
+				$o_sheet->getRowDimension($line)->setRowHeight(-1);
 
-				foreach($va_export_config[$vs_table][$ps_template]['columns'] as $vs_title => $va_settings) {
+				foreach($export_config[$table][$template]['columns'] as $title => $settings) {
 
 					if (
-						(strpos($va_settings['template'], 'ca_object_representations.media') !== false)
+						(strpos($settings['template'], 'ca_object_representations.media') !== false)
 						&& 
-						preg_match("!ca_object_representations\.media\.([A-Za-z0-9_\-]+)!", $va_settings['template'], $va_matches)
+						preg_match("!ca_object_representations\.media\.([A-Za-z0-9_\-]+)!", $settings['template'], $matches)
 					) {
-						$vs_version = $va_matches[1];
-						$va_info = $po_result->getMediaInfo('ca_object_representations.media', $vs_version);
+						$version = $matches[1];
+						$info = $result->getMediaInfo('ca_object_representations.media', $version);
 		
-						if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
 		
-							if (is_file($vs_path = $po_result->getMediaPath('ca_object_representations.media', $vs_version))) {
-								$image = "image".$vs_supercol.$vs_column.$vn_line;
+							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
+								$image = "image".$supercol.$column.$line;
 								$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
 								$drawing->setName($image);
 								$drawing->setDescription($image);
-								$drawing->setPath($vs_path);
-								$drawing->setCoordinates($vs_supercol.$vs_column.$vn_line);
+								$drawing->setPath($path);
+								$drawing->setCoordinates($supercol.$column.$line);
 								$drawing->setWorksheet($o_sheet);
 								$drawing->setOffsetX(10);
 								$drawing->setOffsetY(10);
 							}
 
-							$vn_width = floor(intval($va_info['PROPERTIES']['width']) * $vn_ratio_pixels_to_excel_width);
-							$vn_height = floor(intval($va_info['PROPERTIES']['height']) * $vn_ratio_pixels_to_excel_height);
+							$width = floor(intval($info['PROPERTIES']['width']) * $ratio_pixels_to_excel_width);
+							$height = floor(intval($info['PROPERTIES']['height']) * $ratio_pixels_to_excel_height);
 
 							// set the calculated withs for the current row and column,
 							// but make sure we don't make either smaller than they already are
-							if($vn_width > $o_sheet->getColumnDimension($vs_supercol.$vs_column)->getWidth()) {
-								$o_sheet->getColumnDimension($vs_supercol.$vs_column)->setWidth($vn_width);	
+							if($width > $o_sheet->getColumnDimension($supercol.$column)->getWidth()) {
+								$o_sheet->getColumnDimension($supercol.$column)->setWidth($width);	
 							}
-							if($vn_height > $o_sheet->getRowDimension($vn_line)->getRowHeight()){
-								$o_sheet->getRowDimension($vn_line)->setRowHeight($vn_height);
+							if($height > $o_sheet->getRowDimension($line)->getRowHeight()){
+								$o_sheet->getRowDimension($line)->setRowHeight($height);
 							}
 
 						}
-					} elseif ($vs_display_text = $po_result->getWithTemplate($va_settings['template'])) {
+					} elseif ($display_text = $result->getWithTemplate($settings['template'])) {
 		
-						$o_sheet->setCellValue($vs_supercol.$vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5));
+						$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
 						// We trust the autosizing up to a certain point, but
 						// we want column widths to be finite :-).
 						// Since Arial is not fixed-with and font rendering
 						// is different from system to system, this can get a
 						// little dicey. The values come from experimentation.
-						if ($o_sheet->getColumnDimension($vs_supercol.$vs_column)->getWidth() == -1) {  // don't overwrite existing settings
-							if(strlen($vs_display_text)>55) {
-								$o_sheet->getColumnDimension($vs_supercol.$vs_column)->setWidth(50);
+						if ($o_sheet->getColumnDimension($supercol.$column)->getWidth() == -1) {  // don't overwrite existing settings
+							if(strlen($display_text)>55) {
+								$o_sheet->getColumnDimension($supercol.$column)->setWidth(50);
 							}
 						}
 					}
 
-					if (!($vs_column = next($va_a_to_z))) {
-						$vs_supercol = array_shift($va_supercol_a_to_z);
-						$vs_column = reset($va_a_to_z);
+					if (!($column = next($a_to_z))) {
+						$supercol = array_shift($supercol_a_to_z);
+						$column = reset($a_to_z);
 					}
 				}
 
-				$vn_line++;
+				$line++;
 			}
 
 			// set column width to auto for all columns where we haven't set width manually yet
-			foreach(range('A','Z') as $vs_chr) {
-				if ($o_sheet->getColumnDimension($vs_chr)->getWidth() == -1) {
-					$o_sheet->getColumnDimension($vs_chr)->setAutoSize(true);	
+			foreach(range('A','Z') as $chr) {
+				if ($o_sheet->getColumnDimension($chr)->getWidth() == -1) {
+					$o_sheet->getColumnDimension($chr)->setAutoSize(true);	
 				}
 			}
 
 			$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
-			header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition:inline;filename='.$filename_stub.'.xlsx');
-			$o_writer->save('php://output');
-			exit;
+			
+			if($output === 'STREAM') {
+				header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				header('Content-Disposition:inline;filename='.$filename_stub.'.xlsx');
+				$o_writer->save('php://output');
+				exit;
+			} else {
+				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
+				return [
+					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					'path' => $path
+				];
+			}
 			break;
 		case 'pptx':
 			$ppt = new PhpOffice\PhpPresentation\PhpPresentation();
 
-			$vn_slide = 0;
-			while($po_result->nextHit()) {
-				if ($vn_slide > 0) {
+			$slide = 0;
+			while($result->nextHit()) {
+				if ($slide > 0) {
 					$slide = $ppt->createSlide();
 				} else {
 					$slide = $ppt->getActiveSlide();
 				}
 		
-				foreach($va_export_config[$vs_table][$ps_template]['columns'] as $vs_title => $va_settings) {
+				foreach($export_config[$table][$template]['columns'] as $title => $settings) {
 
 					if (
-						(strpos($va_settings['template'], 'ca_object_representations.media') !== false)
+						(strpos($settings['template'], 'ca_object_representations.media') !== false)
 						&& 
-						preg_match("!ca_object_representations\.media\.([A-Za-z0-9_\-]+)!", $va_settings['template'], $va_matches)
+						preg_match("!ca_object_representations\.media\.([A-Za-z0-9_\-]+)!", $settings['template'], $matches)
 					) {
-						$vs_version = $va_matches[1];
-						$va_info = $po_result->getMediaInfo('ca_object_representations.media', $vs_version);
+						$version = $matches[1];
+						$info = $result->getMediaInfo('ca_object_representations.media', $version);
 		
-						if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
 		
-							if (is_file($vs_path = $po_result->getMediaPath('ca_object_representations.media', $vs_version))) {
+							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
 								$shape = $slide->createDrawingShape();
-								$shape->setName($va_info['ORIGINAL_FILENAME'])
+								$shape->setName($info['ORIGINAL_FILENAME'])
 									  ->setDescription('Image')
-									  ->setPath($vs_path)
-									  ->setWidth(caConvertMeasurementToPoints(caGetOption('width', $va_settings, '100px'), array('dpi' => 96)))
-									  ->setHeight(caConvertMeasurementToPoints(caGetOption('height', $va_settings, '100px'), array('dpi' => 96)))
-									  ->setOffsetX(caConvertMeasurementToPoints(caGetOption('x', $va_settings, '100px'), array('dpi' => 96)))
-									  ->setOffsetY(caConvertMeasurementToPoints(caGetOption('y', $va_settings, '100px'), array('dpi' => 96)));
+									  ->setPath($path)
+									  ->setWidth(caConvertMeasurementToPoints(caGetOption('width', $settings, '100px'), array('dpi' => 96)))
+									  ->setHeight(caConvertMeasurementToPoints(caGetOption('height', $settings, '100px'), array('dpi' => 96)))
+									  ->setOffsetX(caConvertMeasurementToPoints(caGetOption('x', $settings, '100px'), array('dpi' => 96)))
+									  ->setOffsetY(caConvertMeasurementToPoints(caGetOption('y', $settings, '100px'), array('dpi' => 96)));
 								$shape->getShadow()->setVisible(true)
 												   ->setDirection(45)
 												   ->setDistance(10);
 							}
 						}
-					} elseif ($vs_display_text = html_entity_decode(strip_tags(br2nl($po_result->getWithTemplate($va_settings['template']))))) {
-						switch($vs_align = caGetOption('align', $va_settings, 'center')) {
+					} elseif ($display_text = html_entity_decode(strip_tags(br2nl($result->getWithTemplate($settings['template']))))) {
+						switch($align = caGetOption('align', $settings, 'center')) {
 							case 'center':
-								$vs_align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER;
+								$align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER;
 								break;
 							case 'left':
-								$vs_align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_LEFT;
+								$align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_LEFT;
 								break;
 							case 'right':
 							default:
-								$vs_align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_RIGHT;
+								$align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_RIGHT;
 								break;
 						}
 		
 						$shape = $slide->createRichTextShape()
-							  ->setHeight(caConvertMeasurementToPoints(caGetOption('height', $va_settings, '100px'), array('dpi' => 96)))
-							  ->setWidth(caConvertMeasurementToPoints(caGetOption('width', $va_settings, '100px'), array('dpi' => 96)))
-							  ->setOffsetX(caConvertMeasurementToPoints(caGetOption('x', $va_settings, '100px'), array('dpi' => 96)))
-							  ->setOffsetY(caConvertMeasurementToPoints(caGetOption('y', $va_settings, '100px'), array('dpi' => 96)));
-						$shape->getActiveParagraph()->getAlignment()->setHorizontal($vs_align);
-						$textRun = $shape->createTextRun($vs_display_text);
-						$textRun->getFont()->setBold((bool)caGetOption('bold', $va_settings, false))
-										   ->setSize(caConvertMeasurementToPoints(caGetOption('size', $va_settings, '36px'), array('dpi' => 96)))
-										   ->setColor( new \PhpOffice\PhpPresentation\Style\Color( caGetOption('color', $va_settings, 'cccccc') ) );
+							  ->setHeight(caConvertMeasurementToPoints(caGetOption('height', $settings, '100px'), array('dpi' => 96)))
+							  ->setWidth(caConvertMeasurementToPoints(caGetOption('width', $settings, '100px'), array('dpi' => 96)))
+							  ->setOffsetX(caConvertMeasurementToPoints(caGetOption('x', $settings, '100px'), array('dpi' => 96)))
+							  ->setOffsetY(caConvertMeasurementToPoints(caGetOption('y', $settings, '100px'), array('dpi' => 96)));
+						$shape->getActiveParagraph()->getAlignment()->setHorizontal($align);
+						$textRun = $shape->createTextRun($display_text);
+						$textRun->getFont()->setBold((bool)caGetOption('bold', $settings, false))
+										   ->setSize(caConvertMeasurementToPoints(caGetOption('size', $settings, '36px'), array('dpi' => 96)))
+										   ->setColor( new \PhpOffice\PhpPresentation\Style\Color( caGetOption('color', $settings, 'cccccc') ) );
 					}
 
 				}
 
-				$vn_slide++;
+				$slide++;
 			}
 
 			
-			$vs_filename = caGetOption('filename', $va_export_config[$vs_table][$ps_template], 'export_results');
-			$vs_filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $vs_filename);
-			header('Content-type: application/vnd.openxmlformats-officedocument.presentationml.presentation');
-			header('Content-Disposition:inline;filename='.$filename_stub.'.pptx');
+			$filename = caGetOption('filename', $export_config[$table][$template], 'export_results');
+			$filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $filename);
 			
 			$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
-			$o_writer->save($filepath = caGetTempFileName('caPPT', 'pptx'));
+			if($output === 'STREAM') { 
+				header('Content-type: application/vnd.openxmlformats-officedocument.presentationml.presentation');
+				header('Content-Disposition:inline;filename='.$filename_stub.'.pptx');
 			
-			set_time_limit(0);
-			$o_fp = @fopen($filepath, "rb");
-			while(is_resource($o_fp) && !feof($o_fp)) {
-				print(@fread($o_fp, 1024*8));
-				ob_flush();
-				flush();
+				$o_writer->save($filepath = caGetTempFileName('caPPT', 'pptx'));
+			
+				set_time_limit(0);
+				$o_fp = @fopen($filepath, "rb");
+				while(is_resource($o_fp) && !feof($o_fp)) {
+					print(@fread($o_fp, 1024*8));
+					ob_flush();
+					flush();
+				}
+				@unlink($filepath);
+				exit;
+			} else {
+				$o_writer->save($path = ($output_filename ? $output_filename : "./ppt_output.pptx"));
+				
+				return [
+					'mimetype' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+					'path' => $path
+				];
 			}
-			@unlink($filepath);
-			exit;
 			break;
 		case 'pdf':
 			//
 			// PDF output
 			//
-			caExportViewAsPDF($o_view, $va_template_info, (($vs_filename = $o_view->getVar('filename')) ? $vs_filename : caGetOption('filename', $va_template_info, 'export_results')).'_'.date("Y-m-d").'.pdf', $pa_options);
-			$o_controller = AppController::getInstance();
-			$o_controller->removeAllPlugins();
-			exit;
+			if(!($filename = $output_filename)) {
+				if(!($filename = $o_view->getVar('filename'))) { 
+					$filename = caGetOption('filename', $template_info, 'export_results');
+				}
+				$filename .= '_'.date("Y-m-d").'.pdf';
+			}
+			
+			if($output === 'STREAM') { 
+				caExportViewAsPDF($o_view, $template_info, $filename, $options);
+				$o_controller = AppController::getInstance();
+				$o_controller->removeAllPlugins();
+				exit;
+			} else {
+				$tmp_filename = caGetTempFileName('caExportResult', '');
+				if(!caExportViewAsPDF($o_view, $template_info, $filename, ['writeToFile' => $tmp_filename])) {
+					return null;
+				}
+				return [
+					'mimetype' => 'application/pdf', 
+					'path' => $tmp_filename
+				];
+			}
 			break;
 	}
 	
@@ -525,7 +592,6 @@ function caExportViewAsPDF($po_view, $ps_template_identifier, $ps_output_filenam
 			}
 		}
 		$vs_content = $po_view->render($pa_template_info['path']);
-		
 		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $ps_output_filename, $pa_options);
 	} catch (Exception $e) {
 		$vb_printed_properly = false;
@@ -542,7 +608,9 @@ function caExportViewAsPDF($po_view, $ps_template_identifier, $ps_output_filenam
  * @param array $pa_template_info
  * @param string $ps_output_filename
  * @param array $pa_options Options include:
- * 		returnFile = return file content instead of streaming to browser
+ * 		returnFile = return file content instead of streaming to browser. [Default is false]
+ *		writeToFile = path to file to write output. [Default is null] 
+ *		stream = stream output to browser. [Default is true unless writeFile is set]
  * @return bool
  *
  * @throws ApplicationException
@@ -561,11 +629,12 @@ function caExportContentAsPDF($ps_content, $pa_template_info, $ps_output_filenam
 	
 		$ps_output_filename = (($ps_output_filename) ? preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $ps_output_filename) : 'export').".pdf";
 
-		if(caGetOption('returnFile', $pa_options, null)){
+		if(caGetOption('returnFile', $pa_options, false)){
 			return $o_pdf->render($ps_content, ['stream' => false]);
 		} else {
-			$rendered_content = $o_pdf->render($ps_content, ['stream'=> caGetOption('stream', $pa_options, true), 'filename' => $ps_output_filename]);
-			if($path = caGetOption('writeFile', $pa_options, null)) {
+			$path = caGetOption('writeToFile', $pa_options, null);
+			$rendered_content = $o_pdf->render($ps_content, ['stream'=> caGetOption('stream', $pa_options, !(bool)$path), 'filename' => $ps_output_filename]);
+			if($path) {
 				file_put_contents($path, $rendered_content);
 			}
 			$vb_printed_properly = true;
