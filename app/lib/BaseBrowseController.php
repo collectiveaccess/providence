@@ -337,7 +337,7 @@
  			switch($pa_options['output_format'] ?? null) {
  				# ------------------------------------
  				case 'LABELS':
- 					$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), _t('Browse'), _t('Browse'));
+ 					caExportAsLabels($this->request, $vo_result, $this->request->getParameter("label_form", pString), _t('Browse'), _t('Browse'), ['output' => 'STREAM', 'checkAccess' => $va_access_values]);
  					break;
  				# ------------------------------------
  				case 'EXPORT':

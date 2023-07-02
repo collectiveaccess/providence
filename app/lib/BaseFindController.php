@@ -35,12 +35,7 @@
  */
 require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
-require_once(__CA_LIB_DIR__.'/ResultContext.php');
-require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
-require_once(__CA_LIB_DIR__.'/Visualizer.php');
-require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
-require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
 
 class BaseFindController extends ActionController {
@@ -429,132 +424,50 @@ class BaseFindController extends ActionController {
 	# Printing
 	# -------------------------------------------------------
 	/**
-	  * Action to trigger generation of label-formatted PDF of current find result set
+	  * Trigger generation of label-formatted PDF of current find result set
 	  */
 	public function printLabels() {
+		if($this->request->getParameter('background', pInteger) === 1) {
+			$o_tq = new TaskQueue();
+			
+			if($this->ops_find_type === 'basic_browse') {
+				$o_browse = caGetBrowseInstance($this->ops_tablename);
+				$o_browse->reload($this->opo_result_context->getSearchExpression());
+				$exp = $exp_display = print_R($o_browse->getCriteria(), true);
+			} else {
+				$exp =  $this->opo_result_context->getSearchExpression();
+				$exp_display = $this->opo_result_context->getSearchExpressionForDisplay();
+			}
+			
+			if ($o_tq->addTask(
+				'dataExport',
+				[
+					'request' => $_REQUEST,
+					'mode' => 'LABELS',
+					'findType' => $this->ops_find_type,
+					'table' => $this->ops_tablename,
+					'results' => $this->opo_result_context->getResultList(),
+					'sort' => $this->opo_result_context->getCurrentSort(),
+					'sortDirection' => $this->opo_result_context->getCurrentSortDirection(),
+					'searchExpression' => $exp,
+					'searchExpressionForDisplay' => $exp_display,
+					'user_id' => $this->request->getUserID()
+				],
+				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
+			{
+				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
+				$this->request->isDownload(false);
+				$this->notification->addNotification(_t("Labels are queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
+				
+				$this->Index();
+				return;
+			} else {
+				$this->postError(100, _t("Couldn't queue label export", ), "BaseFindController->export()");
+			}
+		}
+		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
+		set_time_limit(7200);
 		return $this->Index(array('output_format' => 'LABELS'));
-	}
-	# -------------------------------------------------------
-	/**
-	 * Generates and outputs label-formatted PDF version of search results 
-	 */
-	protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
-		$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
-		
-		//
-		// PDF output
-		//
-		$tinfo = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
-		if (!is_array($tinfo)) {
-			$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genLabels()");
-			return;
-		}
-		
-		$this->view->setVar('template_info', $tinfo);
-		if(is_array($tinfo) && is_array($tinfo['params'])) {
-			$values = [];
-			foreach($tinfo['params'] as $n => $p) {
-				if((bool)$p['multiple'] ?? false) {
-					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pArray));
-				} else {
-					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
-				}
-			}
-			Session::setVar("print_labels_options_{$m[2]}", $values);
-		}
-		
-		try {
-			$this->view->setVar('title', $ps_title);
-			
-			$this->view->setVar('base_path', $vs_base_path = pathinfo($tinfo['path'], PATHINFO_DIRNAME).'/');
-			$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-		
-			$o_pdf = new PDFRenderer();
-			$this->view->setVar('PDFRenderer', $vs_renderer = $o_pdf->getCurrentRendererCode());
-		
-			
-			// render labels
-			$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $tinfo, null), 'mm');
-			$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $tinfo, null), 'mm');
-			
-			$vn_top_margin = 			caConvertMeasurement(caGetOption('marginTop', $tinfo, null), 'mm');
-			$vn_bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $tinfo, null), 'mm');
-			$vn_left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $tinfo, null), 'mm');
-			$vn_right_margin = 			caConvertMeasurement(caGetOption('marginRight', $tinfo, null), 'mm');
-			
-			$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $tinfo, null), 'mm');
-			$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $tinfo, null), 'mm');
-			
-			$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $tinfo, 'letter'), 'mm', caGetOption('pageOrientation', $tinfo, 'portrait'));
-			$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-			
-			$vn_label_count = 0;
-			$vn_left = $vn_left_margin;
-			
-			$vn_top = $vn_top_margin;
-			
-			$this->view->setVar('pageWidth', "{$vn_page_width}mm");
-			$this->view->setVar('pageHeight', "{$vn_page_height}mm");				
-			$this->view->setVar('marginTop', caGetOption('marginTop', $tinfo, '0mm'));
-			$this->view->setVar('marginRight', caGetOption('marginRight', $tinfo, '0mm'));
-			$this->view->setVar('marginBottom', caGetOption('marginBottom', $tinfo, '0mm'));
-			$this->view->setVar('marginLeft', caGetOption('marginLeft', $tinfo, '0mm'));
-			
-			
-			$vs_content = $this->render("pdfStart.php");
-			
-			
-			$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
-			$va_tag_list = $this->getTagListForView($tinfo['path']);				// get list of tags in view
-			
-			$vn_page_count = 0;
-			while($po_result->nextHit()) {
-				caDoPrintViewTagSubstitution($this->view, $po_result, $tinfo['path'], array('checkAccess' => $this->opa_access_values));
-				
-				$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
-				$vs_content .= $this->render($tinfo['path']);
-				$vs_content .= "</div>\n";
-				
-				$vn_label_count++;
-				
-				$vn_left += $vn_vertical_gutter + $vn_width;
-				
-				if (($vn_left + $vn_width) > $vn_page_width) {
-					$vn_left = $vn_left_margin;
-					$vn_top += $vn_horizontal_gutter + $vn_height;
-				}
-				if (($vn_top + $vn_height) > (($vn_page_count + 1) * $vn_page_height)) {
-					
-					// next page
-					if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
-					$vn_left = $vn_left_margin;
-						
-					switch($vs_renderer) {
-						case 'wkhtmltopdf':
-							// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
-							$vn_page_count++;
-							$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
-							break;
-						case 'domPDF':
-						default:
-							// domPDF wants things positioned in a per-page coordinate space (Eg. the upper left hand corner of each page is 0,0)
-							$vn_top = $vn_top_margin;								
-							break;
-					}
-				}
-			}
-			
-			$vs_content .= $this->render("pdfEnd.php");
-			$o_pdf->setPage(caGetOption('pageSize', $tinfo, 'letter'), caGetOption('pageOrientation', $tinfo, 'portrait'));
-			$o_pdf->render($vs_content, array('stream'=> true, 'filename' => ($filename = $this->view->getVar('filename')) ? $filename : caGetOption('filename', $tinfo, 'labels.pdf')));
-
-			$vb_printed_properly = true;
-			exit;
-		} catch (Exception $e) {
-			$vb_printed_properly = false;
-			$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
-		}
-		
 	}
 	# -------------------------------------------------------
 	# Export
@@ -564,7 +477,6 @@ class BaseFindController extends ActionController {
 	 */
 	public function export() {
 		if($this->request->getParameter('background', pInteger) === 1) {
-			//die("do background processing");
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -693,7 +605,6 @@ class BaseFindController extends ActionController {
 				if (!$vs_set_name) { $vs_set_name = $this->opo_result_context->getSearchExpression(); }
 		
 				$t_set = new ca_sets();
-				$t_set->setMode(ACCESS_WRITE);
 				if($vn_set_type_id = $this->getRequest()->getParameter('set_type_id', pInteger)) {
 					$t_set->set('type_id', $vn_set_type_id);
 				} else {

@@ -39,12 +39,12 @@ require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 /**
  *
  */
-function caExportFormatForTemplate($table, $template) {
+function caExportFormatForTemplate(string $table, string $template) : ?string {
 	if (substr($template, 0, 5) === '_pdf_') {
 		return 'PDF';
 	} else {		
-		$o_config = Configuration::load();
-		$export_config = $o_config->getAssoc('export_formats');
+		$config = Configuration::load();
+		$export_config = $config->getAssoc('export_formats');
 		
 		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
 			
@@ -64,21 +64,21 @@ function caExportFormatForTemplate($table, $template) {
 /**
  * Export instance as PDF using template
  * 
- * @param RequestHTTP $po_request
+ * @param RequestHTTP $request
  * @param BaseModel $pt_subject
  * @param string $ps_template The name of the template to render
  * @param string $ps_output_filename
- * @param array $pa_options
+ * @param array $options
  * @return bool
  *
  * @throws ApplicationException
  */
-function caExportItemAsPDF($po_request, $pt_subject, $ps_template, $ps_output_filename, $pa_options=null) {
-	$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/');
+function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filename, $options=null) {
+	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
-	$pa_access_values = caGetOption('checkAccess', $pa_options, null);
+	$pa_access_values = caGetOption('checkAccess', $options, null);
 	
-	$o_view->setVar('t_subject', $pt_subject);
+	$view->setVar('t_subject', $pt_subject);
 	
 	$vs_template_identifier = null;
 	if (substr($ps_template, 0, 5) === '_pdf_') {
@@ -92,9 +92,9 @@ function caExportItemAsPDF($po_request, $pt_subject, $ps_template, $ps_output_fi
 		//
 		$t_display = new ca_bundle_displays($vn_display_id = (int)substr($ps_template, 9));
 		
-		if ($vn_display_id && ($t_display->isLoaded()) && ($t_display->haveAccessToDisplay($po_request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-			$o_view->setVar('t_display', $t_display);
-			$o_view->setVar('display_id', $vn_display_id);
+		if ($vn_display_id && ($t_display->isLoaded()) && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
+			$view->setVar('t_display', $t_display);
+			$view->setVar('display_id', $vn_display_id);
 		
 			$va_display_list = array();
 			$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
@@ -115,7 +115,7 @@ function caExportItemAsPDF($po_request, $pt_subject, $ps_template, $ps_output_fi
 					'settings' => $va_settings
 				);
 			}
-			$o_view->setVar('placements', $va_display_list);
+			$view->setVar('placements', $va_display_list);
 		} else {
 			throw new ApplicationException(_t("Invalid format %1", $ps_template));
 		}
@@ -130,8 +130,8 @@ function caExportItemAsPDF($po_request, $pt_subject, $ps_template, $ps_output_fi
 	$o_controller = AppController::getInstance();
 	$o_controller->removeAllPlugins();
 	
-	$pa_options['writeFile'] = $cache_path = __CA_BASE_DIR__.'/export/'.$pt_subject->tableName().'_'.$pt_subject->getPrimaryKey().'.pdf';
-	if(!caGetOption('dontCache', $pa_options, false)) {
+	$options['writeFile'] = $cache_path = __CA_BASE_DIR__.'/export/'.$pt_subject->tableName().'_'.$pt_subject->getPrimaryKey().'.pdf';
+	if(!caGetOption('dontCache', $options, false)) {
 		
 		if(file_exists($cache_path)) {
 			header("Cache-Control: private");
@@ -147,54 +147,199 @@ function caExportItemAsPDF($po_request, $pt_subject, $ps_template, $ps_output_fi
 		}
 	}
 		
-	caDoTemplateTagSubstitution($o_view, $pt_subject, $va_template_info['path'], ['checkAccess' => $pa_access_values, 'render' => false]);	
-	caExportViewAsPDF($o_view, $va_template_info, $ps_output_filename, $pa_options);
+	caDoTemplateTagSubstitution($view, $pt_subject, $va_template_info['path'], ['checkAccess' => $pa_access_values, 'render' => false]);	
+	caExportViewAsPDF($view, $va_template_info, $ps_output_filename, $options);
 	
 	return true;
 }
 # ----------------------------------------
 /**
+ * Export view as PDF using a specified template. It is assumed that all view variables required for 
+ * rendering are already set.
+ * 
+ * @param View $view
+ * @param string $ps_template_identifier
+ * @param string $ps_output_filename
+ * @param array $options Options include:
+ * 		returnFile = return file content instead of streaming to browser -> passed through to caExportContentAsPDF
+ *		writeToFile = write content to filepath
+ * @return bool
+ *
+ * @throws ApplicationException
+ */
+function caExportViewAsPDF($view, $ps_template_identifier, $ps_output_filename, $options=null) {
+	if (is_array($ps_template_identifier)) {
+		$pa_template_info = $ps_template_identifier;
+	} else {
+		$va_template = explode(':', $ps_template_identifier);
+		$pa_template_info = caGetPrintTemplateDetails($va_template[0], $va_template[1]);
+	}
+	if (!is_array($pa_template_info)) { throw new ApplicationException("No template information specified"); }
+	$vb_printed_properly = false;
+	
+	try {
+		$o_pdf = new PDFRenderer();
+		$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+
+		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $pa_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $pa_template_info, 'portrait'));
+		$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+		$view->setVar('pageWidth', "{$vn_page_width}mm");
+		$view->setVar('pageHeight', "{$vn_page_height}mm");
+		$view->setVar('marginTop', caGetOption('marginTop', $pa_template_info, '0mm'));
+		$view->setVar('marginRight', caGetOption('marginRight', $pa_template_info, '0mm'));
+		$view->setVar('marginBottom', caGetOption('marginBottom', $pa_template_info, '0mm'));
+		$view->setVar('marginLeft', caGetOption('marginLeft', $pa_template_info, '0mm'));
+		$view->setVar('base_path', $vs_base_path = pathinfo($pa_template_info['path'], PATHINFO_DIRNAME));
+
+		$view->addViewPath($vs_base_path."/local");
+		$view->addViewPath($vs_base_path);
+		
+		// Copy download-time user parameters into view
+		if(is_array($pa_template_info) && is_array($pa_template_info['params'])) {
+			$values = [];
+			foreach($pa_template_info['params'] as $n => $p) {
+				if((bool)$p['multiple'] ?? false) {
+					$view->setVar("param_{$n}", $values[$n] = $view->request->getParameter($n, pArray));
+				} else {
+					$view->setVar("param_{$n}", $values[$n] = $view->request->getParameter($n, pString));
+				}
+			}
+			if($template_type = caGetOption('printTemplateType', $options, null)) {
+				// Set defaults for form
+				$values = Session::setVar("print_{$template_type}_options_".pathinfo($pa_template_info['path'] ?? null, PATHINFO_FILENAME), $values);
+			}
+		}
+		$vs_content = $view->render($pa_template_info['path']);
+		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $ps_output_filename, $options);
+	} catch (Exception $e) {
+		$vb_printed_properly = false;
+		throw new ApplicationException(_t("Could not generate PDF"));
+	}
+	
+	return $vb_printed_properly;
+}
+# ----------------------------------------
+/**
+ * Export content as PDF.
+ * 
+ * @param string $ps_content
+ * @param array $pa_template_info
+ * @param string $ps_output_filename
+ * @param array $options Options include:
+ * 		returnFile = return file content instead of streaming to browser. [Default is false]
+ *		writeToFile = path to file to write output. [Default is null] 
+ *		stream = stream output to browser. [Default is true unless writeFile is set]
+ * @return bool
+ *
+ * @throws ApplicationException
+ */
+function caExportContentAsPDF($ps_content, $pa_template_info, $ps_output_filename, $options=null) {
+	if (!is_array($pa_template_info)) { throw new ApplicationException("No template information specified"); }
+	$vb_printed_properly = false;
+	
+	try {
+		$o_pdf = new PDFRenderer();
+
+		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $pa_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $pa_template_info, 'portrait'));
+		$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+
+		$o_pdf->setPage(caGetOption('pageSize', $pa_template_info, 'letter'), caGetOption('pageOrientation', $pa_template_info, 'portrait'), caGetOption('marginTop', $pa_template_info, '0mm'), caGetOption('marginRight', $pa_template_info, '0mm'), caGetOption('marginBottom', $pa_template_info, '0mm'), caGetOption('marginLeft', $pa_template_info, '0mm'));
+	
+		$ps_output_filename = (($ps_output_filename) ? preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $ps_output_filename) : 'export').".pdf";
+
+		if(caGetOption('returnFile', $options, false)){
+			return $o_pdf->render($ps_content, ['stream' => false]);
+		} else {
+			$path = caGetOption('writeToFile', $options, null);
+			$rendered_content = $o_pdf->render($ps_content, ['stream'=> caGetOption('stream', $options, !(bool)$path), 'filename' => $ps_output_filename]);
+			if($path) {
+				file_put_contents($path, $rendered_content);
+			}
+			$vb_printed_properly = true;
+		}
+	} catch (Exception $e) {
+		$vb_printed_properly = false;
+		throw new ApplicationException(_t("Could not generate PDF: ".$e->getMessage()));
+	}
+	
+	return $vb_printed_properly;
+}
+# ----------------------------------------
+/**
+ * Generate name for downloadable file. Can take a display template evaluated relative to a provided model instance, a template
+ * evaluated with an array of tag values or static text. (Note: for compatibility reasons if the static text "label" is passed and
+ * a model instance is passed in the 't_subject' option then the preferred label of the instance will be returned).
+ *
+ * The returned value will have all non-alphanumeric characters replaced with underscores, ready for use as a download file name.
+ *
+ * @param string $ps_template A display template or static text used to generate the file name.
+ * @param array $options Options include:
+ * 		t_subject = a model instance to evaluate the filename template relative to. [Default is null]
+ *		values = an array of values, where keys are tag names in the filename template. [Default is null]
+ *
+ * Note that if neither the t_subject or values options are set the template will be evaluated as static text.
+ *
+ * @return string
+ */
+function caGenerateDownloadFileName(string $ps_template, ?array $options=null) : string {
+	$pt_subject = caGetOption('t_subject', $options, null);
+	if ((strpos($ps_template, "^") !== false) && ($pt_subject)) {
+		return caProcessTemplateForIDs($ps_template, $pt_subject->tableName(), [$pt_subject->getPrimaryKey()], $options);
+	} elseif ((strpos($ps_template, "^") !== false) && is_array($va_values = caGetOption('values', $options, null))) {
+		return caProcessTemplate($ps_template, $va_values, $options);
+	}
+	
+	switch(strtolower($ps_template)) {
+		case 'label':
+			return $pt_subject ? $pt_subject->getLabelForDisplay() : "export";
+			break;
+	}
+	
+	return $ps_template;
+}
+# ----------------------------------------
+/**
  * Export search result set as a PDF, XLSX or PPTX file.
  * 
- * @param RequestHTTP $po_request
+ * @param RequestHTTP $request
  * @param SearchResult $po_result
  * @param string $ps_template
  * @param string $output_filename
- * @param array $pa_options Options include:
+ * @param array $options Options include:
  *		output = where to output data. Values may be FILE (write to file) or STREAM. [Default is stream]
  *
  * @return ?array|bool If output is FILE, path to file or null if file could not be generated. If output is STREAM null returned on error; true returned on success
  *
  * @throws ApplicationException
  */
-function caExportResult($request, $result, $template, $output_filename, $options=null) {
+function caExportResult(RequestHTTP $request, SearchResult $result, string $template, string $output_filename, ?array $options=null) {
 	$output = caGetOption('output', $options, 'STREAM');
 	
-	$o_config = Configuration::load();
-	$o_view = new View($request, $request->getViewsDirectoryPath().'/');
+	$config = Configuration::load();
+	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
-	$o_view->setVar('result', $result);
-	$o_view->setVar('t_set', caGetOption('set', $options, null));
-	$o_view->setVar('criteria_summary', caGetOption('criteriaSummary', $options, ''));
+	$view->setVar('result', $result);
+	$view->setVar('t_set', caGetOption('set', $options, null));
+	$view->setVar('criteria_summary', caGetOption('criteriaSummary', $options, ''));
 	
 	$table = $result->tableName();
 	
 	$type = null;
 	$export_config = $template_info = null;
 	
-	if (!(bool)$o_config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
+	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
 		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), substr($template, 5));
 		$type = 'pdf';
-	} elseif (!(bool)$o_config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
+	} elseif (!(bool)$config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
 		$display_id = substr($template, 9);
 		$t_display = new ca_bundle_displays($display_id);
-		$o_view->setVar('display', $t_display);
+		$view->setVar('display', $t_display);
 		
 		if ($display_id && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-			$o_view->setVar('display', $t_display);
+			$view->setVar('display', $t_display);
 			
 			$placements = $t_display->getPlacements(array('settingsOnly' => true));
-			$o_view->setVar('display_list', $placements);
+			$view->setVar('display_list', $placements);
 			foreach($placements as $placement_id => $display_item) {
 				$settings = caUnserializeForDatabase($display_item['settings']);
 			
@@ -212,15 +357,15 @@ function caExportResult($request, $result, $template, $output_filename, $options
 					'settings' => $settings
 				);
 			}
-			$o_view->setVar('display_list', $display_list);
+			$view->setVar('display_list', $display_list);
 		} else {
 			throw new ApplicationException(_t("Invalid format %1", $template));
 		}
 		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), 'display');
 		$type = 'pdf';
-	} elseif(!(bool)$o_config->get('disable_export_output')) {
+	} elseif(!(bool)$config->get('disable_export_output')) {
 		// Look it up in app.conf export_formats
-		$export_config = $o_config->getAssoc('export_formats');
+		$export_config = $config->getAssoc('export_formats');
 		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
 			
 			switch($export_config[$table][$template]['type']) {
@@ -508,20 +653,19 @@ function caExportResult($request, $result, $template, $output_filename, $options
 			// PDF output
 			//
 			if(!($filename = $output_filename)) {
-				if(!($filename = $o_view->getVar('filename'))) { 
+				if(!($filename = $view->getVar('filename'))) { 
 					$filename = caGetOption('filename', $template_info, 'export_results');
 				}
 				$filename .= '_'.date("Y-m-d").'.pdf';
 			}
 			
 			if($output === 'STREAM') { 
-				caExportViewAsPDF($o_view, $template_info, $filename, $options);
+				caExportViewAsPDF($view, $template_info, $filename, $options);
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
-				exit;
 			} else {
 				$tmp_filename = caGetTempFileName('caExportResult', '');
-				if(!caExportViewAsPDF($o_view, $template_info, $filename, ['writeToFile' => $tmp_filename])) {
+				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename])) {
 					return null;
 				}
 				return [
@@ -536,147 +680,137 @@ function caExportResult($request, $result, $template, $output_filename, $options
 }
 # ----------------------------------------
 /**
- * Export view as PDF using a specified template. It is assumed that all view variables required for 
- * rendering are already set.
- * 
- * @param View $po_view
- * @param string $ps_template_identifier
- * @param string $ps_output_filename
- * @param array $pa_options Options include:
- * 		returnFile = return file content instead of streaming to browser -> passed through to caExportContentAsPDF
- *		writeToFile = write content to filepath
- * @return bool
  *
- * @throws ApplicationException
  */
-function caExportViewAsPDF($po_view, $ps_template_identifier, $ps_output_filename, $pa_options=null) {
-	if (is_array($ps_template_identifier)) {
-		$pa_template_info = $ps_template_identifier;
-	} else {
-		$va_template = explode(':', $ps_template_identifier);
-		$pa_template_info = caGetPrintTemplateDetails($va_template[0], $va_template[1]);
+function caExportAsLabels($request, SearchResult $result, string $label_code, string $output_filename, ?string $title=null, ?array $options=null) {
+	$view = new View($request, $request->getViewsDirectoryPath().'/');
+	$output = caGetOption('output', $options, 'STREAM');
+	$config = Configuration::load();
+	
+	$border = ((bool)$config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
+	
+	//
+	// PDF output
+	//
+	$tinfo = caGetPrintTemplateDetails('labels', substr($label_code, 5));
+	if (!is_array($tinfo)) {
+		//$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genLabels()");
+		return;
 	}
-	if (!is_array($pa_template_info)) { throw new ApplicationException("No template information specified"); }
-	$vb_printed_properly = false;
+	
+	$view->setVar('template_info', $tinfo);
+	if(is_array($tinfo) && is_array($tinfo['params'])) {
+		$values = [];
+		foreach($tinfo['params'] as $n => $p) {
+			if((bool)$p['multiple'] ?? false) {
+				$view->setVar("param_{$n}", $values[$n] = $request->getParameter($n, pArray));
+			} else {
+				$view->setVar("param_{$n}", $values[$n] = $request->getParameter($n, pString));
+			}
+		}
+		Session::setVar("print_labels_options_{$m[2]}", $values);
+	}
 	
 	try {
-		$o_pdf = new PDFRenderer();
-		$po_view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
-
-		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $pa_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $pa_template_info, 'portrait'));
-		$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-		$po_view->setVar('pageWidth', "{$vn_page_width}mm");
-		$po_view->setVar('pageHeight', "{$vn_page_height}mm");
-		$po_view->setVar('marginTop', caGetOption('marginTop', $pa_template_info, '0mm'));
-		$po_view->setVar('marginRight', caGetOption('marginRight', $pa_template_info, '0mm'));
-		$po_view->setVar('marginBottom', caGetOption('marginBottom', $pa_template_info, '0mm'));
-		$po_view->setVar('marginLeft', caGetOption('marginLeft', $pa_template_info, '0mm'));
-		$po_view->setVar('base_path', $vs_base_path = pathinfo($pa_template_info['path'], PATHINFO_DIRNAME));
-
-		$po_view->addViewPath($vs_base_path."/local");
-		$po_view->addViewPath($vs_base_path);
+		$view->setVar('title', $title);
+		$view->setVar('result', $result);
 		
-		// Copy download-time user parameters into view
-		if(is_array($pa_template_info) && is_array($pa_template_info['params'])) {
-			$values = [];
-			foreach($pa_template_info['params'] as $n => $p) {
-				if((bool)$p['multiple'] ?? false) {
-					$po_view->setVar("param_{$n}", $values[$n] = $po_view->request->getParameter($n, pArray));
-				} else {
-					$po_view->setVar("param_{$n}", $values[$n] = $po_view->request->getParameter($n, pString));
+		$view->setVar('base_path', $base_path = pathinfo($tinfo['path'], PATHINFO_DIRNAME).'/');
+		$view->addViewPath([$base_path, "{$base_path}/local"]);
+	
+		$o_pdf = new PDFRenderer();
+		$view->setVar('PDFRenderer', $renderer = $o_pdf->getCurrentRendererCode());
+		
+		// render labels
+		$width = 				caConvertMeasurement(caGetOption('labelWidth', $tinfo, null), 'mm');
+		$height = 				caConvertMeasurement(caGetOption('labelHeight', $tinfo, null), 'mm');
+		
+		$top_margin = 			caConvertMeasurement(caGetOption('marginTop', $tinfo, null), 'mm');
+		$bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $tinfo, null), 'mm');
+		$left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $tinfo, null), 'mm');
+		$right_margin = 		caConvertMeasurement(caGetOption('marginRight', $tinfo, null), 'mm');
+		
+		$horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $tinfo, null), 'mm');
+		$vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $tinfo, null), 'mm');
+		
+		$page_size =			PDFRenderer::getPageSize(caGetOption('pageSize', $tinfo, 'letter'), 'mm', caGetOption('pageOrientation', $tinfo, 'portrait'));
+		$page_width = 			$page_size['width']; $page_height = $page_size['height'];
+		
+		$label_count = 0;
+		
+		$left = $left_margin;
+		$top = $top_margin;
+		
+		$view->setVar('pageWidth', "{$page_width}mm");
+		$view->setVar('pageHeight', "{$page_height}mm");				
+		$view->setVar('marginTop', caGetOption('marginTop', $tinfo, '0mm'));
+		$view->setVar('marginRight', caGetOption('marginRight', $tinfo, '0mm'));
+		$view->setVar('marginBottom', caGetOption('marginBottom', $tinfo, '0mm'));
+		$view->setVar('marginLeft', caGetOption('marginLeft', $tinfo, '0mm'));
+		
+		$content = $view->render("pdfStart.php");
+		
+		$defined_vars = array_keys($view->getAllVars());		// get list defined vars (we don't want to copy over them)
+		$tag_list = $view->getTagList($tinfo['path']);				// get list of tags in view
+		
+		$page_count = 0;
+		while($result->nextHit()) {
+			caDoPrintViewTagSubstitution($view, $result, $tinfo['path'], array('checkAccess' => caGetOption('checkAccess', $options, null)));
+			
+			$content .= "<div style=\"{$border} position: absolute; width: {$width}mm; height: {$height}mm; left: {$left}mm; top: {$top}mm; overflow: hidden; padding: 0; margin: 0;\">";
+			$content .= $view->render($tinfo['path']);
+			$content .= "</div>\n";
+			
+			$label_count++;
+			
+			$left += $vertical_gutter + $width;
+			
+			if (($left + $width) > $page_width) {
+				$left = $left_margin;
+				$top += $horizontal_gutter + $height;
+			}
+			if (($top + $height) > (($page_count + 1) * $page_height)) {
+				
+				// next page
+				if ($label_count < $result->numHits()) { $content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
+				$left = $left_margin;
+					
+				switch($renderer) {
+					case 'wkhtmltopdf':
+						// WebKit based renderers (wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+						$page_count++;
+						$top = ($page_count * $page_height) + $top_margin;
+						break;
+					case 'domPDF':
+					default:
+						// domPDF wants things positioned in a per-page coordinate space (Eg. the upper left hand corner of each page is 0,0)
+						$top = $top_margin;								
+						break;
 				}
 			}
-			if($template_type = caGetOption('printTemplateType', $pa_options, null)) {
-				// Set defaults for form
-				$values = Session::setVar("print_{$template_type}_options_".pathinfo($pa_template_info['path'] ?? null, PATHINFO_FILENAME), $values);
-			}
 		}
-		$vs_content = $po_view->render($pa_template_info['path']);
-		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $ps_output_filename, $pa_options);
-	} catch (Exception $e) {
-		$vb_printed_properly = false;
-		throw new ApplicationException(_t("Could not generate PDF"));
-	}
-	
-	return $vb_printed_properly;
-}
-# ----------------------------------------
-/**
- * Export content as PDF.
- * 
- * @param string $ps_content
- * @param array $pa_template_info
- * @param string $ps_output_filename
- * @param array $pa_options Options include:
- * 		returnFile = return file content instead of streaming to browser. [Default is false]
- *		writeToFile = path to file to write output. [Default is null] 
- *		stream = stream output to browser. [Default is true unless writeFile is set]
- * @return bool
- *
- * @throws ApplicationException
- */
-function caExportContentAsPDF($ps_content, $pa_template_info, $ps_output_filename, $pa_options=null) {
-	if (!is_array($pa_template_info)) { throw new ApplicationException("No template information specified"); }
-	$vb_printed_properly = false;
-	
-	try {
-		$o_pdf = new PDFRenderer();
-
-		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $pa_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $pa_template_info, 'portrait'));
-		$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-
-		$o_pdf->setPage(caGetOption('pageSize', $pa_template_info, 'letter'), caGetOption('pageOrientation', $pa_template_info, 'portrait'), caGetOption('marginTop', $pa_template_info, '0mm'), caGetOption('marginRight', $pa_template_info, '0mm'), caGetOption('marginBottom', $pa_template_info, '0mm'), caGetOption('marginLeft', $pa_template_info, '0mm'));
-	
-		$ps_output_filename = (($ps_output_filename) ? preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $ps_output_filename) : 'export').".pdf";
-
-		if(caGetOption('returnFile', $pa_options, false)){
-			return $o_pdf->render($ps_content, ['stream' => false]);
+		
+		$content .= $view->render("pdfEnd.php");
+		$o_pdf->setPage(caGetOption('pageSize', $tinfo, 'letter'), caGetOption('pageOrientation', $tinfo, 'portrait'));
+		
+		if($output === 'STREAM') { 
+			$o_controller = AppController::getInstance();
+			$o_controller->removeAllPlugins();
+			
+			$o_pdf->render($content, ['stream'=> true, 'filename' => ($filename = $view->getVar('filename')) ? $filename : caGetOption('filename', $tinfo, 'labels.pdf')]);
 		} else {
-			$path = caGetOption('writeToFile', $pa_options, null);
-			$rendered_content = $o_pdf->render($ps_content, ['stream'=> caGetOption('stream', $pa_options, !(bool)$path), 'filename' => $ps_output_filename]);
-			if($path) {
-				file_put_contents($path, $rendered_content);
-			}
-			$vb_printed_properly = true;
+			$tmp_filename = caGetTempFileName('caExportResult', '');
+			
+			file_put_contents($tmp_filename, $o_pdf->render($content, ['stream'=> false]));
+		
+			return [
+				'mimetype' => 'application/pdf', 
+				'path' => $tmp_filename
+			];
 		}
+		return true;
 	} catch (Exception $e) {
-		$vb_printed_properly = false;
-		throw new ApplicationException(_t("Could not generate PDF: ".$e->getMessage()));
+		return false;
 	}
-	
-	return $vb_printed_properly;
-}
-# ----------------------------------------
-/**
- * Generate name for downloadable file. Can take a display template evaluated relative to a provided model instance, a template
- * evaluated with an array of tag values or static text. (Note: for compatibility reasons if the static text "label" is passed and
- * a model instance is passed in the 't_subject' option then the preferred label of the instance will be returned).
- *
- * The returned value will have all non-alphanumeric characters replaced with underscores, ready for use as a download file name.
- *
- * @param string $ps_template A display template or static text used to generate the file name.
- * @param array $pa_options Options include:
- * 		t_subject = a model instance to evaluate the filename template relative to. [Default is null]
- *		values = an array of values, where keys are tag names in the filename template. [Default is null]
- *
- * Note that if neither the t_subject or values options are set the template will be evaluated as static text.
- *
- * @return string
- */
-function caGenerateDownloadFileName($ps_template, $pa_options=null) {
-	$pt_subject = caGetOption('t_subject', $pa_options, null);
-	if ((strpos($ps_template, "^") !== false) && ($pt_subject)) {
-		return caProcessTemplateForIDs($ps_template, $pt_subject->tableName(), [$pt_subject->getPrimaryKey()], $pa_options);
-	} elseif ((strpos($ps_template, "^") !== false) && is_array($va_values = caGetOption('values', $pa_options, null))) {
-		return caProcessTemplate($ps_template, $va_values, $pa_options);
-	}
-	
-	switch(strtolower($ps_template)) {
-		case 'label':
-			return $pt_subject ? $pt_subject->getLabelForDisplay() : "export";
-			break;
-	}
-	
-	return $ps_template;
 }
 # ----------------------------------------
