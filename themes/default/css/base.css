@@ -4801,6 +4801,10 @@ div.searchFormElementSettingsMessage {
 }
 
 select.searchFormSelector {
+    max-width: 200px;
+}
+
+select.searchFormSelector {
     font-size: 12px;
 }
 
