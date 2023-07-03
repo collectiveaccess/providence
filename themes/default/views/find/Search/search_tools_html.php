@@ -177,7 +177,7 @@ $table = $t_subject->tableName();
 	function caUpdateResultsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#resultsSelect").val();
 		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { return; }
-		jQuery("#caResultsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintSummaryOptions'); ?>/type/results/form/' + val, function(t, r, x) {
+		jQuery("#caResultsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintResultsOptions'); ?>/type/results/form/' + val, function(t, r, x) {
 			if(x.status == 200) {
 				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
 				jQuery('#caResultsDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);
@@ -196,7 +196,7 @@ $table = $t_subject->tableName();
 	function caUpdateLabelsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#labelsSelect").val();
 		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { return; }
-		jQuery("#caLabelsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintSummaryOptions'); ?>/type/labels/form/' + val, function(t, r, x) {
+		jQuery("#caLabelsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintResultsOptions'); ?>/type/labels/form/' + val, function(t, r, x) {
 			if(x.status == 200) {
 				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
 				jQuery('#caLabelsDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);

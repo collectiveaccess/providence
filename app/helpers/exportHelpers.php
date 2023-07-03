@@ -167,11 +167,11 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
  *
  * @throws ApplicationException
  */
-function caExportViewAsPDF($view, $ps_template_identifier, $ps_output_filename, $options=null) {
-	if (is_array($ps_template_identifier)) {
-		$pa_template_info = $ps_template_identifier;
+function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
+	if (is_array($template_identifier)) {
+		$pa_template_info = $template_identifier;
 	} else {
-		$va_template = explode(':', $ps_template_identifier);
+		$va_template = explode(':', $template_identifier);
 		$pa_template_info = caGetPrintTemplateDetails($va_template[0], $va_template[1]);
 	}
 	if (!is_array($pa_template_info)) { throw new ApplicationException("No template information specified"); }
@@ -195,22 +195,11 @@ function caExportViewAsPDF($view, $ps_template_identifier, $ps_output_filename, 
 		$view->addViewPath($vs_base_path);
 		
 		// Copy download-time user parameters into view
-		if(is_array($pa_template_info) && is_array($pa_template_info['params'])) {
-			$values = [];
-			foreach($pa_template_info['params'] as $n => $p) {
-				if((bool)$p['multiple'] ?? false) {
-					$view->setVar("param_{$n}", $values[$n] = $view->request->getParameter($n, pArray));
-				} else {
-					$view->setVar("param_{$n}", $values[$n] = $view->request->getParameter($n, pString));
-				}
-			}
-			if($template_type = caGetOption('printTemplateType', $options, null)) {
-				// Set defaults for form
-				$values = Session::setVar("print_{$template_type}_options_".pathinfo($pa_template_info['path'] ?? null, PATHINFO_FILENAME), $values);
-			}
-		}
+		$template_type = caGetOption('printTemplateType', $options, null);
+		$values = $template_type ? caGetPrintTemplateParameters($template_type, $pa_template_info['identifier'], ['view' => $view, 'request' => $view->request]) : [];
+		
 		$vs_content = $view->render($pa_template_info['path']);
-		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $ps_output_filename, $options);
+		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $output_filename, $options);
 	} catch (Exception $e) {
 		$vb_printed_properly = false;
 		throw new ApplicationException(_t("Could not generate PDF"));
@@ -660,12 +649,12 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 			}
 			
 			if($output === 'STREAM') { 
-				caExportViewAsPDF($view, $template_info, $filename, $options);
+				caExportViewAsPDF($view, $template_info, $filename, array_merge($options, ['printTemplateType' => 'results']));
 				$o_controller = AppController::getInstance();
 				$o_controller->removeAllPlugins();
 			} else {
 				$tmp_filename = caGetTempFileName('caExportResult', '');
-				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename])) {
+				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename, 'printTemplateType' => 'results'])) {
 					return null;
 				}
 				return [

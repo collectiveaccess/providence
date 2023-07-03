@@ -33,7 +33,6 @@
 /**
  *
  */
-
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
@@ -882,7 +881,7 @@ class BaseEditorController extends ActionController {
         }
         
         // Pass download-time option settings to template
-        $values = caGetTemplateParameters('summary', $m[2], ['view' => $this->view, 'request' => $this->request);
+        $values = caGetPrintTemplateParameters('summary', $m[2], ['view' => $this->view, 'request' => $this->request]);
 		Session::setVar("print_summary_options_{$m[2]}", $values);
 
 		$va_barcode_files_to_delete = array();
@@ -1048,8 +1047,8 @@ class BaseEditorController extends ActionController {
 		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
 			throw new ApplicationException(_t('Invalid template'));
 		}
-		$values = Session::getVar("print_summary_options_{$m[2]}");
 		
+		$values = Session::getVar("print_summary_options_{$m[2]}");
 		$form_options = caEditorPrintParametersForm('summary', $m[2], $values);
 		
 		$this->view->setVar('form', $m[2]);

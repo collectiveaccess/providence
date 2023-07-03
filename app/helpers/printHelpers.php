@@ -268,6 +268,7 @@ use Zend\Stdlib\Glob;
 			    $va_info['restrictToTypes'] = preg_split("![,;]{1}!", trim($va_info['restrictToTypes']));
 			}
 			$va_info['path'] = $vs_template_path;
+			$va_info['identifier'] = $ps_template;
 
 			ExternalCache::save($vs_cache_key, $va_info, 'PrintTemplateDetails');
 			ExternalCache::save("{$vs_cache_key}_mtime", filemtime($vs_template_path), 'PrintTemplateDetails');
@@ -915,5 +916,49 @@ use Zend\Stdlib\Glob;
 		}
 		
 		return $form_elements;
+	}
+	# ---------------------------------------
+	/**
+	 * Get configured paramweters for template
+	 *
+	 * @param string $type
+	 * @param string $template
+	 * @param array $options Options include:
+	 * 		view = Optional view to set parameters data into. Parameters will be set as view variables with the prefix "param_". [Default is null]
+	 *		request = The current request. If set the returned array is key'ed on parameter name, with values set. If not set a simple list of template parameter names is returned. [Default is null]
+	 * @return array Array with template paramet
+	 */
+	function caGetPrintTemplateParameters(string $type, string $template, ?array $options=null) : array {
+		$template = preg_replace("!^(_pdf_|_display_)!", "", $template);
+		
+        $view = caGetOption('view', $options, null);
+        $request = caGetOption('request', $options, null);
+        
+		$tinfo = caGetPrintTemplateDetails($type, $template);
+        if($view) {
+       		$view->setVar('template_info', $tinfo);
+       	}
+        $values = [];
+        
+		if(is_array($tinfo) && is_array($tinfo['params'])) {
+			$values = [];
+			foreach($tinfo['params'] as $n => $p) {
+				if($request) {
+					if((bool)($p['multiple'] ?? false)) {
+						$values[$n] = $request->getParameter($n, pArray);
+					} else {
+						$values[$n] = $request->getParameter($n, pString);
+					}
+				} else {
+					$values[] = $n;
+				}
+				if($view) {
+					$view->setVar("param_{$n}", $values[$n]);
+				}
+			}
+		}
+		
+		Session::setVar("print_template_{$type}_options_".pathinfo($tinfo['path'] ?? null, PATHINFO_FILENAME), $values);
+		return $values;
 	}
 	# ---------------------------------------

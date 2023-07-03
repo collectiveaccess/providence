@@ -428,6 +428,9 @@ class BaseFindController extends ActionController {
 	  * Trigger generation of label-formatted PDF of current find result set
 	  */
 	public function printLabels() {
+		$this->opo_result_context->setParameter($this->ops_tablename.'_last_label_export_type', $_REQUEST['label_form'] ?? null);
+		$this->opo_result_context->saveContext();
+		
 		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
@@ -457,6 +460,7 @@ class BaseFindController extends ActionController {
 				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
 				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
+				caGetPrintTemplateParameters('labels', $_REQUEST['label_form'] ?? null, ['request' => $this->request]);
 				$this->request->isDownload(false);
 				$this->notification->addNotification(_t("Labels are queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
 				
@@ -468,9 +472,6 @@ class BaseFindController extends ActionController {
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
 		
-		$this->opo_result_context->setParameter($this->ops_tablename.'_last_label_export_type', $_REQUEST['label_form'] ?? null);
-		$this->opo_result_context->saveContext();
-		
 		set_time_limit(7200);
 		return $this->Index(array('output_format' => 'LABELS'));
 	}
@@ -481,6 +482,8 @@ class BaseFindController extends ActionController {
 	 * Action to trigger export of current find result set
 	 */
 	public function export() {
+		$this->opo_result_context->setParameter($this->ops_tablename.'_last_export_type', $_REQUEST['export_format'] ?? null);
+		$this->opo_result_context->saveContext();
 		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
@@ -511,19 +514,18 @@ class BaseFindController extends ActionController {
 				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
 				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
+				caGetPrintTemplateParameters('results', $_REQUEST['export_format'] ?? null, ['view' => $this->view, 'request' => $this->request]);
 				$this->request->isDownload(false);
 				$this->notification->addNotification(_t("Report is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
 				
 				$this->Index();
+				
 				return;
 			} else {
 				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
-		
-		$this->opo_result_context->setParameter($this->ops_tablename.'_last_export_type', $_REQUEST['export_format'] ?? null);
-		$this->opo_result_context->saveContext();
 		
 		set_time_limit(7200);
 		return $this->Index(array('output_format' => 'EXPORT'));
@@ -1083,7 +1085,7 @@ class BaseFindController extends ActionController {
 	 *
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
-	public function PrintSummaryOptions(?array $options=null) {
+	public function PrintResultsOptions(?array $options=null) {
 		$type = $this->request->getParameter('type', pString);
 		if(!in_array($type, ['results', 'labels'], true)) { $type = 'results'; }
 		$form = $this->request->getParameter('form', pString);
@@ -1091,8 +1093,8 @@ class BaseFindController extends ActionController {
 		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
 			throw new ApplicationException(_t('Invalid template'));
 		}
-		$values = Session::getVar("print_results_options_{$m[2]}");
 		
+		$values = Session::getVar("print_template_results_options_{$m[2]}");
 		$form_options = caEditorPrintParametersForm($type, $m[2], $values);
 		
 		$this->view->setVar('form', $m[2]);
