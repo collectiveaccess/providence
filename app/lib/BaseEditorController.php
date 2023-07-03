@@ -882,19 +882,8 @@ class BaseEditorController extends ActionController {
         }
         
         // Pass download-time option settings to template
-        $tinfo = caGetPrintTemplateDetails('summary', $m[2]);
-        $this->view->setVar('template_info', $tinfo);
-		if(is_array($tinfo) && is_array($tinfo['params'])) {
-			$values = [];
-			foreach($tinfo['params'] as $n => $p) {
-				if((bool)$p['multiple'] ?? false) {
-					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pArray));
-				} else {
-					$this->view->setVar("param_{$n}", $values[$n] = $this->request->getParameter($n, pString));
-				}
-			}
-			Session::setVar("print_summary_options_{$m[2]}", $values);
-		}
+        $values = caGetTemplateParameters('summary', $m[2], ['view' => $this->view, 'request' => $this->request);
+		Session::setVar("print_summary_options_{$m[2]}", $values);
 
 		$va_barcode_files_to_delete = array();
 
