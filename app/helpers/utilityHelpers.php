@@ -5006,3 +5006,12 @@ function caFileIsIncludable($ps_file) {
 		return $f;
 	}
 	# ----------------------------------------
+	/**
+	 * Check if background processing queue is enabled
+	 *
+	 * @return bool
+	 */
+	function caProcessingQueueIsEnabled() : bool {
+		return defined('__CA_QUEUE_ENABLED__') && __CA_QUEUE_ENABLED__;
+	}
+	# ----------------------------------------

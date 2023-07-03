@@ -293,7 +293,8 @@ class BaseFindController extends ActionController {
 		
 		# --- print forms used for printing search results as labels - in tools show hide under page bar
 		$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label', 'restrictToTypes' => $this->opn_type_restriction_id)));
-		
+		$this->view->setVar('current_label_form', $this->opo_result_context->getParameter($this->ops_tablename.'_last_label_export_type'));
+
 		# --- export options used to export search results - in tools show hide under page bar
 		$vn_table_num = Datamodel::getTableNum($this->ops_tablename);
 
@@ -313,7 +314,7 @@ class BaseFindController extends ActionController {
 		$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('showOnlyIn' => ['search_browse_'.$this->opo_result_context->getCurrentView()], 'table' => $this->ops_tablename, 'restrictToTypes' => $this->opn_type_restriction_id)));
 		
 		$this->view->setVar('export_formats', $va_export_options);
-		$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
+		$this->view->setVar('current_export_format', $this->opo_result_context->getParameter($this->ops_tablename.'_last_export_type'));
 
 		// export mapping list
 		if($this->request->user->canDoAction('can_batch_export_metadata') && $this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
@@ -427,7 +428,7 @@ class BaseFindController extends ActionController {
 	  * Trigger generation of label-formatted PDF of current find result set
 	  */
 	public function printLabels() {
-		if($this->request->getParameter('background', pInteger) === 1) {
+		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -466,6 +467,10 @@ class BaseFindController extends ActionController {
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
+		
+		$this->opo_result_context->setParameter($this->ops_tablename.'_last_label_export_type', $_REQUEST['label_form'] ?? null);
+		$this->opo_result_context->saveContext();
+		
 		set_time_limit(7200);
 		return $this->Index(array('output_format' => 'LABELS'));
 	}
@@ -476,7 +481,7 @@ class BaseFindController extends ActionController {
 	 * Action to trigger export of current find result set
 	 */
 	public function export() {
-		if($this->request->getParameter('background', pInteger) === 1) {
+		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -487,6 +492,7 @@ class BaseFindController extends ActionController {
 				$exp =  $this->opo_result_context->getSearchExpression();
 				$exp_display = $this->opo_result_context->getSearchExpressionForDisplay();
 			}
+			
 			
 			if ($o_tq->addTask(
 				'dataExport',
@@ -515,6 +521,10 @@ class BaseFindController extends ActionController {
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
+		
+		$this->opo_result_context->setParameter($this->ops_tablename.'_last_export_type', $_REQUEST['export_format'] ?? null);
+		$this->opo_result_context->saveContext();
+		
 		set_time_limit(7200);
 		return $this->Index(array('output_format' => 'EXPORT'));
 	}
