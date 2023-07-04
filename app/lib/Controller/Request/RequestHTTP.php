@@ -634,7 +634,7 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 		}
 		
-		die(_t("Invalid parameter type %1 for %2 [value was %3] : %4", $pn_type, is_array($pa_name) ? join("; ", $pa_name) : $pa_name, $vm_val, caPrintStackTrace()));
+		die(_t("Invalid parameter type %1 for %2 [value was %3]", $pn_type, is_array($pa_name) ? join("; ", $pa_name) : $pa_name, $vm_val));
 	}
 	# -------------------------------------------------------
 	/**
