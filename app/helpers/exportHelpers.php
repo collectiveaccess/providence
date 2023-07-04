@@ -51,8 +51,8 @@ function caExportFormatForTemplate(string $table, string $template) : ?string {
 	switch(substr($template, 0, 6)) {
 		case '_xlsx_':
 			return 'Excel';
-		case '_pptx_':
-			return 'Powerpoint';
+		case '_docx_':
+			return 'Word';
 	}
 
 	$config = Configuration::load();
@@ -64,8 +64,6 @@ function caExportFormatForTemplate(string $table, string $template) : ?string {
 			case 'xlsx':
 				return 'Excel';
 				break;
-			case 'pptx':
-				return 'Powerpoint';
 				break;
 			case 'csv':
 				return 'CSV';
@@ -304,7 +302,7 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
 }
 # ----------------------------------------
 /**
- * Export search result set as a PDF, XLSX or PPTX file.
+ * Export search result set as a PDF, XLSX, DOCX, TAB or CSV file.
  * 
  * @param RequestHTTP $request
  * @param SearchResult $result
@@ -366,15 +364,17 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		}
 		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), 'display');
 		$type = 'pdf';
-	} elseif(!(bool)$config->get('disable_export_output')) {
-		switch(substr($template, 0, 5)) {
-			case '_csv_':
-				$type = 'csv';
+	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_!', $template, $m)) {
+		switch($m[1]) {
+			case 'csv':
+			case 'tab':
+				$type = $m[1];
 				$display_id = substr($template, 5);
 				break;
-			case '_tab_':
-				$type = 'tab';
-				$display_id = substr($template, 5);
+			case 'xlsx':
+			case 'docx':
+				$type = $m[1];
+				$display_id = substr($template, 6);
 				break;
 			default:
 				// Look it up in app.conf export_formats
@@ -384,9 +384,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					switch($export_config[$table][$template]['type']) {
 						case 'xlsx':
 							$type = 'xlsx';
-							break;
-						case 'pptx':
-							$type = 'pptx';
 							break;
 						case 'csv':
 							$type = 'csv';
@@ -493,14 +490,20 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			break;
 		case 'xlsx':
 
+			$precision = ini_get('precision');
+			ini_set('precision', 12);
+	
+			$t_display				= $view->getVar('display');
+			$va_display_list 		= $view->getVar('display_list');
+
 			$ratio_pixels_to_excel_height = 0.85;
 			$ratio_pixels_to_excel_width = 0.135;
 
 			$supercol_a_to_z = range('A', 'Z');
 			$supercol = '';
-
+	
 			$a_to_z = range('A', 'Z');
-
+	
 			$workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 			$o_sheet = $workbook->getActiveSheet();
@@ -514,7 +517,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
 							'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 							'wrap' => true,
-							'shrinkToFit'=> true),
+							'shrinkToFit'=> false),
 					'borders' => array(
 							'allborders'=>array(
 									'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
@@ -527,23 +530,36 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
 							'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
 							'wrap' => true,
-							'shrinkToFit'=> true),
+							'shrinkToFit'=> false),
 					'borders' => array(
 							'allborders'=>array(
 									'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));
 
 			$o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
 			$o_sheet->setTitle("CollectiveAccess");
-
+	
 			$line = 1;
 
 			$column = reset($a_to_z);
-
+		
+			// Add default reps
+			if (
+				($version = $config->get($result->tableName()."_always_include_primary_representation_media_in_xlsx_output")) 
+				&& 
+				!sizeof(array_filter($display_list, function($v) { return preg_match('!^ca_object_representations.media!', $v['bundle']); }))
+			) {
+				array_unshift($display_list, [
+					'display' => _t('Media'),
+					'bundle' => "ca_object_representations.media.{$version}",
+					'bundle_name' => "ca_object_representations.media.{$version}",
+				]);
+			}
+	
 			// Column headers
 			$o_sheet->getRowDimension($line)->setRowHeight(30);
-			foreach($export_config[$table][$template]['columns'] as $title => $template) {
+			foreach($display_list as $placement_id => $info) {
 				if($column) {
-					$o_sheet->setCellValue($supercol.$column.$line,$title);
+					$o_sheet->setCellValue($supercol.$column.$line, $info['display']);
 					$o_sheet->getStyle($supercol.$column.$line)->applyFromArray($columntitlestyle);
 					if (!($column = next($a_to_z))) {
 						$supercol = array_shift($supercol_a_to_z);
@@ -551,31 +567,43 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					}
 				}
 			}
-
-
+	
 			$line = 2 ;
 
+			// Other lines
 			while($result->nextHit()) {
+				if(!is_array($media_versions = $result->getMediaVersions('ca_object_representations.media'))) { $media_versions = []; }
+		
 				$column = reset($a_to_z);
-
+		
 				$supercol_a_to_z = range('A', 'Z');
 				$supercol = '';
 
 				// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
 				$o_sheet->getRowDimension($line)->setRowHeight(-1);
 
-				foreach($export_config[$table][$template]['columns'] as $title => $settings) {
-
+				foreach($display_list as $info) {
+					$placement_id = $info['placement_id'];
+			
+					if (is_array($info['settings']) && isset($info['settings']['format']) && ($tags = array_filter(caGetTemplateTags($info['settings']['format']), function($v) { return preg_match("!^ca_object_representations.media.!", $v); }))) {
+						// Transform bundle with template including media into a media bundle as that's the only way to show media within an XLSX
+						$info['bundle_name'] = $tags[0];
+					}
 					if (
-						(strpos($settings['template'], 'ca_object_representations.media') !== false)
-						&& 
-						preg_match("!ca_object_representations\.media\.([A-Za-z0-9_\-]+)!", $settings['template'], $matches)
+						(preg_match('!^ca_object_representations.media!', $info['bundle_name']))
+						&&
+						!strlen($info['settings']['format'])
+						&&
+						(!isset($info['settings']['display_mode']) || ($info['settings']['display_mode'] !== 'url'))
 					) {
-						$version = $matches[1];
+						$bits = explode(".", $info['bundle_name']);
+						$version = array_pop($bits);
+				
+						if (!in_array($version, $media_versions)) { $version = $media_versions[0]; }
+	
 						$info = $result->getMediaInfo('ca_object_representations.media', $version);
-		
-						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-		
+				
+						if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
 							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
 								$image = "image".$supercol.$column.$line;
 								$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
@@ -601,8 +629,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							}
 
 						}
-					} elseif ($display_text = $result->getWithTemplate($settings['template'])) {
-		
+					} elseif ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : []))) {
 						$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
 						// We trust the autosizing up to a certain point, but
 						// we want column widths to be finite :-).
@@ -624,15 +651,46 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 				$line++;
 			}
-
+	
 			// set column width to auto for all columns where we haven't set width manually yet
 			foreach(range('A','Z') as $chr) {
 				if ($o_sheet->getColumnDimension($chr)->getWidth() == -1) {
 					$o_sheet->getColumnDimension($chr)->setAutoSize(true);	
 				}
 			}
-
+	
+			if($request && ($config->get('excel_report_header_enabled') || $config->get('excel_report_footer_enabled'))){
+				$o_sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+				$o_sheet->getPageMargins()->setTop(1);
+				$o_sheet->getPageMargins()->setRight(0.75);
+				$o_sheet->getPageMargins()->setLeft(0.75);
+				$o_sheet->getPageMargins()->setBottom(1);
+				$o_sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1,1);
+		
+				if($request && $config->get('excel_report_header_enabled')){
+					if(file_exists($request->getThemeDirectoryPath()."/graphics/logos/".$request->config->get('report_img'))){
+						$logo_path = $request->getThemeDirectoryPath().'/graphics/logos/'.$request->config->get('report_img');
+					}
+					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
+					$objDrawing->setName('Image');
+					$objDrawing->setPath($vs_logo_path);
+					$objDrawing->setHeight(36);
+					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
+					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
+					$criteria_summary = (strlen($vs_criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
+					$criteria_summary = wordwrap($vs_criteria_summary, 50, "\n", true);
+					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$vs_criteria_summary : ''));
+			
+				}
+				if(!$request || $config->get('excel_report_footer_enabled')){
+					$t_instance = Datamodel::getInstanceByTableName($result->tableName(), true);
+					$o_sheet->getHeaderFooter()->setOddFooter('&L&10'.ucfirst($t_instance->getProperty('NAME_SINGULAR').' report').' &C&10Page &P of &N &R&10 '.date("m/t/y"));
+				}
+			}
+	
 			$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
+
+			ini_set('precision', $precision);
 			
 			if($output === 'STREAM') {
 				$request->isDownload(true);
@@ -649,102 +707,164 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				];
 			}
 			break;
-		case 'pptx':
-			$ppt = new PhpOffice\PhpPresentation\PhpPresentation();
+		case 'docx':
+			// For easier calculation
+			// 1 cm = 1440/2.54 = 566.93 twips
+			$cmToTwips = 567;
 
-			$slide = 0;
-			while($result->nextHit()) {
-				if ($slide > 0) {
-					$slide = $ppt->createSlide();
-				} else {
-					$slide = $ppt->getActiveSlide();
-				}
-		
-				foreach($export_config[$table][$template]['columns'] as $title => $settings) {
+			$phpWord = new \PhpOffice\PhpWord\PhpWord();
 
-					if (
-						(strpos($settings['template'], 'ca_object_representations.media') !== false)
-						&& 
-						preg_match("!ca_object_representations\.media\.([A-Za-z0-9_\-]+)!", $settings['template'], $matches)
-					) {
-						$version = $matches[1];
-						$info = $result->getMediaInfo('ca_object_representations.media', $version);
-		
-						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-		
-							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
-								$shape = $slide->createDrawingShape();
-								$shape->setName($info['ORIGINAL_FILENAME'])
-									  ->setDescription('Image')
-									  ->setPath($path)
-									  ->setWidth(caConvertMeasurementToPoints(caGetOption('width', $settings, '100px'), array('dpi' => 96)))
-									  ->setHeight(caConvertMeasurementToPoints(caGetOption('height', $settings, '100px'), array('dpi' => 96)))
-									  ->setOffsetX(caConvertMeasurementToPoints(caGetOption('x', $settings, '100px'), array('dpi' => 96)))
-									  ->setOffsetY(caConvertMeasurementToPoints(caGetOption('y', $settings, '100px'), array('dpi' => 96)));
-								$shape->getShadow()->setVisible(true)
-												   ->setDirection(45)
-												   ->setDistance(10);
-							}
-						}
-					} elseif ($display_text = html_entity_decode(strip_tags(br2nl($result->getWithTemplate($settings['template']))))) {
-						switch($align = caGetOption('align', $settings, 'center')) {
-							case 'center':
-								$align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER;
-								break;
-							case 'left':
-								$align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_LEFT;
-								break;
-							case 'right':
-							default:
-								$align = \PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_RIGHT;
-								break;
-						}
-		
-						$shape = $slide->createRichTextShape()
-							  ->setHeight(caConvertMeasurementToPoints(caGetOption('height', $settings, '100px'), array('dpi' => 96)))
-							  ->setWidth(caConvertMeasurementToPoints(caGetOption('width', $settings, '100px'), array('dpi' => 96)))
-							  ->setOffsetX(caConvertMeasurementToPoints(caGetOption('x', $settings, '100px'), array('dpi' => 96)))
-							  ->setOffsetY(caConvertMeasurementToPoints(caGetOption('y', $settings, '100px'), array('dpi' => 96)));
-						$shape->getActiveParagraph()->getAlignment()->setHorizontal($align);
-						$textRun = $shape->createTextRun($display_text);
-						$textRun->getFont()->setBold((bool)caGetOption('bold', $settings, false))
-										   ->setSize(caConvertMeasurementToPoints(caGetOption('size', $settings, '36px'), array('dpi' => 96)))
-										   ->setColor( new \PhpOffice\PhpPresentation\Style\Color( caGetOption('color', $settings, 'cccccc') ) );
-					}
+			// Every element you want to append to the word document is placed in a section.
 
-				}
+			// New portrait section
+			$sectionStyle = array(
+				'orientation' => 'portrait',
+				'marginTop' => 2 * $cmToTwips,
+				'marginBottom' => 2 * $cmToTwips,
+				'marginLeft' => 2 * $cmToTwips,
+				'marginRight' => 2 * $cmToTwips,
+				'headerHeight' => 1 * $cmToTwips,
+				'footerHeight' => 1 * $cmToTwips,
+				'colsNum' => 1,
+				'pageSizeW' => 8.5 * 1440,
+				'pageSizeH' => 11 * 1440
+	
+			);
+			$section = $phpWord->addSection($sectionStyle);
 
-				$slide++;
+			// Add header for all pages
+			$header = $section->addHeader();
+
+			$headerimage =  ($request && $config->get('report_img')) ? $request->getThemeDirectoryPath()."/graphics/logos/".$request->config->get('report_img') : '';
+			if(file_exists($headerimage)){
+				$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
 			}
 
-			
-			$filename = caGetOption('filename', $export_config[$table][$template], 'export_results');
-			$filename = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $filename);
-			
-			$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
-			if($output === 'STREAM') { 
-				$request->isDownload(true);
-				header('Content-type: application/vnd.openxmlformats-officedocument.presentationml.presentation');
-				header('Content-Disposition:inline;filename='.$filename_stub.'.pptx');
-			
-				$o_writer->save($filepath = caGetTempFileName('caPPT', 'pptx'));
-			
-				set_time_limit(0);
-				$o_fp = @fopen($filepath, "rb");
-				while(is_resource($o_fp) && !feof($o_fp)) {
-					print(@fread($o_fp, 1024*8));
-					ob_flush();
-					flush();
+			// Add footer
+			$footer = $section->addFooter();
+			$footer->addPreserveText('{PAGE}/{NUMPAGES}', null, array('align' => 'right'));
+
+			// Defining font style for headers
+			$phpWord->addFontStyle('headerStyle',array(
+				'name'=>'Verdana', 
+				'size'=>12, 
+				'color'=>'444477'
+			));
+
+
+			// Defining font style for display values
+			$phpWord->addFontStyle('displayValueStyle',array(
+				'name'=>'Verdana', 
+				'size'=>14, 
+				'color'=>'000000'
+			));
+			$styleHeaderFont = array('bold'=>true, 'size'=>13, 'name'=>'Calibri');
+			$styleBundleNameFont = array('bold'=>false, 'underline'=>'single', 'color'=>'666666', 'size'=>11, 'name'=>'Calibri');
+			$styleContentFont = array('bold'=>false, 'size'=>11, 'name'=>'Calibri');
+	
+			// Define table style arrays
+			$styleTable = array('borderSize'=>0, 'borderColor'=>'ffffff', 'cellMargin'=>80);
+			$styleFirstRow = array('borderBottomSize'=>18, 'borderBottomColor'=>'CCCCCC');
+
+			// Define cell style arrays
+			$styleCell = array('valign'=>'center');
+			$styleCellBTLR = array('valign'=>'center');
+
+			// Define font style for first row
+			$fontStyle = array('bold'=>true, 'align'=>'center');
+
+			// Add table style
+			$phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
+
+
+			while($result->nextHit()) {
+				$table = $section->addTable('myOwnTableStyle');
+				$table->addRow();
+				$list = $display_list;
+	
+				$info = $result->getMediaInfo('ca_object_representations.media',"medium");
+				$path = $result->getMediaPath('ca_object_representations.media',"medium");
+
+				$media_added = false;
+				if(($info['MIMETYPE'] === 'image/jpeg') && $path) { // don't try to insert anything non-jpeg into an Excel file		
+					if (is_file($path)) {
+						// First column : media
+						$mediaCell = $table->addCell( 5 * $cmToTwips);
+						$mediaCell->addImage(
+							$path,
+							array(
+								'width' => 195,
+								'wrappingStyle' => 'inline'
+							)
+						);
+						$media_added = true;
+					}
 				}
-				@unlink($filepath);
-				exit;
+
+
+				// Second column : bundles
+				$contentCell = $table->addCell(($media_added ? 12 : 17) * $cmToTwips);
+
+				$contentCell->addText(
+					caEscapeForXML(html_entity_decode(strip_tags(br2nl($result->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5)),
+					$styleHeaderFont
+				);
+
+				foreach($list as $placement_id => $info) {
+					if (
+						(strpos($info['bundle_name'], 'ca_object_representations.media') !== false)
+						&&
+						($info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+					) {
+						// Inserting bundle name on one line
+						$contentCell->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+
+						// Fetching version asked & corresponding file
+						$version = str_replace("ca_object_representations.media.", "", $info['bundle_name']);
+						$info = $result->getMediaInfo('ca_object_representations.media',$version);
+			
+						// If it's a JPEG, print it (basic filter to avoid non handled media version)
+						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+							$path = $result->getMediaPath('ca_object_representations.media',$version);
+							if (is_file($path)) {
+								$contentCell->addImage(
+									$path
+								);
+							}
+						}
+
+					} elseif ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(array('request' => $request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : array()))) {
+
+						$textrun = $contentCell->createTextRun();
+			
+						if ($request && $config->get('report_include_labels_in_docx_output')) {
+							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+						}
+						$textrun->addText(
+							preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
+							$styleContentFont
+						);
+
+					}}
+				$line++;
+				// Two text break
+				$section->addTextBreak(2);
+			}
+
+			// Finally, write the document:
+			$o_writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+			if($output === 'STREAM') {
+				$request->isDownload(true);
+				header("Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+				header('Content-Disposition: inline;filename='.$filename_stub.'.docx');
+				$o_writer->save('php://output');
+				return;
 			} else {
-				$o_writer->save($path = ($output_filename ? $output_filename : "./ppt_output.pptx"));
-				
+				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
 				return [
-					'mimetype' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+					'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'path' => $path,
-					'extension' => 'pptx'
+					'extension' => 'docx'
 				];
 			}
 			break;
