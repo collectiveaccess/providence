@@ -101,9 +101,13 @@ $formats 				= $this->getVar('formats');
 							
 <?php
 	if(caProcessingQueueIsEnabled()) {
+		$background_opts = ['value' => 1, 'id' => 'caProcessInBackground'];
+		if(Session::getVar($t_item->tableName().'_summary_export_in_background')) {
+			$background_opts['checked'] = 1;
+		}
 ?>	
 		<div>
-			<?= caHTMLCheckBoxInput('background', ['value' => 1, 'id' => 'caProcessInBackground']); ?>
+			<?= caHTMLCheckBoxInput('background', $background_opts); ?>
 			<?= _t('Process in background'); ?>
 		</div>
 <?php

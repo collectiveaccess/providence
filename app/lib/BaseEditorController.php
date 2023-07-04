@@ -798,10 +798,10 @@ class BaseEditorController extends ActionController {
         $template = $this->request->getParameter('template', pString);
         $display_id = (int)$this->request->getParameter('display_id', pString);
 
+		$table = $t_subject->tableName();
 		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
-			$table = $t_subject->tableName();
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld}");
 			
@@ -821,7 +821,7 @@ class BaseEditorController extends ActionController {
 				],
 				["priority" => 100, "entity_key" => join(':', [$table, $vn_subject_id]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
-				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
+				Session::setVar("{$table}_summary_export_in_background", true);
 				caGetPrintTemplateParameters('summary', $template, ['view' => $this->view, 'request' => $this->request]);
 				$this->request->isDownload(false);
 				$this->notification->addNotification(_t("Summary is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
@@ -832,7 +832,7 @@ class BaseEditorController extends ActionController {
 				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
 			}
 		}
-		Session::setVar($t_subject->tableName().'_summary_export_in_background', false);
+		Session::setVar("{$table}_summary_export_in_background", false);
 		
 		caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', []);
 		return;
