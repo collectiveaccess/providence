@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2022 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -97,7 +97,19 @@ $formats 				= $this->getVar('formats');
 				<table class="caSummaryDownloadOptionsPanelAlertControls">
 					<tr style="vertical-align: top;">
                         <td class="caSummaryDownloadOptionsPanelAlertControl">
-							<?= _t('Download')."<br/>{$display_select_html}"; ?>		
+							<?= _t('Download')."<br/>{$display_select_html}"; ?>	
+							
+<?php
+	if(caProcessingQueueIsEnabled()) {
+?>	
+		<div>
+			<?= caHTMLCheckBoxInput('background', ['value' => 1, 'id' => 'caProcessInBackground']); ?>
+			<?= _t('Process in background'); ?>
+		</div>
+<?php
+	}
+?>					
+	
                         </td>	
                         <td class="caSummaryDownloadOptionsPanelAlertControl" id="caSummaryFormatSelectorGroup">
 							<?= _t('Format').'<br/>'.caHTMLSelect('template', $formats, ['id' => 'caSummaryFormatSelector'], ['value' => caGetOption('template', $last_settings, null)]); ?>

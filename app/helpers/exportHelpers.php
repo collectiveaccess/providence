@@ -127,8 +127,7 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
 	//
 	// PDF output
 	//
-	$o_controller = AppController::getInstance();
-	$o_controller->removeAllPlugins();
+	$request->isDownload(true);
 	
 	$options['writeFile'] = $cache_path = __CA_BASE_DIR__.'/export/'.$pt_subject->tableName().'_'.$pt_subject->getPrimaryKey().'.pdf';
 	if(!caGetOption('dontCache', $options, false)) {
@@ -291,7 +290,7 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * Export search result set as a PDF, XLSX or PPTX file.
  * 
  * @param RequestHTTP $request
- * @param SearchResult $po_result
+ * @param SearchResult $result
  * @param string $ps_template
  * @param string $output_filename
  * @param array $options Options include:
@@ -301,7 +300,7 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  *
  * @throws ApplicationException
  */
-function caExportResult(RequestHTTP $request, SearchResult $result, string $template, string $output_filename, ?array $options=null) {
+function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
@@ -528,6 +527,7 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 			$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
 			
 			if($output === 'STREAM') {
+				$request->isDownload(true);
 				header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				header('Content-Disposition:inline;filename='.$filename_stub.'.xlsx');
 				$o_writer->save('php://output');
@@ -536,7 +536,8 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-					'path' => $path
+					'path' => $path,
+					'extension' => 'xlsx'
 				];
 			}
 			break;
@@ -614,6 +615,7 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 			
 			$o_writer = \PhpOffice\PhpPresentation\IOFactory::createWriter($ppt, 'PowerPoint2007');
 			if($output === 'STREAM') { 
+				$request->isDownload(true);
 				header('Content-type: application/vnd.openxmlformats-officedocument.presentationml.presentation');
 				header('Content-Disposition:inline;filename='.$filename_stub.'.pptx');
 			
@@ -633,7 +635,8 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 				
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-					'path' => $path
+					'path' => $path,
+					'extension' => 'pptx'
 				];
 			}
 			break;
@@ -649,9 +652,8 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 			}
 			
 			if($output === 'STREAM') { 
+				$request->isDownload(true);
 				caExportViewAsPDF($view, $template_info, $filename, array_merge($options, ['printTemplateType' => 'results']));
-				$o_controller = AppController::getInstance();
-				$o_controller->removeAllPlugins();
 			} else {
 				$tmp_filename = caGetTempFileName('caExportResult', '');
 				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename, 'printTemplateType' => 'results'])) {
@@ -659,7 +661,8 @@ function caExportResult(RequestHTTP $request, SearchResult $result, string $temp
 				}
 				return [
 					'mimetype' => 'application/pdf', 
-					'path' => $tmp_filename
+					'path' => $tmp_filename,
+					'extension' => 'pdf'
 				];
 			}
 			break;
@@ -783,9 +786,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 		$o_pdf->setPage(caGetOption('pageSize', $tinfo, 'letter'), caGetOption('pageOrientation', $tinfo, 'portrait'));
 		
 		if($output === 'STREAM') { 
-			$o_controller = AppController::getInstance();
-			$o_controller->removeAllPlugins();
-			
+			$request->isDownload(true);
 			$o_pdf->render($content, ['stream'=> true, 'filename' => ($filename = $view->getVar('filename')) ? $filename : caGetOption('filename', $tinfo, 'labels.pdf')]);
 		} else {
 			$tmp_filename = caGetTempFileName('caExportResult', '');
@@ -794,11 +795,197 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 		
 			return [
 				'mimetype' => 'application/pdf', 
-				'path' => $tmp_filename
+				'path' => $tmp_filename,
+				'extension' => 'pdf'
 			];
 		}
 		return true;
 	} catch (Exception $e) {
+		return false;
+	}
+}
+# ----------------------------------------
+/**
+ *
+ */
+function caExportSummary($request, BaseModel $t_instance, string $template, int $display_id, string $output_filename, ?string $title=null, ?array $options=null) {
+	$config = Configuration::load();
+	$output = caGetOption('output', $options, 'STREAM');
+	$access_values = caGetOption('checkAccess', $options, null);
+	
+	$table = $t_instance->tableName();
+	$view = new View($request, $request->getViewsDirectoryPath().'/');
+	
+	$t_display = new ca_bundle_displays();
+	$displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $t_instance->tableNum(), 'user_id' => $request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => [$t_instance->getTypeID()]]));
+
+	$view->setVar('t_subject', $t_instance);
+	
+	// PDF templates set in the display list need to be remapped to the template parameter
+	if(substr($display_id, 0, 5) === '_pdf_') {
+		$template = $display_id;
+		$display_id = null;
+	}
+
+	if ((!$display_id ) || !isset($displays[$display_id])) {
+		$display_id = $request->user->getVar("{$table}_summary_display_id");
+	}
+	
+	if (!isset($displays[$display_id]) || (is_array($displays[$display_id]['settings']['show_only_in'] ?? null) && sizeof($displays[$display_id]['settings']['show_only_in']) && !in_array('editor_summary', $displays[$display_id]['settings']['show_only_in']))) {
+		$tmp = array_filter($displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
+		$display_id = sizeof($tmp) > 0 ? array_shift(array_keys($tmp)) : 0;
+	}
+	
+	$view->setVar('t_display', $t_display);
+	$view->setVar('bundle_displays', $displays);
+
+	// Check validity and access of specified display
+	$media_to_append = [];
+	if ($t_display->load($display_id) && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
+		$view->setVar('display_id', $display_id);
+
+		$placements = $t_display->getPlacements(['returnAllAvailableIfEmpty' => true, 'table' => $t_instance->tableNum(), 'user_id' => $request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true]);
+		$display_list = array();
+		foreach($placements as $placement_id => $display_item) {
+			$settings = caUnserializeForDatabase($display_item['settings']);
+
+			// get column header text
+			$header = $display_item['display'];
+			if (isset($settings['label']) && is_array($settings['label'])) {
+				if ($tmp = array_shift(caExtractValuesByUserLocale(array($settings['label'])))) { $header = $tmp; }
+			}
+
+			$display_list[$placement_id] = array(
+				'placement_id' => $placement_id,
+				'bundle_name' => $display_item['bundle_name'],
+				'display' => $header,
+				'settings' => $settings
+			);
+			
+			$e = explode(".", $display_item['bundle_name'])[1];
+			if ($t_instance->hasElement($e) && (ca_metadata_elements::getElementDatatype($e) === __CA_ATTRIBUTE_VALUE_MEDIA__) && isset($settings['appendMultiPagePDFToPDFOutput']) && (bool)$settings['appendMultiPagePDFToPDFOutput']) {
+				$media = $t_instance->get($display_item['bundle_name'].'.path', ['returnAsArray' => true, 'version' => 'original']);;
+				$mimetypes = $t_instance->get($display_item['bundle_name'].'.original.mimetype', ['returnAsArray' => true]);
+				foreach($mimetypes as $i => $mimetype) {
+					if ($mimetype !== 'application/pdf') { continue; }
+					$media_to_append[] = $media[$i];
+				}
+			  
+			}
+		}
+		$view->setVar('placements', $display_list);
+
+		$request->user->setVar("{$table}_summary_display_id", $display_id);
+	} else {
+		$display_id = null;
+		$view->setVar('display_id', null);
+		$view->setVar('placements', []);
+	}
+
+	//
+	// PDF output
+	//
+	if ($template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
+		$last_settings['template'] = $template;
+	} else {		
+		// When no display is specified (or valid) and no template is specified try loading the default summary format for the table
+		if(!$display_id || !$t_display || !is_array($template_info = caGetPrintTemplateDetails('summary', "{$table}_".$t_display->get('display_code')."_summary"))) {
+			if(!is_array($template_info = caGetPrintTemplateDetails('summary', "{$table}_summary"))) {
+				if(!is_array($template_info = caGetPrintTemplateDetails('summary', "summary"))) {
+					//$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
+					return false;
+				}
+			}
+		}
+	}
+	
+	// Pass download-time option settings to template
+	$values = caGetPrintTemplateParameters('summary', $m[2], ['view' => $view, 'request' => $request]);
+	Session::setVar("print_summary_options_{$m[2]}", $values);
+
+	$barcode_files_to_delete = array();
+
+	try {
+		$view->setVar('base_path', $base_path = pathinfo($template_info['path'], PATHINFO_DIRNAME));
+		$view->addViewPath(array($base_path, "{$base_path}/local"));
+
+		$barcode_files_to_delete += caDoPrintViewTagSubstitution($view, $t_instance, $template_info['path'], array('checkAccess' => $access_values));
+
+		switch($template_info['fileFormat']) {
+			case 'pdf':
+				$o_pdf = new PDFRenderer();
+
+				$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+
+				$page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', caGetOption('pageOrientation', $template_info, 'portrait'));
+				$page_width = $page_size['width']; $page_height = $page_size['height'];
+				$view->setVar('pageWidth', "{$page_width}mm");
+				$view->setVar('pageHeight', "{$page_height}mm");
+				$view->setVar('marginTop', caGetOption('marginTop', $template_info, '0mm'));
+				$view->setVar('marginRight', caGetOption('marginRight', $template_info, '0mm'));
+				$view->setVar('marginBottom', caGetOption('marginBottom', $template_info, '0mm'));
+				$view->setVar('marginLeft', caGetOption('marginLeft', $template_info, '0mm'));
+
+				$content = $view->render($template_info['path']);
+				
+				// Printable views can pass back PDFs to append if they want...
+				if(is_array($media_set_in_view_to_append = $view->getVar('append'))) {
+					$media_to_append = array_merge($media_to_append, $media_set_in_view_to_append);
+				}
+
+				$o_pdf->setPage(caGetOption('pageSize', $template_info, 'letter'), caGetOption('pageOrientation', $template_info, 'portrait'), caGetOption('marginTop', $template_info, '0mm'), caGetOption('marginRight', $template_info, '0mm'), caGetOption('marginBottom', $template_info, '0mm'), caGetOption('marginLeft', $template_info, '0mm'));
+		
+				if (!$filename_template = $config->get("{$table}_summary_file_naming")) {
+					$filename_template = $view->getVar('filename') ? $filename_template : caGetOption('filename', $template_info, 'print_summary');
+				}
+				if (!($filename = caProcessTemplateForIDs($filename_template, $table, [$subject_id]))) {
+					$filename = 'print_summary';
+				}
+				
+				if($output === 'STREAM') { 
+					$request->isDownload(true);
+					$o_pdf->render($content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
+				} else {
+					$tmp_filename = caGetTempFileName('caExportSummary', '');
+			
+					file_put_contents($tmp_filename, $o_pdf->render($content, ['stream'=> false, 'append' => $media_to_append]));
+		
+					return [
+						'mimetype' => 'application/pdf', 
+						'path' => $tmp_filename,
+						'extension' => 'pdf'
+					];
+				}
+				$printed_properly = true;
+				break;
+			case 'docx':
+				$request->isDownload(true);
+				$content = $view->render($template_info['path']);
+				if($output === 'STREAM') { 
+					print $content;
+				} else {
+					$tmp_filename = caGetTempFileName('caExportSummary', '');
+					file_put_contents($tmp_filename, $content);
+					return [
+						'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+						'path' => $tmp_filename,
+						'extension' => 'docx'
+					];
+				}
+				break;
+			default:
+				throw new Exception(_t('Unsupported format: %1', $template_info['fileFormat']));
+				break;
+		}
+		
+		Session::setVar("{$table}_summary_last_settings", $last_settings);
+
+		foreach($barcode_files_to_delete as $tmp) { @unlink($tmp);}
+		return true;
+	} catch (Exception $e) {
+		die($e->getMessage());
+		foreach($barcode_files_to_delete as $tmp) { @unlink($tmp);}
+		$printed_properly = false;
 		return false;
 	}
 }

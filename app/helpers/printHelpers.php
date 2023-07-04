@@ -940,7 +940,7 @@ use Zend\Stdlib\Glob;
        	}
         $values = [];
         
-		if(is_array($tinfo) && is_array($tinfo['params'])) {
+		if(is_array($tinfo) && is_array($tinfo['params'] ?? null)) {
 			$values = [];
 			foreach($tinfo['params'] as $n => $p) {
 				if($request) {

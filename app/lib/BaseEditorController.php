@@ -35,6 +35,7 @@
  */
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
@@ -709,7 +710,7 @@ class BaseEditorController extends ActionController {
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+		if ((!($vn_display_id = (int)$this->request->getParameter('display_id', pString))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
 		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in'] ?? null) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
@@ -788,161 +789,52 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function PrintSummary($pa_options=null) {
-		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
-
+		
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
         if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
-
-		$t_display = new ca_bundle_displays();
-		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
-
-		$vn_display_id = $this->request->getParameter('display_id', pString);
-		$ps_template = $this->request->getParameter('template', pString);
-		
-		// PDF templates set in the display list need to be remapped to the template parameter
-		if(substr($vn_display_id, 0, 4) === '_pdf') {
-			$ps_template = $vn_display_id;
-			$vn_display_id = null;
-		}
-
-		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
-			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
-		}
-		
-		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
-		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
-		}
-		
-		$this->view->setVar('t_display', $t_display);
-		$this->view->setVar('bundle_displays', $va_displays);
-
-		// Check validity and access of specified display
-		$media_to_append = [];
-		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-			$this->view->setVar('display_id', $vn_display_id);
-
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
-			$va_display_list = array();
-			foreach($va_placements as $vn_placement_id => $va_display_item) {
-				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
-
-				// get column header text
-				$vs_header = $va_display_item['display'];
-				if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-					if ($vs_tmp = array_shift(caExtractValuesByUserLocale(array($va_settings['label'])))) { $vs_header = $vs_tmp; }
-				}
-
-				$va_display_list[$vn_placement_id] = array(
-					'placement_id' => $vn_placement_id,
-					'bundle_name' => $va_display_item['bundle_name'],
-					'display' => $vs_header,
-					'settings' => $va_settings
-				);
-				
-				$e = explode(".", $va_display_item['bundle_name'])[1];
-				if ($t_subject->hasElement($e) && (ca_metadata_elements::getElementDatatype($e) === __CA_ATTRIBUTE_VALUE_MEDIA__) && isset($va_settings['appendMultiPagePDFToPDFOutput']) && (bool)$va_settings['appendMultiPagePDFToPDFOutput']) {
-				    $media = $t_subject->get($va_display_item['bundle_name'].'.path', ['returnAsArray' => true, 'version' => 'original']);;
-				    $mimetypes = $t_subject->get($va_display_item['bundle_name'].'.original.mimetype', ['returnAsArray' => true]);
-				    foreach($mimetypes as $i => $mimetype) {
-				        if ($mimetype !== 'application/pdf') { continue; }
-				        $media_to_append[] = $media[$i];
-				    }
-				  
-				}
-			}
-			$this->view->setVar('placements', $va_display_list);
- 
-			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-		} else {
-			$vn_display_id = null;
-			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', []);
-		}
-
-		//
-		// PDF output
-		//
-		if ($ps_template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
-		    $last_settings['template'] = $ps_template;
-		} else {		
-            // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
-            if(!$vn_display_id || !$t_display || !is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_".$t_display->get('display_code')."_summary"))) {
-                if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
-                    if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
-                        $this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
-                        return;
-                    }
-                }
-            }
-        }
         
-        // Pass download-time option settings to template
-        $values = caGetPrintTemplateParameters('summary', $m[2], ['view' => $this->view, 'request' => $this->request]);
-		Session::setVar("print_summary_options_{$m[2]}", $values);
+        $template = $this->request->getParameter('template', pString);
+        $display_id = (int)$this->request->getParameter('display_id', pString);
 
-		$va_barcode_files_to_delete = array();
-
-		try {
-			$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
-			$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-
-			$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
-
-            switch($va_template_info['fileFormat']) {
-                case 'pdf':
-                    $o_pdf = new PDFRenderer();
-
-                    $this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
-
-                    $va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
-                    $vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-                    $this->view->setVar('pageWidth', "{$vn_page_width}mm");
-                    $this->view->setVar('pageHeight', "{$vn_page_height}mm");
-                    $this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
-                    $this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
-                    $this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
-                    $this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
-
-                    $vs_content = $this->render($va_template_info['path']);
-                    
-                    // Printable views can pass back PDFs to append if they want...
-                    if(is_array($media_set_in_view_to_append = $this->view->getVar('append'))) {
-                        $media_to_append = array_merge($media_to_append, $media_set_in_view_to_append);
-                    }
-
-                    $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-            
-            		if (!$filename_template = $this->request->config->get($t_subject->tableName().'_summary_file_naming')) {
-            			$filename_template = $this->view->getVar('filename') ? $filename_template : caGetOption('filename', $va_template_info, 'print_summary');
-            		}
-            		if (!($filename = caProcessTemplateForIDs($filename_template, $t_subject->tableName(), [$vn_subject_id]))) {
-            			$filename = 'print_summary';
-            		}
-                    $o_pdf->render($vs_content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
-
-                    $vb_printed_properly = true;
-                    break;
-                case 'docx':
-                    print $this->render($va_template_info['path']);
-                    break;
-                default:
-                    throw new Exception(_t('Unsupported format: %1', $va_template_info['fileFormat']));
-                    break;
-            }
-            
-            Session::setVar($t_subject->tableName().'_summary_last_settings', $last_settings);
-
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
-			exit;
-		} catch (Exception $e) {
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
-			$vb_printed_properly = false;
-			$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
+			$o_tq = new TaskQueue();
+			
+			$table = $t_subject->tableName();
+			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
+			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld}");
+			
+			if ($o_tq->addTask(
+				'dataExport',
+				[
+					'request' => $_REQUEST,
+					'mode' => 'SUMMARY',
+					'findType' => 'summary',
+					'table' => $table,
+					'results' => [$vn_subject_id],
+					'sort' => null,
+					'sortDirection' => null,
+					'searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}",
+					'searchExpressionForDisplay' => $exp_display,
+					'user_id' => $this->request->getUserID()
+				],
+				["priority" => 100, "entity_key" => join(':', [$table, $vn_subject_id]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
+			{
+				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
+				caGetPrintTemplateParameters('summary', $template, ['view' => $this->view, 'request' => $this->request]);
+				$this->request->isDownload(false);
+				$this->notification->addNotification(_t("Summary is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
+				
+				$this->Summary();
+				return;
+			} else {
+				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
+			}
 		}
+		Session::setVar($t_subject->tableName().'_summary_export_in_background', false);
+		
+		caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', []);
 		return;
 	}
 	# -------------------------------------------------------

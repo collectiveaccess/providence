@@ -89,7 +89,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		
 		$params['outputFormat'] = array(
 			'label' => _t('Output format'),
-			'value' => caExportFormatForTemplate($parameters["table"], $parameters['request']['export_format'] ?? null)
+			'value' => ($parameters['request']['export_format'] ?? null) ? caExportFormatForTemplate($parameters["table"], $parameters['request']['export_format']) : '???'
 		);
 		
 		$exp = $parameters["searchExpressionForDisplay"];
@@ -160,7 +160,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					if(is_array($res)) {
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Report'), 'data_export_result.tpl', [], null, null, ['attachments' => [
 							[
-								'name' => 'report.pdf',
+								'name' => "report.{$res['extension']}",
 								'path' => $res['path'],
 								'mimetype' => $res['mimetype']
 							]]
@@ -181,6 +181,24 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 						]);
 					} else {
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Label export failed'), 'label_export_failure.tpl', [], null, null, []);
+					}
+					break;
+				case 'SUMMARY':
+					if(!$result->nextHit()) {
+						$this->error->setError(551, _t("[TaskQueue::dataExport::process] Record does not exist", $mode),"dataExport->process()");
+						break;
+					}
+					$res = caExportSummary($req, $result->getInstance(), $parameters['request']['template'], (int)$parameters['request']['display_id'], _t('Download'), _t('Download'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
+					if(is_array($res)) {
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Summary'), 'summary_export_result.tpl', [], null, null, ['attachments' => [
+							[
+								'name' => "summary.{$res['extension']}",
+								'path' => $res['path'],
+								'mimetype' => $res['mimetype']
+							]]
+						]);
+					} else {
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Summary failed'), 'summaru_export_failure.tpl', [], null, null, []);
 					}
 					break;
 				default:
