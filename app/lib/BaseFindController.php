@@ -491,7 +491,11 @@ class BaseFindController extends ActionController {
 			if($this->ops_find_type === 'basic_browse') {
 				$o_browse = caGetBrowseInstance($this->ops_tablename);
 				$o_browse->reload($this->opo_result_context->getSearchExpression());
-				$exp = $exp_display = print_R($o_browse->getCriteria(), true);
+				
+				$criteria_by_facet = $o_browse->getCriteriaAsStrings();
+				$exp = $exp_display = join(' / ', array_map(function($k, $v) {
+					return "{$k}: {$v}";
+				}, array_keys($criteria_by_facet), array_values($criteria_by_facet)));
 			} else {
 				$exp =  $this->opo_result_context->getSearchExpression();
 				$exp_display = $this->opo_result_context->getSearchExpressionForDisplay();
