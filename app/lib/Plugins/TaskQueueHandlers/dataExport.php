@@ -59,7 +59,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 	 * @return string Name - actually more of a short description - of this task queue plugin
 	 */
 	public function getHandlerName() {
-		return _t("Background data export");
+		return _t("Background export");
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -75,35 +75,43 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		$params = [];
 		$config = Configuration::load(__CA_CONF_DIR__.'/find_navigation.conf');
 		$find_types = $config->getAssoc('find_types_for_display');
+		$is_summary = ($parameters["mode"] ?? null) === 'SUMMARY';
 	
-		$params['findType'] = array(
-			'label' => _t('Find type'),
-			'value' => $find_types[$parameters["findType"]] ?? $parameters["findType"]
+		$params['outputType'] = array(
+			'label' => _t('Output type'),
+			'value' => mb_strtolower($parameters["mode"] ?? _t('Unknown'))
 		);
 		
+		if(!$is_summary) {
+			$params['findType'] = array(
+				'label' => _t('Find type'),
+				'value' => $find_types[$parameters["findType"]] ?? $parameters["findType"]
+			);
+		}
+		$params['outputFormat'] = array(
+			'label' => _t('Output format'),
+			'value' => $parameters['format'] ?? _t('Unknown')
+		);
 		
 		$params['contentType'] = array(
 			'label' => _t('Content'),
-			'value' => Datamodel::getTableProperty($parameters["table"], 'NAME_PLURAL')
+			'value' => Datamodel::getTableProperty($parameters["table"], !$is_summary ? 'NAME_PLURAL' : 'NAME_SINGULAR')
 		);
 		
-		$params['outputFormat'] = array(
-			'label' => _t('Output format'),
-			'value' => ($parameters['request']['export_format'] ?? null) ? caExportFormatForTemplate($parameters["table"], $parameters['request']['export_format']) : '???'
-		);
 		
 		$exp = $parameters["searchExpressionForDisplay"];
 		
 		$params['searchExpressionForDisplay'] = array(
-			'label' => _t('Query'),
+			'label' => $is_summary ? _('Subject') : _('Query'),
 			'value' => $exp
 		);
 		
-		$params['resultCount'] = array(
-			'label' => _t('Result count'),
-			'value' => sizeof($parameters["results"])
-		);
-		
+		if(!$is_summary) {
+			$params['resultCount'] = array(
+				'label' => _t('Result count'),
+				'value' => sizeof($parameters["results"])
+			);
+		}
 		
 		return $params;
 	}
@@ -121,7 +129,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 	public function process($parameters) {
 		$logger = caGetLogger();
 		$resp = new ResponseHTTP();
-		$req = new RequestHTTP($resp, array('simulateWith' => array(
+		$req = new RequestHTTP($resp, array('simulateWith' => [
 				'POST' => $parameters['request'],
 				'SCRIPT_NAME' => join('/', array(__CA_URL_ROOT__, 'index.php')), 'REQUEST_METHOD' => 'POST',
 				'REQUEST_URI' => join('/', array(__CA_URL_ROOT__, 'index.php', 'find')), 
@@ -129,7 +137,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 				'REMOTE_ADDR' => $parameters['ip_address'] ?? null,
 				'HTTP_USER_AGENT' => 'dataExport',
 				'user_id' => $parameters['user_id'] ?? null
-			)
+			]
 		));
 		
 		$o_app = AppController::getInstance($req, $resp);
@@ -150,7 +158,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 				case 'EXPORT':
 					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Data_Export'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export for %2', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'data_export_result.tpl', $parameters, null, null, ['attachments' => [
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'data_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
 								'name' => "data_export.{$res['extension']}",
 								'path' => $res['path'],
@@ -159,13 +167,13 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 						]);
 					} else {
 						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export failed', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'data_export_failure.tpl', $parameters, null, null, []);
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export failed', __CA_APP_DISPLAY_NAME__), 'data_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
 				case 'LABELS':
 					$res = caExportAsLabels($req, $result, $parameters['request']['label_form'], _t('Labels'), _t('Labels'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Labels for %2', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'label_export_result.tpl', $parameters, null, null, ['attachments' => [
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Labels for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'label_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
 								'name' => 'labels.pdf',		// labels are always PDF
 								'path' => $res['path'],
@@ -186,7 +194,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					}
 					$res = caExportSummary($req, $result->getInstance(), $parameters['request']['template'], (int)$parameters['request']['display_id'], _t('Download'), _t('Download'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary for %2', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'summary_export_result.tpl', $parameters, null, null, ['attachments' => [
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'summary_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
 								'name' => "summary.{$res['extension']}",
 								'path' => $res['path'],

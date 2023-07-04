@@ -803,7 +803,7 @@ class BaseEditorController extends ActionController {
 			$o_tq = new TaskQueue();
 			
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
-			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld}");
+			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld})");
 			
 			if ($o_tq->addTask(
 				'dataExport',
@@ -813,6 +813,7 @@ class BaseEditorController extends ActionController {
 					'findType' => 'summary',
 					'table' => $table,
 					'results' => [$vn_subject_id],
+					'format' => caExportFormatForTemplate($table, $template),
 					'sort' => null,
 					'sortDirection' => null,
 					'searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}",
