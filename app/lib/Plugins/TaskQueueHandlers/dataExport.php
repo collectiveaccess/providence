@@ -134,14 +134,6 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		
 		$o_app = AppController::getInstance($req, $resp);
 		
-// 				'request' => $_REQUEST,
-// 				'mode' => 'EXPORT',
-// 				'findType' => $this->ops_find_type,
-// 				'table' => $this->ops_tablename,
-// 				'results' => $this->opo_result_context->getResultList(),
-// 				'sort' => $this->opo_result_context->getCurrentSort(),
-// 				'sortDirection' => $this->opo_result_context->getCurrentSortDirection()
-
 		if(!($user = ca_users::findAsInstance(['user_id' => $parameters['user_id']]))) {
 			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid user id; id was '%1'", $parameters['user_id'])); 
 			$this->error->setError(551, _t("Invalid user_id; id was '%1'", $parameters['user_id']),"dataExport->process()");
@@ -156,41 +148,45 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		try {
 			switch($mode = $parameters['mode']) {
 				case 'EXPORT':
-					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Download'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
+					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Data_Export'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Report'), 'data_export_result.tpl', [], null, null, ['attachments' => [
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export for %2', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'data_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
-								'name' => "report.{$res['extension']}",
+								'name' => "data_export.{$res['extension']}",
 								'path' => $res['path'],
 								'mimetype' => $res['mimetype']
 							]]
 						]);
 					} else {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Report failed'), 'data_export_failure.tpl', [], null, null, []);
+						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export failed', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'data_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
 				case 'LABELS':
 					$res = caExportAsLabels($req, $result, $parameters['request']['label_form'], _t('Labels'), _t('Labels'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Labels'), 'label_export_result.tpl', [], null, null, ['attachments' => [
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Labels for %2', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'label_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
-								'name' => 'labels.pdf',
+								'name' => 'labels.pdf',		// labels are always PDF
 								'path' => $res['path'],
 								'mimetype' => $res['mimetype']
 							]]
 						]);
 					} else {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Label export failed'), 'label_export_failure.tpl', [], null, null, []);
+						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Label export failed', __CA_APP_DISPLAY_NAME__), 'label_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
 				case 'SUMMARY':
 					if(!$result->nextHit()) {
 						$this->error->setError(551, _t("[TaskQueue::dataExport::process] Record does not exist", $mode),"dataExport->process()");
+						$parameters['errors'] = _t('Record does not exist');
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
 						break;
 					}
 					$res = caExportSummary($req, $result->getInstance(), $parameters['request']['template'], (int)$parameters['request']['display_id'], _t('Download'), _t('Download'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Summary'), 'summary_export_result.tpl', [], null, null, ['attachments' => [
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary for %2', __CA_APP_DISPLAY_NAME__, $parameters['searchExpressionForDisplay']), 'summary_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
 								'name' => "summary.{$res['extension']}",
 								'path' => $res['path'],
@@ -198,7 +194,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('Summary failed'), 'summaru_export_failure.tpl', [], null, null, []);
+						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
 				default:
@@ -207,7 +204,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					break;
 			}
 		} catch(TypeError $e) {
-			die("error: " . $e->getMEssage());
+			die("Type error: " . $e->getMessage());
 		}
 		return false;
 	}

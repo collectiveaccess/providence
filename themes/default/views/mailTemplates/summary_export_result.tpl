@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1>Summary</h1>
-<p>Suummary for <?= $this->getVar('summary'); ?> has been created and is attached.</p>
+<p><strong><?= _t('Summary output'); ?></strong></p>
+<p><?= _t('Summary for <em>%1</em> has been created and is attached.', $this->getVar('searchExpressionForDisplay')); ?></p>

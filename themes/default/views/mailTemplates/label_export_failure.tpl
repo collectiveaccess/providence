@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1>Label output failed</h1>
-<p>Labels for <?= $this->getVar('summary'); ?> could not be created: <?= $this->getVar('errors'); ?>.</p>
+<p><strong><?= _t('Label output failed'); ?></strong></p>
+<p><?= _t('Labels for <em>%1</em> could not be created: %2.', $this->getVar('searchExpressionForDisplay'), $this->getVar('errors')); ?></p>

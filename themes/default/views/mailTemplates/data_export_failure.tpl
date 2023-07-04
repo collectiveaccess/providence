@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1>Report failed</h1>
-<p>The report <?= $this->getVar('summary'); ?> could not be created: <?= $this->getVar('errors'); ?>.</p>
+<p><strong><?= _t('Data export failed'); ?></strong></p>
+<p><?= _t('The data export for <em>%1</em> could not be created: %2.', $this->getVar('searchExpressionForDisplay'), $this->getVar('errors')); ?></p>

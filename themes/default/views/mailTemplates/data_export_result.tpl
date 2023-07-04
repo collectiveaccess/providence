@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1>Report</h1>
-<p>The report <?= $this->getVar('summary'); ?> has been created and is attached.</p>
+<p><strong><?= _t('Data export'); ?></strong></p>
+<p><?= _t('The data export for <em>%1</em> has been created and is attached.', $this->getVar('searchExpressionForDisplay')); ?></p>

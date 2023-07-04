@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1>Summary output failed</h1>
-<p>Summary for <?= $this->getVar('summary'); ?> could not be created: <?= $this->getVar('errors'); ?>.</p>
+<p><strong><?= _t('Summary output failed'); ?></strong></p>
+<p><?= _t('Summary for <em>%1</em> could not be created: %2.', $this->getVar('searchExpressionForDisplay'), $this->getVar('errors')); ?></p>

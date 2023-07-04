@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h1>Labels</h1>
-<p>Labels for <?= $this->getVar('summary'); ?> have been created and are attached.</p>
+<p><strong><?= _t('Label output'); ?></strong></p>
+<p><?= _t('Labels for <em>%1</em> have been created and are attached.', $this->getVar('searchExpressionForDisplay')); ?></p>
