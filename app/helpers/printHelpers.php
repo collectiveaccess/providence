@@ -207,6 +207,9 @@ use Zend\Stdlib\Glob;
 	function caGetPrintTemplateDetails($ps_type, $ps_template, $pa_options=null) {
 		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { return null; }
 		
+		// strip format prefix if present
+		$ps_template = caProcessTemplateName($ps_template);
+		
 		$va_info = [];
 		foreach($va_template_paths as $vs_template_path) {
 			if (file_exists("{$vs_template_path}/local/{$ps_template}.php")) {
@@ -960,5 +963,34 @@ use Zend\Stdlib\Glob;
 		
 		Session::setVar("print_template_{$type}_options_".pathinfo($tinfo['path'] ?? null, PATHINFO_FILENAME), $values);
 		return $values;
+	}
+	# ---------------------------------------
+	/**
+	 * Process template name, stripping type prefix if present. Eg. "_pdf_my_first_report" will be returned as "my_first_report"
+	 *
+	 * If the returnDetails option is set an array will be returned with keys for name ("my_first_report") and extracted type if present ("pdf")
+	 *
+	 * @param string $template_name
+	 * @param array $options Options include:
+	 *		returnDetails = return array with template name and type in "name" and "type" keys. [Default is false]
+	 *	
+	 * @return mixed Returns string with processed name, or an array if the returnDetails option is set. 
+	 */
+	function caProcessTemplateName(string $template_name, ?array $options=null) {
+		// strip format prefix if present
+		$type = null;
+		if(preg_match("!^_(pdf|display|docx|xlsx|csv|tab)_!", $template_name, $m)) {
+			$type = $m[1];
+			$template_name = preg_replace("!^_{$type}_!", "", $template_name);
+		}
+		
+		if(caGetOption('returnDetails', $options, false)) {
+			return [
+				'name' => $template_name,
+				'type' => $type
+			];
+		} else {
+			return $template_name;
+		}
 	}
 	# ---------------------------------------

@@ -431,7 +431,22 @@ class BaseFindController extends ActionController {
 		$this->opo_result_context->setParameter($this->ops_tablename.'_last_label_export_type', $_REQUEST['label_form'] ?? null);
 		$this->opo_result_context->saveContext();
 		
-		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
+		$is_background = ($this->request->getParameter('background', pInteger) === 1);
+		
+		// Check is report should be force-backgrounded because the number of results exceeds the background result size 
+		// threshold declared in the chosen template.
+		if(
+			!$is_background &&
+			caProcessingQueueIsEnabled() &&
+			is_array($tinfo = caGetPrintTemplateDetails('labels', $_REQUEST['export_format'])) && 
+			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
+			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
+		) {
+			$this->notification->addNotification(_t("Label export is too large for immediate download."), __NOTIFICATION_TYPE_INFO__);
+			$is_background = true;	
+		}
+		
+		if($is_background && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -463,7 +478,7 @@ class BaseFindController extends ActionController {
 				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
 				caGetPrintTemplateParameters('labels', $_REQUEST['label_form'] ?? null, ['request' => $this->request]);
 				$this->request->isDownload(false);
-				$this->notification->addNotification(_t("Labels are queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
+				$this->notification->addNotification(_t("Label export is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
 				
 				$this->Index();
 				return;
@@ -485,7 +500,23 @@ class BaseFindController extends ActionController {
 	public function export() {
 		$this->opo_result_context->setParameter($this->ops_tablename.'_last_export_type', $_REQUEST['export_format'] ?? null);
 		$this->opo_result_context->saveContext();
-		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
+		
+		$is_background = ($this->request->getParameter('background', pInteger) === 1);
+		
+		// Check is report should be force-backgrounded because the number of results exceeds the background result size 
+		// threshold declared in the chosen template.
+		if(
+			!$is_background &&
+			caProcessingQueueIsEnabled() &&
+			is_array($tinfo = caGetPrintTemplateDetails('results', $_REQUEST['export_format'])) && 
+			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
+			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
+		) {
+			$this->notification->addNotification(_t("Data export is too large for immediate download."), __NOTIFICATION_TYPE_INFO__);
+			$is_background = true;	
+		}
+		
+		if($is_background && caProcessingQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -522,7 +553,7 @@ class BaseFindController extends ActionController {
 				Session::setVar($this->ops_tablename.'_search_export_in_background', true);
 				caGetPrintTemplateParameters('results', $_REQUEST['export_format'] ?? null, ['view' => $this->view, 'request' => $this->request]);
 				$this->request->isDownload(false);
-				$this->notification->addNotification(_t("Report is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
+				$this->notification->addNotification(_t("Data export is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
 				
 				$this->Index();
 				
