@@ -40,22 +40,39 @@ require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
  *
  */
 function caExportFormatForTemplate(string $table, string $template) : ?string {
-	if (substr($template, 0, 5) === '_pdf_') {
-		return 'PDF';
-	} else {		
-		$config = Configuration::load();
-		$export_config = $config->getAssoc('export_formats');
+	switch(substr($template, 0, 5)) {
+		case '_pdf_':
+			return 'PDF';
+		case '_tab_':
+			return 'TAB';
+		case '_csv_':
+			return 'CSV';
+	}
+	switch(substr($template, 0, 6)) {
+		case '_xlsx_':
+			return 'Excel';
+		case '_pptx_':
+			return 'Powerpoint';
+	}
+
+	$config = Configuration::load();
+	$export_config = $config->getAssoc('export_formats');
+	
+	if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
 		
-		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
-			
-			switch($export_config[$table][$template]['type']) {
-				case 'xlsx':
-					return 'Excel';
-					break;
-				case 'pptx':
-					return 'Powerpoint';
-					break;
-			}
+		switch($export_config[$table][$template]['type']) {
+			case 'xlsx':
+				return 'Excel';
+				break;
+			case 'pptx':
+				return 'Powerpoint';
+				break;
+			case 'csv':
+				return 'CSV';
+				break;
+			case 'tab':
+				return 'TAB';
+				break;
 		}
 	}
 	return null;
@@ -312,7 +329,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	
 	$table = $result->tableName();
 	
-	$type = null;
+	$type = $display_id = null;
 	$export_config = $template_info = null;
 	
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
@@ -320,8 +337,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		$type = 'pdf';
 	} elseif (!(bool)$config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
 		$display_id = substr($template, 9);
-		$t_display = new ca_bundle_displays($display_id);
-		$view->setVar('display', $t_display);
 		
 		if ($display_id && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$view->setVar('display', $t_display);
@@ -352,21 +367,64 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), 'display');
 		$type = 'pdf';
 	} elseif(!(bool)$config->get('disable_export_output')) {
-		// Look it up in app.conf export_formats
-		$export_config = $config->getAssoc('export_formats');
-		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
+		switch(substr($template, 0, 5)) {
+			case '_csv_':
+				$type = 'csv';
+				$display_id = substr($template, 5);
+				break;
+			case '_tab_':
+				$type = 'tab';
+				$display_id = substr($template, 5);
+				break;
+			default:
+				// Look it up in app.conf export_formats
+				$export_config = $config->getAssoc('export_formats');
+				if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
 			
-			switch($export_config[$table][$template]['type']) {
-				case 'xlsx':
-					$type = 'xlsx';
-					break;
-				case 'pptx':
-					$type = 'pptx';
-					break;
+					switch($export_config[$table][$template]['type']) {
+						case 'xlsx':
+							$type = 'xlsx';
+							break;
+						case 'pptx':
+							$type = 'pptx';
+							break;
+						case 'csv':
+							$type = 'csv';
+							break;
+						case 'tab':
+							$type = 'tab';
+							break;
+					}
+				} else {
+					throw new ApplicationException(_t("Invalid format %1", $template));
+				}
 			}
-		} else {
-			throw new ApplicationException(_t("Invalid format %1", $template));
+	}
+	
+	$t_display = new ca_bundle_displays();
+	if ($display_id && ($t_display->load($display_id)) && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
+		$placements = $t_display->getPlacements(['settingsOnly' => true]);
+		$view->setVar('display_list', $placements);
+		$view->setVar('display', $t_display);
+		
+		foreach($placements as $placement_id => $display_item) {
+			$settings = caUnserializeForDatabase($display_item['settings']);
+		
+			// get column header text
+			$header = $display_item['display'];
+			if (isset($settings['label']) && is_array($settings['label'])) {
+				$tmp = caExtractValuesByUserLocale(array($settings['label']));
+				if ($tmp = array_shift($tmp)) { $header = $tmp; }
+			}
+		
+			$display_list[$placement_id] = [
+				'placement_id' => $placement_id,
+				'bundle_name' => $display_item['bundle_name'],
+				'display' => $header,
+				'settings' => $settings
+			];
 		}
+		$view->setVar('display_list', $display_list);
 	}
 	
 	if(!$type) { throw new ApplicationException(_t('Invalid export type')); }
@@ -383,6 +441,56 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	$filename_stub = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $filename_stub);
 	
 	switch($type) {
+		case 'tab':
+		case 'csv':
+			$delimiter = ($type === 'tab') ? "\t" : ",";
+			$mimetype = ($type === 'tab') ? "text/tab-separated-values" : "text/csv";
+			$extension = ($type === 'tab') ? "tsv" : "csv";
+			
+			$display_list = $view->getVar('display_list');
+			$rows = $row = [];
+			
+			// Header
+			foreach($display_list as $display_item) {
+				$row[] = $display_item['display'];
+			}
+			$rows[] = join($delimiter, $row);
+		
+			$result->seek(0);
+		
+			$t_display = $view->getVar('display');
+			while($result->nextHit()) {
+				$row = [];
+				foreach($display_list as $placement_id => $display_item) {
+					$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
+					$value = preg_replace("![\r\n\t]+!", " ", $value);
+					
+					// quote values as required
+					if (preg_match("![^A-Za-z0-9 .;]+!", $value)) {
+						$value = '"'.str_replace('"', '""', $value).'"';
+					}
+					$row[] = $value;
+				}
+				$rows[] = join($delimiter, $row);
+			}
+			
+			if($output === 'STREAM') { 
+				$request->isDownload(true);				
+				header("Content-Disposition: attachment; filename=export_{$output_filename}.{$extension}");
+				header("Content-type: {$mimetype}");
+				print join("\n", $rows);
+				return;
+			} else {
+				$tmp_filename = caGetTempFileName('caExportResult', '');
+				// write file to $tmp_filename
+				file_put_contents($tmp_filename, join("\n", $rows));
+				return [
+					'mimetype' =>  $mimetype, 
+					'path' => $tmp_filename,
+					'extension' =>  $extension
+				];
+			}
+			break;
 		case 'xlsx':
 
 			$ratio_pixels_to_excel_height = 0.85;

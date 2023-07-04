@@ -306,7 +306,7 @@ class BaseFindController extends ActionController {
 			['tab' => _t('Tab delimited'), 'csv' => _t('Comma delimited (CSV)'), 
 			'xlsx' => _t('Spreadsheet (XLSX)'), 'docx' => _t('Word processing (DOCX)')] as $ext => $name) {
 			if (!is_array($include_export_options) || in_array($ext, $include_export_options)) {
-				$va_export_options[] = ['name' => $name, 'code' => "_{$ext}"];
+				$va_export_options[] = ['name' => $name, 'code' => "_{$ext}_{$display_id}"];
 			}
 		}
 		
