@@ -6589,7 +6589,7 @@ div.dialogHeader {
 	border-radius: 5px;
 	display: none;
 	overflow-y: auto;
-	max-height: 300px;
+	max-height: 350px;
 }
 
 #caLabelsDownloadOptionsPanelOptions, #caResultsDownloadOptionsPanelOptions {
@@ -6634,7 +6634,7 @@ div.dialogHeader {
 
 .caSummaryDownloadOptionsPanelAlertControls {
     font-size: 14px;
-    height: 25px;
+    height: 35px;
     margin-bottom: 10px;
 }
 
