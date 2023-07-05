@@ -747,7 +747,7 @@ use Zend\Stdlib\Glob;
 		$display_select_html = caHTMLSelect(
 			'display_id', 
 			$display_opts, 
-			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector'],
+			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector dontTriggerUnsavedChangeWarning'],
 			['value' => $t_display->getPrimaryKey()]
 		);
 		
@@ -853,7 +853,7 @@ use Zend\Stdlib\Glob;
 		$print_display_select_html = caHTMLSelect(
 			'display_id', 
 			$display_opts, 
-			['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector'],
+			['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector dontTriggerUnsavedChangeWarning'],
 			['value' => $t_display->getPrimaryKey()]
 		);
 		$view->setVar('print_display_select_html', $print_display_select_html);
@@ -902,17 +902,17 @@ use Zend\Stdlib\Glob;
 			$default = $p['default'] ?? null;
 			switch(strtolower($p['type'] ?? null)) {
 				case 'list':
-					$attr = [];
+					$attr = ['class' => 'dontTriggerUnsavedChangeWarning'];
 					if($p['multiple'] ?? false) { $attr['multiple'] = 1; }
 					$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $p['options'], $attr, ['values' => $values[$n] ?? $default, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
 					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
 					break;
 				case 'checkbox':
-					$e = caHTMLCheckboxInput($n, ['value' => $p['value'] ?? 1, 'checked' => $values[$n] ?? $default]);
+					$e = caHTMLCheckboxInput($n, ['value' => $p['value'] ?? 1, 'checked' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning']);
 					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
 					break;
 				case 'text':
-					$e = caHTMLTextInput($n, ['placeholder' => caGetOption('placeholder', $p, ''), 'value' => $values[$n] ?? $default], ['width' => caGetOption('width', $p, '200px'), 'height' => caGetOption('height', $p, '200px')]);
+					$e = caHTMLTextInput($n, ['placeholder' => caGetOption('placeholder', $p, ''), 'value' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning'], ['width' => caGetOption('width', $p, '200px'), 'height' => caGetOption('height', $p, '200px')]);
 					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
 					break;
 			}

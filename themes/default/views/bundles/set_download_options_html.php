@@ -63,7 +63,7 @@ $url = caNavUrl($this->request, 'manage', 'sets/setEditor', 'ExportSetItems/'.$t
 ?>
                         </td>	
                         <td class="caSummaryDownloadOptionsPanelAlertControl" id="caSummaryFormatSelectorGroup">
-							<?= _t('Format').'<br/>'.caHTMLSelect('template', $formats, ['id' => 'caSummaryFormatSelector', 'class' => 'searchFormSelector'], ['value' => caGetOption('template', $last_settings, null)]); ?>
+							<?= _t('Format').'<br/>'.caHTMLSelect('template', $formats, ['id' => 'caSummaryFormatSelector', 'class' => 'searchFormSelector dontTriggerUnsavedChangeWarning'], ['value' => caGetOption('template', $last_settings, null)]); ?>
                         </td>		
 					</tr>
 				</table>
@@ -73,14 +73,14 @@ $url = caNavUrl($this->request, 'manage', 'sets/setEditor', 'ExportSetItems/'.$t
 			<div id="caSummaryDownloadOptionsPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caGetExport(); return false;'], []); ?></td>
-						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
+						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton dontTriggerUnsavedChangeWarning', ['onclick' => 'caGetExport(); return false;'], []); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton dontTriggerUnsavedChangeWarning', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
 					</tr>
 				</table>
 			</div>
 	</div>
 </div>
-<?= caHTMLHiddenInput($t_set->primaryKey(), ['value' => $t_set->getPrimaryKey()]); ?>
+<?= caHTMLHiddenInput($t_set->primaryKey(), ['value' => $t_set->getPrimaryKey(), 'class' => 'dontTriggerUnsavedChangeWarning']); ?>
 
 <script type="text/javascript">
 	var caSummaryDownloadOptionsPanel;

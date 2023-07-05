@@ -1281,7 +1281,7 @@ div.formLabelUploadSizeNote {
 	line-height:1em;
 	margin-top: 0px;
 }
-.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
+.bundleSubLabel select[multiple=false], .bundleSubLabel .editorBundlePrintControl select[multiple=false], .bundleSubLabel .editorBundleSortControl select[multiple=false]{
 	position:relative;
 	padding-top:0px;
 	padding-bottom:0px;
