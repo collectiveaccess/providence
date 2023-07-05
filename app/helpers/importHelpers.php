@@ -1101,7 +1101,9 @@
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
 						$va_attr_vals_with_parent = array_merge($va_val, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));						
 						
-						$pa_options = array_merge($pa_options, ['matchOn' => $va_val['_matchOn'] ?? null]); // add matchOn value for lookup
+						if($va_val['_matchOn'] ?? null) {
+							$pa_options = array_merge($pa_options, ['matchOn' => $va_val['_matchOn']]); // add matchOn value for lookup
+						}
 						switch($ps_table) {
 							case 'ca_objects':
 								$vn_item_id = DataMigrationUtils::getObjectID($va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@ class RequestHTTP extends Request {
 		parent::__construct();
 		
 		global $AUTH_CURRENT_USER_ID;
-		$AUTH_CURRENT_USER_ID = "";
+		$AUTH_CURRENT_USER_ID = null;
 
 		if (is_array($pa_options)) {
 			if (isset($pa_options["no_headers"]) && $pa_options["no_headers"]) {
@@ -166,6 +166,9 @@ class RequestHTTP extends Request {
 		} else {
 			if (isset($va_sim_params['user_id']) && $va_sim_params['user_id']) {
 				$this->user = new ca_users($va_sim_params['user_id']);
+				if($this->user->isLoaded()) {
+					$AUTH_CURRENT_USER_ID = $this->user->getPrimaryKey();
+				}
 			} else {
 				$this->user = new ca_users();
 			}
