@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
 require_once(__CA_LIB_DIR__."/BaseEditorController.php");
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
@@ -305,37 +304,90 @@ class SetEditorController extends BaseEditorController {
 	# Export set items
 	# -------------------------------------------------------
 	public function ExportSetItems() {
-		set_time_limit(7200); // allow a lot of time for this because the sets can be potentially large
+		$this->opo_result_context->setParameter('ca_sets_last_export_type', $_REQUEST['export_format'] ?? null);
+		$this->opo_result_context->saveContext();
 		
-		$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
+		$is_background = ($this->request->getParameter('background', pInteger) === 1);
+		$export_format = $this->request->getParameter('export_format', pString);
+		$set_id = $this->request->getParameter('set_id', pInteger);
+		
+		// Check is report should be force-backgrounded because the number of results exceeds the background result size 
+		// threshold declared in the chosen template.
+		if(
+			!$is_background &&
+			caProcessingQueueIsEnabled() &&
+			is_array($tinfo = caGetPrintTemplateDetails('sets', $export_format)) && 
+			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
+			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
+		) {
+			$this->notification->addNotification(_t("Set export is too large for immediate download."), __NOTIFICATION_TYPE_INFO__);
+			$is_background = true;	
+		}
+		
+		$t_set = new ca_sets($set_id);
 		if (!$t_set->getPrimaryKey()) {
 			$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
 			$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
 			return false;
 		}
 
-		$va_record_ids = array_keys($t_set->getItemRowIDs(array('limit' => 100000)));
-		if(!is_array($va_record_ids) || !sizeof($va_record_ids)) {
+		$record_ids = array_keys($t_set->getItemRowIDs(['limit' => 100000]));
+		if(!is_array($record_ids) || !sizeof($record_ids)) {
 			$this->notification->addNotification(_t('No items are available for export'), __NOTIFICATION_TYPE_ERROR__);
 			$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
 			return false;
 		}
-
-		$vs_subject_table = Datamodel::getTableName($t_set->get('table_num'));
-		$t_instance = Datamodel::getInstanceByTableName($vs_subject_table);
-
-		$qr_res = $vs_subject_table::createResultSet($va_record_ids);
-		$qr_res->filterNonPrimaryRepresentations(false);
 		
-		# --- get the export format/template to use
-		$ps_export_format = $this->request->getParameter('export_format', pString);
+		$subject_table = Datamodel::getTableName($t_set->get('table_num'));
+		$t_instance = Datamodel::getInstanceByTableName($subject_table);
 		
+		if($is_background && caProcessingQueueIsEnabled()) {
+			$o_tq = new TaskQueue();
+
+			$exp = 'ca_sets.set_code:'.$t_set->get('set_code');
+			$exp_display = _t('Set: %1', $t_set->get('set_code'));
+						
+			if ($o_tq->addTask(
+				'dataExport',
+				[
+					'request' => ['export_format' => $export_format],
+					'mode' => 'SETS',
+					'findType' => null,
+					'table' => $subject_table,
+					'results' => $record_ids,
+					'format' => caExportFormatForTemplate($subject_table, $export_format),
+					'sort' => null,
+					'sortDirection' => null,
+					'searchExpression' => $exp,
+					'searchExpressionForDisplay' => $exp_display,
+					'user_id' => $this->request->getUserID()
+				],
+				["priority" => 100, "entity_key" => join(':', ['ca_sets', $set_id, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
+			{
+				Session::setVar('ca_sets_set_export_in_background', true);
+				caGetPrintTemplateParameters('sets', $export_format, ['view' => $this->view, 'request' => $this->request]);
+				$this->request->isDownload(false);
+				$this->notification->addNotification(_t("Set export is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
+				
+				$this->Edit();
+				
+				return;
+			} else {
+				$this->postError(100, _t("Couldn't queue set export", ), "SetEditorController->ExportSetItems()");
+			}
+		}
+		Session::setVar('ca_sets_set_export_in_background', false);
+		
+		set_time_limit(7200);
+	
+		$res = $subject_table::createResultSet($record_ids);
+		$res->filterNonPrimaryRepresentations(false);
 		
 		$filename_stub = $t_set->get('ca_sets.preferred_labels.name');
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		caExportResult($this->request, $qr_res, $ps_export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
+		caExportResult($this->request, $res, $export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
 		
 		return;
 	}

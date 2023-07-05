@@ -32,14 +32,56 @@ $t_display 				= $this->getVar('t_display');
 
 $id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 
-//$last_settings     		= $this->getVar($t_item->tableName().'_summary_last_settings');
+$last_settings     		= $this->getVar('ca_sets_summary_last_settings');
 
 $display_select_html 	= $this->getVar('print_display_select_html');
 $formats 				= $this->getVar('formats');
 
-$url = caNavUrl($this->request, 'manage', 'sets', 'setEditor/ExportSetItems', ['set_id' => $t_set->get("set_id"), 'download' => 1]);
-		
+$url = caNavUrl($this->request, 'manage', 'sets/setEditor', 'ExportSetItems/'.$this->request->getActionExtra(), ['set_id' => $t_set->get("set_id"), 'download' => 1]);	
 ?>
+<div id="caSummaryDownloadOptionsPanel" class="caSummaryDownloadOptionsPanel"> 
+	<div class='dialogHeader'><?= _t('Download options'); ?></div>
+	<div id="caSummaryDownloadOptionsPanelContentArea">
+			<div class="caSummaryDownloadOptionsPanelAlertControls">
+				<table class="caSummaryDownloadOptionsPanelAlertControls">
+					<tr style="vertical-align: top;">
+                        <td class="caSummaryDownloadOptionsPanelAlertControl">
+							<?= _t('Download')."<br/>{$display_select_html}"; ?>	
+<?php
+								if(caProcessingQueueIsEnabled()) {
+									$background_opts = ['value' => 1, 'id' => 'caSummaryProcessInBackground', 'class' => 'dontTriggerUnsavedChangeWarning'];
+									if(Session::getVar('ca_sets_set_export_in_background')) {
+										$background_opts['checked'] = 1;
+									}
+?>	
+									<div>
+										<?= caHTMLCheckBoxInput('background', $background_opts); ?>
+										<?= _t('Process in background'); ?>
+									</div>
+<?php
+								}
+?>
+                        </td>	
+                        <td class="caSummaryDownloadOptionsPanelAlertControl" id="caSummaryFormatSelectorGroup">
+							<?= _t('Format').'<br/>'.caHTMLSelect('template', $formats, ['id' => 'caSummaryFormatSelector', 'class' => 'searchFormSelector'], ['value' => caGetOption('template', $last_settings, null)]); ?>
+                        </td>		
+					</tr>
+				</table>
+			</div>
+			<div class="caSummaryDownloadOptionsPanelOptions" id="caSummaryDownloadOptionsPanelOptions"></div>	
+			<br class="clear"/>
+			<div id="caSummaryDownloadOptionsPanelControlButtons">
+				<table>
+					<tr>
+						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caGetExport(); return false;'], []); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
+					</tr>
+				</table>
+			</div>
+	</div>
+</div>
+<?= caHTMLHiddenInput($t_set->primaryKey(), ['value' => $t_set->getPrimaryKey()]); ?>
+
 <script type="text/javascript">
 	var caSummaryDownloadOptionsPanel;
 	
@@ -94,13 +136,15 @@ $url = caNavUrl($this->request, 'manage', 'sets', 'setEditor/ExportSetItems', ['
 		caSummaryDownloadOptionsPanel.hidePanel();
 		var s = jQuery('#caSummaryDisplaySelector').val();
 		var x = jQuery('#caSummaryFormatSelector').val();
+		var b = jQuery('#caSummaryProcessInBackground:checked').val();
+		if(!b) { b = 0; }
 		
 		if(s.match(/^_/)) {
 			x = s;
 			s = -1;
 		}
 		
-		var f = jQuery('<form id="caTempExportForm" action="<?= $url; ?>/export_format/' + x + '/display_id/' + s + '" method="post" style="display:none;"></form>');
+		var f = jQuery('<form id="caTempExportForm" action="<?= $url; ?>/export_format/' + x + '/display_id/' + s + '/background/' + b + '" method="post" style="display:none;"></form>');
 		jQuery('body #caTempExportForm').replaceWith(f).hide();
 		
 		jQuery('#caSummaryDownloadOptionsPanelOptions').find('select,textarea,input').each(function(k, v) {
@@ -109,32 +153,3 @@ $url = caNavUrl($this->request, 'manage', 'sets', 'setEditor/ExportSetItems', ['
 		f.submit();
 	}
 </script>
-
-<div id="caSummaryDownloadOptionsPanel" class="caSummaryDownloadOptionsPanel"> 
-	<div class='dialogHeader'><?= _t('Download options'); ?></div>
-	<div id="caSummaryDownloadOptionsPanelContentArea">
-			<div class="caSummaryDownloadOptionsPanelAlertControls">
-				<table class="caSummaryDownloadOptionsPanelAlertControls">
-					<tr style="vertical-align: top;">
-                        <td class="caSummaryDownloadOptionsPanelAlertControl">
-							<?= _t('Download')."<br/>{$display_select_html}"; ?>		
-                        </td>	
-                        <td class="caSummaryDownloadOptionsPanelAlertControl" id="caSummaryFormatSelectorGroup">
-							<?= _t('Format').'<br/>'.caHTMLSelect('template', $formats, ['id' => 'caSummaryFormatSelector'], ['value' => caGetOption('template', $last_settings, null)]); ?>
-                        </td>		
-					</tr>
-				</table>
-			</div>
-			<div class="caSummaryDownloadOptionsPanelOptions" id="caSummaryDownloadOptionsPanelOptions"></div>	
-			<br class="clear"/>
-			<div id="caSummaryDownloadOptionsPanelControlButtons">
-				<table>
-					<tr>
-						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caGetExport(); return false;'], []); ?></td>
-						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
-					</tr>
-				</table>
-			</div>
-	</div>
-</div>
-<?= caHTMLHiddenInput($t_set->primaryKey(), ['value' => $t_set->getPrimaryKey()]); ?>

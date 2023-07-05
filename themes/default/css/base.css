@@ -6615,6 +6615,8 @@ div.dialogHeader {
 }
 
 #caSummaryDownloadOptionsPanelContentArea {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+    font-weight: normal;
     padding:10px;
 }
 

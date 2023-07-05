@@ -76,13 +76,14 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		$config = Configuration::load(__CA_CONF_DIR__.'/find_navigation.conf');
 		$find_types = $config->getAssoc('find_types_for_display');
 		$is_summary = ($parameters["mode"] ?? null) === 'SUMMARY';
+		$is_set = ($parameters["mode"] ?? null) === 'SETS';
 	
 		$params['outputType'] = array(
 			'label' => _t('Output type'),
 			'value' => mb_strtolower($parameters["mode"] ?? _t('Unknown'))
 		);
 		
-		if(!$is_summary) {
+		if(!$is_summary && !$is_set) {
 			$params['findType'] = array(
 				'label' => _t('Find type'),
 				'value' => $find_types[$parameters["findType"]] ?? $parameters["findType"]
@@ -108,7 +109,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		
 		if(!$is_summary) {
 			$params['resultCount'] = array(
-				'label' => _t('Result count'),
+				'label' => _t('Count'),
 				'value' => sizeof($parameters["results"])
 			);
 		}
@@ -204,6 +205,21 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					} else {
 						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
+					}
+					break;
+				case 'SETS':
+					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Set_Export'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
+					if(is_array($res)) {
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Set export for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'set_export_result.tpl', $parameters, null, null, ['attachments' => [
+							[
+								'name' => "data_export.{$res['extension']}",
+								'path' => $res['path'],
+								'mimetype' => $res['mimetype']
+							]]
+						]);
+					} else {
+						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Set export failed', __CA_APP_DISPLAY_NAME__), 'set_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
 				default:
