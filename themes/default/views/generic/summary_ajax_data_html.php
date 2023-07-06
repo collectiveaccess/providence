@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/editor/objects/summary_html_ajax_placements.php :
+ * views/generic/summary_ajax_data_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
-    $va_placements = $this->getVar('placements');
-?>
 
-<?php if (isset($va_placements)) : ?>
-    <?php foreach ($va_placements as $vn_placement_id => $va_info) : ?>
-        <div class="_content" placementid="<?php print $vn_placement_id; ?>"></div>
-    <?php endforeach; ?>
-<?php endif; ?>
+$t_item                 = $this->getVar('t_subject');
+$t_display              = $this->getVar('t_display');
+$va_placements          = $this->getVar('placements');
+$ajax_item              = $this->getVar('ajax_item');
+
+if (isset($ajax_item)) {
+    $va_info = $va_placements[$ajax_item];
+    $vs_class = "";
+    if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $ajax_item, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
+        if ((bool)$t_display->getSetting('show_empty_values')) {
+            $vs_display_value = "&lt;" . _t('not defined') . "&gt;";
+            $vs_class = " notDefined";
+        }
+    }
+    print "<div class=\"unit" . $vs_class . "\"><span class=\"heading" . $vs_class . "\">" . $va_info['display'] . ":</span> " . $vs_display_value . "</div>\n";
+}

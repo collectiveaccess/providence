@@ -696,7 +696,7 @@ use Zend\Stdlib\Glob;
 	 * 
 	 * @return string
 	 */
-	function caEditorPrintSummaryControls($view, $ajax_form = false) {
+	function caEditorPrintSummaryControls($view) {
 	    $t_display = $view->getVar('t_display');
 	    $t_item = $view->getVar('t_subject');
 	    $request = $view->request;
@@ -722,7 +722,7 @@ use Zend\Stdlib\Glob;
 		$display_select_html = caHTMLSelect(
 			'display_id', 
 			$display_opts, 
-			['onchange' => $ajax_form ? 'loadDisplay();' : 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector'],
+			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector'],
 			['value' => $t_display->getPrimaryKey()]
 		);
 		
