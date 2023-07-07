@@ -775,6 +775,13 @@ class ItemService extends BaseJSONService {
 
 		// intrinsic fields
 		if(is_array($pa_data["intrinsic_fields"]) && sizeof($pa_data["intrinsic_fields"])) {
+			// Ensure Parent field set before generating IDNO
+			if ($vs_parent_field_name = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+				if (isset($pa_data["intrinsic_fields"][$vs_parent_field_name])) {
+					$t_instance->set( $vs_parent_field_name, $pa_data["intrinsic_fields"][$vs_parent_field_name]);
+				}
+			}
+			
 			foreach($pa_data["intrinsic_fields"] as $vs_field_name => $vs_value) {
 				if (($vs_field_name === $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && (strpos($vs_value, '%') !== false)) {
 					$t_instance->setIdnoWithTemplate($vs_value);
