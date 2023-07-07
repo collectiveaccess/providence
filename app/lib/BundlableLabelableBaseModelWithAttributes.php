@@ -722,8 +722,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if ($this->opo_idno_plugin_instance) {
+			if ($this->isChild()) {
+				$parent_idno = self::getIdnoForID($this->get($parent_id_fld));
+			}
+			if (($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) {
+				$parent_idno = self::getIdnoForID($pa_fields[$vs_parent_id_fld]);
+			}
 			// If attempting to set parent_id, then flag record as child for id numbering purposes
-			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->isChild())) ? true : null);
+			$this->opo_idno_plugin_instance->isChild(isset($parent_idno) ? true : null, isset($parent_idno) ? $parent_idno : null);
 		
 			if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
 				if (!$this->_validateIncomingAdminIDNo(true, false)) { 
