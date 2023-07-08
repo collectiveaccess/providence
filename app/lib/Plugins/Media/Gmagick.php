@@ -320,7 +320,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$tp = new TilepicParser();
 			if ($tp->isTilepic($filepath)) {
 				return 'image/tilepic';
-			} elseif ($this->imagemagick_path && (preg_match('!\.heic$!i', $filepath) || preg_match('!\.psd$!i', $filepath))) {	// Is it HEIC?
+
+			} elseif ($this->imagemagick_path && (preg_match('!\.(heic|psd|jpg|jpeg)$!i', $filepath))) {	// Is it HEIC?
 				caExec($this->imagemagick_path." ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
 				if(is_array($output) && preg_match("!(HEIC|PSD) [\d]+x[\d]+!", $output[0], $m)) {
 					$this->opa_heic_list[$filepath] = true;

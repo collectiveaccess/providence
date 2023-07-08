@@ -8225,3 +8225,7 @@ div.searchResultDesc ul {
 	font-weight: bold;
 	text-align: left;
 }
+
+#algebraSetControls {
+	display: none;
+}
