@@ -114,7 +114,7 @@ class SetController extends ActionController {
 					$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'allUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
 					break;
 				case 2:
-					$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'publicUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());z
+					$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'publicUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
 					break;
 			}
 		} else {
