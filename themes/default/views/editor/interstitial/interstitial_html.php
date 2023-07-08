@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2020 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,26 +24,25 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
- 	global $g_ui_locale_id;
- 
- 	$t_subject 			= $this->getVar('t_subject');
-	$vn_subject_id 		= $this->getVar('subject_id');
-	
-	$va_restrict_to_types = $this->getVar('restrict_to_types');
-	
-	$vs_field_name_prefix = $this->getVar('field_name_prefix');
-	$vs_n 				= $this->getVar('n');
-	$vs_q				= caUcFirstUTF8Safe($this->getVar('q'), true);
+ */ 
+global $g_ui_locale_id;
 
-	$vb_can_edit	 	= true; //$t_subject->isSaveable($this->request);
+$t_subject 			= $this->getVar('t_subject');
+$vn_subject_id 		= $this->getVar('subject_id');
+
+$va_restrict_to_types = $this->getVar('restrict_to_types');
+
+$vs_field_name_prefix = $this->getVar('field_name_prefix');
+$vs_n 				= $this->getVar('n');
+$vs_q				= caUcFirstUTF8Safe($this->getVar('q'), true);
+
+$vb_can_edit	 	= true; //$t_subject->isSaveable($this->request);
+
+$vs_form_name = "InterstitialEditorForm";
 	
-	$vs_form_name = "InterstitialEditorForm";
-		
-	$t_left= $t_subject->getLeftTableInstance();
-	$t_right= $t_subject->getRightTableInstance();
-	$vs_rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName()."</em>";
+$t_left= $t_subject->getLeftTableInstance();
+$t_right= $t_subject->getRightTableInstance();
+$vs_rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName()."</em>";
 ?>		
 <form action="#" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='dialogHeader quickAddDialogHeader'><?php 
@@ -74,7 +73,7 @@
 			
 			//TODO better errors
 ?>
-	<h2><?= _t("No user interface defined"); ?></h2>
+			<h2><?= _t("No user interface defined"); ?></h2>
 <?php
 			}
 ?>
@@ -108,7 +107,10 @@
 							jQuery.jGrowl('<?= addslashes(_t('Saved changes to')); ?> <em>' + resp.display + '</em>', { header: '<?= addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
 							jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
 							var displayContent = jQuery('#caRelationEditorPanel<?= substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').template(resp.bundleDisplay);
+						
+							let rel_type_select = jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?> .listRelRelationshipTypeEdit").detach(); // Save current relationship type drop-down
 							jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?>").empty().append(displayContent);
+							jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?> .listRelRelationshipTypeEdit").replaceWith(rel_type_select); // replace empty relationship dropdown after template refresh with working vaoue
 							jQuery("input[name='form_timestamp']").val(resp['time']);
 						} else {
 							// error
