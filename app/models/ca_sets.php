@@ -783,7 +783,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			", $va_sql_params);
 			$va_sets = array();
 			$va_type_name_cache = array();
-			
+
+			$qrx = caMakeSearchResult('ca_sets', $qr_res->getAllFieldValues('set_id'));
+			$creation_times = [];
+			while($qrx->nextHit()) {
+				$creation_times[$qrx->get('ca_sets.set_id')] = $qrx->get('ca_sets.created.timestamp');
+			}
+			$qr_res->seek(0);
 			$t_list = new ca_lists();
 			while($qr_res->nextRow()) {
 				$set_id = $qr_res->get('set_id');
@@ -794,13 +800,18 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
 				
-				$extras = ['item_count' => (int)($va_item_counts[$qr_res->get('set_id')] ?? 0), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type];
+				$extras = [
+					'item_count' => (int)($va_item_counts[$set_id] ?? 0), 
+					'set_content_type' => $vs_set_type, 
+					'set_type' => $vs_type, 
+					'created' => $creation_times[$set_id] ?? null
+				];
 				
 				if ($include_items) {
 				    $extras['items'] = caExtractValuesByUserLocale(ca_sets::getItemsForSet($set_id, $pa_options));
 				}
 				
-				$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), $extras);
+				$va_sets[$set_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), $extras);
 			}
 			
 			if ($pb_by_user) {

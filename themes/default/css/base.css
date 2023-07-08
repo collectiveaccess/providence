@@ -8193,3 +8193,7 @@ div.typePill {
 	font-weight: normal;
 	margin: 3px 3px 6px 0;
 }
+
+#algebraSetControls {
+	display: none;
+}
