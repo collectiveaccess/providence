@@ -181,7 +181,8 @@
 		 * @param $view
 		 */
 		public static function getStatusForDisplay($va_status, $view){
-			$result = "";
+			if(!is_array($va_status)) { return ''; }
+			$result = '';
 			foreach($va_status as $vs_code => $va_info) {
 				switch($vs_code) {
 					case 'table':

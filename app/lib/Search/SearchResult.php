@@ -2980,11 +2980,11 @@ class SearchResult extends BaseObject {
 						$vs_val = strip_tags($vs_val);
 					}
 
-					if($pa_options['htmlEncode']) {
+					if($pa_options['htmlEncode'] ?? false) {
 						$vs_val = htmlentities($vs_val);
 					}
 					
-					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
+					if (isset($pa_options['truncate']) && ($pa_options['truncate'] > 0)) { 
 						$pa_options['start'] = 0;
 						$pa_options['length'] = (int)$pa_options['truncate'];
 					}
