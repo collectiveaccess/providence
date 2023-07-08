@@ -41,7 +41,7 @@ if ($vb_batch) {
 } else {
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, (bool)$t_subject->get('is_deaccessioned'), ((bool)$t_subject->get('is_deaccessioned') ? _t('Yes') : _t('No')));
 }
-print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div id="<?= $vs_id_prefix; ?>" class="<?= $vb_batch ? "editorBatchBundleContent" : ''; ?>">
 	<div class="bundleContainer">

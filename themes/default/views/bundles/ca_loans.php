@@ -59,7 +59,7 @@ $loaded_sort_direction 	= $this->getVar('sortDirection');
 // params to pass during occurrence lookup
 $va_lookup_params = array(
 	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noSubtypes' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0),
 	'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 );
@@ -104,7 +104,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">

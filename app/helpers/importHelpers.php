@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -356,7 +356,7 @@
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
 				$vs_prefix = '';
 				$va_prefix_file_list = [];
-
+				
 				// Add details for file and media types.
 				$va_prefix_file_list = [];
 				$media_directories = caGetAvailableMediaUploadPaths();
@@ -433,6 +433,7 @@
 					}
 				}elseif(caIsAssociativeArray($va_attrs)) {
 					// single mapping
+					print_R($va_attrs);
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						
@@ -486,11 +487,12 @@
 						}
 					}
 				} elseif(is_string($va_attrs)) {
-					$va_attr_vals[$vs_element_code] = $va_attrs;
+					$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
 				} else {
 					 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 				}
 			}
+			
 			return $va_attr_vals;
 		}
 		return null;
