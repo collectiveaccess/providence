@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	$vo_result = $this->getVar('result');	
+ $result = $this->getVar('result');	
  ?>
  <div class="titleText" style="position: absolute; left: 0.125in; top: 0.125in; width: 1.75in; height: 1.5in; overflow: hidden;">
  	{{{<ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
@@ -56,7 +56,7 @@
  </div>
  
  <div class="thumbnail" style="position: absolute; left: 2in; top: 0.125in; width: 1.875in; overflow: hidden;">
- 	<?php print $vo_result->get('ca_object_representations.media.thumbnail', ['usePath' => true]); ?>
+ 	<?= $result->get('ca_object_representations.media.thumbnail', ['usePath' => true]); ?>
  </div>
  
  <div class="bodyText" style="position: absolute; left: 0.125in; top: 3in; width: 2.0in; height: 0.375in;">
