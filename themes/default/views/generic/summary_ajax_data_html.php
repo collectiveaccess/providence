@@ -34,7 +34,7 @@ $ajax_item              = $this->getVar('ajax_item');
 if (isset($ajax_item)) {
     $va_info = $va_placements[$ajax_item];
     $vs_class = "";
-    if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $ajax_item, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
+    if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, ($ajax_item > 0) ? $ajax_item : $va_info['bundle_name'], array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
         if ((bool)$t_display->getSetting('show_empty_values')) {
             $vs_display_value = "&lt;" . _t('not defined') . "&gt;";
             $vs_class = " notDefined";
