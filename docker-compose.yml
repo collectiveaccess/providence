@@ -1,0 +1,40 @@
+services:
+  providence:
+    depends_on: 
+      - mysql
+    build: .
+    volumes:
+      - $PWD:/app/apache2/htdocs
+    ports:
+      - "127.0.0.1:8088:80"
+    restart: unless-stopped
+    links:
+      - mysql 
+
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - mysql_data:/var/lib/mysql 
+    command: --max_allowed_packet=32505856 ## useful for loading massive database
+    ports:
+      - "127.0.0.1:3306:3306"
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOTPASS-pRoViDeNcEdEvEnV}
+      MYSQL_DATABASE: ${MYSQL_DB-ca}
+      MYSQL_USER: ${MYSQL_USER-ca_user}
+      MYSQL_PASSWORD: ${MYSQL_PASS-ca_password}
+   
+
+  redis:
+    image: redis:5
+    ports:
+      - ${REDIS_LOCALHOST_PORT-127.0.0.1:6379}:6379
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+
+volumes:
+ mysql_data:
+ redis_data:

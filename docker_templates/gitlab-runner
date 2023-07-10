@@ -1,0 +1,1 @@
+gitlab-runner ALL=(ALL) NOPASSWD: /app/apache2/bin/apachectl,/usr/local/bin/setup_ca_permissions.sh,/usr/bin/chown -R gitlab-runner\:gitlab-runner /app/apache2/htdocs/

@@ -1,0 +1,55 @@
+stages:
+  - deploy
+  - manual_non_deploy 
+
+
+## Code Deploy
+# Sync the local copy of the code
+deploy_prod:
+  stage: deploy
+  only:
+    - bmac
+  before_script:
+    - cd /app/providence && cp $PROD_ENV_FILE .env
+  script:
+    - cd /app/providence
+    - git pull
+    - cp $SETUP_PHP_PROVIDENCE setup.php
+    - source .env
+    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml build --build-arg LOCAL_UID=$LOCAL_UID --build-arg SERVERNAME=$SERVERNAME  
+    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d
+    - docker-compose -f docker-compose.yml -f docker-compose-deploy.yml exec -T providence /bin/bash -c "cd /app/apache2/htdocs && composer install"
+  after_script:
+    - cd /app/providence && rm .env
+    - cd /app/providence && chown gitlab-runner:daemon setup.php && chmod 640 setup.php
+  environment:
+    name: prod
+    url: https://ca.libs.uga.edu
+  tags:
+    - brown-hosting-shell
+
+# Tail the error logs
+# A hacky solution to see the error log output
+tail_providence_logs_only:
+  stage: manual_non_deploy
+  only:
+    - bmac
+  script:
+    - tail -f /app/apachelogs_providence/error_log
+  timeout: 1h
+  when: manual
+  tags:
+    - brown-hosting-shell
+
+# Tail the error logs
+# A hacky solution to see the error log output
+tail_all_error_logs:
+  stage: manual_non_deploy
+  only:
+    - bmac
+  script:
+    - tail -f /app/apachelogs_providence/error_log /app/apachelogs_pawtucket/error_log
+  timeout: 1h
+  when: manual
+  tags:
+    - brown-hosting-shell
