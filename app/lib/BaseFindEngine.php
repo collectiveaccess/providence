@@ -741,7 +741,7 @@ class BaseFindEngine extends BaseObject {
 					FROM ca_attribute_values cav FORCE INDEX(i_sorting)
 					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = cav.attribute_id
 					WHERE cav.element_id = ? 
-					ORDER BY cav.value_sortable {$direction}
+					ORDER BY cav.{$attr_val_sort_field} {$direction}
 					{$limit_sql}";
 					
 		$qr_sort = $this->db->query($sql, [$element_id]);
@@ -880,7 +880,7 @@ class BaseFindEngine extends BaseObject {
 					INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 					{$filter_join}
 					WHERE cav.element_id = ? {$filter_where}
-					ORDER BY cav.value_sortable {$direction}
+					ORDER BY cav.{$attr_val_sort_field} {$direction}
 					{$limit_sql}"; 
 		$qr_sort = $this->db->query($sql, [$element_id]);
 		$sort_keys = [];
