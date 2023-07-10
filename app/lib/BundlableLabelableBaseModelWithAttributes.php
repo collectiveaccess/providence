@@ -4525,7 +4525,7 @@ if (!$vb_batch) {
 						$vb_allow_existing_rep = (bool)$this->_CONFIG->get($this->tableName().'_allow_relationships_to_existing_representations') && !(bool)caGetOption('dontAllowRelationshipsToExistingRepresentations', $va_bundle_settings, false);
 						$dont_allow_access_to_import_directory = caGetOption('dontAllowAccessToImportDirectory', $va_bundle_settings, false);
 	
-						$import_directory_paths = caGetAvailableMediaUploadPaths($po_request->getUserID());
+						$import_directory_paths = array_map('realpath', caGetAvailableMediaUploadPaths($po_request->getUserID() ?? []));
 						
 						$va_rep_ids_sorted = $va_rep_sort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'ObjectRepresentationBundleList', pString));
 						sort($va_rep_ids_sorted, SORT_NUMERIC);
@@ -8678,6 +8678,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * 		merge = list of data categories to merge. Valid values include 'preferred_labels', 'nonpreferred_labels', 'intrinisics', 'attributes', 'relationships'. If omitted all categories are merged. [Default is null]
 	 *		preferredLabelsMode = Merge mode for preferred labels. [Default is "longest"]
 	 *		intrinsicMode = Merge mode for intrinisic values. [Default is "whenNotSet"]
+	 *		notification = Notification manager object to push merge status messages to. [Default is null]
 	 *
 	 * @return BundlableLabelableBaseModelWithAttributes Instance of merged record
 	 *
