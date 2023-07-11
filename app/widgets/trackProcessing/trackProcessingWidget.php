@@ -77,15 +77,23 @@
 			$this->opo_view->setVar('hours', $pa_settings['hours']);
 			
 			$vo_tq = new TaskQueue();
+			$qr_tq_total_count = $this->opo_db->query("
+				SELECT count(*) as _count
+				FROM ca_task_queue ctq 
+				WHERE ctq.completed_on > ?
+			", time() - (60*60*$pa_settings['hours']));
+
 			$qr_completed = $this->opo_db->query("
 				SELECT tq.*, u.fname, u.lname 
 				FROM ca_task_queue tq 
 				LEFT JOIN ca_users u ON u.user_id = tq.user_id 
-				WHERE tq.completed_on > ? 
+				WHERE tq.completed_on > ?
 				ORDER BY tq.completed_on desc
+				LIMIT 100
 			", time() - (60*60*$pa_settings['hours']));
 			$va_completed = array();
 			$vn_reported = 0;
+
 			while($qr_completed->nextRow() && $vn_reported < $this->opn_limit){
 				$va_row = $qr_completed->getRow();
 				$va_completed[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
@@ -110,8 +118,9 @@
 				$va_completed[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
 				$vn_reported ++;
 			}
-			$this->opo_view->setVar('jobs_done_additional', max($qr_completed->numRows() - $this->opn_limit, 0));
-			$this->opo_view->setVar('jobs_done',$qr_completed->numRows());
+			if ($qr_tq_total_count->nextRow()) { $vn_count = $qr_tq_total_count->get('_count'); } else { $vn_count = 0; }
+			$this->opo_view->setVar('jobs_done_additional', max($vn_count - $this->opn_limit, 0));
+			$this->opo_view->setVar('jobs_done', $vn_count);
 			$this->opo_view->setVar('jobs_done_data',$va_completed);
 
 			$qr_qd = $this->opo_db->query("
