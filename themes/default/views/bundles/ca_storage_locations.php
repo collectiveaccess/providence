@@ -40,6 +40,8 @@ $placement_code = $this->getVar('placement_code');
 $placement_id	= (int)$settings['placement_id'] ?? null;
 $batch			= $this->getVar('batch');
 
+$force_values 	= $this->getVar('forceValues');
+
 $color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
 $first_color 	= ((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
 $last_color 	= ((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
