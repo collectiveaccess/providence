@@ -174,44 +174,51 @@ $table = $t_subject->tableName();
 	}
 ?>
 	});
+	
 	function caUpdateResultsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#resultsSelect").val();
-		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { return; }
+		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { 
+			caUpdatePanelOptionsVisibility('caResultsDownloadOptionsPanelOptions', animation);
+			return; 
+		}
 		jQuery("#caResultsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintResultsOptions'); ?>/type/results/form/' + val, function(t, r, x) {
 			if(x.status == 200) {
 				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
 				jQuery('#caResultsDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);
 				searchToolsBoxIsExpanded++;
 			} else {
-				if(jQuery('#caResultsDownloadOptionsPanelOptions').is(":visible")) {
-					jQuery('#caResultsDownloadOptionsPanelOptions').slideUp(animation ? 250 : 0);
-					searchToolsBoxIsExpanded--;
-				}
-				if(searchToolsBoxIsExpanded === 0) {
-					if(animation) { jQuery('#searchToolsBox').animate({'width': '400px', 'left': '25%'}, 250); } else { jQuery('#searchToolsBox').css('width', '400px'); }
-				}
+				caUpdatePanelOptionsVisibility('caResultsDownloadOptionsPanelOptions', animation);
 			}
 		});
 	}
+	
 	function caUpdateLabelsOptionsForm(animation=true, use_download_selection=false) {
 		var val = jQuery("#labelsSelect").val();
-		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { return; }
+		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { 
+			caUpdatePanelOptionsVisibility('caLabelsDownloadOptionsPanelOptions', animation);
+			return; 
+		}
 		jQuery("#caLabelsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintResultsOptions'); ?>/type/labels/form/' + val, function(t, r, x) {
 			if(x.status == 200) {
 				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
 				jQuery('#caLabelsDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);
 				searchToolsBoxIsExpanded++;
 			} else {
-				if(jQuery('#caLabelsDownloadOptionsPanelOptions').is(":visible")) {
-					jQuery('#caLabelsDownloadOptionsPanelOptions').slideUp(animation ? 250 : 0);
-					searchToolsBoxIsExpanded--;
-				}
-				if(searchToolsBoxIsExpanded === 0) { 
-					if(animation) { jQuery('#searchToolsBox').animate({'width': '400px', 'left': '25%'}, 250); } else { jQuery('#searchToolsBox').css('width', '400px'); } 
-				}
+				caUpdatePanelOptionsVisibility('caLabelsDownloadOptionsPanelOptions', animation);
 			}
 		});
 	}
+	
+	function caUpdatePanelOptionsVisibility(id, animation) {
+		if(jQuery('#' + id).is(":visible")) {
+			jQuery('#' + id).slideUp(animation ? 250 : 0);
+			searchToolsBoxIsExpanded--;
+		}
+		if(searchToolsBoxIsExpanded === 0) {
+			if(animation) { jQuery('#searchToolsBox').animate({'width': '400px', 'left': '25%'}, 250); } else { jQuery('#searchToolsBox').css('width', '400px'); }
+		}
+	}
+	
 	function caDownloadRepresentations(mode) {
 		var tmp = mode.split('_');
 		if(tmp[0] == 'all') {	// download all search results

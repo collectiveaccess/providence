@@ -183,37 +183,48 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
  */
 function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
 	if (is_array($template_identifier)) {
-		$pa_template_info = $template_identifier;
+		$template_info = $template_identifier;
 	} else {
 		$va_template = explode(':', $template_identifier);
-		$pa_template_info = caGetPrintTemplateDetails($va_template[0], $va_template[1]);
+		$template_info = caGetPrintTemplateDetails($va_template[0], $va_template[1]);
 	}
-	if (!is_array($pa_template_info)) { throw new ApplicationException("No template information specified"); }
+	if (!is_array($template_info)) { throw new ApplicationException("No template information specified"); }
 	$vb_printed_properly = false;
+	
+	$include_header_footer = caGetOption('includeHeaderFooter', $template_info, false);
 	
 	try {
 		$o_pdf = new PDFRenderer();
 		$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 
-		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $pa_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $pa_template_info, 'portrait'));
+		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', caGetOption('pageOrientation', $template_info, 'portrait'));
 		$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 		$view->setVar('pageWidth', "{$vn_page_width}mm");
 		$view->setVar('pageHeight', "{$vn_page_height}mm");
-		$view->setVar('marginTop', caGetOption('marginTop', $pa_template_info, '0mm'));
-		$view->setVar('marginRight', caGetOption('marginRight', $pa_template_info, '0mm'));
-		$view->setVar('marginBottom', caGetOption('marginBottom', $pa_template_info, '0mm'));
-		$view->setVar('marginLeft', caGetOption('marginLeft', $pa_template_info, '0mm'));
-		$view->setVar('base_path', $vs_base_path = pathinfo($pa_template_info['path'], PATHINFO_DIRNAME));
+		$view->setVar('marginTop', caGetOption('marginTop', $template_info, '0mm'));
+		$view->setVar('marginRight', caGetOption('marginRight', $template_info, '0mm'));
+		$view->setVar('marginBottom', caGetOption('marginBottom', $template_info, '0mm'));
+		$view->setVar('marginLeft', caGetOption('marginLeft', $template_info, '0mm'));
+		$view->setVar('base_path', $vs_base_path = pathinfo($template_info['path'], PATHINFO_DIRNAME));
 
 		$view->addViewPath($vs_base_path."/local");
 		$view->addViewPath($vs_base_path);
 		
 		// Copy download-time user parameters into view
 		$template_type = caGetOption('printTemplateType', $options, null);
-		$values = $template_type ? caGetPrintTemplateParameters($template_type, $pa_template_info['identifier'], ['view' => $view, 'request' => $view->request]) : [];
+		$values = $template_type ? caGetPrintTemplateParameters($template_type, $template_info['identifier'], ['view' => $view, 'request' => $view->request]) : [];
 		
-		$vs_content = $view->render($pa_template_info['path']);
-		$vb_printed_properly = caExportContentAsPDF($vs_content, $pa_template_info, $output_filename, $options);
+		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
+		$vs_content = '';
+		if($include_header_footer) {
+			$vs_content .= $view->render("{$template_dir}/pdfStart.php").$view->render("{$template_dir}/header.php");
+		}	
+		$vs_content .= $view->render($template_info['path']);
+
+		if($include_header_footer) {
+			$vs_content .= $view->render("{$template_dir}/footer.php").$view->render("{$template_dir}/pdfEnd.php");
+		}
+		$vb_printed_properly = caExportContentAsPDF($vs_content, $template_info, $output_filename, $options);
 	} catch (Exception $e) {
 		$vb_printed_properly = false;
 		throw new ApplicationException(_t("Could not generate PDF"));
@@ -907,7 +918,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 	$output = caGetOption('output', $options, 'STREAM');
 	$config = Configuration::load();
 	
-	$border = ((bool)$config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
+	$show_borders = (bool)$config->get('add_print_label_borders');
 	
 	//
 	// PDF output
@@ -922,6 +933,9 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 	if(is_array($tinfo) && is_array($tinfo['params'])) {
 		$values = [];
 		foreach($tinfo['params'] as $n => $p) {
+			if($n == 'add_print_label_borders') {
+				$show_borders = (bool)$request->getParameter($n, pString);
+			}
 			if((bool)$p['multiple'] ?? false) {
 				$view->setVar("param_{$n}", $values[$n] = $request->getParameter($n, pArray));
 			} else {
@@ -930,6 +944,8 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 		}
 		Session::setVar("print_labels_options_{$m[2]}", $values);
 	}
+	
+	$border = ($show_borders) ? "border: 1px dotted #000000; " : "";
 	
 	try {
 		$view->setVar('title', $title);

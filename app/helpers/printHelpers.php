@@ -237,7 +237,7 @@ use Zend\Stdlib\Glob;
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
 				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
-				"@disabled", "@param", "@backgroundThreshold"
+				"@disabled", "@param", "@backgroundThreshold", "@includeHeaderFooter"
 			) as $vs_tag) {
 				$vs_tag = str_replace("@", "", $vs_tag);
 				switch($vs_tag) {
