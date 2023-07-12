@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2017 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,68 +37,68 @@
  * @marginBottom 0.5in
  * @marginRight 0.25in
  *
+ * @includeHeaderFooter true
+ *
+ * @param includeLogo {"type": "CHECKBOX",  "label": "Include logo?", "value": "1", "default": true}
+ * @param includePageNumbers {"type": "CHECKBOX",  "label": "Include page numbers?", "value": "1", "default": true}
+ * @param showSearchTermInFooter {"type": "CHECKBOX",  "label": "Show search terms in footer?", "value": "1", "default": false}
+ * @param showSearchResultCountInFooter {"type": "CHECKBOX",  "label": "Show result count in footer?", "value": "1", "default": false}
+ * @param showTimestampInFooter {"type": "CHECKBOX",  "label": "Show current date/time in footer?", "value": "1", "default": false}
+ *
  * ----------------------------------------------------------------------
  */
-
-	$vo_result 				= $this->getVar('result');
-	$vn_num_items			= (int)$vo_result->numHits();
-	$t_set					= $this->getVar("t_set");
-	
-	print $this->render("pdfStart.php");
-	print $this->render("header.php");
-	print $this->render("footer.php");
+$result 				= $this->getVar('result');
+$num_items			= (int)$result->numHits();
+$t_set					= $this->getVar("t_set");
 ?>
-		<div id='body'>
-			<div class="row">
-				<table>
-				<tr><td>
-					<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
+<div id='body'>
+	<div class="row">
+		<table>
+		<tr><td>
+			<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
 <?php
-					if($t_set->get("description")){
-						print "<p>".$t_set->get("description")."</p>";
-					}
+			if($t_set->get("description")){
+				print "<p>".$t_set->get("description")."</p>";
+			}
 ?>
-				</td></tr>
-				</table>
-			</div>
+		</td></tr>
+		</table>
+	</div>
 <?php
 
-		$vo_result->seek(0);
-		
-		$vn_c = 0;
-		while($vo_result->nextHit()) {
-			$vn_c++;
-			$vn_object_id = $vo_result->get('ca_objects.object_id');		
+$result->seek(0);
+
+$c = 0;
+while($result->nextHit()) {
+	$c++;
+	$object_id = $result->get('ca_objects.object_id');		
 ?>
-			<div class="row">
-			<table>
-			<tr>
-				<td><b><?php print $vn_c; ?></b>&nbsp;&nbsp;</td>
-				<td>
+	<div class="row">
+	<table>
+	<tr>
+		<td><b><?php print $c; ?></b>&nbsp;&nbsp;</td>
+		<td>
 <?php 
-					if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
-						print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
-					} else {
+			if ($vs_path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+				print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
+			} else {
 ?>
-						<div class="imageTinyPlaceholder">&nbsp;</div>
+				<div class="imageTinyPlaceholder">&nbsp;</div>
 <?php					
-					}	
+			}	
 ?>								
 
-				</td><td>
-					<div class="metaBlock">
+		</td><td>
+			<div class="metaBlock">
 <?php				
-					print "<div class='title'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 							
+			print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 							
 ?>
-					</div>				
-				</td>	
-			</tr>
-			</table>	
-			</div>
+			</div>				
+		</td>	
+	</tr>
+	</table>	
+	</div>
 <?php
-		}
+}
 ?>
-		</div>
-<?php
-	print $this->render("pdfEnd.php");
-?>
+</div>

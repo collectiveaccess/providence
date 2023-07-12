@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/Results/docx_summary.php
+ * app/printTemplates/summary/docx_summary.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,9 +42,9 @@
 */
 $t_item = $this->getVar('t_subject');
 
-$va_bundle_displays = $this->getVar('bundle_displays');
+$bundle_displays = $this->getVar('bundle_displays');
 $t_display = $this->getVar('t_display');
-$va_display_list = $this->getVar("placements");
+$display_list = $this->getVar("placements");
 
 // For easier calculation
 // 1 cm = 1440/2.54 = 566.93 twips
@@ -115,18 +115,18 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable);
 
 $table = $section->addTable('myOwnTableStyle');
 $table->addRow();
-$list = $va_display_list;
+$list = $display_list;
 
 // First column : media
 $mediaCell = $table->addCell( 5 * $cmToTwips);
 
-$va_info = $t_item->getPrimaryRepresentation(["medium"]);
+$info = $t_item->getPrimaryRepresentation(["medium"]);
 
-if($va_info['info']['medium']['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-	$vs_path = $va_info['paths']['medium']; 
-	if (is_file($vs_path)) {
+if($info['info']['medium']['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+	$path = $info['paths']['medium']; 
+	if (is_file($path)) {
 		$mediaCell->addImage(
-			$vs_path,
+			$path,
 			array(
 				'width' => 195,
 				'wrappingStyle' => 'inline'
@@ -144,44 +144,43 @@ $contentCell->addText(
 	$styleHeaderFont
 );
 
-foreach($list as $vn_placement_id => $va_info) {
-
+foreach($list as $placement_id => $info) {
 	if (
-		(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
+		(strpos($info['bundle_name'], 'ca_object_representations.media') !== false)
 		&&
-		($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+		($info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
 	) {
 		// Inserting bundle name on one line
-		$contentCell->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
+		$contentCell->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
 
 		// Fetching version asked & corresponding file
-		$vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
-		$va_info = $t_item->getMediaInfo('ca_object_representations.media',$vs_version);
+		$version = str_replace("ca_object_representations.media.", "", $info['bundle_name']);
+		$info = $t_item->getMediaInfo('ca_object_representations.media',$version);
 	
 		// If it's a JPEG, print it (basic filter to avoid non handled media version)
-		if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-			$vs_path = $t_item->getMediaPath('ca_object_representations.media',$vs_version);
-			if (is_file($vs_path)) {
+		if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+			$path = $t_item->getMediaPath('ca_object_representations.media',$version);
+			if (is_file($path)) {
 				$contentCell->addImage(
-					$vs_path
+					$path
 				);
 			}
 		}
 
-	} elseif ($vs_display_text = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
+	} elseif ($display_text = $t_display->getDisplayValue($t_item, $placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : array()))) {
 
 		$textrun = $contentCell->createTextRun();
 		
 		if ($this->request->config->get('report_include_labels_in_docx_output')) {
-			$textrun->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
+			$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
 		}
 		$textrun->addText(
-			preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5))),
+			preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
 			$styleContentFont
 		);
 
 	}}
-$vn_line++;
+$line++;
 // Two text break
 $section->addTextBreak(2);
 

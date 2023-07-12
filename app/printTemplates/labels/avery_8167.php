@@ -39,12 +39,13 @@
  * @verticalGutter 0.0in
  * @labelWidth 1.75in
  * @labelHeight 0.5in
+ *
+ * @param add_print_label_borders {"type": "CHECKBOX",  "label": "Show label borders?", "value": "1", "default": false}
  * 
  * ----------------------------------------------------------------------
  */
- 
  $result = $this->getVar('result');	
  ?>
- <div class="smallText" style="position: absolute; left: 0.1in; top: 0.1in; width: 1.5in; height: 0.35in; overflow: hidden;">
- 	<?= $result->getWithTemplate('(^ca_objects.idno) ^ca_objects.preferred_labels.name'); ?>
+ <div class="smallText" style="position: absolute; left: 0.1in; top: 0.1in; width: 1.5in; height: 0.35in; overflow: hidden; ">
+	<?= $result->getWithTemplate('(^ca_objects.idno) ^ca_objects.preferred_labels.name'); ?>
  </div>
