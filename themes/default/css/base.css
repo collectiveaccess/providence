@@ -8226,7 +8226,7 @@ div.typePill {
 ul.caPrintOptions {
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-between;
+    justify-content: start;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -8235,6 +8235,7 @@ ul.caPrintOptions {
 
 li.caPrintOptionItem {
     margin-right: 10px;
+    min-width: 100px;
 }
 
 /* Search debugging */
