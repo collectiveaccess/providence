@@ -89,8 +89,8 @@
 				LEFT JOIN ca_users u ON u.user_id = tq.user_id 
 				WHERE tq.completed_on > ?
 				ORDER BY tq.completed_on desc
-				LIMIT 100
-			", time() - (60*60*$pa_settings['hours']));
+				LIMIT ?
+			", time() - (60*60*$pa_settings['hours']), $this->opn_limit);
 			$va_completed = array();
 			$vn_reported = 0;
 
