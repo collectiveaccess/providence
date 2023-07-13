@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_MODELS_DIR__."/ca_users.php");
-
 /**
  *
  */
@@ -142,30 +138,32 @@ class AccessRestrictions {
 
 		// check rules
 		foreach($va_groups_to_check as $va_group){
-			if(!is_array($va_group) || !is_array($va_group["actions"])) continue; // group without action restrictions
+			if(!is_array($va_group) || !is_array($va_group["actions"] ?? null)) continue; // group without action restrictions
 			$vb_group_passed = false;
 
 			// check if parameter restrictions apply
-			if(is_array($va_group["parameters"])){
+			if(is_array($va_group["parameters"] ?? null)){
 				if(!$this->_parameterRestrictionsApply($va_group["parameters"],$ps_controller,$ps_action,$pa_fake_parameters)){
 					continue; // auto-pass
 				}
 			}
 			
-			if(isset($va_group["operator"]) && ($va_group["operator"]=="OR")) { // OR
-				foreach($va_group["actions"] as $vs_action) {
-					if($this->opt_user->canDoAction($vs_action)){
-						$vb_group_passed = true;
-						break;
+			if(is_array($va_group["actions"])) {
+				if(isset($va_group["operator"]) && ($va_group["operator"]=="OR")) { // OR
+					foreach($va_group["actions"] as $vs_action) {
+						if($this->opt_user->canDoAction($vs_action)){
+							$vb_group_passed = true;
+							break;
+						}
 					}
-				}
-			} else { // AND
-				foreach($va_group["actions"] as $vs_action) {
-					if(!$this->opt_user->canDoAction($vs_action)){
-						return false;
+				} else { // AND
+					foreach($va_group["actions"] as $vs_action) {
+						if(!$this->opt_user->canDoAction($vs_action)){
+							return false;
+						}
 					}
-				}
-				$vb_group_passed = true; // passed all AND-ed conditions
+					$vb_group_passed = true; // passed all AND-ed conditions
+				}	
 			}
 
 			if(!$vb_group_passed) { // one has to pass ALL groups!
@@ -184,7 +182,7 @@ class AccessRestrictions {
 				}
 				// if there is no explicit type_id parameter we need to figure out the subject with the information we have
 				// (which is basically the controller name) and get the type_id by ourselves
-				if($pa_fake_parameters["type_id"]){
+				if($pa_fake_parameters["type_id"] ?? null){
 					$vs_type_id = $pa_fake_parameters["type_id"];
 				} else {
 					$vs_type_id = $this->opo_request->getParameter("type_id",pInteger);
@@ -217,8 +215,10 @@ class AccessRestrictions {
 				} else {
 					$vs_fake_val = null;
 				}
-				if(substr($va_value_data["value"],0,1)=="!"){
-					switch($va_value_data["type"]){
+				
+				if(!isset($va_value_data["value"])) { $va_value_data["value"] = ''; }
+				if(substr($va_value_data["value"] , 0, 1) == "!"){
+					switch($va_value_data["type"] ?? null){
 						case "int":
 							if(intval(substr($va_value_data["value"],1)) == intval($vs_fake_val ? $vs_fake_val : $this->opo_request->getParameter($vs_key,pInteger))){
 								return false;
@@ -241,7 +241,7 @@ class AccessRestrictions {
 							return false;
 						}
 					} else {
-						switch($va_value_data["type"]){
+						switch($va_value_data["type"] ?? null){
 							case "int":
 								if(intval($va_value_data["value"]) != intval($vs_fake_val ? $vs_fake_val : $this->opo_request->getParameter($vs_key,pInteger))){
 									return false;
@@ -309,4 +309,3 @@ class AccessRestrictions {
 	}
 	# -------------------------------------------------------
 }
-?>
