@@ -2356,7 +2356,7 @@ if (!$pb_omit_editing_info) {
 			}
 		}
 		
-		if ((!$vs_template) && ($t_element = ca_metadata_elements::getInstance($va_bundle_bits[sizeof($va_bundle_bits)-1]))) { 
+		if ((!$vs_template) && ($t_element = ca_metadata_elements::getInstance($va_bundle_bits[sizeof($va_bundle_bits)-1]))) {
 			$vs_template = $t_element->getSetting('displayTemplate'); 
 		}
 		
@@ -2434,7 +2434,7 @@ if (!$pb_omit_editing_info) {
 					// resolve template relative to current record
 					$rtc = null;
 					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
-					if($element_code !== '_generic_bundle_') {
+					if(!preg_match( '/(_generic_bundle_|custom_display_component)/', $element_code)) {
 						$dt = ca_metadata_elements::getElementDatatype($element_code);
 						$rtc = ($dt === 0) ? $vs_bundle_name : null;
 					}

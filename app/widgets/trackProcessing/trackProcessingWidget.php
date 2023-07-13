@@ -84,7 +84,9 @@
 			", time() - (60*60*$pa_settings['hours']));
 
 			$qr_completed = $this->opo_db->query("
-				SELECT tq.*, u.fname, u.lname 
+				SELECT 
+				    tq.task_id, tq.handler, tq.created_on, tq.completed_on, tq.error_code,
+				    tq.notes, u.fname, u.lname , u.fname, u.lname 
 				FROM ca_task_queue tq 
 				LEFT JOIN ca_users u ON u.user_id = tq.user_id 
 				WHERE tq.completed_on > ?
