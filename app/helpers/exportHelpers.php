@@ -1143,6 +1143,8 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 		}
 	}
 	
+	$include_header_footer = caGetOption('includeHeaderFooter', $template_info, false);
+	
 	// Pass download-time option settings to template
 	$values = caGetPrintTemplateParameters('summary', $m[2], ['view' => $view, 'request' => $request]);
 	Session::setVar("print_summary_options_{$m[2]}", $values);
@@ -1170,7 +1172,16 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 				$view->setVar('marginBottom', caGetOption('marginBottom', $template_info, '0mm'));
 				$view->setVar('marginLeft', caGetOption('marginLeft', $template_info, '0mm'));
 
-				$content = $view->render($template_info['path']);
+				
+				$content = '';
+				if($include_header_footer) {
+					$content .= $view->render("{$base_path}/pdfStart.php").$view->render("{$base_path}/header.php");
+				}	
+				$content .= $view->render($template_info['path']);
+
+				if($include_header_footer) {
+					$content .= $view->render("{$base_path}/footer.php").$view->render("{$base_path}/pdfEnd.php");
+				}
 				
 				// Printable views can pass back PDFs to append if they want...
 				if(is_array($media_set_in_view_to_append = $view->getVar('append'))) {
