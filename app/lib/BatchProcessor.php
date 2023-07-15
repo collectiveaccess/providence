@@ -1469,15 +1469,15 @@ class BatchProcessor {
 		
 		if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 			if ($vs_email = trim($po_request->user->get('email'))) {
-				$info = $t_importer?->getInfoForLastImport();
+				$t_importer ? $info = $t_importer->getInfoForLastImport() : null;
 				caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
 					[
 						'sourceFile' => $pa_options['sourceFile'],
 						'sourceFileName' => $pa_options['sourceFileName'],
 						'notices' => $va_notices['general'], 'errors' => $va_errors['general'],
-						'total' => $info['total'],
-						'numErrors' => $info['numErrors'], 'numProcessed' => $info['numProcessed'],
-						'numSkipped' => $info['numSkipped'],
+						'total' => $info['total'] ?? null,
+						'numErrors' => $info['numErrors'] ?? null, 'numProcessed' => $info['numProcessed'] ?? null,
+						'numSkipped' => $info['numSkipped'] ?? null,
 						'subjectNameSingular' => _t('row'),
 						'subjectNamePlural' => _t('rows'),
 						'startedOn' => caGetLocalizedDate($vn_start_time),
