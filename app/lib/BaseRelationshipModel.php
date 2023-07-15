@@ -747,8 +747,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	# ------------------------------------------------------
 	private function _processRelationshipHierarchy($pn_id, $pa_hier, $pa_types, $pn_level) {
 		$va_types_to_return = [];
-		if(!is_array($pa_hier[$pn_id])) { return []; }
-		if (!is_array($pa_types[$pn_id])) { return [];}
+		if(!is_array($pa_hier[$pn_id] ?? null)) { return []; }
+		if (!is_array($pa_types[$pn_id] ?? null) ) { return [];}
 		foreach($pa_types[$pn_id] as $vs_sub_types => $va_list) {	// items in this level
 			ksort($va_list);
 			foreach($va_list as $vs_key => $va_list_by_type_id) {

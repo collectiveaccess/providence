@@ -155,7 +155,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 					</td>
 					<td>
 <?php
-	if (sizeof($this->getVar('relationship_types_by_sub_type'))) {
+	if (is_array($this->getVar('relationship_types_by_sub_type')) && sizeof($this->getVar('relationship_types_by_sub_type'))){
 ?>
 						<select name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
 <?php

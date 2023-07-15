@@ -966,7 +966,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}	
 			
-			return $subject_ids;
+			return array_map(function($v) { return ['row_id' => $v, 'boost' => 1, 'index_ids' => []]; }, $subject_ids);
 		}
 		return null;	// can't process here - try using search index
 	}
@@ -1877,7 +1877,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$res_proc = [];
 		
 		$index_ids = array_unique(array_reduce($res, function($c, $v) {
-			$ids = array_filter($v['index_ids'], 'is_numeric');
+			$ids = array_filter($v['index_ids'] ?? [], 'is_numeric');
 			return array_merge($c, $ids);
 		}, []));
 		
