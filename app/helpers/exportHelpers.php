@@ -217,12 +217,12 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
 		$vs_content = '';
 		if($include_header_footer) {
-			$vs_content .= $view->render("{$template_dir}/pdfStart.php").$view->render("{$template_dir}/header.php");
+			$vs_content .= $view->render("{$template_dir}/pdfStart.php").$view->render("{$template_dir}/header.php").$view->render("{$template_dir}/footer.php");
 		}	
 		$vs_content .= $view->render($template_info['path']);
 
 		if($include_header_footer) {
-			$vs_content .= $view->render("{$template_dir}/footer.php").$view->render("{$template_dir}/pdfEnd.php");
+			$vs_content .= $view->render("{$template_dir}/pdfEnd.php");
 		}
 		$vb_printed_properly = caExportContentAsPDF($vs_content, $template_info, $output_filename, $options);
 	} catch (Exception $e) {
@@ -1175,12 +1175,12 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 				
 				$content = '';
 				if($include_header_footer) {
-					$content .= $view->render("{$base_path}/pdfStart.php").$view->render("{$base_path}/header.php");
+					$content .= $view->render("{$base_path}/pdfStart.php").$view->render("{$base_path}/header.php").$view->render("{$base_path}/footer.php");
 				}	
 				$content .= $view->render($template_info['path']);
 
 				if($include_header_footer) {
-					$content .= $view->render("{$base_path}/footer.php").$view->render("{$base_path}/pdfEnd.php");
+					$content .= $view->render("{$base_path}/pdfEnd.php");
 				}
 				
 				// Printable views can pass back PDFs to append if they want...
