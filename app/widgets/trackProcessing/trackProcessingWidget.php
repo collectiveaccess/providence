@@ -194,7 +194,9 @@
 						}
 						break;
 					default:
-						$result .= "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n";
+						if(isset($va_info['label'])) {
+							$result .= "<strong>".$va_info['label']."</strong>: ".($va_info['value'] ?? '')."<br/>\n";
+						}
 						break;
 				}
 			}

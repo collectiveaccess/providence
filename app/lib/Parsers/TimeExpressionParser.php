@@ -1684,7 +1684,8 @@ class TimeExpressionParser {
 		
 		$vs_next_token_lc = mb_strtolower($va_next_token['value'] ?? null);
 		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
-										
+		$vb_is_range = false;
+								
 		if (
 			($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
 			||	
@@ -2393,12 +2394,12 @@ class TimeExpressionParser {
 				}
 			}
 			
-			if ($pa_dates['start']['hours'] === null) { $pa_dates['start']['hours'] = 0; }
-			if ($pa_dates['start']['minutes'] === null) { $pa_dates['start']['minutes'] = 0; }
-			if ($pa_dates['start']['seconds'] === null) { $pa_dates['start']['seconds'] = 0; }
-			if ($pa_dates['end']['hours'] === null) { $pa_dates['end']['hours'] = 23; }
-			if ($pa_dates['end']['minutes'] === null) { $pa_dates['end']['minutes'] = 59; }
-			if ($pa_dates['end']['seconds'] === null) { $pa_dates['end']['seconds'] = 59; }
+			if (($pa_dates['start']['hours'] ?? null) === null) { $pa_dates['start']['hours'] = 0; }
+			if (($pa_dates['start']['minutes'] ?? null) === null) { $pa_dates['start']['minutes'] = 0; }
+			if (($pa_dates['start']['seconds'] ?? null) === null) { $pa_dates['start']['seconds'] = 0; }
+			if (($pa_dates['end']['hours'] ?? null) === null) { $pa_dates['end']['hours'] = 23; }
+			if (($pa_dates['end']['minutes'] ?? null) === null) { $pa_dates['end']['minutes'] = 59; }
+			if (($pa_dates['end']['seconds'] ?? null) === null) { $pa_dates['end']['seconds'] = 59; }
 		
 			if (
 				($pa_dates['start']['year'] >= 1970) && ($pa_dates['end']['year'] >= 1970)
@@ -4290,7 +4291,7 @@ class TimeExpressionParser {
 		$era = ($century < 0) ? ' '.$this->opo_language_settings->get('dateBCIndicator') : '';
 
 		// if useRomanNumeralsForCenturies is set in datetime.conf, 20th Century will be displayed as XXth Century
-		if ($options["useRomanNumeralsForCenturies"]) {
+		if ($options["useRomanNumeralsForCenturies"] ?? false) {
 			return caArabicRoman(abs($century)).$ordinal.' '.$century_indicators[0].$era;
 		}
 
