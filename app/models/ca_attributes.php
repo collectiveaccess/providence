@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -578,6 +578,7 @@ class ca_attributes extends BaseModel {
 		$ps_formatted_element = str_replace("^ELEMENT", $vs_element, $ps_formatted_element);
 		$ps_formatted_element = str_replace("^DESCRIPTION", "", $ps_formatted_element);
 		$ps_formatted_element = str_replace("^EXTRA", "", $ps_formatted_element);
+		$ps_formatted_element = str_replace("^BUNDLECODE", "", $ps_formatted_element);
 	
 		if ($vs_description) {
 			// don't use TooltipManager to make sure the tooltip is also displayed when this element is added dynamically (via "add" button)
@@ -620,6 +621,7 @@ class ca_attributes extends BaseModel {
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id, caa.value_source,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
+				caav.value_sortable,
 				caav.element_id
 			FROM ca_attributes caa
 			INNER JOIN ca_attribute_values AS caav ON caa.attribute_id = caav.attribute_id
@@ -752,6 +754,7 @@ class ca_attributes extends BaseModel {
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id, caa.value_source,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
+				caav.value_sortable,
 				cme.element_id, cme.datatype, cme.settings, cme.element_code
 			FROM ca_attributes caa
 			INNER JOIN ca_attribute_values AS caav ON caa.attribute_id = caav.attribute_id
@@ -828,6 +831,7 @@ class ca_attributes extends BaseModel {
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1,
+				caav.value_sortable,
 				cme.element_id, cme.datatype, cme.settings, cme.element_code
 			FROM ca_attributes caa
 			INNER JOIN ca_attribute_values AS caav ON caa.attribute_id = caav.attribute_id

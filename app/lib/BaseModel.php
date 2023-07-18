@@ -6092,7 +6092,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$t_list = Datamodel::getInstance('ca_lists', true);
 						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
 							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
-							print_R($item);
 							$v = $item['item_value'] ?? null;
 						}
 					}
@@ -8509,7 +8508,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force', 'bundleCode'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -9361,6 +9360,7 @@ $pa_options["display_form_field_tips"] = true;
 					}
 				}
 
+				$ps_formatted_element = str_replace("^BUNDLECODE", isset($pa_options['bundleCode']) ? $pa_options['bundleCode'] : '', $ps_formatted_element);
 				$ps_formatted_element = str_replace("^ERRORS", $vs_errors, $ps_formatted_element);
 				$ps_formatted_element = str_replace("^EXTRA", isset($pa_options['extraLabelText']) ? $pa_options['extraLabelText'] : '', $ps_formatted_element);
 				$vs_element = $ps_formatted_element;
@@ -9494,6 +9494,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
 		if ($this->inTransaction()) { $o_trans = $this->getTransaction(); $t_item_rel->setTransaction($o_trans); }
+		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -9656,6 +9659,9 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -12317,6 +12323,21 @@ $pa_options["display_form_field_tips"] = true;
 							$pa_values['parent_id'][$i][1] = $ids[$v[1]];
 						}
 					}
+				}
+			}
+		}
+		
+		//
+		// Convert dates
+		//
+		foreach($pa_values as $vs_field => $va_field_values) {
+			if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+				$d = $va_field_values[0][1];
+				if($dt = caDateToHistoricTimestamps($d)) {
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+					unset($pa_values[$vs_field]);
 				}
 			}
 		}

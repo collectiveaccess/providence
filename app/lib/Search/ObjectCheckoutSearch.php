@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,9 +46,8 @@ class ObjectCheckoutSearch extends BaseSearch {
 	protected $ops_primary_key = "checkout_id";
 	
 	# ----------------------------------------------------------------------
-	public function &search($ps_search, $pa_options=null) {
-		return parent::doSearch($ps_search, new ObjectCheckoutSearchResult(), $pa_options);
+	public function &search($search, $options=null) {
+		return parent::doSearch($search, new ObjectCheckoutSearchResult(), $options);
 	}
 	# ----------------------------------------------------------------------
 }
-?>

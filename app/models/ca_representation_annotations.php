@@ -40,8 +40,8 @@ require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_representation_annotations'] = array(
- 	'NAME_SINGULAR' 	=> _t('representation annotation'),
- 	'NAME_PLURAL' 		=> _t('representation annotations'),
+ 	'NAME_SINGULAR' 	=> _t('annotation'),
+ 	'NAME_PLURAL' 		=> _t('annotations'),
  	'FIELDS' 			=> array(
  		'annotation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 

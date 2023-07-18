@@ -79,6 +79,7 @@ class DataMigrationUtils {
 	 * @see DataMigrationUtils::_getID()
 	 */
 	static function getEntityID($pa_entity_name, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
+		if(is_null($pa_entity_name)) { return null; }
 		$pa_entity_name = ca_entity_labels::normalizeLabel($pa_entity_name, $options);
 		return DataMigrationUtils::_getID('ca_entities', $pa_entity_name, null, $pn_type_id, $locale_id, $pa_values, $options);
 	}

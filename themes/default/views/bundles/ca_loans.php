@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
 */
+
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');				// loan
@@ -36,6 +37,8 @@ $va_rel_types		= $this->getVar('relationship_types');
 $vs_placement_code 	= $this->getVar('placement_code');
 $vn_placement_id	= (int)$settings['placement_id'];
 $vb_batch			= $this->getVar('batch');
+
+$force_values = $this->getVar('forceValues');
 
 $vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
 $vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_loans') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -56,7 +59,7 @@ $loaded_sort_direction 	= $this->getVar('sortDirection');
 // params to pass during occurrence lookup
 $va_lookup_params = array(
 	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noSubtypes' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0),
 	'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 );
@@ -101,7 +104,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -320,7 +323,8 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 		});
 	});
 </script>

@@ -184,7 +184,7 @@ class TimeExpressionParser {
 		$this->opo_datetime_settings = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 		
 		if (!$ps_iso_code) { $ps_iso_code = $g_ui_locale; }
-		if (!$ps_iso_code) { $ps_iso_code = 'en_US'; }
+		if (!$ps_iso_code) { $ps_iso_code = $o_config->get('locale_default'); }
 		
 		$this->opa_error_messages = array(
 			_t("No error"), _t("Start must be before date in range"), _t("Invalid date"), _t("Invalid time"), 
@@ -1684,7 +1684,8 @@ class TimeExpressionParser {
 		
 		$vs_next_token_lc = mb_strtolower($va_next_token['value'] ?? null);
 		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
-										
+		$vb_is_range = false;
+								
 		if (
 			($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
 			||	
@@ -2393,12 +2394,12 @@ class TimeExpressionParser {
 				}
 			}
 			
-			if ($pa_dates['start']['hours'] === null) { $pa_dates['start']['hours'] = 0; }
-			if ($pa_dates['start']['minutes'] === null) { $pa_dates['start']['minutes'] = 0; }
-			if ($pa_dates['start']['seconds'] === null) { $pa_dates['start']['seconds'] = 0; }
-			if ($pa_dates['end']['hours'] === null) { $pa_dates['end']['hours'] = 23; }
-			if ($pa_dates['end']['minutes'] === null) { $pa_dates['end']['minutes'] = 59; }
-			if ($pa_dates['end']['seconds'] === null) { $pa_dates['end']['seconds'] = 59; }
+			if (($pa_dates['start']['hours'] ?? null) === null) { $pa_dates['start']['hours'] = 0; }
+			if (($pa_dates['start']['minutes'] ?? null) === null) { $pa_dates['start']['minutes'] = 0; }
+			if (($pa_dates['start']['seconds'] ?? null) === null) { $pa_dates['start']['seconds'] = 0; }
+			if (($pa_dates['end']['hours'] ?? null) === null) { $pa_dates['end']['hours'] = 23; }
+			if (($pa_dates['end']['minutes'] ?? null) === null) { $pa_dates['end']['minutes'] = 59; }
+			if (($pa_dates['end']['seconds'] ?? null) === null) { $pa_dates['end']['seconds'] = 59; }
 		
 			if (
 				($pa_dates['start']['year'] >= 1970) && ($pa_dates['end']['year'] >= 1970)
@@ -3533,10 +3534,13 @@ class TimeExpressionParser {
 	 * @return Configuration Settings for the specified locale or null if the locale is not defined.
 	 */
 	static public function getSettingsForLanguage($ps_iso_code) {
-		$vs_config_path = __CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
-		if(!file_exists($vs_config_path)) { return null; }
+		global $g_tep_lang_settings;
+		if(isset($g_tep_lang_settings[$ps_iso_code])) { return $g_tep_lang_settings[$ps_iso_code]; }
 		
-		return Configuration::load($vs_config_path);
+		$vs_config_path = __CA_LIB_DIR__.'/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
+		if(!file_exists($vs_config_path)) { return $g_tep_lang_settings[$ps_iso_code] = null; }
+		
+		return $g_tep_lang_settings[$ps_iso_code] = Configuration::load($vs_config_path);
 	}
 	# -------------------------------------------------------------------
 	private function getLanguageSettingsWordList($ps_key) {
@@ -4287,7 +4291,7 @@ class TimeExpressionParser {
 		$era = ($century < 0) ? ' '.$this->opo_language_settings->get('dateBCIndicator') : '';
 
 		// if useRomanNumeralsForCenturies is set in datetime.conf, 20th Century will be displayed as XXth Century
-		if ($options["useRomanNumeralsForCenturies"]) {
+		if ($options["useRomanNumeralsForCenturies"] ?? false) {
 			return caArabicRoman(abs($century)).$ordinal.' '.$century_indicators[0].$era;
 		}
 

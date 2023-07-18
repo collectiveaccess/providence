@@ -180,7 +180,8 @@
 						    $exit = true;
 						}
 						if (in_array($type_list, ['*', '__default__'])) { 
-							$bundle_settings["{$table}_displayTemplate"] = $config['template'];
+							$bundle_settings["{$table}_displayTemplate"] = $config['template'] ?? null;
+							$bundle_settings["{$table}_additionalTemplates"] = $config['additionalTemplates'] ?? null;
 							$tt = array_filter(array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()), function($v) use ($types) { return !isset($types[$v]); });
 							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 						} else {
@@ -198,6 +199,7 @@
 								$bundle_settings["{$table}_{$t}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'] ?? null;
 							}
 							$bundle_settings["{$table}_{$t}_displayTemplate"] = $config['template'] ?? null;
+							$bundle_settings["{$table}_{$t}_additionalTemplates"] = $config['additionalTemplates'] ?? null;
 							$bundle_settings["{$table}_{$t}_color"] = $config['color'] ?? null;
 							$bundle_settings["{$table}_showTypes"][] = array_shift(caMakeTypeIDList($table, [$t]));
 							
@@ -995,6 +997,7 @@
 		
 			$policy = caGetOption('policy', $options, $this->getDefaultHistoryTrackingCurrentValuePolicy());
 			$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+			$use_template = caGetOption('useTemplate', $options, null);
 		
 			$pa_bundle_settings = null;
 			if ($policy && !is_array($pa_bundle_settings = caGetOption('settings', $options, null))) {
@@ -1089,8 +1092,14 @@
 						if ((string)$qr_lots->get('ca_object_lots.deleted') !== '0') { continue; }	// filter out deleted
 						
 						$vn_type_id = $qr_lots->get('ca_object_lots.type_id');
-						$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_object_lots_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
-					
+						
+						$additional_templates = caGetOption(["ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_object_lots_".$qr_lots->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_object_lots_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_object_lots_".$qr_lots->get('ca_relationship_types.type_code')."_displayTemplate", "ca_object_lots_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
+						
 						$vs_color = $va_lot_type_info[$vn_type_id]['color'];
 						if (!$vs_color || ($vs_color == '000000')) {
 							$vs_color = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
@@ -1198,8 +1207,13 @@
 						$vn_type_id = $qr_loans->get('ca_loans.type_id');
 						$vn_rel_type_id = $qr_loans->get("{$linking_table}.type_id");
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_loans_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
-				
+						$additional_templates = caGetOption(["ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_loans_".$qr_loans->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_loans_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_loans_".$qr_loans->get('ca_relationship_types.type_code')."_displayTemplate", "ca_loans_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
+						
 						$va_dates = [];
 						
 						if($pb_date_mode) {
@@ -1314,8 +1328,13 @@
 						
 						$type_code = $va_movement_type_info[$vn_type_id]['idno'];
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_movements_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);			
-					
+						$additional_templates = caGetOption(["ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_movements_".$qr_movements->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_movements_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_movements_".$qr_movements->get('ca_relationship_types.type_code')."_displayTemplate", "ca_movements_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
+						
 						$va_dates = [];
 						if($pb_date_mode) {
 						    $va_dates[] = $current_date_arr;
@@ -1429,7 +1448,12 @@
 						$vs_type_idno = $va_occurrence_type_info[$vn_type_id]['idno'];
 						$vn_rel_type_id = $qr_occurrences->get("{$linking_table}.type_id");
 						
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_displayTemplate", "ca_occurrences_displayTemplate"], $pa_bundle_settings, $vs_default_display_template, ['castTo' => 'string']);
+						$additional_templates = caGetOption(["ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_occurrences_".$qr_occurrences->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_occurrences_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_occurrences_".$qr_occurrences->get('ca_relationship_types.type_code')."_displayTemplate", "ca_occurrences_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_childDisplayTemplate", "ca_occurrences_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template, ['castTo' => 'string']);
 		   			
 						$va_dates = [];
@@ -1527,7 +1551,7 @@
 						if (!$va_date_elements) { continue; }
 						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
 					}
-					
+
 					$vs_default_display_template = '^ca_entities.preferred_labels.name (^ca_entities.idno)';
 					$vs_default_child_display_template = '^ca_entities.preferred_labels.name (^ca_entities.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
 								
@@ -1544,7 +1568,12 @@
 						$vs_type_idno = $va_entity_type_info[$vn_type_id]['idno'];
 						$vn_rel_type_id = $qr_entities->get("{$linking_table}.type_id");
 				
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_entities_{$vs_type_idno}_displayTemplate", "ca_entities_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						$additional_templates = caGetOption(["ca_entities_{$va_entity_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_entities_".$qr_entities->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_entities_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_entities_{$va_entity_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_entities_".$qr_entities->get('ca_relationship_types.type_code')."_displayTemplate", "ca_entities_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_entities_{$vs_type_idno}_childDisplayTemplate", "ca_entities_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1653,7 +1682,12 @@
 						$vn_type_id = $qr_collections->get('ca_collections.type_id');
 						$vn_rel_type_id = $qr_collections->get("{$linking_table}.type_id");
 				
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_collections_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						$additional_templates = caGetOption(["ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_collections_".$qr_collections->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_collections_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_collections_{$va_collection_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_collections_".$qr_collections->get('ca_relationship_types.type_code')."_displayTemplate", "ca_collections_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_collections_childDisplayTemplate', 'ca_collections_childTemplate'], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1746,7 +1780,7 @@
 						if (!$va_date_elements) { continue; }
 						$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
 					}
-					
+
 					$vs_default_display_template = '^ca_objects.preferred_labels.name (^ca_objects.idno)';
 					$vs_default_child_display_template = '^ca_objects.preferred_labels.name (^ca_objects.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
 							
@@ -1762,7 +1796,12 @@
 						$vn_type_id = $qr_objects->get('ca_objects.type_id');
 						$vn_rel_type_id = $qr_objects->get("{$linking_table}.type_id");
 				
-						$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption(["ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_objects_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						$additional_templates = caGetOption(["ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_objects_".$qr_objects->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_objects_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_objects_{$va_object_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_objects_".$qr_objects->get('ca_relationship_types.type_code')."_displayTemplate", "ca_objects_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
 						$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_objects_childDisplayTemplate', 'ca_objects_childTemplate'], $pa_bundle_settings, $vs_display_template);
 		   			
 						$va_dates = [];
@@ -1844,7 +1883,6 @@
 				}
 
 				if(is_array($va_location_types = caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_locations)) {	
-					require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
 					$t_location = new ca_storage_locations();
 					if ($this->inTransaction()) { $t_location->setTransaction($this->getTransaction()); }
 					$va_location_type_info = $t_location->getTypeList(); 
@@ -1873,8 +1911,12 @@
 						$relation_id = $qr_locations->get("{$linking_table}.relation_id");
 						$vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id");
 				
-				        $vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
-					
+						$additional_templates = caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_storage_locations_additionalTemplates"], $pa_bundle_settings, null);
+						if($use_template && isset($additional_templates[$use_template])) {
+				       		$vs_display_template = $additional_templates[$use_template];
+				        } else {
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+						}
 						if($pb_date_mode) {
 						    $va_date = $current_date_arr;
 						} else {
@@ -1936,8 +1978,15 @@
 		
 				$vn_date = $qr->get('ca_objects.deaccession_date', array('sortable'=> true));
 			
+				$additional_templates = caGetOption("deaccession_additionalTemplates", $pa_bundle_settings, null);
 				$vs_default_display_template = '^ca_objects.deaccession_notes';
-				$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption('deaccession_displayTemplate', $pa_bundle_settings, $vs_default_display_template);
+				
+				if($use_template && isset($additional_templates[$use_template])) {
+					$vs_display_template = $additional_templates[$use_template];
+				} else {
+					$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption('deaccession_displayTemplate', $pa_bundle_settings, $vs_default_display_template);
+				}
+				
 			
 				$vs_name_singular = _t('deaccession');
 				$vs_name_plural = _t('deaccessions');
@@ -2089,6 +2138,22 @@
 			if(caGetOption('returnHistoryTrackingData', $options, false)) { return $values; }
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
+			
+			if(is_array($options['restrict_to_types'] ?? null) && sizeof($options['restrict_to_types'])) {
+				$policy_info = $this->getPolicyConfig($policy);
+			
+				$type_res = caMakeTypeIDList($policy_info['table'], $options['restrict_to_types']);
+				
+				$ids_filtered = [];
+				$qr = caMakeSearchResult($policy_info['table'], $ids, ['transaction' => $this->getTransaction()]);
+				
+				while($qr->nextHit()) {
+					if(!in_array((int)$qr->get("{$policy_info['table']}.type_id"), $type_res)) { continue; }
+					$ids_filtered[] = $qr->getPrimaryKey();
+				}
+				$ids = $ids_filtered;
+			}
+			
 			if(caGetOption('idsOnly', $options, false)) { return $ids; }
 			if(!is_array($row = array_shift($values))) { return null; }
 	
@@ -2543,7 +2608,7 @@
 						// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
 						//
 						$policy = caGetOption('policy', $pa_options, null);
-						if (is_array($h = $this->getHistory(array('limit' => 1, 'currentOnly' => true, 'policy' => $policy, 'row_id' => $pn_row_id))) && (sizeof($h) > 0)) {
+						if (is_array($h = $this->getHistory(['useTemplate' => caGetOption('useTemplate', $pa_options, null), 'limit' => 1, 'currentOnly' => true, 'policy' => $policy, 'row_id' => $pn_row_id])) && (sizeof($h) > 0)) {
 							$va_current_location = array_shift(array_shift($h));
 						
 							$va_path_components = caGetOption('pathComponents', $pa_options, null);

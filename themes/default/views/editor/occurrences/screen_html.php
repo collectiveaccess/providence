@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,8 @@
 	$vs_rel_table		= $this->getVar('rel_table');
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
+	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
 
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_occurrence_id ? array('occurrence_id' => $vn_occurrence_id) : array('type_id' => $t_occurrence->getTypeID()));
@@ -53,7 +55,8 @@
 			
 			$va_form_elements = $t_occurrence->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'OccurrenceEditorForm'), $va_bundle_list);
+									'formName' => 'OccurrenceEditorForm',
+									'forcedValues' => $forced_values), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			

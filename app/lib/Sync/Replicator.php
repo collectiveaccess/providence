@@ -515,11 +515,11 @@ class Replicator {
 										// Should insert on server...
 										// ... which means synthesizing log from current state
 
-                                		$this->_findMissingGUID($source_log_subject['guid'], $filter_on_access_settings);
+                                		$this->_findMissingGUID($source_log_subject['guid'], $filter_on_access_settings, 0, $single_log_id_mode);
                                          	
 										if(sizeof($this->source_log_entries_for_missing_guids)) {
 											$this->logDebug(_t("[%1] Processing missing guid queue (in subject loop).", $source_key), Zend_Log::WARN);
-											$this->_pushMissingGUIDs($set_intrinsics_json);
+											$this->_pushMissingGUIDs($set_intrinsics_json, $single_log_id_mode);
 										}	
                                     }
                                 }	// end subject loop							
@@ -530,7 +530,7 @@ class Replicator {
 							$this->source_log_entries_for_missing_guids = array_reverse($this->source_log_entries_for_missing_guids);
 
 							$this->logDebug(_t("[%1] Processing missing guid queue (after source loop).", $source_key), Zend_Log::WARN);
-							$this->_pushMissingGUIDs($set_intrinsics_json);
+							$this->_pushMissingGUIDs($set_intrinsics_json, $single_log_id_mode);
 						}	
 					
 						// process missing?
@@ -540,7 +540,7 @@ class Replicator {
 								$missing_guid = array_shift($missing_guids);
 								$this->logDebug(_t("[%1] Processing missing guid %2 (after source loop).", $source_key, $missing_guid), Zend_Log::WARN);
 											
-								$this->_findMissingGUID($missing_guid, $filter_on_access_settings);
+								$this->_findMissingGUID($missing_guid, $filter_on_access_settings, 0, $single_log_id_mode);
 							}
 						}
 					}
@@ -574,7 +574,7 @@ class Replicator {
 							$missing_guid = array_shift($this->missing_guids);
 							$this->logDebug(_t("[%1] Processing missing guid %2 (after source loop).", $source_key, $missing_guid), Zend_Log::WARN);
 										
-							$this->_findMissingGUID($missing_guid, $filter_on_access_settings);
+							$this->_findMissingGUID($missing_guid, $filter_on_access_settings, 0, $single_log_id_mode);
 						}
 					}
 
@@ -629,7 +629,7 @@ class Replicator {
 						$this->logDebug(_t("[%1] Running missing guid queue with %2 guids (after chunk loop).", $source_key, sizeof($this->source_log_entries_for_missing_guids)), Zend_Log::DEBUG);
 						$this->source_log_entries_for_missing_guids = array_reverse($this->source_log_entries_for_missing_guids);
 					
-						$this->_pushMissingGUIDs($set_intrinsics_json);
+						$this->_pushMissingGUIDs($set_intrinsics_json, $single_log_id_mode);
 					}
 				}
 
@@ -638,7 +638,7 @@ class Replicator {
 					$this->logDebug(_t("[%1] Running missing guid queue with %2 guids (at end of sync).", $source_key, sizeof($this->source_log_entries_for_missing_guids)), Zend_Log::DEBUG);
 					$this->source_log_entries_for_missing_guids = array_reverse($this->source_log_entries_for_missing_guids);
 				
-					$this->_pushMissingGUIDs($set_intrinsics_json);
+					$this->_pushMissingGUIDs($set_intrinsics_json, $single_log_id_mode);
 				}
 				if($is_ok) {
 					$this->log(_t("Sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
@@ -732,7 +732,7 @@ class Replicator {
 	 *
 	 * @return 
 	 */
-	public function _findMissingGUID(string $missing_guid, $filter_on_access_settings, int $level=0) : ?bool {		
+	public function _findMissingGUID(string $missing_guid, $filter_on_access_settings, int $level=0, ?bool $single_log_id_mode=false) : ?bool {		
 			
 		if ($this->source_log_entries_for_missing_guids_seen_guids[$missing_guid]) { 
 			$this->logDebug(_t("[%1] Skipped %2 because we've seen it already.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
@@ -853,7 +853,7 @@ class Replicator {
 				$new_dependent_guids = [];
 				foreach($dependent_guids as $dep_guid) {
 					$this->logDebug(_t("[%1] Run findMissingGUID for %2 / %3", $this->source_key, $dep_guid, $missing_guid),Zend_Log::DEBUG);
-					if(!$this->_findMissingGUID($dep_guid, $filter_on_access_settings, $level+1)) {
+					if(!$this->_findMissingGUID($dep_guid, $filter_on_access_settings, $level+1, $single_log_id_mode)) {
 						$new_dependent_guids[] = $dep_guid;
 					}
 					$dependent_guids = $new_dependent_guids;
@@ -893,7 +893,7 @@ class Replicator {
 							continue; 
 						}
 						
-						if ($mlog_id > $this->last_log_id) { 
+						if (!$single_log_id_mode && ($mlog_id > $this->last_log_id)) { 
 							$this->logDebug(_t("[%1] Skipped entry (%2) because it's in the future.", $this->source_key, $mlog_id),Zend_Log::DEBUG);
 							continue; 
 						}
@@ -993,7 +993,7 @@ class Replicator {
 	/**
 	 *
 	 */
-	private function _pushMissingGUIDs($set_intrinsics) {
+	private function _pushMissingGUIDs($set_intrinsics, ?bool $single_log_id_mode=false) {
 		$dependency_list = $this->_analyzeDependencies($this->source_log_entries_for_missing_guids);
 		//$this->logDebug(_t("[%1] Got dep list %2", $this->source_key, print_R($dependency_list, true)), Zend_Log::DEBUG);
 		//
@@ -1042,7 +1042,7 @@ class Replicator {
 						$this->logDebug(_t("[%1] Skipped entry because it lacks a log_id %2.", $this->source_key, print_R($log_entry, true)), Zend_Log::DEBUG);
 						continue; 
 					}
-					if ($mlog_id > $this->last_log_id) { 
+					if (!$single_log_id_mode && ($mlog_id > $this->last_log_id)) { 
 						$this->logDebug(_t("[%1] Skipped %2 (during push of missing?) because it's in the future.", $this->source_key, $mlog_id),Zend_Log::DEBUG);
 						continue; 
 					}

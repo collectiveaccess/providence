@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 	AssetLoadManager::register("jcarousel");
- 
- 	$t_rep 						= $this->getVar('t_subject');
-	$vn_representation_id 		= $this->getVar('subject_id');
-	$va_annotation_map 			= $this->getVar('annotation_map');
-	
-	$vn_annotation_count		= $this->getVar('annotation_count');
-	$vn_timecode_offset 		= $this->getVar('timecode_offset');
+AssetLoadManager::register("jcarousel");
 
-	$vb_can_edit	 			= $t_rep->isSaveable($this->request);
-	$vb_can_delete				= $t_rep->isDeletable($this->request);
-	
-	$vn_player_height			= (int)$this->getVar('player_height');
-	
-	$t_media = new Media();
-	$vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'));
+$t_rep 						= $this->getVar('t_subject');
+$vn_representation_id 		= $this->getVar('subject_id');
+$va_annotation_map 			= $this->getVar('annotation_map');
+
+$vn_annotation_count		= $this->getVar('annotation_count');
+$default_annotation_id		= $this->getVar('default_annotation_id');
+$vn_timecode_offset 		= $this->getVar('timecode_offset');
+
+$vb_can_edit	 			= $t_rep->isSaveable($this->request);
+$vb_can_delete				= $t_rep->isDeletable($this->request);
+
+$vn_player_height			= (int)$this->getVar('player_height');
+
+$t_media = new Media();
+$vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'));
 ?>
 
 <div class="caMediaOverlayControls">
@@ -121,7 +122,7 @@
 			}
 		});
 	
-		caAnnoEditorTlLoad('#caAnnoEditorTlCarousel', 0);
+		caAnnoEditorTlLoad('#caAnnoEditorTlCarousel', 0, 0, 1);
 
 		jQuery('#caAnnoEditorTlCarousel').data('annotation_map', <?= json_encode($va_annotation_map); ?>);
 		var annotation_map = jQuery('#caAnnoEditorTlCarousel').data('annotation_map');
@@ -180,7 +181,7 @@
 		});
 	});
 
-	function caAnnoEditorTlLoad(theCarousel, start, count) {
+	function caAnnoEditorTlLoad(theCarousel, start, count, isInit=0) {
 		if (!count) count = 0;
 		jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'getAnnotationList'); ?>', { representation_id: <?= (int)$vn_representation_id; ?>, s: start, n: count}, function(data) {
 			
@@ -224,6 +225,16 @@
 			// Set clip count
 			var total = parseInt(data['total']);
 			caAnnoEditorTlSetCount(total);
+			
+<?php
+	if($default_annotation_id > 0) {
+?>
+		if(isInit == 1) {
+			caAnnoEditorEdit(<?= $default_annotation_id; ?>);
+		}
+<?php
+	}
+?>
 		});
 	}
 	
@@ -291,6 +302,13 @@
 		if(annotation_id > 0) {
 			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton, #caAnnoEditorInOutButtonLabel").show();
 			jQuery("#caAnnoEditorNewInButton").hide();
+			let annotation_info  = caGetAnnotationInfo(annotation_id);
+			caAnnoEditorPlayerPause(parseFloat(annotation_info['startTimecode_raw']) + 0.5);
+			
+			// Try to trigger on play event, if available
+			jQuery('#caAnnoEditorMediaPlayer').data('player').on('canplay', (e) => {
+				caAnnoEditorPlayerPause(parseFloat(annotation_info['startTimecode_raw']) + 0.5);
+			});
 		} else {
 			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton, #caAnnoEditorInOutButtonLabel").show();
 			jQuery("#caAnnoEditorNewInButton").hide();
@@ -398,6 +416,15 @@
 	function caAnnoEditorPlayerPause(s) {
 		var p = caAnnoEditorGetPlayer();
 		if (!p) { return false; }
+		
+		if ((s != null) && (s != undefined)) { 
+			p.play(); 
+			if (s > p.currentTime) {
+				p.forward(s - p.currentTime);
+			} else {
+				p.rewind(p.currentTime - s);
+			} 
+		}
 	
 		p.pause();
 	}
@@ -435,6 +462,18 @@
 		jQuery("#caAnnoEditorNewInButton").show();
 		jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton, #caAnnoEditorInOutButtonLabel").hide();
 		return false;
+	}
+	
+	function caGetAnnotationInfo(annotation_id) {
+		let list = jQuery('#caAnnoEditorTlCarousel').data('annotation_list');
+		if(!list) { return null; }
+		
+		for(let i in list) {
+			if(parseInt(list[i]['annotation_id']) === parseInt(annotation_id)) {
+				return list[i];
+			}
+		}
+		return null;
 	}
 	
 	function caConvertSecondsToTimecode(s) {

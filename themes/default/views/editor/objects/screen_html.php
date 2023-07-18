@@ -39,6 +39,8 @@
 	
 	$vn_collection_id	= $this->request->getParameter('collection_id', pInteger);
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_object_id ? array('object_id' => $vn_object_id, 'collection_id' => $vn_collection_id) : array('type_id' => $t_object->getTypeID(), 'collection_id' => $vn_collection_id));
 		print $vs_control_box = caFormControlBox(
@@ -52,14 +54,14 @@
 ?>
 	<div class="sectionBox">
 <?php
-
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$vn_object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data');
 		
 			$va_bundle_list = array();
 			$va_form_elements = $t_object->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'ObjectEditorForm',
-									'forceHidden' => array('lot_id')
+									'forceHidden' => array('lot_id'),
+									'forcedValues' => $forced_values
 								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);

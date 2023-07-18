@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,65 +25,83 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');
-	$settings 			= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_rel_types		= $this->getVar('relationship_types');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// object
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$va_rel_types		= $this->getVar('relationship_types');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
 
-	$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-	
-	$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
-	$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
-	
-	$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-	$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
-	
-	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
-	
-	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	
-	// params to pass during object lookup
-	$va_lookup_params = array(
-		'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
-	);
-	
-	$va_errors = [];
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
+$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
+
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+
+$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
+$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+
+$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
+
+$show_set_representation_button = caGetOption('showSetRepresentationButton', $settings, false); 
+
+$force_values = $this->getVar('forceValues');
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+
+// params to pass during object lookup
+$va_lookup_params = array(
+	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+);
+
+$va_errors = [];
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
+
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {		
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+}	
 
-	$count = $this->getVar('relationship_count');
-	$num_per_page = caGetOption('numPerPage', $settings, 10);
-	
-	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
-	
-		if ($vb_batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-		} else {		
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
-	}	
-	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {		
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+}	
+
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
+
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -101,6 +119,9 @@
 		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
+?>
+	<div class='bundleMessage' style="display: none;"></div>
+<?php
 	
 	//
 	// Template to generate display for existing items
@@ -170,12 +191,20 @@
 	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
 ?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
+	
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
+	
+	if($show_set_representation_button) {
 ?>
+			<a href="#" class="caSetRepresentationButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, 1); ?></a>
+<?php
+	}
+?>
+
 			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
 			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
@@ -364,6 +393,24 @@
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
 
+<?php if($show_set_representation_button) { ?>	
+			buttons: [{
+				'className': 'caSetRepresentationButton',
+				'callback': function(n) {
+					jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'setRepresentation', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]); ?>/t/<?= $t_item->tableName(); ?>', {id: n}, function(d) {
+						if(d && d['ok'] && caBundleUpdateManager) { 
+							caBundleUpdateManager.reloadInspector(); 
+						} 
+						let e = jQuery('#<?= $vs_id_prefix; ?>').find('.bundleMessage').html(d.message).slideDown(250);
+				
+						setTimeout(function() { 
+							jQuery(e).slideUp(250);
+						}, 5000);
+					});
+				}
+			}],
+<?php } ?>
+			
 <?php if($vb_quick_add_enabled) { ?>			
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
 			quickaddUrl: '<?= caNavUrl($this->request, 'editor/objects', 'ObjectQuickAdd', 'Form', array('object_id' => 0, 'source' => $t_instance->tableName(), 'source_id' => $t_instance->getPrimaryKey(), 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
@@ -375,7 +422,7 @@
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?= $vs_id_prefix; ?>,
-			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
+			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', ['t' => $t_item_rel->tableName()]); ?>',
 			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
 <?php
@@ -393,7 +440,8 @@
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && method_exists($t_item_rel, "isSelfRelationship") && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 <?php
 	}
 ?>

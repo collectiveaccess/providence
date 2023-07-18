@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,13 +27,14 @@
  * ----------------------------------------------------------------------
  */
  
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_image_name 			= $this->request->config->get('no_image_icon');
-	$vb_hide_children		= $this->getVar('hide_children');
+$vo_result 				= $this->getVar('result');
+$vn_items_per_page 		= $this->getVar('current_items_per_page');
+$vs_current_sort 		= $this->getVar('current_sort');
+$vo_ar					= $this->getVar('access_restrictions');
+$vs_image_name 			= $this->request->config->get('no_image_icon');
+$vb_hide_children		= $this->getVar('hide_children');
 
+$result_desc			= $this->getVar('result_desc');
 ?>
 <form id="caFindResultsForm">
 	<table border="0" cellpadding="0px" cellspacing="0px" width="100%">
@@ -46,11 +47,9 @@
 		
 		while(($vn_item_count < $vn_items_per_page) && ($vo_result->nextHit())) {
 			$vn_object_id = $vo_result->get('object_id');
-			
 			if (!$vn_col) { 
 				print "<tr>";
 			}
-			
 			$vs_caption = $vs_caption_template ? $vo_result->getWithTemplate($vs_caption_template) : caEditorLink($this->request, $vo_result->get('idno'), '', 'ca_objects', $vn_object_id);
 			
 			
@@ -74,7 +73,16 @@
 					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
 					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $vn_object_id; ?>"><a class='qlButton' data-id="<?= $vn_object_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
-				<div class="thumbCaption"><?= $vs_caption; ?></div>
+				<div class="thumbCaption">
+<?php
+	if($result_desc) {
+?>
+					<div class='searchResultDesc'><span class='searchResultDescHeading'><?= _t('Matched on'); ?>:</span><?= caFormatSearchResultDesc($vn_object_id, $result_desc, ['maxTitleLength' => 20, 'request' => $this->request]) ?></div>
+<?php
+	}
+?>			
+					<?= $vs_caption; ?>
+				</div>
 			</td>
 <?php
 			$vn_col++;

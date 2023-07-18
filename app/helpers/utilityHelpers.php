@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3707,13 +3707,21 @@ function caFileIsIncludable($ps_file) {
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
 		$pn_precision = caGetOption('precision', $pa_options, null);
 
-		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
-			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
+		if ($delimiter = caGetOption('delimiter', $pa_options, 'x')) {
+			if(is_array($delimiter)) {
+				$va_measurements = [];
+				foreach($delimiter as $d) {
+					if(strpos($ps_expression, $d) !== false) {
+						$va_measurements = explode(strtolower($d), mb_strtolower($ps_expression));
+						break;
+					}
+				}
+			} else {
+				$va_measurements = explode(strtolower($delimiter), mb_strtolower($ps_expression));
+			}
 		} else {
-			$ps_delimiter = '';
 			$va_measurements = array($ps_expression);
 		}
-		
 		$va_glyphs = array_keys(caGetFractionalGlyphTable());
 		
         $va_unit_map = [];
@@ -4967,5 +4975,33 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
  		return $name;
+ 	}
+	# ----------------------------------------
+	/**
+	 * Verify that path relative to a base directory is valid and doesn't include
+	 * path traversal that takes it out of the base directory.
+	 *
+	 * @param string $relative_filepath
+	 * @param string $base_directory
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception is path is invalid. [Default is false]
+	 *
+	 * @return string Return absolute path or null if path is invalid
+	 */
+	function caSanitizeRelativeFilepath(string $relative_filepath, string $base_directory, ?array $options=null) : ?string {
+		$f = realpath($base_directory.'/'.$relative_filepath);
+		
+		if(!is_null($f)) {
+			$bd = realpath($base_directory);
+		
+			if(is_null($bd) || !preg_match("!^{$bd}/!u", $f)) { 
+				$f = null;
+			}
+		}
+		
+		if(is_null($f) && caGetOption('throwException', $options, false)) {
+			throw new ApplicationException(_t('Relative file path is invalid'));
+		}
+		return $f;
 	}
 	# ----------------------------------------

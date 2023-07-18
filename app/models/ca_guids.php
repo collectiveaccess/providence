@@ -447,4 +447,32 @@ class ca_guids extends BaseModel {
 		return is_array($guids) ? $guids : [];
 	}
 	# ------------------------------------------------------
+	/**
+	 * Remove GUIDs for table that do not reference a valid row. Note rows marked as deleted
+	 * are considered valid.
+	 *
+	 * @param string $table
+	 * @param array $options No options are available.
+	 * @return bool
+	 */
+	public static function removeUnusedGUIDs($table, ?array $options=null) : bool {
+		if(!($table_num = Datamodel::getTableNum($table))) { return false; }
+		if($o_tx = caGetOption('transaction', $options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		$pk = Datamodel::primaryKey($table);
+		
+		try {
+			$qr = $o_db->query(
+				"DELETE FROM ca_guids WHERE table_num = ? AND row_id NOT IN (SELECT {$pk} FROM {$table})", [$table_num]
+			);
+		} catch (DatabaseException $e) {
+			return false;
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
 }

@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-<<<<<<< HEAD
 $id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 $placement_id			= $this->getVar('placement_id');
 $table_num 				= $this->getVar('table_num');
@@ -36,19 +35,6 @@ $read_only				= (isset($settings['readonly']) && $settings['readonly']);
 
 if (!($add_label 		= $this->getVar('add_label'))) { $add_label = _t('Add component'); }
 
-=======
-
-$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-$placement_id			= $this->getVar('placement_id');
-$table_num 				= $this->getVar('table_num');
-$t_subject				= $this->getVar('t_subject');	// parent artwork
-$t_instance				= $this->getVar('t_instance');	// currently selected record (currently edited artwork or element)
-$settings 				= $this->getVar('settings');
-$read_only				= (isset($settings['readonly']) && $settings['readonly']);
-
-if (!($add_label 		= $this->getVar('add_label'))) { $add_label = _t('Add component'); }
-
->>>>>>> develop
 $display_template		= caGetOption('displayTemplate', $settings, null);
 if(!$display_template) { $display_template = $t_subject->getAppConfig()->get('ca_objects_component_display_settings'); }
 

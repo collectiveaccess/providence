@@ -382,7 +382,7 @@ trait ModelSettings {
 		$vs_return .= '<span id="'.$vs_label_id.'"  class="'.$vs_label_id.'">'.$va_properties['label'].'</span>';
 		
 		
-		if ($vs_help_text = $pa_options['helpText']) {
+		if ($vs_help_text = ($pa_options['helpText'] ?? null)) {
 			$vs_return .= "<a href='#' onclick='jQuery(\"#".str_replace(".", "_", $vs_label_id)."_help_text\").slideToggle(250); return false;' class='settingsKeyButton'>"._t('Key')."</a>";
 		}
 		

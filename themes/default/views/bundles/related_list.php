@@ -155,7 +155,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 					</td>
 					<td>
 <?php
-	if (sizeof($this->getVar('relationship_types_by_sub_type'))) {
+	if (is_array($this->getVar('relationship_types_by_sub_type')) && sizeof($this->getVar('relationship_types_by_sub_type'))){
 ?>
 						<select name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
 <?php
@@ -286,7 +286,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
-			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
+			isSelfRelationship:<?= ($t_item_rel && method_exists($t_item_rel, "isSelfRelationship") && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
 			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
 		};
 

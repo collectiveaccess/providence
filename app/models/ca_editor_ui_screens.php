@@ -619,7 +619,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$deprecated = (bool)(isset($va_info['deprecated']) && $va_info['deprecated']);
 			if (isset($va_info['displayOnly']) && $va_info['displayOnly']) { continue; }	// skip bundles meant for use in displays only
 			
-			$bundle_normalized = $bundle_proc = caConvertBundleNameToCode($bundle, ['includeTablePrefix' => true]);
+			$bundle_normalized = $bundle_proc = $bundle;
+			if(preg_match("!^ca_attribute_!", $bundle_normalized)) {
+				$bundle_normalized = $bundle_proc = preg_replace('!^ca_attribute_!', '', $bundle_normalized);
+			
+				if(!preg_match('!^ca_[a-z]+!', $bundle_normalized)) {
+					$bundle_normalized = $t_instance->tableName().'.'.$bundle_normalized;
+				}
+			}
 			
 			$va_additional_settings = [];
 			switch ($va_info['type']) {
@@ -1163,7 +1170,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => 10, 'height' => 1,
 								'takesLocale' => false,
 								'default' => false,
-								'label' => _t('Show set representtion button?'),
+								'label' => _t('Show set representation button?'),
 								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
 							)
 						);
@@ -2570,7 +2577,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						return false;
 					}
 				} else {
-					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings'] ?? []);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->set('rank', $vn_i + 1);
 					

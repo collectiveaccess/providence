@@ -113,6 +113,7 @@
  	 *			request = current request; required for generation of editor links
  	 *			color = hex color to use for item marker; can include bundle display template tags for inclusion of colors stored in metadata elements
  	 *			group = group item belongs to. Items will be output in feature group layers corresponding to each group code.
+ 	 *			fuzz = distort coordinates by rounding to the specified number of decimal places. Only applied to point locations. Larger numbers return more precision and less distortion. Paths are never distorted. [Default is null; no distortion]
  	 * @return array Returns an array with two keys: 'points' = number of unique markers added to map; 'items' = number of result hits than were plotted at least once on the map
  	 */
  	public function mapFrom($po_data_object, $ps_georeference_field_name, $pa_options=null) {
@@ -123,6 +124,7 @@
  		$vs_group = caGetOption('group', $pa_options, null);
  		$vb_render_label_as_link = caGetOption('renderLabelAsLink', $pa_options, false);
  		
+ 		$fuzz = caGetOption('fuzz', $pa_options, null, ['castTo' => 'int']);
  		
  		$vn_point_count = 0;
  		$vn_item_count = 0;
@@ -254,6 +256,9 @@
                                     $va_coord = explode(',', $va_path[0]);
                                     list($lng, $radius) = explode('~', $va_coord[1]);
                                     if (!$radius) { list($lng, $angle) = explode('*', $va_coord[1]); }
+                                    
+                                    if($fuzz > 0) { $va_coord[0] = ''.round($va_coord[0], $fuzz); $lng = ''.round($lng, $fuzz); }
+                             
                                     $d = ['latitude' => $va_coord[0], 'longitude' => $lng, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color, 'group' => $vs_group];
                                     if ($radius) { $d['radius'] = $radius; }
                                     if ($angle) { $d['angle'] = $angle; }

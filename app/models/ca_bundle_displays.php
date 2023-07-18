@@ -2199,13 +2199,14 @@ if (!$pb_omit_editing_info) {
 			$val = $bundle = null;
 			switch((int)$pn_placement_id) {
 				case -1:	// idno
-					if($instance = $po_result->getInstance()) {
+					
+					if($instance = is_a($po_result, 'BaseModel') ? $po_result : $po_result->getInstance()) {
 						$val = $po_result->get($bundle = $instance->tableName().'.'.$instance->getProperty('ID_NUMBERING_ID_FIELD'));
 					}
 					$bundle_type =  'intrinsic';
 					break;
 				case -2:	// display name	
-					if($instance = $po_result->getInstance()) {
+					if($instance = is_a($po_result, 'BaseModel') ? $po_result : $po_result->getInstance()) {
 						$val = $po_result->get($bundle = $instance->tableName().'.preferred_labels');
 					}
 					$bundle_type =  'preferred_labels';
