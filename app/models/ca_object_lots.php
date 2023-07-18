@@ -568,6 +568,7 @@ class ca_object_lots extends RepresentableBaseModel {
  	 * @return array List of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
  	 */
  	 public function getObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	if(!is_array($pa_options)) { $pa_options = []; }
  	 	$vn_lot_id = $this->getPrimaryKey();
  	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
  	 		$vn_lot_id = $pn_lot_id;
