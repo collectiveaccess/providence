@@ -31,7 +31,6 @@ $va_sub_elements 		= $this->getVar('sub_elements');
 $va_type_restrictions 	= $this->getVar('type_restrictions');
 
 $vn_parent_id 			= $this->getVar('parent_id');
-$o_request 				= $this->request;
 ?>
 <div class="sectionBox">
 <?php
@@ -162,7 +161,7 @@ $o_request 				= $this->request;
 			fieldNamePrefix: 'type_restrictions_',
 			templateValues: <?= json_encode(array_merge(array_keys($t_restriction->getAvailableSettings()), array('table_num', 'type_id', 'include_subtypes'))); ?>, 
 			initialValues: <?= json_encode($va_initial_values); ?>,
-			itemID: 'Item_',
+			itemID: '<?= $vs_id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			addButtonClassName: 'caAddItemButton',
@@ -222,9 +221,7 @@ if(is_array($va_sub_elements)):
 endif;
 ?>
 	<div class="editorBottomPadding"><!-- empty --></div>
-<?php	
-			print $vs_control_box;
-?>
+<?= $vs_control_box; ?>
 </div>
 
 <div class="editorBottomPadding"><!-- empty --></div>
