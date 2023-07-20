@@ -5753,8 +5753,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 
 				# -- delete old file if its name is different from the one we just wrote (otherwise, we overwrote it)
-				if ($filepath != $this->getFilePath($field)) {
-					@unlink($this->getFilePath($field));
+				if (($filepath != $this->getFilePath($field)) && file_exists($filepath = $this->getFilePath($field))) {
+					@unlink($filepath);
 				}
 
 
