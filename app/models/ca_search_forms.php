@@ -756,6 +756,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 *		bundle = The bundle name (eg. ca_objects.idno)
 	 *		display = Display label for each available bundle
 	 *		description = Description of bundle
+	 *		useDisambiguationLabels = Use alternate labels for metadata elements suitable for list display. [Default is false]
 	 *
 	 * Will return null if table name or number is invalid.
 	 */
@@ -763,6 +764,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->get('table_num'); }
 		$pm_table_name_or_num = Datamodel::getTableNum($pm_table_name_or_num);
 		if (!$pm_table_name_or_num) { return null; }
+		
+		$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $pa_options, false);
 
 		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
 		$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
@@ -925,7 +928,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							if (caGetBundleAccessLevel($vs_primary_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
 
 							$vs_bundle = $vs_table.'.'.$vs_field;
-							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_bundle);
+							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_bundle, ['useDisambiguationLabels' => $use_disambiguation_labels]);
 
 							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.$vs_label."</div>";
 							$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1039,7 +1042,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$vs_bundle = $policy ? "{$vs_table}.current_value.{$p}.{$vs_field}" : ((($bundle_bits[1] ?? null) === 'related') ? "{$subject_table}.preferred_labels.{$bundle_bits[2]}" : "{$vs_table}.{$vs_field}");
 
 
-							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => true, 'includeSourceSuffix' => false]);
+							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => $use_disambiguation_labels, 'includeSourceSuffix' => false]);
+							
 							if ($policy) { 
 							    $vs_label = _t('Current value for <em>%1</em> using <em>%2</em>', mb_strtolower($vs_label), mb_strtolower(ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name')));
 							}
