@@ -904,7 +904,11 @@ use Zend\Stdlib\Glob;
 				case 'list':
 					$attr = ['class' => 'dontTriggerUnsavedChangeWarning'];
 					if($p['multiple'] ?? false) { $attr['multiple'] = 1; }
-					$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $p['options'], $attr, ['values' => $values[$n] ?? $default, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
+					
+					$dv = $values[$n] ?? $default;
+					if(!is_array($dv)) { $dv = [$dv]; }
+					
+					$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $p['options'], $attr, ['values' => $dv, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
 					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
 					break;
 				case 'checkbox':
