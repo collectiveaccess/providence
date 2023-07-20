@@ -193,11 +193,20 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 	
 	$include_header_footer = caGetOption('includeHeaderFooter', $template_info, false);
 	
+	// Copy download-time user parameters into view
+	$template_type = caGetOption('printTemplateType', $options, null);
+	$values = $template_type ? caGetPrintTemplateParameters($template_type, $template_info['identifier'], ['view' => $view, 'request' => $view->request]) : [];
+	
 	try {
 		$o_pdf = new PDFRenderer();
 		$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
-
-		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', caGetOption('pageOrientation', $template_info, 'portrait'));
+	
+		if($page_orientation = $view->getVar('param_pageOrientation')) {
+			$template_info['pageOrientation'] = $page_orientation;
+		} else {
+			$page_orientation = caGetOption('pageOrientation', $template_info, 'portrait');
+		}
+		$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', $page_orientation);
 		$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 		$view->setVar('pageWidth', "{$vn_page_width}mm");
 		$view->setVar('pageHeight', "{$vn_page_height}mm");
@@ -209,10 +218,6 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 
 		$view->addViewPath($vs_base_path."/local");
 		$view->addViewPath($vs_base_path);
-		
-		// Copy download-time user parameters into view
-		$template_type = caGetOption('printTemplateType', $options, null);
-		$values = $template_type ? caGetPrintTemplateParameters($template_type, $template_info['identifier'], ['view' => $view, 'request' => $view->request]) : [];
 		
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
 		$vs_content = '';
@@ -1160,10 +1165,16 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 		switch($template_info['fileFormat']) {
 			case 'pdf':
 				$o_pdf = new PDFRenderer();
+				
+				if($page_orientation = $view->getVar('param_pageOrientation')) {
+					$template_info['pageOrientation'] = $page_orientation;
+				} else {
+					$page_orientation = caGetOption('pageOrientation', $template_info, 'portrait');
+				}
 
 				$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 
-				$page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', caGetOption('pageOrientation', $template_info, 'portrait'));
+				$page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', $page_orientation);
 				$page_width = $page_size['width']; $page_height = $page_size['height'];
 				$view->setVar('pageWidth', "{$page_width}mm");
 				$view->setVar('pageHeight', "{$page_height}mm");
