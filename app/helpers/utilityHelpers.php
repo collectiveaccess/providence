@@ -4167,6 +4167,7 @@ function caFileIsIncludable($ps_file) {
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *		maxLength = Maximum length of returned value. [Default is 255]
+	 *		moveArticles = Move articles at the beginnning of the text to the end. [Default is true]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
@@ -4178,13 +4179,14 @@ function caFileIsIncludable($ps_file) {
 		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
 		$omit_article = caGetOption('omitArticle', $options, true);
+		$move_articles = caGetOption('moveArticles', $options, true);
 
 		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
 		$display_value = preg_replace('![ ]+!', ' ', $display_value);
 		
 		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
 		
-		if($locale) {
+		if($locale && $move_articles) {
 			// Move articles to end of string
 			$articles = caGetArticlesForLocale($locale) ?: [];
 
