@@ -932,7 +932,7 @@
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
 		    if(!self::checkPolicyTypeRestrictions($policy, caGetOption('restrictToTypes', $options, []))) { return null; }
 		    
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null), 'useTemplate' => caGetOption('useTemplate', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
