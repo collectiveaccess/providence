@@ -2139,7 +2139,7 @@
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
 			
-			if(is_array($options['restrict_to_types'] ?? null) && sizeof($options['restrict_to_types'])) {
+			if(is_array($options['restrict_to_types'] ?? null) && ($options['restrict_to_types'] = array_filter($options['restrict_to_types'], "strlen")) && sizeof($options['restrict_to_types'])) {
 				$policy_info = $this->getPolicyConfig($policy);
 			
 				$type_res = caMakeTypeIDList($policy_info['table'], $options['restrict_to_types']);
