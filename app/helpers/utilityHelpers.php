@@ -2928,6 +2928,7 @@ function caFileIsIncludable($ps_file) {
 		if(!$locale) { $locale = $g_ui_locale; }
 		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
 		
+		$currency_specifier = $decimal_value = null;
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
 		try {
 			// either
@@ -5005,5 +5006,14 @@ function caFileIsIncludable($ps_file) {
 			throw new ApplicationException(_t('Relative file path is invalid'));
 		}
 		return $f;
+	}
+	# ----------------------------------------
+	/**
+	 * Check if background processing queue is enabled
+	 *
+	 * @return bool
+	 */
+	function caProcessingQueueIsEnabled() : bool {
+		return defined('__CA_QUEUE_ENABLED__') && __CA_QUEUE_ENABLED__;
 	}
 	# ----------------------------------------

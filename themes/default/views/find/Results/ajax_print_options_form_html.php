@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/printTemplates/sets/pdfEnd.php : bottom-matter appended to PDF templates
+ * views/find/Results/ajax_print_options_form_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,14 +23,23 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
- * Template configuration:
- *
- * @name PDF end
- * @type pageEnd
- *
  * ----------------------------------------------------------------------
  */
+ 
+$form = $this->getVar('form');
+$options = $this->getVar('options');
+
+if(!sizeof($options)) { return; }
 ?>
-	</body>
-</html>
+<ul class="caPrintOptions">
+<?php
+foreach($options as $e) {
+?>
+	<li class="caPrintOptionItem">
+		<?= $e['label']; ?><br/>
+		<?= $e['element']; ?>
+	</li>
+<?php	
+}
+?>
+</ul>

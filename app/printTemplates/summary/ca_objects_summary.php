@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/summary/summary.php
+ * app/printTemplates/summary/summary.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,52 +37,49 @@
  * @marginBottom 0.5in
  * @marginRight 0.25in
  *
+ * @includeHeaderFooter true
+ *
+ * @param includeLogo {"type": "CHECKBOX",  "label": "Include logo?", "value": "1", "default": true}
+ * @param includePageNumbers {"type": "CHECKBOX",  "label": "Include page numbers?", "value": "1", "default": true}
+ * @param showIdentifierInFooter {"type": "CHECKBOX",  "label": "Show identifier in footer?", "value": "1", "default": false}
+ * @param showTimestampInFooter {"type": "CHECKBOX",  "label": "Show current date/time in footer?", "value": "1", "default": false}
+ *
  * ----------------------------------------------------------------------
  */
- 
- 	$t_item = $this->getVar('t_subject');
-	
-	$va_bundle_displays = $this->getVar('bundle_displays');
-	$t_display = $this->getVar('t_display');
-	$va_placements = $this->getVar("placements");
-
-	print $this->render("pdfStart.php");
-	print $this->render("header.php");
-	print $this->render("footer.php");	
+$t_item = $this->getVar('t_subject');
+$bundle_displays = $this->getVar('bundle_displays');
+$t_display = $this->getVar('t_display');
+$placements = $this->getVar("placements");
 ?>
-	<br/>
-	<div class="title">
-		<?php print $t_item->getLabelForDisplay();?>
-	</div>
-	<div class="representationList">
-		
+<br/>
+<div class="title">
+	<?= $t_item->getLabelForDisplay();?>
+</div>
+<div class="representationList">		
 <?php
-	$va_reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => true]);
+	$reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => true]);
 
-	foreach($va_reps as $va_rep) {
-		if(sizeof($va_reps) > 1){
+	foreach($reps as $rep) {
+		if(sizeof($reps) > 1){
 			# --- more than one rep show thumbnails
-			$vn_padding_top = ((120 - $va_rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
-			print $va_rep['tags']['thumbnail']."\n";
+			$padding_top = ((120 - $rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
+			print $rep['tags']['thumbnail']."\n";
 		}else{
 			# --- one rep - show medium rep
-			print $va_rep['tags']['medium']."\n";
+			print $rep['tags']['medium']."\n";
 		}
 	}
 ?>
-	</div>
-		
+</div>		
 <?php
-	foreach($va_placements as $vn_placement_id => $va_bundle_info){
-		if (!is_array($va_bundle_info)) break;
-		if (in_array($va_bundle_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always print it anyway
-		
-		if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('usePath' => true, 'purify' => true)))) {
-			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-			$vs_display_value = "&lt;"._t('not defined')."&gt;";
-		}
-		
-		print '<div class="data"><span class="label">'."{$va_bundle_info['display']} </span><span class='meta'> {$vs_display_value}</span></div>\n";
+foreach($placements as $placement_id => $bundle_info){
+	if (!is_array($bundle_info)) break;
+	if (in_array($bundle_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always print it anyway
+	
+	if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, array('usePath' => true, 'purify' => true)))) {
+		if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
+		$display_value = "&lt;"._t('not defined')."&gt;";
 	}
 	
-	print $this->render("pdfEnd.php");
+	print '<div class="data"><span class="label">'."{$bundle_info['display']} </span><span class='meta'> {$display_value}</span></div>\n";
+}

@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/printTemplates/sets/pdfEnd.php : bottom-matter appended to PDF templates
+ * default/views/mailTemplates/set_export_failure.tpl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,14 +23,8 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
- * Template configuration:
- *
- * @name PDF end
- * @type pageEnd
- *
  * ----------------------------------------------------------------------
  */
 ?>
-	</body>
-</html>
+<p><strong><?= _t('Set export failed'); ?></strong></p>
+<p><?= _t('The set export for <em>%1</em> could not be created: %2.', $this->getVar('searchExpressionForDisplay'), $this->getVar('errors')); ?></p>

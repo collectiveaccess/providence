@@ -125,7 +125,7 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		} else {
 			$vs_page_size_arg = "--page-size {$this->ops_page_size}";
 		}
-		caExec($this->ops_wkhtmltopdf_path." --enable-local-file-access  --disable-smart-shrinking --print-media-type --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} {$vs_page_size_arg} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);
+		caExec($z=$this->ops_wkhtmltopdf_path." --log-level none --enable-local-file-access  --disable-smart-shrinking --print-media-type --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} {$vs_page_size_arg} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $options, false)) {
 			header("Cache-Control: private");

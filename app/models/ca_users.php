@@ -2055,6 +2055,7 @@ class ca_users extends BaseModel {
 									$vs_country_name = $vs_code;
 								}
 								$va_opts[($vs_lang_name ? $vs_lang_name : $vs_code).($vs_country_name ? ' ('.$vs_country_name.')':'')] = $vs_code;
+								asort($va_opts);
 							}
 							natcasesort($va_opts);
 							break;

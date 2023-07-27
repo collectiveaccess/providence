@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2022 Whirl-i-Gig
+ * Copyright 2004-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,20 +30,10 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__."/BaseObject.php");
-require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Db.php");
-require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
-require_once(__CA_LIB_DIR__."/ApplicationVars.php");
 require_once(__CA_LIB_DIR__."/Utils/ProcessStatus.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
-require_once(__CA_MODELS_DIR__."/ca_task_queue.php");
-require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 class TaskQueue extends BaseObject {
 	private $opo_eventlog;
@@ -207,7 +197,7 @@ class TaskQueue extends BaseObject {
 		// verify registered processes
 		$o_appvars = new ApplicationVars();
 		$va_processes = $o_appvars->getVar("taskqueue_processes");
-		if (!is_array($va_processes)) { $va_processes = array(); }
+		if (!is_array($va_processes)) { $va_processes = []; }
 		$va_verified_processes = $this->verifyProcesses($va_processes);
 		$o_appvars->setVar("taskqueue_processes", $va_verified_processes);
 		$o_appvars->save();
@@ -402,7 +392,7 @@ class TaskQueue extends BaseObject {
 		", md5($ps_entity_key));
 		
 		
-		$task_cancel_delete_failures = array();
+		$task_cancel_delete_failures = [];
 		
 		if (!sizeof($this->opa_handler_plugin_dirs)) {
 			$this->opo_eventlog->log(array("CODE" => "ERR", "SOURCE" => "TaskQueue->cancelPendingTasks()", "MESSAGE" => "Cancelling of task failed because no handler directories are configured"));		
@@ -507,7 +497,7 @@ class TaskQueue extends BaseObject {
 					$sql_handler_criteria
 		", md5($ps_row_key));
 		
-		$task_cancel_delete_failures = array();
+		$task_cancel_delete_failures = [];
 		
 		if (!sizeof($this->opa_handler_plugin_dirs)) {
 			$this->opo_eventlog->log(array("CODE" => "ERR", "SOURCE" => "TaskQueue->cancelPendingTasks()", "MESSAGE" => "Queue processing failed because no handler directories are configured; queue was halted"));		
@@ -586,7 +576,7 @@ class TaskQueue extends BaseObject {
 		$o_appvars = new ApplicationVars();
 		$va_processes = $o_appvars->getVar("taskqueue_processes");
 	
-		if (!is_array($va_processes)) { $va_processes = array(); }
+		if (!is_array($va_processes)) { $va_processes = []; }
 		$va_processes = $this->verifyProcesses($va_processes);
 		
 		if (sizeof($va_processes) >= $vn_max_processes) {
@@ -676,8 +666,8 @@ class TaskQueue extends BaseObject {
 	 *
 	 */
 	function &verifyProcesses($pa_processes) {
-		if (!is_array($pa_processes)) { return array(); }
-		$va_verified_processes = array();
+		if (!is_array($pa_processes)) { return []; }
+		$va_verified_processes = [];
 		
 		if ($this->opo_processes->canDetectProcesses()) {
 			foreach($pa_processes as $vn_proc_id => $va_proc_info) {

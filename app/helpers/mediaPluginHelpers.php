@@ -405,7 +405,7 @@ function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null, $options=null) {
 		return $ps_wkhtmltopdf_path; 
 	} // don't try exec test on Windows
 	
-	caExec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
+	caExec($ps_wkhtmltopdf_path." > /dev/null 2> /dev/null",$va_output,$vn_return);
 	
 	$vb_ret = (($vn_return == 0) || ($vn_return == 1));
 	

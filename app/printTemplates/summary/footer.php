@@ -31,45 +31,41 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
 $t_item = $this->getVar('t_subject');
 
-if($this->request->config->get('summary_header_enabled')) {
-	$footer = '<table class="footerText" style="width: 100%;"><tr>';
-	if($this->request->config->get('summary_show_identifier')) {
-		$footer .= "<td class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
-	}
+$footer = '<table class="footerText" style="width: 100%;"><tr>';
+if($this->getVar('param_showIdentifierInFooter')) {
+	$footer .= "<td class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
+}
 
-	if($this->request->config->get('summary_show_timestamp')) {
-		$footer .= "<td class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</td>";
-	}
-	$footer .= "</tr></table>";
-	
-	
-	switch($this->getVar('PDFRenderer')) {
-		case 'domPDF':
+if($this->getVar('param_showTimestampInFooter')) {
+	$footer .= "<td class='footerText'>".caGetLocalizedDate(null, ['dateFormat' => 'delimited'])."</td>";
+}
+$footer .= "</tr></table>";
+
+switch($this->getVar('PDFRenderer')) {
+	case 'domPDF':
 ?>
 <div id='footer'>
 	<?= $footer; ?>
 </div>
 <?php
-				break;
-		case 'wkhtmltopdf':
+			break;
+	case 'wkhtmltopdf':
 ?>
 <!--BEGIN FOOTER-->
 <!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 </head>
 <body>
-<?= $footer; ?>
+	<?= $footer; ?>
 </body>
 </html>
 <!--END FOOTER-->
 
 <?php
-		break;
-	}
+	break;
 }

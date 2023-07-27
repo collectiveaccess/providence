@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,53 +31,48 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	
-$vo_result 				= $this->getVar('result');
-$vn_num_items			= (int)$vo_result->numHits();
+$result 				= $this->getVar('result');
+$num_items			= (int)$result->numHits();
 
-if($this->request->config->get('report_header_enabled')) {
+$footer = '<table class="footerText" style="width: 100%;"><tr>';
+if($this->getVar('param_showSearchTermInFooter')) {
+	$footer .= "<td class='footerText'>".$this->getVar('criteria_summary_truncated')."</td>";
+}
 
-	$vs_footer = '<table class="footerText" style="width: 100%;"><tr>';
-	if($this->request->config->get('report_show_search_term')) {
-		$vs_footer .= "<td class='footerText'>".$this->getVar('criteria_summary_truncated')."</td>";
-	}
+if($this->getVar('param_showResultCountInFooter')) {
+	$footer .= "<td class='footerText'>".(($num_items == 1) ? _t('%1 item', $num_items) : _t('%1 items', $num_items))."</td>";
+}
 
-	if($this->request->config->get('report_show_number_results')) {
-		$vs_footer .= "<td class='footerText'>".(($vn_num_items == 1) ? _t('%1 item', $vn_num_items) : _t('%1 items', $vn_num_items))."</td>";
-	}
+if($this->getVar('param_showTimestampInFooter')) {
+	$footer .= "<td class='footerText'>".caGetLocalizedDate(null, ['dateFormat' => 'delimited'])."</td>";
+}
+$footer .= "</tr></table>";
 
-	if($this->request->config->get('report_show_timestamp')) {
-		$vs_footer .= "<td class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</td>";
-	}
-	$vs_footer .= "</tr></table>";
-
-	switch($this->getVar('PDFRenderer')) {
-		case 'domPDF':
+switch($this->getVar('PDFRenderer')) {
+	case 'domPDF':
 ?>
 <div id='footer'>
-<?= $vs_footer; ?>
+	<?= $footer; ?>
 </div>
 <?php
-			break;
-		case 'wkhtmltopdf':
+		break;
+	case 'wkhtmltopdf':
 ?>
 <!--BEGIN FOOTER-->
 <!DOCTYPE html>
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-</head>
-<body>
-	<table class="footerText"><tr>
-<?= $vs_footer; ?>
-	</tr></table>
-</body>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+	</head>
+	<body>
+		<table class="footerText"><tr>
+			<?= $footer; ?>
+		</tr></table>
+	</body>
 </html>
 <!--END FOOTER-->
 
 <?php
-		break;
-	}
+	break;
 }
