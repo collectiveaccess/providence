@@ -963,6 +963,8 @@ class ItemService extends BaseJSONService {
 			}
 		} else if ($va_post["remove_all_attributes"]) {
 			$t_instance->removeAttributes();
+		} else if ($pa_data["purge_all_attributes"]) {
+			$t_instance->purgeAttributes();
 		}
 
 		if(is_array($va_post["attributes"]) && sizeof($va_post["attributes"])) {
