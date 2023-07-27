@@ -68,6 +68,6 @@ $hide_zero_counts 		= $this->getVar('hide_zero_counts');
 	}else{
 		$vs_join = " ";
 	}
-	print implode($va_counts, $vs_join).".";
+	print implode($vs_join, $va_counts).".";
 ?>
 </div>

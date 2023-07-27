@@ -384,7 +384,7 @@ class Session {
 	 */
 	public static function decodeJWT(string $jwt, string $key) {
 		if (!$key) { $key = Configuration::load()->get('jwt_token_key'); }
-		return JWT::decode($jwt, $key, ['HS256']);
+		return JWT::decode($jwt, new Firebase\JWT\Key($key, 'HS256'));
 	}
 	# ----------------------------------------
 }

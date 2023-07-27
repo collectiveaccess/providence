@@ -51,11 +51,14 @@
 			// output headers
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
+				$va_display_item['display'] = $va_display_item['display'] ?? null;
+				$va_display_item['bundle_sort'] = $va_display_item['bundle_sort'] ?? null;
+				
 				$vs_item_display_str =
 					((mb_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
 
-				if ($va_display_item['is_sortable']) {
-					if ($vs_current_sort == $va_display_item['bundle_sort']) {
+				if ($va_display_item['is_sortable'] ?? false) {
+					if ($vs_current_sort == ($va_display_item['bundle_sort'] ?? null)) {
 						if($vs_current_sort_dir == 'desc') {
 							$vs_th_class = 'list-header-sorted-desc';
 							$vs_new_sort_direction = 'asc';
@@ -65,7 +68,7 @@
 						}
 
 						print "<th class='{$vs_th_class}'><span id='listHeader".$vn_id_count."'><nobr>".
-							caNavLink($this->request, $vs_item_display_str, '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'], 'direction' => $vs_new_sort_direction))
+							caNavLink($this->request, $vs_item_display_str, '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'] ?? null, 'direction' => $vs_new_sort_direction))
 						."</nobr></span></th>";
 						TooltipManager::add('#listHeader'.$vn_id_count , _t("Currently sorting by ").$va_display_item['display']);
 					} else {
@@ -98,7 +101,7 @@
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_objects', $vn_object_id, array(), array())."</td>";
 						
 					foreach($va_display_list as $placement_id => $info) {
-                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))."</span></td>";
+                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'] ?? null, array_merge(array('request' => $this->request), is_array($info['settings'] ?? null) ? $info['settings'] : []))."</span></td>";
                     }
 ?>	
 				</tr>

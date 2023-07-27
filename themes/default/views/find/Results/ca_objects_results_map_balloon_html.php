@@ -40,7 +40,7 @@ foreach($va_ids as $vn_id) {
 	}
 ?>
 	<div id="mapBalloonText">
-	<?php print caNavLink($this->request, '<b>'.$t_object->get("ca_objects.idno").'</b>: '.$t_object->get("ca_objects.preferred_labels"), '', 'editor/objects', 'ObjectEditor', 'Edit', array('object_id' => $t_object->get("ca_objects.object_id"))); ?>
+	<?= caNavLink($this->request, '<b>'.$t_object->get("ca_objects.idno").'</b>: '.$t_object->get("ca_objects.preferred_labels"), '', 'editor/objects', 'ObjectEditor', 'Edit', array('object_id' => $t_object->get("ca_objects.object_id"))); ?>
 	</div><!-- end mapBalloonText -->
 </div><!-- end mapBallon -->
 <br/>

@@ -55,7 +55,7 @@
 ?>
 				</td>
 				<td>
-					<div class='formLabel'><?php print _t('Group members'); ?></div>
+					<div class='formLabel'><?= _t('Group members'); ?></div>
 					<div>
 <?php
 		// users

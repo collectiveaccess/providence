@@ -117,7 +117,7 @@
 	}
 
 	$strict_type_hierarchy = $this->request->config->get($subject_table.'_enforce_strict_type_hierarchy');
-	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$id_prefix}type_id", array('id' => "{$id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 'includeSelf' => !(bool)$strict_type_hierarchy, 'directChildrenOnly' => ((bool)$strict_type_hierarchy && ($strict_type_hierarchy !== '~')), 'restrictToTypes' => $pa_bundle_settings['restrict_to_types'])));
+	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$id_prefix}type_id", array('id' => "{$id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 'includeSelf' => !(bool)$strict_type_hierarchy, 'directChildrenOnly' => ((bool)$strict_type_hierarchy && ($strict_type_hierarchy !== '~')), 'restrictToTypes' => $pa_bundle_settings['restrict_to_types'] ?? null)));
 
 	$vb_read_only		=	((isset($pa_bundle_settings['readonly']) && $pa_bundle_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($subject_table, 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
 	
@@ -179,7 +179,9 @@
 			$template_values = caProcessTemplateForIDs($template, $subject_table, array_keys($pa_ancestors), ['returnAsArray' => true, 'indexWithIDs' => true]);
 		}
 		foreach($pa_ancestors as $vn_id => $va_item) {
-			$vs_item_id = $vb_do_objects_x_collections_hierarchy ? ($va_item['table'].'-'.$va_item['item_id']) : $va_item['item_id'];
+			$va_item['table'] = $va_item['table'] ?? null;
+			
+			$vs_item_id = $vb_do_objects_x_collections_hierarchy ? ($va_item['table'].'-'.($va_item['item_id'] ?? null)) : ($va_item['item_id'] ?? null);
 			if($vn_id === '') {
 				$path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
 			} else {
@@ -284,7 +286,8 @@
 			}
 	
 			if (!$vb_batch && ($pn_id > 0)) {
-				$vs_count_label = $pa_bundle_settings['label_for_count'] ?? caGetTableDisplayName($subject_table, true);
+				$vs_count_label = caExtractSettingsValueByUserLocale('label_for_count', $pa_bundle_settings) ?? caGetTableDisplayName($subject_table, true);
+
 ?>
 				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $vs_count_label, $vn_items_in_hier); } ?></div>
 				<div class="buttonPosition">

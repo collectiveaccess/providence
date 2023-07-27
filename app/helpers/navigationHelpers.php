@@ -35,6 +35,7 @@
    */
    
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	
  	# ------------------------------------------------------------------------------------------------
  	/**
@@ -559,6 +560,7 @@
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
 		if($vs_classname = (!$pb_no_background) ? 'form-button' : '') {
+			if(!isset($pa_attributes['class'])) { $pa_attributes['class'] = null; }
 			$pa_attributes['class'] .= " {$vs_classname}";
 		}
 		
@@ -636,7 +638,7 @@
 	function caNavIcon($pn_type, $pm_size=2, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
-		$vs_opt_class = $pa_attributes['class'] ? ' '.$pa_attributes['class'] : '';
+		$vs_opt_class = ($pa_attributes['class'] ?? null) ? ' '.$pa_attributes['class'] : '';
 		unset($pa_attributes['class']);
 		
 		if ($vs_color = caGetOption('color', $pa_options, null)) {
@@ -998,7 +1000,23 @@
 			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$pb_quick_add = caGetOption('quick_add', $pa_options, false);
-
+		
+		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
+			// Make sure record link points to exists
+			if (($pn_id > 0) && !$t_table->load($pn_id)) {
+				return null;
+			}
+		}
+		
+		$action_extra = caGetOption('actionExtra', $pa_options, null);
+		if($bundle = caGetOption('bundle', $pa_options, null)) {
+			$t_table->load($pn_id);
+			$type_id = $t_table->getTypeID();
+			if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
+				$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
+			}
+		}
+		
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $t_table->tableName();
 		if ($vs_table == 'ca_list_items') { $vs_table = 'ca_lists'; }
@@ -1108,9 +1126,6 @@
 				return null;
 				break;
 		}
-		
-		$action_extra = caGetOption('actionExtra', $pa_options, null);
-
 		switch($vs_table) {
 			case 'ca_relationship_types':
 				$vs_action = isset($pa_options['action']) ? $pa_options['action'] : (($po_request->isLoggedIn() && $po_request->user->canDoAction('can_configure_relationship_types')) ? 'Edit' : 'Summary'); 
@@ -1138,14 +1153,6 @@
 				}
 				break;
 		}
-		
-		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
-			// Make sure record link points to exists
-			if (($pn_id > 0) && !$t_table->load($pn_id)) {
-				return null;
-			}
-		}
-		
 		
 		if ($pb_return_url_as_pieces) {
 			return array(

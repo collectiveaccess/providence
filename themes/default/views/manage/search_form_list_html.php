@@ -47,7 +47,7 @@
 	});
 	
 	function _navigateToNewForm(table_num) {
-		document.location = '<?php print caNavUrl($this->request, 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => 0)); ?>' + '/table_num/' + table_num;
+		document.location = '<?= caNavUrl($this->request, 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => 0)); ?>' + '/table_num/' + table_num;
 	}
 /* ]]> */
 </script>
@@ -64,13 +64,13 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Form name'); ?>
+					<?= _t('Form name'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Owner'); ?>
+					<?= _t('Owner'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Content type'); ?>
+					<?= _t('Content type'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
@@ -82,17 +82,17 @@
 ?>
 			<tr>
 				<td>
-					<?php print $va_form['name']; ?>
+					<?= $va_form['name']; ?>
 				</td>
 				<td>
-					<?php print $va_form['fname'].' '.$va_form['lname']; ?>
+					<?= $va_form['fname'].' '.$va_form['lname']; ?>
 				</td>
 				<td>
-					<?php print $va_form['search_form_content_type']; ?>
+					<?= $va_form['search_form_content_type']; ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				
 				</td>
 			</tr>
@@ -106,7 +106,7 @@
 		<tr>
 			<td colspan='4'>
 				<div align="center">
-					<?php print _t('No forms have been configured'); ?>
+					<?= _t('No forms have been configured'); ?>
 				</div>
 			</td>
 		</tr>

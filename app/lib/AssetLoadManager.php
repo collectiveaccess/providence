@@ -117,9 +117,9 @@
 				$vs_main_package = array_shift($va_pack_path);
 				
 				$vb_is_theme_specific = false;
-				if (($va_list = $va_packages[$vs_main_package])) {
+				if (($va_list = ($va_packages[$vs_main_package] ?? null))) {
 					// noop
-				} elseif (($va_list = $va_theme_packages[$vs_main_package])) {
+				} elseif (($va_list = ($va_theme_packages[$vs_main_package] ?? null))) {
 					$vb_is_theme_specific = true;
 				}
 				 
@@ -232,7 +232,7 @@
 			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
 			$vs_buf = '';
-			if (is_array($g_asset_load_list[$output_target])) {
+			if (is_array($g_asset_load_list[$output_target] ?? null)) {
 				ksort($g_asset_load_list[$output_target]);
 				foreach($g_asset_load_list[$output_target] as $vn_priority => $va_libs) {
 					foreach($va_libs as $vs_lib => $va_types) {

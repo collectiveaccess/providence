@@ -24,19 +24,18 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
- 	$vs_element 			= $this->getVar('type_restrictions');
- 	
- 	$va_errors = array();
- 	if(is_array($va_action_errors = $this->getVar('errors'))) {
- 		foreach($va_action_errors as $o_error) {
- 			$va_errors[] = $o_error->getErrorDescription();
- 		}
- 	}
- 	
- 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+ */ 
+$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vs_element 			= $this->getVar('type_restrictions');
+
+$va_errors = array();
+if(is_array($va_action_errors = $this->getVar('errors'))) {
+	foreach($va_action_errors as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
+	}
+}
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 <div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,6 +65,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
+			'NOT_MANDATORY' => true,
 			'LIST_CODE' => 'object_lot_statuses',
 			'LABEL' => _t('Accession status'), 'DESCRIPTION' => _t('Indicates accession/collection status of lot. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)')
 		),
@@ -472,6 +473,17 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override insert() to check type_id (or whatever the type key is called in the table as returned by getTypeFieldName())
+	 * against the ca_lists list for the table (as defined by getTypeListCode())
+	 */ 
+	public function insert($pa_options=null) {
+		if(!$this->get('lot_status_id')) {
+			$this->set('lot_status_id', caGetDefaultItemID('object_lot_statuses'));
+		}
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
  	/**
  	 * Unlinks any ca_objects rows related to the currently loaded ca_object_lots record. Note that this does *not*
  	 * delete the related objects. It only removes their link to this lot.  Note that on error, the database maybe left in 
@@ -529,6 +541,7 @@ class ca_object_lots extends RepresentableBaseModel {
  	 * @return int Number of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
  	 */
  	 public function numObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	if(!is_array($pa_options)) { $pa_options = []; }
  	 	$vn_lot_id = $this->getPrimaryKey();
  	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
  	 		$vn_lot_id = $pn_lot_id;
@@ -555,6 +568,7 @@ class ca_object_lots extends RepresentableBaseModel {
  	 * @return array List of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
  	 */
  	 public function getObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	if(!is_array($pa_options)) { $pa_options = []; }
  	 	$vn_lot_id = $this->getPrimaryKey();
  	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
  	 		$vn_lot_id = $pn_lot_id;

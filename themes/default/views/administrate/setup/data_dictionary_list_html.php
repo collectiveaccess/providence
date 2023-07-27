@@ -41,7 +41,7 @@
 	});
 
 	function _navigateToNewForm(table_num) {
-		document.location = '<?php print caNavUrl($this->request, 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => 0)); ?>' + '/table_num/' + table_num;
+		document.location = '<?= caNavUrl($this->request, 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => 0)); ?>' + '/table_num/' + table_num;
 	}
 /* ]]> */
 </script>
@@ -58,16 +58,16 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Name'); ?>
+					<?= _t('Name'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Entry type'); ?>
+					<?= _t('Entry type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Bundle'); ?>
+					<?= _t('Bundle'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Rules'); ?>
+					<?= _t('Rules'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEditDelete"> </th>
 			</tr>
@@ -79,19 +79,19 @@
 ?>
 			<tr>
 				<td>
-					<div class="caDataDictionaryListName"><?php print $entry['label']; ?></div>
+					<div class="caDataDictionaryListName"><?= $entry['label']; ?></div>
 				</td>
 				<td>
-					<div class="caDataDictionaryListName"><?php print Datamodel::getTableProperty($entry['table_num'], 'NAME_PLURAL'); ?></div>
+					<div class="caDataDictionaryListName"><?= Datamodel::getTableProperty($entry['table_num'], 'NAME_PLURAL'); ?></div>
 				</td>
 				<td>
-					<div class="caDataDictionaryListName"><?php print $entry['bundle_label']." (".$entry['bundle_name'].")"; ?></div>
+					<div class="caDataDictionaryListName"><?= $entry['bundle_label']." (".$entry['bundle_name'].")"; ?></div>
 				</td>
 				<td>
-					<div><?php print (int)$entry['numRules']; ?></div>
+					<div><?= (int)$entry['numRules']; ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => $entry['entry_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/data_dictionary_entries', 'DataDictionaryEntryEditor', 'Edit', array('entry_id' => $entry['entry_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
 				</td>
 			</tr>
 <?php
@@ -101,7 +101,7 @@
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?php print _t('No entries have been created'); ?>
+					<?= _t('No entries have been created'); ?>
 				</div>
 			</td>
 		</tr>

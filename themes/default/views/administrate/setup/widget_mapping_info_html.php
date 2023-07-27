@@ -31,7 +31,7 @@
  	if (!$t_item->getPrimaryKey()) {
  		$vn_mapping_count = ca_bundle_mappings::getMappingCount();
 ?>
-<h3><?php print _t('Editing import/export mappings'); ?>:
+<h3><?= _t('Editing import/export mappings'); ?>:
 <div><?php
 	if ($vn_mapping_count == 1) {
 		print _t("1 mapping is defined");

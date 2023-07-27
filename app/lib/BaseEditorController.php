@@ -33,9 +33,9 @@
 /**
  *
  */
-
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
@@ -92,7 +92,15 @@ class BaseEditorController extends ActionController {
 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
 			// Trigger "before duplicate" hook
-			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(
+				[
+					'id' => $vn_subject_id, 
+					'table_num' => $t_subject->tableNum(),
+					'table_name' => $t_subject->tableName(), 
+					'instance' => $t_subject,
+					'request' => $this->request
+				]
+			);
 
 			if ($t_dupe = $t_subject->duplicate(array(
 				'user_id' => $this->request->getUserID(),
@@ -109,7 +117,16 @@ class BaseEditorController extends ActionController {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
 				// Trigger duplicate hook
-				$this->opo_app_plugin_manager->hookDuplicateItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'duplicate' => $t_dupe));
+				$this->opo_app_plugin_manager->hookDuplicateItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $t_subject->tableName(), 
+						'instance' => $t_subject, 
+						'duplicate' => $t_dupe,
+						'request' => $this->request
+					]
+				);
 
 				// redirect to edit newly created dupe.
 				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
@@ -176,7 +193,7 @@ class BaseEditorController extends ActionController {
 			if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
 				// jump to screen containing url-specified bundle
 				$this->request->setActionExtra($vs_bundle_screen);
-			} else {
+			} elseif(isset($va_nav['defaultScreen'])) {
 				$this->request->setActionExtra($va_nav['defaultScreen']);
 			}
 		}
@@ -187,8 +204,19 @@ class BaseEditorController extends ActionController {
 			Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
 		}
 
-		# trigger "EditItem" hook
-		$this->opo_app_plugin_manager->hookEditItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+		// Trigger "EditItem" hook on form load
+		$params = $this->opo_app_plugin_manager->hookEditItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => $t_subject,
+				'request' => $this->request
+			]
+		);
+		
+		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
+		$this->view->setVar('forced_values', $params['forced_values'] ?? null);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {
 			$vs_view = 'screen_html';
@@ -296,7 +324,16 @@ class BaseEditorController extends ActionController {
 		$t_subject->isChild();	// sets idno "child" flag
 		
 		# trigger "BeforeSaveItem" hook
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => &$t_subject, 
+				'is_insert' => $vb_is_insert,
+				'request' => $this->request
+			]
+		);
 
 		$vb_save_rc = false;
 		$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
@@ -400,9 +437,18 @@ class BaseEditorController extends ActionController {
 			$this->opo_result_context->invalidateCache();	// force new search in case changes have removed this item from the results
 			$this->opo_result_context->saveContext();
 		}
+		
 		# trigger "SaveItem" hook
-
-		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => $vb_is_insert));
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => &$t_subject, 
+				'is_insert' => $vb_is_insert, 
+				'request' => $this->request
+			]
+		);
 
 		if (method_exists($this, "postSave")) {
 			$this->postSave($t_subject, $vb_is_insert);
@@ -516,7 +562,8 @@ class BaseEditorController extends ActionController {
 	        
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$t_subject->setTransaction($o_t = new Transaction());
+				$o_t = new Transaction();
+				$t_subject->setTransaction($o_t);
 				$vb_we_set_transaction = true;
 			}
 			
@@ -602,7 +649,15 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
 
 				# trigger "DeleteItem" hook
-				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $subject_table, 'instance' => $t_subject));
+				$this->opo_app_plugin_manager->hookDeleteItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $subject_table, 
+						'instance' => $t_subject,
+						'request' => $this->request
+					]
+				);
 
 				# redirect
 				$this->redirectAfterDelete($t_subject);
@@ -655,10 +710,10 @@ class BaseEditorController extends ActionController {
 		$t_display = new ca_bundle_displays();
 		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
 
-		if ((!($vn_display_id = $this->request->getParameter('display_id', pInteger))) || !isset($va_displays[$vn_display_id])) {
+		if ((!($vn_display_id = (int)$this->request->getParameter('display_id', pString))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
 		}
-		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
+		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in'] ?? null) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
 		    $va_tmp = array_filter($va_displays, function($v) { return !isset($v['settings']['show_only_in']) || !is_array($v['settings']['show_only_in']) || in_array('editor_summary', $v['settings']['show_only_in']); });
 		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
 		}
@@ -715,7 +770,15 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar($t_subject->tableName().'_summary_last_settings', Session::getVar($t_subject->tableName().'_summary_last_settings'));
 		
-		$this->opo_app_plugin_manager->hookSummarizeItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+		$this->opo_app_plugin_manager->hookSummarizeItem(
+			[
+				'id' => $vn_subject_id, 
+				'table_num' => $t_subject->tableNum(), 
+				'table_name' => $t_subject->tableName(), 
+				'instance' => $t_subject, 
+				'request' => $this->request
+			]
+		);
 
 		$this->render('summary_html.php');
 	}
@@ -726,157 +789,53 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
 	public function PrintSummary($pa_options=null) {
-		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
-
+		
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
         if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
+        
+        $template = $this->request->getParameter('template', pString);
+        $display_id = (int)$this->request->getParameter('display_id', pString);
 
-		$t_display = new ca_bundle_displays();
-		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
-
-		$vn_display_id = $this->request->getParameter('display_id', pString);
-		$ps_template = $this->request->getParameter('template', pString);
-		
-		// PDF templates set in the display list need to be remapped to the template parameter
-		if(substr($vn_display_id, 0, 4) === '_pdf') {
-			$ps_template = $vn_display_id;
-			$vn_display_id = null;
-		}
-
-		if ((!$vn_display_id ) || !isset($va_displays[$vn_display_id])) {
-			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
-		}
-		
-		if (!isset($va_displays[$vn_display_id]) || (is_array($va_displays[$vn_display_id]['settings']['show_only_in']) && sizeof($va_displays[$vn_display_id]['settings']['show_only_in']) && !in_array('editor_summary', $va_displays[$vn_display_id]['settings']['show_only_in']))) {
-		    $va_tmp = array_filter($va_displays, function($v) { return isset($v['settings']['show_only_in']) && is_array($v['settings']['show_only_in']) && in_array('editor_summary', $v['settings']['show_only_in']); });
-		    $vn_display_id = sizeof($va_tmp) > 0 ? array_shift(array_keys($va_tmp)) : 0;
-		}
-		
-		$this->view->setVar('t_display', $t_display);
-		$this->view->setVar('bundle_displays', $va_displays);
-
-		// Check validity and access of specified display
-		$media_to_append = [];
-		if ($t_display->load($vn_display_id) && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-			$this->view->setVar('display_id', $vn_display_id);
-
-			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
-			$va_display_list = array();
-			foreach($va_placements as $vn_placement_id => $va_display_item) {
-				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
-
-				// get column header text
-				$vs_header = $va_display_item['display'];
-				if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-					if ($vs_tmp = array_shift(caExtractValuesByUserLocale(array($va_settings['label'])))) { $vs_header = $vs_tmp; }
-				}
-
-				$va_display_list[$vn_placement_id] = array(
-					'placement_id' => $vn_placement_id,
-					'bundle_name' => $va_display_item['bundle_name'],
-					'display' => $vs_header,
-					'settings' => $va_settings
-				);
+		$table = $t_subject->tableName();
+		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
+			$o_tq = new TaskQueue();
+			
+			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
+			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld})");
+			
+			if ($o_tq->addTask(
+				'dataExport',
+				[
+					'request' => $_REQUEST,
+					'mode' => 'SUMMARY',
+					'findType' => 'summary',
+					'table' => $table,
+					'results' => [$vn_subject_id],
+					'format' => caExportFormatForTemplate($table, $template),
+					'sort' => null,
+					'sortDirection' => null,
+					'searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}",
+					'searchExpressionForDisplay' => $exp_display,
+					'user_id' => $this->request->getUserID()
+				],
+				["priority" => 100, "entity_key" => join(':', [$table, $vn_subject_id]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
+			{
+				Session::setVar("{$table}_summary_export_in_background", true);
+				caGetPrintTemplateParameters('summary', $template, ['view' => $this->view, 'request' => $this->request]);
+				$this->request->isDownload(false);
+				$this->notification->addNotification(_t("Summary is queued for processing and will be sent to %1 when ready.", $this->request->user->get('ca_users.email')), __NOTIFICATION_TYPE_INFO__);
 				
-				$e = explode(".", $va_display_item['bundle_name'])[1];
-				if ($t_subject->hasElement($e) && (ca_metadata_elements::getElementDatatype($e) === __CA_ATTRIBUTE_VALUE_MEDIA__) && isset($va_settings['appendMultiPagePDFToPDFOutput']) && (bool)$va_settings['appendMultiPagePDFToPDFOutput']) {
-				    $media = $t_subject->get($va_display_item['bundle_name'].'.path', ['returnAsArray' => true, 'version' => 'original']);;
-				    $mimetypes = $t_subject->get($va_display_item['bundle_name'].'.original.mimetype', ['returnAsArray' => true]);
-				    foreach($mimetypes as $i => $mimetype) {
-				        if ($mimetype !== 'application/pdf') { continue; }
-				        $media_to_append[] = $media[$i];
-				    }
-				  
-				}
+				$this->Summary();
+				return;
+			} else {
+				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
 			}
-			$this->view->setVar('placements', $va_display_list);
- 
-			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-		} else {
-			$vn_display_id = null;
-			$this->view->setVar('display_id', null);
-			$this->view->setVar('placements', []);
 		}
-
-		//
-		// PDF output
-		//
-		if ($ps_template && (preg_match("!^_([A-Za-z0-9]+)_(.*)$!", $ps_template, $m)) && (in_array($m[1], ['pdf', 'docx'])) && is_array($va_template_info = caGetPrintTemplateDetails('summary', $m[2]))) {
-		    $last_settings['template'] = $ps_template;
-		} else {		
-            // When no display is specified (or valid) and no template is specified try loading the default summary format for the table
-            if(!$vn_display_id || !$t_display || !is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_".$t_display->get('display_code')."_summary"))) {
-                if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
-                    if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
-                        $this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
-                        return;
-                    }
-                }
-            }
-        }
-
-		$va_barcode_files_to_delete = array();
-
-		try {
-			$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
-			$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-
-			$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
-
-            switch($va_template_info['fileFormat']) {
-                case 'pdf':
-                    $o_pdf = new PDFRenderer();
-
-                    $this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
-
-                    $va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
-                    $vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
-                    $this->view->setVar('pageWidth', "{$vn_page_width}mm");
-                    $this->view->setVar('pageHeight', "{$vn_page_height}mm");
-                    $this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
-                    $this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
-                    $this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
-                    $this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
-
-                    $vs_content = $this->render($va_template_info['path']);
-                    
-                    // Printable views can pass back PDFs to append if they want...
-                    if(is_array($media_set_in_view_to_append = $this->view->getVar('append'))) {
-                        $media_to_append = array_merge($media_to_append, $media_set_in_view_to_append);
-                    }
-
-                    $o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
-            
-            		if (!$filename_template = $this->request->config->get($t_subject->tableName().'_summary_file_naming')) {
-            			$filename_template = $this->view->getVar('filename') ? $filename_template : caGetOption('filename', $va_template_info, 'print_summary');
-            		}
-            		if (!($filename = caProcessTemplateForIDs($filename_template, $t_subject->tableName(), [$vn_subject_id]))) {
-            			$filename = 'print_summary';
-            		}
-                    $o_pdf->render($vs_content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
-
-                    $vb_printed_properly = true;
-                    break;
-                case 'docx':
-                    print $this->render($va_template_info['path']);
-                    break;
-                default:
-                    throw new Exception(_t('Unsupported format: %1', $va_template_info['fileFormat']));
-                    break;
-            }
-            
-            Session::setVar($t_subject->tableName().'_summary_last_settings', $last_settings);
-
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
-			exit;
-		} catch (Exception $e) {
-			foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
-			$vb_printed_properly = false;
-			$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-		}
+		Session::setVar("{$table}_summary_export_in_background", false);
+		
+		caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', []);
 		return;
 	}
 	# -------------------------------------------------------
@@ -968,6 +927,31 @@ class BaseEditorController extends ActionController {
 			$vb_printed_properly = false;
 			$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintBundle()");
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generates options form for printable template
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function PrintSummaryOptions(?array $options=null) {
+		$form = $this->request->getParameter('form', pString);
+		
+		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
+			throw new ApplicationException(_t('Invalid template'));
+		}
+		
+		$values = Session::getVar("print_summary_options_{$m[2]}");
+		$form_options = caEditorPrintParametersForm('summary', $m[2], $values);
+		
+		$this->view->setVar('form', $m[2]);
+		$this->view->setVar('options', $form_options);
+		
+		if(sizeof($form_options) === 0) {
+			$this->response->setHTTPResponseCode(204, _t('No options available'));
+		}
+		
+		$this->render("../generic/ajax_print_summary_options_form_html.php");
 	}
 	# -------------------------------------------------------
 	/**
@@ -1097,12 +1081,15 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
-		$this->opo_app_plugin_manager->hookSaveItem(array(
-			'id' => $vn_subject_id,
-			'table_num' => $t_subject->tableNum(),
-			'table_name' => $t_subject->tableName(),
-			'instance' => &$t_subject,
-			'is_insert' => false)
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $vn_subject_id,
+				'table_num' => $t_subject->tableNum(),
+				'table_name' => $t_subject->tableName(),
+				'instance' => &$t_subject,
+				'is_insert' => false,
+				'request' => $this->request
+			]
 		);
 
 		$this->Access();
@@ -1133,7 +1120,16 @@ class BaseEditorController extends ActionController {
 				} else {
 					$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
 				}
-				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
+				$this->opo_app_plugin_manager->hookSaveItem(
+					[
+						'id' => $vn_subject_id, 
+						'table_num' => $t_subject->tableNum(), 
+						'table_name' => $t_subject->tableName(), 
+						'instance' => &$t_subject, 
+						'is_insert' => false,
+						'request' => $this->request
+					]
+				);
 
 			}
 		} else {
@@ -1175,6 +1171,8 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+		$vn_above_id = $vn_after_id = null;
+		
 		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
@@ -1492,8 +1490,7 @@ class BaseEditorController extends ActionController {
 		$limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
 		$exclude_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_exclude_types');
 		
-        $va_limit_to_type_ids = (is_array($va_limit_to_types) && sizeof($va_limit_to_types)) ? caMakeTypeIDList($this->ops_table_name, $va_limit_to_types, ['dontIncludeSubtypesInTypeRestriction' => true]) : null;
-		foreach($va_subtypes as $vs_sort_key => $va_type) {
+        foreach($va_subtypes as $vs_sort_key => $va_type) {
 			foreach($va_type as $vn_item_id => $va_item) {
 				if (is_array($pa_restrict_to_types) && !in_array($vn_item_id, $pa_restrict_to_types)) { continue; }
 				if (is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_item['parameters']['type_id'], $limit_to_types)) { continue; }
@@ -1942,7 +1939,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $vn_subject_id) {
+		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $pt_subject->getPrimaryKey()) {
 			if (method_exists($pt_subject, 'checkACLAccessForUser') && $pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return false;
@@ -2325,7 +2322,7 @@ class BaseEditorController extends ActionController {
 
 		$pa_annotations = $this->request->getParameter('save', pArray);
 
-		$va_annotation_ids = array();
+		$va_annotation_ids = [];
 		if (is_array($pa_annotations)) {
 			foreach($pa_annotations as $vn_i => $va_annotation) {
 				$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : '';
@@ -2789,6 +2786,15 @@ class BaseEditorController extends ActionController {
 					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
 				}
 				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
+				break;
+			case 'ca_objects_components_list':
+				$id = $this->request->getParameter('primary_id', pInteger);
+				$t_object = ca_objects::findAsInstance($id);
+				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
+					throw new ApplicationException(_('Invalid item'));
+				}
+				$ids = $t_object->getComponents(['returnAs' => 'ids']);
+				$table = "ca_objects";
 				break;
 			default:
 				// relationship bundles

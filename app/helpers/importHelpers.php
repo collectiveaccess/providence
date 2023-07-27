@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -356,7 +356,7 @@
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
 				$vs_prefix = '';
 				$va_prefix_file_list = [];
-
+				
 				// Add details for file and media types.
 				$va_prefix_file_list = [];
 				$media_directories = caGetAvailableMediaUploadPaths();
@@ -433,6 +433,7 @@
 					}
 				}elseif(caIsAssociativeArray($va_attrs)) {
 					// single mapping
+					print_R($va_attrs);
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						
@@ -485,8 +486,13 @@
 							$va_attr_vals[$vs_element_code][] = $vs_path;
 						}
 					}
+				} elseif(is_string($va_attrs)) {
+					$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
+				} else {
+					 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 				}
 			}
+			
 			return $va_attr_vals;
 		}
 		return null;
@@ -873,6 +879,7 @@
 					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item, ['skipRegularExpressions' => true]); // do replacement values on split values
 					// Set label
 					$va_val = [];       // values for current item
+					$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item);	// apply replacement values
 					
 					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
@@ -913,11 +920,11 @@
 							continue; 
 						}
 					}
-					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
-						if ($o_log) { $o_log->logDebug(_t('[%1] Skipped %2 because it was in the skipIfValue list', $ps_refinery_name, $vs_item)); }
+					
+					if(caSkipValueIf($vs_item, $ps_refinery_name, $pa_item, ['log' => $o_log])) {
 						continue;
 					}
-				
+					
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
 						$va_val = array_merge($va_val, caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true, 'refinery' => $po_refinery_instance))));
@@ -1096,7 +1103,9 @@
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => null, 'applyImportItemSettings' => $apply_import_item_settings));
 						$va_attr_vals_with_parent = array_merge($va_val, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));						
 						
-						$pa_options = array_merge($pa_options, ['matchOn' => $va_val['_matchOn'] ?? null]); // add matchOn value for lookup
+						if($va_val['_matchOn'] ?? null) {
+							$pa_options = array_merge($pa_options, ['matchOn' => $va_val['_matchOn']]); // add matchOn value for lookup
+						}
 						switch($ps_table) {
 							case 'ca_objects':
 								$vn_item_id = DataMigrationUtils::getObjectID($va_val['preferred_labels'] ? $va_val['preferred_labels'] : $vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -1212,6 +1221,14 @@
 
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log && ($ps_refinery_name !== 'objectRepresentationSplitter')) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 \"%1\"", $vs_item, $ps_item_prefix));
+						}
+						
+						if (
+							(!isset($va_val['_relationship_orientation']) || !$va_val['_relationship_orientation']) 
+							&&
+							($vs_rel_orientation_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipOrientation"])
+						) {
+							$va_val['_relationship_orientation'] = BaseRefinery::parsePlaceholder($vs_rel_orientation_opt, $pa_source_data, $pa_item, $vn_x, array( 'returnDelimitedValueAt' => $vn_i, 'reader' => $o_reader, 'returnAsString' => true, 'applyImportItemSettings' => $apply_import_item_settings, 'delimiter' => $vs_rel_type_delimiter_opt ?? $va_delimiter));
 						}
 	
 						$label_is_not_set = (!isset($va_val['preferred_labels']) || (is_array($va_val['preferred_labels']) && !sizeof($va_val['preferred_labels'])) || (!is_array($va_val['preferred_labels']) && !strlen($va_val['preferred_labels'])));
@@ -1803,5 +1820,30 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				break;
 		}
 		return $value;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if refinery value should be skipped based upon refinery skipIfValue and skioIfNotValue options.
+	 *
+	 * @param mixed $value Refinery value to test
+	 * @param string $refinery_name
+	 * @param array $item Mapping item information, including refinery settings in 'settings' key.
+	 * @param array $options Options for check. Options include:
+	 *		log = logging instance [Default is null]
+	 *
+	 * @return bool
+	 */
+	function caSkipValueIf($value, string $refinery_name, array $item, ?array $options=null){
+		$log = caGetOption('log', $options, null);
+		if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfValue"]) && in_array($value, $skip_values)) {
+			if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in the skipIfValue list', $refinery_name, $value)); }
+			return true;
+		}
+		if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfNotValue"]) && !in_array($value, $skip_values)) {
+			if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in not in the skipIfNotValue list', $refinery_name, $value)); }
+			return true;
+		}
+	
+		return false;
 	}
 	# ---------------------------------------------------------------------

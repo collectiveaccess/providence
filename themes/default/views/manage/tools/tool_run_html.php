@@ -37,7 +37,7 @@
 	$vs_job_id = 			$this->getVar('job_id');
  ?>
  
-<h1><?php print _t('Running %1: %2', $o_tool->getToolName(), $vs_command); ?></h1>
+<h1><?= _t('Running %1: %2', $o_tool->getToolName(), $vs_command); ?></h1>
 
 <div class="batchProcessingTableProgressGroup">
 	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
@@ -55,7 +55,7 @@
 
 <div id="batchProcessingMessage"></div>
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Back to tool list'), '', 'manage', 'Tools', 'Index'); ?>
+	<?= caNavLink($this->request, _t('Back to tool list'), '', 'manage', 'Tools', 'Index'); ?>
 </div>
 	
 <script type="text/javascript">
@@ -66,7 +66,7 @@
 		
 		// Start running tool
 		var updateProgressBarInterval = null;
-		jQuery.post('<?php print caNavUrl($this->request, 'manage', 'Tools', 'RunJob', array('tool' => $vs_tool_identifier, 'command' => $vs_command)); ?>', <?php print json_encode(array('job_id' => $vs_job_id, 'settings' => $va_setting_values)); ?>,
+		jQuery.post('<?= caNavUrl($this->request, 'manage', 'Tools', 'RunJob', array('tool' => $vs_tool_identifier, 'command' => $vs_command)); ?>', <?= json_encode(array('job_id' => $vs_job_id, 'settings' => $va_setting_values)); ?>,
 			function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
 				// stop progress refresh
@@ -84,7 +84,7 @@
 				
 			// Set up repeating load of progress bar status
 			updateProgressBarInterval = setInterval(function() {
-				jQuery.getJSON('<?php print caNavUrl($this->request, 'manage', 'Tools', 'GetJobStatus', array('job_id' => $vs_job_id)); ?>', {}, function(data) {
+				jQuery.getJSON('<?= caNavUrl($this->request, 'manage', 'Tools', 'GetJobStatus', array('job_id' => $vs_job_id)); ?>', {}, function(data) {
 					jQuery('#progressbar').progressbar("option", "value", data.position).progressbar("option", "max", data.total);
 					jQuery('#batchProcessingTableStatus').html(data.message);
 					jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);

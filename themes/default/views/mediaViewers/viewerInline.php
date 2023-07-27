@@ -30,4 +30,4 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<div><?php print $this->render($this->getVar('viewer').".php"); ?></div>	
+<div><?= $this->render($this->getVar('viewer').".php"); ?></div>	

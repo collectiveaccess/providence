@@ -50,7 +50,7 @@
 		
 		print "<div class='objectFullImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px;'>";
 ?>
-			<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />
+			<input type='checkbox' name='add_to_set_ids' value='<?= (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />
 <?php
 		$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'small');
 		print caEditorLink($this->request, array_shift($va_tmp), '', 'ca_objects', $vn_object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerFull").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerFull").css("display", "none");'));

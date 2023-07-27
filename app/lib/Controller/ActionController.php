@@ -36,7 +36,6 @@
  
 require_once(__CA_LIB_DIR__.'/ApplicationVars.php');
 require_once(__CA_LIB_DIR__.'/BaseObject.php');
-require_once(__CA_LIB_DIR__.'/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/View.php');
 require_once(__CA_LIB_DIR__.'/Controller/Request/NotificationManager.php');
 

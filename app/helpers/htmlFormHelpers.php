@@ -52,42 +52,43 @@
 	 * @return string HTML code representing the drop-down list
 	 */
 	function caHTMLSelect($ps_name, $pa_content, $pa_attributes=null, $pa_options=null) {
-		if (!is_array($pa_content)) { $pa_content = array(); }
+		if(!is_array($pa_content)) { $pa_content = []; }
+		if(!isset($pa_attributes['style'])) { $pa_attributes['style'] = ""; }
+		
 		if (is_array($va_dim = caParseFormElementDimension(isset($pa_options['width']) ? $pa_options['width'] : null))) {
 			if ($va_dim['type'] == 'pixels') {
-				$pa_attributes['style'] = "width: ".$va_dim['dimension']."px; ".$pa_attributes['style'];
+				$pa_attributes['style'] = "width: ".$va_dim['dimension']."px; ".($pa_attributes['style'] ?? '');
 			} else {
 				// Approximate character width using 1 character = 6 pixels of width
-				$pa_attributes['style'] = "width: ".($va_dim['dimension'] * 6)."px; ".$pa_attributes['style'];
+				$pa_attributes['style'] = "width: ".($va_dim['dimension'] * 6)."px; ".($pa_attributes['style'] ?? '');
 			}
 		}	
 		
 		if (is_array($va_dim = caParseFormElementDimension(isset($pa_options['height']) ? $pa_options['height'] : null))) {
 			if ($va_dim['type'] == 'pixels') {
-				$pa_attributes['style'] = "height: ".$va_dim['dimension']."px; ".$pa_attributes['style'];
+				$pa_attributes['style'] = "height: ".$va_dim['dimension']."px; ".($pa_attributes['style'] ?? '');
 			} else {
 				// Approximate character width using 1 character = 6 pixels of width
 				$pa_attributes['size'] = $va_dim['dimension'];
 			}
 		}	
+
+		if(!isset($pa_options['values']) || !is_array($pa_options['values'])) { $pa_options['values'] = []; }	// Initialize selected values option if not set
+		
+		$va_selected_vals = (isset($pa_options['values']) && is_array($pa_options['values'])) ? $pa_options['values'] : [];
+		if (!is_null($pa_options['value'] ?? null)) { 		// If "values" is set append its value onto the selected values list
+			$va_selected_vals[] = $pa_options['value'];
+		}
+		$va_selected_vals = array_map(function($v) { return (string)$v; }, $va_selected_vals);
+		$va_disabled_options =  $pa_options['disabledOptions'] ?? [];
 		
 		
 		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 		
 		$vs_element = "<select name='{$ps_name}' {$vs_attr_string}>\n";
-		
-		$vs_selected_val = isset($pa_options['value']) ? $pa_options['value'] : null;
-		if (is_array($pa_options['values']) && $vs_selected_val) { 
-			$pa_options['values'][] = $vs_selected_val;
-			$vs_selected_val = null; 
-		}
-		$va_selected_vals = isset($pa_options['values']) ? $pa_options['values'] : array();
-		
-		$va_disabled_options =  isset($pa_options['disabledOptions']) ? $pa_options['disabledOptions'] : array();
-		
 		$vb_content_is_list = caIsIndexedArray($pa_content);
 		
-		$va_colors = array();
+		$va_colors = [];
 		if (isset($pa_options['colors']) && is_array($pa_options['colors'])) {
 			$va_colors = $pa_options['colors'];
 		}
@@ -98,32 +99,24 @@
 		if (isset($pa_options['contentArrayUsesKeysForValues']) && $pa_options['contentArrayUsesKeysForValues']) {
 			foreach($pa_content as $vs_val => $vs_opt) {
 				if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
-				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-				if (is_null($vs_selected_val) || !($SELECTED = (((string)$vs_selected_val === (string)$vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
-					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
-				}
+				if ($COLOR = ($vs_color = ($va_colors[$vs_val] ?? null)) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
+				$SELECTED = (is_array($va_selected_vals) && in_array((string)$vs_val, $va_selected_vals, true)) ? ' selected="1"' : '';
 				$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
 				$vs_element .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'{$SELECTED}{$DISABLED}{$COLOR}>".$vs_opt."</option>\n";
 			}
 		} else {
 			if ($vb_content_is_list) {
 				foreach($pa_content as $vs_val) {
-					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-					
-					if (is_null($vs_selected_val) || !($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
-						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
-					}
+					if ($COLOR = ($vs_color = ($va_colors[$vs_val] ?? null)) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
+					$SELECTED = (is_array($va_selected_vals) && in_array((string)$vs_val, $va_selected_vals, true))  ? ' selected="1"' : '';
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
 					$vs_element .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'{$SELECTED}{$DISABLED}{$COLOR}>".$vs_val."</option>\n";
 				}
 			} else {
 				foreach($pa_content as $vs_opt => $vs_val) {
 					if ($vb_use_options_for_values) { $vs_val = preg_replace("!^[\s]+!", "", preg_replace("![\s]+$!", "", str_replace("&nbsp;", "", $vs_opt))); }
-					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
-				
-					if (is_null($vs_selected_val) || !($SELECTED = ((string)$vs_selected_val === (string)$vs_val) ? ' selected="1"' : '')) {
-						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
-					}
+					if ($COLOR = ($vs_color = ($va_colors[$vs_val] ?? null)) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
+					$SELECTED = (is_array($va_selected_vals) && in_array((string)$vs_val, $va_selected_vals, true)) ? ' selected="1"' : '';
 					$DISABLED = (isset($va_disabled_options[$vs_val]) && $va_disabled_options[$vs_val]) ? ' disabled="1"' : '';
 					$vs_element .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'{$SELECTED}{$DISABLED}{$COLOR}>".$vs_opt."</option>\n";
 				}
@@ -212,14 +205,14 @@
 		
 		if ($vb_is_textarea) {
 			$tag_name = caGetOption('textAreaTagName', $pa_options, 'textarea');
-			$vs_value = $pa_attributes['value'];
-			if ($pa_attributes['size']) { $pa_attributes['cols'] = $pa_attributes['size']; }
+			$vs_value = $pa_attributes['value'] ?? null;
+			if ($pa_attributes['size'] ?? null) { $pa_attributes['cols'] = $pa_attributes['size']; }
 			unset($pa_attributes['size']);
 			unset($pa_attributes['value']);
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 			$vs_element = "<{$tag_name} name='{$ps_name}' wrap='soft' {$vs_attr_string}>".$vs_value."</{$tag_name}>\n";
 		} else {
-			$pa_attributes['size']  = !$pa_attributes['size'] ?  $pa_attributes['width'] : $pa_attributes['size'];
+			$pa_attributes['size'] = ($pa_attributes['size'] ?? false) ? $pa_attributes['size'] : $pa_attributes['width'] ?? null;
 			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='text'/>\n";
 		}
@@ -338,6 +331,7 @@
 	 *		returnValueIfUnchecked = boolean indicating if checkbox should return value in request if unchecked; default is false
 	 */
 	function caHTMLCheckboxInput($ps_name, $pa_attributes=null, $pa_options=null) {
+		if(!is_array($pa_attributes)) { $pa_attributes = []; }
 		if (array_key_exists('checked', $pa_attributes) && !$pa_attributes['checked']) { unset($pa_attributes['checked']); }
 		if (array_key_exists('CHECKED', $pa_attributes) && !$pa_attributes['CHECKED']) { unset($pa_attributes['CHECKED']); }
 		
@@ -396,8 +390,8 @@
 		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
 		$vn_scale_css_height_to = caGetOption('scaleCSSHeightTo', $pa_options, null);
 		
-		$width = caGetOption('width', $pa_options, $va_attributes['width']);
-		$height = caGetOption('height', $pa_options, $va_attributes['height']);
+		$width = caGetOption('width', $pa_options, $va_attributes['width'] ?? null);
+		$height = caGetOption('height', $pa_options, $va_attributes['height'] ?? null);
 		
 		if ($vn_scale_css_width_to || $vn_scale_css_height_to) {
 			if (!$vn_scale_css_width_to) { $vn_scale_css_width_to = $vn_scale_css_height_to; }

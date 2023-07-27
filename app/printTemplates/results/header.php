@@ -1,13 +1,13 @@
 <?php	
 /* ----------------------------------------------------------------------
- * app/templates/header.php : standard PDF report header
+ * app/printTemplates/results/header.php : standard PDF report header
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,69 +31,70 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	if($this->request->config->get('report_header_enabled')) {
-		switch($this->getVar('PDFRenderer')) {
-			case 'domPDF':
+switch($this->getVar('PDFRenderer')) {
+	case 'domPDF':
 ?>
-<div id='header'>
+		<div id='header'>
 
 <?php
-	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+			if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+				<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
-	} else {
+			} else {
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+				<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
-	}	
+			}	
 
-	print caGetReportLogo()."<div class='pagingText'>"._t('Page')." </div>";
+			if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
+			if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText'>"._t('Page')." </div>"; }
 ?>
-</div>
+		</div>
 <?php
-				break;			
-			case 'wkhtmltopdf':
+			break;			
+		case 'wkhtmltopdf':
 ?>
 <!--BEGIN HEADER--><!DOCTYPE html>
-<html>
-<head>
+			<html>
+				<head>
 <?php
-	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+					if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+						<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
-	} else {
+					} else {
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+						<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
-	}
-	print caGetReportLogo()."<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>";
+					}
+					if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
+					
+					if($this->getVar('param_includePageNumbers')) { 
+						print "<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>";
 ?>
+						<script>
+							function dynvar() {
+								var vars = {};
+								var x = document.location.search.substring(1).split('&');
 
-	<script>
-		function dynvar() {
-			var vars = {};
-			var x = document.location.search.substring(1).split('&');
-	
-			for (var i in x) {
-				var z = x[i].split('=',2);
-	
-				if (!vars[z[0]]) {
-					vars[z[0]] = unescape(z[1]);
-				}
-			}
-	
-			document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
-		}
-  		
-	</script>
-</head>
-<body onload='dynvar();'>
-</body>
-</html>
+								for (var i in x) {
+									var z = x[i].split('=',2);
+
+									if (!vars[z[0]]) {
+										vars[z[0]] = unescape(z[1]);
+									}
+								}
+
+								document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
+							}
+						</script>
+<?php
+					}
+?>
+				</head>
+				<body onload='dynvar();'></body>
+			</html>
 <!--END HEADER-->
 <?php
-	}
 }

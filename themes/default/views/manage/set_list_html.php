@@ -51,7 +51,6 @@ if (!$this->request->isAjax()) {
 ?>
 <script language="JavaScript" type="text/javascript">
 	jQuery(document).ready(function(){
-		jQuery('#caItemList').caFormatListTable();
 		jQuery('#setSearch').autocomplete(
 			{
 				minLength: 3, delay: 800, html: true,
@@ -107,7 +106,7 @@ if (!$this->request->isAjax()) {
 					<?= caNavLink($this->request, _t('Name'), '', 'manage', 'Set', 'ListSets', array('sort' => 'name', 'direction' => ((($vs_current_sort == "name") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
 				<th class="<?= (($vs_current_sort == "set_content_type") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Content type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_content_type', 'direction' => ((($vs_current_sort == "set_content_type") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+					<?= caNavLink($this->request, _t('Content'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_content_type', 'direction' => ((($vs_current_sort == "set_content_type") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
 <?php
 				if(!$vn_type_id){
@@ -129,6 +128,9 @@ if (!$this->request->isAjax()) {
 				</th>
 				<th class="<?= (($vs_current_sort == "status") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
 					<?= caNavLink($this->request, _t('Status'), '', 'manage', 'Set', 'ListSets', array('sort' => 'status', 'direction' => ((($vs_current_sort == "status") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				</th>
+				<th class="<?= (($vs_current_sort == "created") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('Created'), '', 'manage', 'Set', 'ListSets', array('sort' => 'created', 'direction' => ((($vs_current_sort == "created") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
@@ -180,6 +182,9 @@ if (!$this->request->isAjax()) {
 				<td>
 					<div><?= $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
+				<td>
+					<div><?= caGetLocalizedDate($va_set['created'], ['timeOmit' => true]); ?></div>
+				</td>
 				<td class="listtableEditDelete">
 					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					<?php ($t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__, $va_set['set_id'])) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
@@ -190,7 +195,7 @@ if (!$this->request->isAjax()) {
 	} else {
 ?>
 		<tr>
-			<td colspan='8'>
+			<td colspan='<?= $vn_type_id ? 9 : 10; ?>'>
 				<div align="center">
 					<?= _t('No sets have been created'); ?>
 				</div>
@@ -211,16 +216,11 @@ if (!$this->request->isAjax()) {
 if (!$this->request->isAjax()) {
 ?>
 </div>
-
 	<div class="editorBottomPadding"><!-- empty --></div>
 <?php
 }
 ?>
 <script type="text/javascript">
-	function caUpdateSetAlgebraForm() {
-	
-	}
-	
 	var caAlgebraSetTableNum = null;
 	jQuery(document).ready(function() {
 		jQuery('#algebraSetControls, #algebraDeleteButton').hide();

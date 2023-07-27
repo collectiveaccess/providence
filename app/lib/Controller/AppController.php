@@ -67,7 +67,7 @@ class AppController {
 	}
 	# -------------------------------------------------------
 	public function __construct(&$po_request=null, &$po_response=null) {
-		if (!isset($GLOBALS) || !$GLOBALS['AppController']) {
+		if (!isset($GLOBALS) || !isset($GLOBALS['AppController'])) {
 			if ($po_response) { 
 				$this->opo_response = $po_response;
 			} else {

@@ -45,18 +45,16 @@
 									'request' => $this->request, 
 									'formName' => 'BundleDisplayEditorForm'));
 					
-			if (!$vn_form_id) {
-				// For new displays, show mandatory fields...
-				// ... BUT ...
-				// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
-				// This allows us to set the content type for the display from the calling control
-				$va_mandatory_fields = $t_display->getMandatoryFields();
-				if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
-					if ($vn_table_num = $t_display->get('table_num')) {
-						print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
-						unset($va_form_elements['table_num']);
-						unset($va_mandatory_fields[$vn_index]);
-					}
+			// For new displays, show mandatory fields...
+			// ... BUT ...
+			// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
+			// This allows us to set the content type for the display from the calling control
+			$va_mandatory_fields = $t_display->getMandatoryFields();
+			if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
+				if ($vn_table_num = $t_display->get('table_num')) {
+					print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
+					unset($va_form_elements['table_num']);
+					unset($va_mandatory_fields[$vn_index]);
 				}
 			}
 			
@@ -64,8 +62,8 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='table_num' value='<?php print $t_display->get('table_num'); ?>'/>
-			<input type='hidden' name='display_id' value='<?php print $vn_display_id; ?>'/>
+			<input type='hidden' name='table_num' value='<?= $t_display->get('table_num'); ?>'/>
+			<input type='hidden' name='display_id' value='<?= $vn_display_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

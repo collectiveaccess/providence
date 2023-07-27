@@ -92,7 +92,6 @@ $va_role_list = $t_item->getRoleList();
 		templateValues: ['role_id'],
 		initialValues: <?= json_encode($va_initial_values); ?>,
 		initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?= json_encode($va_errors); ?>,
 		itemID: '<?= $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',

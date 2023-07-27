@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2020 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -166,8 +166,8 @@ class WLPlugMediaBinaryFile extends BaseMediaPlugin implements IWLPlugMedia {
 	public function transform($operation, $parameters) {
 		switch($operation) {
 			case 'SCALE':
-				$this->properties['width'] = $parameters['width'];
-				$this->properties['height'] = $parameters['height'];
+				$this->properties['width'] = $parameters['width'] ?? null;
+				$this->properties['height'] = $parameters['height'] ?? null;
 				break;
 		}
 		return true;

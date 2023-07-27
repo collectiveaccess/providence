@@ -146,13 +146,15 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
+		$dom = new DOMDocument();
 		if ($ps_source) { 
-			if(!($this->opo_xml = @DOMDocument::load($ps_source))) { return false;}
+			if(!(@$dom->load($ps_source))) { return false;}
 		} elseif($str = caGetOption('fromString', $pa_options, null))  {
-			if(!($this->opo_xml = @DOMDocument::loadXML($str))) { return false;}
+			if(!(@$dom->loadXML($str))) { return false;}
 		} else {
 			return false;
 		}
+		$this->opo_xml = $dom;
 		try {
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
 		} catch (Exception $e) {

@@ -41,7 +41,7 @@
 	});
 
 	function _navigateToNewForm(table_num) {
-		document.location = '<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('rule_id' => 0)); ?>' + '/table_num/' + table_num;
+		document.location = '<?= caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('rule_id' => 0)); ?>' + '/table_num/' + table_num;
 	}
 /* ]]> */
 </script>
@@ -58,16 +58,16 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Alert name'); ?>
+					<?= _t('Alert name'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Rule type'); ?>
+					<?= _t('Rule type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Content type'); ?>
+					<?= _t('Content type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Owner'); ?>
+					<?= _t('Owner'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEditDelete"> </th>
 			</tr>
@@ -79,20 +79,20 @@
 ?>
 			<tr>
 				<td>
-					<div class="caMetadataAlertListName"><?php print $va_rule['name'].($va_rule['code'] ? "<br/>(".$va_rule['code'].")" : ""); ?></div>
+					<div class="caMetadataAlertListName"><?= $va_rule['name'].($va_rule['code'] ? "<br/>(".$va_rule['code'].")" : ""); ?></div>
 				</td>
 				<td>
-					<div><?php print $va_rule['trigger_types']; ?></div>
+					<div><?= $va_rule['trigger_types']; ?></div>
 				</td>
 				<td>
-					<div><?php print $va_rule['metadata_alert_rule_content_type']; ?></div>
+					<div><?= $va_rule['metadata_alert_rule_content_type']; ?></div>
 				</td>
 				<td>
-					<div class="caMetadataAlertListOwner"><?php print $va_rule['fname'].' '.$va_rule['lname'].($va_rule['email'] ? "<br/>(<a href='mailto:".$va_rule['email']."'>".$va_rule['email']."</a>)" : ""); ?></div>
+					<div class="caMetadataAlertListOwner"><?= $va_rule['fname'].' '.$va_rule['lname'].($va_rule['email'] ? "<br/>(<a href='mailto:".$va_rule['email']."'>".$va_rule['email']."</a>)" : ""); ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('rule_id' => $va_rule['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Delete', array('rule_id' => $va_rule['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('rule_id' => $va_rule['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Delete', array('rule_id' => $va_rule['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
 				</td>
 			</tr>
 <?php
@@ -102,7 +102,7 @@
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?php print _t('No metadata alert rules have been created'); ?>
+					<?= _t('No metadata alert rules have been created'); ?>
 				</div>
 			</td>
 		</tr>

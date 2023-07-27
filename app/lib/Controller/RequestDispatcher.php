@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,16 +74,12 @@ class RequestDispatcher extends BaseObject {
 	public function setRequest(&$request) {
 		$this->request = $request;
 		
-		switch($request->getScriptName()){
-			case "service.php":
-				$this->ops_controller_path = $this->request->config->get('service_controllers_directory');
-				$this->ops_default_action = $this->request->config->get('service_default_action');
-				break;
-			case "index.php":
-			default:
-				$this->ops_controller_path = $this->request->config->get('controllers_directory');
-				$this->ops_default_action = $this->request->config->get('default_action');
-				break;
+		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
+			$this->ops_controller_path = $this->request->config->get('service_controllers_directory');
+			$this->ops_default_action = $this->request->config->get('service_default_action');
+		} else {
+			$this->ops_controller_path = $this->request->config->get('controllers_directory');
+			$this->ops_default_action = $this->request->config->get('default_action');
 		}
 
 		$this->ops_application_plugins_path = $this->request->config->get('application_plugins');
@@ -100,9 +96,15 @@ class RequestDispatcher extends BaseObject {
 		if (!($vs_path = $this->request->getPathInfo()) || ($vs_path == '/')) {
 			$vs_path = $this->ops_default_action;
 		}
-		
 		if ($vs_path[0] === '/') { $vs_path = substr($vs_path, 1); }	// trim leading forward slash...
-		$va_tmp = explode('/', $vs_path);								// break path into parts
+		$va_tmp = explode('/', $vs_path);		// break path into parts
+		
+		// Rewrite path for /service/index.php style service call
+		if(($this->request->getScriptName() === 'index.php') && defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
+			array_shift($va_tmp);
+			if(!strlen(trim($va_tmp[sizeof($va_tmp)-1]))) { array_pop($va_tmp); }
+			$vs_path = join('/', $va_tmp);
+		}
 		
 		if (is_dir($this->ops_theme_plugins_path.'/'.$va_tmp[0].'/controllers')) {
 			// is theme plugin
@@ -177,6 +179,7 @@ class RequestDispatcher extends BaseObject {
 	}
 	# -------------------------------------------------------
 	public function dispatch($pa_plugins) {
+		$va_params = null;
 		$this->setPlugins($pa_plugins);
 		if ($this->isDispatchable()) {
 			do {
@@ -237,14 +240,13 @@ class RequestDispatcher extends BaseObject {
 					}
 				}
 
-				if(!$this->request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)){
+				if(!$this->request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)) {
 					switch($this->request->getScriptName()){
 						case "service.php":
 							// service auth requests for deprecated service API are allowed to go through to
 							// dispatch because in that case logging in requires running actual controller code. 
-							// this is bad practice and should be removed once the old API is no longer supported.
-							
-							if(!in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) || !$this->request->isServiceAuthRequest()) {
+							// this is bad practice and should be removed once the old API is no longer supported.`
+							if(in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) || !$this->request->isServiceAuthRequest()) {
 								$this->response->setHTTPResponseCode(401,_t("Access denied"));
 								$this->response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
 								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!
@@ -256,7 +258,6 @@ class RequestDispatcher extends BaseObject {
 							return false;
 					}
 				}
-				
 
 				$o_action_controller = new $vs_classname($this->request, $this->response, $this->request->getViewsDirectoryPath().'/'.join('/', $this->opa_module_path));
 

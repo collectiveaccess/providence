@@ -154,7 +154,7 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 		if(!isset($pa_options['version'])) { $pa_options['version'] = 'thumbnail'; }
 		$vs_version = $pa_options['version'];
 		
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+		$vs_class = trim($pa_options['class'] ?? '');
 		
 		
 		if(!isset($pa_options['return'])) { $pa_options['return'] = null; } else { $pa_options['return'] = strtolower($pa_options['return']); }
@@ -243,13 +243,13 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_dimensions = join('; ', $va_dimensions);
 			}
 			
-			if (isset($pa_options['poster_frame_version']) && $pa_options['poster_frame_version']) {
+			if ($pa_options['poster_frame_version'] ?? null) {
 				$pa_options['poster_frame_url'] = $this->opo_media_info_coder->getMediaUrl($pa_options['poster_frame_version']);
 			}
 			
 			$vs_tag = $this->opo_media_info_coder->getMediaTag($vs_version, $pa_options);
 			
-			if (is_object($pa_options['request'])) {
+			if (is_object($pa_options['request'] ?? null)) {
 				$vs_view_url = urldecode(caNavUrl($pa_options['request'], $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'GetMediaOverlay', array('value_id' => $this->opn_value_id)));
 				$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'>";
 
@@ -267,7 +267,7 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'><div class='attributeMediaThumbnail'>{$vs_tag}</div></div>";
 			}
 			
-			if ($pa_options['showMediaInfo']) {
+			if ($pa_options['showMediaInfo'] ?? false) {
 				TooltipManager::add('#caMediaAttribute'.$this->opn_value_id, "<h2>"._t('Media details')."</h2> <p>{$vs_filename}</p><p>{$vs_dimensions}</p>");
 			}	
 		}

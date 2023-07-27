@@ -4927,14 +4927,16 @@ create table ca_sets (
     tagging_status tinyint unsigned not null default 0,
     rating_status tinyint unsigned not null default 0,
 	set_code    varchar(100) null,
+	set_code_sort varchar(100) null,
 	table_num	tinyint unsigned not null,
 	access		tinyint unsigned not null default 0,	
 	status		tinyint unsigned not null default 0,
 	hier_left	decimal(30,20) unsigned not null,
 	hier_right	decimal(30,20) unsigned not null,
     deleted     tinyint unsigned not null default 0,
-    `rank`        int unsigned not null default 0,
-	
+    `rank`      int unsigned not null default 0,
+    source_id   int unsigned,
+    
 	primary key (set_id),
       
 	key i_user_id (user_id),
@@ -4945,12 +4947,17 @@ create table ca_sets (
 	key i_parent_id (parent_id),
 	key i_hier_set_id (hier_set_id),
 	key i_table_num (table_num),
+	key i_source_id (source_id),
+	key i_set_code_sort (set_code_sort),
       
    constraint fk_ca_sets_parent_id foreign key (parent_id)
       references ca_sets (set_id) on delete restrict on update restrict,
       
    constraint fk_ca_sets_user_id foreign key (user_id)
-      references ca_users (user_id) on delete restrict on update restrict
+      references ca_users (user_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_sets_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 create index i_set_filter on ca_sets(set_id, deleted, access); 
 
@@ -7837,4 +7844,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (184, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (186, unix_timestamp());

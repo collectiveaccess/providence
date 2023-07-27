@@ -194,6 +194,16 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 
 # --------------------------------------------------------------------------------------------
 
+# Machine translation API keys. If you are using automated language translation uncomment 
+# and set the API key for your preferred service below. Currently Deepl and 
+# GoogleTranslate are supported.
+# 
+# __DEEPL_API_KEY__ = DeepL translation service API key (sew https://www.deepl.com) 
+# __GOOGLE_TRANSLATE_API_KEY__ = Google API key with access to Translation API 
+#
+#define('__DEEPL_API_KEY__', '<API KEY>');
+#define('__GOOGLE_TRANSLATE_API_KEY__', '<API KEY>');
+
 # __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__
 #
 # Set this to allow the installer to overwrite an existing installation.

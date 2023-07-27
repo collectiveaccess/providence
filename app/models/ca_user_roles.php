@@ -534,13 +534,13 @@ class ca_user_roles extends BaseModel {
 			// expand actions that need expanding
 			foreach($va_raw_actions as $vs_group => $va_group_info) {
 				$va_new_actions = array();
-				if(!is_array($va_group_info["actions"])) { $va_group_info["actions"] = array(); }
+				if(!is_array($va_group_info["actions"] ?? null)) { $va_group_info["actions"] = array(); }
 				foreach($va_group_info["actions"] as $vs_action_key => $va_action){
 					if(isset($va_action['requires']) && is_array($va_action['requires']) && !ca_user_roles::_evaluateActionRequirements($va_action['requires'])) {
 						unset($va_raw_actions[$vs_group]["actions"][$vs_action_key]);
 						continue;
 					}
-					if(is_array($va_action["expand_types"]) && strlen($va_action["expand_types"]["table"])>0){
+					if(is_array($va_action["expand_types"] ?? null) && strlen($va_action["expand_types"]["table"])>0){
 						$t_instance = Datamodel::getInstanceByTableName($va_action["expand_types"]["table"], true);
 						if(method_exists($t_instance, "getTypeList")){
 							$va_type_list = $t_instance->getTypeList();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@ class RequestHTTP extends Request {
 		parent::__construct();
 		
 		global $AUTH_CURRENT_USER_ID;
-		$AUTH_CURRENT_USER_ID = "";
+		$AUTH_CURRENT_USER_ID = null;
 
 		if (is_array($pa_options)) {
 			if (isset($pa_options["no_headers"]) && $pa_options["no_headers"]) {
@@ -147,6 +147,8 @@ class RequestHTTP extends Request {
 		# create session
 		$vs_app_name = $this->config->get("app_name");
 
+		// @todo: REMOVE IN FUTURE VERSION
+		// JSON API (deprecated)
 		// restore session from token for service requests
 		if(($this->ops_script_name=="service.php") && isset($_GET['authToken']) && (strlen($_GET['authToken']) > 0)) {
 			$vs_token = preg_replace("/[^a-f0-9]/", "", $_GET['authToken']); // sanitize
@@ -164,6 +166,9 @@ class RequestHTTP extends Request {
 		} else {
 			if (isset($va_sim_params['user_id']) && $va_sim_params['user_id']) {
 				$this->user = new ca_users($va_sim_params['user_id']);
+				if($this->user->isLoaded()) {
+					$AUTH_CURRENT_USER_ID = $this->user->getPrimaryKey();
+				}
 			} else {
 				$this->user = new ca_users();
 			}
@@ -178,6 +183,8 @@ class RequestHTTP extends Request {
 		
 		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
 		
+		// @todo: REMOVE IN FUTURE VERSION
+		// JSON API (deprecated)
 		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
 		if($this->ops_script_name=="service.php") {
 			$this->ops_raw_post_data = file_get_contents("php://input");
@@ -368,15 +375,11 @@ class RequestHTTP extends Request {
 	 */
 	public function getViewsDirectoryPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
-		switch($this->getScriptName()){
-			case "service.php":
-				return $this->getServiceViewPath();
-				break;
-			case "index.php":
-			default:
-				return $this->getThemeDirectoryPath($pb_use_default).'/views';
-				break;
-		}
+		
+		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) {
+			return $this->getServiceViewPath();
+		} 
+		return $this->getThemeDirectoryPath($pb_use_default).'/views';
 	}
 	# -------------------------------------------------------
 	/**
@@ -582,7 +585,7 @@ class RequestHTTP extends Request {
 		$vm_val = $this->parameterExists($pa_name, $ps_http_method, $pa_options);
 		if (!isset($vm_val)) { return ""; }
 		
-		$vm_val = str_replace("\0", '', $vm_val);
+		if(!is_array($vm_val)) { $vm_val = str_replace("\0", '', $vm_val); }
 		
 		$purified = false;
 		if((caGetOption('purify', $pa_options, true) && $this->config->get('purify_all_text_input')) || caGetOption('forcePurify', $pa_options, false)) {
@@ -631,7 +634,7 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 		}
 		
-		die("Invalid parameter type for $ps_name\n");
+		die(_t("Invalid parameter type %1 for %2 [value was %3]", $pn_type, is_array($pa_name) ? join("; ", $pa_name) : $pa_name, $vm_val));
 	}
 	# -------------------------------------------------------
 	/**
@@ -670,7 +673,7 @@ class RequestHTTP extends Request {
 			$this->user->close();
 		}
 
-		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
 			$host_without_port = __CA_SITE_HOSTNAME__;
 			$host_port = null;
 		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
@@ -709,7 +712,7 @@ class RequestHTTP extends Request {
 			}
 			
 			// trigger async search indexing
-			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && $this->getAppConfig()->get('run_indexing_queue') ) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
                 	$dont_verify_ssl_cert = (bool)$this->getAppConfig()->get('out_of_process_search_indexing_dont_verify_ssl_cert');
@@ -820,6 +823,11 @@ class RequestHTTP extends Request {
 		if ($pa_options["dont_redirect"]) {
 			$pa_options["dont_redirect_to_login"] = true;
 			$pa_options["dont_redirect_to_welcome"] = true;
+		}
+		
+		if(isset($_SERVER['PHP_AUTH_USER']) && !$pa_options["user_name"]) {
+			$pa_options["user_name"] = $_SERVER['PHP_AUTH_USER'];
+			$pa_options["password"] = $_SERVER['PHP_AUTH_PW'];
 		}
 		
 		$vb_login_successful = false;
@@ -1040,7 +1048,7 @@ class RequestHTTP extends Request {
 	static public function ip() {
 		if (isset($_SERVER['HTTP_X_REAL_IP']) && $_SERVER['HTTP_X_REAL_IP']) { return $_SERVER['HTTP_X_REAL_IP']; }
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) { return $_SERVER['HTTP_X_FORWARDED_FOR']; }
-		return $_SERVER['REMOTE_ADDR'];
+		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 	}
 	# ----------------------------------------
 }

@@ -208,15 +208,14 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function getDisplayValue($pa_options=null) {
+		global $_locale;
+		
 		if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
 			if (!$this->ops_currency_specifier) { return null; }
 			return caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID()).' '.$this->opn_value;
 		}
-		if(Zend_Registry::isRegistered("Zend_Locale")) {
-			$o_locale = Zend_Registry::get('Zend_Locale');
-		} else {
-			$o_locale = new Zend_Locale('en_US');
-		}
+		
+		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
 		
 		if (!$this->ops_currency_specifier) { return null; }
 		$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
@@ -246,12 +245,16 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+		global $_locale;
+		// If the locale is valid, locale is set
+		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
+		
 		$o_config = Configuration::load();
 		
 		$ps_value = trim($ps_value);
 		$va_settings = $this->getSettingValuesFromElementArray(
 			$pa_element_info, 
-			array('minValue', 'maxValue', 'mustNotBeBlank', 'dollarCurrency')
+			['minValue', 'maxValue', 'mustNotBeBlank', 'dollarCurrency']
 		);
 		
 		if (strlen($ps_value) == 0) {
@@ -269,7 +272,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_currency_specifier = $va_parsed_value['currency'];
 			$vs_decimal_value = $va_parsed_value['value'];
 		} else {
-			$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
+			$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel'] ?? null), 'CurrencyAttributeValue->parseValue()');
 			return false;
 		}
 
@@ -278,17 +281,13 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 		}
 		if(!$vs_currency_specifier){
 			// this respects the global UI locale which is set using Zend_Locale
-			$o_currency = new Zend_Currency();
+			$o_currency = new Zend_Currency($o_locale);
 			$vs_currency_specifier = $o_currency->getShortName();
 		}
 
 		// get UI locale from registry and convert string to actual php float
 		// based on rules for this locale (e.g. most non-US locations use 10.000,00 as notation)
-		if(Zend_Registry::isRegistered("Zend_Locale")) {
-			$o_locale = Zend_Registry::get('Zend_Locale');
-		} else {
-			$o_locale = new Zend_Locale('en_US');
-		}
+		
 		try {
 			$vn_value = preg_match("!^[\d\.]+$!", $vs_decimal_value) ? (float)$vs_decimal_value : Zend_Locale_Format::getFloat($vs_decimal_value, ['locale' => $o_locale, 'precision' => 2]);
 		} catch (Zend_Locale_Exception $e){
@@ -359,10 +358,10 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 		return caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
 			array(
-				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-				'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
+				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'] ?? null,
+				'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'] ?? null, 
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
-				'maxlength' => $va_settings['maxChars'],
+				'maxlength' => $va_settings['maxChars'] ?? null,
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				'class' => $vs_class
 			)

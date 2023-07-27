@@ -30,64 +30,60 @@
  * @type fragment
  *
  * ----------------------------------------------------------------------
- */
- 
-	if($this->request->config->get('summary_header_enabled')) {
-		switch($this->getVar('PDFRenderer')) {
-			case 'domPDF':
+*/
+switch($this->getVar('PDFRenderer')) {
+	case 'domPDF':
 ?>
 <div id='header'>
 <?php
-	print caGetReportLogo();
-	
-	if ($this->request->config->get('summary_page_numbers')) {
-		print "<div class='pagingText'>"._t('Page')." </div>";
-	}
+	if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
+	if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText'>"._t('Page')." </div>"; }
 ?>
 </div>
 <?php
-				break;
-			case 'wkhtmltopdf':
+		break;
+	case 'wkhtmltopdf':
 ?>
 <!--BEGIN HEADER--><!DOCTYPE html>
 <html>
 <head >
-	<div id="head">
+<div id="head">
 <?php
-	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
-	} else {
+} else {
 ?>
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
-	}
-	print caGetReportLogo()."<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>";
+}
+
+	if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
+	if($this->getVar('param_includePageNumbers')) {  print "<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>"; }
 ?>
 	<script>
 		function dynvar() {
 			var vars = {};
 			var x = document.location.search.substring(1).split('&');
-	
+
 			for (var i in x) {
 				var z = x[i].split('=',2);
-	
+
 				if (!vars[z[0]]) {
 					vars[z[0]] = unescape(z[1]);
 				}
 			}
-	
+
 			document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
 		}
-  		
 	</script>
-	</div>
+</div>
 </head>
 <body onload='dynvar();'>
 </body>
 </html>
 <!--END HEADER-->
 <?php
-	}
+	break;
 }

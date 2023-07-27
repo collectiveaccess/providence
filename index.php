@@ -47,7 +47,7 @@
 		require_once(__CA_APP_DIR__.'/lib/ConfigurationCheck.php');
 		ConfigurationCheck::performQuick();
 		if(ConfigurationCheck::foundErrors()){
-			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__ && $_REQUEST['updateSchema']) {
+			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__ && ($_REQUEST['updateSchema'] ?? false)) {
 				ConfigurationCheck::updateDatabaseSchema();
 			} else {
 				ConfigurationCheck::renderErrorsAsHTMLOutput();
@@ -79,8 +79,16 @@
 		// Security headers
 		$resp->addHeader("X-XSS-Protection", "1; mode=block");
 		$resp->addHeader("X-Frame-Options", "SAMEORIGIN");
-		$resp->addHeader("Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com 'unsafe-inline' 'unsafe-eval';"); 
-		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com  tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com 'unsafe-inline' 'unsafe-eval';"); 
+
+		$vt_app_plugin_manager = new ApplicationPluginManager();
+		if($vt_app_plugin_manager->hookAddDomainSecurityPolicy(null) && is_array($vt_app_plugin_manager->hookAddDomainSecurityPolicy(null))) {
+			$vs_security_policy_domains = implode(" ",$vt_app_plugin_manager->hookAddDomainSecurityPolicy());
+		} else {
+			$vs_security_policy_domains = "";
+		}
+
+		$resp->addHeader("Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com ".$vs_security_policy_domains." 'unsafe-inline' 'unsafe-eval';"); 
+		$resp->addHeader("X-Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com  tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com ".$vs_security_policy_domains." 'unsafe-inline' 'unsafe-eval';"); 
 
 		//
 		// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature
@@ -108,10 +116,7 @@
 		//
 		// PageFormat plug-in generates header/footer shell around page content
 		//
-		require_once(__CA_APP_DIR__.'/lib/PageFormat.php');
-		if (!$req->isAjax() && !$req->isDownload()) {
-			$app->registerPlugin(new PageFormat());
-		}
+		$app->registerPlugin(new PageFormat());
 
 		//
 		// Dispatch the request

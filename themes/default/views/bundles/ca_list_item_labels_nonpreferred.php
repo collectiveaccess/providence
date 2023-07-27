@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,27 +25,26 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$labels 				= $this->getVar('labels');
-	$t_subject 				= $this->getVar('t_subject');
-	$t_label 				= $this->getVar('t_label');
-	$initial_values 		= $this->getVar('label_initial_values');
-	if (!$force_new_labels 	= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
+$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+$labels 				= $this->getVar('labels');
+$t_subject 				= $this->getVar('t_subject');
+$t_label 				= $this->getVar('t_label');
+$initial_values 		= $this->getVar('label_initial_values');
+if (!$force_new_labels 	= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$settings 				= $this->getVar('settings');
-	$add_label 				= $this->getVar('add_label');
-	
-	$read_only				= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_list_items', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
-	
-	$show_effective_date 	= $this->getVar('show_effective_date');
-	$show_access 			= $this->getVar('show_access');
-	$label_list 			= $this->getVar('label_type_list');
-	$locale_list			= $this->getVar('locale_list');
-	$show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_labels');
-	
-	print caEditorBundleShowHideControl($this->request, $id_prefix.'NPLabels', $settings, caInitialValuesArrayHasValue($id_prefix.'NPLabels', $initial_values));	
-	print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $settings);
+$settings 				= $this->getVar('settings');
+$add_label 				= $this->getVar('add_label');
+
+$read_only				= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_list_items', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$show_effective_date 	= $this->getVar('show_effective_date');
+$show_access 			= $this->getVar('show_access');
+$label_list 			= $this->getVar('label_type_list');
+$locale_list			= $this->getVar('locale_list');
+$show_source 			= $t_subject->getTypeSetting('show_source_for_nonpreferred_labels');
+
+print caEditorBundleShowHideControl($this->request, $id_prefix.'NPLabels', $settings, caInitialValuesArrayHasValue($id_prefix.'NPLabels', $initial_values));	
+print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $settings);
 ?>
 <div id="<?= $id_prefix; ?>NPLabels">
 <?php
@@ -134,6 +133,7 @@
 		deleteButtonClassName: 'caDeleteLabelButton',
 		bundlePreview: <?= caEscapeForBundlePreview($this->getVar('bundle_preview')); ?>,
 		readonly: <?= $read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		defaultAccess: <?= json_encode(caGetDefaultItemValue('access_statuses')); ?>
 	});
 </script>

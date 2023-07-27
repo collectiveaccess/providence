@@ -144,7 +144,7 @@ class DbResult extends DbBase {
 
 		$va_field = isset(DbResult::$s_field_info_cache[$ps_field]) ? DbResult::$s_field_info_cache[$ps_field] : $this->getFieldInfo($ps_field);
 
-		if (!isset($this->opa_current_row[$va_field["field"]])) {
+		if (!isset($this->opa_current_row[$va_field["field"] ?? null])) {
 			return null;
 		}
 
@@ -179,19 +179,19 @@ class DbResult extends DbBase {
 				$vs_val = ereg_replace("\n","<br/>",$vs_val);
 			}
 		}
-		if (isset($pa_options["urlEncode"]) && ($pa_options["urlEncode"])) {
+		if ($pa_options["urlEncode"] ?? null) {
 			$vs_val = urlEncode($vs_val);
 		}
 
-		if (isset($pa_options["filterHTMLSpecialCharacters"]) && ($pa_options["filterHTMLSpecialCharacters"])) {
+		if ($pa_options["filterHTMLSpecialCharacters"] ?? null) {
 			$vs_val = htmlentities(html_entity_decode($vs_val));
 		}
 
-		if (isset($pa_options["escapeForXML"]) && $pa_options["escapeForXML"]) {
+		if ($pa_options["escapeForXML"] ?? null) {
 			$vs_val = caEscapeForXML($vs_val);
 		}
 
-		if (get_magic_quotes_gpc() || $pa_options["stripSlashes"]) {
+		if ($pa_options["stripSlashes"] ?? null) {
 			$vs_val = stripSlashes($vs_val);
 		}
 

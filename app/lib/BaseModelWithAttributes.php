@@ -56,6 +56,9 @@
 		protected $opa_attributes_to_edit;
 		protected $opa_attributes_to_remove;
 		
+		protected $ATTRIBUTE_TYPE_ID_FLD;
+		protected $SOURCE_ID_FLD;
+		
 		
 		# ------------------------------------------------------------------
 		public function __construct($id=null, ?array $options=null) {
@@ -212,9 +215,10 @@
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	(strlen($pa_values[$vn_sub_element_id] && ($pa_values[$vn_sub_element_id] != $pv)))
+			                	is_array($pa_values[$vn_sub_element_id]) ||
+			                	((strlen($pa_values[$vn_sub_element_id] ?? '') && ($pa_values[$vn_sub_element_id] != $pv))
 			            		||
-			            		(strlen($pa_values[$vs_element_code] && ($pa_values[$vs_element_code] != $pv)))
+			            		(strlen($pa_values[$vs_element_code] ?? '') && ($pa_values[$vs_element_code] != $pv)))
 			            	) {
 			                    continue(2);
 			                }
@@ -380,6 +384,7 @@
 			    }
 			}
 			
+			$elements = null;
 			if (
 			    // this may return a false positive if the attribute is a container with media or file attributes, 
 			    // as ca_attribute_values records for those will only be present if a file was uploaded
@@ -583,6 +588,33 @@
 			
 			return true;
 		}
+
+		# ------------------------------------------------------------------
+		/**
+		 * Remove Attribute with extreme prejudice, don't check required, min, max, etc
+		 *
+		 */
+		public function purgeAttribute($pn_attribute_id, $ps_error_source=null, $pa_extra_info=null, $pa_options=null) {
+			$t_attr = new ca_attributes($pn_attribute_id);
+			$t_attr->purify($this->purify());
+			if (!$t_attr->getPrimaryKey()) { return false; }
+			$vn_element_id = (int)$t_attr->get('element_id');
+
+			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.ca_metadata_elements::getElementCodeForId($vn_element_id); }
+
+			if (!($t_element = ca_metadata_elements::getInstance($t_attr->get('element_id')))) { return false; }
+
+			$this->opa_attributes_to_remove[] = array(
+				'attribute_id' => $pn_attribute_id,
+				'error_source' => $ps_error_source,
+				'element_id' => $t_attr->get('element_id')
+			);
+
+			$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$t_attr->get('element_id')] = true;
+
+			return true;
+		}
+
 		# ------------------------------------------------------------------
 		/**
 		 * remove attribute from current row
@@ -637,6 +669,28 @@
 					}
 				}
 			}
+			return $this->update(['queueIndexing' => true]);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Purges all attributes regardless of element with extreme prejudice.
+		 *
+		 * @param array $pa_options
+		 * @return bool True on success, false on error
+		 */
+		public function purgeAttributes($pa_options=null) {
+			if(!$this->getPrimaryKey()) { return null; }
+
+			if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
+				foreach($va_element_codes as $vs_element_code) {
+					$va_attributes = $this->getAttributesByElement($vs_element_code);
+
+					foreach($va_attributes as $o_attribute) {
+						$this->purgeAttribute($o_attribute->getAttributeID(), null, null, []);
+					}
+				}
+			}
+
 			return $this->update(['queueIndexing' => true]);
 		}
 		# ------------------------------------------------------------------
@@ -975,7 +1029,7 @@
 		 *
 		 */
 		public function set($pa_fields, $pm_value="", $pa_options=null) {
-			if ($this->ATTRIBUTE_TYPE_LIST_CODE) {
+			if (property_exists($this, 'ATTRIBUTE_TYPE_LIST_CODE') && $this->ATTRIBUTE_TYPE_LIST_CODE) {
 				if(is_array($pa_fields)) {
 					if (isset($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
 						if ($vn_id = ca_lists::getItemID($this->ATTRIBUTE_TYPE_LIST_CODE, $pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
@@ -1046,7 +1100,7 @@
 			$pa_options = array_merge($pa_options, array('indexByRowID' => true));		// force arrays to be indexed by current row_id
 			
 			$t_instance = $this;
-			if ((sizeof($va_tmp) >= 2) && (!$this->hasField($va_tmp[2]))) {
+			if ((sizeof($va_tmp) >= 2) && (!($va_tmp[2] ?? null) || !$this->hasField($va_tmp[2]))) {
 				if (($va_tmp[1] == 'parent') && ($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
 					$t_instance = Datamodel::getInstanceByTableNum($this->tableNum(), true);
 					if (!$t_instance->load($vn_parent_id)) {
@@ -1400,7 +1454,7 @@
 		 * Field in this table that defines the type of the row; the type determines which attributes are applicable to the row
 		 */
 		public function getTypeFieldName() {
-			return $this->ATTRIBUTE_TYPE_ID_FLD;
+			return property_exists($this, 'ATTRIBUTE_TYPE_ID_FLD') ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1519,7 +1573,8 @@
 		 * @return array List of types
 		 */ 
 		public function getTypeList($pa_options=null) {
-			$ids_only = $pa_options['idsOnly'];
+			if(!is_array($pa_options)) { $pa_options = []; }
+			$ids_only = $pa_options['idsOnly'] ?? false;
 			if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 				$pa_options['item_id'] = $this->get('type_id');
 			}
@@ -1588,11 +1643,11 @@
 			}
 			
 			$user_type_res = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
-			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])){
+			if (is_array($pa_options['limitToItemsWithID'] ?? null) && sizeof($pa_options['limitToItemsWithID'])){
 			    $pa_options['limitToItemsWithID'] = caMakeTypeIDList($this->tableName(), $pa_options['limitToItemsWithID']);
 			}
 			
-			if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID']) && is_array($user_type_res) && sizeof($user_type_res)) {
+			if (is_array($pa_options['limitToItemsWithID'] ?? null) && sizeof($pa_options['limitToItemsWithID']) && is_array($user_type_res) && sizeof($user_type_res)) {
 			    $pa_options['limitToItemsWithID'] = array_intersect($user_type_res, $pa_options['limitToItemsWithID']);
 			} elseif(is_array($user_type_res) && sizeof($user_type_res)) {
 			    $pa_options['limitToItemsWithID'] = $user_type_res;
@@ -1618,7 +1673,7 @@
 			$va_restrict_to_types = caGetOption(['restrictToTypes', 'restrict_to_types'], $pa_options, null);
 			if (isset($va_restrict_to_types) && is_array($va_restrict_to_types)) {
 				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $va_restrict_to_types, $pa_options);
-				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+				if (!is_array($pa_options['limitToItemsWithID'] ?? null) || $pa_options['limitToItemsWithID']) {
 					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
 				} else {
 					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
@@ -1652,8 +1707,8 @@
 		  */
 		public function getDisplayDescription($ps_field, $options=null) {
 			$va_tmp = explode('.', $ps_field);
-			if (($va_tmp[0] != $this->tableName()) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) { return null; }
-			if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
+			if (($va_tmp[0] ?? null) && ($va_tmp[0] != $this->tableName()) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) { return null; }
+			if (($va_tmp[1] ?? null) && !$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 				$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
 				return $this->getAttributeDescription($va_tmp[1], $options);	
 			}
@@ -1886,7 +1941,7 @@
 			
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
-			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
+			$o_view->setVar('graphicsPath', $pa_options['graphicsPath'] ?? null);
 			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
@@ -1926,8 +1981,10 @@
 			}
 			
 			$element_datatype = $t_element->get('datatype');
-			$t_element_code = $t_element->get('element_code');
+			$element_code = $t_element->get('element_code');
+			$element_id = $t_element->get('element_id');
 			$table_name = $this->tableName();
+			
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
 			$root_element_id = $group_key = $t_element->getPrimaryKey();
@@ -1938,13 +1995,12 @@
 				if ($va_element['datatype'] == 0) {
 					if ($va_element['parent_id'] > 0) { 
 						if(sizeof($group_keys) > 1) { array_pop($group_keys); }
-						array_push($group_keys, $group_key = $va_element['element_id']);
 					}
+					$group_keys[] = $group_key = $va_element['element_id'];
 					continue; 
 				}
-				
-				if((sizeof($group_keys) > 1) && ($va_element['datatype'] != 0) && ($va_element['parent_id'] == $root_element_id)) {
-					$group_keys = [$group_key = $va_element['element_id']];
+				if($va_element['parent_id'] === $root_element_id) {
+					$group_key = $root_element_id;
 				}
 	
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
@@ -1973,33 +2029,34 @@
 				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
 				
 				if($element_datatype == 0){ //Only show field level bundle codes inside containers    
-					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
-					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
+					$bundle_code = "{$table_name}.{$element_code}.{$va_element['element_code']}";
+					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode' data-code='{$bundle_code}'>{$va_element['element_code']}</a>)</span>" : $label;
 				}
 				
+				if(!is_array($va_element['settings'])) { $va_element['settings'] = []; }
 				$va_elements_by_container[$group_key][] = ($va_element['datatype'] == 0) ? '' : 
-					$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
-						'label' => $label,
-						'description' => $va_label['description'],
-						't_subject' => $this,
-						'request' => $po_request,
-						'form_name' => $ps_form_name,
-						'format' => '',
-						'dontDoRefSubstitution' => true,
-						'format' => 
-							// Set format to single line when displaying yes_no checkboxes
-							(($va_element['datatype'] == 3) && ($va_element['settings']['render'] === 'yes_no_checkboxes')) ? $this->getAppConfig()->get('form_element_display_format_single_line') 
-							: null
-						
+
+				$vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, [
+					'label' => $label,
+					'description' => $va_label['description'],
+					't_subject' => $this,
+					'request' => $po_request,
+					'form_name' => $ps_form_name,
+					'format' => '',
+					'dontDoRefSubstitution' => true,
+					'format' => 
+						// Set format to single line when displaying yes_no checkboxes
+						(($va_element['datatype'] == 3) && (($va_element['settings']['render'] ?? null) === 'yes_no_checkboxes')) ? $this->getAppConfig()->get('form_element_display_format_single_line') 
+						: null
 				])));
 				
 				// If the elements datatype returns true from renderDataType, then force render the element
-				if(Attribute::renderDataType($va_element)) {
+				if(\CA\Attributes\Attribute::renderDataType($va_element)) {
 					return array_pop($va_elements_by_container[$va_element['element_id']]);
 				}
 				$va_element_ids[] = $va_element['element_id'];
 				
-				$vs_setting = Attribute::getValueDefault($va_element);
+				$vs_setting = \CA\Attributes\Attribute::getValueDefault($va_element);
 				if (strlen($vs_setting)) {
 					$tmp_element = ca_metadata_elements::getInstance($va_element['element_id']);
 					$va_element_value_defaults[$va_element['element_id']] = caProcessTemplate($tmp_element->getSetting($vs_setting), $user_values);
@@ -2041,17 +2098,17 @@
 			$o_view->setVar('t_element', $t_element);
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('request', $po_request);
-			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));
+			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$element_id);
 			$o_view->setVar('elements', $va_elements_by_container);
-			$o_view->setVar('error_source_code', $this->tableName().'.'.$t_element->get('element_code'));
+			$o_view->setVar('error_source_code', $this->tableName().'.'.$element_code);
 			$o_view->setVar('element_ids', $va_element_ids);
 			$o_view->setVar('element_info', $va_element_info);
-			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
+			$o_view->setVar('element_set_label', $this->getAttributeLabel($element_id));
 			$o_view->setVar('element_code', $t_element->get('element_code'));
 			$o_view->setVar('placement_code', $ps_placement_code);
 			$o_view->setVar('render_mode', ($element_datatype == 3) ? $t_element->getSetting('render') : null);	// only set for list attributes (as of 26 Sept 2010 at least)
 			
-			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
+			if ($t_restriction = $this->getTypeRestrictionInstance($element_id)) {
 				// If batch mode force minimums to zero
 				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
 				
@@ -2062,18 +2119,36 @@
 				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
+			// Convert any forced values to use element_id keys required by failed_insert_attribute_list
+			$forced_values_proc = [];
+			if(is_array($forced_values = caGetOption('forcedValues', $pa_options, null)) && isset($forced_values[$t_element->get('element_code')])) {
+				foreach($forced_values[$element_code] as $v) {
+					if(!is_array($v)) { continue; }
+					$v_proc = [];
+					foreach($v as $kk => $vv) {
+						$e_id = ($kk === 'locale_id')  ? 'locale_id' : ca_metadata_elements::getElementID($kk);
+						if(!$e_id) { continue; }
+						$v_proc[$e_id] = $vv;
+					}
+					$forced_values_proc[$element_id] = $v_proc;
+				}
+			}
+			
 			// These are lists of associative arrays representing attributes that were rejected in a save() action
 			// during the current request. They are used to maintain the state of the form so the user can modify the
-			// input that caused the error
-			$o_view->setVar('failed_insert_attribute_list', $this->getFailedAttributeInserts($pm_element_code_or_id));
+			// input that caused the error. The inserts list is also used to force values into forms for new not-yet-saved
+			// records. Forced values do not include error messages and appear as default values.
+			$fi = $this->getFailedAttributeInserts($pm_element_code_or_id) ?? [];
+			$o_view->setVar('failed_insert_attribute_list', array_merge($fi, $forced_values_proc));
 			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
 		
 			// Set the list of existing attributes for the current row
-			$vs_sort = $pa_bundle_settings['sort'];
-			$vs_sort_dir = $pa_bundle_settings['sortDirection'];
+			$vs_sort = $pa_bundle_settings['sort'] ?? null;
+			$vs_sort_dir = $pa_bundle_settings['sortDirection'] ?? null;
 			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
 			
 			$o_view->setVar('attribute_list', $va_attribute_list);
+			
 			
 			// Pass list of element default values
 			$o_view->setVar('element_value_defaults', $va_element_value_defaults);
@@ -2165,17 +2240,17 @@
 				}
 			
 				$va_element_opts = array_merge(array(
-					'label' => $va_label['name'],
-					'description' => $va_label['description'],
+					'label' => $va_label['name'] ?? null,
+					'description' => $va_label['description'] ?? null,
 					't_subject' => $this,
 					'table' => $this->tableName(),
 					'request' => $po_request,
-					'class' => $pa_options['class'],
+					'class' => $pa_options['class'] ?? null,
 					'nullOption' => '-',
 					'value' => $vm_values,
 					'forSearch' => true,
 					'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
-					'render' => $va_element['settings']['render']//(isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : isset($pa_options['render']) ? $pa_options['render'] : 'select'
+					'render' => $va_element['settings']['render'] ?? null
 				), array_merge($pa_options, $va_override_options));
 				
 				if (caGetOption('forSimpleForm', $pa_options, false)) { 
@@ -2226,7 +2301,7 @@
 				$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
 				
 				// If the elements datatype returns true from renderDataType, then force render the element
-				if(Attribute::renderDataType($va_element)) {
+				if(\CA\Attributes\Attribute::renderDataType($va_element)) {
 					return array_pop($va_elements_by_container[$va_element['element_id']]);
 				}
 				$va_element_ids[] = $va_element['element_id'];
@@ -2338,7 +2413,7 @@
 			$vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), $pa_options);
 		
-			$va_attribute_list =  is_array($va_attributes[$vn_hier_id = ca_metadata_elements::getElementHierarchyID($vn_element_id)]) ? $va_attributes[$vn_hier_id] : array();
+			$va_attribute_list =  is_array($va_attributes[$vn_hier_id = ca_metadata_elements::getElementHierarchyID($vn_element_id)] ?? null) ? $va_attributes[$vn_hier_id] : array();
 		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if ((isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) || ($vs_sort_dir == 'desc')) {
@@ -2640,7 +2715,7 @@
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
-				if (!($vn_row_id = $pa_options['row_id'])) {
+				if (!($vn_row_id = ($pa_options['row_id'] ?? null))) {
 					return null; 
 				}
 			}
@@ -3044,8 +3119,8 @@
 			$va_references = [];
 			while($qr_res->nextRow()) {
 				$va_row = $qr_res->getRow();
-				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
-				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']])) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
+				if(!is_array($va_references[$va_row['table_num']][$va_row['row_id']] ?? null)) { $va_references[$va_row['table_num']][$va_row['row_id']] = []; }
+				if(!in_array($va_row['element_id'], $va_references[$va_row['table_num']][$va_row['row_id']] ?? null)) { $va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id']; }
 			}
 			
 			foreach($va_references as $vn_table_num => $va_rows) {
@@ -3406,7 +3481,7 @@
  		public function getApplicableElementCodes($pn_type_id=null, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
 			if (!$pn_type_id) { $pn_type_id = null; }
  			 
-			if (!$pb_dont_cache && is_array($va_tmp = BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)])) {
+			if (!$pb_dont_cache && is_array($va_tmp = BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)] ?? null)) {
 				return $va_tmp;
 			}
  			
@@ -3490,7 +3565,7 @@
 		 	$vn_element_id = ca_metadata_elements::getElementID($pn_element_code_or_id);
 		 	$va_codes = $this->getApplicableElementCodes(null, $pb_include_sub_element_codes, false);
 		
-		 	return (bool)$va_codes[$vn_element_id];
+		 	return (bool)($va_codes[$vn_element_id] ?? false);
 		 }
 		# ------------------------------------------------------------------
 		/**
@@ -3653,7 +3728,7 @@
 			$element_id = ca_metadata_elements::getElementID($element_code);
 			$datatype = ca_metadata_elements::getElementDatatype($element_code);
 			
-			$attr_fld = Attribute::getSortFieldForDatatype($datatype);
+			$attr_fld = \CA\Attributes\Attribute::getSortFieldForDatatype($datatype);
 			
 			$params = [$element_id, $values];
 		
