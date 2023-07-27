@@ -182,6 +182,7 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 	public static function getStatusForDisplay($va_status, $view){
 		$result = "";
 		foreach($va_status as $vs_code => $va_info) {
+			if(!($va_info['value'] ?? null)) { continue; }
 			switch($vs_code) {
 				case 'table':
 					$va_tmp = explode(':', $va_status['table']['value']);
