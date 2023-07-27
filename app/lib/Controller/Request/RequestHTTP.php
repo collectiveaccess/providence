@@ -712,7 +712,7 @@ class RequestHTTP extends Request {
 			}
 			
 			// trigger async search indexing
-			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && $this->getAppConfig()->get('run_indexing_queue') ) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
                 	$dont_verify_ssl_cert = (bool)$this->getAppConfig()->get('out_of_process_search_indexing_dont_verify_ssl_cert');
