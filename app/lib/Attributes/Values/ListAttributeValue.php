@@ -538,7 +538,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
 
-        $for_search = caGetOption('forSearch', $pa_options, false);
+		$for_search = caGetOption('forSearch', $pa_options, false);
 
 		$vs_render = $for_search ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
@@ -547,6 +547,10 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$separate_disabled_values = caGetOption('separateDisabledValues', $pa_options, caGetOption('separateDisabledValues', $pa_element_info['settings'], false));
 		
 		$vn_max_columns = $pa_element_info['settings']['maxColumns'];
+
+		if($for_search) {
+			$pa_options['useDefaultWhenNull'] = false;
+		}
 
 		if(!isset($pa_options['useDefaultWhenNull'])) {
 			$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
