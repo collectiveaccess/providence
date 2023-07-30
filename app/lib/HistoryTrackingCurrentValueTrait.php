@@ -2378,6 +2378,8 @@
 			$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
 			$o_view->setVar('history', $h);
 			
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+			
 			return $o_view->render('history_tracking_chronology.php');
 		}
 		# ------------------------------------------------------

@@ -5173,7 +5173,7 @@ if (!$vb_batch) {
 							} catch(MediaExistsException $e) {
 								$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
 								$po_request->addActionErrors($this->errors(), $vs_f, 'general');
-								return false;
+								break;
 							}
 						}
 						
@@ -5181,7 +5181,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representation_captions':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 				
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							// any to delete?
@@ -5199,7 +5199,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representation_sidecars':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 			
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							// any to delete?
@@ -5219,7 +5219,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for relationships that include an object on one end
 					case 'ca_object_representation_chooser':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = []; }
 								
 						if ($vs_element_code = caGetOption(array('elementCode', 'element_code'), $va_bundle_settings, null)) {
@@ -5251,7 +5251,6 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 					case 'ca_objects_location':
 					case 'history_tracking_chronology':
-						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 								
 					    if (strlen($pb_show_child_history = $po_request->getParameter("showChildHistory", pInteger))) {
@@ -5461,7 +5460,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_deaccession':		// object deaccession information
-						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$vb_batch && !$this->getPrimaryKey()) { break; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						
 						if($vb_batch) {
@@ -5491,8 +5490,8 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_object_checkouts':		// object checkout information
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!$vb_batch && !$this->getPrimaryKey()) { break; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						// Save checkout/return note edits
@@ -5536,7 +5535,7 @@ if (!$vb_batch) {
 						break;
 					# -------------------------------
 					case 'ca_object_circulation_status':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						$this->set('circulation_status_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}ca_object_circulation_status", pInteger));
 						break;
@@ -5568,16 +5567,16 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for ca_metadata_alert_rules
 					case 'ca_metadata_alert_triggers':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!($this instanceof ca_metadata_alert_rules)) { return null; }
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_alert_rules)) { break; }
 						if (!$po_request->user->canDoAction('can_use_metadata_alerts')) { break; }
 						$this->saveTriggerHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------
 					// This bundle is only available for ca_metadata_dictionary_entries
 					case 'ca_metadata_dictionary_rules':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!($this instanceof ca_metadata_dictionary_entries)) { return null; }
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_dictionary_entries)) { break; }
 						if (!$po_request->user->canDoAction('can_configure_data_dictionary')) { break; }
 
 						$this->saveRuleHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
