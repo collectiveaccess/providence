@@ -108,9 +108,11 @@ var caUI = caUI || {};
 					} else {
 						that.players[playerName].rewind(c - t);
 					} 
-					that.isPlaying[playerName] = true;
+					that.isPlaying[playerName] = false;
 					
-					that.players[playerName].on('canplay', (event) => {
+					that.players[playerName].on('canplaythrough', (event) => {
+						if(that.isPlaying[playerName]) { return; }
+						that.isPlaying[playerName] = true;
 						that.players[playerName].play();
 						if (t > c) {
 							that.players[playerName].forward(t - c);
@@ -175,6 +177,16 @@ var caUI = caUI || {};
 					break;
 			}
 		};
+		
+		//
+		that.getPlayerNames = function() {
+			return Object.keys(that.players);
+		}
+		
+		//
+		that.getPlayers = function() {
+			return that.players;
+		}
 		
 		return that;
 	};	
