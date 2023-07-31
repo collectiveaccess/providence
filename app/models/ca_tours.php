@@ -408,9 +408,6 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 			$qr_stops = $t_stop->makeSearchResult("ca_tour_stops", $va_stop_ids);
 			while($qr_stops->nextHit()) {
 				if (!$va_stops[$vn_stop_id = $qr_stops->get('stop_id')][$vn_screen_locale_id = $qr_stops->get('locale_id')]) {
-					//$va_tmp =  $qr_res->getRow();
-					//$va_tmp['typename'] = $t_list->getItemForDisplayByItemID($va_tmp['type_id'], false);
-			
 					if ($va_bundles_to_return) {
 						foreach($va_bundles_to_return as $vs_fld_name => $vs_bundle) {
 							$va_tmp[$vs_fld_name] = $qr_stops->get($vs_bundle, array('convertValueToDisplayText' => true));
@@ -492,7 +489,6 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_stop = new ca_tour_stops();
 		$t_stop->setTransaction($o_trans);
-		$t_stop->setMode(ACCESS_WRITE);
 		$va_errors = array();
 		
 		

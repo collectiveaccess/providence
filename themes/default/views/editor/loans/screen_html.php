@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,8 @@
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_loan_id ? array('loan_id' => $vn_loan_id) : array('type_id' => $t_loan->getTypeID()));
 		print $vs_control_box = caFormControlBox(
@@ -54,19 +56,20 @@
 			
 			$va_form_elements = $t_loan->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'LoanEditorForm'), $va_bundle_list);
+									'formName' => 'LoanEditorForm',
+									'forcedValues' => $forced_values), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='loan_id' value='<?php print $vn_loan_id; ?>'/>
-			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+			<input type='hidden' name='loan_id' value='<?= $vn_loan_id; ?>'/>
+			<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
-			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>
@@ -79,4 +82,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_loan, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_loan, $va_bundle_list); ?>

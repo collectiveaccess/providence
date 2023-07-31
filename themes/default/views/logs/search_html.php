@@ -49,28 +49,28 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Date/time'); ?>
+					<?= _t('Date/time'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Type'); ?>
+					<?= _t('Type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Search'); ?>
+					<?= _t('Search'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Hits'); ?>
+					<?= _t('Hits'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('User'); ?>
+					<?= _t('User'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('IP'); ?>
+					<?= _t('IP'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Source'); ?>
+					<?= _t('Source'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Execution time'); ?>
+					<?= _t('Execution time'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -81,28 +81,28 @@
 ?>
 			<tr>
 				<td>
-					<?php print caGetLocalizedDate($va_search['log_datetime']); ?>
+					<?= caGetLocalizedDate($va_search['log_datetime']); ?>
 				</td>
 				<td>
-					<?php print $va_search['table_name']; ?>
+					<?= $va_search['table_name']; ?>
 				</td>
 				<td>
-					<?php print $va_search['search_expression']; ?>
+					<?= $va_search['search_expression']; ?>
 				</td>
 				<td>
-					<?php print $va_search['num_hits']; ?>
+					<?= $va_search['num_hits']; ?>
 				</td>
 				<td>
-					<?php print $va_search['user_name']; ?>
+					<?= $va_search['user_name']; ?>
 				</td>
 				<td>
-					<?php print $va_search['ip_addr']; ?>
+					<?= $va_search['ip_addr']; ?>
 				</td>
 				<td>
-					<?php print $va_search['search_source'].($va_search['form'] ? '/'.$va_search['form'] : ''); ?>
+					<?= $va_search['search_source'].($va_search['form'] ? '/'.$va_search['form'] : ''); ?>
 				</td>
 				<td>
-					<?php print (float)$va_search['execution_time']; ?>s
+					<?= (float)$va_search['execution_time']; ?>s
 				</td>
 			</tr>
 <?php
@@ -112,7 +112,7 @@
 		<tr>
 			<td colspan='9'>
 				<div align="center">
-					<?php print (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
+					<?= (trim($this->getVar('search_list_search'))) ? _t('No searches found') : _t('Enter a date to display searches from above'); ?>
 				</div>
 			</td>
 		</tr>

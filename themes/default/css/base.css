@@ -1189,6 +1189,8 @@ li.notification-error-box ul.errorList {
     margin-top: 8px;
 }
 
+
+
 div.hint {
     color: black;
     border: 2px solid #000000;
@@ -1279,7 +1281,7 @@ div.formLabelUploadSizeNote {
 	line-height:1em;
 	margin-top: 0px;
 }
-.bundleSubLabel select, .bundleSubLabel .editorBundlePrintControl select, .bundleSubLabel .editorBundleSortControl select{
+.bundleSubLabel select[multiple=false], .bundleSubLabel .editorBundlePrintControl select[multiple=false], .bundleSubLabel .editorBundleSortControl select[multiple=false]{
 	position:relative;
 	padding-top:0px;
 	padding-bottom:0px;
@@ -1467,7 +1469,7 @@ div.formLabelUploadSizeNote {
 }
 #summary .searchFormSelector {
 	margin-bottom: 3px; 
-	font-size: 11px;
+	font-size: 12px;
 	display:inline;
 }
 #summary #printButton{
@@ -2329,11 +2331,7 @@ select.searchSetSelect {
 #searchOptionsBox, .relatedListSearchOptionsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
-    display:none;
-    font-size:12px;
-    color:#828282;
-    margin: 0px 0px 0px 0px;
-	display: none;
+    display: none;
 	font-size: 14px;
 	color: #333;
 	line-height: 1.4em;
@@ -2489,10 +2487,6 @@ a#hideRefine img {
 #searchToolsBox, .relatedListSearchToolsBox {
     clear:both;
     margin: 0px 0px 0px 0px;
-    display:none;
-    font-size:12px;
-    color:#828282;
-    margin: 0px 0px 0px 0px;
 	display: none;
 	font-size: 14px;
 	color: #333;
@@ -2523,7 +2517,7 @@ a#hideRefine img {
 
 select.searchToolsSelect {
     width: 165px;
-    font-size: 11px;
+    font-size: 12px;
 }
 /* Set Tools */
 
@@ -4807,6 +4801,10 @@ div.searchFormElementSettingsMessage {
 }
 
 select.searchFormSelector {
+    max-width: 200px;
+}
+
+select.searchFormSelector {
     font-size: 12px;
 }
 
@@ -5943,7 +5941,6 @@ select.caItemListSortControlTrigger {
     line-height: 17px;
     font-size: 11px;
     padding: 0px 5px 5px 0px;
-	background-color:#fbfbfb;
 
     z-index: 10000;
 
@@ -6582,12 +6579,44 @@ div.dialogHeader {
     background-color: #FFFFFF;
 }
 
-#caSummaryDownloadOptionsPanel .close a{
+#caSummaryDownloadOptionsPanelOptions {
+    font-size: 12px;
+	color: #333;
+	line-height: 1.4em;
+	padding: 10px;
+	margin: 25px 0px 0px 0px;
+	background-color: #eee;
+	border-radius: 5px;
+	display: none;
+	overflow-y: auto;
+	max-height: 350px;
+}
+
+#caLabelsDownloadOptionsPanelOptions, #caResultsDownloadOptionsPanelOptions {
+    font-size: 12px;
+	color: #333;
+	line-height: 1.4em;
+	padding: 10px;
+	margin: 25pxpx 0px 0px 0px;
+	background-color: #eee;
+	border-radius: 5px;
+	display: none;
+	overflow-y: auto;
+	max-height: 300px;
+}
+
+#caSummaryDownloadOptionsPanelOptions div.col, #caLabelsDownloadOptionsPanelOptions div.col, #caResultsDownloadOptionsPanelOptions div.col {
+    margin-bottom: 5px;
+}
+
+#caSummaryDownloadOptionsPanel .close a, #caLabelsDownloadOptionsPanelOptions .close a, #caResultsDownloadOptionsPanelOptions .close a {
     text-decoration:none;
     font-size:16px;
 }
 
 #caSummaryDownloadOptionsPanelContentArea {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+    font-weight: normal;
     padding:10px;
 }
 
@@ -6606,8 +6635,8 @@ div.dialogHeader {
 }
 
 .caSummaryDownloadOptionsPanelAlertControls {
-    font-size: 11px;
-    height: 25px;
+    font-size: 14px;
+    height: 35px;
     margin-bottom: 10px;
 }
 
@@ -6617,7 +6646,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 .caSummaryDownloadOptionsPanelAlertControl {
-    font-size: 11px;
+    font-size: 12px;
 }
 
 /* Quick add */
@@ -6847,6 +6876,11 @@ div.caRepresentationMediaReplicationControls {
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #ededed;
 }
+
+.caAnnoEditorPanelContentArea {
+    margin-top: 40px;
+}
+
 .caAnnoEditorTlContainer {		/* timeline container */
     width:100%;
     height: 130px;
@@ -6947,12 +6981,7 @@ div.caRepresentationMediaReplicationControls {
 	width: 500px;
     margin: auto auto 0 auto;
 }
-.caAnnoEditorAudioMediaPlayer {
-	margin-top: 343px;
-}
-.caAnnoEditorVideoMediaPlayer {
 
-}
 .caAnnoMediaPlayerControlsLeft {
 	float: left;
 	padding: 10px;
@@ -8192,4 +8221,53 @@ div.typePill {
 	font-size: 10px;
 	font-weight: normal;
 	margin: 3px 3px 6px 0;
+}
+
+ul.caPrintOptions {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: start;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    width: 520px;
+}
+
+li.caPrintOptionItem {
+    margin-right: 10px;
+    min-width: 100px;
+}
+
+/* Search debugging */
+div.searchResultDesc {
+	display: block;
+	font-size: 9px;
+	
+	text-align: left;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    
+    height: 60px;
+    overflow-y: auto;
+}
+
+div.searchResultDesc ul {
+	display: block !important;
+	font-size: 9px;
+	text-align: left;
+	list-style: none;
+	padding: 1px;
+	margin: 0px;
+}
+
+.searchResultDescHeading {
+	font-weight: bold;
+	text-align: left;
+}
+
+#algebraSetControls {
+	display: none;
 }

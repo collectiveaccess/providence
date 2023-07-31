@@ -45,14 +45,17 @@
 	  * are enabled (via the 'dont_enforce_access_settings' configuration directive) and whether the user
 	  * is considered privileged.
 	  *
-	  * @param RequestHTTP|ca_users $po_request The current request or user
+	  * @param RequestHTTP|ca_users $po_request The current request or a ca_users instance
 	  * @param array $pa_options Optional options. If omitted settings are taken application configuration file is used. Any array passed to this function should include the following keys: "dont_enforce_access_settings", "public_access_settings", "privileged_access_settings", "privileged_networks"
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
-	function caGetUserAccessValues($po_request, $pa_options=null) {
+	function caGetUserAccessValues($po_request=null, $pa_options=null) {
+		global $g_request;
+		if(!$po_request) { $po_request = $g_request; }
 		if(!caGetOption('ignoreProvidence', $pa_options, false)) {
 			if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
 		}
+
 		$config = Configuration::load();
 		
 		$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $config->get('dont_enforce_access_settings');
@@ -62,6 +65,9 @@
 		$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 		if (!$vb_dont_enforce_access_settings) {
 			$va_access = array();
+
+			$vb_is_privileged = ((is_a($po_request, 'ca_users') && $po_request->isLoaded()) || caUserIsPrivileged($po_request, $pa_options));
+
 			if($vb_is_privileged) {
 				$va_access = $va_privileged_access_settings;
 			} else {
@@ -69,6 +75,7 @@
 			}
 			if(!is_array($va_access)) { $va_access = []; }
 			
+
 			if ($vb_is_privileged) {
 				$va_user_access = is_a($po_request, 'ca_users') ? $po_request->getAccessStatuses(1) : $po_request->user->getAccessStatuses(1);
 				if(is_array($va_user_access)) {
@@ -629,10 +636,10 @@
 	 */
 	function caMergeTypeRestrictionLists($t_instance, $pa_options) {
 		$va_restrict_to_type_ids = null;
-		if (is_array($pa_options['restrict_to_types']) && sizeof($pa_options['restrict_to_types'])) {
+		if (isset($pa_options['restrict_to_types']) && is_array($pa_options['restrict_to_types']) && sizeof($pa_options['restrict_to_types'])) {
 			$pa_options['restrictToTypes'] = $pa_options['restrict_to_types'];
 		}
-		if (is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
+		if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
 			$va_restrict_to_type_ids = caMakeTypeIDList($t_instance->tableName(), $pa_options['restrictToTypes'], array('noChildren' => caGetOption(['dontIncludeSubtypesInTypeRestriction', 'dont_include_subtypes_in_type_restriction'], $pa_options, true)));
 		}
 		
@@ -666,10 +673,10 @@
 	 */
 	function caMergeSourceRestrictionLists($t_instance, $pa_options) {
 		$va_restrict_to_source_ids = null;
-		if (is_array($pa_options['restrict_to_sources']) && sizeof($pa_options['restrict_to_sources'])) {
+		if (isset($pa_options['restrict_to_sources']) && is_array($pa_options['restrict_to_sources']) && sizeof($pa_options['restrict_to_sources'])) {
 			$pa_options['restrictToSources'] = $pa_options['restrict_to_sources'];
 		}
-		if (is_array($pa_options['restrictToSources']) && sizeof($pa_options['restrictToSources'])) {
+		if (isset($pa_options['restrictToSources']) && is_array($pa_options['restrictToSources']) && sizeof($pa_options['restrictToSources'])) {
 			$va_restrict_to_source_ids = caMakeSourceIDList($t_instance->tableName(), $pa_options['restrictToSources'], array('noChildren' => true));
 		}
 		
@@ -831,7 +838,7 @@ $g_source_access_level_cache = array();
 	function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
 		
 		$va_tmp = explode(".", $ps_bundle_name);
-		if (in_array($va_tmp[1], array('hierarchy', 'parent', 'children'))) {
+		if (in_array($va_tmp[1] ?? null, array('hierarchy', 'parent', 'children'))) {
 			unset($va_tmp[1]); 
 		}
 		

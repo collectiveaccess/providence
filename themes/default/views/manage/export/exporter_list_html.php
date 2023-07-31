@@ -55,7 +55,7 @@ if (!$this->request->isAjax()) {
 	</div>
 	
 	<div id="exporterUploadArea" >
-		<span class="exporterUploadText"><?php print _t("Drag exporter worksheets here to add or update"); ?></span>
+		<span class="exporterUploadText"><?= _t("Drag exporter worksheets here to add or update"); ?></span>
 	</div>
 <?php
 }
@@ -85,19 +85,19 @@ if (!$this->request->isAjax()) {
 ?>
 			<tr>
 				<td>
-					<?php print $va_exporter['label']; ?>
+					<?= $va_exporter['label']; ?>
 				</td>
 				<td>
-					<?php print $va_exporter['exporter_code']; ?>
+					<?= $va_exporter['exporter_code']; ?>
 				</td>
 				<td>
-					<?php print $va_exporter['exporter_type']; ?>
+					<?= $va_exporter['exporter_type']; ?>
 				</td>
 				<td>
-					<?php print caGetLocalizedDate($va_exporter['last_modified_on'], array('dateFormat' => 'delimited')); ?>
+					<?= caGetLocalizedDate($va_exporter['last_modified_on'], array('dateFormat' => 'delimited')); ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					<?php /*print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Export data"), '', 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));*/ ?>
 				</td>
 			</tr>
@@ -119,7 +119,7 @@ if (!$this->request->isAjax()) {
 		
 		jQuery('#exporterUploadArea').fileupload({
 			dataType: 'json',
-			url: '<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
+			url: '<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
 			dropZone: jQuery('#exporterUploadArea'),
 			singleFileUploads: false,
 			done: function (e, data) {
@@ -144,7 +144,7 @@ if (!$this->request->isAjax()) {
 							jQuery("#batchProcessingTableProgressGroup").hide(250);
 						}, 3000);
 				}
-				jQuery("#caExporterListContainer").load("<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'Index'); ?>");
+				jQuery("#caExporterListContainer").load("<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'Index'); ?>");
 			},
 			progressall: function (e, data) {
 				jQuery("#exporterUploadArea").hide(150);
@@ -154,7 +154,7 @@ if (!$this->request->isAjax()) {
 				var progress = parseInt(data.loaded / data.total * 100, 10);
 				jQuery('#progressbar').progressbar("value", progress);
 			
-				var msg = "<?php print _t("Progress: "); ?>%1";
+				var msg = "<?= _t("Progress: "); ?>%1";
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
 				
 			}

@@ -51,11 +51,11 @@
 <?php
 	}
 ?>
-	<h2><?php print $this->getVar('message'); ?>
+	<h2><?= $this->getVar('message'); ?>
 <?php
     if ($last_update = $this->getVar('last_update')) {
 ?>
-	(<?php print _t('Last updated %1', $last_update); ?>)
+	(<?= _t('Last updated %1', $last_update); ?>)
 <?php
     }
 ?>

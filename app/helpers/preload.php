@@ -63,7 +63,7 @@
     }
   
     // Hoa?
-    if($parts[0] === 'Hoa') {
+    if(($parts[0] === 'Hoa') && sizeof($parts) >= 3) {
     	$path_to_hoa = __CA_LIB_DIR__."/Parsers/".strtolower(join('/', array_slice($parts, 0, 2))).'/'.join('/', array_slice($parts, 2)).".php";
     	if(@include_once($path_to_hoa)) { $loaded = true; }  
     }
@@ -114,7 +114,8 @@ require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
 require_once(__CA_APP_DIR__.'/lib/GarbageCollection.php');
 require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
-
+require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 
 require_once(__CA_LIB_DIR__."/Datamodel.php");
 Datamodel::load();
@@ -134,3 +135,5 @@ register_shutdown_function(function() {
 		}
 	}
   });
+
+caInitErrorHandler();

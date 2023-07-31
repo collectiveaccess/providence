@@ -1219,6 +1219,8 @@ trait CLIUtilsImportExport {
 	/**
 	 * @param Zend_Console_Getopt|null $po_opts
 	 * @return bool
+	 *
+	 * @TODO: use caExportResult helper instead
 	 */
 	public static function export_search_using_display($po_opts=null) {
 		$file = $po_opts->getOption('file');
@@ -1256,7 +1258,6 @@ trait CLIUtilsImportExport {
 		}
 		$result = $o_s->search($search);
 
-		//$result, $format, $file, $ps_title=null
 		$view = new View(null, [__CA_THEME_DIR__.'/views/find']);
 
 		$view->setVar('criteria_summary', $search);	// add displayable description of current search/browse parameters

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -200,7 +200,7 @@ class Db_mysqli extends DbDriverBase {
 		$vb_is_escaped = false;
 		
 		while($vn_i < $vn_l) {
-			$vs_c = $ps_sql{$vn_i};
+			$vs_c = $ps_sql[$vn_i];
 
 			switch($vs_c) {
 				case '"':
@@ -448,9 +448,16 @@ class Db_mysqli extends DbDriverBase {
 			
 		if (is_array($pa_fields)) {
 			$va_row = @mysqli_fetch_assoc($pr_res);
+			if (!is_array($va_row)) { return []; }
+			
+			$fields_exist = false;
 			foreach($pa_fields as $vs_field) {
-				if (!is_array($va_row) || !array_key_exists($vs_field, $va_row)) { return array(); }
+				if (array_key_exists($vs_field, $va_row)) { 
+					$fields_exist = true; 
+					break;
+				}
 			}
+			if(!$fields_exist) { return []; }
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = @mysqli_fetch_assoc($pr_res))) {
 				foreach($pa_fields as $vs_field) {

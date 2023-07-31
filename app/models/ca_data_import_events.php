@@ -33,17 +33,10 @@
  /**
    *
    */
+require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_importer_log.php');
 
-	require_once(__CA_LIB_DIR__.'/Datamodel.php');
-	require_once(__CA_MODELS_DIR__.'/ca_data_import_event_log.php');
-	require_once(__CA_MODELS_DIR__.'/ca_data_import_items.php');
-
-/**
-  * Constants for data import items (ca_data_import_items) "success" flag
-  */
-define("__CA_DATA_IMPORT_ITEM_FAILURE__", 0);
-define("__CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__", 1);
-define("__CA_DATA_IMPORT_ITEM_SUCCESS__", 2);
 
 BaseModel::$s_ca_models_definitions['ca_data_import_events'] = array(
  	'NAME_SINGULAR' 	=> _t('data import event'),

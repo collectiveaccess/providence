@@ -33,9 +33,9 @@
 	
 	if ($pn_representation_id > 0) {
 ?>
-	<div class="formLabelError"><?php print join("; ", $t_rep->getErrors()); ?></div>
+	<div class="formLabelError"><?= join("; ", $t_rep->getErrors()); ?></div>
 
-	<div id="caRepresentationMediaReplicationControls<?php print $pn_representation_id; ?>" class="caRepresentationMediaReplicationControls">
+	<div id="caRepresentationMediaReplicationControls<?= $pn_representation_id; ?>" class="caRepresentationMediaReplicationControls">
 <?php	
 		if(is_array($va_available_targets = $t_rep->getAvailableMediaReplicationTargets('media', 'original')) && sizeof($va_available_targets)) {
 		
@@ -70,9 +70,9 @@
 			if ($vb_incomplete_replications > 0) {
 ?>
 	<script type="text/javascript">
-		var caRepresentationMediaReplicationStatusRefresh<?php print $pn_representation_id; ?> = setInterval(function() {
-			jQuery('#caRepresentationMediaReplicationControls<?php print $pn_representation_id; ?>').parent().load("<?php print caNavUrl($this->request, '*', '*', 'MediaReplicationControls', array('representation_id' => $pn_representation_id)); ?>"); 
-			clearInterval(caRepresentationMediaReplicationStatusRefresh<?php print $pn_representation_id; ?>);
+		var caRepresentationMediaReplicationStatusRefresh<?= $pn_representation_id; ?> = setInterval(function() {
+			jQuery('#caRepresentationMediaReplicationControls<?= $pn_representation_id; ?>').parent().load("<?= caNavUrl($this->request, '*', '*', 'MediaReplicationControls', array('representation_id' => $pn_representation_id)); ?>"); 
+			clearInterval(caRepresentationMediaReplicationStatusRefresh<?= $pn_representation_id; ?>);
 		}, 8000);	// every 8 seconds
 	</script>
 <?php

@@ -263,8 +263,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 *
 	 * @return array|null
 	 */
-	static public function getEntries() {
-		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+	static public function getEntries(?array $options=null) {
+		if (!($o_db = caGetOption('db', $options, null))) { $o_db = new Db(); }
 		
 		$t = new ca_metadata_dictionary_entries();
 		$qr = $o_db->query("
@@ -512,7 +512,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			if (sizeof($va_types) || sizeof($va_relationship_types)) {
 				foreach(array_keys($va_entry_list) as $vn_id) {
 					$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
-					if (is_array($va_tables = $va_entry['settings']['restrict_to']) && sizeof($va_tables)) {
+					if (is_array($va_tables = ($va_entry['settings']['restrict_to'] ?? null)) && sizeof($va_tables)) {
 						if(in_array($pt_subject->tableName(), $va_tables)) { 
 							$vn_entry_id = $vn_id;
 						} else {
@@ -521,7 +521,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 					}
 					if (sizeof($va_relationship_types)) {
 						if(
-							is_array($va_entry_types = $va_entry['settings']['restrict_to_relationship_types'])
+							is_array($va_entry_types = ($va_entry['settings']['restrict_to_relationship_types'] ?? null))
 						) {
 							if (sizeof(array_intersect($va_relationship_types, $va_entry_types))) {
 								$vn_entry_id = $vn_id;
@@ -532,7 +532,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 					}
 					if (sizeof($va_types)) {
 						if(
-							is_array($va_entry_types = $va_entry['settings']['restrict_to_types'])
+							is_array($va_entry_types = ($va_entry['settings']['restrict_to_types'] ?? null))
 						) {
 							if (sizeof(array_intersect($va_types, $va_entry_types))) {
 								$vn_entry_id = $vn_id;

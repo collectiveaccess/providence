@@ -297,27 +297,35 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			itemGroups{$vs_id}[group].addTo(g);
 		}
 		
-		jQuery(pathList{$vs_id}).each(function(k, v) {
-			var splitPts = v.path.map(c => { return [c.latitude, c.longitude] });
-			var m = L.polygon(splitPts, { color: '{$vs_path_color}', weight: '{$vn_path_weight}', opacity: '{$vn_path_opacity}', fillColor: '{$vs_fill_color}', fillOpacity: '{$vn_fill_opacity}' });
-			if (v.label || v.content) { 
-			    if (v.ajaxUrl) {
-			        var ajaxUrl = v.ajaxUrl;
-                    m.bindPopup(
-                        (layer)=>{
-                            var el = document.createElement('div');
-                            $.get(ajaxUrl,function(data){
-                                el.innerHTML = data + '<br/>';
-                            });
-
-                            return el;
-                        }, { minWidth: 400, maxWidth : 560 });
-			    } else {
-			        m.bindPopup(v.label + v.content); 
-			    }
+		for(let group in pathList{$vs_id}) {
+			let paths = pathList{$vs_id}[group];
+			if(!itemGroups{$vs_id}[group]) {
+				itemGroups{$vs_id}[group] = new L.featureGroup();
 			}
-			m.addTo(g);
-		});
+			for(let k in paths) {
+				let v = paths[k];
+				
+				var splitPts = v.path.map(c => { return [c.latitude, c.longitude] });
+				var m = L.polygon(splitPts, { color: '{$vs_path_color}', weight: '{$vn_path_weight}', opacity: '{$vn_path_opacity}', fillColor: '{$vs_fill_color}', fillOpacity: '{$vn_fill_opacity}' });
+				if (v.label || v.content) { 
+					if (v.ajaxUrl) {
+						var ajaxUrl = v.ajaxUrl;
+						m.bindPopup(
+							(layer)=>{
+								var el = document.createElement('div');
+								$.get(ajaxUrl,function(data){
+									el.innerHTML = data + '<br/>';
+								});
+
+								return el;
+							}, { minWidth: 400, maxWidth : 560 });
+					} else {
+						m.bindPopup(v.label + v.content); 
+					}
+				}
+				m.addTo(g);
+			}
+		}
 			
 		var bounds = g.getBounds();
 		if (bounds.isValid()) { map.fitBounds(bounds)".((strlen($vn_zoom_level) && !$we_set_zoom) ? ".setZoom({$vn_zoom_level})" : "")."; }
@@ -344,10 +352,10 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
  		AssetLoadManager::register('leaflet');
 		
-		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
-		$vn_element_width = $va_element_width['dimension'];
-		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
-		$vn_element_height = $va_element_height['dimension'];
+		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth'] ?? null);
+		$vn_element_width = $va_element_width['dimension'] ?? null;
+		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight'] ?? null);
+		$vn_element_height = $va_element_height['dimension'] ?? null;
 		
 		$map_width_info = caParseFormElementDimension(caGetOption('mapWidth', $pa_options, '695px'));
 		$map_width = $map_width_info['dimension'].'px';
@@ -363,8 +371,8 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 			if(!caParseGISSearch($default_location)) { $default_location = null; }
 		}
 		
-		$points_are_directional = (bool)$pa_element_info['settings']['pointsAreDirectional'] ? 1 : 0;
-		$autoDropPin = (bool)$pa_element_info['settings']['autoDropPin'] ? 1 : 0;
+		$points_are_directional = (bool)($pa_element_info['settings']['pointsAreDirectional'] ?? false) ? 1 : 0;
+		$autoDropPin = (bool)($pa_element_info['settings']['autoDropPin'] ?? false) ? 1 : 0;
  		
  		$element_id = (int)$pa_element_info['element_id'];
  		$vs_id = $pa_element_info['element_id']."_{n}";

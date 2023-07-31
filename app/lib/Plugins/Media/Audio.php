@@ -184,13 +184,13 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($filepath) {
 		$ID3 = new getID3();
 		$info = $ID3->analyze($filepath);
-		if (($info['fileformat'] == 'riff') && (!isset($info['video']))) {
+		if ((($info['fileformat'] ?? null) == 'riff') && (!isset($info['video']))) {
 			if (isset($info['audio']['dataformat']) && ($info['audio']['dataformat'] == 'wav')) {
 				$info['mime_type'] = 'audio/x-wav';
 			}
 		}
-		if (
-		    ($info['fileformat'] == 'quicktime') && 
+		if ( 
+		    (($info['fileformat'] ?? null) == 'quicktime') && 
 		    ($info['audio']['codec'] == 'Fraunhofer MPEG Layer-III alias') &&
 		    ($info['video']['resolution_x'] == 0) && 
 		    ($info['video']['resolution_y'] == 0)
@@ -198,10 +198,10 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		    // Quicktime-wrapped MP3
 			$info['mime_type'] = 'audio/mpeg';
 		}
-		if (in_array(strtolower(trim($info["mime_type"])), ['audio/wave', 'audio/wav', 'audio/x-wave'], true)) {
+		if (in_array(strtolower(trim($info["mime_type"] ?? null)), ['audio/wave', 'audio/wav', 'audio/x-wave'], true)) {
 			$info["mime_type"] = 'audio/x-wav';
 		}
-		if (($info["mime_type"]) && isset($this->info["IMPORT"][$info["mime_type"]]) && $this->info["IMPORT"][$info["mime_type"]]) {
+		if (($info["mime_type"] ?? null) && isset($this->info["IMPORT"][$info["mime_type"]]) && $this->info["IMPORT"][$info["mime_type"]]) {
 			$this->handle = $this->ohandle = $info;
 			$this->metadata = $info;	// populate with getID3 data because it's handy
 			return $info["mime_type"];
@@ -221,14 +221,13 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function get($property) {
 		if ($this->handle) {
-			if ($this->info["PROPERTIES"][$property]) {
-				return $this->properties[$property];
+			if ($this->info["PROPERTIES"][$property] ?? null) {
+				return $this->properties[$property] ?? null;
 			} else {
-				print "Invalid property '$property'";
-				return "";
+				return null;
 			}
 		} else {
-			return "";
+			return null;
 		}
 	}
 	# ----------------------------------------------------------
@@ -239,19 +238,20 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					default:
 						if ($this->info["PROPERTIES"][$property] == 'W') {
 							$this->properties[$property] = $value;
+							return true;
 						} else {
 							# read only
-							return "";
+							return null;
 						}
 						break;
 				}
 			} else {
 				# invalid property
 				$this->postError(1650, _t("Can't set property %1", $property), "WLPlugAudio->set()");
-				return "";
+				return null;
 			}
 		} else {
-			return "";
+			return null;
 		}
 	}
 	# ------------------------------------------------
@@ -323,96 +323,96 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			switch($this->properties["mimetype"]) {
 				case 'audio/mpeg':
 
-					if (is_array($this->handle["tags"]["id3v1"]["title"])) {
+					if (is_array($this->handle["tags"]["id3v1"]["title"] ?? null)) {
 						$this->properties["title"] = 		join("; ",$this->handle["tags"]["id3v1"]["title"]);
 					}
-					if (is_array($this->handle["tags"]["id3v1"]["artist"])) {
+					if (is_array($this->handle["tags"]["id3v1"]["artist"] ?? null)) {
 						$this->properties["author"] = 		join("; ",$this->handle["tags"]["id3v1"]["artist"]);
 					}
-					if (is_array($this->handle["tags"]["id3v1"]["comment"])) {
+					if (is_array($this->handle["tags"]["id3v1"]["comment"] ?? null)) {
 						$this->properties["copyright"] = 	join("; ",$this->handle["tags"]["id3v1"]["comment"]);
 					}
 					if (
-						(is_array($this->handle["tags"]["id3v1"]["album"])) &&
-						(is_array($this->handle["tags"]["id3v1"]["year"])) &&
-						(is_array($this->handle["tags"]["id3v1"]["genre"]))) {
+						(is_array($this->handle["tags"]["id3v1"]["album"] ?? null)) &&
+						(is_array($this->handle["tags"]["id3v1"]["year"] ?? null)) &&
+						(is_array($this->handle["tags"]["id3v1"]["genre"] ?? null))) {
 						$this->properties["description"] = 	join("; ",$this->handle["tags"]["id3v1"]["album"])." ".join("; ",$this->handle["tags"]["id3v1"]["year"])." ".join("; ",$this->handle["tags"]["id3v1"]["genre"]);
 					}
-					$this->properties["type_specific"] = array("audio" => $this->handle["audio"], "tags" => $this->handle["tags"]);
+					$this->properties["type_specific"] = array("audio" => $this->handle["audio"] ?? null, "tags" => $this->handle["tags"] ?? null);
 
 					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
 
-					$this->properties["getID3_tags"] = $this->handle["tags"];
+					$this->properties["getID3_tags"] = $this->handle["tags"] ?? null;
 
-					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
-					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
-					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"];
-					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"] ?? null;
+					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/x-aiff':
 
-					$this->properties["type_specific"] = array("audio" => $this->handle["audio"], "riff" => $this->handle["riff"]);
+					$this->properties["type_specific"] = array("audio" => $this->handle["audio"] ?? null, "riff" => $this->handle["riff"] ?? null);
 
-					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
+					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 
 					$this->properties["getID3_tags"] = [];
 
-					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
-					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
-					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"];
-					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"] ?? null;
+					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/x-flac':
 					$this->properties["type_specific"] = [];
 
-					$this->properties["audio"] = $this->handle["audio"];
-					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
+					$this->properties["audio"] = $this->handle["audio"] ?? null;
+					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 					
 					$this->properties["getID3_tags"] = [];
 
-					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
-					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
-					$this->properties["sample_frequency"] = $this->handle["audio"]["sample_rate"];
-					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $this->handle["audio"]["sample_rate"] ?? null;
+					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/x-wav':
 					$this->properties["type_specific"] = [];
 
-					$this->properties["audio"] = $this->handle["audio"];
-					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
+					$this->properties["audio"] = $this->handle["audio"] ?? null;
+					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 
 					$this->properties["getID3_tags"] = [];
 
-					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
-					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
-					$this->properties["sample_frequency"] = $this->handle["audio"]["sample_rate"];
-					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $this->handle["audio"]["sample_rate"] ?? null;
+					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/mp4':
 					$this->properties["type_specific"] = [];
 
-					$this->properties["audio"] = $this->handle["audio"];
-					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
+					$this->properties["audio"] = $this->handle["audio"] ?? null;
+					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"] ?? null, "max" => $this->handle["bitrate"] ?? null);
 
 					$this->properties["getID3_tags"] = [];
 
-					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
-					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
-					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"];
-					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"] ?? null;
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"] ?? null;
+					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 				case 'audio/ogg':
 					$this->properties["type_specific"] = [];
 
-					$this->properties["audio"] = $this->handle['vorbis'];
-					$this->properties["bandwidth"] = array("min" => $this->handle['vorbis']['bitrate'], "max" => $this->handle['vorbis']['bitrate']);
+					$this->properties["audio"] = $this->handle['vorbis'] ?? null;
+					$this->properties["bandwidth"] = array("min" => $this->handle['vorbis']['bitrate'] ?? null, "max" => $this->handle['vorbis']['bitrate'] ?? null);
 
 					$this->properties["getID3_tags"] = [];
 
-					$this->properties["bitrate"] = $input_bitrate = $this->handle['vorbis']['bitrate'];
-					$this->properties["channels"] = $input_channels = $this->handle["vorbis"]["channels"];
-					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["vorbis"]["samplerate"];
-					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					$this->properties["bitrate"] = $input_bitrate = $this->handle['vorbis']['bitrate'] ?? null;
+					$this->properties["channels"] = $input_channels = $this->handle["vorbis"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["vorbis"]["samplerate"] ?? null;
+					$this->properties["duration"] = $this->handle["playtime_seconds"] ?? null;
 					break;
 			}
 
@@ -438,15 +438,17 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
 
-		$this->properties["version_width"] = $w = $parameters["width"];
-		$this->properties["version_height"] = $h = $parameters["height"];
+		$this->properties["version_width"] = $w = $parameters["width"] ?? null;
+		$this->properties["version_height"] = $h = $parameters["height"] ?? null;
 		
-		if (!$parameters["width"]) {
-			$this->properties["version_width"] = $w = $parameters["height"];
+		if (!($parameters["width"] ?? null)) {
+			$this->properties["version_width"] = $w = $parameters["height"] ?? null;
 		}
-		if (!$parameters["height"]) {
-			$this->properties["version_height"] = $h = $parameters["width"];
+		if (!($parameters["height"] ?? null)) {
+			$this->properties["version_height"] = $h = $parameters["width"] ?? null;
 		}
+		
+		$do_crop = false; 
 		
 		$cw = $this->get("width");
 		$ch = $this->get("height");
@@ -455,7 +457,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		switch($operation) {
 			# -----------------------
 			case "SET":
-				while(list($k, $v) = each($parameters)) {
+				foreach($parameters as $k => $v){
+
 					$this->set($k, $v);
 				}
 				break;
@@ -498,8 +501,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					return false;
 				}
 				if ($do_crop) {
-					$this->properties["width"] = $parameters["width"];
-					$this->properties["height"] = $parameters["height"];
+					$this->properties["width"] = $parameters["width"] ?? null;
+					$this->properties["height"] = $parameters["height"] ?? null;
 				} else {
 					$this->properties["width"] = $w;
 					$this->properties["height"] = $h;
@@ -507,11 +510,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case 'INTRO':
-				$this->properties["intro_filepath"] = $parameters["filepath"];
+				$this->properties["intro_filepath"] = $parameters["filepath"] ?? null;
 				break;
 			# -----------------------
 			case 'OUTRO':
-				$this->properties["outro_filepath"] = $parameters["filepath"];
+				$this->properties["outro_filepath"] = $parameters["filepath"] ?? null;
 				break;
 			# -----------------------
 		}
@@ -522,7 +525,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (!$this->handle) { return false; }
 		if (!($ext = $this->info["EXPORT"][$mimetype])) {
 			# this plugin can't write this mimetype
-			$this->postError(1610, _t("Can't convert '%1' to '%2': unsupported format", $this->handle["mime_type"], $mimetype), "WLPlugAudio->write()");
+			$this->postError(1610, _t("Can't convert '%1' to '%2': unsupported format", $this->handle["mime_type"] ?? null, $mimetype), "WLPlugAudio->write()");
 			return false;
 		}
 
@@ -612,29 +615,29 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$o_getid3 = new getid3();
 					$mp3_output_info = $o_getid3->analyze($filepath.".".$ext);
 					$this->properties = array();
-					if (is_array($mp3_output_info["tags"]["id3v1"]["title"])) {
+					if (is_array($mp3_output_info["tags"]["id3v1"]["title"] ?? null)) {
 						$this->properties["title"] = 		join("; ",$mp3_output_info["tags"]["id3v1"]["title"]);
 					}
-					if (is_array($mp3_output_info["tags"]["id3v1"]["artist"])) {
+					if (is_array($mp3_output_info["tags"]["id3v1"]["artist"] ?? null)) {
 						$this->properties["author"] = 		join("; ",$mp3_output_info["tags"]["id3v1"]["artist"]);
 					}
-					if (is_array($mp3_output_info["tags"]["id3v1"]["comment"])) {
+					if (is_array($mp3_output_info["tags"]["id3v1"]["comment"] ?? null)) {
 						$this->properties["copyright"] = 	join("; ",$mp3_output_info["tags"]["id3v1"]["comment"]);
 					}
 					if (
-						(is_array($mp3_output_info["tags"]["id3v1"]["album"])) &&
-						(is_array($mp3_output_info["tags"]["id3v1"]["year"])) &&
-						(is_array($mp3_output_info["tags"]["id3v1"]["genre"]))) {
+						(is_array($mp3_output_info["tags"]["id3v1"]["album"] ?? null)) &&
+						(is_array($mp3_output_info["tags"]["id3v1"]["year"] ?? null)) &&
+						(is_array($mp3_output_info["tags"]["id3v1"]["genre"] ?? null))) {
 						$this->properties["description"] = 	join("; ",$mp3_output_info["tags"]["id3v1"]["album"])." ".join("; ",$mp3_output_info["tags"]["id3v1"]["year"])." ".join("; ",$mp3_output_info["tags"]["id3v1"]["genre"]);
 					}
 					$this->properties["type_specific"] = array("audio" => $mp3_output_info["audio"], "tags" => $mp3_output_info["tags"]);
 	
 					$this->properties["bandwidth"] = array("min" => $mp3_output_info["bitrate"], "max" => $mp3_output_info["bitrate"]);
 	
-					$this->properties["bitrate"] = $mp3_output_info["bitrate"];
-					$this->properties["channels"] = $mp3_output_info["audio"]["channels"];
-					$this->properties["sample_frequency"] = $mp3_output_info["audio"]["sample_rate"];
-					$this->properties["duration"] = $mp3_output_info["playtime_seconds"];
+					$this->properties["bitrate"] = $mp3_output_info["bitrate"] ?? null;
+					$this->properties["channels"] = $mp3_output_info["audio"]["channels"] ?? null;
+					$this->properties["sample_frequency"] = $mp3_output_info["audio"]["sample_rate"] ?? null;
+					$this->properties["duration"] = $mp3_output_info["playtime_seconds"] ?? null;
 				}
 			} else {
 				# use default media icons if ffmpeg is not present or the current version is an image
@@ -716,7 +719,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){
 			if ($v === $extension) {
 				return $k;
 			}
@@ -725,7 +728,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function mimetype2typename($mimetype) {
-		return $this->typenames[$mimetype];
+		return $this->typenames[$mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function reset() {

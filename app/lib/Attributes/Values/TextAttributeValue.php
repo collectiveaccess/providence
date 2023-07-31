@@ -254,7 +254,15 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'width' => "200px", 'height' => 1,
 		'label' => _t('Reference media in'),
 		'description' => _t('Allow in-line references in text to a media element.')
-	)
+	),
+	'moveArticles' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 1,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Omit leading definite and indefinite articles when sorting'),
+		'description' => _t('Check this option to sort values wuthout definite and indefinite articles when they are at the beginning of the text.')
+	),
 );
 
 class TextAttributeValue extends AttributeValue implements IAttributeValue {
@@ -266,7 +274,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	}
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
+		$this->ops_text_value = $pa_value_array['value_longtext1'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -288,7 +296,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray(
 			$pa_element_info, 
-			array('minChars', 'maxChars', 'regex', 'mustBeUnique')
+			array('minChars', 'maxChars', 'regex', 'mustBeUnique', 'moveArticles')
 		);
 		$vn_strlen = mb_strlen($ps_value);
 		if ($vn_strlen < $va_settings['minChars']) {
@@ -320,7 +328,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		return array(
 			'value_longtext1' => $ps_value,
-			'value_sortable' => $this->sortableValue($ps_value)
+			'value_sortable' => $this->sortableValue($ps_value, $va_settings)
 		);
 	}
 	# ------------------------------------------------------------------
@@ -365,7 +373,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_height = ((int)$vs_height * 16)."px";
 		}
 		
-		if ($va_settings['usewysiwygeditor']) {
+		if ($va_settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
 			if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 			AssetLoadManager::register("ckeditor");
@@ -406,7 +414,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
 				'maxlength' => $va_settings['maxChars'],
 				'class' => $vs_class,
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor-element" : '')
+				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".(($va_settings['usewysiwygeditor'] ?? null) ? " ckeditor-element" : '')
 			);
 		if (caGetOption('readonly', $pa_options, false)) { 
 			$va_opts['disabled'] = 1;
@@ -425,7 +433,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			";
 		}
 		
-		if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] || $pa_options['isDependentValue'])) {
+		if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] ?? false || $pa_options['isDependentValue'] ?? false)) {
 			$t_element = new ca_metadata_elements($pa_element_info['element_id']);
 			$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
 			$va_element_dom_ids = array();
@@ -541,8 +549,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	 * 
 	 * @return string
 	 */
-	public function sortableValue(?string $value) {
-		return mb_strtolower(substr(trim(caSortableValue($value)), 0, 100));
+	public function sortableValue(?string $value, ?array $options=null) {
+		return mb_strtolower(substr(trim(caSortableValue($value, $options)), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

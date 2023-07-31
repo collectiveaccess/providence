@@ -114,7 +114,7 @@ class Session {
 			if (!$session_id) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				$secure = (__CA_SITE_PROTOCOL__ === 'https');
-				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__)) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
+				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__ || (defined('__CA_SET_COOKIE_FOR_SERVICE_REQUEST__') && __CA_SET_COOKIE_FOR_SERVICE_REQUEST__))) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
@@ -384,7 +384,7 @@ class Session {
 	 */
 	public static function decodeJWT(string $jwt, string $key) {
 		if (!$key) { $key = Configuration::load()->get('jwt_token_key'); }
-		return JWT::decode($jwt, $key, ['HS256']);
+		return JWT::decode($jwt, new Firebase\JWT\Key($key, 'HS256'));
 	}
 	# ----------------------------------------
 }

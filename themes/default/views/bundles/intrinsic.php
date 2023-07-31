@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,64 +26,64 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
- 	$vs_element 			= $this->getVar('form_element');
- 	$va_settings 			= $this->getVar('settings');
- 	$t_instance				= $this->getVar('t_instance');
- 	$vs_bundle_name 		= $this->getVar('bundle_name');
- 	$vb_batch				= $this->getVar('batch');
+$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vs_element 			= $this->getVar('form_element');
+$va_settings 			= $this->getVar('settings');
+$t_instance				= $this->getVar('t_instance');
+$vs_bundle_name 		= $this->getVar('bundle_name');
+$vb_batch				= $this->getVar('batch');
 
-	// fetch data for bundle preview
-	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
-	if(is_array($vs_bundle_preview)) { $vs_bundle_preview = ''; }
- 	
- 	$va_errors = array();
- 	if(is_array($va_action_errors = $this->getVar('errors'))) {
- 		foreach($va_action_errors as $o_error) {
- 			$va_errors[] = $o_error->getErrorDescription();
- 		}
- 	}
- 	if ($vb_batch) {
-		print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
-	} else {
-		if(!caGetOption('forACLAccessScreen', $va_settings, false)) {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $vs_bundle_preview));
+// fetch data for bundle preview
+$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
+if(is_array($vs_bundle_preview)) { $vs_bundle_preview = ''; }
+
+$va_errors = array();
+if(is_array($va_action_errors = $this->getVar('errors'))) {
+	foreach($va_action_errors as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
+	}
+}
+if ($vb_batch) {
+	print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
+} else {
+	if(!caGetOption('forACLAccessScreen', $va_settings, false)) {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $vs_bundle_preview));
 
 ?>
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>);
-			});
-		</script>
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			jQuery('#' + '<?= $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?= caEscapeForBundlePreview($vs_bundle_preview); ?>);
+		});
+	</script>
 <?php
-		}
 	}
-	print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$vs_bundle_name}", $va_settings);
+}
+print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$vs_bundle_name}", $va_settings);
 ?>
 	<div>
 <?php
 	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
 ?>
 		<div class="globalAccess">	
-			<div class='title'><?php print $t_instance->getFieldInfo($vs_bundle_name, 'LABEL'); ?></div>
+			<div class='title'><?= $t_instance->getFieldInfo($vs_bundle_name, 'LABEL'); ?></div>
 			<p>
 <?php
 	} else {
 ?>
-		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?php print $vs_id_prefix; ?>">
+		<div class="bundleContainer <?= $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?= $vs_id_prefix; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
 	}
 					if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
-						<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
+						<span class="formLabelError"><?= join('; ', $va_errors); ?></span>
 <?php
 					}
 					
 					if ($vs_media = $this->getVar('display_media')) {
 ?>
-						<div style="float: right; margin: 5px 10px 5px 0px;"><?php print $vs_media; ?></div>
+						<div style="float: right; margin: 5px 10px 5px 0px;"><?= $vs_media; ?></div>
 <?php
 					}
 					
@@ -95,19 +95,19 @@
 ?>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
-								jQuery('#<?php print $vs_id_prefix; ?>access_inherit_from_parent').bind('click', function(e) {
-									jQuery('#<?php print $vs_id_prefix; ?>access').prop('disabled', jQuery(this).prop('checked'));
-								}).prop('checked', <?php print (bool)$t_instance->get('access_inherit_from_parent') ? 'true' : 'false'; ?>);
+								jQuery('#<?= $vs_id_prefix; ?>access_inherit_from_parent').bind('click', function(e) {
+									jQuery('#<?= $vs_id_prefix; ?>access').prop('disabled', jQuery(this).prop('checked'));
+								}).prop('checked', <?= (bool)$t_instance->get('access_inherit_from_parent') ? 'true' : 'false'; ?>);
 			
-								if (jQuery('#<?php print $vs_id_prefix; ?>access_inherit_from_parent').prop('checked')) { 
-									jQuery('#<?php print $vs_id_prefix; ?>access').prop('disabled', true);
+								if (jQuery('#<?= $vs_id_prefix; ?>access_inherit_from_parent').prop('checked')) { 
+									jQuery('#<?= $vs_id_prefix; ?>access').prop('disabled', true);
 								}
 							});
 						</script>
 <?php
 					}
 ?>
-					<?php print $vs_element; ?>
+					<?= $vs_element; ?>
 <?php
 	if ($vs_media) {
 ?>

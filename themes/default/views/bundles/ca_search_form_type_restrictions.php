@@ -38,18 +38,18 @@
  	
  	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div class="labelInfo">	
 <?php
 				if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
-					<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
+					<span class="formLabelError"><?= join('; ', $va_errors); ?></span>
 <?php
 				}
 ?>
-				<?php print $vs_element; ?>
+				<?= $vs_element; ?>
 			</div>
 		</div>
 	</div>

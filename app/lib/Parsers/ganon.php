@@ -2869,4 +2869,3 @@ class HTML_Formatter {
 }
 //END gan_formatter.php
 
-?>

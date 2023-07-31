@@ -559,6 +559,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function update($options=null) {
+		$media_path = null;
 		if(!is_array($options)) { $options = []; }
 		if($vb_media_has_changed = $this->changed('media')) {
 		
@@ -580,7 +581,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if ($vn_rc = parent::update($options)) {
 			if(is_array($va_media_info = $this->getMediaInfo('media'))) {
 				$this->set('md5', $va_media_info['INPUT']['MD5']);
-				$this->set('mimetype', $va_media_info['INPUT']['MIMETYPE']);
+				$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
 				$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
 				
 				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {

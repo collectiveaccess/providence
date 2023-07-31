@@ -37,7 +37,7 @@
 			<?php
 			print _t("Export results with mapping") . ":<br/>";
 			print caFormTag($this->request, 'ExportData', 'caExportWithMappingForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList', 'class' => 'searchToolsSelect'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm', null, ['aria-label' => _t('Export results with mapping')]);
@@ -98,13 +98,13 @@
 
 		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchToolsSelect'), array('value' => null))."\n";
 ?>
-			<a href='#' onclick="caAddItemsToSet();" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+			<a href='#' onclick="caAddItemsToSet();" class="button"><?= caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 	</div>
 <?php
 	}
 ?>
-		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->
@@ -126,7 +126,7 @@
 
 	function caAddItemsToSet() {
 		jQuery.post(
-			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>',
+			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>',
 			{
 				set_id: jQuery('#caAddToSetID').val(),
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
@@ -135,24 +135,24 @@
 				if (res['status'] === 'ok') {
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
-						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
+						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
 					} else {
-						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
+						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
 					}
-					var msg = '<?php print addslashes(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>';
+					var msg = '<?= addslashes(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>';
 					msg = msg.replace('^num_items', res['num_items_added']);
 					msg = msg.replace('^item_type_name', item_type_name);
 					msg = msg.replace('^set_name', res['set_name']);
 
 					if (res['num_items_already_in_set'] > 0) {
-						msg += '<?php print addslashes(_t('<br/>(^num_dupes were already in the set.)')); ?>';
+						msg += '<?= addslashes(_t('<br/>(^num_dupes were already in the set.)')); ?>';
 						msg = msg.replace('^num_dupes', res['num_items_already_in_set']);
 					}
 
-					jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Add to set')); ?>' });
+					jQuery.jGrowl(msg, { header: '<?= addslashes(_t('Add to set')); ?>' });
 					jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
 				} else {
-					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Add to set')); ?>' });
+					jQuery.jGrowl(res['error'], { header: '<?= addslashes(_t('Add to set')); ?>' });
 				};
 			},
 			'json'

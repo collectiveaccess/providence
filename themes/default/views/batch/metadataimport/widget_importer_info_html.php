@@ -31,7 +31,7 @@
  	if (!$t_item->getPrimaryKey()) {
  		$vn_importer_count = ca_data_importers::getImporterCount();
 ?>
-<h3 class='importers'><?php print _t('Importers'); ?>:
+<h3 class='importers'><?= _t('Importers'); ?>:
 <div><?php
 	if ($vn_importer_count == 1) {
 		print _t("1 importer is defined");

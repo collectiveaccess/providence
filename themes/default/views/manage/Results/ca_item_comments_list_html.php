@@ -34,32 +34,32 @@
 	<div id="commentsResults">
 		<form action='#' id='commentListForm'>
 			<div style="text-align:right;">
-				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
-				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+				<?= _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?= caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?= _t("Approve"); ?></span></span></a>
+				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?= caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?= _t("Delete"); ?></span></span></a>
 			</div>
 
 			<table id="caItemList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
 				<thead>
 					<tr>
 						<th class="list-header-nosort">
-							<?php print _t('Item'); ?>
+							<?= _t('Item'); ?>
 						</th>
 						<th class="list-header-nosort">
-							<?php print _t('Comment'); ?>
+							<?= _t('Comment'); ?>
 						</th>
 						<th class="list-header-nosort">
-							<?php print _t('Author'); ?>
+							<?= _t('Author'); ?>
 						</th>
 						<th class="list-header-nosort">
-							<?php print _t('Date'); ?>
+							<?= _t('Date'); ?>
 						</th>
 						<th class="list-header-nosort">
-							<?php print _t('Status'); ?>
+							<?= _t('Status'); ?>
 						</th>
 						<th class="list-header-nosort">
-							<?php print _t('Notes'); ?>
+							<?= _t('Notes'); ?>
 						</th>
-						<th class="list-header-nosort"><?php print _t('Select'); ?></th>
+						<th class="list-header-nosort"><?= _t('Select'); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -80,7 +80,7 @@
 						</td>
 						<td>
 							<div class="caUserCommentsListComment">
-								<?php print $d['comment']; ?>
+								<?= $d['comment']; ?>
 							</div>
 						</td>
 						<td>
@@ -96,7 +96,7 @@
 ?>
 						</td>
 						<td>
-							<?php print $d['moderated_on'] ? _t("Approved") : _t("Needs moderation"); ?>
+							<?= $d['moderated_on'] ? _t("Approved") : _t("Needs moderation"); ?>
 						</td>
 						<td>
 <?php
@@ -109,7 +109,7 @@
 ?>
 						</td>
 						<td>
-							<input type="checkbox" name="comment_id[]" value="<?php print $result->get('comment_id'); ?>">
+							<input type="checkbox" name="comment_id[]" value="<?= $result->get('comment_id'); ?>">
 						</td>
 					</tr>
 <?php

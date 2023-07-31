@@ -66,7 +66,7 @@ class BaseInterstitialController extends BaseEditorController {
 	 */
 	public function Form($pa_values=null, $options=null) {
 		if(!is_array($options)) { $options = array(); }
-		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
+		@list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
 		
 		if (!$t_subject) {
 			$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
@@ -118,7 +118,7 @@ class BaseInterstitialController extends BaseEditorController {
 		$this->app_plugin_manager->hookEditItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
 	
 		// Set form unique identifiers
-		$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
+		$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName'] ?? null);
 		$this->view->setVar('n', $pn_n);
 	
 		$this->view->setVar('q', $this->request->getParameter('q', pString));
@@ -137,7 +137,7 @@ class BaseInterstitialController extends BaseEditorController {
 	 */
 	public function Save($options=null) {
 		if(!is_array($options)) { $options = array(); }
-		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
+		@list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($options, array('loadSubject' => true)));
 		
 		if (!$t_subject) {
 			$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");

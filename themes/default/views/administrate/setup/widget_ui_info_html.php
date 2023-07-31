@@ -31,7 +31,7 @@
  	if (!$t_item->getPrimaryKey()) {
  		$vn_interface_count = ca_editor_uis::getUICount();
 ?>
-<h3 class='metalist'><?php print _t('Editing user interfaces'); ?>:
+<h3 class='metalist'><?= _t('Editing user interfaces'); ?>:
 <div><?php
 	if ($vn_interface_count == 1) {
 		print _t("1 user interface is defined");

@@ -41,25 +41,25 @@
 	
 	$vn_num_images = sizeof($va_images);
 ?>
-<div class="threesixty <?php print $vs_class; ?>" id="<?php print $vs_id; ?>" style="width: <?php print caGetOption('viewer_width', $va_data['display'], '800px'); ?>; height: <?php print caGetOption('viewer_height', $va_data['display'], '800px'); ?>;">
+<div class="threesixty <?= $vs_class; ?>" id="<?= $vs_id; ?>" style="width: <?= caGetOption('viewer_width', $va_data['display'], '800px'); ?>; height: <?= caGetOption('viewer_height', $va_data['display'], '800px'); ?>;">
     <div class="spinner">
         <span>0%</span>
     </div>
-    <ol class="threesixty_images" id="<?php print $vs_id.'_images'; ?>"></ol>
+    <ol class="threesixty_images" id="<?= $vs_id.'_images'; ?>"></ol>
 </div>
 <script type="text/javascript">
-	jQuery('#<?php print $vs_id; ?>').ThreeSixty({
-        totalFrames: <?php print $vn_num_images; ?>,
-        endFrame: <?php print $vn_num_images; ?>, 
-        framerate: <?php print floor($vn_num_images/3); ?>, 
+	jQuery('#<?= $vs_id; ?>').ThreeSixty({
+        totalFrames: <?= $vn_num_images; ?>,
+        endFrame: <?= $vn_num_images; ?>, 
+        framerate: <?= floor($vn_num_images/3); ?>, 
         currentFrame: 1, 
-        imgList: '#<?php print $vs_id; ?>_images', // selector for image list
-        progress: '#<?php print $vs_id; ?> .spinner', // selector to show the loading progress
-        imagePath:'<?php print caNavUrl($this->request, '*', '*', 'GetMediaData', ['context' => $this->request->getAction(), 'id' => $t_subject->getPrimaryKey(), 'identifier' => $vs_identifier]); ?>:', 
+        imgList: '#<?= $vs_id; ?>_images', // selector for image list
+        progress: '#<?= $vs_id; ?> .spinner', // selector to show the loading progress
+        imagePath:'<?= caNavUrl($this->request, '*', '*', 'GetMediaData', ['context' => $this->request->getAction(), 'id' => $t_subject->getPrimaryKey(), 'identifier' => $vs_identifier]); ?>:', 
         filePrefix: '',
         ext: '',
-        width: "<?php print caGetOption('viewer_width', $va_data['display'], '800'); ?>",
-        height: "<?php print caGetOption('viewer_height', $va_data['display'], '800'); ?>",
+        width: "<?= caGetOption('viewer_width', $va_data['display'], '800'); ?>",
+        height: "<?= caGetOption('viewer_height', $va_data['display'], '800'); ?>",
         navigation: true,
         disableSpin: false
     });

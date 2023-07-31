@@ -39,6 +39,9 @@
 	$history					= $this->getVar('history');
 	$current_value 				= $t_subject->getCurrentValue();
 	
+	$placement_code 			= $this->getVar('placement_code');
+	$placement_id				= (int)($settings['placement_id'] ?? null);
+	
 	$show_return_home_controls = false;
 	if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
 		$show_return_home_controls = true;
@@ -64,6 +67,7 @@
 	$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
 	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
 	
+	$batch			= $this->getVar('batch');
 	
 	$home_location_idno = null;
 	if ($t_subject->hasField('home_location_id')) {
@@ -72,13 +76,17 @@
 	}
 	
     if (!$this->request->isAjax()) {
-	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+    	if ($batch) {
+			print caBatchEditorRelationshipModeControl($t_subject, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+			print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+		}
 	}
 	
 	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
 ?>
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 	<div class="bundleContainer">
 			<div class="caHistoryTrackingButtonBar labelInfo">
 <?php
@@ -208,7 +216,7 @@ switch($display_mode) {
 ?>
                                     <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($current_value['current_table_num']); ?>" data-primary_id="<?= $current_value['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                 }
-                                if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+                                if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
                                     <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
                                 }
@@ -246,7 +254,7 @@ switch($display_mode) {
 ?>
                                         <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                     }
-                                    if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+                                    if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
                                         <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
                                     }
@@ -290,7 +298,7 @@ switch($display_mode) {
 ?>
 						<div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
 					}
-					if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+					if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
 						<div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
 					}
@@ -681,7 +689,7 @@ if($show_entity_controls) {
 				initialValues: [],
 				initialValueOrder: [],
 				itemID: '<?= $vs_id_prefix; ?>_ca_storage_locations_',
-				placementID: '<?= $vn_placement_id; ?>',
+				placementID: '<?= $placement_id; ?>',
 				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetLocationTemplate',
 				initialValueTemplateClassName: null,
 				itemListClassName: '<?= $vs_id_prefix; ?>caLocationList',
@@ -697,7 +705,7 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false))); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				addMode: 'prepend',
@@ -898,7 +906,7 @@ if($show_entity_controls) {
 				initialValues: [],
 				initialValueOrder: [],
 				itemID: '<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>_',
-				placementID: '<?= $vn_placement_id; ?>',
+				placementID: '<?= $placement_id; ?>',
 				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetOccurrenceTemplate<?= $vn_type_id; ?>',
 				initialValueTemplateClassName: null,
 				itemListClassName: '<?= $vs_id_prefix; ?>caOccurrenceList<?= $vn_type_id; ?>',
@@ -910,14 +918,14 @@ if($show_entity_controls) {
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_occurrences_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Occurrence', 'Get', array_merge($occ_lookup_params, ['types' => $vn_type_id])); ?>',
-				types: <?= json_encode($settings['restrict_to_types']); ?>,
+				types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
-				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
+				isSortable: false,
 				listSortOrderID: '<?= $vs_id_prefix; ?>OccurrenceBundleList',
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_occurrence_<?= $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? null))); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,

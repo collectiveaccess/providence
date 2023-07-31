@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Media import processing status'); ?></h1>
+<h1><?= _t('Media import processing status'); ?></h1>
 
 <div class="batchProcessingTableProgressGroup">
 	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
@@ -44,7 +44,7 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Perform another media import'), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra()); ?>
+	<?= caNavLink($this->request, _t('Perform another media import'), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra()); ?>
 </div>
 	
 <script type="text/javascript">

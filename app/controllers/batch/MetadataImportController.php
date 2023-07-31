@@ -174,7 +174,7 @@
  				'fileImportPath' => $this->request->getParameter("fileImportPath", pString), // path relative to import directory when fileInput='import'
  				
  				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger), 
- 				'originalFilename' => $vs_name,
+ 				'originalFilename' => null,
  				
  				'importer_id' => $this->request->getParameter("importer_id", pInteger),
  				'inputFormat' => $this->request->getParameter("inputFormat", pString),
@@ -192,7 +192,7 @@
  			
  			switch(strtolower($options['fileInput'])) {
  				case 'googledrive':
-					if ($google_url = caValidateGoogleSheetsUrl($google_url_orig = $this->request->getParameter('google_drive_url', pString))) {
+					if ($google_url = caValidateGoogleSheetsUrl($google_url_orig = $this->request->getParameter('google_drive_url', pString, ['urldecode' => true]))) {
 						try {
 							$tmp_file = caFetchFileFromUrl($google_url);
 						} catch (ApplicationException $e) {
@@ -295,7 +295,7 @@
  		 * 
  		 */
  		public function Load() {
- 			if(!($google_url = trim($this->request->getParameter('google_drive_url', pString)))) {
+ 			if(!($google_url = trim($this->request->getParameter('google_drive_url', pString, ['urlDecode' => true])))) {
  				$this->notification->addNotification(_t('No url specified'), __NOTIFICATION_TYPE_ERROR__);
 				return $this->Index();
  			}

@@ -122,11 +122,11 @@ class BrowseCache {
 	 */
 	public function save() {
 		$this->ops_cache_key = $this->getCurrentCacheKey();
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['facets'], 'BrowseFacets');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['results'], 'BrowseResults');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['params'], 'BrowseParams');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['type_restrictions'], 'BrowseTypeRestrictions');
-		ExternalCache::save($this->ops_cache_key, $this->opa_browse['source_restrictions'], 'BrowseSourceRestrictions');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['facets'] ?? null, 'BrowseFacets');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['results'] ?? null, 'BrowseResults');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['params'] ?? null, 'BrowseParams');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['type_restrictions'] ?? null, 'BrowseTypeRestrictions');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse['source_restrictions'] ?? null, 'BrowseSourceRestrictions');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -174,7 +174,7 @@ class BrowseCache {
 	 *
 	 */
 	public function getFacets() {
-		return $this->opa_browse['facets'];
+		return $this->opa_browse['facets'] ?? null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -196,7 +196,7 @@ class BrowseCache {
 	 *
 	 */
 	public function getParameters() {
-		return $this->opa_browse['params'];
+		return $this->opa_browse['params'] ?? null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -233,7 +233,7 @@ class BrowseCache {
 	 *
 	 */
 	public function getTypeRestrictions() {
-		return is_array($this->opa_browse['type_restrictions']) ? $this->opa_browse['type_restrictions'] : array();
+		return is_array($this->opa_browse['type_restrictions'] ?? null) ? $this->opa_browse['type_restrictions'] : array();
 	}
 	# ------------------------------------------------------
 	/**
@@ -248,19 +248,19 @@ class BrowseCache {
 	 *
 	 */
 	public function getSourceRestrictions() {
-		return is_array($this->opa_browse['source_restrictions']) ? $this->opa_browse['source_restrictions'] : array();
+		return is_array($this->opa_browse['source_restrictions'] ?? null) ? $this->opa_browse['source_restrictions'] : array();
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getResults() {
-		return $this->opa_browse['results'];
+		return $this->opa_browse['results'] ?? null;
 	}
 	# ------------------------------------------------------
 	public function getCurrentCacheKey() {
 		if(!is_array($va_params = $this->getParameters())) { $va_params = array(); }
-		if(!is_array($va_params['criteria'])) { $va_params['criteria'] = array(); }
+		if (!is_array($va_params['criteria'] ?? null)) { $va_params['criteria'] = array(); }
 		if(!is_array($va_type_restrictions = $this->getTypeRestrictions())) { $va_type_restrictions = array(); }
 		if(!is_array($va_source_restrictions = $this->getSourceRestrictions())) { $va_source_restrictions = array(); }
 
@@ -272,7 +272,7 @@ class BrowseCache {
 		unset($va_params['facet_html']);
 		unset($va_params['filterDeaccessionedRecords']);
 		foreach(['criteria', 'table_num'] as $k) {
-			if(!is_array($va_params[$k])) { $va_params[$k] = []; }
+			if(!is_array($va_params[$k] ?? null)) { $va_params[$k] = []; }
 		}
 
 		return BrowseCache::makeCacheKey($va_params, $va_type_restrictions,$va_source_restrictions);	
@@ -280,9 +280,9 @@ class BrowseCache {
 	# ------------------------------------------------------
 	public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {
 		global $g_ui_locale;
-		if (!is_array($pa_params['criteria'])) { $pa_params['criteria'] = array(); }
+		if (!is_array($pa_params['criteria'] ?? null)) { $pa_params['criteria'] = array(); }
 
-		return md5($g_ui_locale.'/'.$pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.$pa_params['filterDeaccessionedRecords'].'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
+		return md5($g_ui_locale.'/'.print_R($pa_params['context'] ?? '', true).'/'.print_R($pa_params['table_num'] ?? '', true).'/'.print_r(($pa_params['criteria'] ?? null), true).'/'.($pa_params['filterDeaccessionedRecords'] ?? '').'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all browses

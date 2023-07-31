@@ -37,8 +37,8 @@
 	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID())))) {
 ?>
 		<div id="printButton">
-			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->primaryKey() => $t_item->getPrimaryKey()))?>">
-				<?php print caNavIcon(__CA_NAV_ICON_PDF__, 2); ?>
+			<a href="<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->primaryKey() => $t_item->getPrimaryKey()))?>">
+				<?= caNavIcon(__CA_NAV_ICON_PDF__, 2); ?>
 			</a>
 		</div>
 <?php
@@ -49,13 +49,13 @@
 				print _t('Display').': '.$vs_display_select_html; 
 ?>
 			</div>
-			<input type="hidden" name="<?php print $t_item->PrimaryKey(); ?>" value="<?php print $vn_item_id; ?>"/>
+			<input type="hidden" name="<?= $t_item->PrimaryKey(); ?>" value="<?= $vn_item_id; ?>"/>
 		</form>
 <?php
 	}
 ?>
 	<div id="title">
-		<?php print $t_item->getLabelForDisplay(); ?>
+		<?= $t_item->getLabelForDisplay(); ?>
 	</div><!-- end title -->
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1139,7 +1139,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ?? '').':'.$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 
@@ -1503,7 +1503,7 @@ function caFileIsIncludable($ps_file) {
 			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
-			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key];  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
+			    $k = isset($va_data[$vs_sort_key.'_sort_']) ? $va_data[$vs_sort_key.'_sort_'] : $va_data[$vs_sort_key] ?? null;  // an alternative sort-specific value for a key may be present with the suffix "_sort_"; when present we use this in preference to the key value
 				
 				if ($pb_natural_sort || $pb_case_insensitive) { $k = mb_strtolower($k); }
 				if ($pb_natural_sort) {
@@ -1793,7 +1793,7 @@ function caFileIsIncludable($ps_file) {
 	  * @param string $ps_additional_text Additional text to add to key
 	  * @return string An MD5 cache key for the options array
 	  */
-	function caMakeCacheKeyFromOptions($pa_options, $ps_additional_text=null) {
+	function caMakeCacheKeyFromOptions(array $pa_options, ?string $ps_additional_text=null) {
 		if (!is_array($pa_options)) { return md5($pa_options.$ps_additional_text); }
 		foreach($pa_options as $vs_key => $vm_value) {
 			if (is_object($vm_value)) { unset($pa_options[$vs_key]); }
@@ -2928,19 +2928,20 @@ function caFileIsIncludable($ps_file) {
 		if(!$locale) { $locale = $g_ui_locale; }
 		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
 		
+		$currency_specifier = $decimal_value = null;
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[2];
+				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]) : (float)$matches[2];
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]) : (float)$matches[1];
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $g_locale, 'precision' => 2]) : (float)$matches[1];
+				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]) : (float)$matches[1];
 				$currency_specifier = null;
 			}
 		} catch (Zend_Locale_Exception $e){
@@ -3113,7 +3114,7 @@ function caFileIsIncludable($ps_file) {
 	 *		useMebibytes = Assume 1 kilobyte = 1024 bytes; otherwise assume 1 kilobyte = 1000 bytes. [Default is whatever value of show_filesizes_in_mebibytes in app.conf is]
 	 * @return int File size in bytes, or null if the expression could not be parsed.
 	 */
-	function caParseHumanFilesize(string $from): ?int {
+	function caParseHumanFilesize(string $from, ?array $options = null): ?int {
 		$return_mebibytes = caGetOption('useMebibytes', $options, Configuration::load()->get('show_filesizes_in_mebibytes'));
 		
 		$iec = ['B' => 'B', 'KIB' => 'KB', 'MIB' => 'MB', 'GIB' => 'GB', 'TIB' => 'TB', 'PIB' => 'PB'];
@@ -3707,13 +3708,21 @@ function caFileIsIncludable($ps_file) {
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
 		$pn_precision = caGetOption('precision', $pa_options, null);
 
-		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
-			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
+		if ($delimiter = caGetOption('delimiter', $pa_options, 'x')) {
+			if(is_array($delimiter)) {
+				$va_measurements = [];
+				foreach($delimiter as $d) {
+					if(strpos($ps_expression, $d) !== false) {
+						$va_measurements = explode(strtolower($d), mb_strtolower($ps_expression));
+						break;
+					}
+				}
+			} else {
+				$va_measurements = explode(strtolower($delimiter), mb_strtolower($ps_expression));
+			}
 		} else {
-			$ps_delimiter = '';
 			$va_measurements = array($ps_expression);
 		}
-		
 		$va_glyphs = array_keys(caGetFractionalGlyphTable());
 		
         $va_unit_map = [];
@@ -4167,6 +4176,7 @@ function caFileIsIncludable($ps_file) {
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *		maxLength = Maximum length of returned value. [Default is 255]
+	 *		moveArticles = Move articles at the beginnning of the text to the end. [Default is true]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
@@ -4178,13 +4188,14 @@ function caFileIsIncludable($ps_file) {
 		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
 		$omit_article = caGetOption('omitArticle', $options, true);
+		$move_articles = caGetOption('moveArticles', $options, true);
 
 		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
 		$display_value = preg_replace('![ ]+!', ' ', $display_value);
 		
 		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
 		
-		if($locale) {
+		if($locale && $move_articles) {
 			// Move articles to end of string
 			$articles = caGetArticlesForLocale($locale) ?: [];
 
@@ -4806,20 +4817,25 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	function caReturnValueInBytes($vs_val) {
-		$vs_val = trim($vs_val);
-		$vs_last = strtolower($vs_val[strlen($vs_val)-1]);
-		switch($vs_last) {
-			case 't':
-				$vs_val *= 1024;
-			case 'g':
-				$vs_val *= 1024;
-			case 'm':
-				$vs_val *= 1024;
-			case 'k':
-				$vs_val *= 1024;
+	function caReturnValueInBytes(string $val) {
+		$val = trim($val);
+		$last = strtolower($val[strlen($val)-1]);
+		
+		if(preg_match("!^([\d\.\,]+)!", $val, $m)) {
+			$val = $m[1];
+			switch($last) {
+				case 't':
+					$val *= 1024;
+				case 'g':
+					$val *= 1024;
+				case 'm':
+					$val *= 1024;
+				case 'k':
+					$val *= 1024;
+			}
+			return $val;
 		}
-		return $vs_val;
+		return null;
 	}
 	# ----------------------------------------
 	/**
@@ -4916,4 +4932,88 @@ function caFileIsIncludable($ps_file) {
 		}
 		return null;
     }
+	# ----------------------------------------
+	/**
+	 * Convert a bundle name from configuration/profile into a usable bundle code.
+	 * In older (pre v1.7.9) versions of CollectiveAccess  attribute editor, search form 
+	 * and display placements consisted of a "ca_attribute_" prefix + the code of the
+	 * attribute (Eg. ca_attribute_description). This syntax is still supported, but
+	 * standard <table>.<element code> (Eg. ca_objects.descriotion) is now encouraged
+	 * for consistency and readability. 
+	 *
+	 * This helper will convert a name into a code. By default names old style
+	 * names are stripped of their ca_attribute_ prefix and the remainder returned.
+	 * <table>.<element code> names are stripped of their table specifiers and returned. 
+	 * <table>.<element code>.<subelement code> names are stripped of both table and subelement
+	 * code, with only element code returned. All other name forms are returned without
+	 * modification.
+	 *
+	 * If the 'convertOldStyleNamesOnly' option is set only old-style names are converted,
+	 * with all other forms returned without modification. 
+	 *
+	 * If the 'includeTablePrefix' option is set table codes will be returned with element codes
+	 * for new-style names in the form <table>.<element code>. Sub-element codes are stripped 
+	 * regardless of how 'includeTablePrefix' is set.
+	 *
+	 * @param string $name
+	 * @param array $options Options include:
+	 *		convertOldStyleNamesOnly = only convert old style 'ca_attribute_' prefixed names. [Default is false]
+	 *		includeTablePrefix = Include table in returned value when converting new-style names .[Default is false]
+	 *
+	 * @return string
+	 */
+	function caConvertBundleNameToCode(string $name, ?array $options=null) : string {
+		if(substr($name, 0, 13) === 'ca_attribute_') {
+			return str_replace('ca_attribute_', '', $name);
+		}
+		if(!($options['convertOldStyleNamesOnly'] ?? false)) {
+			$tmp = explode('.', $name);
+			if(sizeof($tmp) > 1) {
+				if(Datamodel::tableExists($tmp[0])) {
+					if($options['includeTablePrefix'] ?? false) {
+						return $tmp[0].'.'.$tmp[1];
+					}
+					return $tmp[1];
+				}
+			}
+		}
+ 		return $name;
+ 	}
+	# ----------------------------------------
+	/**
+	 * Verify that path relative to a base directory is valid and doesn't include
+	 * path traversal that takes it out of the base directory.
+	 *
+	 * @param string $relative_filepath
+	 * @param string $base_directory
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception is path is invalid. [Default is false]
+	 *
+	 * @return string Return absolute path or null if path is invalid
+	 */
+	function caSanitizeRelativeFilepath(string $relative_filepath, string $base_directory, ?array $options=null) : ?string {
+		$f = realpath($base_directory.'/'.$relative_filepath);
+		
+		if(!is_null($f)) {
+			$bd = realpath($base_directory);
+		
+			if(is_null($bd) || !preg_match("!^{$bd}/!u", $f)) { 
+				$f = null;
+			}
+		}
+		
+		if(is_null($f) && caGetOption('throwException', $options, false)) {
+			throw new ApplicationException(_t('Relative file path is invalid'));
+		}
+		return $f;
+	}
+	# ----------------------------------------
+	/**
+	 * Check if background processing queue is enabled
+	 *
+	 * @return bool
+	 */
+	function caProcessingQueueIsEnabled() : bool {
+		return defined('__CA_QUEUE_ENABLED__') && __CA_QUEUE_ENABLED__;
+	}
 	# ----------------------------------------

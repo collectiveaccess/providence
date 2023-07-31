@@ -270,9 +270,6 @@ class Request {
 			# -----------------------------------------
 			case pString:
 				if (is_string($vs_val)) {
-					if (get_magic_quotes_gpc()) {
-						$vs_val = stripSlashes($vs_val);
-					}
 					return rawurldecode($vs_val);
 				}
 				break;
@@ -361,10 +358,10 @@ class Request {
 	}
 	# ----------------------------------------
 	public function addActionError($o_error, $ps_source, $ps_subsource=null) {
-		if(!is_array($this->opa_action_errors[$ps_source])) { $this->opa_action_errors[$ps_source] = array(); }
+		if(!is_array($this->opa_action_errors[$ps_source] ?? null)) { $this->opa_action_errors[$ps_source] = array(); }
 		
 		if ($ps_subsource) {
-			if(!is_array($this->opa_action_errors[$ps_source][$ps_subsource])) { $this->opa_action_errors[$ps_source][$ps_subsource] = array(); }
+			if(!is_array($this->opa_action_errors[$ps_source][$ps_subsource] ?? null)) { $this->opa_action_errors[$ps_source][$ps_subsource] = array(); }
 			array_push($this->opa_action_errors[$ps_source][$ps_subsource], $o_error);
 		} else {
 			array_push($this->opa_action_errors[$ps_source], $o_error);
@@ -376,7 +373,7 @@ class Request {
 		foreach($pa_errors as $o_e) {
 			if (is_null($ps_source)) {
 				$vs_tmp = $o_e->getErrorSource();
-				list($vs_source, $ps_subsource) = explode('/', $vs_tmp);
+				list($vs_source, $ps_subsource) = array_pad(explode('/', $vs_tmp), 2, null);
 			}	
 			$this->addActionError($o_e, $vs_source, $ps_subsource);
 		}

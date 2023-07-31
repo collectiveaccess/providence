@@ -32,7 +32,7 @@ $vs_placement_code = $this->getVar('placement_code');
 
 ?>
 
-<div class="bundleContainer" id="<?php print $vs_id_prefix; ?>">
+<div class="bundleContainer" id="<?= $vs_id_prefix; ?>">
 	<div class="caItemList">
 		<div class="labelInfo">
 <?php

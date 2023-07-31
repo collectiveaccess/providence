@@ -238,6 +238,8 @@ class BaseLookupController extends ActionController {
 	 */
 	public function GetHierarchyLevel() {
 		header("Content-type: application/json");
+		
+		$qr_children = null;
 
 		$ps_bundle = (string)$this->request->getParameter('bundle', pString);
 		$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));

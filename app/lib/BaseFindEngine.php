@@ -281,7 +281,8 @@ class BaseFindEngine extends BaseObject {
 	 * @param string $table The table for the results being sorted
 	 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
 	 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
-	 * @param array $options No options are currently defined.
+	 * @param array $options Options include:
+	 *		context = Array with interstitial fields and values to restrict sort values to; used to constrain relationships when sorting on interstitial rank. [Default is null]
 	 *
 	 * @return array
 	 */
@@ -311,7 +312,14 @@ class BaseFindEngine extends BaseObject {
 		$parsed_sort_spec = self::_parseSortOpts(array_shift($sort_fields));
 		$primary_sort_field = $parsed_sort_spec['sort'];
 		$options = array_merge($options, $parsed_sort_spec['options']);
-		if ($primary_sort_field === '_natural') { return $hits; }
+		if ($primary_sort_field === '_natural') { 
+			$start = caGetOption('start', $options, 0);
+			$limit = caGetOption('limit', $options, null);
+			if($start || $limit) {
+				$hits = array_slice($hits, (int)$start, $limit);
+			}
+			return $hits; 
+		}
 		$primary_sort_direction = self::sortDirection(array_shift($sort_directions));
 		
 		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, array_merge($options, ['relationshipTypes' => array_shift($rel_types)]));
@@ -447,8 +455,11 @@ class BaseFindEngine extends BaseObject {
 	 * @param string $table The table for the results being sorted
 	 * @param string $field_list An array or semicolon-delimited string of fully qualified bundle names (Eg. ca_objects.idno;ca_objects.due_date)
 	 * @param string $directions An array or semicolon-delimited string of sort directions corresponding to sort criteria specified in $field_list. Values for direction may be either 'asc' (ascending order) or 'desc' (descending order). If not specified 'asc' is assumed.
-	 * @param array $options No options are currently defined.
-	 *
+	 * @param array $options Options include:
+	 *		start = Starting index of returned hits. [Default is 0]
+	 *		limit = Maximum number of hits to return. [Default is null; no limit]
+	 *		context = Array with interstitial fields and values to restrict sort values to; used to constrain relationships when sorting on interstitial rank. [Default is null]
+	 *		policy = History tracking policy to sort by. [Default is null]
 	 * @return array
 	 */
 	public function doSort(array $hits, string $table, string $sort_field, string $sort_direction='asc', array $options=null) {
@@ -483,7 +494,6 @@ class BaseFindEngine extends BaseObject {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => true]));	
 			} elseif($sort_field === 'nonpreferred_labels') {
 				$sort_key_values = $this->_sortByLabels($t_table, $hit_table, $sort_subfield, $sort_direction, array_merge($options, ['isPreferred' => false]));	
-			
 			} else {
 				//throw new ApplicationException(_t('Unhandled sort'));
 				return $hits;
@@ -494,6 +504,9 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			list($sort_field, $set_id) = array_pad(explode('/', $sort_field), 2, null);
 			
+			if(strpos($sort_field, ":") !== false) {
+				list($sort_field, $set_id) = array_pad(explode(':', $sort_field), 2, null);
+			}
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
@@ -503,8 +516,8 @@ class BaseFindEngine extends BaseObject {
 			}
 			
 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
-			if(($sort_table === 'ca_set_items')) {
-				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $sort_direction, $options);
+			if((in_array($sort_table, ['ca_sets', 'ca_set_items']))) {
+				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, 'rank', $set_id, $sort_direction, $options);
 			} elseif ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $sort_direction, $options);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
@@ -565,16 +578,26 @@ class BaseFindEngine extends BaseObject {
 		
 		$intrinsic = array_shift(explode('/', $intrinsic));
 		$limit_sql = self::_limitSQL($options);
-		
+	
+		// If sorting on interstitial intrinsic (usually rank) we set context so sort works as expected 
+		// (eg. sorting only on relationships to the browsed upon related record)
+		$context_sql = '';
+		if(is_array($context = caGetOption('context', $options, null)) && isset($context[$t_rel_table->tableName()])) {
+			$wheres = [];
+			foreach($context[$t_rel_table->tableName()] as $t => $f) {
+				$wheres[] = "s.{$t} = ".(int)$f;
+			}
+			$context_sql = "WHERE ".join(" AND ", $wheres);
+		}
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 			{$join_sql}
+			{$context_sql}
 			ORDER BY s.`{$intrinsic}` {$direction}
 			{$limit_sql}
 		";
-		
 		$qr_sort = $this->db->query($sql);
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
@@ -674,7 +697,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element: %1', $e));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
-		
+		if(!$attr_val_sort_field) { return $hits; }
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
 		
@@ -721,7 +744,7 @@ class BaseFindEngine extends BaseObject {
 					FROM ca_attribute_values cav FORCE INDEX(i_sorting)
 					INNER JOIN {$attr_tmp_table} AS attr_tmp ON attr_tmp.attribute_id = cav.attribute_id
 					WHERE cav.element_id = ? 
-					ORDER BY cav.value_sortable {$direction}
+					ORDER BY cav.{$attr_val_sort_field} {$direction}
 					{$limit_sql}";
 					
 		$qr_sort = $this->db->query($sql, [$element_id]);
@@ -736,7 +759,7 @@ class BaseFindEngine extends BaseObject {
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h] = true; }
 		}
 		return $sort_keys;
 	}
@@ -755,7 +778,7 @@ class BaseFindEngine extends BaseObject {
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
-			INNER JOIN ca_set_items AS csi ON csi.row_id = t.{$table_pk} AND csi.table_num = ? AND csi.set_id = ?
+			LEFT JOIN ca_set_items AS csi ON t.{$table_pk} = csi.row_id AND csi.table_num = ? AND csi.set_id = ?
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 			ORDER BY csi.`{$intrinsic}` {$direction}
 			{$limit_sql}
@@ -821,7 +844,8 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
-
+		if(!$attr_val_sort_field) { return $hits; }
+		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
 		$limit_sql = self::_limitSQL($options);
@@ -860,7 +884,7 @@ class BaseFindEngine extends BaseObject {
 					INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 					{$filter_join}
 					WHERE cav.element_id = ? {$filter_where}
-					ORDER BY cav.value_sortable {$direction}
+					ORDER BY cav.{$attr_val_sort_field} {$direction}
 					{$limit_sql}"; 
 		$qr_sort = $this->db->query($sql, [$element_id]);
 		$sort_keys = [];
@@ -1307,7 +1331,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
-		
+		if(!$attr_val_sort_field) { return []; }
 
 		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
 					FROM ca_attribute_values cav
@@ -1339,7 +1363,8 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
-
+		if(!$attr_val_sort_field) { return []; }
+		
 		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
 					FROM ca_attribute_values cav
 					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id

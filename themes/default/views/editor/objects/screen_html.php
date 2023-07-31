@@ -39,6 +39,8 @@
 	
 	$vn_collection_id	= $this->request->getParameter('collection_id', pInteger);
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_object_id ? array('object_id' => $vn_object_id, 'collection_id' => $vn_collection_id) : array('type_id' => $t_object->getTypeID(), 'collection_id' => $vn_collection_id));
 		print $vs_control_box = caFormControlBox(
@@ -52,28 +54,28 @@
 ?>
 	<div class="sectionBox">
 <?php
-
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$vn_object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data');
 		
 			$va_bundle_list = array();
 			$va_form_elements = $t_object->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'ObjectEditorForm',
-									'forceHidden' => array('lot_id')
+									'forceHidden' => array('lot_id'),
+									'forcedValues' => $forced_values
 								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='object_id' value='<?php print $vn_object_id; ?>'/>
-			<input type='hidden' name='collection_id' value='<?php print $vn_collection_id; ?>'/>
-			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+			<input type='hidden' name='object_id' value='<?= $vn_object_id; ?>'/>
+			<input type='hidden' name='collection_id' value='<?= $vn_collection_id; ?>'/>
+			<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
-			<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>
@@ -86,4 +88,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>

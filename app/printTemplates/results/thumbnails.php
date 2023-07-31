@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/thumbnails.php
+ * app/prinTemplates/results/thumbnails.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,67 +37,55 @@
  * @marginBottom 0.5in
  * @marginRight 0.25in
  *
+ * @includeHeaderFooter true
+ *
+ * @param includeLogo {"type": "CHECKBOX",  "label": "Include logo?", "value": "1", "default": true}
+ * @param includePageNumbers {"type": "CHECKBOX",  "label": "Include page numbers?", "value": "1", "default": true}
+ * @param showSearchTermInFooter {"type": "CHECKBOX",  "label": "Show search terms?", "value": "1", "default": false}
+ * @param showSearchResultCountInFooter {"type": "CHECKBOX",  "label": "Show result count?", "value": "1", "default": false}
+ * @param showTimestampInFooter {"type": "CHECKBOX",  "label": "Show current date?", "value": "1", "default": false}
+ *
  * ----------------------------------------------------------------------
  */
-
 $t_display				= $this->getVar('t_display');
-$va_display_list 		= $this->getVar('display_list');
-$vo_result 				= $this->getVar('result');
-$vn_items_per_page 		= $this->getVar('current_items_per_page');
-$vs_current_sort 		= $this->getVar('current_sort');
-$vs_default_action		= $this->getVar('default_action');
-$vo_ar					= $this->getVar('access_restrictions');
-$vo_result_context 		= $this->getVar('result_context');
-$vn_num_items			= (int)$vo_result->numHits();
-$vs_color 				= ($this->request->config->get('report_text_color')) ? $this->request->config->get('report_text_color') : "FFFFFF";;
-
-$vn_start 				= 0;
-
-print $this->render("pdfStart.php");
-print $this->render("header.php");
-print $this->render("footer.php");
+$result 				= $this->getVar('result');
+$items_per_page 		= $this->getVar('current_items_per_page');
+$result_context 		= $this->getVar('result_context');
+$num_items				= (int)$result->numHits();
 ?>
-	<div id='body'>
+<div id='body'>
 <?php
-
-	$vo_result->seek(0);
+	$result->seek(0);
+	$start = $lines_on_page = $items_in_line = $left = $top = $page_count = 0;
 	
-	$vn_lines_on_page = 0;
-	$vn_items_in_line = 0;
-	
-	$vn_left = $vn_top = 0;
-	$vn_page_count = 0;
-	while($vo_result->nextHit()) {
-		$vn_object_id = $vo_result->get('ca_objects.object_id');		
+	while($result->nextHit()) {
+		$object_id = $result->get('ca_objects.object_id');		
 ?>
-		<div class="thumbnail" style="left: <?php print $vn_left; ?>mm; top: <?php print $vn_top + 3; ?>mm;">
-			<?= "<div class='imgThumb'><img src='".$vo_result->getMediaPath('ca_object_representations.media', 'preview')."'/></div>"; ?>
+		<div class="thumbnail" style="left: <?= $left; ?>mm; top: <?= $top + 3; ?>mm;">
+			<?= "<div class='imgThumb'><img src='".$result->getMediaPath('ca_object_representations.media', 'preview')."'/></div>"; ?>
 			<br/>
-			<?= "<div class='caption'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; ?>
+			<?= "<div class='caption'>".$result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; ?>
 		</div>
 <?php
-
-		$vn_items_in_line++;
-		$vn_left += 58;
-		if ($vn_items_in_line >= 4) {
-			$vn_items_in_line = 0;
-			$vn_left = 0;
-			$vn_top += 58;
-			$vn_lines_on_page++;
+		$items_in_line++;
+		$left += 58;
+		if ($items_in_line >= 4) {
+			$items_in_line = 0;
+			$left = 0;
+			$top += 58;
+			$lines_on_page++;
 			print "<br class=\"clear\"/>\n";
 		}
 		
-		if ($vn_lines_on_page >= 3) { 
-			$vn_page_count++;
-			$vn_lines_on_page = 0;
-			$vn_left = 0; 
+		if ($lines_on_page >= 3) { 
+			$page_count++;
+			$lines_on_page = 0;
+			$left = 0; 
 			
-			$vn_top = ($this->getVar('PDFRenderer') === 'domPDF') ? 0 : ($vn_page_count * 183);
+			$top = ($this->getVar('PDFRenderer') === 'domPDF') ? 0 : ($page_count * 183);
 			
 			print "<div class=\"pageBreak\" style=\"page-break-before: always;\">&nbsp;</div>\n";
 		}
 	}
 ?>
-	</div>
-<?php
-print $this->render("pdfEnd.php");
+</div>

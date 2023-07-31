@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,60 +26,63 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// tour stop
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_rel_types		= $this->getVar('relationship_types');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
-	
-	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_tour_stops') == __CA_BUNDLE_ACCESS_READONLY__));
-	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
-	
-	$vs_color 			= 	((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
-	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
-		
-	// params to pass during tour stop lookup
-	$va_lookup_params = array(
-		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0,
-		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
-	);
-	
-	$va_errors = [];
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
-	}
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// tour stop
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$va_rel_types		= $this->getVar('relationship_types');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
 
-	$count = $this->getVar('relationship_count');
-	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
-	
-	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
 
-		if ($vb_batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-		} else {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-	}
+$force_values 		= $this->getVar('forceValues');
+
+$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_tour_stops') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+
+$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
+$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
 	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+// params to pass during tour stop lookup
+$va_lookup_params = array(
+	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0,
+	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+);
+
+$va_errors = [];
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
+
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+}
+
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -88,7 +91,7 @@
 		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
 	
 		if(!$vb_read_only) {
-			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($va_settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
@@ -244,9 +247,9 @@
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_tour_stops_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'TourStop', 'Get', $va_lookup_params); ?>',
-			types: <?= json_encode($va_settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($va_settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($va_settings['restrict_to_search']); ?>,
+			types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?= ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -254,7 +257,7 @@
 			listSortItems: 'div.roundedRel',
 			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/tour_stops', 'TourStopQuickAdd', 'Form', array('stop_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/tour_stops', 'TourStopQuickAdd', 'Form', array('stop_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0))); ?>',
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			loadedSort: <?= json_encode($loaded_sort); ?>,
@@ -275,11 +278,12 @@
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
 			
-			minRepeats: <?= caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
+			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 		});
 	});
 </script>
