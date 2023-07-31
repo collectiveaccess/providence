@@ -472,7 +472,20 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		if(!$ps_info_key) {
 			return (is_array($this->opa_extra_info) ? $this->opa_extra_info : array());
 		} else {
-			return isset($this->opa_extra_info[$ps_info_key]) ? $this->opa_extra_info[$ps_info_key] : null;
+			$keys = explode(".", $ps_info_key);
+
+			$current = $this->opa_extra_info;
+			foreach ($keys as $i=>$key) {
+				if(!isset($current[$key])) {
+					return null;
+				}
+				$current = $current[$key];
+			}
+
+			if(is_string($current)) return $current;
+			if(is_array($current)) return implode(", ", $current);
+			return serialize($current);
+			
 		}
 	}
 	# ------------------------------------------------------------------
