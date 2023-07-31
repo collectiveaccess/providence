@@ -2352,7 +2352,7 @@
 	 *
 	 * @return array
 	 */
-	function caTextExcerptForSearchResult(int $id, array $result_desc_data, ?array $options=null) : ?array {
+	function caTextExcerptForSearchResult(int $id, ?array $result_desc_data, ?array $options=null) : ?array {
 		$max_excerpts = caGetOption('maxExcerpts', $options, null);
 		if(is_array($result_desc_data[$id] ?? null)) {
 			$m = $result_desc_data[$id];
@@ -2384,11 +2384,9 @@
 				}
 			}
 			
-			$excerpts = array_map(function($v) use ($word_list) {
+			return array_map(function($v) use ($word_list) {
 				return caHighlightText($v, $word_list);
-			}, $excerpts);
-			
-			return array_unique($excerpts);
+			}, array_unique($excerpts));
 		}
 		return null;
 	}
