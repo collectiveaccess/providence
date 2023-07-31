@@ -1278,6 +1278,15 @@ class DisplayTemplateParser {
 			}
 		}
 		
+		// standard values (always present)
+		$config = Configuration::load();
+		$va_vals['__protocol__'] = $config->get('site_protocol');
+		$va_vals['__hostname__'] = $config->get('site_hostname');
+		$va_vals['__host__'] = $config->get('site_host');
+		$va_vals['__url_root__'] = $config->get('ca_url_root');
+		$va_vals['__theme__'] = $config->get('theme');
+		$va_vals['__base_url__'] = $config->get('site_host').$config->get('ca_url_root');
+				
 		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					// Return nothing when relationship type is set and a value is referenced but not set
 
 		return $va_vals;
