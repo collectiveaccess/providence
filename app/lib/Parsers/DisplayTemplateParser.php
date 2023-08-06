@@ -1143,7 +1143,7 @@ class DisplayTemplateParser {
 			}
 			
 			if(strlen($pn_index)) {
-				$va_tag_vals = $va_tag_vals[$pn_index];	
+				$va_tag_vals = $va_tag_vals[$pn_index] ?? null;	
 				$vs_relative_to_container = null;
 			}
 		}

@@ -2156,7 +2156,7 @@ class SearchResult extends BaseObject {
 							continue;
 						}
 					}
-					$vs_val_proc = $va_label[$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $pt_instance->getLabelDisplayField()];
+					$vs_val_proc = ($va_label[$va_path_components['subfield_name'] ?? null) ? $va_path_components['subfield_name'] : $pt_instance->getLabelDisplayField()];
 					
 					switch($pa_options['output']) {
 						case 'text':
