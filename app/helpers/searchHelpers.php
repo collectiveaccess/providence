@@ -2308,10 +2308,11 @@
 			$s = "";
 			
 			$by_table = [];
-			foreach($m['desc'] as $d) {
-				$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+			if(is_array($m['desc'] ?? null)) {
+				foreach($m['desc'] as $d) {
+					$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+				}
 			}
-			
 			$lines = $titles = [];
 			foreach($by_table as $t => $by_row_id) {
 				$t_instance = Datamodel::getInstance($t);
