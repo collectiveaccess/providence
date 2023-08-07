@@ -50,8 +50,9 @@ $va_element_value_defaults 	= 	$this->getVar('element_value_defaults');
 $va_failed_inserts 			= 	$this->getVar('failed_insert_attribute_list');
 $va_failed_updates 			= 	$this->getVar('failed_update_attribute_list');
 
-$settings 				= 	$this->getVar('settings');
+$settings 					= 	$this->getVar('settings');
 $vb_read_only				=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del			=	$settings['dontShowDeleteButton'] ?? false;
 $vb_batch					=	$this->getVar('batch');
 $va_element_settings 		=	$t_element->getSettings();
 
