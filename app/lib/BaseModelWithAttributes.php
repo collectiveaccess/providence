@@ -1963,7 +1963,7 @@
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
-			// fine element breaks by container
+			// find element breaks by container
 			foreach($va_element_set as $va_element) {
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
 					if(isset($va_element['settings']) && isset($va_element["settings"]["lineBreakAfterNumberOfElements"])) {
