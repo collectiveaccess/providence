@@ -340,7 +340,7 @@ class BaseEditorController extends ActionController {
 		if ($this->_beforeSave($t_subject, $vb_is_insert)) {
 			if ($vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts)) {
 				$this->_afterSave($t_subject, $vb_is_insert);
-			} elseif($t_subject->hasErrorNumInRange(3600, 3699)) {
+			} elseif($t_subject->hasErrorNumInRange(3600, 3699) || $t_subject->hasErrorNumInRange(2592, 2599)) {
 				$vb_no_save_error = true;
 			}
 			if($t_subject->numErrors() > 0) {
@@ -427,7 +427,7 @@ class BaseEditorController extends ActionController {
 				}
 			}
 			if ($vb_no_save_error) {
-				$this->notification->addNotification("<span class='heading'>"._t("There are errors preventing <strong>ALL</strong> information from being saved. Correct the problems and click \"save\" again:")."</span><ul class='errorList'>".join("\n", $va_error_list)."</span></ul>", __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification("<div class='heading'>"._t("There are errors preventing <strong>ALL</strong> information from being saved:")."</div><ul class='errorList'>".join("\n", $va_error_list)."</span></ul>", __NOTIFICATION_TYPE_ERROR__);
 			} else {
 				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
 				$this->notification->addNotification("<span class='heading'>"._t("There are errors preventing information in specific fields from being saved:")."</span><ul class='errorList'>".join("\n", $va_error_list)."</ul>", __NOTIFICATION_TYPE_ERROR__);
