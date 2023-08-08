@@ -87,7 +87,6 @@ $va_initial_values = array();
 $va_errors = array();
 $vs_bundle_preview = '';
 
-<<<<<<< HEAD
 $va_template_tags = $va_element_ids;
 if(!($vs_display_template = trim(caGetOption('displayTemplate', $va_settings)))) {
 	$vs_display_template = caGetOption('displayTemplate', $va_element_settings, null);
