@@ -1083,7 +1083,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						$va_date_bits = explode('.', $vs_date_element);
 						$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_movements.{$vs_date_element}";
 						$va_dates[] = array(
-							'sortable' => $qr_movements->get($vs_date_spec, array('sortable' => true)),
+							'sortable' => end(explode("/", $qr_movements->get($vs_date_spec, array('sortable' => true)))),
 							'bounds' => explode("/", $qr_movements->get($vs_date_spec, array('sortable' => true))),
 							'display' => $qr_movements->get($vs_date_spec)
 						);
