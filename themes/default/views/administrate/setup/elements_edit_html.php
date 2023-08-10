@@ -161,7 +161,7 @@ $vn_parent_id 			= $this->getVar('parent_id');
 			fieldNamePrefix: 'type_restrictions_',
 			templateValues: <?= json_encode(array_merge(array_keys($t_restriction->getAvailableSettings()), array('table_num', 'type_id', 'include_subtypes'))); ?>, 
 			initialValues: <?= json_encode($va_initial_values); ?>,
-			itemID: '<?= $vs_id_prefix; ?>Item_',
+			itemID: 'Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			addButtonClassName: 'caAddItemButton',
