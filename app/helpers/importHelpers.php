@@ -479,8 +479,10 @@
 							$vs_path = array_shift($va_candidates);
 						}
 					
-						if (in_array($vs_element_code, array_merge(caGetPreferredLabelNameKeyList(), caGetIdnoNameKeyList()))) {
+						if (!isset($va_attr_vals[$vs_element_code])) {
 							$va_attr_vals[$vs_element_code] = $vs_path;
+						} elseif(!is_array($va_attr_vals[$vs_element_code])) {
+							$va_attr_vals[$vs_element_code] = [$va_attr_vals[$vs_element_code], $vs_path];
 						} else {
 							$va_attr_vals[$vs_element_code][] = $vs_path;
 						}
