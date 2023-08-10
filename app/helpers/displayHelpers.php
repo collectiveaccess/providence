@@ -1009,7 +1009,7 @@ jQuery(document).ready(function() {
 		} else {
 			if ($vn_item_id) {
 				if(!$po_view->request->config->get("{$vs_priv_table_name}_inspector_disable_headline")) {
-					if($t_item->isSaveable($po_view->request)) {
+					if(!method_exists($t_item, 'isSaveable') || $t_item->isSaveable($po_view->request)) {
 						$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
 					}else{
 						$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
