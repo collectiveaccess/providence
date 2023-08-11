@@ -142,3 +142,138 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 		'relationships' => $rel_list
 	];
 }
+
+
+/**
+ *
+ */
+function processItemMedia(\BaseModel $rec, string $table, array $t, ?array $options=null) : array {
+	list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
+	//$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
+	$rec_pk = $rec->primaryKey();
+
+	$target = caGetOption('target', $opts, 'ca_object_representations');
+
+	$start = caGetOption('start', $args, 0);
+	$limit = caGetOption('limit', $args, null);
+
+	$media_list = [];
+	if($target === 'ca_object_representations') {
+		$reps = $rec->getRelatedItems('ca_object_representations', [
+			'returnAs' => 'array', 
+			'filterNonPrimaryRepresentations' => false,
+			'checkAccess' => caGetOption('checkAccess', $args, null), 
+			'restrictToTypes' => caGetOption('restrictToTypes', $args, null), 
+			'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $args, null)
+		]);
+		if(is_array($reps)) {
+			if($start || $limit) {
+				$reps = array_slice($reps, $start, $limit);
+			}
+		
+			$qr_reps = caMakeSearchResult('ca_object_representations', array_map(function($v) {
+				return $v['representation_id'];
+			}, $reps));
+		
+			while($qr_reps->nextHit()) {
+				$rinfo = array_shift($reps);
+				$versions = [];
+				$media_versions = caGetOption('mediaVersions', $args, $qr_reps->getMediaVersions('media'));
+				foreach($media_versions as $media_version) {
+					$media_info = $qr_reps->getMediaInfo('media', $media_version);
+					$version = [
+						'version' => $media_version,
+						'url' => $qr_reps->getMediaUrl('media', $media_version),
+						'tag' => $qr_reps->getMediaTag('media', $media_version),
+						'mimetype' => $media_info['MIMETYPE'],
+						'mediaclass' => caGetMediaClass($media_info['MIMETYPE']),
+						'width' => $media_info['WIDTH'],
+						'height' => $media_info['HEIGHT'],
+						'duration' => $media_info['PROPERTIES']['duration'] ?? null,
+						'filesize' => $media_info['PROPERTIES']['filesize'] ?? null,
+						'md5' => $media_info['MD5']
+					];
+				
+					$versions[] = $version;
+				}
+			
+				$bundle_data = null;
+				if(is_array($bundles = \GraphQLServices\Helpers\extractBundleNames($t_rep = $qr_reps->getInstance(), $args))) {
+					$bundle_data = \GraphQLServices\Helpers\fetchDataForBundles($t_rep, $bundles, []);
+				}
+				$media_list[] = [
+					'id' => $qr_reps->getPrimaryKey(),
+					'idno' => $qr_reps->get('ca_object_representations.idno'),
+					'type' => $qr_reps->get('ca_object_representations.type_id'),
+					'name' => $qr_reps->get('ca_object_representations.preferred_labels.name'),
+					'mimetype' => $qr_reps->get('ca_object_representations.mimetype'),
+					'mediaclass' => $qr_reps->get('ca_object_representations.mediaclass'),
+					'originalFilename' => $qr_reps->get('ca_object_representations.original_filename'),
+					'md5' => $qr_reps->get('ca_object_representations.md5'),
+					'versions' => $versions,
+					'bundles' => $bundle_data,
+					'isPrimary' => $rinfo['is_primary'] ?? false,
+					'relationship_typename' => $rinfo['relationship_typename'] ?? null,
+					'relationship_typecode' => $rinfo['relationship_type_code'] ?? null
+				];
+			}
+		}
+	} elseif($t_rec->elementExists($target)) {
+
+	} else {
+		throw new \ServiceException(_t('Invalid target specified'));
+	}
+
+	$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
+	$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
+
+	return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'id' => $rec->getPrimaryKey(), 'media' => $media_list];
+}
+
+/**
+ *
+ */
+function processItemRelationships(string $table, array $identifer, ?array $options=null) : array {	
+	$resolve_to_related = $args['resolveRelativeToRelated'];
+	
+	// TODO: add explicit parameter for idno and id (to handle case where numeric idnos are used) 
+	$opts = [];
+	list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
+//	$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
+	$rec_pk = $rec->primaryKey();
+	
+	$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
+	
+	$targets = [];
+	if(is_array($args['targets'])) {
+		$targets = $args['targets'];
+	} elseif($target = $args['target']) {
+		$targets[] = [
+			'table' => $target,
+			'restrictToTypes' => $args['restrictToTypes'] ?? null,
+			'restrictToRelationshipTypes' => $args['restrictToRelationshipTypes'] ?? null,
+			'bundles' => $args['bundles'] ?? [],
+			'start' => $args['start'] ?? null,
+			'limit' => $args['limit'] ?? null,
+			'includeMedia' => $args['includeMedia'] ?? null,
+			'mediaVersions' => $args['mediaVersions'] ?? null,
+			'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+		];
+	} else {
+		throw new \ServiceException(_t('No target specified'));
+	}
+	
+	$rels_by_target = [];
+	foreach($targets as $t) {
+		$rels_by_target[] = \GraphQLServices\Helpers\Item\processTarget($rec, $table, $t, ['resolveRelativeToRelated' => $resolve_to_related]);
+	}
+	return [
+		'table' => $rec->tableName(), 
+		'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 
+		'identifier' => $args['identifier'], 
+		'id' => $rec->getPrimaryKey(), 
+		'targets' => $rels_by_target,
+		'relationships' => $rels_by_target[0]['relationships'] ?? null
+	];
+
+}
