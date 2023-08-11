@@ -4226,7 +4226,7 @@ if (!$vb_batch) {
 		
 		$this->clearErrors();
 		
-		//save reserved elements -  those with a saveElement method
+		// Save reserved elements -  those with a saveElement method
 		if (isset($reserved_elements) && is_array($reserved_elements)) {
 			foreach($reserved_elements as $res_element) {
 				$res_element_id = $res_element->getPrimaryKey();
@@ -4821,7 +4821,18 @@ if (!$vb_batch) {
 					case 'ca_loans':
 					case 'ca_movements':
 					case 'ca_tour_stops':
-						$this->_processRelated($po_request, $vs_f, $vs_form_prefix, $vs_placement_code, array('batch' => $vb_batch, 'settings' => $va_bundle_settings));
+						if(!$this->_processRelated($po_request, $vs_f, $vs_form_prefix, $vs_placement_code, array('batch' => $vb_batch, 'settings' => $va_bundle_settings))) {
+							BaseModel::unsetChangeLogUnitID();
+							if ($vb_we_set_transaction) {
+								$this->removeTransaction(false);
+							}
+							// Emit "no save" error (code 2592-2599) as relationship failures 
+							// should about the entire save transaction
+							$this->postError(2592, _t("Relationship for %1 failed", Datamodel::getTableName($vs_f)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $vs_f);
+							
+							if($vb_is_insert) {$this->set($this->primaryKey(), 0); }	// clear primary key from failed insert
+							return false;	// bail on insert error
+						}
 						break;
 					# -------------------------------------
 					case 'ca_sets':
@@ -4838,7 +4849,7 @@ if (!$vb_batch) {
 		}
 		
 		
-		// save data for "specials"
+		// Save data for "specials"
 
 		if (isset($va_fields_by_type['special']) && is_array($va_fields_by_type['special'])) {
 			foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_f) {
@@ -5173,7 +5184,7 @@ if (!$vb_batch) {
 							} catch(MediaExistsException $e) {
 								$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
 								$po_request->addActionErrors($this->errors(), $vs_f, 'general');
-								return false;
+								break;
 							}
 						}
 						
@@ -5181,7 +5192,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representation_captions':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 				
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							// any to delete?
@@ -5199,7 +5210,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representation_sidecars':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 			
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							// any to delete?
@@ -5219,7 +5230,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for relationships that include an object on one end
 					case 'ca_object_representation_chooser':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = []; }
 								
 						if ($vs_element_code = caGetOption(array('elementCode', 'element_code'), $va_bundle_settings, null)) {
@@ -5251,7 +5262,6 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 					case 'ca_objects_location':
 					case 'history_tracking_chronology':
-						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 								
 					    if (strlen($pb_show_child_history = $po_request->getParameter("showChildHistory", pInteger))) {
@@ -5461,7 +5471,7 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_deaccession':		// object deaccession information
-						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$vb_batch && !$this->getPrimaryKey()) { break; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						
 						if($vb_batch) {
@@ -5491,8 +5501,8 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_object_checkouts':		// object checkout information
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!$vb_batch && !$this->getPrimaryKey()) { break; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						// Save checkout/return note edits
@@ -5536,7 +5546,7 @@ if (!$vb_batch) {
 						break;
 					# -------------------------------
 					case 'ca_object_circulation_status':
-						if ($vb_batch) { return null; } // not supported in batch mode
+						if ($vb_batch) { break; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						$this->set('circulation_status_id', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}ca_object_circulation_status", pInteger));
 						break;
@@ -5568,16 +5578,16 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for ca_metadata_alert_rules
 					case 'ca_metadata_alert_triggers':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!($this instanceof ca_metadata_alert_rules)) { return null; }
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_alert_rules)) { break; }
 						if (!$po_request->user->canDoAction('can_use_metadata_alerts')) { break; }
 						$this->saveTriggerHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------
 					// This bundle is only available for ca_metadata_dictionary_entries
 					case 'ca_metadata_dictionary_rules':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!($this instanceof ca_metadata_dictionary_entries)) { return null; }
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!($this instanceof ca_metadata_dictionary_entries)) { break; }
 						if (!$po_request->user->canDoAction('can_configure_data_dictionary')) { break; }
 
 						$this->saveRuleHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
@@ -5968,11 +5978,11 @@ if (!$vb_batch) {
 		// Check min/max
 		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
 		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
-			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $bundle_label) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $bundle_label), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors([new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for <em>%2</em>', $vn_min_relationships, mb_strtolower($bundle_label)) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $bundle_label), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', $ps_bundle_name, null, false, false)], $ps_bundle_name);
 			return false;
 		}
 		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
-			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $bundle_label) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $bundle_label), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for <em>%2</em>', $vn_max_relationships, mb_strtolower($bundle_label)) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $bundle_label), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', $ps_bundle_name, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		
@@ -7377,7 +7387,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($this->_CONFIG->get('require_valid_id_number_for_'.$this->tableName()) && sizeof($va_admin_idno_errors = $this->opo_idno_plugin_instance->isValidValue($ps_admin_idno))) {
 			$va_errors[] = join('; ', $va_admin_idno_errors);
 		} elseif (!$this->_CONFIG->get('allow_duplicate_id_number_for_'.$this->tableName()) && sizeof($this->checkForDupeAdminIdnos($ps_admin_idno))) {
-			$va_errors[] = _t("Identifier %1 already exists and duplicates are not permitted", $ps_admin_idno);
+			$va_errors[] = _t("Identifier <em>%1</em> already exists and duplicates are not permitted", $ps_admin_idno);
 		}
 		
 		return $va_errors;

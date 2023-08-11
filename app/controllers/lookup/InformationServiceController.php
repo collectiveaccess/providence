@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
-require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 require_once(__CA_LIB_DIR__.'/InformationServiceManager.php');
 
@@ -62,23 +61,23 @@ class InformationServiceController extends ActionController {
 
 			$vs_service = $t_element->getSetting('service');
 		
-			$va_items = array();
+			$va_items = [];
 			if (mb_strlen($ps_query) >= 3) {
 				try {
 					// Load plugin and connect to information service
 					if (!($o_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) {
-						$va_items['error'] = array('label' => _t('ERROR: Invalid service'), 'idno' => '');
+						$va_items['error'] = ['label' => _t('ERROR: Invalid service'), 'idno' => ''];
 					} else {
-						$va_data = $o_plugin->lookup($t_element->getSettings(), $ps_query, array('element_id' => $pn_element_id, 'format' => 'full'));
+						$va_data = $o_plugin->lookup($t_element->getSettings(), $ps_query, ['request' => $this->request, 'element_id' => $pn_element_id, 'format' => 'full']);
 				
 						if ($va_data && isset($va_data['results']) && is_array($va_data['results'])) {
 							foreach($va_data['results'] as $va_result) {
-								$va_items[] = array('label' => (string)$va_result['label'], 'idno' => (string)$va_result['idno'], 'url' => (string)$va_result['url']);
+								$va_items[] = ['label' => (string)$va_result['label'], 'idno' => (string)$va_result['idno'], 'url' => (string)$va_result['url']];
 							}
 						}
 					}
 				} catch (Exception $e) {
-					$va_items['error'] = array('label' => _t('ERROR').': '.$e->getMessage(), 'idno' => '');
+					$va_items['error'] = ['label' => _t('ERROR').': '.$e->getMessage(), 'idno' => ''];
 				}
 			}
 		}
@@ -95,12 +94,13 @@ class InformationServiceController extends ActionController {
 	 *
 	 */
 	public function GetDetail() {
+		$no_cache = $this->request->getParameter('noCache', pInteger);
 		$pn_element_id = $this->request->getParameter('element_id', pInteger);
 		$t_element = new ca_metadata_elements($pn_element_id);
-		$va_data = array();
+		$va_data = [];
 		if (!$t_element->getPrimaryKey()) { 
 			// error
-			$va_items['error'] = array('label' => _t('ERROR: Invalid element_id'), 'idno' => '');
+			$va_items['error'] = ['label' => _t('ERROR: Invalid element_id'), 'idno' => ''];
 		} else {
 			$vs_service = $t_element->getSetting('service');
 			$va_settings = $t_element->getSettings();
@@ -108,21 +108,22 @@ class InformationServiceController extends ActionController {
 			$pn_attribute_id = $this->request->getParameter('id', pInteger);
 			
 			$t_attr_val = new ca_attribute_values();
-			if ($t_attr_val->load(array('attribute_id' => $pn_attribute_id, 'element_id' => $pn_element_id))) {
+			if ($t_attr_val->load(['attribute_id' => $pn_attribute_id, 'element_id' => $pn_element_id])) {
 				$t_attr = new ca_attributes();
 				if ($t_attr->load($pn_attribute_id)) {
 					if (!caCanRead($this->request->getUserID(), $t_attr->get('table_num'), $t_attr->get('row_id'), $t_element->get('element_code'))) {
-						$va_items['error'] = array('label' => _t('ERROR: You do not have access to this item'), 'idno' => '');
+						$va_items['error'] = ['label' => _t('ERROR: You do not have access to this item'), 'idno' => ''];
 					} else {			
 						$vs_url = $t_attr_val->get('value_longtext2');
 						if (!($o_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) {
-							$va_items['error'] = array('label' => _t('ERROR: Invalid service'), 'idno' => '');
+							$va_items['error'] = ['label' => _t('ERROR: Invalid service'), 'idno' => ''];
 						} else {
 							$vs_cache_key = md5(print_r($va_settings, true) . $vs_url);
-							if(CompositeCache::contains($vs_cache_key, 'InformationServiceExtendedInfo')) {
+
+							if(!$no_cache && CompositeCache::contains($vs_cache_key, 'InformationServiceExtendedInfo')) {
 								$va_data = CompositeCache::fetch($vs_cache_key, 'InformationServiceExtendedInfo');
 							} else {
-								$va_data = $o_plugin->getExtendedInformation($va_settings, $vs_url);
+								$va_data = $o_plugin->getExtendedInformation($va_settings, $vs_url, ['request' => $this->request]);
 								CompositeCache::save($vs_cache_key, $va_data, 'InformationServiceExtendedInfo');
 							}
 						}

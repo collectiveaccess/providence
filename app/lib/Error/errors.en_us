@@ -207,6 +207,7 @@
 2585 = You cannot quickadd
 2590 = Item does not have the minimum number of relationships specified
 2591 = Item has more than the maximum number of relationships specified
+2592 = Item is missing required relationships
 2593 = No relationship types configured
 
 # --- Object representation errors

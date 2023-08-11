@@ -184,6 +184,7 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
 function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
 	if (is_array($template_identifier)) {
 		$template_info = $template_identifier;
+		$template_info['identifier'] = pathinfo($template_info['path'], PATHINFO_FILENAME);
 	} else {
 		$va_template = explode(':', $template_identifier);
 		$template_info = caGetPrintTemplateDetails($va_template[0], $va_template[1]);
@@ -195,6 +196,7 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 	
 	// Copy download-time user parameters into view
 	$template_type = caGetOption('printTemplateType', $options, null);
+
 	$values = $template_type ? caGetPrintTemplateParameters($template_type, $template_info['identifier'], ['view' => $view, 'request' => $view->request]) : [];
 	
 	try {

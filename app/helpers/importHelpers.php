@@ -433,7 +433,6 @@
 					}
 				}elseif(caIsAssociativeArray($va_attrs)) {
 					// single mapping
-					print_R($va_attrs);
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						

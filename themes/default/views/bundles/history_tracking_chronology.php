@@ -67,6 +67,7 @@
 	$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
 	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
 	
+	$batch			= $this->getVar('batch');
 	
 	$home_location_idno = null;
 	if ($t_subject->hasField('home_location_id')) {
@@ -75,13 +76,17 @@
 	}
 	
     if (!$this->request->isAjax()) {
-	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+    	if ($batch) {
+			print caBatchEditorRelationshipModeControl($t_subject, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+			print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+		}
 	}
 	
 	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
 ?>
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 	<div class="bundleContainer">
 			<div class="caHistoryTrackingButtonBar labelInfo">
 <?php
