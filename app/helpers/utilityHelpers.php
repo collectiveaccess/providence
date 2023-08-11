@@ -1630,25 +1630,29 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'.
 	 *
-	 * @param string $ps_mimetype A media MIME type
+	 * @param string $mimetype A media MIME type
+	 * @param array $options Options include:
+	 *		forIIIF = return IIIF presentation type values rather than CA-standard media class names. [Default is false]
 	 *
 	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
-	function caGetMediaClass($ps_mimetype) {
-		$va_tmp = explode("/", $ps_mimetype);
+	function caGetMediaClass(string $mimetype, ?array $options=null) : string {
+		$tmp = explode("/", $mimetype);
 
-		switch($va_tmp[0]) {
+		$for_iiif = caGetOption('forIIIF', $options, false);
+	
+		switch($tmp[0]) {
 			case 'image':
-				return 'image';
+				return $for_iiif ? 'Image' : 'image';
 				break;
 			case 'video':
-				return 'video';
+				return $for_iiif ? 'Video' : 'video';;
 				break;
 			case 'audio':
-				return 'audio';
+				return $for_iiif ? 'Sound' : 'audio';
 				break;
 			default:
-				switch($ps_mimetype) {
+				switch($mimetype) {
 					case 'application/pdf':
 					case 'application/postscript':
 					case 'text/xml':
@@ -1660,27 +1664,27 @@ function caFileIsIncludable($ps_file) {
 					case 'application/vnd.ms-powerpoint':
 					case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
 					case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-						return 'document';
+						return $for_iiif ? 'Text' : 'document';
 						break;
 					case 'x-world/x-qtvr':
 					case 'application/x-shockwave-flash':
-						return 'video';
+						return $for_iiif ? 'Video' : 'video';
 						break;
 					case 'application/dicom':
-						return 'image';
+						return $for_iiif ? 'Image' : 'image';;
 						break;
 					case 'application/ply':
 					case 'application/stl':
 					case 'text/prs.wavefront-obj':
 					case 'application/surf':
 					case 'model/gltf+json':
-						return '3d';
+						return $for_iiif ? '3D' : '3d';
 						break;
 					case 'x-world/x-qtvr':
-						return 'vr';
+						return $for_iiif ? 'VR' : 'vr';
 						break;
 					case 'application/octet-stream':
-						return 'binary';
+						return $for_iiif ? 'Binary' : 'binary';
 						break;
 				}
 				break;
