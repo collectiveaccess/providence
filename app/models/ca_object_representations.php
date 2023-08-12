@@ -922,6 +922,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			foreach($o_coder->getPropertyList() as $vs_property) {
  				$va_tmp[$vs_property] = $o_coder->getProperty($vs_property);
  				$va_tmp[$vs_property.'_raw'] = $o_coder->getProperty($vs_property, true);
+ 				$va_tmp[$vs_property.'_vtt'] = $o_coder->getProperty($vs_property, false, ['vtt' => true]);
  			}
  			
  			$va_tmp['timecodeOffset'] = $vn_timecode_offset;

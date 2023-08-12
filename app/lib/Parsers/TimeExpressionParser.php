@@ -1684,7 +1684,8 @@ class TimeExpressionParser {
 		
 		$vs_next_token_lc = mb_strtolower($va_next_token['value'] ?? null);
 		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
-										
+		$vb_is_range = false;
+								
 		if (
 			($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
 			||	
@@ -2393,12 +2394,12 @@ class TimeExpressionParser {
 				}
 			}
 			
-			if ($pa_dates['start']['hours'] === null) { $pa_dates['start']['hours'] = 0; }
-			if ($pa_dates['start']['minutes'] === null) { $pa_dates['start']['minutes'] = 0; }
-			if ($pa_dates['start']['seconds'] === null) { $pa_dates['start']['seconds'] = 0; }
-			if ($pa_dates['end']['hours'] === null) { $pa_dates['end']['hours'] = 23; }
-			if ($pa_dates['end']['minutes'] === null) { $pa_dates['end']['minutes'] = 59; }
-			if ($pa_dates['end']['seconds'] === null) { $pa_dates['end']['seconds'] = 59; }
+			if (($pa_dates['start']['hours'] ?? null) === null) { $pa_dates['start']['hours'] = 0; }
+			if (($pa_dates['start']['minutes'] ?? null) === null) { $pa_dates['start']['minutes'] = 0; }
+			if (($pa_dates['start']['seconds'] ?? null) === null) { $pa_dates['start']['seconds'] = 0; }
+			if (($pa_dates['end']['hours'] ?? null) === null) { $pa_dates['end']['hours'] = 23; }
+			if (($pa_dates['end']['minutes'] ?? null) === null) { $pa_dates['end']['minutes'] = 59; }
+			if (($pa_dates['end']['seconds'] ?? null) === null) { $pa_dates['end']['seconds'] = 59; }
 		
 			if (
 				($pa_dates['start']['year'] >= 1970) && ($pa_dates['end']['year'] >= 1970)
@@ -2594,7 +2595,7 @@ class TimeExpressionParser {
 	 *		dateTimeConjunction (string) [default is first in lang. config]
 	 *		showADEra (true|false) [default is false]
 	 *		uncertaintyIndicator (string) [default is first in lang. config]
- 	 *		dateFormat		(text|delimited|iso8601|yearOnly|ymd)	[default is text]
+ 	 *		dateFormat		(text|delimited|iso8601|yearOnly|ymd|xsd)	[default is text]
 	 *		dateDelimiter	(string) [default is first delimiter in language config file]
 	 *		circaIndicator	(string) [default is first indicator in language config file]
 	 *		beforeQualifier	(string) [default is first indicator in language config file]
@@ -2796,7 +2797,7 @@ class TimeExpressionParser {
 			}
 			
 			
-			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
+			if (isset($pa_options['dateFormat']) && (in_array($pa_options['dateFormat'], ['iso8601', 'xsd'], true))) {
 				return $this->getISODateRange($va_start_pieces, $va_end_pieces, $pa_options);
 			}
 
@@ -3768,7 +3769,7 @@ class TimeExpressionParser {
 	 * @param array $pa_options Options include:
 	 *		timeOmit = Omit time from returned ISO 8601 date. [Default is false]
 	 *		returnUnbounded = Return extreme value for unbounded dates. For "before" dates the start date would be equal to -9999; for "after" dates the end date would equal "9999". [Default is false]
-	 *		dateFormat = If set to "yearOnly" will return bare year. [Default is null]
+	 *		dateFormat = If set to "yearOnly" will return bare year; if set to 'xsd' BCE years are returned relative to zero. [Default is null]
 	 *		full = Always return full date [Default is false]
 	 * @return string
 	 */
@@ -3780,6 +3781,10 @@ class TimeExpressionParser {
 		if (($pa_date['year'] == TEP_END_OF_UNIVERSE) && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
 		if ($pa_date['year'] == TEP_START_OF_UNIVERSE && !caGetOption('returnUnbounded', $pa_options, false)) { return ''; }
 		
+		if((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'xsd')) && ($pa_date['year'] < 0)) { $pa_date['year']++; }
+		
+		$pa_date['year'] = sprintf(($pa_date['year'] < 0) ? "%05d" : "%04d", $pa_date['year']);
+		 
 		if ($ps_mode == 'FULL') {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
 			
@@ -4290,7 +4295,7 @@ class TimeExpressionParser {
 		$era = ($century < 0) ? ' '.$this->opo_language_settings->get('dateBCIndicator') : '';
 
 		// if useRomanNumeralsForCenturies is set in datetime.conf, 20th Century will be displayed as XXth Century
-		if ($options["useRomanNumeralsForCenturies"]) {
+		if ($options["useRomanNumeralsForCenturies"] ?? false) {
 			return caArabicRoman(abs($century)).$ordinal.' '.$century_indicators[0].$era;
 		}
 

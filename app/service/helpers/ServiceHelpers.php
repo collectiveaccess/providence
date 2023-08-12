@@ -47,7 +47,7 @@ function filterAccessValues(?array $values) : ?array {
  * Extract list of bundles to return from request args.
  *
  */
-function extractBundleNames(\BaseModel $rec, array $args) : array {
+function extractBundleNames($rec, array $args) : array {
 	$table = $args['table'];
 	$bundles = $args['bundles'];
 	if(!isset($bundles) || !is_array($bundles) || !sizeof($bundles)) {
@@ -528,9 +528,9 @@ function itemSchemaDefinitions() {
 					'type' => Type::string(),
 					'description' => 'Media MIME type'
 				],
-				'mimetype' => [
+				'mediaclass' => [
 					'type' => Type::string(),
-					'description' => 'Media MIME type'
+					'description' => 'Media class'
 				],
 				'width' => [
 					'type' => Type::int(),
@@ -547,7 +547,11 @@ function itemSchemaDefinitions() {
 				'filesize' => [
 					'type' => Type::int(),
 					'description' => 'Media filesize (in bytes)'
-				]
+				],
+				'md5' => [
+					'type' => Type::string(),
+					'description' => 'MD5 checksum'
+				],
 			]
 		]),
 		$mediaItemType = new ObjectType([
@@ -578,6 +582,14 @@ function itemSchemaDefinitions() {
 					'type' => Type::string(),
 					'description' => 'Media MIME type'
 				],
+				'mediaclass' => [
+					'type' => Type::string(),
+					'description' => 'Media class'
+				],
+				'md5' => [
+					'type' => Type::string(),
+					'description' => 'MD5 checksum'
+				],
 				'originalFilename' => [
 					'type' => Type::string(),
 					'description' => 'Original filename of media'
@@ -601,6 +613,22 @@ function itemSchemaDefinitions() {
 				'isPrimary' => [
 					'type' => Type::boolean(),
 					'description' => 'Is primary media?'
+				],
+				'relationship_type_id' => [
+					'type' => Type::string(),
+					'description' => 'Relationship type_id'
+				],
+				'relationship_typename' => [
+					'type' => Type::string(),
+					'description' => 'Relationship type name'
+				],
+				'relationship_typecode' => [
+					'type' => Type::string(),
+					'description' => 'Relationship type code'
+				],
+				'bundles' => [
+					'type' => Type::listOf($bundleValueListType),
+					'description' => 'Data for media'
 				],
 			]
 		]),
@@ -642,24 +670,28 @@ function itemSchemaDefinitions() {
 				],
 			]
 		]),
-		// $targetList = new ObjectType([
-// 			'name' => 'TargetList',
-// 			'description' => 'A list of related items',
-// 			'fields' => [
-// 				'name' => [
-// 					'type' => Type::string(),
-// 					'description' => 'Name of target'
-// 				],
-// 				'table' => [
-// 					'type' => Type::string(),
-// 					'description' => 'Related table'
-// 				],
-// 				'relationships' => [
-// 					'type' => Type::listOf($itemType),
-// 					'description' => 'List of related records'
-// 				]
-// 			]
-// 		]),
+		$mediaListType = new ObjectType([
+			'name' => 'MediaList',
+			'description' => 'Media associated with record',
+			'fields' => [
+				'id' => [
+					'type' => Type::int(),
+					'description' => 'ID of media'
+				],
+				'table' => [
+					'type' => Type::string(),
+					'description' => 'Table of item'
+				],
+				'idno' => [
+					'type' => Type::string(),
+					'description' => 'Item identifier'
+				],
+				'media' => [
+					'type' => Type::listOf($mediaItemType),
+					'description' => 'Media for related item'
+				],
+			]
+		]),
 		$targetList = _targetListType(0, $bundleValueListType, $mediaItemType),
 		$relationshipList = new ObjectType([
 			'name' => 'RelationshipList',
@@ -829,6 +861,7 @@ function resolveParams(array $args, ?string $prefix=null) : array {
 	$idno_key = $prefix ? $prefix.'Idno' : 'idno';
 	$identifier_key = $prefix ? $prefix.'Identifier' : 'identifier';
 	
+	$identifier = null;
 	if(isset($args[$id_key]) && ($args[$id_key] > 0)) {
 		$identifier = $args[$id_key];
 		$opts['primaryKeyOnly'] = true;
@@ -839,4 +872,27 @@ function resolveParams(array $args, ?string $prefix=null) : array {
 		$identifier = $args[$identifier_key] ?? null;
 	}
 	return [$identifier, $opts];
+}
+
+/**
+ *
+ */
+function resolveListParams(array $args, ?string $prefix=null) : array {
+	$opts = [];
+	
+	$id_key = $prefix ? $prefix.'Ids' : 'ids';
+	$idno_key = $prefix ? $prefix.'Idnos' : 'idnos';
+	$identifier_key = $prefix ? $prefix.'Identifiers' : 'identifiers';
+	
+	$identifiers = null;
+	if(isset($args[$id_key]) && is_array($args[$id_key])) {
+		$identifiers = $args[$id_key];
+		$opts['primaryKeyOnly'] = true;
+	} elseif(isset($args[$idno_key]) && is_array($args[$idno_key])) {
+		$identifiers = $args[$idno_key];
+		$opts['idnoOnly'] = true;
+	} elseif(isset($args[$identifier_key]) && is_array($args[$identifier_key])) {
+		$identifiers = $args[$identifier_key] ?? null;
+	}
+	return [$identifiers, $opts];
 }

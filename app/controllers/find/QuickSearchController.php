@@ -75,7 +75,7 @@ class QuickSearchController extends BaseFindController {
 			$search_suffix = (caGetSearchConfig()->get('match_on_stem') && caIsSearchStem($search)) ? '*' : '';
 			
 			$o_result_context = new ResultContext($this->request, $table, 'quick_search', $type);
-			if (!($result = $this->_doSearch($table, $search.$search_suffix, $sorts[$sort], $type, $o_result_context))) { unset($searches[$target]); continue; }
+			if (!($result = $this->_doSearch($table, $search.$search_suffix, $sorts[$sort] ?? null, $type, $o_result_context))) { unset($searches[$target]); continue; }
 			
 			$result->setOption('prefetch', $this->opn_num_results_per_item_type);	// get everything we need in one pass
 			$result->setOption('dontPrefetchAttributes', true);						// don't bother trying to prefetch attributes as we don't need them
@@ -124,7 +124,7 @@ class QuickSearchController extends BaseFindController {
 		$this->render('Results/quick_search_results_html.php');
 	}
 	# -------------------------------------------------------
-	private function _doSearch(string $target, string $search, string $sort, ?string $type=null, ?ResultContext $result_context=null) {
+	private function _doSearch(string $target, string $search, ?string $sort, ?string $type=null, ?ResultContext $result_context=null) {
 		$access_values = caGetUserAccessValues($this->request);
 		$no_cache = (bool)$this->request->getParameter('no_cache', pInteger);
 		if (!$this->request->user->canDoAction('can_search_'.(($target == 'ca_tour_stops') ? 'ca_tours' : $target))) { return ''; }

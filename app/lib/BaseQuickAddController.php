@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
 
 class BaseQuickAddController extends ActionController {
 	# -------------------------------------------------------

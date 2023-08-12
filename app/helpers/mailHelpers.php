@@ -208,7 +208,6 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 		return true;
 	} catch (Exception $e) {
 		$g_last_email_error = $e->getMessage();
-		
 		if(caGetOption('logSuccess', $options, true)) {
 			$log->logError('['.caGetOption('source', $options, 'Registration').'] '._t(caGetOption('failureMessage', $options, 'Could not send email to %1: %2'), join(';', $to), $e->getMessage()));
 		}

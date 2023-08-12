@@ -578,6 +578,31 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Returns criteria on the current browse as strings organized by facet. If the $ps_facet_name parameter is set
+		 * then only criteria for the facet are returned, otherwise all criteria for all facets are returned.
+		 * The returned array is key'ed on facet display name with values showing criteria values separated by semicolons
+		 *
+		 * @param string $ps_facet_name Optional name of facet for which to list criteria
+		 * @param array $options Options include:
+		 *		delimiter = delimiter between facet values. [Default is ';']
+		 * @return array
+		 *
+		 * @see BrowseEngine::getCriteria
+		 */
+		public function getCriteriaAsStrings(?string $ps_facet_name=null, ?array $options=null) {
+			$criteria = $this->getCriteriaWithLabels($ps_facet_name);
+			$delimiter = caGetOption('delimiter', $options, ';');
+			
+			$criteria_by_facet = [];
+			foreach($criteria as $facet => $criteria_list) {
+				$facet_info = $this->getInfoForFacet($facet);
+				
+				$criteria_by_facet[$facet_info['label_plural']] = join($delimiter, $criteria_list);
+			}
+			return $criteria_by_facet;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Returns a display label for a given criterion and facet.
 		 *
 		 * @param string $ps_facet_name Name of facet

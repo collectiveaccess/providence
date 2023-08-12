@@ -32,7 +32,6 @@
     "monolog/monolog": "~1.0",
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
-    "phpoffice/phppresentation": "1.0.0",
     "phpoffice/phpspreadsheet": "v1.22",
     "phpoffice/phpword": "v0.18.*",
     "phpunit/phpunit": "^9.5",

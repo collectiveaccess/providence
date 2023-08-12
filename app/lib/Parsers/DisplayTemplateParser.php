@@ -961,9 +961,10 @@ class DisplayTemplateParser {
 					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
+						$relative_to = (string)$o_node->relativeTo;
 						
-						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
-							$vs_linking_context = array_shift($va_tmp);
+						if ($t_instance->isRelationship() && ($relative_to || (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true]))) && sizeof($va_tmp))) {
+							$vs_linking_context = $relative_to ? $relative_to : array_shift(explode('.', array_shift($va_tmp)));
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
 								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs'] ?? null]);
 							}
@@ -1142,7 +1143,7 @@ class DisplayTemplateParser {
 			}
 			
 			if(strlen($pn_index)) {
-				$va_tag_vals = $va_tag_vals[$pn_index];	
+				$va_tag_vals = $va_tag_vals[$pn_index] ?? null;	
 				$vs_relative_to_container = null;
 			}
 		}
@@ -1277,6 +1278,15 @@ class DisplayTemplateParser {
 			}
 		}
 		
+		// standard values (always present)
+		$config = Configuration::load();
+		$va_vals['__protocol__'] = $config->get('site_protocol');
+		$va_vals['__hostname__'] = $config->get('site_hostname');
+		$va_vals['__host__'] = $config->get('site_host');
+		$va_vals['__url_root__'] = $config->get('ca_url_root');
+		$va_vals['__theme__'] = $config->get('theme');
+		$va_vals['__base_url__'] = $config->get('site_host').$config->get('ca_url_root');
+				
 		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					// Return nothing when relationship type is set and a value is referenced but not set
 
 		return $va_vals;

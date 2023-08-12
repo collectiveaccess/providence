@@ -214,7 +214,7 @@ class BaseLabel extends BaseModel {
 			}
 		}
 		
-		$show_bundle_codes = ($g_request && $g_request->isLoggedIn() && $g_request->user->getPreference('show_bundle_codes_in_editor'));
+		$show_bundle_codes = ($g_request && $g_request->isLoggedIn()) ? $g_request->user->getPreference('show_bundle_codes_in_editor') : 'hide';
 			
 		if($show_bundle_codes) {
 			// Only output codes if we're being called from a bundle rendering view. Determine whether this is 

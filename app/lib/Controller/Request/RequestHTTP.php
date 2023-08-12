@@ -138,10 +138,14 @@ class RequestHTTP extends Request {
 		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
 		$this->ops_script_name = '';
 		
-		// Look for .php element. we can rely upon $_SERVER['SCRIPT_NAME'] to be the actual path to the 
-		// executing script due to a PHP bug present in several 7.x versions (see https://bugs.php.net/bug.php?id=74129) 
-		while((!preg_match('!\.php$!', $this->ops_script_name)) && (sizeof($va_tmp) > 0)) {
-			$this->ops_script_name = trim(array_pop($va_tmp));
+		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) { 
+			$this->ops_script_name  = (strpos($_SERVER['SCRIPT_NAME'], 'service.php') === false) ? 'service' : 'service.php'; 
+		} else {
+			// Look for .php element. we can rely upon $_SERVER['SCRIPT_NAME'] to be the actual path to the 
+			// executing script due to a PHP bug present in several 7.x versions (see https://bugs.php.net/bug.php?id=74129) 
+			while((!preg_match('!\.php$!', $this->ops_script_name)) && (sizeof($va_tmp) > 0)) {
+				$this->ops_script_name = trim(array_pop($va_tmp));
+			}
 		}
 
 		# create session
@@ -203,12 +207,12 @@ class RequestHTTP extends Request {
 		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
-		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
+		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/(service.php|service)!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
 		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
 		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
 		$this->ops_path_info = preg_replace("![/]+!", "/", $vs_path_info ? "/{$vs_path_info}" : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''));
-		
+
 		if(!caIsRunFromCLI() && defined('__CA_SITE_HOSTNAME__') && !ExternalCache::contains('system_url', 'system')) {
 			ExternalCache::save('system_url', [
 				'protocol' => __CA_SITE_PROTOCOL__,
@@ -634,7 +638,7 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 		}
 		
-		die("Invalid parameter type for $ps_name\n");
+		die(_t("Invalid parameter type %1 for %2 [value was %3]", $pn_type, is_array($pa_name) ? join("; ", $pa_name) : $pa_name, $vm_val));
 	}
 	# -------------------------------------------------------
 	/**
@@ -712,7 +716,7 @@ class RequestHTTP extends Request {
 			}
 			
 			// trigger async search indexing
-			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && $this->getAppConfig()->get('run_indexing_queue') ) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
                 	$dont_verify_ssl_cert = (bool)$this->getAppConfig()->get('out_of_process_search_indexing_dont_verify_ssl_cert');

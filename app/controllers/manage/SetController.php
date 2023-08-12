@@ -68,7 +68,7 @@ class SetController extends ActionController {
 		if($this->opn_list_set_type_id){
 			$t_list = new ca_lists();
 			$this->ops_set_type_singular = $t_list->getItemForDisplayByItemID($this->opn_list_set_type_id);
-			$this->ops_set_type_plural = $t_list->getItemForDisplayByItemID($this->opn_list_set_type_id, true);
+			$this->ops_set_type_plural = $t_list->getItemForDisplayByItemID($this->opn_list_set_type_id, ['return' => 'plural']);
 		}
 		$this->view->setVar('list_set_type_id', $this->opn_list_set_type_id);
 		$this->view->setVar('type_name_singular', $this->ops_set_type_singular);

@@ -1367,8 +1367,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
+		$settings = self::getElementSettingsForId($pm_element_code_or_id);
 		if ($attr_value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true)) {
-			return $attr_value->sortableValue($value);
+			return $attr_value->sortableValue($value, $settings);
 		}
 		return null;
 	}

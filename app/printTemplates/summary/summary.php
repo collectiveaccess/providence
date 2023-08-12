@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/summary/summary.php
+ * app/printTemplates/summary/summary.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,32 +38,31 @@
  * @marginBottom 0.5in
  * @marginRight 0.25in
  *
+ * @includeHeaderFooter true
+ *
+ * @param includeLogo {"type": "CHECKBOX",  "label": "Include logo?", "value": "1", "default": true}
+ * @param includePageNumbers {"type": "CHECKBOX",  "label": "Include page numbers?", "value": "1", "default": true}
+ * @param showIdentifierInFooter {"type": "CHECKBOX",  "label": "Show identifier in footer?", "value": "1", "default": false}
+ * @param showTimestampInFooter {"type": "CHECKBOX",  "label": "Show current date/time in footer?", "value": "1", "default": false}
+ *
  * ----------------------------------------------------------------------
- */
- 
- 	$t_item 				= $this->getVar('t_subject');
-	$va_bundle_displays 	= $this->getVar('bundle_displays');
-	$t_display 				= $this->getVar('t_display');
-	$va_placements 			= $this->getVar("placements");
-	
-	print $this->render("pdfStart.php");
-	print $this->render("header.php");
-	print $this->render("footer.php");
+ */ 
+$t_item 				= $this->getVar('t_subject');
+$t_display 				= $this->getVar('t_display');
+$placements 			= $this->getVar("placements");
 ?>
 	<br/>
 	<div class="title">
-		<?php print $t_item->getLabelForDisplay();?>
+		<?= $t_item->getLabelForDisplay();?>
 	</div>
 <?php
-	foreach($va_placements as $vn_placement_id => $va_bundle_info){
-		if (!is_array($va_bundle_info)) break;
-		
-		if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('purify' => true)))) {
-			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-			$vs_display_value = "&lt;"._t('not defined')."&gt;";
-		} 
-		
-		print '<div class="data"><span class="label">'."{$va_bundle_info['display']} </span><span> {$vs_display_value}</span></div>\n";
-	}
-
-	print $this->render("pdfEnd.php");
+foreach($placements as $placement_id => $bundle_info){
+	if (!is_array($bundle_info)) break;
+	
+	if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, array('purify' => true)))) {
+		if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
+		$display_value = "&lt;"._t('not defined')."&gt;";
+	} 
+	
+	print '<div class="data"><span class="label">'."{$bundle_info['display']} </span><span> {$display_value}</span></div>\n";
+}

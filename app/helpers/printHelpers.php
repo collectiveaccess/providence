@@ -207,6 +207,9 @@ use Zend\Stdlib\Glob;
 	function caGetPrintTemplateDetails($ps_type, $ps_template, $pa_options=null) {
 		if (!is_array($va_template_paths = caGetPrintTemplateDirectoryPath($ps_type))) { return null; }
 		
+		// strip format prefix if present
+		$ps_template = caProcessTemplateName($ps_template);
+		
 		$va_info = [];
 		foreach($va_template_paths as $vs_template_path) {
 			if (file_exists("{$vs_template_path}/local/{$ps_template}.php")) {
@@ -234,12 +237,31 @@ use Zend\Stdlib\Glob;
 				"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
 				"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight",
 				"@elementCode", "@showOnlyIn", "@filename", "@fileFormat", "@generic", "@standalone",
-				"@disabled"
+				"@disabled", "@param", "@backgroundThreshold", "@includeHeaderFooter"
 			) as $vs_tag) {
-				if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
-					$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
-				} else {
-					$va_info[str_replace("@", "", $vs_tag)] = null;
+				$vs_tag = str_replace("@", "", $vs_tag);
+				switch($vs_tag) {
+					case 'param':
+						if (preg_match_all("!@{$vs_tag}[ ]+([^ ]+)[ ]+([^\n\n]+)!", $vs_template, $matches)) {
+							foreach($matches[1] as $i => $param_name) {
+								if(!is_array($options = json_decode($matches[2][$i], true))) { continue; }
+								$va_info['params'][$param_name] = $options;
+							}
+						}
+						break;
+					case 'backgroundThreshold':
+						// maximum number of items to process in output before forcing background processing
+						if (preg_match("!@{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
+							$va_info[$vs_tag] = (int)$va_matches[1];
+						}
+						break;
+					default:
+						if (preg_match("!@{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
+							$va_info[$vs_tag] = trim($va_matches[1]);
+						} else {
+							$va_info[$vs_tag] = null;
+						}
+						break;
 				}
 			}
 			if (!$va_info['fileFormat']) { $va_info['fileFormat'] = 'pdf'; }    // pdf is assumed for templates without a specific file format
@@ -249,6 +271,7 @@ use Zend\Stdlib\Glob;
 			    $va_info['restrictToTypes'] = preg_split("![,;]{1}!", trim($va_info['restrictToTypes']));
 			}
 			$va_info['path'] = $vs_template_path;
+			$va_info['identifier'] = $ps_template;
 
 			ExternalCache::save($vs_cache_key, $va_info, 'PrintTemplateDetails');
 			ExternalCache::save("{$vs_cache_key}_mtime", filemtime($vs_template_path), 'PrintTemplateDetails');
@@ -724,7 +747,7 @@ use Zend\Stdlib\Glob;
 		$display_select_html = caHTMLSelect(
 			'display_id', 
 			$display_opts, 
-			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector'],
+			['onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();', 'class' => 'searchFormSelector dontTriggerUnsavedChangeWarning'],
 			['value' => $t_display->getPrimaryKey()]
 		);
 		
@@ -783,5 +806,195 @@ use Zend\Stdlib\Glob;
 		}
 	
         return $buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Return HTML/Javascript for "print set" controls on item ca_set_items bundle
+	 *
+	 * @param View $po_view The view into which the control will be rendered
+	 * 
+	 * @return string
+	 */
+	function caEditorPrintSetItemsControls($view) {
+	    $t_display = new ca_bundle_displays(); //$view->getVar('t_display');
+	    $t_set = $view->getVar('t_set');
+	    $t_item = $view->getVar('t_row');
+	    $request = $view->request;
+	    
+	   	$item_id = $t_item->getPrimaryKey();
+	    
+	    $available_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays([
+			'table' => $t_item->tableNum(), 
+			'value' => $t_display->getPrimaryKey(), 
+			'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 
+			'user_id' => $request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 
+			'context' => 'editor_summary'
+		]));
+		
+		// Opts for on-screen display list (only displays; no PDF print templates)
+		$display_opts = [];
+		foreach($available_displays as $d) {
+			$display_opts[$d['name']] = $d['display_id'];
+		}
+		ksort($display_opts);
+		
+		// Opts for print templates (displays + PDF templates)
+		$print_templates = caGetAvailablePrintTemplates('sets', ['table' => $t_item->tableName(), 'restrictToTypes' => $t_item->getTypeID()]);
+
+		// Add PDF templates to existing display list
+		foreach($print_templates as $pt) {
+			if((bool)$pt['standalone']) {	// templates marked standalone are shown as printable options in the display list 
+				$display_opts[$pt['name']] = $pt['code'];
+			}
+		}
+		ksort($display_opts);
+		
+		// HTML <select> for print template list
+		$print_display_select_html = caHTMLSelect(
+			'display_id', 
+			$display_opts, 
+			['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector dontTriggerUnsavedChangeWarning'],
+			['value' => $t_display->getPrimaryKey()]
+		);
+		$view->setVar('print_display_select_html', $print_display_select_html);
+		
+		// Opts for print formats list (PDF, DOCX, etc – any template that is not marked as standalone is a format)
+		$formats = [];
+		if(is_array($print_templates)) {
+            $num_available_templates = sizeof($print_templates);
+            foreach($print_templates as $k => $v) {
+                if (($num_available_templates > 1) && (bool)$v['generic']) { continue; }    // omit generics from list when specific templates are available
+            	if ((bool)$v['standalone']) { continue; }
+                $formats[$v['name']] = $v['code'];
+            }
+        }
+		$view->setVar('formats', $formats);
+
+		$view->setViewPath('bundles');
+		
+		// Generate print options overlay
+		$buf = $view->render('set_download_options_html.php');    
+		$buf .= "<div id='printButton'>
+			<a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_PDF__, 2)."</a>
+				<script type='text/javascript'>
+						function caShowSummaryDownloadOptionsPanel() {
+							caSummaryDownloadOptionsPanel.showPanel();
+							return false;
+						}
+				</script>
+</div>\n";
+	
+        return $buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Return form elements for print summary options form
+	 * 
+	 * @return array
+	 */
+	function caEditorPrintParametersForm(string $type, string $template, ?array $values=null, ?array $options=null) : ?array {
+		if(!is_array($info = caGetPrintTemplateDetails($type, $template, $options))) { return null; }
+		if(!is_array($info['params']) || (sizeof($info['params']) === 0)) { return []; }
+		
+		$form_elements = [];
+		
+		foreach($info['params'] as $n => $p) {
+			$default = $p['default'] ?? null;
+			switch(strtolower($p['type'] ?? null)) {
+				case 'list':
+					$attr = ['class' => 'dontTriggerUnsavedChangeWarning'];
+					if($p['multiple'] ?? false) { $attr['multiple'] = 1; }
+					
+					$dv = $values[$n] ?? $default;
+					if(!is_array($dv)) { $dv = [$dv]; }
+					
+					$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $p['options'], $attr, ['values' => $dv, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
+					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+					break;
+				case 'checkbox':
+					$e = caHTMLCheckboxInput($n, ['value' => $p['value'] ?? 1, 'checked' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning']);
+					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+					break;
+				case 'text':
+					$e = caHTMLTextInput($n, ['placeholder' => caGetOption('placeholder', $p, ''), 'value' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning'], ['width' => caGetOption('width', $p, '200px'), 'height' => caGetOption('height', $p, '200px')]);
+					$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+					break;
+			}
+		}
+		
+		return $form_elements;
+	}
+	# ---------------------------------------
+	/**
+	 * Get configured paramweters for template
+	 *
+	 * @param string $type
+	 * @param string $template
+	 * @param array $options Options include:
+	 * 		view = Optional view to set parameters data into. Parameters will be set as view variables with the prefix "param_". [Default is null]
+	 *		request = The current request. If set the returned array is key'ed on parameter name, with values set. If not set a simple list of template parameter names is returned. [Default is null]
+	 * @return array Array with template paramet
+	 */
+	function caGetPrintTemplateParameters(string $type, string $template, ?array $options=null) : array {
+		$template = preg_replace("!^(_pdf_|_display_)!", "", $template);
+		
+        $view = caGetOption('view', $options, null);
+        $request = caGetOption('request', $options, null);
+        
+		$tinfo = caGetPrintTemplateDetails($type, $template);
+        if($view) {
+       		$view->setVar('template_info', $tinfo);
+       	}
+        $values = [];
+        
+		if(is_array($tinfo) && is_array($tinfo['params'] ?? null)) {
+			$values = [];
+			foreach($tinfo['params'] as $n => $p) {
+				if($request) {
+					if((bool)($p['multiple'] ?? false)) {
+						$values[$n] = $request->getParameter($n, pArray);
+					} else {
+						$values[$n] = $request->getParameter($n, pString);
+					}
+				} else {
+					$values[] = $n;
+				}
+				if($view) {
+					$view->setVar("param_{$n}", $values[$n]);
+				}
+			}
+		}
+		
+		Session::setVar("print_template_{$type}_options_".pathinfo($tinfo['path'] ?? null, PATHINFO_FILENAME), $values);
+		return $values;
+	}
+	# ---------------------------------------
+	/**
+	 * Process template name, stripping type prefix if present. Eg. "_pdf_my_first_report" will be returned as "my_first_report"
+	 *
+	 * If the returnDetails option is set an array will be returned with keys for name ("my_first_report") and extracted type if present ("pdf")
+	 *
+	 * @param string $template_name
+	 * @param array $options Options include:
+	 *		returnDetails = return array with template name and type in "name" and "type" keys. [Default is false]
+	 *	
+	 * @return mixed Returns string with processed name, or an array if the returnDetails option is set. 
+	 */
+	function caProcessTemplateName(string $template_name, ?array $options=null) {
+		// strip format prefix if present
+		$type = null;
+		if(preg_match("!^_(pdf|display|docx|xlsx|csv|tab)_!", $template_name, $m)) {
+			$type = $m[1];
+			$template_name = preg_replace("!^_{$type}_!", "", $template_name);
+		}
+		
+		if(caGetOption('returnDetails', $options, false)) {
+			return [
+				'name' => $template_name,
+				'type' => $type
+			];
+		} else {
+			return $template_name;
+		}
 	}
 	# ---------------------------------------

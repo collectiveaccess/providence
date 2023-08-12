@@ -251,7 +251,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	public function get($property) {
 		if ($this->handle ?? null) {
 			if ($this->info["PROPERTIES"][$property] ?? null) {
-				return $this->properties[$property] ?? nnull;
+				return $this->properties[$property] ?? null;
 			} else {
 				return '';
 			}

@@ -790,6 +790,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 1,
 							'label' => _t('Documentation URL'),
 							'description' => _t('URL pointing to documentation for this field. Leave blank if you wish to use the default URL for this metadata element.')
+						),
+						'dontShowDeleteButton' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => 10, 'height' => 1,
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Do not show delete button'),
+							'description' => _t('If checked the delete control will not be provided.')
 						)
 					);
 					if ($va_elements[$bundle_proc]['datatype'] == 1) {		// 1=text
@@ -853,7 +862,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '0',
 								'label' => _t('Do not show delete button'),
-								'description' => _t('If checked the delete relationship control will not be provided.')
+								'description' => _t('If checked the delete control will not be provided.')
 							),
 							'display_template' => array(
 								'formatType' => FT_TEXT,
@@ -1015,7 +1024,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '0',
 								'label' => _t('Do not show delete button'),
-								'description' => _t('If checked the delete relationship control will not be provided.')
+								'description' => _t('If checked the delete control will not be provided.')
 							),
 							'display_template' => array(
 								'formatType' => FT_TEXT,
@@ -2109,7 +2118,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                         'takesLocale' => false,
                                         'default' => '0',
                                         'label' => _t('Do not show delete button'),
-                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                        'description' => _t('If checked the delete control will not be provided.')
                                     )
                                 ];
 							    break;
@@ -2135,7 +2144,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                         'takesLocale' => false,
                                         'default' => '0',
                                         'label' => _t('Do not show delete button'),
-                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                        'description' => _t('If checked the delete control will not be provided.')
                                     )
                                 ];
 							    break;

@@ -55,6 +55,7 @@
 		 *		simple = return only field data, omitting media information. [Default is false]
 		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
 		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
+		 *		includeAnnotations = include annotation data. [Default is false]
 		 *		.. and options supported by getMediaTag() .. [they are passed through]
 		 *	
 		 * @return array An array of information about the linked representations
@@ -67,7 +68,7 @@
 			$pn_start = caGetOption('start', $pa_options, 0);
 			$pn_limit = caGetOption('limit', $pa_options, null);
 			$simple = caGetOption('simple', $pa_options, false, ['castTo' => 'bool']);
-		
+			$include_annotations = caGetOption('includeAnnotations', $pa_options, false);
 		
 			if (caGetBundleAccessLevel($this->tableName(), 'ca_object_representations') == __CA_BUNDLE_ACCESS_NONE__) {
 				return null;
@@ -189,7 +190,13 @@
 			
 					$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
 					$va_tmp['num_transcriptions'] = $t_rep->numTranscriptions($vn_rep_id);
-
+					
+					if($include_annotations) {
+						$t_rep->load($vn_rep_id);
+						$va_tmp['num_annotations'] = $t_rep->getAnnotationCount($pa_options);					
+						$va_tmp['annotations'] = $t_rep->getAnnotations($pa_options);
+					}
+					
 					$va_captions = $t_rep->getCaptionFileList($vn_rep_id);
 					if(is_array($va_captions) && (sizeof($va_captions)>0)){
 						$va_tmp['captions'] = $va_captions;	

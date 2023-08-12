@@ -183,7 +183,7 @@
 							$bundle_settings["{$table}_displayTemplate"] = $config['template'] ?? null;
 							$bundle_settings["{$table}_additionalTemplates"] = $config['additionalTemplates'] ?? null;
 							$tt = array_filter(array_map(function($v) { return $v['idno']; }, $t_instance->getTypeList()), function($v) use ($types) { return !isset($types[$v]); });
-							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
+							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'] ?? null;
 						} else {
 							$tt = preg_split("![ ]*[,;]{1}[ ]*!", $type_list);
 						}
@@ -934,7 +934,7 @@
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
 		    if(!self::checkPolicyTypeRestrictions($policy, caGetOption('restrictToTypes', $options, []))) { return null; }
 		    
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null), 'useTemplate' => caGetOption('useTemplate', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
@@ -2139,7 +2139,7 @@
 			
 			$ids = array_map(function($v) { return $v['row_id']; }, $values);
 			
-			if(is_array($options['restrict_to_types'] ?? null) && sizeof($options['restrict_to_types'])) {
+			if(is_array($options['restrict_to_types'] ?? null) && ($options['restrict_to_types'] = array_filter($options['restrict_to_types'], "strlen")) && sizeof($options['restrict_to_types'])) {
 				$policy_info = $this->getPolicyConfig($policy);
 			
 				$type_res = caMakeTypeIDList($policy_info['table'], $options['restrict_to_types']);
@@ -2377,6 +2377,8 @@
 			$h = $this->getHistory(array_merge($pa_bundle_settings, $pa_options));
 			$o_view->setVar('child_count', $child_count = sizeof(array_filter($h, function($v) { return sizeof(array_filter($v, function($x) { return $x['hasChildren']; })); })));
 			$o_view->setVar('history', $h);
+			
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render('history_tracking_chronology.php');
 		}

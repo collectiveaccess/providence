@@ -697,7 +697,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element: %1', $e));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
-		
+		if(!$attr_val_sort_field) { return $hits; }
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
 		
@@ -824,7 +824,7 @@ class BaseFindEngine extends BaseObject {
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h] = true; }
 		}
 		return $sort_keys;
 	}
@@ -844,7 +844,8 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
-
+		if(!$attr_val_sort_field) { return $hits; }
+		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
 		$limit_sql = self::_limitSQL($options);
@@ -1330,7 +1331,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
-		
+		if(!$attr_val_sort_field) { return []; }
 
 		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
 					FROM ca_attribute_values cav
@@ -1362,7 +1363,8 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
-
+		if(!$attr_val_sort_field) { return []; }
+		
 		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
 					FROM ca_attribute_values cav
 					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
