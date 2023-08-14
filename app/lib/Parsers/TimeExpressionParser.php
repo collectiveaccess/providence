@@ -3059,8 +3059,8 @@ class TimeExpressionParser {
 						$vs_day = $this->_dateToText(array('year' => $va_start_pieces['year'], 'month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'era' => $va_end_pieces['era'], 'uncertainty' => $va_end_pieces['uncertainty'], 'uncertainty_units' => $va_end_pieces['uncertainty_units']), $pa_options);
 
 						if (!$vb_full_day_time_range) {
-							$vn_start_time = ($va_start_pieces['hours'] * 3600) + ($va_start_pieces['minutes'] * 60) + $va_start_pieces['seconds'];
-							$vn_end_time = ($va_end_pieces['hours'] * 3600) + ($va_end_pieces['minutes'] * 60) + $va_end_pieces['seconds'];
+							$vn_start_time = ((int)$va_start_pieces['hours'] * 3600) + ((int)$va_start_pieces['minutes'] * 60) + (int)$va_start_pieces['seconds'];
+							$vn_end_time = ((int)$va_end_pieces['hours'] * 3600) + ((int)$va_end_pieces['minutes'] * 60) + (int)$va_end_pieces['seconds'];
 
 							return $vs_start_circa.$vs_day.' '.$vs_datetime_conjunction.' '.$this->_timerangeToText($vn_start_time, $vn_end_time, $pa_options);
 						}
