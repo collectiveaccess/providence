@@ -57,7 +57,7 @@ $ar						= $this->getVar('access_restrictions');
 $result_context 		= $this->getVar('result_context');
 $num_items				= (int)$result->numHits();
 ?>
-<div id='body'>
+<div class='body checklist'>
 <?php
 	$result->seek(0);
 	
@@ -67,10 +67,10 @@ $num_items				= (int)$result->numHits();
 ?>
 		<div class="row">
 			<table width="100%">
-				<tr>
+				<tr valign="top">
 					<td width="20%">
 <?php 
-						if ($path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+						if (($path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) && file_exists($path)) {
 							print "<div class=\"imageTiny\"><img src='{$path}'/></div>";
 						} else {
 ?>
@@ -82,15 +82,17 @@ $num_items				= (int)$result->numHits();
 					<td>
 						<div class="metaBlock">
 <?php				
-							print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 
+							print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name')."</div>"; 
 							if (is_array($display_list)) {
 								foreach($display_list as $placement_id => $display_item) {
-									if (!strlen($display_value = $t_display->getDisplayValue($result, $placement_id, array('forReport' => true, 'purify' => true)))) {
+									$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+									if(!$locale && preg_match("!^(ca_object_representations.media|ca_objects.preferred_labels)!", $display_item['bundle_name'] ?? null)) { continue; }
+									if (!strlen($display_value = $t_display->getDisplayValue($result, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true]))) {
 										if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 										$display_value = "&lt;"._t('not defined')."&gt;";
 									} 
 					
-									print "<div class='metadata'><span class='displayHeader'>".$display_item['display']."</span>: <span class='displayValue' >".(strlen($display_value) > 1200 ? strip_tags(substr($display_value, 0, 1197))."..." : $display_value)."</span></div>";		
+									print "<div class='metadata'><span class='displayHeader'>".$display_item['display']."</span>: <span class='displayValue' >".(strlen($display_value) > 1200 ? strip_tags(substr($display_value, 0, 1197))."..." : strip_tags($display_value))."</span></div>";		
 								}	
 							}						
 ?>
