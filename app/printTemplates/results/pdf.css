@@ -2,6 +2,13 @@
 @font-face {
 	font-family: "DejaVuSans";
 	font-style: normal;
+	font-weight: normal;
+	src: url('../../fonts/DejaVuSans.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: "DejaVuSans";
+	font-style: normal;
 	font-weight: bold;
 	src: url('../../fonts/DejaVuSans-Bold.ttf') format('truetype');
 }
@@ -93,14 +100,14 @@ span.footerText {
 }
 
 /* Checklist styles */
-.checklist > .row > table > tr > td > .imageTiny { 
+.imageTiny { 
 	width: 120px;
 	margin: 0 5px 0 0;
 	border-radius: 5px;
 	text-align:center;
 }
 
-.checklist > .row > table > tr > td > .imageTinyPlaceholder { 
+.imageTinyPlaceholder { 
 	width: 120px;
 	height: 100px;
 	border: 1px solid #eee;
@@ -110,24 +117,38 @@ span.footerText {
 }
 
 
-.checklist > .row > table > tr > td > .metaBlock > .displayHeader { 
+.metaBlock > .displayHeader { 
 	color:#666;
 	font-weight:bold;
+	font-family: "DejaVuSans";
 }
 
 .metaBlock > .title {
 	font-weight:bold;
 	font-size: 12px;
+	font-family: "DejaVuSans";
 }
 
 .metaBlock > .metadata {
 	line-height:1.1em;
+	font-family: "DejaVuSans";
 }
 
- .metaBlock {
+.metaBlock {
 	margin-left:0px;
 	height:auto;
 	width:120mm;
+	font-family: "DejaVuSans";
+}
+
+.displayHeader {
+	font-weight:bold;
+	font-size: 10px;
+	font-family: "DejaVuSans";
+}
+.displayValue {
+	font-size: 10px;
+	font-family: "DejaVuSans";
 }
 
 .checklist > .row { 
@@ -140,7 +161,7 @@ span.footerText {
 	overflow: hidden
 }
 
-/* ??? */
+/* Thumbnail list */
 .thumbnaillist > .thumbnail { 
 	font-size: 11px;
 	border: 1px solid #ccc;
