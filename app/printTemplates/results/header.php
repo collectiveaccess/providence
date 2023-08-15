@@ -35,16 +35,12 @@ switch($this->getVar('PDFRenderer')) {
 	case 'domPDF':
 ?>
 		<div id='header'>
-
+			<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
 			if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
 				<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
-			} else {
-?>
-				<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-<?php
 			}	
 
 			if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
@@ -58,16 +54,13 @@ switch($this->getVar('PDFRenderer')) {
 <!--BEGIN HEADER--><!DOCTYPE html>
 			<html>
 				<head>
+					<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
 					if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
 						<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
-					} else {
-?>
-						<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-<?php
-					}
+					} 
 					if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
 					
 					if($this->getVar('param_includePageNumbers')) { 

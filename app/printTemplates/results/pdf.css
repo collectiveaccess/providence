@@ -1,3 +1,4 @@
+/* Fonts */
 @font-face {
 	font-family: "DejaVuSans";
 	font-style: normal;
@@ -11,7 +12,8 @@
 	font-weight: normal;
 	src: url('../../fonts/DejaVuSans-Oblique.ttf') format('truetype');
 }
-		
+	
+/* Header/footer/body styles */	
 #header { 
 	position: fixed;
 	left: 0px;
@@ -44,7 +46,7 @@
 	content: counter(page, decimal);
 }
 
-#body { 
+.body { 
 	font-family: "DejaVuSans";
 	z-index: 30000;
 	position: relative;
@@ -80,7 +82,66 @@ span.footerText {
 	margin-left: 45px;
 }	
 
-.thumbnail { 
+/* Utility styles */
+.pageBreak { 
+	page-break-before: always;
+}
+
+.clear { 
+	clear: both;
+	line-height: 5px;
+}
+
+/* Checklist styles */
+.checklist > .row > table > tr > td > .imageTiny { 
+	width: 120px;
+	margin: 0 5px 0 0;
+	border-radius: 5px;
+	text-align:center;
+}
+
+.checklist > .row > table > tr > td > .imageTinyPlaceholder { 
+	width: 120px;
+	height: 100px;
+	border: 1px solid #eee;
+	background-color: #eee;
+	margin: 0 5px 0 0;
+	border-radius: 5px;
+}
+
+
+.checklist > .row > table > tr > td > .metaBlock > .displayHeader { 
+	color:#666;
+	font-weight:bold;
+}
+
+.metaBlock > .title {
+	font-weight:bold;
+	font-size: 12px;
+}
+
+.metaBlock > .metadata {
+	line-height:1.1em;
+}
+
+ .metaBlock {
+	margin-left:0px;
+	height:auto;
+	width:120mm;
+}
+
+.checklist > .row { 
+	font-size: 11px;
+	border-bottom: 1px solid #eee;
+	width: 100%;
+	height: auto;
+	margin: 5px 0 0 0;
+	padding: 3px 0px 5px 0px;
+	overflow: hidden
+}
+
+/* ??? */
+.thumbnaillist > .thumbnail { 
 	font-size: 11px;
 	border: 1px solid #ccc;
 	width: 200px;
@@ -93,77 +154,13 @@ span.footerText {
 	border-radius:4px;
 }	
 
-.imgThumb {
+.thumbnaillist > .thumbnail > .imgThumb {
 	width:194px;
 	height:170px;
 }
 
-.caption {
+.thumbnaillist > .thumbnail > .caption {
 	font-size:11px;
 	color:#333;
 	display:block;
 }
-
-.row { 
-	font-size: 11px;
-	border-bottom: 1px solid #eee;
-	width: 100%;
-	height: auto;
-	margin: 5px 0 0 0;
-	padding: 3px 0px 5px 0px;
-	overflow: hidden
-}
-	
-.imageTiny { 
-	width: 120px;
-	margin: 0 5px 0 0;
-	border-radius: 5px;
-	text-align:center;
-}
-
-.imageTinyPlaceholder { 
-	width: 120px;
-	height: 100px;
-	border: 1px solid #eee;
-	background-color: #eee;
-	margin: 0 5px 0 0;
-	border-radius: 5px;
-}
-
-.displayHeader { 
-	color:#666;
-	font-weight:bold;
-}
-
-.displayValue { 
-
-}
-
-.title {
-	font-weight:bold;
-	font-size: 14px;
-}
-
-.metadata {
-	line-height:1.1em;
-}
-
-.metaBlock {
-	margin-left:0px;
-	height:auto;
-	width:120mm;
-}
-
-.label { 
-
-} 
-
-.pageBreak { 
-	page-break-before: always;
-}
-
-.clear { 
-	clear: both;
-	line-height: 5px;
-}
-
