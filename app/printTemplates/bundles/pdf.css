@@ -1,3 +1,25 @@
+/* Fonts */
+@font-face {
+	font-family: "DejaVuSans";
+	font-style: normal;
+	font-weight: normal;
+	src: url('../../fonts/DejaVuSans.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: "DejaVuSans";
+	font-style: normal;
+	font-weight: bold;
+	src: url('../../fonts/DejaVuSans-Bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: "DejaVuSans";
+	font-style: italic;
+	font-weight: normal;
+	src: url('../../fonts/DejaVuSans-Oblique.ttf') format('truetype');
+}
+
 #header { 
     position: fixed;
     left: 0px;
@@ -40,7 +62,7 @@ img.headerImg {
 }
 
 .headerText { 
-    font: "helvetica, sans-serif";
+    font-family: "DejaVuSans";
     font-size: 11px;
     margin: 0px 0px 10px 25px;
 }
@@ -49,20 +71,20 @@ img.headerImg {
     position: absolute;
     top: 0px;
     right: 10px;
-    font: "helvetica, sans-serif";
+    font-family: "DejaVuSans";
     font-size: 11px;
     text-align: right;
     margin: 0px 0px 10px 25px;
 }
 
 .footerText { 
-    font: "helvetica, sans-serif";
+    font-family: "DejaVuSans";
     font-size: 11px;
     margin: -5px 0px 0px 45px;
 }  
 
 .thumbnail { 
-    font: "helvetica, sans-serif";
+    font-family: "DejaVuSans";
     font-size: 11px;
     border: 1px solid #ccc;
     width: 200px;
@@ -87,7 +109,7 @@ img.headerImg {
 }
 
 .row { 
-    font: "helvetica, sans-serif";
+    font-family: "DejaVuSans";
     font-size: 11px;
     border-bottom: 1px solid #eee;
     width: 100%;
