@@ -39,7 +39,19 @@ class TimeExpressionParserTest extends TestCase {
 		// most of the comparisons below rely on Eastern time zone
 		date_default_timezone_set('America/New_York');
 	}
-	
+	public function testBCRange() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('2160 - 2040 BC ');
+		$this->assertEquals($vb_res, true);
+		$parse = $o_tep->getHistoricTimestamps();
+		$t = $o_tep->getText(['dateFormat' => 'text']);
+		$this->assertEquals($t, "2160 BCE – 2040 BCE");
+		
+		$t = $o_tep->getText(['dateFormat' => 'iso8601']);
+		$this->assertEquals($t, "-2160/-2040");
+	}
 	public function testBCISO() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');

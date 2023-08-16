@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2022 Whirl-i-Gig
+ * Copyright 2006-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1710,12 +1710,14 @@ class TimeExpressionParser {
 			$this->skipToken();
 			
 			$vn_is_circa = 0;
+			$era = null;
 			if($va_modfier_token = (is_array($va_next_token) ? $va_next_token : $this->peekToken())) {
 				$va_next_token = null;
 				switch($va_modfier_token['type']) {
 					case TEP_TOKEN_ERA:
 						if($va_modfier_token['era'] == TEP_ERA_BC) {
 							$vn_century *= -1;
+							$era = TEP_ERA_BC;
 						}
 						
 						$this->skipToken();
@@ -1759,6 +1761,9 @@ class TimeExpressionParser {
 						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
 						'dont_window' => true
 					);
+					if(!is_null($era)) {
+						$va_dates['start']['era'] = $era;
+					}
 				}
 				if (!$vb_is_range) {
 					$vn_end_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'end', 'century', $vn_end_year);
@@ -1767,11 +1772,16 @@ class TimeExpressionParser {
 						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
 						'dont_window' => true
 					);
+					if(!is_null($era)) {
+						$va_dates['start']['era'] = $era;
+					}
 				}
+				
 				$vn_state = $vb_is_range ? TEP_STATE_BEGIN : TEP_STATE_ACCEPT;
 				$vb_can_accept = !$vb_is_range;
 				$part_of_range_qualifier = null;
 			}
+			
 			$part_of_range_qualifier = null;
 			return $va_dates;
 		}
@@ -2287,6 +2297,12 @@ class TimeExpressionParser {
 		
 			# date/time expression
 			
+			// Implicitly set BC on start date if no era set for start and end is BCE
+			if(isset($pa_dates['end']['era']) && ($pa_dates['end']['era'] === TEP_ERA_BC) && !isset($pa_dates['start']['era'])) {
+				$pa_dates['start']['era'] = TEP_ERA_BC;
+				$pa_dates['start']['year'] *= -1;
+			}
+			
 			// first date is a bare two digit number interpreted as a year but should be day in a range
 			if ($pa_dates['start']['year'] && is_null($pa_dates['start']['month']) && (strlen($pa_dates['start']['year']) === 2) && ($pa_dates['end']['year'] >= 100)) {
 				$pa_dates['start']['day'] = $pa_dates['start']['year'];
@@ -2535,6 +2551,13 @@ class TimeExpressionParser {
 				    return false;
 				}
 			}
+			
+			if((int)$vn_end_historic < (int)$vn_start_historic) {
+				print "$vn_end_historic  // $vn_start_historic\n";
+				$this->setParseError(null, TEP_ERROR_RANGE_ERROR);
+				return false;
+			}
+			
 			$this->setHistoricTimestamps($vn_start_historic, $vn_end_historic);
 		}
 		return true;
