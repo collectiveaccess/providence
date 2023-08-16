@@ -1,3 +1,11 @@
+/* Fonts */
+@font-face {
+	font-family: "DejaVuSans";
+	font-style: normal;
+	font-weight: normal;
+	src: url('../../fonts/DejaVuSans.ttf') format('truetype');
+}
+
 @font-face {
 	font-family: "DejaVuSans";
 	font-style: normal;
@@ -11,7 +19,8 @@
 	font-weight: normal;
 	src: url('../../fonts/DejaVuSans-Oblique.ttf') format('truetype');
 }
-		
+	
+/* Header/footer/body styles */	
 #header { 
 	position: fixed;
 	left: 0px;
@@ -44,7 +53,7 @@
 	content: counter(page, decimal);
 }
 
-#body { 
+.body { 
 	font-family: "DejaVuSans";
 	z-index: 30000;
 	position: relative;
@@ -80,40 +89,17 @@ span.footerText {
 	margin-left: 45px;
 }	
 
-.thumbnail { 
-	font-size: 11px;
-	border: 1px solid #ccc;
-	width: 200px;
-	height: 210px;
-	position: absolute;
-	text-align: center;
-	margin: 0px 10px 10px 0px;
-	padding: 3px;
-	overflow: hidden;
-	border-radius:4px;
-}	
-
-.imgThumb {
-	width:194px;
-	height:170px;
+/* Utility styles */
+.pageBreak { 
+	page-break-before: always;
 }
 
-.caption {
-	font-size:11px;
-	color:#333;
-	display:block;
+.clear { 
+	clear: both;
+	line-height: 5px;
 }
 
-.row { 
-	font-size: 11px;
-	border-bottom: 1px solid #eee;
-	width: 100%;
-	height: auto;
-	margin: 5px 0 0 0;
-	padding: 3px 0px 5px 0px;
-	overflow: hidden
-}
-	
+/* Checklist styles */
 .imageTiny { 
 	width: 120px;
 	margin: 0 5px 0 0;
@@ -130,40 +116,72 @@ span.footerText {
 	border-radius: 5px;
 }
 
-.displayHeader { 
+
+.metaBlock > .displayHeader { 
 	color:#666;
 	font-weight:bold;
+	font-family: "DejaVuSans";
 }
 
-.displayValue { 
-
-}
-
-.title {
+.metaBlock > .title {
 	font-weight:bold;
-	font-size: 14px;
+	font-size: 12px;
+	font-family: "DejaVuSans";
 }
 
-.metadata {
+.metaBlock > .metadata {
 	line-height:1.1em;
+	font-family: "DejaVuSans";
 }
 
 .metaBlock {
 	margin-left:0px;
 	height:auto;
 	width:120mm;
+	font-family: "DejaVuSans";
 }
 
-.label { 
-
-} 
-
-.pageBreak { 
-	page-break-before: always;
+.displayHeader {
+	font-weight:bold;
+	font-size: 10px;
+	font-family: "DejaVuSans";
+}
+.displayValue {
+	font-size: 10px;
+	font-family: "DejaVuSans";
 }
 
-.clear { 
-	clear: both;
-	line-height: 5px;
+.checklist > .row { 
+	font-size: 11px;
+	border-bottom: 1px solid #eee;
+	width: 100%;
+	height: auto;
+	margin: 5px 0 0 0;
+	padding: 3px 0px 5px 0px;
+	overflow: hidden
 }
 
+/* Thumbnail list */
+.thumbnaillist > .thumbnail { 
+	font-size: 11px;
+	border: 1px solid #ccc;
+	width: 200px;
+	height: 210px;
+	position: absolute;
+	text-align: center;
+	margin: 0px 10px 10px 0px;
+	padding: 3px;
+	overflow: hidden;
+	border-radius:4px;
+}	
+
+.thumbnaillist > .thumbnail > .imgThumb {
+	width:194px;
+	height:170px;
+}
+
+.thumbnaillist > .thumbnail > .caption {
+	font-size:11px;
+	color:#333;
+	display:block;
+}
