@@ -2516,7 +2516,7 @@ create table ca_data_importer_items (
    item_id           int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    group_id             int unsigned         not null,
-   source               varchar(1024)         not null,
+   source               varchar(8192)         not null,
    destination          varchar(1024)         not null,
    settings          longtext          not null,
 
@@ -7844,4 +7844,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (187, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (188, unix_timestamp());
