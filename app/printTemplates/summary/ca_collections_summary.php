@@ -47,7 +47,7 @@
  */ 
 $t_item = $this->getVar('t_subject');
 $t_display = $this->getVar('t_display');
-$placements = $this->getVar("placements");
+$display_list = $this->getVar("display_list");
 ?>
 <div class="title">
 	<h1 class="title"><?= $t_item->getLabelForDisplay();?></h1>
@@ -72,15 +72,18 @@ $placements = $this->getVar("placements");
 	{{{<unit relativeTo="ca_occurrences_x_collections"><unit relativeTo="ca_occurrences" delimiter="<br/>">^ca_occurrences.preferred_labels.name</unit> (^relationship_typename)</unit>}}}
 </div>
 <?php
-foreach($placements as $placement_id => $bundle_info){
-	if (!is_array($bundle_info)) break;
+foreach($display_list as $placement_id => $display_item) {
+	if (!is_array($display_item)) break;
+	$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+	if(!$locale && preg_match("!^ca_collections.preferred_labels!", $display_item['bundle_name'] ?? null)) { continue; }
 	
 	if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, array('purify' => true)))) {
 		if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 		$display_value = "&lt;"._t('not defined')."&gt;";
 	} 
-	
-	print '<div class="data"><span class="label">'."{$bundle_info['display']} </span><span> {$display_value}</span></div>\n";
+?>
+	<div class="data"><span class="label"><?= $display_item['display'];?></span><span> <?= $display_value; ?></span></div>
+<?php
 }
 
 if ($t_item->get("ca_collections.children.collection_id") || $t_item->get("ca_objects.object_id")){

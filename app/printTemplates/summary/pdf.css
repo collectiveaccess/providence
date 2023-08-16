@@ -1,90 +1,107 @@
+/* Fonts */
+@font-face {
+	font-family: "DejaVuSans";
+	font-style: normal;
+	font-weight: normal;
+	src: url('../../fonts/DejaVuSans.ttf') format('truetype');
+}
+
 @font-face {
 	font-family: "DejaVuSans";
 	font-style: normal;
 	font-weight: bold;
-	src: url('./fonts/DejaVuSans-Bold.ttf') format('truetype');
+	src: url('../../fonts/DejaVuSans-Bold.ttf') format('truetype');
 }
 
 @font-face {
 	font-family: "DejaVuSans";
 	font-style: italic;
 	font-weight: normal;
-	src: url('./fonts/DejaVuSans-Oblique.ttf') format('truetype');
+	src: url('../../fonts/DejaVuSans-Oblique.ttf') format('truetype');
 }
 
+/* Header/footer/body styles */	
 #header { 
-	position: fixed; 
-	left: 0px; 
-	top: -25px; 
-	right: 0px; 
-	height: 55px;	
-	text-align: left; 
-	vertical-align: top; 
-	margin: 0px 5px 10px 0px; 
-	padding: 0px 5px 2px 0px; 
-}
-
-#header .pagingText:after { 
-	content: counter(page, decimal); 
+	position: fixed;
+	left: 0px;
+	top: -35px;
+	right: 0px;
+	height: 55px;
+	text-align: left;
+	vertical-align: top;
+	margin: 0px 5px 10px 0px;
+	padding: 0px 5px 2px 0px;
 }
 
 #footer { 
-	position: fixed; 
-	left: 0px; 
-	bottom: -50px; 
-	right: 0px; 
-	height: 20px; 
-	text-align: center; 
-	vertical-align: 
-	bottom; margin: 0px 5px 10px 5px; 
-	padding: 3px 5px 2px 10px; 
+	position: fixed;
+	left: 0px;
+	bottom: -50px;
+	right: 0px;
+	height: 20px;
+	text-align: center;
+	vertical-align: bottom;
+	margin: 0px 5px 10px 5px;
+	padding: 3px 5px 2px 10px;
+}
+
+#header .pagingText:after { 
+	content: counter(page, decimal);
 }
 
 #footer .pagingText:after { 
-	content: counter(page, decimal); 
-
+	content: counter(page, decimal);
 }
 
-body { 
-	font-family: "DejaVuSans"; 
-	z-index: 30000; 
-	position: relative; 
-	margin-top: 36px;
+.body { 
+	font-family: "DejaVuSans";
+	z-index: 30000;
+	position: relative;
 }
 
 .headerText { 
-	font-family: "DejaVuSans"; 
-	font-size: 10px; 
-	margin: 0px 0px 10px 25px; 
+	font-size: 10px;
+	margin: 0px 0px 10px 25px;
 }
 
 .pagingText { 
-	font-family: "DejaVuSans"; 
-	position: absolute; 
-	top: 0px; 
-	right: 10px; 
-	font-size: 11px; 
-	text-align: right; 
-	margin: 0px 0px 10px 25px; 
+	font-family: "DejaVuSans";
+	font-size: 11px;
+	position: absolute;
+	top: 0px;
+	right: 10px;
+	text-align: right;
+	width: 150px;
+	margin: 0px 0px 10px 25px;
 }
 
 table.footerText { 
-	width: 100%; 
-
+	font-family: "DejaVuSans";
+	width: 100%;
 }
+
 td.footerText { 
-	font-family: "DejaVuSans"; 
-	font-size: 12px; 
-	text-align: center; 
+	font-size: 12px;
+	text-align: center;
 }	
 
 span.footerText { 
-	font-family: "DejaVuSans"; 
-	font-size: 12px; 
-	margin-left: 45px; 
-} 
+	font-size: 12px;
+	margin-left: 45px;
+}
 
-.title { 
+/* Utility styles */
+.pageBreak { 
+	page-break-before: always;
+}
+
+.clear { 
+	clear: both;
+	line-height: 5px;
+}
+
+/* Summary styles */
+.summary > div.title { 
 	font-family: "DejaVuSans"; 
 	font-size: 18px; 
 	font-weight: bold;
@@ -92,7 +109,14 @@ span.footerText {
 	text-align: center; 
 }
 
-span.label { 
+.summary > div.data { 
+	font-family: "DejaVuSans"; 
+	font-size: 12px; 
+	border-bottom: 1px solid #eeeeee; 
+	margin-top: 10px; 
+}
+
+.summary > div.data > span.label { 
 	font-family: "DejaVuSans"; 
 	font-size: 12px; 
 	font-weight: bold; 
@@ -109,16 +133,6 @@ span.meta {
 	display:inline-block; 
 	color:#000;
 
-}
-div.data { 
-	font-family: "DejaVuSans"; 
-	font-size: 12px; 
-	border-bottom: 1px solid #eeeeee; 
-	margin-top: 10px; 
-}
-
-div.findingAid.data { 
-	border-bottom: 0px; 
 }
 
 .representationList { 
@@ -139,38 +153,25 @@ div.findingAid.data {
 	overflow: none;
 }	
 
-.pageBreak { 
-	page-break-before: always; 
-}
-
-.clear { 
-	clear: both; 
-	line-height: 5px; 
-}
-
-/* universal header/footer styles */
-img.headerImg {height:45px; width:auto; margin-top:20px; margin-bottom:10px;}
-.pagingText { position: absolute; top: 30px; right: 30px; font: "helvetica"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px;}
-#footer .pagingText{ top:20px; }
-.footerText { position:relative; font-size: 11px;  top:13px; padding-right:40px;  }  
-
-/* dompdf */
-@page { margin: 65px 56px 35px 56px; }
-
-#headerdompdf { position: fixed; left: 0px; top: -75px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 10px 0px; padding: 0px 5px 2px 0px; }
-#footerdompdf { position: fixed; left: 0px; bottom: -0px; right: 0px; height: 0px; text-align: center; vertical-align: bottom; }
-#footerdompdf .pagingText:after { content: counter(page, decimal); }
-#footerdompdf .pagingText { position: absolute; top: 0px; right: 30px; font: "helvetica"; font-size: 11px; text-align: right; margin: 0px;}
-#footerdompdf .footerText { position:relative; font-size: 11px; padding-right:40px;  } 
-
 /* summary styles */
-.title { font: "helvetica, sans-serif"; font-size: 18px; width:100%; margin-top:10px; text-align: center; font-weight: bold;}
-.representationList { width: 100%; margin-top:10px; text-align: center; }
-.unit {font-size:12px;margin-bottom:12px;}
-h6 {font-size:12px; font-weight:bold;text-transform:uppercase; margin:0px 0px 5px 0px; padding:0px;}
-.tombstone { margin-top:20px;}
-.clear { clear: both; }
+.summary > .title { 
+	font: "helvetica, sans-serif"; 
+	font-size: 18px; 
+	width:100%; 
+	margin-top:10px; 
+	text-align: center; 
+	font-weight: bold;
+}
 
+.summary > .representationList { 
+	width: 100%; 
+	margin-top:10px; 
+	text-align: center; 
+}
+
+div.findingAid.data { 
+	border-bottom: 0px; 
+}
 
 .fileIcon{
 	background-image: url("folder.jpg");
