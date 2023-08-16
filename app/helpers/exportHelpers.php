@@ -1129,13 +1129,15 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 			  
 			}
 		}
-		$view->setVar('placements', $display_list);
+		$view->setVar('placements', $display_list);	// for compatibility with older reports
+		$view->setVar('display_list', $display_list);
 
 		$request->user->setVar("{$table}_summary_display_id", $display_id);
 	} else {
 		$display_id = null;
 		$view->setVar('display_id', null);
-		$view->setVar('placements', []);
+		$view->setVar('placements', []);	// for compatibility with older reports
+		$view->setVar('display_list', []);
 	}
 
 	//

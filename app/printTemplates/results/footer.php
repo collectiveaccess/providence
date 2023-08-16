@@ -65,6 +65,13 @@ if($this->getVar('param_showSearchTermInFooter')) {
 			<head>
 				<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 				<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} 
+?>
 			</head>
 			<body>
 				<table class="footerText"><tr>
