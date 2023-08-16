@@ -2297,7 +2297,7 @@ class TimeExpressionParser {
 		
 			# date/time expression
 			
-			// Implicitly set BC on start date if no era set for start and end is BCE
+			// Implicitly set BCE on start date if no era set for start and end is BCE
 			if(isset($pa_dates['end']['era']) && ($pa_dates['end']['era'] === TEP_ERA_BC) && !isset($pa_dates['start']['era'])) {
 				$pa_dates['start']['era'] = TEP_ERA_BC;
 				$pa_dates['start']['year'] *= -1;
