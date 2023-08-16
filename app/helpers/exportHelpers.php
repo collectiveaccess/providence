@@ -328,6 +328,7 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * @param string $output_filename
  * @param array $options Options include:
  *		output = where to output data. Values may be FILE (write to file) or STREAM. [Default is stream]
+ *		display = ca_bundle_displays object loaded with currently selected displat. [Default is null]
  *
  * @return ?array|bool If output is FILE, path to file or null if file could not be generated. If output is STREAM null returned on error; true returned on success
  *
@@ -346,6 +347,9 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	$table = $result->tableName();
 	
 	$type = $display_id = null;
+	if($t_display = caGetOption('display', $options, null)) {
+		$display_id = $t_display->getPrimaryKey();
+	}
 	$export_config = $template_info = null;
 	
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
@@ -421,6 +425,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		$placements = $t_display->getPlacements(['settingsOnly' => true]);
 		$view->setVar('display_list', $placements);
 		$view->setVar('display', $t_display);
+		$view->setVar('t_display', $t_display); 	// legacy reports
 		
 		foreach($placements as $placement_id => $display_item) {
 			$settings = caUnserializeForDatabase($display_item['settings']);

@@ -600,13 +600,15 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$t_instance = null;
 		$vs_table = get_called_class();
 		
+		$include_deleted = caGetOption('includeDeleted', $pa_options, false);
+		
 		$t_instance = new $vs_table;
 		if (!is_array($pa_values)) {
 			if ((int)$pa_values > 0) { 
 				$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
 				if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 			} elseif($pa_values === '*') {
-				$pa_values = (caGetOption('includeDeleted', $pa_options, false) || !$t_instance->hasField('deleted')) ? [] : ['deleted' => 0];
+				$pa_values = ($include_deleted || !$t_instance->hasField('deleted')) ? [] : ['deleted' => 0];
 			}
 		}
 		
@@ -661,14 +663,14 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	
 		// Check for intrinsics in value array
 		if (is_array($pa_values) && !sizeof($pa_values)) { 
-			return parent::find($t_instance->hasField('deleted') ? ['deleted' => 0] : '*', $pa_options);
+			return parent::find((!$include_deleted && $t_instance->hasField('deleted')) ? ['deleted' => 0] : '*', $pa_options);
 		}
 		$vb_has_simple_fields = false;
 		foreach ($pa_values as $vs_field => $va_field_values) {
 			foreach ($va_field_values as  $va_field_value) {
 				$vs_op = $va_field_value[0];
 				$vm_value = $va_field_value[1];
-				if ($vm_value === '*') { return parent::find($t_instance->hasField('deleted') ? ['deleted' => 0] : '*', $pa_options); }
+				if ($vm_value === '*') { return parent::find((!$include_deleted && $t_instance->hasField('deleted')) ? ['deleted' => 0] : '*', $pa_options); }
 				if ($t_instance->hasField($vs_field)) { $vb_has_simple_fields = true; break; }
 			}
 		}
@@ -1114,7 +1116,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$va_sql_params[] = $pa_check_access;
 		}
 					
-		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0)" : '';
+		$vs_deleted_sql = (!$include_deleted && $t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0)" : '';
 		
 		$va_sql = [];
 		if ($vs_wheres = join(" {$ps_boolean} ", $va_label_sql)) { $va_sql[] = "({$vs_wheres})"; }

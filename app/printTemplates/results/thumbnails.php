@@ -53,7 +53,7 @@ $items_per_page 		= $this->getVar('current_items_per_page');
 $result_context 		= $this->getVar('result_context');
 $num_items				= (int)$result->numHits();
 ?>
-<div id='body'>
+<div class='body thumbnaillist'>
 <?php
 	$result->seek(0);
 	$start = $lines_on_page = $items_in_line = $left = $top = $page_count = 0;
@@ -84,7 +84,9 @@ $num_items				= (int)$result->numHits();
 			
 			$top = ($this->getVar('PDFRenderer') === 'domPDF') ? 0 : ($page_count * 183);
 			
-			print "<div class=\"pageBreak\" style=\"page-break-before: always;\">&nbsp;</div>\n";
+?>
+			<div class="pageBreak">&nbsp;</div>
+<?php
 		}
 	}
 ?>

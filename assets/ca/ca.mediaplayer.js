@@ -100,26 +100,25 @@ var caUI = caUI || {};
 					that.isPlaying[playerName] = true;
 					break;
 				case 'Plyr':
-					that.players[playerName].play();
-					
-					const c = that.players[playerName].currentTime;
-					if (t > c) {
-						that.players[playerName].forward(t - c);
-					} else {
-						that.players[playerName].rewind(c - t);
-					} 
+					that.players[playerName].stop();
 					that.isPlaying[playerName] = false;
 					
-					that.players[playerName].on('canplaythrough', (event) => {
-						if(that.isPlaying[playerName]) { return; }
+					const c = that.players[playerName].currentTime;
+					let readyState = that.players[playerName].media.readyState;
+					
+					if(readyState >= 1) {
+						that.players[playerName].currentTime = t;
 						that.isPlaying[playerName] = true;
 						that.players[playerName].play();
-						if (t > c) {
-							that.players[playerName].forward(t - c);
-						} else {
-							that.players[playerName].rewind(c - t);
-						} 
-					});
+					} else {
+						that.players[playerName].on('canplaythrough', (event) => {
+							if(that.isPlaying[playerName]) { return; }
+							that.isPlaying[playerName] = true;
+							
+							that.players[playerName].currentTime = t;
+							that.players[playerName].play();
+						});
+					}
 					break;
 				case 'MediaElement':
 					that.players[playerName][0].play();

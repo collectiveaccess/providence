@@ -796,7 +796,11 @@ class BaseEditorController extends ActionController {
         if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
         
         $template = $this->request->getParameter('template', pString);
-        $display_id = (int)$this->request->getParameter('display_id', pString);
+        $display_id = $this->request->getParameter('display_id', pString);
+        if(preg_match("!^_pdf_!", $display_id)) {
+        	$template = $display_id;
+        	$display_id = 0;
+        }
 
 		$table = $t_subject->tableName();
 		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
@@ -2684,7 +2688,7 @@ class BaseEditorController extends ActionController {
 			foreach($_FILES['files']['tmp_name'] as $i => $f) {
 				if(!strlen($f)) { continue; }
 				
-				$dest_filename = isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME);
+				$dest_filename = preg_replace("![^A-Za-z0-9_\-\.]+!", "_", isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME));
 				if(!@copy($f, $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
 				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path

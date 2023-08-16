@@ -1255,6 +1255,16 @@ if (!$pb_omit_editing_info) {
 					'label' => _t('Display format'),
 					'description' => _t('Template used to format output.')
 				),
+				'locale' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => "200px", 'height' => 1,
+					'default' => '',
+					'useLocaleList' => true,
+					'allowNull' => true,
+					'label' => _t('Locale'),
+					'description' => _t('Locale to use for output.')
+				),
 				'delimiter' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
@@ -2249,6 +2259,7 @@ if (!$pb_omit_editing_info) {
 		if (!isset($options['maximumLength'])) { $options['maximumLength'] =  ($va_settings['maximum_length'] ?? null) ? $va_settings['maximum_length'] : null; }
 		if (!isset($options['filter'])) { $options['filter'] = caGetOption('filter', $va_settings, null); }
 		
+		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $options, null));
 		$options['delimiter'] = caGetOption('delimiter', $options, caGetOption('delimiter', $va_settings, '; '));
 		$options['dateFormat'] = caGetOption('dateFormat', $options, caGetOption('dateFormat', $va_settings, ''));
 		$options['useSingular'] = (isset($va_settings['sense']) && ($va_settings['sense'] == 'singular')) ? true : false;
