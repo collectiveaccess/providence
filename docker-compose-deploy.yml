@@ -1,13 +1,41 @@
 services:
   providence:
-    restart: unless-stopped
-    depends_on: 
+    depends_on:
       - mysql
-      - redis
+    build: .
+    ports:
+      - ${APACHE_LOCALHOST_PORT-127.0.0.1:8098}:80
     volumes:
+      - $PWD:/app/apache2/htdocs
       - ${APACHE_LOGS_DIR:-./log}:/app/apache2/logs
       - ${CA_MEDIA_DIR:-./media}:/app/apache2/htdocs/media
       - ${CA_IMPORT_DIR:-./import}:/app/apache2/htdocs/import
     links:
-      - mysql 
+      - mysql
 
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - mysql_data:/var/lib/mysql 
+    command: --max_allowed_packet=32505856 ## useful for loading massive database
+    ports:
+      - ${MYSQL_LOCALHOST_PORT-127.0.0.1:3396}:3306
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOTPASS-pRoViDeNcEdEvEnV}
+      MYSQL_DATABASE: ${MYSQL_DB-ca}
+      MYSQL_USER: ${MYSQL_USER-ca_user}
+      MYSQL_PASSWORD: ${MYSQL_PASS-ca_password}
+   
+  redis:
+    image: redis:5
+    ports:
+      - ${REDIS_LOCALHOST_PORT-127.0.0.1:6399}:6379
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+
+volumes:
+ mysql_data:
+ redis_data:

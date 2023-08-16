@@ -26,3 +26,4 @@ build
 /support/scripts/*.sh
 .env
 /uploads/
+/log/
