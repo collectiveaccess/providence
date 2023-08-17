@@ -1245,6 +1245,9 @@ class DisplayTemplateParser {
                                 $va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => false], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
                                 if (!is_array($va_val_list)) { $va_val_list = array(); }
                             
+                            	$delimiter = caGetOption('delimiter', $va_parsed_tag_opts['options'], '; ');
+                            	$va_val_list = array_map(function($v) use ($delimiter) { return is_array($v) ? join($delimiter, $v) : $v; }, $va_val_list);
+                          
                                 if (!caGetOption('skipWhen', $pa_options, false)) { 
                                     if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_val_list)))) {
                                         $va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
