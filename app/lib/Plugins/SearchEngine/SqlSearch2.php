@@ -798,12 +798,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$params[] = $ap['relationship_type_ids'];
 			}
 			$qr_res = $this->db->query("
-				SELECT swi.index_id, swi.row_id, SUM(swi.boost) boost
+				SELECT swi.index_id, swi.row_id, swi.boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 				WHERE
 					swi.table_num = ? AND swi.field_table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ? {$rel_type_sql}
-				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
 		}
