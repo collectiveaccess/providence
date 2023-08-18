@@ -400,7 +400,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vs_right_table_name = $this->getRightTableName();
 		
 		$restrict_to_relationship_types = caGetOption(['restrictToRelationshipTypes', 'restrict_to_relationship_types'], $pa_options, null);
-		$vb_dont_include_subtypes_in_type_restriction = caGetOptions('dont_include_subtypes_in_type_restriction', $pa_options, false);
+		$vb_dont_include_subtypes_in_type_restriction = (bool)caGetOption('dont_include_subtypes_in_type_restriction', $pa_options, false);
 		
 		$o_db = $this->getDb();
 		$t_rel_type = new ca_relationship_types();
