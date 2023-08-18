@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -308,11 +308,28 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			    ];
 			    
 			} else { // raw text
+				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+				$res = $this->opo_plugin->lookup($pa_element_info['settings'], $ps_value);
+				$selected_result = null;
+				if(is_array($res['results'] ?? null) && sizeof($res['results'])) {
+					$v = mb_strtolower($ps_value);
+					foreach($res['results'] as $r) {
+						if(mb_strtolower($r['label']) === $v) {
+							$selected_result = $r;
+							break;
+						}
+					}
+					if(!$selected_result) { $selected_result = array_shift($res['results']); }
+				}
+				if($selected_result && !caGetOption('isRecursive', $pa_options, false)) {
+					return self::parseValue($selected_result['url'], $pa_element_info, array_merge($pa_options, ['isRecursive' => true]));
+				}
 				return [
 			        'value_longtext1' => $ps_value,
 			        'value_longtext2' => '',
 			        'value_decimal1' => null,
-			        'value_blob' => null
+			        'value_blob' => null,
+			        'value_sortable' => $this->sortableValue($ps_value)
 			    ];
 			}
 		}
