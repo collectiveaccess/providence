@@ -197,7 +197,7 @@ function caGetThemeUrlPath() : string {
   */
 function caGetDefaultLogo() : string {
 	if(function_exists('caGetLoginLogo')) { 
-		return caGetLoginLogo();
+		return caGetLoginLogo() ?? '';
 	}
 	$url = caGetThemeUrlPath()."/graphics/logos/logo.svg";
 	$width = 327;
