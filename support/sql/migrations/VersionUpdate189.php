@@ -109,6 +109,8 @@ SQL;
 		$this->dropForeignKeys($db, $this->getDropForeignKeys());
 		$this->createIndexes($db, $this->getCreateIndexSimple());
 		$this->removeDefaultValues($db);
+		$this->setIsTemplateDefault($db);
+		$this->setIsUserRoleRankDefault($db);
 	}
 
 	private function addForeignKeys(Db $db, array $foreign_keys)
@@ -127,8 +129,12 @@ SQL;
 	private function modifyColumns(Db $db, array $modify_columns)
 	{
 		foreach ($modify_columns as $info) {
-			$db->query("ALTER TABLE $info[0] MODIFY $info[1] $info[2]");
-			$this->messages[__METHOD__]['added'][ $info[0] ][ $info[1] ] = $info[2];
+			try {
+				$db->query("ALTER TABLE $info[0] MODIFY $info[1] $info[2]");
+				$this->messages[__METHOD__]['added'][ $info[0] ][ $info[1] ] = $info[2];
+			} catch(DatabaseException $e) {
+				$this->messages[__METHOD__]['skipped'][ $info[0] ][ $info[1] ] = $info[2];
+			}
 		}
 	}
 
@@ -1125,11 +1131,11 @@ SQL;
 				'idno_sort_num',
 				'BIGINT DEFAULT 0 NOT NULL',
 			],
-			[
-				'ca_sql_search_word_index',
-				'index_id',
-				'BIGINT unsigned AUTO_INCREMENT',
-			],
+// 			[
+// 				'ca_sql_search_word_index',
+// 				'index_id',
+// 				'BIGINT unsigned AUTO_INCREMENT',
+// 			],
 			[
 				'ca_storage_locations',
 				'idno_sort_num',
@@ -1569,5 +1575,35 @@ SQL;
 	{
 		$db->query("ALTER TABLE ca_metadata_element_labels ALTER COLUMN is_preferred DROP DEFAULT");
 		$this->messages[__METHOD__]['added'][ 'ca_metadata_element_labels' ] = 'is_preferred DROP DEFAULT';
+	}
+	
+	/**
+	 * @param Db $db
+	 *
+	 * @return DbResult|false
+	 */
+	public function setIsTemplateDefault(Db $db)
+	{
+		foreach([
+			'ca_objects', 'ca_object_lots', 
+			'ca_entities', 'ca_occurrences', 
+			'ca_collections', 'ca_places', 
+			'ca_object_representations', 'ca_loans', 
+			'ca_movements', 'ca_storage_locations'
+		] as $table) {
+			$db->query("ALTER TABLE ca_metadata_element_labels ALTER COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
+			$this->messages[__METHOD__]['added'][ $table ] = 'is_template TINYINT unsigned NOT NULL DEFAULT 0';
+		}
+	}
+	
+	/**
+	 * @param Db $db
+	 *
+	 * @return DbResult|false
+	 */
+	public function setIsUserRoleRankDefault(Db $db)
+	{
+		$db->query("ALTER TABLE ca_users_x_roles ALTER COLUMN `rank` INT unsigned NOT NULL DEFAULT 0");
+		$this->messages[__METHOD__]['added'][ 'ca_users_x_roles' ] = 'rank INT unsigned NOT NULL DEFAULT 0';
 	}
 }
