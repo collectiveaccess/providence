@@ -1829,7 +1829,7 @@ create table ca_task_queue
    completed_on                   int unsigned,
    priority                       smallint unsigned              not null default 0,
    handler                        varchar(20)                    not null,
-   parameters                     text                           not null,
+   parameters                     longtext                           not null,
    notes                          longtext                       null,
    error_code                     smallint unsigned              not null default 0,
    primary key (task_id)
@@ -2516,7 +2516,7 @@ create table ca_data_importer_items (
    item_id           int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    group_id             int unsigned         not null,
-   source               varchar(1024)         not null,
+   source               varchar(8192)         not null,
    destination          varchar(1024)         not null,
    settings          longtext          not null,
 
@@ -4927,6 +4927,7 @@ create table ca_sets (
     tagging_status tinyint unsigned not null default 0,
     rating_status tinyint unsigned not null default 0,
 	set_code    varchar(100) null,
+	set_code_sort varchar(100) null,
 	table_num	tinyint unsigned not null,
 	access		tinyint unsigned not null default 0,	
 	status		tinyint unsigned not null default 0,
@@ -4947,6 +4948,7 @@ create table ca_sets (
 	key i_hier_set_id (hier_set_id),
 	key i_table_num (table_num),
 	key i_source_id (source_id),
+	key i_set_code_sort (set_code_sort),
       
    constraint fk_ca_sets_parent_id foreign key (parent_id)
       references ca_sets (set_id) on delete restrict on update restrict,
@@ -7842,4 +7844,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (185, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (189, unix_timestamp());
