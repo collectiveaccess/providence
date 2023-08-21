@@ -1591,7 +1591,7 @@ SQL;
 			'ca_object_representations', 'ca_loans', 
 			'ca_movements', 'ca_storage_locations'
 		] as $table) {
-			$db->query("ALTER TABLE {$table} ALTER COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
+			$db->query("ALTER TABLE {$table} MODIFY COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
 			$this->messages[__METHOD__]['added'][ $table ] = 'is_template TINYINT unsigned NOT NULL DEFAULT 0';
 		}
 	}
@@ -1603,7 +1603,7 @@ SQL;
 	 */
 	public function setIsUserRoleRankDefault(Db $db)
 	{
-		$db->query("ALTER TABLE ca_users_x_roles ALTER COLUMN `rank` INT unsigned NOT NULL DEFAULT 0");
+		$db->query("ALTER TABLE ca_users_x_roles MODIFY COLUMN `rank` INT unsigned NOT NULL DEFAULT 0");
 		$this->messages[__METHOD__]['added'][ 'ca_users_x_roles' ] = 'rank INT unsigned NOT NULL DEFAULT 0';
 	}
 }
