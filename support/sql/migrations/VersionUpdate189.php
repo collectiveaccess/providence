@@ -1,7 +1,6 @@
 <?php
-
 /** ---------------------------------------------------------------------
- * app/lib/VersionUpdate186.php :
+ * app/lib/VersionUpdate189.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +33,10 @@
 require_once(__CA_LIB_DIR__ . '/BaseVersionUpdater.php');
 
 
-class VersionUpdate186 extends BaseVersionUpdater
+class VersionUpdate189 extends BaseVersionUpdater
 {
 	# -------------------------------------------------------
-	protected $opn_schema_update_to_version_number = 186;
+	protected $opn_schema_update_to_version_number = 189;
 	protected $messages = [];
 	# -------------------------------------------------------
 
