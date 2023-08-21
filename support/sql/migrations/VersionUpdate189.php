@@ -1591,7 +1591,7 @@ SQL;
 			'ca_object_representations', 'ca_loans', 
 			'ca_movements', 'ca_storage_locations'
 		] as $table) {
-			$db->query("ALTER TABLE ca_metadata_element_labels ALTER COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
+			$db->query("ALTER TABLE {$table} ALTER COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
 			$this->messages[__METHOD__]['added'][ $table ] = 'is_template TINYINT unsigned NOT NULL DEFAULT 0';
 		}
 	}
