@@ -1,7 +1,6 @@
 <?php
-
 /** ---------------------------------------------------------------------
- * app/lib/VersionUpdate186.php :
+ * app/lib/VersionUpdate189.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +33,10 @@
 require_once(__CA_LIB_DIR__ . '/BaseVersionUpdater.php');
 
 
-class VersionUpdate186 extends BaseVersionUpdater
+class VersionUpdate189 extends BaseVersionUpdater
 {
 	# -------------------------------------------------------
-	protected $opn_schema_update_to_version_number = 186;
+	protected $opn_schema_update_to_version_number = 189;
 	protected $messages = [];
 	# -------------------------------------------------------
 
@@ -1592,7 +1591,7 @@ SQL;
 			'ca_object_representations', 'ca_loans', 
 			'ca_movements', 'ca_storage_locations'
 		] as $table) {
-			$db->query("ALTER TABLE ca_metadata_element_labels ALTER COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
+			$db->query("ALTER TABLE {$table} ALTER COLUMN is_template TINYINT unsigned NOT NULL DEFAULT 0");
 			$this->messages[__METHOD__]['added'][ $table ] = 'is_template TINYINT unsigned NOT NULL DEFAULT 0';
 		}
 	}
