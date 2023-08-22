@@ -49,20 +49,25 @@
  */ 
 $t_item 				= $this->getVar('t_subject');
 $t_display 				= $this->getVar('t_display');
-$placements 			= $this->getVar("placements");
+$display_list 			= $this->getVar("display_list");
 ?>
-	<br/>
+<div class="summary">
 	<div class="title">
 		<?= $t_item->getLabelForDisplay();?>
 	</div>
-<?php
-foreach($placements as $placement_id => $bundle_info){
-	if (!is_array($bundle_info)) break;
+	<?php
+	foreach($display_list as $placement_id => $display_item) {
+		if (!is_array($display_item)) break;
+		$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+		if(!$locale && preg_match("!^".$t_item->tableName().".preferred_labels!", $display_item['bundle_name'] ?? null)) { continue; }
 	
-	if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, array('purify' => true)))) {
-		if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
-		$display_value = "&lt;"._t('not defined')."&gt;";
-	} 
-	
-	print '<div class="data"><span class="label">'."{$bundle_info['display']} </span><span> {$display_value}</span></div>\n";
-}
+		if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, ['purify' => true]))) {
+			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
+			$display_value = "&lt;"._t('not defined')."&gt;";
+		} 
+	?>
+		<div class="data"><span class="label"><?= $display_item['display']; ?></span><span> <?= $display_value; ?></span></div>
+	<?php
+	}
+?>
+</div>

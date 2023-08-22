@@ -178,6 +178,11 @@ var caUI = caUI || {};
 			if (!id) { id = 'new_' + (that.getCount() - 1); } // default to current "new" option
 			var item_id = data.id;
 			var type_id = (data.type_id) ? data.type_id : '';
+			
+			// transform with type map when available
+			if(options.relationshipTypes['_type_map'][type_id]) {
+				type_id = options.relationshipTypes['_type_map'][type_id];
+			}
 			if (parseInt(item_id) < 0) { return; }
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,16 +56,23 @@ switch($this->getVar('PDFRenderer')) {
 <!--BEGIN FOOTER-->
 <!DOCTYPE html>
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-</head>
-<body>
-	<?= $footer; ?>
-</body>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} 
+?>
+	</head>
+	<body>
+		<?= $footer; ?>
+	</body>
 </html>
 <!--END FOOTER-->
-
 <?php
 	break;
 }
+

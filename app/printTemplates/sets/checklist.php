@@ -51,17 +51,21 @@ $result 				= $this->getVar('result');
 $num_items			= (int)$result->numHits();
 $t_set					= $this->getVar("t_set");
 ?>
-<div id='body'>
+<div id='body set'>
 	<div class="row">
-		<table>
-		<tr><td>
-			<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
+		<table width="100%">
+			<tr>
+				<td>
+					<div class='title'>
+						<?= $t_set->get("ca_sets.preferred_labels.name"); ?>
+					</div>
 <?php
-			if($t_set->get("description")){
-				print "<p>".$t_set->get("description")."</p>";
-			}
+					if($t_set->get("description")){
+						print "<p class='setDescription'>".$t_set->get("description")."</p>";
+					}
 ?>
-		</td></tr>
+				</td>
+			</tr>
 		</table>
 	</div>
 <?php
@@ -73,31 +77,31 @@ while($result->nextHit()) {
 	$c++;
 	$object_id = $result->get('ca_objects.object_id');		
 ?>
-	<div class="row">
-	<table>
-	<tr>
-		<td><b><?php print $c; ?></b>&nbsp;&nbsp;</td>
-		<td>
+		<div class="row">
+			<table width="100%">
+				<tr valign="top">
+					<td><div class="itemNumber"><?= $c; ?></div></td>
+					<td width="20%">
 <?php 
-			if ($vs_path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
-				print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
-			} else {
+						if (($path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) && file_exists($path)) {
+							print "<div class=\"imageTiny\"><img src='{$path}'/></div>";
+						} else {
 ?>
-				<div class="imageTinyPlaceholder">&nbsp;</div>
+							<div class="imageTinyPlaceholder">&nbsp;</div>
 <?php					
-			}	
-?>								
-
-		</td><td>
-			<div class="metaBlock">
+						}	
+?>	
+					</td>
+					<td>
+						<div class="metaBlock">
 <?php				
-			print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 							
+							print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 					
 ?>
-			</div>				
-		</td>	
-	</tr>
-	</table>	
-	</div>
+						</div>				
+					</td>	
+				</tr>
+			</table>	
+		</div>
 <?php
 }
 ?>

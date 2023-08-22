@@ -269,7 +269,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			    switch($vs_context) {
 			        case 'parent':
 			        	if($force_values) {
-			        		$va_rels = $t_parent->getRelatedItems($vs_target, ['showCurrentOnly' => caGetOption('currentOnly', $va_rule, false)]);
+			        		$va_rels = $t_parent ? $t_parent->getRelatedItems($vs_target, ['showCurrentOnly' => caGetOption('currentOnly', $va_rule, false)]) : [];
 			        	} else {
 							$t_parent = Datamodel::getInstance($t_instance->tableName());
 							if (($vn_parent_id = $t_instance->get($t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) && $t_parent->load($vn_parent_id)) {

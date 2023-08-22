@@ -452,7 +452,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
-				'class' => $vs_class
+				'class' => $vs_class,
+				'placeholder' => $pa_options['placeholder'] ?? null
 			)
 		);
 		

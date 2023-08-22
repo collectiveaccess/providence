@@ -46,18 +46,14 @@ switch($this->getVar('PDFRenderer')) {
 ?>
 <!--BEGIN HEADER--><!DOCTYPE html>
 <html>
-<head >
-<div id="head">
-<?php
-if(file_exists($this->getVar('base_path')."/local/pdf.css")){
-?>
-	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
-<?php	
-} else {
-?>
+<head>
 	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
-}
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} 
 
 	if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
 	if($this->getVar('param_includePageNumbers')) {  print "<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>"; }
@@ -78,10 +74,8 @@ if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 			document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
 		}
 	</script>
-</div>
 </head>
-<body onload='dynvar();'>
-</body>
+<body onload='dynvar();'></body>
 </html>
 <!--END HEADER-->
 <?php
