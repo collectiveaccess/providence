@@ -474,13 +474,15 @@ class DisplayTemplateParser {
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
-					
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
+
 					$va_get_options = [
 						'limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $check_access, 
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
-						'locale' => caGetOption('locale', $pa_options, null)
+						'locale' => caGetOption('locale', $pa_options, null),
+						'filterNonPrimaryRepresentations' => $filter_non_primary_reps
 					];
 					
 					if (!is_null($vb_omit_blanks)) { 
