@@ -297,11 +297,11 @@ class BaseSearchController extends BaseRefineableSearchController {
 		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
-				caExportAsLabels($this->request, $vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values]);
+				caExportAsLabels($this->request, $vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display]);
 				break;
 			# ------------------------------------
 			case 'EXPORT':
-				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values]);
+				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display]);
 				break;
 			# ------------------------------------
 			case 'HTML': 

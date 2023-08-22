@@ -607,6 +607,9 @@ trait ModelSettings {
 					} else {
 						if ($vb_locale_list) {
 							$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
+							if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+								$va_rel_opts = array_merge([_t('Default') => null], $va_rel_opts);
+							}
 						} elseif($vb_policy_list) {
 							$table = caGetOption('table', $pa_options, null);
 							$rel_table = caGetOption('relatedTable', $pa_options, null);

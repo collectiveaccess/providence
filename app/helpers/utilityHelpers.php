@@ -2972,7 +2972,7 @@ function caFileIsIncludable($ps_file) {
 
 			foreach($va_params_raw as $vs_param_raw) {
 				$va_tmp = explode('=', $vs_param_raw);
-				$va_opts[$va_tmp[0]] = $va_tmp[1];
+				$va_opts[$va_tmp[0]] = urldecode($va_tmp[1]);
 			}
 		}
 

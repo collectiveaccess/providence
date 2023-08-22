@@ -4128,6 +4128,8 @@ jQuery(document).ready(function() {
 		$start_timecode		 				= caGetOption('startTimecode', $pa_options, null);
 		$ps_display_type		 			= caGetOption('display', $pa_options, false);
 
+		$vs_slides = '';
+		$slide_list = [];
  		
  		$t_instance = Datamodel::getInstanceByTableName($po_data->tableName(), true);
  		
@@ -4218,6 +4220,7 @@ jQuery(document).ready(function() {
 
 				$vn_count = 0;
 
+				$slide_list = [];
 				foreach($va_rep_info as $vn_order => $va_rep){
 					if(sizeof($va_rep_ids) > 1){ 
 						$vs_slides .= "<li id='slide{$va_rep['rep_id']}' class='{$va_rep['rep_id']}'>"; 
@@ -4227,6 +4230,7 @@ jQuery(document).ready(function() {
 					if(sizeof($va_rep_ids) > 1) { 
 						$vs_slides .= "</li>"; 
 					}
+					$slide_list[] = $va_rep["tag"];
 
 					$vn_count++;
 				}
@@ -4260,6 +4264,7 @@ jQuery(document).ready(function() {
 		$o_view->setVar('representation_ids', $va_rep_ids);
 		$o_view->setVar('placeholder', $vs_placeholder);
 		$o_view->setVar('slides', $vs_slides);
+		$o_view->setVar('slide_list', $slide_list);
 		$o_view->setVar('display_annotations', $ps_display_annotations);
 		$o_view->setVar('default_annotation_id', $default_annotation_id);
 		$o_view->setVar('start_timecode', $start_timecode);

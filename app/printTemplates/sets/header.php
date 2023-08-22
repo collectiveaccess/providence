@@ -35,20 +35,16 @@ switch($this->getVar('PDFRenderer')) {
 	case 'domPDF'
 ?>
 <div id='header'>
-
-<?php
-if(file_exists($this->getVar('base_path')."/local/pdf.css")){
-?>
-	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
-<?php	
-} else {
-?>
 	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
-}	
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} 	
 
-if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
-if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText'>"._t('Page')." </div>"; }
+	if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
+	if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText'>"._t('Page')." </div>"; }
 ?>
 </div>
 <?php
@@ -57,42 +53,38 @@ if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText'>"
 ?>
 <!--BEGIN HEADER--><!DOCTYPE html>
 <html>
-<head>
+	<head>
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
-if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+		if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
-	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+			<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
 <?php	
-} else {
-?>
-	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-<?php
-}
+		} 
 
-if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
-if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>"; }
+	if($this->getVar('param_includeLogo')) { print caGetReportLogo(); }
+	if($this->getVar('param_includePageNumbers')) { print "<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>"; }
 ?>
 
-<script>
-	function dynvar() {
-		var vars = {};
-		var x = document.location.search.substring(1).split('&');
+	<script>
+		function dynvar() {
+			var vars = {};
+			var x = document.location.search.substring(1).split('&');
 
-		for (var i in x) {
-			var z = x[i].split('=',2);
+			for (var i in x) {
+				var z = x[i].split('=',2);
 
-			if (!vars[z[0]]) {
-				vars[z[0]] = unescape(z[1]);
+				if (!vars[z[0]]) {
+					vars[z[0]] = unescape(z[1]);
+				}
 			}
-		}
 
-		document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
-	}
+			document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
+		}
 	
-</script>
-</head>
-<body onload='dynvar();'>
-</body>
+	</script>
+	</head>
+	<body onload='dynvar();'></body>
 </html>
 <!--END HEADER-->
 <?php
