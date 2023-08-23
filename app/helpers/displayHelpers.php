@@ -2029,7 +2029,7 @@ jQuery(document).ready(function() {
 		if($po_view->request->user->getPreference('show_search_result_desc') === 'show') {
 			$result_desc = $o_result_context->getResultDescription() ?? null;
 			if(is_array($result_desc) && sizeof($result_desc)) {
-				$vs_buf .= "<div class='searchResultDesc'><span class='searchResultDescHeading'>"._t('Search <em>%1</em> matched on', $o_result_context->getSearchExpression()).':</span><br/>'.caFormatSearchResultDesc($t_item->getPrimaryKey(), $result_desc, ['maxTitleLength' => 20, 'request' => $po_view->request])."</div>\n";
+				$vs_buf .= "<div class='searchResultDesc'><span class='searchResultDescHeading'>"._t('Search <em>%1</em> matched on', $o_result_context->getSearchExpression()).':</span><br/>'.($t_item->getPrimaryKey() ? caFormatSearchResultDesc($t_item->getPrimaryKey(), $result_desc, ['maxTitleLength' => 20, 'request' => $po_view->request]) : '')."</div>\n";
 			}
 		}
         $o_app_plugin_manager = new ApplicationPluginManager();

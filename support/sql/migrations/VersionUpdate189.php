@@ -47,7 +47,6 @@ class VersionUpdate189 extends BaseVersionUpdater
 	 */
 	public function applyDatabaseUpdate($pa_options = null)
 	{
-
 		$db	 = new Db();
 		$this->runMigrations($db);
 		foreach ($this->messages as $migration => $message) {
@@ -129,6 +128,9 @@ SQL;
 	private function modifyColumns(Db $db, array $modify_columns)
 	{
 		foreach ($modify_columns as $info) {
+			if(isset($info[3])) {
+				$db->query($info[3]);
+			}
 			try {
 				$db->query("ALTER TABLE $info[0] MODIFY $info[1] $info[2]");
 				$this->messages[__METHOD__]['added'][ $info[0] ][ $info[1] ] = $info[2];
@@ -1075,6 +1077,7 @@ SQL;
 				'ca_entity_labels',
 				'checked',
 				'TINYINT UNSIGNED DEFAULT \'0\' NOT NULL',
+				'UPDATE ca_entity_labels SET checked = 0 WHERE checked IS NULL OR checked <> 1'
 			],
 			[
 				'ca_list_items',
