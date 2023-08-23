@@ -27,4 +27,3 @@ build
 .env
 /uploads/
 /log/
-/app/log/apache*log
