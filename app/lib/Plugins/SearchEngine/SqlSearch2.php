@@ -85,7 +85,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	static protected $filter_stop_words = null;
 	# -------------------------------------------------------
-	public function __construct($db=null) {
+    public function __construct($db=null) {
 		global $g_ui_locale;
 		
 		parent::__construct($db);
@@ -227,7 +227,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	private function _processQuery(int $subject_tablenum, $query) {
 		$qclass = get_class($query);
-		
+
 		$row_ids = [];
 		switch($qclass) {
 			case 'Zend_Search_Lucene_Search_Query_Boolean':
@@ -334,6 +334,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$acc = [];
 	 	foreach($terms as $i => $term) {
 	 		$hits = $this->_processQueryTerm($subject_tablenum, $term);
+			$signs = [];
 	 		$op = $this->_getBooleanOperator($signs, $i);
 
 	 		switch($op) {
@@ -534,6 +535,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			$results[$i] = $this->_arrayFromDbResult($qr_res);
 		}
+
 		$ret = array_shift($results);
 		foreach($results as $r) {
 			if(!is_array($r)) { continue; }
@@ -596,7 +598,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$w = 0;
 	 		foreach($words as $w => $word) {
 	 			$word_op = '=';
-	 			if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
+	 			if((strpos($word, '*') !== false) || (strpos($word, '?') !== false)) {
 	 				$word_op = 'LIKE';
 					$word = str_replace('*', '%', $word);
 					$word = str_replace('?', '_', $word);
@@ -606,7 +608,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$this->_createTempTable($temp_table);
 			
 				$tc = sizeof($temp_tables);
-				$qr_res = $this->db->query("
+				$this->db->query("
 					INSERT INTO {$temp_table}
 					SELECT swi.index_id + 1, 1, null
 					FROM ca_sql_search_words sw 
@@ -616,8 +618,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
 						{$private_sql}
 				", $word, (int)$subject_tablenum);
-				$qr_count = $this->db->query("SELECT count(*) c FROM {$temp_table}");
-			
+
 				$temp_tables[] = $temp_table;	
 			}
 			$results_temp_table = array_pop($temp_tables);
@@ -625,6 +626,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$this->db->query("UPDATE IGNORE {$results_temp_table} SET row_id = row_id - 1");
 			
 			$params = [];
+            $field_sql = '';
 			if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
 				$res = [];
 				foreach($restrictions['restrict'] as $r) {
@@ -642,7 +644,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$params[] = join(',', $flds);
 				}
 				if(sizeof($res)) {
-					$field_sql .= " AND (".join(' AND ', $res).")";
+                    $field_sql .= " AND (".join(' AND ', $res).")";
 				}
 			}
 			
@@ -969,7 +971,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				
 				if(!($fi = Datamodel::getInstance($tmp[0], true))) { continue; }
 				if(!$fi->hasField($tmp[1])) { continue; }
-			
+				$table_name = $fi->tableName();
 				if ($tmp[0] !== $table_name) {
 					$path = Datamodel::getPath($table_name, $tmp[0]);
 				} 
@@ -1499,7 +1501,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$va_hits = array();
 		$va_words = self::tokenize($ps_search, true);
-		
 		if (sizeof($va_words)) {
 			$va_quoted_words = array();
 			foreach($va_words as $vs_word) {
@@ -1790,7 +1791,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _getBooleanOperator(?array $signs, int $index) {
-		if (is_null($signs) || ($signs[$i] === true)) {	
+		if (is_null($signs) || ($signs[$index] === true)) {
 			// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
 			return "AND";
 		} elseif (is_null($signs[$index])) {	
@@ -1863,7 +1864,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $ap['access_point']));
 			}
 			
 			$pk = $t_table->primaryKey(true);
@@ -1871,7 +1872,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$field = $tmp[1];
 			
 			if(!$t_table->hasField($field)) { 
-				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $access_point));
+				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $ap['access_point']));
 			}
 		} else {
 			$field = 'cav.'.$attr_field;
@@ -2082,7 +2083,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $ap['access_point']));
 			}
 			
 			$pk = $t_table->primaryKey(true);
