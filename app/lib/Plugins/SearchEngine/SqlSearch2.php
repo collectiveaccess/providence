@@ -610,7 +610,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$tc = sizeof($temp_tables);
 				$this->db->query("
 					INSERT INTO {$temp_table}
-					SELECT swi.index_id + 1, 1, null
+					SELECT swi.index_id, 1, null
 					FROM ca_sql_search_words sw 
 					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
 					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
@@ -623,8 +623,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			$results_temp_table = array_pop($temp_tables);
 							
-			$this->db->query("UPDATE IGNORE {$results_temp_table} SET row_id = row_id - 1");
-			
 			$params = [];
             $field_sql = '';
 			if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
