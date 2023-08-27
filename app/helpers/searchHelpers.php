@@ -2352,10 +2352,11 @@
 	 * @param SearchResult $result
 	 * @param int $start
 	 * @param int $hits_per_page
+	 * @param array $options
 	 *
 	 * @return array
 	 */
-	function caGetHitsForPage(SearchResult $result, int $start, int $hits_per_page) {
+	function caGetHitsForPage(SearchResult $result, int $start, int $hits_per_page, ?array $options=null) : array {
 		$result->seek($start);
 		
 		$hits = [];

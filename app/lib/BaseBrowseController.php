@@ -266,7 +266,6 @@ class BaseBrowseController extends BaseFindController {
 			}
 			
 			$vo_result->seek(0);	
-			$vn_page_num = 1;
 		}
 		
 		//
@@ -276,10 +275,9 @@ class BaseBrowseController extends BaseFindController {
 		$this->view->setVar('start', $start = ($vn_page_num - 1) * $vn_items_per_page);
 		$this->view->setVar('page', $vn_page_num);
 		$this->view->setVar('result', $vo_result);	
-		
 		$result_desc = [];
 		if($this->request->user->getPreference('show_search_result_desc') === 'show') {
-			$page_hits = caGetHitsForPage($vo_result, $start, $vn_items_per_page);
+			$page_hits = caGetHitsForPage($vo_result, 0, $vn_items_per_page);
 			$result_desc = $this->opo_browse->getResultDesc($page_hits);
 		}
 		
