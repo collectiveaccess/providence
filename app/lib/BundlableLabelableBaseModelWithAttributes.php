@@ -6998,8 +6998,8 @@ if (!$vb_batch) {
                 
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
-					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
-					$va_rels_for_id[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
+					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] ?? null : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'] ?? null;
+					$va_rels_for_id[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'] ?? null;
 				}
 
 				if ($pb_group_fields) {
