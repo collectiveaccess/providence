@@ -2310,6 +2310,9 @@
 			$by_table = [];
 			if(is_array($m['desc'] ?? null)) {
 				foreach($m['desc'] as $d) {
+					if(!isset($by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']])) {
+						$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']] = 0;
+					}
 					$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
 				}
 			}
@@ -2341,6 +2344,31 @@
 			return $s;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get text excerpt for search hit
+	 *
+	 * @param SearchResult $result
+	 * @param int $start
+	 * @param int $hits_per_page
+	 *
+	 * @return array
+	 */
+	function caGetHitsForPage(SearchResult $result, int $start, int $hits_per_page) {
+		$result->seek($start);
+		
+		$hits = [];
+		
+		$c = 0;
+		while($result->nextHit()) {
+			$hits[] = $result->getPrimaryKey();
+			$c++;
+			
+			if($c >= $hits_per_page) { break; }
+		}
+		$result->seek($start);
+		return $hits;
 	}
 	# ---------------------------------------
 	/**

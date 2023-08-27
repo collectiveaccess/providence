@@ -253,10 +253,6 @@ class BaseBrowseController extends BaseFindController {
 			$vo_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction, 'start' => ($vn_page_num - 1) * $vn_items_per_page, 'limit' => $vn_items_per_page));
 		}
 		
-		$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $this->opo_browse->getSearchResultDesc() : [];
-		$this->view->setVar('result_desc', $result_desc);
-		$this->opo_result_context->setResultDescription($result_desc);
-		
 		// Only prefetch what we need
 		$vo_result->setOption('prefetch', $vn_items_per_page);
 		
@@ -270,15 +266,25 @@ class BaseBrowseController extends BaseFindController {
 			}
 			
 			$vo_result->seek(0);	
+			$vn_page_num = 1;
 		}
 		
 		//
 		// Set up view for display of results
 		// 			
 		
-		$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
+		$this->view->setVar('start', $start = ($vn_page_num - 1) * $vn_items_per_page);
 		$this->view->setVar('page', $vn_page_num);
 		$this->view->setVar('result', $vo_result);	
+		
+		$result_desc = [];
+		if($this->request->user->getPreference('show_search_result_desc') === 'show') {
+			$page_hits = caGetHitsForPage($vo_result, $start, $vn_items_per_page);
+			$result_desc = $this->opo_browse->getResultDesc($page_hits);
+		}
+		
+		$this->view->setVar('result_desc', $result_desc);
+		$this->opo_result_context->setResultDesc($result_desc);
 		
 		$this->view->setVar('views', $this->opa_views);	// pass view list to view for rendering
 		$this->view->setVar('current_view', $vs_view);

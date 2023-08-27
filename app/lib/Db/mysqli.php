@@ -461,7 +461,8 @@ class Db_mysqli extends DbDriverBase {
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = @mysqli_fetch_assoc($pr_res))) {
 				foreach($pa_fields as $vs_field) {
-					$va_vals[$vs_field][] = $va_row[$vs_field];
+					if(!isset($va_vals[$vs_field])) { $va_vals[$vs_field] = []; }
+					$va_vals[$vs_field][] = $va_row[$vs_field] ?? null;
 				}
 				$c++;
 				if ($pn_limit && ($c > $pn_limit)) { break; }

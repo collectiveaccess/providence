@@ -1911,11 +1911,11 @@
 						$relation_id = $qr_locations->get("{$linking_table}.relation_id");
 						$vn_rel_type_id = $qr_locations->get("{$linking_table}.type_id");
 				
-						$additional_templates = caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_additionalTemplates", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_storage_locations_additionalTemplates"], $pa_bundle_settings, null);
+						$additional_templates = caGetOption(["ca_storage_locations_".($va_location_type_info[$vn_type_id]['idno'] ?? '')."_additionalTemplates", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_storage_locations_additionalTemplates"], $pa_bundle_settings, null);
 						if($use_template && isset($additional_templates[$use_template])) {
 				       		$vs_display_template = $additional_templates[$use_template];
 				        } else {
-				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+				       		$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_storage_locations_".($va_location_type_info[$vn_type_id]['idno'] ?? '')."_displayTemplate", "ca_storage_locations_".$qr_locations->get('ca_relationship_types.type_code')."_displayTemplate", "ca_storage_locations_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 						}
 						if($pb_date_mode) {
 						    $va_date = $current_date_arr;
@@ -1934,9 +1934,9 @@
 						
 						$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
 				
-						$vs_color = $va_location_type_info[$vn_type_id]['color'];
+						$vs_color = $va_location_type_info[$vn_type_id]['color'] ?? null;
 						if (!$vs_color || ($vs_color == '000000')) {
-							$vs_color = caGetOption("ca_storage_locations_{$va_location_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+							$vs_color = caGetOption("ca_storage_locations_".($va_location_type_info[$vn_type_id]['idno'] ?? '')."_color", $pa_bundle_settings, 'ffffff');
 						}
 						$vs_color = str_replace("#", "", $vs_color);
 			

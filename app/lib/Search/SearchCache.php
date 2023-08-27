@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,13 +30,12 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
-
+require_once(__CA_LIB_DIR__."/ResultDescTrait.php");
 
 class SearchCache {
 	# ------------------------------------------------------
+	use ResultDescTrait;
+	
 	/**
 	 * @var string Cache key for currently loaded browse
 	 */
@@ -51,27 +50,27 @@ class SearchCache {
 	/**
 	 *
 	 */
-	public function __construct($ps_search=null, $pn_table_num=null, $pa_options=null) {
-		$this->opa_search = array();
+	public function __construct(?string $search=null, ?int $table_num=null, ?array $options=null) {
+		$this->opa_search = [];
 
-		if ($ps_search && $pn_table_num) {
-			$this->load($ps_search, $pn_table_num, $pa_options);
+		if ($search && $table_num) {
+			$this->load($search, $table_num, $options);
 		}
 	}
 	# ------------------------------------------------------
 	/**
 	 * Load search from cache
-	 * @param string $ps_search
-	 * @param int $pn_table_num
-	 * @param array $pa_options
+	 * @param string $search
+	 * @param int $table_num
+	 * @param array $options
 	 * @return bool true if successful, false if no result could be found in cache
 	 */
-	public function load($ps_search, $pn_table_num, $pa_options) {
-		$ps_cache_key = $this->generateCacheKey($ps_search, $pn_table_num, $pa_options);
-		if(CompositeCache::contains($ps_cache_key, 'SearchCache')) {
-			if(is_array($va_cached_data = CompositeCache::fetch($ps_cache_key, 'SearchCache'))) {
+	public function load(string $search, int $table_num, ?array $options=null) {
+		$cache_key = $this->generateCacheKey($search, $table_num, $options);
+		if(CompositeCache::contains($cache_key, 'SearchCache')) {
+			if(is_array($va_cached_data = CompositeCache::fetch($cache_key, 'SearchCache'))) {
 				$this->opa_search = $va_cached_data;
-				$this->ops_cache_key = $ps_cache_key;
+				$this->ops_cache_key = $cache_key;
 				return true;
 			}
 		}
@@ -83,34 +82,37 @@ class SearchCache {
 	 * Clear this SearchCache instance
 	 * @return bool
 	 */
-	public function clear() {
-		$this->opa_search = array();
+	public function clear() : bool {
+		$this->opa_search = [];
 		$this->ops_cache_key = null;
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Save result to cache
-	 * @param string $ps_search the search expression
-	 * @param int $pn_table_num
-	 * @param array $pa_results
+	 * @param string $search the search expression
+	 * @param int $table_num
+	 * @param array $results
+	 * @param array $result_desc
 	 * @param null|array $pa_params
-	 * @param null|array $pa_type_restrictions
-	 * @param null|array $pa_options
+	 * @param null|array $type_restrictions
+	 * @param null|array $options
 	 * @return bool
 	 */
-	public function save($ps_search, $pn_table_num, $pa_results, $pa_params=null, $pa_type_restrictions=null, $pa_options=null) {
-		if (!is_array($pa_params)) { $pa_params = array(); }
-		if (!is_array($pa_type_restrictions)) { $pa_type_restrictions = array(); }
+	public function save(string $search, int $table_num, array $results, ?array $result_desc=null, ?array $params=null, ?array $type_restrictions=null, ?array $options=null) {
+		if (!is_array($params)) { $params = []; }
+		if (!is_array($type_restrictions)) { $type_restrictions = []; }
 
-		$this->ops_cache_key = $this->generateCacheKey($ps_search, $pn_table_num, $pa_options);
+		$this->ops_cache_key = $this->generateCacheKey($search, $table_num, $options);
 		$this->opa_search = array(
-			'results' => $pa_results,
-			'search' => $ps_search,
-			'table_num' => $pn_table_num,
-			'params' => $pa_params,
-			'type_restrictions' => $pa_type_restrictions
+			'results' => $results,
+			'search' => $search,
+			'table_num' => $table_num,
+			'params' => $params,
+			'type_restrictions' => $type_restrictions
 		);
+		$this->setRawResultDesc($result_desc);	// optional data on how search temrs matched specified rows
+		
 		return CompositeCache::save($this->ops_cache_key, $this->opa_search, 'SearchCache');
 	}
 	# ------------------------------------------------------
@@ -119,95 +121,95 @@ class SearchCache {
 	 * @return bool
 	 */
 	public function remove() {
-		$this->opa_search = array();
-		$vm_ret = CompositeCache::delete($this->ops_cache_key, 'SearchCache');
+		$this->opa_search = [];
+		$ret = CompositeCache::delete($this->ops_cache_key, 'SearchCache');
 		$this->ops_cache_key = null;
-		return $vm_ret;
+		return $ret;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Get cache key for existing cached result
 	 * @return string
 	 */
-	public function getCacheKey() {
+	public function getCacheKey() : string {
 		return $this->ops_cache_key;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Set parameter
-	 * @param string $ps_param
+	 * @param string $param
 	 * @param mixed $pm_value
 	 */
-	public function setParameter($ps_param, $pm_value) {
-		$this->opa_search['params'][$ps_param] = $pm_value;
+	public function setParameter(string $param, $value) : void {
+		$this->opa_search['params'][$param] = $value;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Get list of parameters
 	 * @return array
 	 */
-	public function getParameters() {
-		return $this->opa_search['params'];
+	public function getParameters() : array {
+		return $this->opa_search['params'] ?? [];
 	}
 	# ------------------------------------------------------
 	/**
 	 * Get specific parameter
-	 * @param string $ps_param
+	 * @param string $param
 	 * @return mixed|null
 	 */
-	public function getParameter($ps_param) {
-		return (isset($this->opa_search['params'][$ps_param]) ? $this->opa_search['params'][$ps_param] : null);
+	public function getParameter(string $param) {
+		return (isset($this->opa_search['params'][$param]) ? $this->opa_search['params'][$param] : null);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getCounts() {
+	public function getCounts() : array {
 		return $this->opa_search['counts'];
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function setResults($pa_results) {
-		$this->opa_search['results'] = is_array($pa_results) ? $pa_results : array();
+	public function setResults(?array $results) : bool {
+		$this->opa_search['results'] = is_array($results) ? $results : [];
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getResults() {
-		return $this->opa_search['results'];
+	public function getResults() : array {
+		return $this->opa_search['results'] ?? [];
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function numResults() {
+	public function numResults() : int {
 		return is_array($this->opa_search['results']) ? sizeof($this->opa_search['results']) : 0;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function setTypeRestrictions($pa_type_restrictions) {
-		$this->opa_search['type_restrictions'] = is_array($pa_type_restrictions) ? $pa_type_restrictions : array();
+	public function setTypeRestrictions(?array $type_restrictions) : bool {
+		$this->opa_search['type_restrictions'] = is_array($type_restrictions) ? $type_restrictions : [];
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getTypeRestrictions() {
-		return is_array($this->opa_search['type_restrictions']) ? $this->opa_search['type_restrictions'] : array();
+	public function getTypeRestrictions() : array {
+		return is_array($this->opa_search['type_restrictions']) ? $this->opa_search['type_restrictions'] : [];
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function generateCacheKey($ps_search, $pn_table_num, $pa_options) {
-		return md5($ps_search.'/'.$pn_table_num.'/'.serialize($pa_options));
+	public function generateCacheKey(string $search, int $table_num, ?array $options = null) : string {
+		return md5($search.'/'.$table_num.'/'.print_r($options, true));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all searches
@@ -215,9 +217,9 @@ class SearchCache {
 	/**
 	 *
 	 */
-	public function getGlobalParameter($ps_param) {
-		if(CompositeCache::contains("search_global_{$ps_param}", 'SearchCache')) {
-			return CompositeCache::fetch("search_global_{$ps_param}", 'SearchCache');
+	public function getGlobalParameter(string $param) : bool {
+		if(CompositeCache::contains("search_global_{$param}", 'SearchCache')) {
+			return CompositeCache::fetch("search_global_{$param}", 'SearchCache');
 		}
 		return false;
 	}
@@ -225,8 +227,8 @@ class SearchCache {
 	/**
 	 *
 	 */
-	public function setGlobalParameter($ps_param, $pm_value) {
-		CompositeCache::save("search_global_{$ps_param}", $pm_value, 'SearchCache');
+	public function setGlobalParameter(string $param, $value) {
+		CompositeCache::save("search_global_{$param}", $value, 'SearchCache');
 	}
 	# ------------------------------------------------------
 }
