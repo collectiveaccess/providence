@@ -7494,7 +7494,10 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 					$this->opo_ca_browse_cache->setResults($va_results);
 					$this->opo_ca_browse_cache->save();
 				}
-				if(($start = caGetOption('start', $pa_options, 0)) || ($limit = caGetOption('limit', $pa_options, null))) {
+				
+				$start = caGetOption('start', $pa_options, 0);
+				$limit = caGetOption('limit', $pa_options, null);
+				if($start || $limit) {
  					$va_results = array_slice($va_results, $start, $limit);
  				}
 			}
@@ -8217,7 +8220,6 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 			}
 			
 			$o_search = new SearchEngine();
-			
 			return $o_search->resolveResultDescData($result_desc);
 		}
 		# ------------------------------------------------------
