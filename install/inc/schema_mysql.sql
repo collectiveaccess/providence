@@ -7834,6 +7834,28 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
+
+create table ca_user_export_downloads (
+  download_id		    int unsigned        not null AUTO_INCREMENT,
+  created_on        	int unsigned        not null,
+  generated_on        	int unsigned        null,
+  user_id             	int unsigned        null,
+  download_type    		varchar(30)	   		not null,
+  metadata				longtext			not null,
+  status		 		varchar(30)    		not null default 'QUEUED',
+  downloaded_on			int unsigned		null,
+  error_code            smallint unsigned   not null default 0,
+
+  primary key (download_id),
+
+  constraint fk_ca_export_download_user_id foreign key (user_id)
+    references ca_users (user_id) on delete restrict on update restrict,
+
+  index i_user_id (user_id)
+
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7844,4 +7866,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (189, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (190, unix_timestamp());
