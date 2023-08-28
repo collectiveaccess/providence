@@ -256,7 +256,6 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 			if($this->request->user->getPreference('show_search_result_desc') === 'show') {
 				$page_hits = caGetHitsForPage($vo_result, $start, $vn_items_per_page);
 				$result_desc = $po_search->getResultDesc($page_hits);
-				print_R($result_desc);
 			}
 			$this->view->setVar('result_desc', $result_desc);
 			$this->opo_result_context->setResultDesc($result_desc);

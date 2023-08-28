@@ -1311,6 +1311,26 @@ class SearchEngine extends SearchBase {
 		
 		return $va_fields;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Return array describing how _search facet matched found records
+	 * To avoid a significant performance hit details are returned only for ids of hits passed in 
+	 * the $hits parameter rather than for the entire result set.
+	 *
+	 * @oaram array $hits List of ids to return matching data for
+	 * 
+	 * @return array
+	 */
+	public function getResultDesc(array $hits) : ?array {
+		$result_desc = [];
+		foreach($hits as $id) {
+			if(isset($this->seach_result_desc[$id])) {
+				$result_desc[$id] = &$this->seach_result_desc[$id];
+			}
+		}
+		
+		return $this->resolveResultDescData($result_desc);
+	}
 	# ------------------------------------------------------------------
 	/**
 	 * Resolve raw data describing why each hit in the result set was matched to processed data

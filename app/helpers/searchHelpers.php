@@ -2317,7 +2317,6 @@
 				}
 			} elseif(is_array($m['access_point'])) {
 				$apinfo = $m['access_point'];
-				print_R($apinfo);
 				if(!isset($by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']])) { 
 					$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']] = 0; 
 				}
@@ -2436,7 +2435,13 @@
 		
 		switch($prefix) {
 			case 'A':
-				return ca_metadata_elements::getElementLabel(substr($field_num, 1));
+				$element_id = substr($field_num, 1);
+				$l = ca_metadata_elements::getElementLabel($element_id);
+				if(($root_id = ca_metadata_elements::getElementHierarchyID($element_id)) && ($root_id != $element_id)) {
+					$p = ca_metadata_elements::getElementLabel($root_id);
+					return "{$p} ➜ {$l}";
+				}
+				return $l;
 				break;
 			case 'I':
 				if($t_instance = Datamodel::getInstance($table_name_or_num)) {

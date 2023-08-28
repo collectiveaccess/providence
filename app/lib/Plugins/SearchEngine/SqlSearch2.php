@@ -920,19 +920,18 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$qr_res = $this->db->query($qinfo['sql'], $params);
 			
 			$row_ids = $this->_arrayFromDbResult($qr_res);
-			print_R($row_ids);
 			unset($ap['element_info']);
-			$row_ids = array_map(function($v, $k) use ($ap, $text) {
-				$v['access_point'] = [
+			
+			foreach($row_ids as $row_id => $row_info) {
+				$row_ids[$row_id]['access_point'] = [
 					'ap' => $ap['access_point'],
 					'table' => Datamodel::getTableName($ap['table_num']),
-					'field_row_id' => $k,
+					'field_row_id' => $row_id,
 					'field_num' => $ap['field_num'],
 					'word' => $text
 				];
-				return $v;
-			}, $row_ids, array_keys($row_ids));
-                    
+			}
+			
 			if ((int)$ap['table_num'] === (int)$subject_tablenum) {
 				return $row_ids;
 			}
