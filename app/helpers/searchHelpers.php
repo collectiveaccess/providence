@@ -2315,6 +2315,13 @@
 					}
 					$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
 				}
+			} elseif(is_array($m['access_point'])) {
+				$apinfo = $m['access_point'];
+				print_R($apinfo);
+				if(!isset($by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']])) { 
+					$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']] = 0; 
+				}
+				$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']]++;
 			}
 			$lines = $titles = [];
 			foreach($by_table as $t => $by_row_id) {

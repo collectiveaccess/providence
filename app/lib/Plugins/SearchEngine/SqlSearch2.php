@@ -287,7 +287,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 				
 	 				$acc = array_intersect_key($acc, $hits);
 	 				
-	 				if($this->get_result_desc_data ) {
+	 				if($this->get_result_desc_data) {
 						foreach($acc as $k => $v) {
 							if(isset($hits[$k])) {
 								$acc[$k]['index_ids'] = array_unique(array_merge($acc[$k]['index_ids'], $hits[$k]['index_ids']));
@@ -920,6 +920,19 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$qr_res = $this->db->query($qinfo['sql'], $params);
 			
 			$row_ids = $this->_arrayFromDbResult($qr_res);
+			print_R($row_ids);
+			unset($ap['element_info']);
+			$row_ids = array_map(function($v, $k) use ($ap, $text) {
+				$v['access_point'] = [
+					'ap' => $ap['access_point'],
+					'table' => Datamodel::getTableName($ap['table_num']),
+					'field_row_id' => $k,
+					'field_num' => $ap['field_num'],
+					'word' => $text
+				];
+				return $v;
+			}, $row_ids, array_keys($row_ids));
+                    
 			if ((int)$ap['table_num'] === (int)$subject_tablenum) {
 				return $row_ids;
 			}
@@ -1866,7 +1879,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		}
 	 		$hits[$row_id]['boost'] += ($vals['boost'][$i] ?? 0);
 	 		
-	 		if(($this->get_result_desc_data  && sizeof($hits[$row_id]['index_ids']) < 3)) {	// TODO: make index_id cap configurable
+	 		if(!$vals['index_id'][$i]) { continue; }
+	 		
+	 		if(($max_index_count = (int)$this->search_config->get('search_result_description_maximum_index_matches')) < 1) {
+	 			$max_index_count = 3;
+	 		}
+	 		
+	 		if(($this->get_result_desc_data  && sizeof($hits[$row_id]['index_ids']) < $max_index_count)) {
 	 			$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
 	 		}
 	 	}
