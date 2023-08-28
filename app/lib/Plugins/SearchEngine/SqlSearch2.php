@@ -1837,7 +1837,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _arrayFromDbResult(DbResult $qr_res) {
-		$vals = $qr_res->getAllFieldValues(['row_id', 'boost']);
+		$vals = $qr_res->getAllFieldValues(['row_id', 'boost'], ['limit' => 100000]);
 	 	if(!isset($vals['row_id'])) { return []; }
 	 	$hits = [];
 	 	foreach($vals['row_id'] as $i => $row_id) {
