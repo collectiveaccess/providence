@@ -3916,4 +3916,39 @@ class SearchResult extends BaseObject {
 		return $content;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Return raw data from engine documenting how hits in the current result set were matched.
+	 * This data is generally not useful as-is for display or UI management, and must be resolved
+	 * into references to matched tables and fiedls using SearchEngine::resolveResultDescData()
+	 *
+	 * @return array()
+	 */
+	public function getRawResultDesc() : array {
+		return $this->opo_engine_result->getRawResultDesc() ?? [];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array describing how search terms matched found records
+	 * To avoid a significant performance hit details are returned only for ids of hits passed in 
+	 * the $hits parameter rather than for the entire result set.
+	 *
+	 * @oaram array $hits List of ids to return matching data for
+	 * 
+	 * @return array
+	 */
+	public function getResultDesc(array $hits) : ?array {
+		$result_desc = [];
+		$result_desc_full = $this->opo_engine_result->getResultDesc();
+		
+		foreach($hits as $id) {
+			if(isset($result_desc_full[$id])) {
+				$result_desc[$id] = &$result_desc_full[$id];
+			}
+		}
+		
+		$o_search = new SearchEngine();
+		
+		return $o_search->resolveResultDescData($result_desc);
+	}
+	# ------------------------------------------------------------------
 }

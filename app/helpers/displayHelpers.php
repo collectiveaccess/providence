@@ -2027,7 +2027,7 @@ jQuery(document).ready(function() {
 		
 		// Search results debug
 		if($po_view->request->user->getPreference('show_search_result_desc') === 'show') {
-			$result_desc = $o_result_context->getResultDescription() ?? null;
+			$result_desc = $o_result_context->getResultDesc() ?? null;
 			if(is_array($result_desc) && sizeof($result_desc)) {
 				$vs_buf .= "<div class='searchResultDesc'><span class='searchResultDescHeading'>"._t('Search <em>%1</em> matched on', $o_result_context->getSearchExpression()).':</span><br/>'.($t_item->getPrimaryKey() ? caFormatSearchResultDesc($t_item->getPrimaryKey(), $result_desc, ['maxTitleLength' => 20, 'request' => $po_view->request]) : '')."</div>\n";
 			}
@@ -4311,7 +4311,7 @@ jQuery(document).ready(function() {
 		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 		}
 		if ($vb_show_compare) {
-		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='button' aria-label='Compare'></i></a>";
+		   $vs_tool_bar .= "<a href='#' class='compare_link compareButton' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='button' aria-label='Compare'></i></a>";
 		}
 
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
@@ -4319,15 +4319,44 @@ jQuery(document).ready(function() {
 		}
 		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id, $pt_representation)){
 			# -- get version to download configured in media_display.conf
-			$va_download_display_info = caGetMediaDisplayInfo('download', $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-			$vs_download_version = caGetOption(['download_version', 'display_version'], $va_download_display_info);
+			$vs_download_version = caGetAvailableDownloadVersions($po_request, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'), ['returnVersionForUser' => true]);
+			
 			if($vs_download_version){
-				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='button' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt downloadButton' role='button' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 
 		return $vs_tool_bar;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caGetAvailableDownloadVersions(RequestHTTP $request, string $mimetype, ?array $options=null) {
+		$download_display_info = caGetMediaDisplayInfo('download', $mimetype);
+		
+		$download_version = caGetOption(['download_version', 'display_version'], $download_display_info);
+		$download_version_by_role = caGetOption('roles', $download_display_info);
+			
+		$available_versions = [];
+		if($download_version) { $available_versions[] = $download_version; }
+		
+		if($request->isLoggedIn()) {
+			$user_roles = $request->user->getUserRoles(['skipVars' => true]);
+			foreach($user_roles as $role) {
+				if(isset($download_version_by_role[$role['code']])) {
+					$download_version = $download_version_by_role[$role['code']];
+					$available_versions[] = $download_version;
+					break;
+				}
+			}
+		}
+		
+		if(caGetOption('returnVersionForUser', $options, false)) {
+			return $download_version;
+		}
+		return $available_versions;
 	}
 	# ---------------------------------------
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,30 +29,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- include_once(__CA_LIB_DIR__.'/Datamodel.php');
- include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
- include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
+include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
+include_once(__CA_LIB_DIR__.'/ResultDescTrait.php');
 
 class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
+	use ResultDescTrait;
+	
 	private $opo_config;
 	
-	private $opa_hits;
+	private $opa_hits = [];
 	private $opn_current_row;
 	protected $opn_subject_tablenum;
 	protected $ops_subject_pk;
 	# -------------------------------------------------------
-	public function __construct($pa_hits, $pn_table_num) {
+	public function __construct($pa_hits, $result_desc, $pn_table_num) {
 		
 		$this->opn_subject_tablenum = $pn_table_num;
 		
 		$this->ops_subject_pk = Datamodel::primaryKey($pn_table_num);
 		$this->setHits(array_values($pa_hits));
+		
+		$this->result_desc = $result_desc ?? [];
 	}
 	# -------------------------------------------------------
 	public function setHits($pa_hits) {
@@ -108,5 +107,5 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 		}
 		return $va_ids;
 	}
-	# -------------------------------------------------------
+	# ------------------------------------------------------------------
 }

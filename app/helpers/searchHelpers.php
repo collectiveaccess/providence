@@ -2310,8 +2310,17 @@
 			$by_table = [];
 			if(is_array($m['desc'] ?? null)) {
 				foreach($m['desc'] as $d) {
+					if(!isset($by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']])) {
+						$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']] = 0;
+					}
 					$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
 				}
+			} elseif(is_array($m['access_point'])) {
+				$apinfo = $m['access_point'];
+				if(!isset($by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']])) { 
+					$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']] = 0; 
+				}
+				$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']]++;
 			}
 			$lines = $titles = [];
 			foreach($by_table as $t => $by_row_id) {
@@ -2341,6 +2350,32 @@
 			return $s;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get text excerpt for search hit
+	 *
+	 * @param SearchResult $result
+	 * @param int $start
+	 * @param int $hits_per_page
+	 * @param array $options
+	 *
+	 * @return array
+	 */
+	function caGetHitsForPage(SearchResult $result, int $start, int $hits_per_page, ?array $options=null) : array {
+		$result->seek($start);
+		
+		$hits = [];
+		
+		$c = 0;
+		while($result->nextHit()) {
+			$hits[] = $result->getPrimaryKey();
+			$c++;
+			
+			if($c >= $hits_per_page) { break; }
+		}
+		$result->seek($start);
+		return $hits;
 	}
 	# ---------------------------------------
 	/**
@@ -2400,7 +2435,13 @@
 		
 		switch($prefix) {
 			case 'A':
-				return ca_metadata_elements::getElementLabel(substr($field_num, 1));
+				$element_id = substr($field_num, 1);
+				$l = ca_metadata_elements::getElementLabel($element_id);
+				if(($root_id = ca_metadata_elements::getElementHierarchyID($element_id)) && ($root_id != $element_id)) {
+					$p = ca_metadata_elements::getElementLabel($root_id);
+					return "{$p} ➜ {$l}";
+				}
+				return $l;
 				break;
 			case 'I':
 				if($t_instance = Datamodel::getInstance($table_name_or_num)) {

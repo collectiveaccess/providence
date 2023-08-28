@@ -1628,7 +1628,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$disabled_option_list[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 				continue;
 			}
-			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
+			$va_options[$va_item[$pa_options['key'] ?? null] ?? null] = str_repeat('&nbsp;', intval(($va_item['LEVEL'] ?? 0)) * 3).' '.$va_item['name_singular'];
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value

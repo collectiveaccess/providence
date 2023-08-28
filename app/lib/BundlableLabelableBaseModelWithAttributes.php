@@ -6998,8 +6998,8 @@ if (!$vb_batch) {
                 
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
-					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
-					$va_rels_for_id[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
+					$va_rels_for_id[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] ?? null : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'] ?? null;
+					$va_rels_for_id[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'] ?? null;
 				}
 
 				if ($pb_group_fields) {
@@ -7451,7 +7451,7 @@ $pa_options["display_form_field_tips"] = true;
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
+		$o_data = new WLPlugSearchEngineCachedResult($va_ids, [], $t_instance->tableNum());
 		/** @var BaseSearchResult $o_res */
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
 		$o_res->init($o_data, [], $pa_options);
@@ -7486,7 +7486,7 @@ $pa_options["display_form_field_tips"] = true;
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, [], $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
 		$o_res->init($o_data, []);
 		

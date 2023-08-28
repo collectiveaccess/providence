@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1982,7 +1982,7 @@ class ca_users extends BaseModel {
 	 *		classname = class to assign to form element
 	 * @return string HTML code to generate form widget
 	 */	
-	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
+	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) : ?string {
 		if ($this->isValidPreference($ps_pref)) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$o_db = $this->getDb();
@@ -2000,9 +2000,48 @@ class ca_users extends BaseModel {
 			
 			foreach(array(
 				'displayType', 'displayWidth', 'displayHeight', 'length', 'formatType', 'choiceList',
-				'label', 'description'
+				'label', 'description', 'requires'
 			) as $vs_k) {
 				if (!isset($va_pref_info[$vs_k])) { $va_pref_info[$vs_k] = null; }
+			}
+			
+			if(is_array($va_pref_info['requires']) && sizeof($va_pref_info['requires'])) {
+				$acc = null;
+				foreach($va_pref_info['requires'] as $req => $bool) {
+					$rtmp = explode(':', $req);
+					
+					$eval = null;
+					switch($rtmp[0]) {
+						case 'configuration':
+							switch($rtmp[1]) {
+								case 'search':
+									$sconfig = caGetSearchConfig();
+									$neg = false;
+									if(substr($rtmp[2], 0, 1) === '!') {
+										$neg = true;
+										$rtmp[2] = substr($rtmp[2], 1);
+									}
+									if(($neg && $sconfig->get($rtmp[2])) || (!$neg && !$sconfig->get($rtmp[2]))) {
+										$eval = false;
+									} else {
+										$eval = true;
+									}
+									break;
+							}
+							break;
+					}
+					
+					if(is_null($acc)) {
+						$acc = $eval;
+					} elseif (strtolower($bool) === 'and') {
+						$acc = ($acc && $eval);
+					} elseif (strtolower($bool) === 'or') {
+						$acc = ($acc || $eval);
+					}
+				}
+				if(!$acc) {
+					return null;
+				}
 			}
 			
 			switch($va_pref_info["displayType"]) {

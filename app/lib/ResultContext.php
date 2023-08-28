@@ -299,7 +299,7 @@ class ResultContext {
 	 *
 	 * @return array
 	 */
-	public function getResultDescription() : ?array {
+	public function getResultDesc() : ?array {
 		if ($context = $this->getContext()) {
 			return $context['result_desc'] ?? null;
 		}
@@ -313,7 +313,7 @@ class ResultContext {
 	 * @param array $result_desc 
 	 * @return array 
 	 */
-	public function setResultDescription(array $result_desc) {
+	public function setResultDesc(array $result_desc) {
 		return $this->setContextValue('result_desc', $result_desc);
 	}
 	# ------------------------------------------------------------------
