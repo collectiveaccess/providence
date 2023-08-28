@@ -5515,6 +5515,7 @@ jQuery(document).ready(function() {
 						if($length > (mb_strlen($content) - $start)) { $length = (mb_strlen($content) - $start); }
 						$extext = mb_substr($content, $start, $length);
 						$excerpts[] = "<p>... {$extext} ...</p>";
+						$content = mb_substr($content, $start + $length);
 					}
 				}
 				$n--;
