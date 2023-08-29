@@ -3455,8 +3455,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$forced_values = $forced_values[$ps_related_table] ?? [];
 		$forced_values_proc = [];
 		foreach($forced_values as $fv) {
+			if(!($pk = Datamodel::primaryKey($ps_related_table))) { continue; }
 			$forced_values_proc[] = [
-				'id' => $fv['entity_id'],
+				'id' => $fv[$pk],
 				'label' => $fv['label'],
 				'type_id' => $fv['item_type_id'],
 				'relationship_type_id' => $fv['relationship_type_id']
@@ -3781,6 +3782,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		$va_errors = [];
+		
+		$ifv = [];	// incoming form values
 			
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
@@ -3955,7 +3958,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['value_source'] = $va_attributes_to_insert[$vn_c]['value_source'] = $value_source; 
 						}
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $vs_val;
-						
 					} else {
 						// is it a delete key?
 						if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
@@ -3963,6 +3965,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_attributes_to_delete[$vn_attribute_id] = true;
 						}
 					}
+				}
+				
+				if(isset($va_inserted_attributes_by_element[$vn_element_id])) {
+					$ifv[$vs_element_set_code] = $va_inserted_attributes_by_element[$vn_element_id] ?? null;
 				}
 				
 				// look for uploaded files as attributes
@@ -3983,7 +3989,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $va_val;
 					}
 				}
-				
 if (!$vb_batch) {				
 				// do deletes
 				$this->clearErrors();
@@ -4061,11 +4066,14 @@ if (!$vb_batch) {
 						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $vb_batch])) {
 							$po_request->addActionErrors($this->errors);
 						}
+						 $ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
 					}
 				}
 			}
 		}
 }
+
+	$pa_options['ifv'] = $ifv;	// return incoming form values via options to caller
 		
 	if (is_array($va_fields_by_type['special'] ?? null)) {
 		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
@@ -4283,6 +4291,7 @@ if (!$vb_batch) {
 											}
 										}
 									}
+									$ifv['preferred_labels'][] = array_merge($va_label_values, ['label_id' => $va_label['label_id'], 'locale_id' => $vn_label_locale_id, 'type_id' => $vn_label_type_id]);
 								} else {
 									$this->editLabel($va_label['label_id'],
 										array($this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']'),
@@ -4377,12 +4386,14 @@ if (!$vb_batch) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 								$vb_error_inserting_pref_label = true;
 							}
+							$ifv['preferred_labels'][] = array_merge($va_label_values, ['locale_id' => $vn_new_label_locale_id, 'type_id' => $vn_label_type_id]);
 						}
 					}
 				}
 			}
 		}
 	}	
+		
 	// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
 	// This ensures at least one label is present for the record. If no labels are present then the 
 	// record may not be found in queries
@@ -4435,6 +4446,7 @@ if (!$vb_batch) {
 											}
 										}
 									}
+									$ifv['nonpreferred_labels'][] = array_merge($va_label_values, ['label_id' => $va_label['label_id'], 'locale_id' => $vn_label_locale_id, 'type_id' => $vn_label_type_id]);
 								} else {
 									$this->editLabel($va_label['label_id'],
 										array($this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']'),
@@ -4492,12 +4504,14 @@ if (!$vb_batch) {
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 							}
+							$ifv['nonpreferred_labels'][] = array_merge($va_label_values, ['locale_id' => $vn_new_label_locale_id, 'type_id' => $vn_label_type_id]);
 						}
 					}
 				}
 			}
 		}
 		
+		$pa_options['ifv'] = $ifv;	// return incoming form values via options to caller
 		
 		// save data in related tables
 		if (isset($va_fields_by_type['related_table']) && is_array($va_fields_by_type['related_table'])) {
@@ -4826,11 +4840,13 @@ if (!$vb_batch) {
 							if ($vb_we_set_transaction) {
 								$this->removeTransaction(false);
 							}
+							
+							if($vb_is_insert) {$this->set($this->primaryKey(), 0); }	// clear primary key from failed insert
+							
 							// Emit "no save" error (code 2592-2599) as relationship failures 
 							// should about the entire save transaction
 							$this->postError(2592, _t("Relationship for %1 failed", Datamodel::getTableName($vs_f)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $vs_f);
 							
-							if($vb_is_insert) {$this->set($this->primaryKey(), 0); }	// clear primary key from failed insert
 							return false;	// bail on insert error
 						}
 						break;
@@ -5822,6 +5838,9 @@ if (!$vb_batch) {
 				}
 			}
 		}
+		
+		
+		$pa_options['ifv'] = $ifv;	// return incoming form values via options to caller
 	
 		BaseModel::unsetChangeLogUnitID();
 		$va_bundle_names = [];

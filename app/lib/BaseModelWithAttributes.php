@@ -2120,17 +2120,25 @@
 			}
 			
 			// Convert any forced values to use element_id keys required by failed_insert_attribute_list
-			$forced_values_proc = [];
+			$forced_values_proc = $forced_existing_values_proc = [];
 			if(is_array($forced_values = caGetOption('forcedValues', $pa_options, null)) && isset($forced_values[$t_element->get('element_code')])) {
 				foreach($forced_values[$element_code] as $v) {
 					if(!is_array($v)) { continue; }
 					$v_proc = [];
+					
+					$attr_id = null;
 					foreach($v as $kk => $vv) {
+						if($kk === 'attribute_id') { $attr_id = $vv; unset($v[$kk]); continue; }
 						$e_id = ($kk === 'locale_id')  ? 'locale_id' : ca_metadata_elements::getElementID($kk);
 						if(!$e_id) { continue; }
 						$v_proc[$e_id] = $vv;
 					}
-					$forced_values_proc[$element_id] = $v_proc;
+					
+					if($attr_id) {
+						$forced_existing_values_proc[$attr_id] = $v_proc;
+					} else {
+						$forced_values_proc[$element_id] = $v_proc;
+					}
 				}
 			}
 			
@@ -2139,8 +2147,10 @@
 			// input that caused the error. The inserts list is also used to force values into forms for new not-yet-saved
 			// records. Forced values do not include error messages and appear as default values.
 			$fi = $this->getFailedAttributeInserts($pm_element_code_or_id) ?? [];
-			$o_view->setVar('failed_insert_attribute_list', array_merge($fi, $forced_values_proc));
-			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
+			$fa = $this->getFailedAttributeUpdates($pm_element_code_or_id) ?? [];
+		
+			$o_view->setVar('failed_insert_attribute_list', $fi + $forced_values_proc);
+			$o_view->setVar('failed_update_attribute_list', $fa + $forced_existing_values_proc);
 		
 			// Set the list of existing attributes for the current row
 			$vs_sort = $pa_bundle_settings['sort'] ?? null;

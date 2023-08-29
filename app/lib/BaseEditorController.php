@@ -216,6 +216,9 @@ class BaseEditorController extends ActionController {
 		);
 		
 		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
+		// $params['forced_values'] = [
+// 			'art_date_container' => [['art_date' => 'xxx']]
+// 		];
 		$this->view->setVar('forced_values', $params['forced_values'] ?? null);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {
@@ -342,6 +345,7 @@ class BaseEditorController extends ActionController {
 				$this->_afterSave($t_subject, $vb_is_insert);
 			} elseif($t_subject->hasErrorNumInRange(3600, 3699) || $t_subject->hasErrorNumInRange(2592, 2599)) {
 				$vb_no_save_error = true;
+				$this->view->setVar('forced_values', $va_opts['ifv']);
 			}
 			if($t_subject->numErrors() > 0) {
 				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
@@ -410,10 +414,12 @@ class BaseEditorController extends ActionController {
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
 			$va_error_list = [];
 			foreach($va_errors as $o_e) {
+				$error_num = (int)$o_e->getErrorNumber();
+				if($error_num == 2592) { continue; } // don't show "relationship failed" error, as more specific errors will also be present
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($error_num = (int)$o_e->getErrorNumber()) {
+				switch($error_num) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
 							$vb_no_save_error = true;
