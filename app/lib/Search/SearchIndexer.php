@@ -2431,8 +2431,8 @@ if (!$for_current_value_reindex) {
 						
 						$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['right_key']} = {$vs_prev_alias}.{$va_key_spec['left_key']}".$vs_rel_type_res_sql;
 
-						if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
-							if ($va_key_spec['right_table_num']) {
+						if (($va_key_spec['left_table_num'] ?? null) || ($va_key_spec['right_table_num'] ?? null)) {
+							if ($va_key_spec['right_table_num'] ?? null) {
 								$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_left_table);
 								$vs_t = $vs_right_table;
 							} else {

@@ -4853,7 +4853,7 @@ jQuery(document).ready(function() {
 
 		$va_previews = array();
 		foreach($pa_initial_values as $va_item) {
-			$va_previews[] = trim($va_item['_display']);
+			$va_previews[] = trim($va_item['_display'] ?? null);
 		}
 
 		return caEscapeForBundlePreview(join($ps_delimiter, $va_previews));
