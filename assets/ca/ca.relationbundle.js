@@ -180,7 +180,7 @@ var caUI = caUI || {};
 			var type_id = (data.type_id) ? data.type_id : '';
 			
 			// transform with type map when available
-			if(options.relationshipTypes['_type_map'][type_id]) {
+			if(options.relationshipTypes && options.relationshipTypes['_type_map'] && options.relationshipTypes['_type_map'][type_id]) {
 				type_id = options.relationshipTypes['_type_map'][type_id];
 			}
 			if (parseInt(item_id) < 0) { return; }
