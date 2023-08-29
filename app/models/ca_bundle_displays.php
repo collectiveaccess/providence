@@ -1143,7 +1143,7 @@ if (!$pb_omit_editing_info) {
 				continue;	
 			}
 			
-			switch($va_all_elements[$vn_element_id]['datatype']) {
+			switch($va_all_elements[$vn_element_id]['datatype'] ?? null) {
 				case __CA_ATTRIBUTE_VALUE_TEXT__:
 					$va_even_more_settings = array(
 						'newlines' => array(
@@ -1210,7 +1210,7 @@ if (!$pb_omit_editing_info) {
 						)		
 					);
 					
-					if ($va_all_elements[$vn_element_id]['datatype'] == 6) {
+					if (($va_all_elements[$vn_element_id]['datatype'] ?? null) == 6) {
 						$va_even_more_settings['display_currency_conversion'] = array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_CHECKBOXES,
