@@ -2590,6 +2590,9 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 
 						if (
 							!$va_attr["IS_NULL"]
@@ -2628,6 +2631,9 @@ class BaseModel extends BaseObject {
 					case (FT_TIMERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 						
 						if (
 							!$va_attr["IS_NULL"]
