@@ -5785,7 +5785,8 @@ if (!$vb_batch) {
 							$tag_ids = array_map(function($v) { return $v['relation_id']; }, $tags);
 							$current_tag_ranks = array_map(function($v) { return $v['rank']; }, $tags);
 							foreach($ids_sorted as $i => $id) {
-								$this->changeTagRank($id, $current_tag_ranks[$i] ?? null);
+								if(!is_numeric($id) || !((int)$id > 0)) { continue; }
+								$this->changeTagRank((int)$id, $current_tag_ranks[$i] ?? null);
 							}
 						}
 						
