@@ -346,6 +346,17 @@ class SetEditorController extends BaseEditorController {
 
 			$exp = 'ca_sets.set_code:'.$t_set->get('set_code');
 			$exp_display = _t('Set: %1', $t_set->get('set_code'));
+			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'SETS',
+				'metadata' => ['searchExpression' => $exp, 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($subject_table, $export_format), 'mode' => 'LABELS', 'table' => $subject_table, 'findType' => null]
+			]);
+			$download_id = $t_download->insert();
+			
 						
 			if ($o_tq->addTask(
 				'dataExport',
@@ -360,7 +371,8 @@ class SetEditorController extends BaseEditorController {
 					'sortDirection' => null,
 					'searchExpression' => $exp,
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', ['ca_sets', $set_id, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
