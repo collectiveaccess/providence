@@ -8754,8 +8754,8 @@ side. For many self-relations the direction determines the nature and display te
 		$max_count = 0;
 		foreach($instances as $id => $t_instance) {
 			// Labels
-			$content[$id]['pref_labels'] = $pref_labels = $t_instance->get("{$table}.preferred_labels", ['returnWithStructure' => true]);
-			$content[$id]['npref_labels'] = $npref_labels = $t_instance->get("{$table}.nonpreferred_labels", ['returnWithStructure' => true]);
+			$content[$id]['pref_labels'] = $pref_labels = $t_instance->get("{$table}.preferred_labels", ['returnAllLocales' => true, 'returnWithStructure' => true]);
+			$content[$id]['npref_labels'] = $npref_labels = $t_instance->get("{$table}.nonpreferred_labels", ['returnAllLocales' => true, 'returnWithStructure' => true]);
 			
 			// Intrinsics
 			$intrinsics = [];
@@ -8860,7 +8860,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $label_list An array of arrays, each containing label data from a record to merge
 	 * @param array $options Options include:
 	 *		notification = A NotificationManager instance to post notifications regarding the merge to. [Default is null]
-	 *		mode = Merge mode to use: "merged" to always use labels from a merged record when defined for a locale; "base" to always preserve labels from the base record (the record into which data is being merged); "longest" to use the longest label defined for the locale. [Default is "longest"]
+	 *		mode = Merge mode to use: "merged" to always use labels from a merged record when defined for a locale; "base" to always preserve labels from the base record (the record into which data is being merged); "longest" to use the longest label defined for the locale. [Default is "merged"]
 	 *		preferredLabelsMode = Synonym for "mode" option
 	 *
 	 * @return void
@@ -8878,40 +8878,41 @@ side. For many self-relations the direction determines the nature and display te
 		$max_lengths_by_locale_id = [];
 		$use_label_by_locale_id = [];
 		$use_label_id_by_locale_id = [];
-		
 		foreach(array_merge([$base], $label_list) as $labels_by_row) {
 			foreach($labels_by_row as $labels) {
-				foreach($labels as $label_id => $label) {
-					$locale_id = $label['locale_id'];
+				foreach($labels as $label_id => $row_labels_by_locale) {
+					foreach($row_labels_by_locale as $locale_id => $label) {
+						$locale_id = $label['locale_id'];
 					
-					switch(strtolower($mode)) {
-						case 'merged':
-							// Always use label from base, if set for the locale
-							if(!in_array($label_id, array_keys($base))) {
-								$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
-								break(2);
-							}
-						case 'base':
-							// Always use label from base, if set for the locale
-							foreach(reset($base) as $blabel) {
-								if($label['locale_id'] == $blabel['locale_id']) {
-									$use_label_by_locale_id[$locale_id] = array_filter($blabel, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+						switch(strtolower($mode)) {
+							case 'merged':
+							default:
+								// Always use label from base, if set for the locale
+								if(!in_array($label_id, array_keys($base))) {
+									$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
 									break(2);
 								}
-							}
-						case 'longest':
-						default:
-							// Use longest available label 
-							$total_length = 0;
-							foreach($label_fields as $f) {
-								$total_length =+ mb_strlen($label[$f]);
-							}
-							if($total_length > (int)$max_lengths_by_locale_id[$locale_id]) { 
-								$max_lengths_by_locale_id[$locale_id] = $total_length;
+							case 'base':
+								// Always use label from base, if set for the locale
+								foreach(reset($base) as $blabel) {
+									if(($label['locale_id'] ?? null) == ($blabel['locale_id'] ?? null)) {
+										$use_label_by_locale_id[$locale_id] = array_filter($blabel, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+										break(2);
+									}
+								}
+							case 'longest':
+								// Use longest available label 
+								$total_length = 0;
+								foreach($label_fields as $f) {
+									$total_length =+ mb_strlen($label[$f]);
+								}
+								if($total_length > (int)($max_lengths_by_locale_id[$locale_id] ?? 0)) { 
+									$max_lengths_by_locale_id[$locale_id] = $total_length;
 					
-								$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
-							}
-							break;
+									$use_label_by_locale_id[$locale_id] = array_filter($label, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
+								}
+								break;
+						}
 					}
 				}
 			}
@@ -8920,17 +8921,17 @@ side. For many self-relations the direction determines the nature and display te
 		foreach($use_label_by_locale_id as $locale_id => $label) {
 			foreach($base as $row_id => $blabels) {
 				foreach($blabels as $blabel_id => $blabel) {
-					if($label['label_id'] === $blabel_id) {
+					if(($label['label_id'] ?? null) === $blabel_id) {
 						unset($use_label_by_locale_id[$locale_id]);
 						break(2);
 					}
 					
 					if(
-						($label['locale_id'] === $blabel['locale_id'])
+						(($label['locale_id'] ?? null) === ($blabel['locale_id'] ?? null))
 					) {
 						$labels_are_equal = true;
 						foreach($label_fields as $f) {
-							if($label[$f] !== $blabel[$f]) {
+							if(($label[$f] ?? null) !== ($blabel[$f] ?? null)) {
 							    $labels_are_equal = false;
 								break;
 							}
@@ -8943,7 +8944,7 @@ side. For many self-relations the direction determines the nature and display te
 				}
 			}
 		}
-				
+		
 		if(sizeof($use_label_by_locale_id) > 0) {
 			// rewrite labels
 			$t_base->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
@@ -8972,28 +8973,29 @@ side. For many self-relations the direction determines the nature and display te
 		$label_fields = $t_base->getLabelUIFields();
 		
 		$labels_by_locale_id = [];
-		foreach(array_merge([$base], $label_list) as $labels_by_row) {
-			foreach($labels_by_row as $row_id => $labels) {
-				foreach($labels as $label_id => $label) {
-					$locale_id = $label['locale_id'];
-					$label_exists = false;
-					if(!is_array($labels_by_locale_id[$locale_id])) { 
-						$labels_by_locale_id[$locale_id] = []; 
-					} else {
-						foreach($labels_by_locale_id[$locale_id] as $elabel) {
-							$labels_are_equal = true;
-							foreach($label_fields as $f) {
-								if($label[$f] !== $elabel[$f]) {
-									$labels_are_equal = false;
-									break;
+		foreach(array_merge([$base], $label_list) as $labels_by_index) {
+			foreach($labels_by_index as $row_labels_by_locale) {
+				foreach($row_labels_by_locale as $locale_id => $labels) {
+					foreach($labels as $label_id => $label) {
+						$label_exists = false;
+						if(!is_array($labels_by_locale_id[$locale_id] ?? null)) { 
+							$labels_by_locale_id[$locale_id] = []; 
+						} else {
+							foreach($labels_by_locale_id[$locale_id] as $elabel) {
+								$labels_are_equal = true;
+								foreach($label_fields as $f) {
+									if($label[$f] !== $elabel[$f]) {
+										$labels_are_equal = false;
+										break;
+									}
 								}
+								if($labels_are_equal) { $label_exists = true; break; }
 							}
-							if($labels_are_equal) { $label_exists = true; break; }
 						}
-					}
-					
-					if(!$label_exists) {
-						$labels_by_locale_id[$locale_id][] = array_filter($label, function($k) use ($label_fields) { return (in_array($k, $label_fields) || ($k === 'type_id')); }, ARRAY_FILTER_USE_KEY);
+			
+						if(!$label_exists) {
+							$labels_by_locale_id[$locale_id][] = array_filter($label, function($k) use ($label_fields) { return (in_array($k, $label_fields) || ($k === 'type_id')); }, ARRAY_FILTER_USE_KEY);
+						}
 					}
 				}
 			}
@@ -9028,6 +9030,7 @@ side. For many self-relations the direction determines the nature and display te
 		$mode = caGetOption(['mode', 'intrinsicMode'], $options, null);
 		
 		$pk = $t_base->primaryKey();
+		$table = $t_base->tableName();
 		foreach($rows as $id => $ivalues) {
 			if($id == $base[$pk]) { continue; }
 			foreach($ivalues as $f => $v) {
@@ -9156,7 +9159,6 @@ side. For many self-relations the direction determines the nature and display te
 					$t_object->setTransaction($t_base->getTransaction());
 					foreach($object_ids as $object_id) {
 						if ($t_object->load($object_id)) {
-							$t_object->setMode(ACCESS_WRITE);
 							$t_object->set('lot_id', $base_id);
 							$t_object->update();
 							if ($t_object->numErrors() > 0) { continue; }
@@ -9167,7 +9169,7 @@ side. For many self-relations the direction determines the nature and display te
 			}
 			
 			if($notification && ($c > 0)) {
-				$notification->addNotification(($c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $v, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $c, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+				$notification->addNotification(($c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $c, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $c, $t_base->getLabelForDisplay(), $t_base->get($t_base->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 			}
 			
 			// update existing metadata attributes to use remapped value
