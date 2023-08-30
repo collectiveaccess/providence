@@ -104,6 +104,14 @@ BaseModel::$s_ca_models_definitions['ca_user_export_downloads'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
 			'LABEL' => _t('Associated metadata'), 'DESCRIPTION' => _t('Metadata for export.')
+		),
+		'export_file' => array(
+			'FIELD_TYPE' => FT_FILE, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'FILE_VOLUME' => 'workspace',
+			'LABEL' => _t('Export file'), 'DESCRIPTION' => _t('Data export file.')
 		)
 	)
 );
@@ -189,15 +197,61 @@ class ca_user_export_downloads extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-
-
+	
 	# ------------------------------------------------------
-	public function insert(?array $options=null) {
-		// if status wasn't set, set to "QUEUED"
-		if(!$this->get('status')) {
-			$this->set('status', 'QUEUED');
+	/**
+	 * Returns number of downloads conforming to specification in options
+	 *
+	 * @param array $options Optional array of options. Supported options are:
+	 *		user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned.
+	 * @return int  Number of downloads available
+	 */
+	public function getDownloadCount($options=null) {
+		if (!is_array($options)) { $options = []; }
+
+		$downloads = $this->getDownloads($options);
+
+		if (is_array($downloads)) { return sizeof($downloads); } else { return 0; }
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns list of downloads subject to options
+	 *
+	 * @param array $options Optional array of options. Supported options are:
+	 *			user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned. [Default is null]
+	 * @return array Array of downloads keyed on download_id. Each download is represented by an array, whose keys include: download_id, created_on, generated_on, user_id, download_type, ...)
+	 */
+	public function getDownloads($options=null) {
+		if (!is_array($options)) { $options = []; }
+		$user_id = caGetOption('user_id', $options, null);
+
+		$o_db = $this->getDb();
+
+		$wheres = [];
+		$params = [];
+		if ($user_id > 0) {
+			$wheres[] = "(d.user_id = ?)";
+			$params[] = $user_id;
 		}
 
-		return parent::insert($options);
-	}----------------------------------------------------
+		
+
+		// get downloads
+		$qr_res = $o_db->query("
+			SELECT d.*, u.email, u.fname, u.lname, u.user_name
+			FROM ca_user_export_downloads d
+			INNER JOIN ca_users AS u ON u.user_id = d.user_id
+			".(sizeof($wheres) ? 'WHERE ' : '')."
+			".join(' AND ', $wheres)."
+			ORDER BY d.created_on  
+		", $params);
+		
+		$downloads = [];
+
+		while($qr_res->nextRow()) {
+			$downloads[(int)$qr_res->get('download_id')] = $qr_res->getRow();
+		}
+		return $downloads;
+	}
+	# ------------------------------------------------------
 }

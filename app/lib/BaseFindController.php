@@ -461,6 +461,15 @@ class BaseFindController extends ActionController {
 				$exp_display = $this->opo_result_context->getSearchExpressionForDisplay();
 			}
 			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'LABELS',
+				'metadata' => ['searchExpression' => $exp, 'searchExpressionForDisplay' => $exp_display, 'format' => 'PDF', 'mode' => 'LABELS', 'table' => $this->ops_tablename, 'findType' => $this->ops_find_type]
+			]);
+			$download_id = $t_download->insert();
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -474,7 +483,8 @@ class BaseFindController extends ActionController {
 					'sortDirection' => $this->opo_result_context->getCurrentSortDirection(),
 					'searchExpression' => $exp,
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
@@ -535,6 +545,15 @@ class BaseFindController extends ActionController {
 				$exp_display = $this->opo_result_context->getSearchExpressionForDisplay();
 			}
 			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'RESULTS',
+				'metadata' => ['searchExpression' => $exp, 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($this->ops_tablename, $_REQUEST['export_format'] ?? _t('Unknown')), 'mode' => 'EXPORT', 'table' => $this->ops_tablename, 'findType' => $this->ops_find_type]
+			]);
+			$download_id = $t_download->insert();
 			
 			if ($o_tq->addTask(
 				'dataExport',
@@ -549,7 +568,8 @@ class BaseFindController extends ActionController {
 					'sortDirection' => $this->opo_result_context->getCurrentSortDirection(),
 					'searchExpression' => $exp,
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{

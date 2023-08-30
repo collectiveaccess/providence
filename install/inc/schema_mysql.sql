@@ -7845,6 +7845,7 @@ create table ca_user_export_downloads (
   status		 		varchar(30)    		not null default 'QUEUED',
   downloaded_on			int unsigned		null,
   error_code            smallint unsigned   not null default 0,
+  export_file           blob            not null,
 
   primary key (download_id),
 

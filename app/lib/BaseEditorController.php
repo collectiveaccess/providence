@@ -815,6 +815,16 @@ class BaseEditorController extends ActionController {
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld})");
 			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'SUMMARY',
+				'metadata' => ['searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}", 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($table, $template), 'mode' => 'SUMMARY', 'table' => $table, 'findType' => 'summary']
+			]);
+			$download_id = $t_download->insert();
+			
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -828,7 +838,8 @@ class BaseEditorController extends ActionController {
 					'sortDirection' => null,
 					'searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}",
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', [$table, $vn_subject_id]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{

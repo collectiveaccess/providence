@@ -37,6 +37,7 @@
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
+include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
 
 class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueueHandler {
@@ -141,6 +142,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			]
 		));
 		
+		$t_download = ca_user_export_downloads::findAsInstance(['download_id' => $parameters['download_id'], 'user_id' => $parameters['user_id']]);
+		
 		$o_app = AppController::getInstance($req, $resp);
 		
 		if(!($user = ca_users::findAsInstance(['user_id' => $parameters['user_id']]))) {
@@ -152,6 +155,13 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid table or id. Table was '%1'; id was '%2'", $table, $id)); 
 			$this->error->setError(551, _t("Invalid table or id. Table was '%1'; id was '%2'", $table, $id),"dataExport->process()");
 			return false;
+		}
+		
+		if($t_download) {
+			$t_download->set([
+				'status' => 'PROCESSING'
+			]);
+			$t_download->update();
 		}
 		
 		try {
@@ -226,6 +236,30 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					$logger->logError(_t("[TaskQueue::dataExport::process] Invalid mode %1", $mode)); 
 					$this->error->setError(551, _t("[TaskQueue::dataExport::process] Invalid mode %1", $mode),"dataExport->process()");
 					break;
+			}
+			
+			if(is_array($res)) {
+				if($t_download) {
+					$md = $t_download->get('ca_user_export_downloads.metadata');
+					$md['extension'] = Media::getExtensionForMimetype($res['mimetype']);
+					$t_download->set([
+						'generated_on' => _t('now'),
+						'status' => 'COMPLETE',
+						'export_file' => $res['path'],
+						'metadata' => $md
+					]);
+					$t_download->update();
+				}
+				
+			} elseif($parameters['errors']) {
+				if($t_download) {
+					$t_download->set([
+						'generated_on' => _t('now'),
+						'status' => 'ERROR',
+						'error_code' => 531	// @TODO: better error code?
+					]);
+					$t_download->update();
+				}
 			}
 		} catch(TypeError $e) {
 			die("Type error: " . $e->getMessage());
