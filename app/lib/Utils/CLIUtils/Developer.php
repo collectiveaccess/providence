@@ -252,20 +252,20 @@ trait CLIUtilsDeveloper{
 					preg_match_all("/_t\(\"(.+?)(?<!\\\\)[\"][,\)]{1}/s", $line, $m);
 
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!s", $v);
+						return preg_replace("![\n\r]+!", " ", preg_match("![A-Za-z0-9]+!s", $v));
 					}));
 					
 					preg_match_all("/_t\(\'(.+?)(?<!\\\\)[\'][,\)]{1}/s", $line, $m);
 
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!s", $v);
+						return preg_replace("![\n\r]+!", " ", preg_match("![A-Za-z0-9]+!s", $v));
 					}));
 	
 					// <t>...</t> construction used in templates and view files
 					$strings = preg_match_all("!<t>(.*?)</t>!s", $line, $m);
 	
 					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!s", $v);
+						return preg_replace("![\n\r]+!", " ", preg_match("![A-Za-z0-9]+!s", $v));
 					}));
 				}
 			}

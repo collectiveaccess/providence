@@ -62,7 +62,7 @@ class ElementsController extends BaseEditorController {
 		AssetLoadManager::register('bundleableEditor');
 		
 		$t_element = $this->getElementObject();
-		$t_restriction = new ca_metadata_type_restrictions(null, null, true);
+		$t_restriction = new ca_metadata_type_restrictions(null, null, false);
 		
 		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
 		$this->view->setVar('type_list', $t_restriction->getTypeListsForTables());

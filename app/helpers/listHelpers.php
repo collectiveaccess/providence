@@ -286,7 +286,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
 		$v = caGetListItemForValue($ps_list_code, $ps_value, $pa_options);
-		return is_array($v) ? array_shift(array_keys()) : null;
+		return is_array($v) ? array_shift(array_keys($v)) : null;
 	}
 	# ---------------------------------------
 	/**
@@ -494,6 +494,30 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		return $g_default_list_item_id_cache[$vs_cache_key] = $t_list->getDefaultItemID($ps_list_code, array_merge($pa_options, ['useFirstElementAsDefaultDefault' => true]));
+	}
+	# ---------------------------------------
+	/**
+	 * Fetch value for default item in list
+	 *
+	 * @param string $ps_list_code List code
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 *      noCache = Don't use cache. [Default is false]
+	 *      dontCache = Synonym for noCache
+     *
+	 * @return string value of list item or null if no default item was found
+	 */
+	$g_default_list_item_value_cache = [];
+	function caGetDefaultItemValue($ps_list_code, $pa_options=null) {
+		global $g_default_list_item_value_cache;
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_list_code);
+		
+		if(!caGetOption(['noCache', 'dontCache'], $pa_options, false)) {
+		    if(isset($g_default_list_item_value_cache[$vs_cache_key])) { return $g_default_list_item_value_cache[$vs_cache_key]; }
+		}
+		
+		$default_item_id = caGetDefaultItemID($ps_list_code, $pa_options);
+		return $g_default_list_item_value_cache[$vs_cache_key] = caGetListItemValueForID($default_item_id, $pa_options);
 	}
 	# ---------------------------------------
 	/**

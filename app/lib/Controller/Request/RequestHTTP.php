@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@ class RequestHTTP extends Request {
 		parent::__construct();
 		
 		global $AUTH_CURRENT_USER_ID;
-		$AUTH_CURRENT_USER_ID = "";
+		$AUTH_CURRENT_USER_ID = null;
 
 		if (is_array($pa_options)) {
 			if (isset($pa_options["no_headers"]) && $pa_options["no_headers"]) {
@@ -164,6 +164,9 @@ class RequestHTTP extends Request {
 		} else {
 			if (isset($va_sim_params['user_id']) && $va_sim_params['user_id']) {
 				$this->user = new ca_users($va_sim_params['user_id']);
+				if($this->user->isLoaded()) {
+					$AUTH_CURRENT_USER_ID = $this->user->getPrimaryKey();
+				}
 			} else {
 				$this->user = new ca_users();
 			}
@@ -670,7 +673,7 @@ class RequestHTTP extends Request {
 			$this->user->close();
 		}
 
-		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
 			$host_without_port = __CA_SITE_HOSTNAME__;
 			$host_port = null;
 		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
@@ -709,7 +712,7 @@ class RequestHTTP extends Request {
 			}
 			
 			// trigger async search indexing
-			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && $this->getAppConfig()->get('run_indexing_queue') ) {
                 require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
                 if (!ca_search_indexing_queue::lockExists()) {
                 	$dont_verify_ssl_cert = (bool)$this->getAppConfig()->get('out_of_process_search_indexing_dont_verify_ssl_cert');
@@ -820,6 +823,11 @@ class RequestHTTP extends Request {
 		if ($pa_options["dont_redirect"]) {
 			$pa_options["dont_redirect_to_login"] = true;
 			$pa_options["dont_redirect_to_welcome"] = true;
+		}
+		
+		if(isset($_SERVER['PHP_AUTH_USER']) && !$pa_options["user_name"]) {
+			$pa_options["user_name"] = $_SERVER['PHP_AUTH_USER'];
+			$pa_options["password"] = $_SERVER['PHP_AUTH_PW'];
 		}
 		
 		$vb_login_successful = false;

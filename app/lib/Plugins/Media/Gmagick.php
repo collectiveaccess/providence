@@ -322,7 +322,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$tp = new TilepicParser();
 			if ($tp->isTilepic($ps_filepath)) {
 				return 'image/tilepic';
-			} elseif ($this->imagemagick_path && (preg_match('!\.heic$!i', $ps_filepath) || preg_match('!\.psd$!i', $ps_filepath))) {	// Is it HEIC?
+			} elseif ($this->imagemagick_path && (preg_match('!\.(heic|psd|jpg|jpeg)$!i', $ps_filepath))) {	// Is it HEIC?
 				caExec($this->imagemagick_path." ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $output, $return);
 				if(is_array($output) && preg_match("!(HEIC|PSD) [\d]+x[\d]+!", $output[0], $m)) {
 					$this->opa_heic_list[$ps_filepath] = true;
@@ -1028,7 +1028,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->handle->setimageindex(0);
 		$num_previews = 0;
 		do {
-			if ($i > 1) { $this->handle->nextImage(); }
+			if ($i > 0) { $this->handle->nextImage(); }
 			$num_previews++;
 			$i++;
 		} while($this->handle->hasnextimage());
@@ -1038,7 +1038,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($num_previews > 1) {
 			$i = 0;
 			do {
-				if ($i > 1) { $this->handle->nextImage(); }
+				if ($i > 0) { $this->handle->nextImage(); }
 			
 				$this->handle->writeImage($output_file_prefix.sprintf("_%05d", $i).".jpg");
 				$file_cleanup_list[] = $files[$i] = $output_file_prefix.sprintf("_%05d", $i).'.jpg';

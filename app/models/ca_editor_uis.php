@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -775,7 +775,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$va_tmp['settings'] = $qr_res->getVars('settings');
 			
 			$va_types = [];
-			if (isset($va_tmp['settings']['bundleTypeRestrictions'])) {
+			if (isset($va_tmp['settings']['bundleTypeRestrictions']) && is_array($va_tmp['settings']['bundleTypeRestrictions']) && sizeof($va_tmp['settings']['bundleTypeRestrictions'])) {
 				$va_types = $va_tmp['settings']['bundleTypeRestrictions'];
 				if ($va_types && !is_array($va_types)) { $va_types = [$va_types]; }
 				
@@ -805,15 +805,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_bundle_name
 	 * @param RequestHTTP $po_request
 	 * @param array $pa_options Options include:
-	 *		user_id = User_id to apply access control for
+	 *		user_id = User_id to apply access control for. [Default is current user]
+	 &		type_id = Restrict to type. [Default is null]
 	 */
 	public function getScreenWithBundle($ps_bundle_name, $po_request=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		$type_id = caGetOption('type_id', $pa_options, null);
 		
-		foreach($this->getScreens(null, $pa_options) as $va_screen) {
+		foreach($this->getScreens($type_id, $pa_options) as $va_screen) {
 			$vn_screen_id = $va_screen['screen_id'];
-			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id);
+			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id, $type_id, $pa_options);
 			
 			foreach($va_placements as $va_placement) {
 				if ($va_placement['bundle_name'] === $ps_bundle_name) {
@@ -835,6 +837,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 * @param RequestHTTP $po_request The current request
 	 * @param array $pa_options Options include:
 	 *		user_id = User_id to apply access control for
+	 *		type_id = 
 	 *
 	 * @return array A list of placement info, one for each placement in the editor
 	 */
@@ -842,7 +845,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_id = $this->getPrimaryKey())) { return null; }
 	    if (!is_array($pa_options)) { $pa_options = []; }
 	    
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$vn_id}/{$ps_bundle_name}");
+		$type_id = caGetOption('type_id', $pa_options, null);
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_id}/{$type_id}/{$ps_bundle_name}");
 		
 		if (isset(self::$s_placements_for_bundle_cache[$vs_cache_key])) { return self::$s_placements_for_bundle_cache[$vs_cache_key]; }
 
@@ -850,7 +854,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
 	
 		$va_found = [];
-		foreach($this->getScreens(null, array_merge($pa_options, ['idsOnly' => true])) as $vn_screen_id) {
+		foreach($this->getScreens($type_id, array_merge($pa_options, ['idsOnly' => true])) as $vn_screen_id) {
 			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id, null, ['bundleList' => [$ps_bundle_name]]);
 			
 			foreach($va_placements as $va_placement) {

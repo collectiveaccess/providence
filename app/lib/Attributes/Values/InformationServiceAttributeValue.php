@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -244,14 +244,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
-			$pa_element_info, array('service')
+			$pa_element_info, ['service']
 		));
-
-		//if (!trim($ps_value)) {
-		//$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'InformationServiceAttributeValue->parseValue()');
-		//	return false;
-		//}
-
+		
 		if (trim($ps_value)) {
 			$va_tmp = explode('|', $ps_value);
 			$va_info = array();
@@ -313,11 +308,28 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			    ];
 			    
 			} else { // raw text
+				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+				$res = $this->opo_plugin->lookup($pa_element_info['settings'], $ps_value);
+				$selected_result = null;
+				if(is_array($res['results'] ?? null) && sizeof($res['results'])) {
+					$v = mb_strtolower($ps_value);
+					foreach($res['results'] as $r) {
+						if(mb_strtolower($r['label']) === $v) {
+							$selected_result = $r;
+							break;
+						}
+					}
+					if(!$selected_result) { $selected_result = array_shift($res['results']); }
+				}
+				if($selected_result && !caGetOption('isRecursive', $pa_options, false)) {
+					return self::parseValue($selected_result['url'], $pa_element_info, array_merge($pa_options, ['isRecursive' => true]));
+				}
 				return [
 			        'value_longtext1' => $ps_value,
 			        'value_longtext2' => '',
 			        'value_decimal1' => null,
-			        'value_blob' => null
+			        'value_blob' => null,
+			        'value_sortable' => $this->sortableValue($ps_value)
 			    ];
 			}
 		}
@@ -346,9 +358,28 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
 		$ps_class = caGetOption('class', $pa_options, 'lookupBg');
 		$pb_for_search = caGetOption('forSearch', $pa_options, false);
-
+		
+		$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
+			$pa_element_info, ['service']
+		));
+		
+		if(!$this->opo_plugin) {
+			$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+		}
+		
         if (!$pb_for_search) {
+        	// Add additional UI elements for services that require them (Eg. Numishare)
+        	$additional_ui_controls = $this->opo_plugin->getAdditionalFields($pa_element_info);
+			$additional_ui_elements = trim(join(' ', array_map(function($v) { return $v['html']; }, $additional_ui_controls)));
+			
+    		$additional_ui_gets = array_map(function($v) { 
+    			return "{$v['name']}: jQuery('#{$v['id']}').val()";
+    		}, $additional_ui_controls);
+    		
+    		$additional_ui_gets_str = sizeof($additional_ui_gets) ? ','.join(',', $additional_ui_gets) : '';
+    		
             $vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
+            	$additional_ui_elements.
                 caHTMLTextInput(
                     '{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
                     array(
@@ -379,14 +410,20 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 
             $vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
             $vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
-    
+    				
             $vs_element .= "
                     <script type='text/javascript'>
                         jQuery(document).ready(function() {
                             jQuery('#infoservice_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
                                 {
                                     minLength: 3,delay: 800,
-                                    source: '{$vs_url}',
+                                    source: function (request, response) {
+										jQuery.get('{$vs_url}', {
+												term: request.term{$additional_ui_gets_str}
+											}, function (data) {
+												response(JSON.parse(data));
+											});
+									},
                                     html: true,
                                     select: function(event, ui) {".((!$pb_for_search) ? "
                                         jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);" : 
@@ -474,6 +511,22 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		} else {
 			return isset($this->opa_extra_info[$ps_info_key]) ? $this->opa_extra_info[$ps_info_key] : null;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of additional values for display for information services such as Numisgare (and perhaps others)
+	 * to support additional interface elements on-screen for a value.
+	 *
+	 * Returns an empty array for attribute services that don't support additional values.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalDisplayValues() : array {
+		$settings = ca_metadata_elements::getElementSettingsForId($this->opn_element_id);
+		if ($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($settings['service'])) {
+			return $this->opo_plugin->getAdditionalFieldValues($this);
+		}
+		return [];
 	}
 	# ------------------------------------------------------------------
 	/**

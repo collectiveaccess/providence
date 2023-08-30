@@ -302,6 +302,7 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 		bundlePreview: <?= caEscapeForBundlePreview($this->getVar('bundle_preview')); ?>,
 		readonly: <?= $read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		defaultAccess: <?= json_encode(caGetDefaultItemValue('access_statuses')); ?>,
 		checkForDupes: <?= ($t_label->getAppConfig()->get('ca_entities_warn_when_preferred_label_exists') ? 'true' : 'false') ?>,
 		checkForDupesUrl: '<?= caNavUrl($this->request, 'editor/entities', 'EntityEditor', 'checkForDupeLabels')?>',
 		dupeLabelWarning: '<?= _t('Label is already in use'); ?>'

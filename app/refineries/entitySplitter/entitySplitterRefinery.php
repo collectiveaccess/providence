@@ -137,6 +137,15 @@ BaseRefinery::$s_refinery_settings['entitySplitter'] = array(
 		'label' => _t('Relationship type'),
 		'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
 	),
+	'entitySplitter_relationshipOrientation' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Relationship type orientation'),
+		'description' => _t('Sets directionality of entity-entity relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default.')
+	),
 	'entitySplitter_extractRelationshipType' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
