@@ -1902,7 +1902,7 @@ class DisplayTemplateParser {
                 
                     $i = $pa_options['tagIndex'] + 1;
                     foreach($t as $z) {
-                        if ($pa_values[$z]) { 
+                        if ($pa_values[$z] ?? null) { 
                             $next_unit = $pa_options['dimensionsUnitMap']['units'][$i] ?? null;  
                             break;
                         } 

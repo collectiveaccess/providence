@@ -2188,10 +2188,15 @@ div.search-hier-browser-box {
     font-size: 11px;
 }
 
-.labelOption {
+input.labelOption {
     font-size: 12px;
     max-width: 130px;
     padding: 2px;
+}
+
+select.labelOption {
+    font-size: 12px;
+    max-width: 130px;
 }
 
 .labelDisplay {

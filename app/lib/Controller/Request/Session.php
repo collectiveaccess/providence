@@ -84,6 +84,12 @@ class Session {
 	 */
 	public static $s_changed_vars = [];
 	
+	/**
+	 *
+	 *
+	 */
+	private static $s_cache_type = 'ExternalCache';
+	
 	# ----------------------------------------
 	# --- Constructor
 	# ----------------------------------------
@@ -94,6 +100,12 @@ class Session {
 	public static function init($ps_app_name=null, $pb_dont_create_new_session=false) {
  		$o_config = Configuration::load();
  		$service_config = Configuration::load(__CA_CONF_DIR__."/services.conf");
+ 		
+ 		// Use persistent (SQL-based) cache when cache back-end is file-based as Stash 
+ 		// tends to invalidate keys early in some enviroments causing forced logouts
+ 		if(defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
+ 			self::$s_cache_type = 'PersistentCache';
+ 		}
 
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
@@ -118,14 +130,14 @@ class Session {
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
-			if($session_id && is_array(Session::$s_session_vars = ExternalCache::fetch($session_id, 'SessionVars'))) {
-				if(!is_array(Session::$s_session_vars = ExternalCache::fetch($session_id, 'SessionVars'))) {
+			if($session_id && is_array(Session::$s_session_vars = self::$s_cache_type::fetch($session_id, 'SessionVars'))) {
+				if(!is_array(Session::$s_session_vars = self::$s_cache_type::fetch($session_id, 'SessionVars'))) {
 					Session::$s_session_vars = [];
 				}
 			} else {
 				Session::$s_session_vars = [];
 				if($session_id) {
-					ExternalCache::delete($session_id, 'SessionVars');
+					self::$s_cache_type::delete($session_id, 'SessionVars');
 				}
 				Session::$s_changed_vars['session_end_timestamp'] = true;
 				Session::$s_session_vars['session_end_timestamp'] = time() + Session::$lifetime;
@@ -138,7 +150,7 @@ class Session {
 				(is_numeric(Session::$s_session_vars['session_end_timestamp']) && (time() > Session::$s_session_vars['session_end_timestamp']))
 			) {
 				Session::$s_session_vars = Session::$s_changed_vars['session_end_timestamp'] = array();
-				ExternalCache::delete($session_id, 'SessionVars');
+				self::$s_cache_type::delete($session_id, 'SessionVars');
 			}
 		}
 		return $session_id;
@@ -154,8 +166,8 @@ class Session {
 	static public function getServiceAuthToken($pb_dont_create_new_token=false) {
 		if(!($session_id = self::getSessionID())) { return false; }
 
-		if(ExternalCache::contains($session_id, 'SessionIDToServiceAuthTokens')) {
-			return ExternalCache::fetch($session_id, 'SessionIDToServiceAuthTokens');
+		if(self::$s_cache_type::contains($session_id, 'SessionIDToServiceAuthTokens')) {
+			return self::$s_cache_type::fetch($session_id, 'SessionIDToServiceAuthTokens');
 		}
 
 		if($pb_dont_create_new_token) { return false; }
@@ -170,8 +182,8 @@ class Session {
 		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
-		ExternalCache::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', Session::$api_session_lifetime);
-		ExternalCache::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', Session::$api_session_lifetime);
+		self::$s_cache_type::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', Session::$api_session_lifetime);
+		self::$s_cache_type::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', Session::$api_session_lifetime);
 
 		return $vs_token;
 	}
@@ -186,11 +198,11 @@ class Session {
 		$o_config = Configuration::load();
 		$vs_app_name = $o_config->get("app_name");
 
-		if(!ExternalCache::contains($ps_token, 'ServiceAuthTokensToSessionID')) {
+		if(!self::$s_cache_type::contains($ps_token, 'ServiceAuthTokensToSessionID')) {
 			return false;
 		}
 
-		$vs_session_id = ExternalCache::fetch($ps_token, 'ServiceAuthTokensToSessionID');
+		$vs_session_id = self::$s_cache_type::fetch($ps_token, 'ServiceAuthTokensToSessionID');
 		$_COOKIE[$vs_app_name] = $vs_session_id;
 
 		return Session::init($vs_app_name);
@@ -213,9 +225,9 @@ class Session {
 		if(!($session_id = self::getSessionID())) { return false; }
 		// nuke service token caches
 		if($vs_token = self::getServiceAuthToken(true)) {
-			ExternalCache::delete($vs_token, 'ServiceAuthTokensToSessionID');
+			self::$s_cache_type::delete($vs_token, 'ServiceAuthTokensToSessionID');
 		}
-		ExternalCache::delete($session_id, 'SessionIDToServiceAuthTokens');
+		self::$s_cache_type::delete($session_id, 'SessionIDToServiceAuthTokens');
 
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
@@ -224,7 +236,7 @@ class Session {
 		// Delete session data
 		unset($_COOKIE[Session::$name]);
 		setCookie(Session::$name, "", time()-3600);
-		ExternalCache::delete($session_id, 'SessionVars');
+		self::$s_cache_type::delete($session_id, 'SessionVars');
 	}
 	# ----------------------------------------
 	/**
@@ -314,7 +326,7 @@ class Session {
 		}
 		
 		// Get old vars
-		if (!ExternalCache::fetch($session_id, 'SessionVars') || !is_array($va_current_values = ExternalCache::fetch($session_id, 'SessionVars'))) {
+		if (!self::$s_cache_type::fetch($session_id, 'SessionVars') || !is_array($va_current_values = self::$s_cache_type::fetch($session_id, 'SessionVars'))) {
 			$va_current_values = [];
 		}
 		
@@ -323,7 +335,7 @@ class Session {
 		foreach(Session::$s_changed_vars as $k => $v) {
 			$vars[$k] = Session::$s_session_vars[$k];
 		}
-		ExternalCache::save($session_id, array_merge($va_current_values, $vars), 'SessionVars', $vn_session_lifetime);
+		self::$s_cache_type::save($session_id, array_merge($va_current_values, $vars), 'SessionVars', $vn_session_lifetime);
 	}
 	# ----------------------------------------
 	/**

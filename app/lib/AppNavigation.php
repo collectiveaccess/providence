@@ -427,10 +427,8 @@
 							$vs_buf .= $this->_genMenu($va_menu['navigation'], $vs_base_path, $vs_cur_selection);
 							$vs_buf .= "</ul>\n";
 						}
-					} else {
-						if ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => true])) {
-							$vs_buf .= "<h2>{$vs_menu_item}</h2>\n";
-						}
+					} elseif ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => false])) {
+						$vs_buf .= "<h2>{$vs_menu_item}</h2>\n";
 					}
 				}
 			}

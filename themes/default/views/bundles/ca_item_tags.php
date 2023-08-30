@@ -78,7 +78,7 @@ if (!RequestHTTP::isAjax()) {
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? 'bubbles') {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">

@@ -3115,11 +3115,14 @@ class SearchResult extends BaseObject {
 		if (method_exists($pt_instance, 'setLabelTypeList')) {
 			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
 		}
-		if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+		
+		$convert_codes_to_idno = caGetOption('convertCodesToIdno', $pa_options, false);
+		
+		if ($convert_codes_to_idno && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = caGetListItemIdno($vs_prop);
-		} elseif (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+		} elseif($convert_codes_to_idno && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
 			$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
-	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+	    } elseif($convert_codes_to_idno && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('type_code');
 		}
@@ -3134,14 +3137,17 @@ class SearchResult extends BaseObject {
 		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
 		
 		$vs_table_name = $pa_path_components['table_name'];
+		
+		$convert_codes_to_value = caGetOption('convertCodesToValue', $pa_options, false);
+		
 		if (method_exists($pt_instance, 'setLabelTypeList')) {
 			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
 		}
-		if (isset($pa_options['convertCodesToValue']) && $pa_options['convertCodesToValue'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+		if ($convert_codes_to_value && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = caGetListItemValueForID($vs_prop);
-		} elseif (isset($pa_options['convertCodesToValue']) && $pa_options['convertCodesToValue'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+		} elseif($convert_codes_to_value && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
 			return $vs_prop;
-	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+	    } elseif($convert_codes_to_value && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('type_code');
 		}
@@ -3155,30 +3161,30 @@ class SearchResult extends BaseObject {
 		$vs_prop = $ps_prop;
 		
 		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
-		$vb_convert_codes_to_display_text = ((isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText']) || ($pa_options['output'] == 'text'));
+		$convert_codes_to_display_text = (caGetOption('convertCodesToDisplayText', $pa_options, false) || ($pa_options['output'] == 'text'));
 		
 		$vs_table_name = $pa_path_components['table_name'];
 		if (method_exists($pt_instance, 'setLabelTypeList') && ($vs_label_list_name = $this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"))) {
 			$pt_instance->setLabelTypeList($vs_label_list_name);
 		}
 		
-		if ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+		if ($convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-		} elseif ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+		} elseif ($convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
             $vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
-		} elseif ($vb_convert_codes_to_display_text && is_array($options = $pt_instance->getFieldInfo($vs_field_name,"OPTIONS")) && (($k = array_search($vs_prop, $options)) !== false)) {
+		} elseif ($convert_codes_to_display_text && is_array($options = $pt_instance->getFieldInfo($vs_field_name,"OPTIONS")) && (($k = array_search($vs_prop, $options)) !== false)) {
 			$vs_prop = $k;
-        } elseif ($vb_convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
+        } elseif ($convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
             $t_locale = new ca_locales($vs_prop);
             $vs_prop = $t_locale->getName();
-        } elseif ($vb_convert_codes_to_display_text && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
+        } elseif ($convert_codes_to_display_text && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
             foreach($va_list as $vs_option => $vs_value) {
                 if ($vs_value == $vs_prop) {
                     $vs_prop = $vs_option;
                     break;
                 }
             }
-		} elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+		} elseif($convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('ca_relationship_types.preferred_labels');
 		}

@@ -3048,11 +3048,11 @@ class TimeExpressionParser {
 					return "{$vs_date} ".$va_range_conjunctions[0];
 				} else {
 					$va_born_qualifiers = $this->opo_language_settings->getList('bornQualifier');
-					if ($pa_options['isLifespan'] && (sizeof($va_born_qualifiers) > 0)) {
+					if (($pa_options['isLifespan'] ?? false) && (sizeof($va_born_qualifiers) > 0)) {
 						$vs_after_qualifier = $va_born_qualifiers[0];
 					} else {
 						$va_after_qualifiers = $this->opo_language_settings->getList('afterQualifier');
-						if ($pa_options['afterQualifier'] && in_array($pa_options['afterQualifier'], $va_after_qualifiers)) {
+						if (($pa_options['afterQualifier'] ?? null) && in_array($pa_options['afterQualifier'], $va_after_qualifiers)) {
 							$vs_after_qualifier = $pa_options['afterQualifier'] ;
 						} else {
 							$vs_after_qualifier = $va_after_qualifiers[0];

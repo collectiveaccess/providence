@@ -2590,6 +2590,9 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 
 						if (
 							!$va_attr["IS_NULL"]
@@ -2628,6 +2631,9 @@ class BaseModel extends BaseObject {
 					case (FT_TIMERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 						
 						if (
 							!$va_attr["IS_NULL"]
@@ -10831,6 +10837,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool
 	 */
 	public function changeTagRank($pn_relation_id, $pn_rank) {
+		global $g_request;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_ixt = new ca_items_x_tags($pn_relation_id);
@@ -10847,8 +10854,8 @@ $pa_options["display_form_field_tips"] = true;
 			return false;
 		}
 		
-		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+		if ($g_request && $g_request->isLoggedIn() && ($user_id = $g_request->getUserID())) {
+			if ($t_ixt->get('user_id') != $user_id) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
 				return false;
 			}

@@ -2549,6 +2549,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				}
 			}
 		}
+		$va_new_labels_to_force_due_to_error = [];
 		if (is_array($this->opa_failed_preferred_label_inserts) && sizeof($this->opa_failed_preferred_label_inserts)) {
 			$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 		}
@@ -2556,7 +2557,17 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 		
 		$forced_values = caGetOption('forcedValues', $pa_options, null);
-		$o_view->setVar('new_labels', array_merge($va_new_labels_to_force_due_to_error, $forced_values['preferred_labels'] ?? []));
+		
+		foreach($forced_values['preferred_labels'] ?? [] as $fpl) {
+			if(isset($fpl['label_id'])) {
+				$va_inital_values[$fpl['label_id']] = $fpl;
+				unset($fpl['label_id']);
+			} else {
+				$va_new_labels_to_force_due_to_error[] = $fpl;
+			}
+		}
+		
+		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		
 		$bundle_preview = '';
@@ -2655,12 +2666,22 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		
+		$va_new_labels_to_force_due_to_error = [];
 		if (is_array($this->opa_failed_nonpreferred_label_inserts) && sizeof($this->opa_failed_nonpreferred_label_inserts)) {
 			$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 		}
 		
 		$forced_values = caGetOption('forcedValues', $pa_options, null);
-		$o_view->setVar('new_labels', array_merge($va_new_labels_to_force_due_to_error, $forced_values['nonpreferred_labels'] ?? []));
+		foreach($forced_values['nonpreferred_labels'] ?? [] as $fpl) {
+			if(isset($fpl['label_id'])) {
+				$va_inital_values[$fpl['label_id']] = $fpl;
+				unset($fpl['label_id']);
+			} else {
+				$va_new_labels_to_force_due_to_error[] = $fpl;
+			}
+		}
+		
+		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 		
