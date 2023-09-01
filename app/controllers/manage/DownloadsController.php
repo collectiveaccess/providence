@@ -56,6 +56,43 @@ class DownloadsController extends ActionController {
 		$this->render('download_export_binary.php');
 	}
 	# -------------------------------------------------------
+	public function Delete() {
+		$ids_to_delete = $this->request->getParameter('delete_id', pArray);
+		$downloaded = $this->request->getParameter('downloadedOnly', pInteger);
+	
+		$delete_count = $failed_deletes = 0;
+		if($downloaded) {
+			if(is_array($downloads_to_delete =  ca_user_export_downloads::find(['user_id' => $this->request->getUserID(), 'generated_on' => ['>', 0]], ['returnAs' => 'modelInstances']))) {
+				foreach($downloads_to_delete as $t_download) {
+					if($t_download->delete(true)) {
+						$delete_count++;
+					} else {
+						$failed_deletes++;
+					}
+				}
+			}
+		} elseif(is_array($ids_to_delete)) {
+			foreach($ids_to_delete as $download_id) {
+				if($t_download = ca_user_export_downloads::findAsInstance(['download_id' => $download_id, 'user_id' => $this->request->getUserID()])) {
+					if($t_download->delete(true)) {
+						$delete_count++;
+					} else {
+						$failed_deletes++;
+					}
+				}
+			}
+		}
+		
+		if($delete_count) {
+			$this->notification->addNotification($delete_count == 1 ? _t("Deleted %1 download", $delete_count) : _t("Deleted %1 downloads", $delete_count), __NOTIFICATION_TYPE_INFO__);
+		}
+		if($failed_deletes) {
+			$this->notification->addNotification($delete_count == 1 ? _t("Could not delete %1 download", $failed_deletes) : _t("Could not delete %1 downloads", $failed_deletes), __NOTIFICATION_TYPE_ERROR__);
+		}
+		
+		$this->List();
+	}
+	# -------------------------------------------------------
 	/**
 	 * 
 	 */
