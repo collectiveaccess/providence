@@ -340,7 +340,11 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			(
 				is_numeric($ps_path) 
 				&& 
-				($t_page = ca_site_pages::find(array_merge(['page_id' => (int)$ps_path], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) 
+				(
+					($t_page = ca_site_pages::find(array_merge(['page_id' => (int)$ps_path], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)]))
+					||
+					($t_page = ca_site_pages::find(array_merge(['page_id' => (int)$ps_path], ['locale_id' => null]), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) 
+				) 
 				&& 
 				($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 			)
