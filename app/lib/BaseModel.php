@@ -6096,7 +6096,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
 						// transform entries to item values
 						$t_list = Datamodel::getInstance('ca_lists', true);
-						if ((isset($va_attr['LIST']) && ($item_id = ca_lists::getItemID($va_attr['LIST'], $v))) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
+						if (isset($va_attr['LIST']) && (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v)))) { // 
 							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
 							$v = $item['item_value'] ?? null;
 						}
