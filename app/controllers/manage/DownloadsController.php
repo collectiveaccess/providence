@@ -47,7 +47,10 @@ class DownloadsController extends ActionController {
 			$this->view->setVar('file_path', $file_path = $t_download->getFilePath('export_file'));
 			$this->view->setVar('download_name', preg_replace("![^A-Za-z0-9_\-\.]+!", '', $md['searchExpressionForDisplay']).'.'.$md['extension']);
 			
-			$t_download->set('downloaded_on', _t('now'));
+			$t_download->set([
+				'downloaded_on' => _t('now'),
+				'status' => 'DOWNLOADED'
+			]);
 			$t_download->update();
 		}
 		$this->render('download_export_binary.php');
@@ -58,7 +61,7 @@ class DownloadsController extends ActionController {
 	 */
 	public function Info() {
 		$t_download = new ca_user_export_downloads();
-		$this->view->setVar('download_count', $t_download->getDownloadCount(['user_id' => $this->request->getUserID()]));
+		$this->view->setVar('download_count', ca_user_export_downloads::getDownloadCount(['generatedOnly' => true, 'user_id' => $this->request->getUserID()]));
 		
 		
 		return $this->render('widget_download_info_html.php', true);

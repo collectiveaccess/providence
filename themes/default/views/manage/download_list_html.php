@@ -74,13 +74,13 @@ $download_list 	= $this->getVar('download_list');
 					<?= $md['searchExpressionForDisplay']." (".$md['findType'].")"; ?>
 				</td>
 				<td>
-					<?= caGetLocalizedDate($download['created_on']); ?>
+					<?= caGetLocalizedDate($download['created_on'], ['dateFormat' => 'delimited']); ?>
 				</td>
 				<td>
-					<?= $download['generated_on'] ? caGetLocalizedDate($download['generated_on']) : ''; ?>
+					<?= $download['generated_on'] ? caGetLocalizedDate($download['generated_on'], ['dateFormat' => 'delimited']) : '-'; ?>
 				</td>
 				<td>
-					<?= $download['downloaded_on'] ? caGetLocalizedDate($download['downloaded_on']) : ''; ?>
+					<?= $download['downloaded_on'] ? caGetLocalizedDate($download['downloaded_on'], ['dateFormat' => 'delimited']) : '-'; ?>
 				</td>
 				<td>
 					<?= $md['format']; ?>
@@ -93,7 +93,7 @@ $download_list 	= $this->getVar('download_list');
 				</td>
 				<td class="listtableEditDelete">
 <?php
-	if(in_array($download['status'], ['COMPLETE', 'ERROR'], true)) {
+	if(in_array($download['status'], ['COMPLETE', 'DOWNLOADED'], true)) {
 ?>
 					<?= caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'manage', 'Downloads', 'Download', ['download_id' => $download['download_id']], [], ['icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true]); ?>
 					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'Downloads', 'Delete', ['download_id' => $download['download_id']], [], ['icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true]); ?>
