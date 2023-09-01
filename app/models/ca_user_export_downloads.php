@@ -206,10 +206,10 @@ class ca_user_export_downloads extends BaseModel {
 	 *		user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned.
 	 * @return int  Number of downloads available
 	 */
-	public function getDownloadCount($options=null) {
+	public static function getDownloadCount($options=null) {
 		if (!is_array($options)) { $options = []; }
 
-		$downloads = $this->getDownloads($options);
+		$downloads = self::getDownloads($options);
 
 		if (is_array($downloads)) { return sizeof($downloads); } else { return 0; }
 	}
@@ -219,13 +219,17 @@ class ca_user_export_downloads extends BaseModel {
 	 *
 	 * @param array $options Optional array of options. Supported options are:
 	 *			user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned. [Default is null]
+	 *			generatedOnly = Only return reports that have been generated. [Default is false; return all reports]
+	 *			limit = Maximum number of downloads to return. [Default is null; return all]
 	 * @return array Array of downloads keyed on download_id. Each download is represented by an array, whose keys include: download_id, created_on, generated_on, user_id, download_type, ...)
 	 */
-	public function getDownloads($options=null) {
+	public static function getDownloads($options=null) {
 		if (!is_array($options)) { $options = []; }
 		$user_id = caGetOption('user_id', $options, null);
+		$generated_only = caGetOption('generatedOnly', $options, false);
+		$limit = caGetOption('limit', $options, null, ['castTo' => 'int']);
 
-		$o_db = $this->getDb();
+		$o_db = new Db();
 
 		$wheres = [];
 		$params = [];
@@ -234,7 +238,14 @@ class ca_user_export_downloads extends BaseModel {
 			$params[] = $user_id;
 		}
 
+		if($generated_only) {
+			$wheres[] = "(d.generated_on > 0)";
+		}	
 		
+		$limit_sql = null;
+		if($limit > 0) {
+			$limit_sql = "LIMIT {$limit}";
+		}	
 
 		// get downloads
 		$qr_res = $o_db->query("
@@ -244,6 +255,7 @@ class ca_user_export_downloads extends BaseModel {
 			".(sizeof($wheres) ? 'WHERE ' : '')."
 			".join(' AND ', $wheres)."
 			ORDER BY d.created_on  
+			{$limit_sql}
 		", $params);
 		
 		$downloads = [];
