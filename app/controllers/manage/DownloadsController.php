@@ -62,7 +62,7 @@ class DownloadsController extends ActionController {
 	
 		$delete_count = $failed_deletes = 0;
 		if($downloaded) {
-			if(is_array($downloads_to_delete =  ca_user_export_downloads::find(['user_id' => $this->request->getUserID(), 'generated_on' => ['>', 0]], ['returnAs' => 'modelInstances']))) {
+			if(is_array($downloads_to_delete =  ca_user_export_downloads::find(['user_id' => $this->request->getUserID(), 'downloaded_on' => ['>', 0]], ['returnAs' => 'modelInstances']))) {
 				foreach($downloads_to_delete as $t_download) {
 					if($t_download->delete(true)) {
 						$delete_count++;

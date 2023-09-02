@@ -26,9 +26,14 @@
  * ----------------------------------------------------------------------
  */
 $t_download 		= $this->getVar('t_download_');
-$download_list 	= $this->getVar('download_list');					
+$download_list 		= $this->getVar('download_list');	
+$downloaded_count 	= array_reduce($download_list, function($c, $v) { 
+	if($v['status'] == 'DOWNLOADED') { $c++; }
+	return $c;
+ }, 0); 	
+ 			
 ?>
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 /* <![CDATA[ */
 	jQuery(document).ready(function(){
 		jQuery('#caFormList').caFormatListTable();
@@ -36,11 +41,26 @@ $download_list 	= $this->getVar('download_list');
 /* ]]> */
 </script>
 <div class="sectionBox">
-	<form id="downloadListForm">
-		<div style="text-align:right;">
-			<a href='#' onclick='jQuery("#downloadListForm").attr("action", "<?= caNavUrl($this->request, '*', '*', 'delete', ['downloadedOnly' => 1]); ?>").submit();' class='form-button' id='deleteDownloaded'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?= _t('Delete downloaded'); ?></span></span></a>
-			<a href='#' onclick='jQuery("#downloadListForm").attr("action", "<?= caNavUrl($this->request, '*', '*', 'delete'); ?>").submit();' class='form-button' id='deleteSelected' style='display: none;'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?= _t('Delete selected'); ?></span></span></a>
+		<div style="float: left;  height: 40px;">
+			<?= caJSButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Refresh"), 'refreshDownloadList', ['class' => 'form-button', 'style' => ''], []); ?>
 		</div>
+<?php
+	if(is_array($download_list) && sizeof($download_list)) {
+?>
+		<div style="text-align:right; height: 40px;">
+<?php
+	if($downloaded_count > 0) {
+?>
+			<?= caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete downloaded"), 'deleteDownloaded', ['class' => 'form-button'], []); ?>
+<?php
+	}
+?>
+			<?= caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete selected"), 'deleteSelected', ['class' => 'form-button', 'style' => 'display: none'], []); ?>
+		</div>
+<?php
+	}
+?>
+		<div><?= _t('Updated at %1', date('H:i')); ?></div>
 		<table id="caFormList" class="listtable">
 			<thead>
 				<tr>
@@ -77,7 +97,7 @@ $download_list 	= $this->getVar('download_list');
 ?>
 				<tr>
 					<td>
-						<?= caHTMLCheckboxInput('delete_id[]', ['value' => $download['download_id'], 'class' => 'downloadSelectedInput']); ?>
+						<?= caHTMLCheckboxInput('delete_id', ['value' => $download['download_id'], 'class' => 'downloadSelectedInput']); ?>
 					</td>
 					<td>
 						<?= $md['searchExpressionForDisplay']." (".$md['findType'].")"; ?>
@@ -103,8 +123,8 @@ $download_list 	= $this->getVar('download_list');
 					<td class="listtableEditDelete">
 <?php
 		if(in_array($download['status'], ['COMPLETE', 'DOWNLOADED'], true)) {
-?>
-						<?= caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), 'downloadIcon', 'manage', 'Downloads', 'Download', ['download_id' => $download['download_id']], [], ['icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true]); ?>
+?>						
+					<?= caJSButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), 'download'.$download['download_id'], ['class' => 'downloadLink', 'data-download_id' => $download['download_id']], []); ?>
 <?php
 		}
 	?>			
@@ -114,7 +134,7 @@ $download_list 	= $this->getVar('download_list');
 		
 			}
 			
-			TooltipManager::add('.downloadIcon', _t("Download"));
+			TooltipManager::add('.downloadLink', _t("Download"));
 		} else {
 ?>
 			<tr>
@@ -129,13 +149,30 @@ $download_list 	= $this->getVar('download_list');
 ?>
 		</tbody>
 	</table>
-	</form>
 </div>
 <div class="editorBottomPadding"><!-- empty --></div>
 
+<?php
+	if (!$this->request->isAjax()) {
+?>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		jQuery('.downloadSelectedInput').on('click', caUpdateDeleteSelectedButton);
+		jQuery('#mainContent').on('click', '.downloadSelectedInput', caUpdateDeleteSelectedButton);
+
+		setInterval(function() {
+			jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'List', []);?>');
+		}, 30000);
+		
+		jQuery('#mainContent').on('click', '.downloadLink', function(e) {
+			window.location = '<?= caNavUrl($this->request, '*', '*', 'Download');?>/download_id/' + jQuery(this).data('download_id');
+			setTimeout(function() {
+				jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'List', []);?>');
+			}, 750);
+		});
+		
+		jQuery('#mainContent').on('click', '#deleteSelected', caDeleteSelected);
+		jQuery('#mainContent').on('click', '#deleteDownloaded', caDeleteDownloaded);
+		jQuery('#mainContent').on('click', '#refreshDownloadList', caRefreshDownloadList);
 	});
 	function caUpdateDeleteSelectedButton() {
 		if(jQuery('input.downloadSelectedInput:checked').length > 0) {
@@ -144,4 +181,17 @@ $download_list 	= $this->getVar('download_list');
 			jQuery('#deleteSelected').hide();
 		}
 	}
+	
+	function caDeleteDownloaded() {
+		jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'Delete', ['downloadedOnly' => 1]);?>', {});
+	}
+	function caDeleteSelected() {
+		let ids = jQuery('.downloadSelectedInput').val();
+		jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'Delete');?>', {'delete_id' : ids });
+	}
+	function caRefreshDownloadList() {
+		jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'List');?>', {});
+	}
 </script>
+<?php
+	}
