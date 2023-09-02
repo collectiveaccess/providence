@@ -177,7 +177,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export failed', __CA_APP_DISPLAY_NAME__), 'data_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -192,7 +192,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Label export failed', __CA_APP_DISPLAY_NAME__), 'label_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -213,7 +213,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed');
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -228,7 +228,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Set export failed', __CA_APP_DISPLAY_NAME__), 'set_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -248,21 +248,44 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 						'export_file' => $res['path'],
 						'metadata' => $md
 					]);
-					$t_download->update();
+					if(!$t_download->update()) {
+						$md['error'] = join('; ', $t_download->getErrors());
+						$t_download->clearMedia('export_file');
+						$t_download->set([
+							'generated_on' => _t('now'),
+							'status' => 'ERROR',
+							'metadata' => $md
+						]);
+						$t_download->update();
+					}
 				}
 				
-			} elseif($parameters['errors']) {
+			} else {
 				if($t_download) {
+					$md = $t_download->get('ca_user_export_downloads.metadata');
+					$md['error'] = $parameters['errors'] ?: _t('Unknown error');
 					$t_download->set([
 						'generated_on' => _t('now'),
 						'status' => 'ERROR',
-						'error_code' => 531	// @TODO: better error code?
+						'error_code' => 531,	
+						'metadata' => $md
 					]);
 					$t_download->update();
 				}
 			}
-		} catch(TypeError $e) {
-			die("Type error: " . $e->getMessage());
+		} catch(Exception $e) {
+			if($t_download) {
+				$md = $t_download->get('ca_user_export_downloads.metadata');
+				$md['error'] = $e->getMessage();
+					
+				$t_download->set([
+					'generated_on' => _t('now'),
+					'status' => 'ERROR',
+					'error_code' => 531,	
+					'metadata' => $md
+				]);
+				$t_download->update();
+			}
 		}
 		return false;
 	}
