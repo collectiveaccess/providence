@@ -63,6 +63,8 @@ class downloadsWidget extends BaseWidget implements IWidget {
 	public function renderWidget($widget_id, &$settings) {
 		parent::renderWidget($widget_id, $settings);
 		$this->opo_view->setVar('download_list', ca_user_export_downloads::getDownloads(['user_id' => $this->request->getUserID(), 'generatedOnly' => true, 'limit' => $settings['display_limit'] ?? 10]));
+		$this->opo_view->setVar('download_count', ca_user_export_downloads::getDownloadCount(['user_id' => $this->request->getUserID()]));
+		
 		return $this->opo_view->render('main_html.php');
 	}
 	# -------------------------------------------------------
