@@ -275,7 +275,7 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 		$vb_printed_properly = caExportContentAsPDF($vs_content, $template_info, $output_filename, $options);
 	} catch (Exception $e) {
 		$vb_printed_properly = false;
-		throw new ApplicationException(_t("Could not generate PDF"));
+		throw new ApplicationException(_t("Could not generate PDF: %1", $e->getMessage()));
 	}
 	
 	return $vb_printed_properly;
