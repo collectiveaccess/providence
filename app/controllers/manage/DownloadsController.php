@@ -83,13 +83,14 @@ class DownloadsController extends ActionController {
 			}
 		}
 		
-		if($delete_count) {
-			$this->notification->addNotification($delete_count == 1 ? _t("Deleted %1 download", $delete_count) : _t("Deleted %1 downloads", $delete_count), __NOTIFICATION_TYPE_INFO__);
+		if(!$this->request->isAjax()) {
+			if($delete_count) {
+				$this->notification->addNotification($delete_count == 1 ? _t("Deleted %1 download", $delete_count) : _t("Deleted %1 downloads", $delete_count), __NOTIFICATION_TYPE_INFO__);
+			}
+			if($failed_deletes) {
+				$this->notification->addNotification($delete_count == 1 ? _t("Could not delete %1 download", $failed_deletes) : _t("Could not delete %1 downloads", $failed_deletes), __NOTIFICATION_TYPE_ERROR__);
+			}
 		}
-		if($failed_deletes) {
-			$this->notification->addNotification($delete_count == 1 ? _t("Could not delete %1 download", $failed_deletes) : _t("Could not delete %1 downloads", $failed_deletes), __NOTIFICATION_TYPE_ERROR__);
-		}
-		
 		$this->List();
 	}
 	# -------------------------------------------------------

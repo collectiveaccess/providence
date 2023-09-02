@@ -206,7 +206,7 @@ class ca_user_export_downloads extends BaseModel {
 	 *		user_id = Restricts returned forms to those accessible by the current user. If omitted then all forms, regardless of access are returned.
 	 * @return int  Number of downloads available
 	 */
-	public static function getDownloadCount($options=null) {
+	public static function getDownloadCount(?array $options=null) : int {
 		if (!is_array($options)) { $options = []; }
 
 		$downloads = self::getDownloads($options);
@@ -223,7 +223,7 @@ class ca_user_export_downloads extends BaseModel {
 	 *			limit = Maximum number of downloads to return. [Default is null; return all]
 	 * @return array Array of downloads keyed on download_id. Each download is represented by an array, whose keys include: download_id, created_on, generated_on, user_id, download_type, ...)
 	 */
-	public static function getDownloads($options=null) {
+	public static function getDownloads(?array $options=null) : array {
 		if (!is_array($options)) { $options = []; }
 		$user_id = caGetOption('user_id', $options, null);
 		$generated_only = caGetOption('generatedOnly', $options, false);

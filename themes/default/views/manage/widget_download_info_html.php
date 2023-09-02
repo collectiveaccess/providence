@@ -25,15 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-$download_count 	= $this->getVar('download_count');
 ?>
-<h3 class='searchForms'><?= _t('Your downloads'); ?>:
-<div><?php
-	if ($download_count == 1) {
-		print _t("1 download is available");
-	} else {
-		print _t("%1 downloads are available", $download_count);
-	}
-?></div>
-</h3>
+<h3 class='searchForms'><?= _t('Your downloads'); ?></h3>

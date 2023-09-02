@@ -49,22 +49,27 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 ?>
 		<div style="text-align:right; height: 40px;">
 <?php
-	if($downloaded_count > 0) {
+		if($downloaded_count > 0) {
 ?>
 			<?= caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete downloaded"), 'deleteDownloaded', ['class' => 'form-button'], []); ?>
 <?php
-	}
+		}
 ?>
 			<?= caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete selected"), 'deleteSelected', ['class' => 'form-button', 'style' => 'display: none'], []); ?>
 		</div>
 <?php
 	}
+	
+	if($downloaded_count > 0) {
 ?>
 		<div><?= _t('Updated at %1', date('H:i')); ?></div>
+<?php
+	}
+?>
 		<table id="caFormList" class="listtable">
 			<thead>
 				<tr>
-					<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
+					<th class="{sorter: false} list-header-nosort listtableEdit"><?= caHTMLCheckboxInput('selectall', ['value' => 1, 'class' => 'downloadSelectAllInput']); ?> </th>
 					<th class="list-header-unsorted">
 						<?= _t('File'); ?>
 					</th>
@@ -118,7 +123,7 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 						<?= $download['download_type']; ?>
 					</td>
 					<td>
-						<?= $download['status']; ?>
+						<span id='downloadStatus<?= $download['download_id']; ?>'><?= $download['status']; ?></span>
 					</td>
 					<td class="listtableEditDelete">
 <?php
@@ -131,6 +136,9 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 					</td>
 				</tr>
 <?php
+				if(isset($md['error'])) {
+					TooltipManager::add('#downloadStatus'.$download['download_id'], $md['error']);	
+				}
 		
 			}
 			
@@ -173,6 +181,7 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 		jQuery('#mainContent').on('click', '#deleteSelected', caDeleteSelected);
 		jQuery('#mainContent').on('click', '#deleteDownloaded', caDeleteDownloaded);
 		jQuery('#mainContent').on('click', '#refreshDownloadList', caRefreshDownloadList);
+		jQuery('#mainContent').on('click', '.downloadSelectAllInput', caToggleSelected);
 	});
 	function caUpdateDeleteSelectedButton() {
 		if(jQuery('input.downloadSelectedInput:checked').length > 0) {
@@ -185,8 +194,22 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 	function caDeleteDownloaded() {
 		jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'Delete', ['downloadedOnly' => 1]);?>', {});
 	}
+	function caToggleSelected() {
+		jQuery('.downloadSelectedInput').each(function(k, v) {
+			if(jQuery(v).prop('checked')) {
+				jQuery(v).prop('checked', false);
+			} else {
+				jQuery(v).prop('checked', true);
+			}
+		});
+		caUpdateDeleteSelectedButton();
+	}
 	function caDeleteSelected() {
-		let ids = jQuery('.downloadSelectedInput').val();
+		let ids = [];
+		jQuery('.downloadSelectedInput:checked').each(function(k, v) {
+			ids.push(jQuery(v).val());
+		});
+		
 		jQuery('#mainContent').load('<?= caNavUrl($this->request, '*', '*', 'Delete');?>', {'delete_id' : ids });
 	}
 	function caRefreshDownloadList() {
@@ -194,4 +217,6 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 	}
 </script>
 <?php
+	} else {	
+		print TooltipManager::getLoadHTML();
 	}
