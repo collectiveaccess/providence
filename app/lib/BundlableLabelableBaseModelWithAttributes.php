@@ -5536,7 +5536,6 @@ if (!$vb_batch) {
 					    foreach($edits as $checkout_id => $data) {
 					        if ($tc = ca_object_checkouts::find(['checkout_id' => $checkout_id], ['returnAs' => 'firstModelInstance'])) {
                                 if((int)$tc->get('object_id') === (int)$this->getPrimaryKey()) {
-                                    $tc->setMode(ACCESS_WRITE);
                                     $tc->set('checkout_notes', $data['checkout']);
                                     $tc->set('return_notes', $data['return']);
                                     $tc->update();
@@ -5896,7 +5895,7 @@ if (!$vb_batch) {
  		
  		if ($bundle_type_restrictions = caGetOption('bundleTypeRestrictions', $pa_settings, null)) {
  			if(!is_array($bundle_type_restrictions)) { $bundle_type_restrictions = [$bundle_type_restrictions]; }
- 			if(!in_array($this->getTypeID(), $bundle_type_restrictions)) { return; }
+ 			if(!in_array($this->getTypeID(), $bundle_type_restrictions)) { return true; }
  		}
 		
 		$vn_min_relationships = caGetOption('minRelationshipsPerRow', $pa_settings, 0);
