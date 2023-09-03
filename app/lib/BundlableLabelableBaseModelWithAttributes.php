@@ -3533,7 +3533,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	protected function getGenericFormBundle(RequestHTTP $request, string $form_name, string $placement_code, ?array $options=null, ?array $bundle_settings=null) {
 		$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $request->getViewsDirectoryPath();
-		$o_view = new View($po_request, "{$view_path}/bundles/");
+		$o_view = new View($request, "{$view_path}/bundles/");
 
 		$o_view->setVar('t_subject', $this);
 		$o_view->setVar('settings', $bundle_settings);
