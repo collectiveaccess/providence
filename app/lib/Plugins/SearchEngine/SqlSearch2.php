@@ -609,7 +609,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 				$tc = sizeof($temp_tables);
 				$this->db->query("
-					INSERT INTO {$temp_table}
+					INSERT IGNORE {$temp_table}
 					SELECT swi.index_id, 1, null
 					FROM ca_sql_search_words sw 
 					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
@@ -622,7 +622,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$temp_tables[] = $temp_table;	
 			}
 			$results_temp_table = array_pop($temp_tables);
-							
+
 			$params = [];
             $field_sql = '';
 			if($restrictions = $this->_getFieldRestrictions($subject_tablenum)) {
