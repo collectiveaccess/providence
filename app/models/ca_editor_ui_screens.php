@@ -1017,6 +1017,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Last item color'),
 								'description' => _t('If set last item in list will use this color.')
 							),
+							'dontShowAddButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Do not show add button'),
+								'description' => _t('If checked the add control will not be provided.')
+							),
 							'dontShowDeleteButton' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_CHECKBOXES,
