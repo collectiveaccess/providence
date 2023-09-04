@@ -4941,7 +4941,7 @@ create table ca_sets (
       
 	key i_user_id (user_id),
 	key i_type_id (type_id),
-	unique key u_set_code (set_code, deleted),
+	key i_set_code (set_code),
 	key i_hier_left (hier_left),
 	key i_hier_right (hier_right),
 	key i_parent_id (parent_id),
