@@ -365,8 +365,9 @@
 		/**
 		 *	Generates HTML for sidenav
 		 */
-		public function getHTMLSideNav($ps_css_id) {
+		public function getHTMLSideNav($ps_css_id, ?array $options=null) {
 			$vs_dest = $this->getDestination();
+			$hide_disabled = caGetOption('hideDisabled', $options, true);
 			
 			if (intval($this->opo_config->get('do_menu_bar_caching')) > 0) {
 				$va_sidebar_cache = Session::getVar('ca_nav_sidebar_cache');
@@ -427,7 +428,7 @@
 							$vs_buf .= $this->_genMenu($va_menu['navigation'], $vs_base_path, $vs_cur_selection);
 							$vs_buf .= "</ul>\n";
 						}
-					} elseif ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => false])) {
+					} elseif ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => $hide_disabled])) {
 						$vs_buf .= "<h2>{$vs_menu_item}</h2>\n";
 					}
 				}
