@@ -4941,7 +4941,7 @@ create table ca_sets (
       
 	key i_user_id (user_id),
 	key i_type_id (type_id),
-	unique key u_set_code (set_code),
+	unique key u_set_code (set_code, deleted),
 	key i_hier_left (hier_left),
 	key i_hier_right (hier_right),
 	key i_parent_id (parent_id),
@@ -7867,4 +7867,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (190, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (191, unix_timestamp());
