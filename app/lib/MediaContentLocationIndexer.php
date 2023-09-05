@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/** 
- * Base media processing plugin
- */
-
-include_once(__CA_LIB_DIR__."/Db.php");
 
 class MediaContentLocationIndexer  {
 	# ------------------------------------------------
@@ -152,7 +142,7 @@ class MediaContentLocationIndexer  {
 	 */
 	static function searchWithinMedia($ps_query, $pm_table, $pn_row_id, $ps_field) {
 		$o_config = Configuration::load();
-		$va_words = caTokenizeString($ps_query);
+		$va_words = caTokenizeString($ps_query, true);
 		
 		$va_results = array(
 			'matches' => 0,
@@ -186,7 +176,6 @@ class MediaContentLocationIndexer  {
 			if (is_array($va_hits) && sizeof($va_hits)) {
 				$va_pages = array();
 				foreach($va_hits as $va_hit) {
-				
 					$x1_percent = $va_hit['x1']/$vn_page_width;
 					$x2_percent = $va_hit['x2']/$vn_page_width;
 					$y1_percent = ($vn_page_height-$va_hit['y2']) / $vn_page_height;
@@ -235,7 +224,7 @@ class MediaContentLocationIndexer  {
 						}
 						
 					} else {
-						$va_hit_acc[$va_hit['p']][] = array('word' => "add $vs_word", 'x1' => $x1_percent, 'y1' => $y1_percent, 'x2' => $x2_percent, 'y2' => $y2_percent, 'c' => $vn_word_num + 1);
+						$va_hit_acc[$va_hit['p']][] = array('word' => $vs_word, 'x1' => $x1_percent, 'y1' => $y1_percent, 'x2' => $x2_percent, 'y2' => $y2_percent, 'c' => $vn_word_num + 1);
 					}
 					
 				}
