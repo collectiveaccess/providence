@@ -324,7 +324,7 @@ class Db_mysqli extends DbDriverBase {
 			//print "<pre>".caPrintStacktrace()."</pre>\n";
 			$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
 			if($logger) {
-				$logger->logError($prefix.json_encode(['errorNumber' => $error_number, 'errorMessage' => $error_message]));
+				$logger->logError($prefix.json_encode(['errorNumber' => $error_num, 'errorMessage' => $error_message]));
 			}
 			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
 		}
