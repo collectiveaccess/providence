@@ -67,12 +67,10 @@ class WLPlugSearchEngineSqlSearch2Result extends WLPlug implements IWLPlugSearch
 	}
 	# -------------------------------------------------------
 	public function setHits(SearchQuery $pa_hits) {
-		dump($pa_hits->getHandle()->getErrors());
 		$pa_hits->rewind();
 		$this->hits = $pa_hits;
 
 		$this->current_row = $pa_hits->key();
-		dump($this->currentRow());
 		if (sizeof($this->hits)) {
 			
 			$this->opo_subject_instance = Datamodel::getInstanceByTableNum($this->opn_subject_tablenum, true);
