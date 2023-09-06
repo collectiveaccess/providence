@@ -410,7 +410,6 @@ trait CLIUtilsMedia {
 				$m = new Media();
 				if(($m->read($vs_path = $t_rep->getMediaPath('media', 'original'))) && is_array($va_locs = $m->getExtractedTextLocations())) {
 					MediaContentLocationIndexer::clear($vn_rep_table_num, $vn_rep_id);
-					print_r($va_locs);
 					foreach($va_locs as $vs_content => $va_loc_list) {
 						foreach($va_loc_list as $va_loc) {
 							MediaContentLocationIndexer::index($vn_rep_table_num, $vn_rep_id, $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
