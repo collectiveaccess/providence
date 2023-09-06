@@ -85,6 +85,9 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 	$ancestor_filters = caGetOption('filterByAncestors', $options, null);
 	
 	$check_access = caGetOption('checkAccess', $options, null);
+	
+	$config = \Configuration::load();
+	$base_url = $config->get('site_host').$config->get('ca_url_root');
 		
 	$data = [];
 	if(isset($bundles) && is_array($bundles) && sizeof($bundles)) {
@@ -343,7 +346,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 					'id' => $sresult->getPrimaryKey(),
 					'table' => $table,
 					'idno' => $sresult->get(\Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD')),
-					'bundles' => $row
+					'bundles' => $row,
+					'manifestUrl' => $base_url.'/service/IIIF/manifest/'.$table.':'.$sresult->getPrimaryKey()
 				];
 			}
 			$data[] = $row;
@@ -654,6 +658,10 @@ function itemSchemaDefinitions() {
 				],
 				'media' => [
 					'type' => Type::listOf($mediaItemType),
+					'description' => 'Media for related item'
+				],
+				'manifestUrl' => [
+					'type' => Type::string(),
 					'description' => 'Media for related item'
 				],
 				'relationship_type_id' => [
