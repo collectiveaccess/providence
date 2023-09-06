@@ -1566,11 +1566,20 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
 				
 					$va_info = $qr_res->getMediaInfo('media', $vs_version);
+					
 					$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
 					$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
 					$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
 				}
 			}
+			
+			if(!isset($va_files['original_width'])) {
+				$va_info = $qr_res->getMediaInfo('media');
+				$va_files[$vn_multifile_id]['original_width'] = $va_info['INPUT']['WIDTH'] ?? null;
+				$va_files[$vn_multifile_id]['original_height'] = $va_info['INPUT']['HEIGHT'] ?? null;
+				$va_files[$vn_multifile_id]['original_mimetype'] = $va_info['INPUT']['MIMETYPE'] ?? null;
+			}
+			
  		}
  		return $va_files;
  	}
