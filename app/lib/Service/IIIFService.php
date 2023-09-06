@@ -768,7 +768,7 @@ class IIIFService {
 													  'body' => [
 														'id' => preg_replace("!/IIIF/manifest/.*$!", "/IIIF/cliplist/", $manifest_url)."representation:".$rep['representation_id'],
 														'type' => 'Text',
-														'format' => 'text/vtt',
+														'format' => 'application/json',
 														'label' => [
 														  'en' => ['Clips']
 														],
