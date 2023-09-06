@@ -2312,6 +2312,11 @@ if (!$pb_omit_editing_info) {
 		if(!$pb_show_hierarchy && $vs_template) {
 			unset($options['template']);
 			
+			// Hack to rewrite object-object lot relationship in standard relationship syntax for display template
+			if(($va_bundle_bits[0] === 'ca_objects') && ($va_bundle_bits[1] === 'lot_id')) {
+				$va_bundle_bits = ['ca_object_lots'];
+			}
+			
 			if ($t_instance = Datamodel::getInstanceByTableName($va_bundle_bits[0], true)) {
 				$va_bundle_bits_proc = $va_bundle_bits;
 				$vb_is_related = false;
