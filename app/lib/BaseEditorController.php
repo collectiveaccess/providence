@@ -2991,11 +2991,10 @@ class BaseEditorController extends ActionController {
 			$t_target->load($rel_id);
 		}
 
-		$rep_ids = $t_target->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
-		if(!is_array($rep_ids) || !sizeof($rep_ids)) {
+		$selected_rep_id = $t_target->getPrimaryRepresentationID();
+		if(!$selected_rep_id) {
 			throw new ApplicationException(_t('ID has no associated media'));
 		}
-		$selected_rep_id = $rep_ids[0];
 		$existing_reps = $t_subject->getRepresentations() ?? [];
 		
 		if(sizeof($selected_reps = array_filter($existing_reps, function($v) use ($selected_rep_id) {
@@ -3005,9 +3004,9 @@ class BaseEditorController extends ActionController {
 			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
 				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
 			} else {
-				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlimk media')];;
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlink media')];
 			}
-		} elseif($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
+		} elseif($t_subject->addRelationship('ca_object_representations', $selected_rep_id, null)) {
 			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
 		} else {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
