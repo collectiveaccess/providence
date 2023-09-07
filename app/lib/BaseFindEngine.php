@@ -705,7 +705,7 @@ class BaseFindEngine extends BaseObject {
 					}
 				}
 			}
-			if(!$attr_val_sort_field) { return $hits; }
+			if(!$attr_val_sort_field) { return array_flip($hits); }
 		}
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
@@ -861,7 +861,7 @@ class BaseFindEngine extends BaseObject {
 					}
 				}
 			}
-			if(!$attr_val_sort_field) { return $hits; }
+			if(!$attr_val_sort_field) { return array_flip($hits); }
 		}
 		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
