@@ -1822,7 +1822,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_movements':
 					case 'ca_tour_stops':
 					case 'ca_sets':
-					
 						if (($this->_CONFIG->get($ps_bundle_name.'_disable')) && ($ps_bundle_name !== 'ca_object_representations')) { return ''; }		// don't display if master "disable" switch is set
 						$pa_options['start'] = 0; $pa_options['limit'] = caGetOption('numPerPage', $pa_bundle_settings, 10);
 						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
@@ -4826,6 +4825,25 @@ if (!$vb_batch) {
                                 }
                             }
 						}
+						// validate related records using metadata dictionary rules
+						try {
+							if(is_array($entry_ids = ca_metadata_dictionary_entries::entryExists('ca_object_representations', ['noCache' => true])) && sizeof($entry_ids)) {
+								foreach($entry_ids as $entry_id) {
+									if($t_entry = ca_metadata_dictionary_entries::findAsInstance($entry_id)) {
+										$rels_to_validate = $this->getRelatedItemsAsSearchResult(Datamodel::getTableName($t_entry->get('table_num')));
+					
+										if($rels_to_validate) {
+											while($rels_to_validate->nextHit()) {
+												$t_to_validate = $rels_to_validate->getInstance();
+												$t_to_validate->validateUsingMetadataDictionaryRules();
+											}
+										}
+									}
+								}
+							}
+						} catch (Exception $e) {
+							$po_request->addActionErrors(array(new ApplicationError(1100, _t('Could not validate related record: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+						}
 						break;
 					# -------------------------------------
 					case 'ca_entities':
@@ -5879,27 +5897,7 @@ if (!$vb_batch) {
 			// TODO: change to specific exception type to allow user to set the specific bundle where the error occurred
 			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Invalid rule expression: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 		}
-		
-		// validate related records using metadata dictionary rules
-		try {
-			if(is_array($entry_ids = ca_metadata_dictionary_entries::entryExists($this->tableName(), ['noCache' => true])) && sizeof($entry_ids)) {
-				foreach($entry_ids as $entry_id) {
-					if($t_entry = ca_metadata_dictionary_entries::findAsInstance($entry_id)) {
-						$rels_to_validate = $this->getRelatedItemsAsSearchResult(Datamodel::getTableName($t_entry->get('table_num')));
-					
-						if($rels_to_validate) {
-							while($rels_to_validate->nextHit()) {
-								$t_to_validate = $rels_to_validate->getInstance();
-								$t_to_validate->validateUsingMetadataDictionaryRules();
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception $e) {
-			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Could not validate related record: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
-		}
-		
+			
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
