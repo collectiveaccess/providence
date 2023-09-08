@@ -5879,6 +5879,27 @@ if (!$vb_batch) {
 			// TODO: change to specific exception type to allow user to set the specific bundle where the error occurred
 			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Invalid rule expression: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 		}
+		
+		// validate related records using metadata dictionary rules
+		try {
+			if(is_array($entry_ids = ca_metadata_dictionary_entries::entryExists($this->tableName(), ['noCache' => true])) && sizeof($entry_ids)) {
+				foreach($entry_ids as $entry_id) {
+					if($t_entry = ca_metadata_dictionary_entries::findAsInstance($entry_id)) {
+						$rels_to_validate = $this->getRelatedItemsAsSearchResult(Datamodel::getTableName($t_entry->get('table_num')));
+					
+						if($rels_to_validate) {
+							while($rels_to_validate->nextHit()) {
+								$t_to_validate = $rels_to_validate->getInstance();
+								$t_to_validate->validateUsingMetadataDictionaryRules();
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception $e) {
+			$po_request->addActionErrors(array(new ApplicationError(1100, _t('Could not validate related record: %1', $e->getMessage()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+		}
+		
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
@@ -6059,7 +6080,7 @@ if (!$vb_batch) {
  	 *
  	 */
  	public function getRelatedItemsAsSearchResult($pm_rel_table_name_or_num, $pa_options=null) {
- 		if (is_array($va_related_ids = $this->getRelatedItems($pm_rel_table_name_or_num, array_merge($pa_options, array('idsOnly' => true, 'sort' => null))))) {
+ 		if (is_array($va_related_ids = $this->getRelatedItems($pm_rel_table_name_or_num, array_merge($pa_options ?? [], array('idsOnly' => true, 'sort' => null))))) {
  			
  			$va_ids = array_filter($va_related_ids, function($pn_v) {
  				return ($pn_v > 0) ? true : false;
