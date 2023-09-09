@@ -23357,7 +23357,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_georeference" access="none"/>
       </bundleLevelAccessControl>
     </role>
-    <role code="Conservaci__n">
+    <role code="Conservacion">
       <name>Conservación</name>
       <description>Otorga permisos correspondientes al rol Conservación</description>
       <actions>
