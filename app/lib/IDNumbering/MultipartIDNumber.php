@@ -174,7 +174,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 				$i++;
 			}
-			$element_vals = array_map(function($v) { return ($v === '_PARENT_') ? '' : $v; }, $element_vals);
+			$element_vals = array_map(function($v) { return preg_replace("!^_PARENT_!", '', $v); }, $element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
@@ -519,7 +519,7 @@ class MultipartIDNumber extends IDNumber {
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
 		if ((bool)($element_info['sequence_by_type'] ?? false)) {
 			$stypes = is_array($element_info['sequence_by_type']) ? $element_info['sequence_by_type'] : [$element_info['sequence_by_type']];
-			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)$element_info['dont_include_subtypes']]);
+			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)($element_info['dont_include_subtypes'] ?? false)]);
 			$type = $this->getType();
 			if ($type == '__default__') {
 			    $types = $this->getTypes(); 
@@ -981,7 +981,7 @@ class MultipartIDNumber extends IDNumber {
 
 		$next_in_seq_is_present = false;
 		foreach($elements as $ename => $info) {
-			if (($info['type'] == 'SERIAL') && ($element_values[$i] == '')) {
+			if (($info['type'] == 'SERIAL') && (($element_values[$i] ?? null) == '')) {
 				$next_in_seq_is_present = true;
 			}
 			$tmp = $this->genNumberElement($ename, $name, $element_values[$i] ?? null, $id_prefix, $generate_for_search_form, $options);

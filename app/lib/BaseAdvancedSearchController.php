@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,20 +60,12 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		
 		// Get elements of result context
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
-		//$vs_search 				= $this->opo_result_context->getSearchExpression();
 		if (!$vn_items_per_page = $this->opo_result_context->getItemsPerPage()) { $vn_items_per_page = $this->opa_items_per_page[0]; }
 		if (!$vs_view 			= $this->opo_result_context->getCurrentView()) {
 			$va_tmp = array_keys($this->opa_views);
 			$vs_view = array_shift($va_tmp);
 		}
-		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
-			$va_tmp = array_keys($this->opa_sorts);
-			$vs_sort = array_shift($va_tmp);
-		}
-		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-
-		$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
-
+		
 		if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
 		$this->view->setVar('type_id', $this->opn_type_restriction_id);
 
@@ -134,6 +126,18 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			$vs_search = '';
 			$vb_is_new_search = true;
 		}
+		
+		if($vb_is_new_search && ($default_sort = $this->request->config->get($this->ops_tablename.'_reset_sort_on_new_search'))) {
+			$this->opo_result_context->setCurrentSort($default_sort);
+			$this->opo_result_context->setCurrentSortDirection('ASC');
+		}
+		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
+			$va_tmp = array_keys($this->opa_sorts);
+			$vs_sort = array_shift($va_tmp);
+		}
+		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
+
+		$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
 
 		$va_access_values = caGetUserAccessValues($this->request);
 
@@ -168,6 +172,8 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			} else {
 				$vo_result = $po_search->search($vs_search, $va_search_opts);
 			}
+			
+			
 			$this->opo_result_context->validateCache();
 
 			// Only prefetch what we need
@@ -182,16 +188,24 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 				if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
 			}
 
-			$vo_result->seek(($vn_page_num - 1) * $vn_items_per_page);
 
 			$this->view->setVar('num_hits', $vo_result->numHits());
 			$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
  			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
 
+			$vo_result->seek($start = ($vn_page_num - 1) * $vn_items_per_page);
 			$this->view->setVar('page', $vn_page_num);
 			$this->view->setVar('search', $vs_search);
 			$this->view->setVar('result', $vo_result);
+			
+			$result_desc = [];
+			if($this->request->user->getPreference('show_search_result_desc') === 'show') {
+				$page_hits = caGetHitsForPage($vo_result, $start, $vn_items_per_page);
+				$result_desc = $po_search->getResultDesc($page_hits);
+			}
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDesc($result_desc);
 		}
 
 		//
@@ -228,15 +242,11 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
-				$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);
-				break;
-			# ------------------------------------
-			case 'PDF':
-				$this->_genPDF($vo_result, $this->request->getParameter("label_form", pString), $vs_search);
+				caExportAsLabels($this->request, $vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display]);
 				break;
 			# ------------------------------------
 			case 'EXPORT':
-				$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
+				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'display' => $t_display]);
 				break;
 			# ------------------------------------
 			case 'HTML':

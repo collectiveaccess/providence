@@ -5,7 +5,7 @@
 */
 /*==========================================================================*/
 
-ALTER TABLE ca_entity_labels ADD COLUMN checked smallint unsigned null;
+ALTER TABLE ca_entity_labels ADD COLUMN checked tinyint unsigned not null default 0;
 CREATE INDEX i_checked ON ca_entity_labels(checked);
 
 /*==========================================================================*/

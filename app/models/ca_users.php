@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -734,7 +734,7 @@ class ca_users extends BaseModel {
 				$vb_has_changed = true;
 				$va_vars[$ps_key] = $vs_proc_val;
 			} else {
-				if (!is_array($vs_proc_val) && !is_array($va_vars[$ps_key]) && (string)$vs_proc_val != (string)$va_vars[$ps_key]) {
+				if (!is_array($vs_proc_val) && !is_array($va_vars[$ps_key] ?? null) && (string)$vs_proc_val != (string)($va_vars[$ps_key] ?? '')) {
 					$vb_has_changed = true;
 					$va_vars[$ps_key] = $vs_proc_val;
 				}
@@ -899,6 +899,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1203,6 +1204,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1576,6 +1578,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1979,7 +1982,7 @@ class ca_users extends BaseModel {
 	 *		classname = class to assign to form element
 	 * @return string HTML code to generate form widget
 	 */	
-	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
+	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) : ?string {
 		if ($this->isValidPreference($ps_pref)) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$o_db = $this->getDb();
@@ -1997,9 +2000,48 @@ class ca_users extends BaseModel {
 			
 			foreach(array(
 				'displayType', 'displayWidth', 'displayHeight', 'length', 'formatType', 'choiceList',
-				'label', 'description'
+				'label', 'description', 'requires'
 			) as $vs_k) {
 				if (!isset($va_pref_info[$vs_k])) { $va_pref_info[$vs_k] = null; }
+			}
+			
+			if(is_array($va_pref_info['requires']) && sizeof($va_pref_info['requires'])) {
+				$acc = null;
+				foreach($va_pref_info['requires'] as $req => $bool) {
+					$rtmp = explode(':', $req);
+					
+					$eval = null;
+					switch($rtmp[0]) {
+						case 'configuration':
+							switch($rtmp[1]) {
+								case 'search':
+									$sconfig = caGetSearchConfig();
+									$neg = false;
+									if(substr($rtmp[2], 0, 1) === '!') {
+										$neg = true;
+										$rtmp[2] = substr($rtmp[2], 1);
+									}
+									if(($neg && $sconfig->get($rtmp[2])) || (!$neg && !$sconfig->get($rtmp[2]))) {
+										$eval = false;
+									} else {
+										$eval = true;
+									}
+									break;
+							}
+							break;
+					}
+					
+					if(is_null($acc)) {
+						$acc = $eval;
+					} elseif (strtolower($bool) === 'and') {
+						$acc = ($acc && $eval);
+					} elseif (strtolower($bool) === 'or') {
+						$acc = ($acc || $eval);
+					}
+				}
+				if(!$acc) {
+					return null;
+				}
 			}
 			
 			switch($va_pref_info["displayType"]) {
@@ -2052,6 +2094,7 @@ class ca_users extends BaseModel {
 									$vs_country_name = $vs_code;
 								}
 								$va_opts[($vs_lang_name ? $vs_lang_name : $vs_code).($vs_country_name ? ' ('.$vs_country_name.')':'')] = $vs_code;
+								asort($va_opts);
 							}
 							natcasesort($va_opts);
 							break;
@@ -2302,6 +2345,8 @@ class ca_users extends BaseModel {
 				
 				TooltipManager::add('#'.$vs_field_id, "<h3>".$va_pref_info["label"]."</h3>".$va_pref_info["description"]);
 			}
+				
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			return $vs_format;
 
 		} else {

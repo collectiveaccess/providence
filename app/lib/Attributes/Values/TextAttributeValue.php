@@ -254,7 +254,15 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'width' => "200px", 'height' => 1,
 		'label' => _t('Reference media in'),
 		'description' => _t('Allow in-line references in text to a media element.')
-	)
+	),
+	'moveArticles' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 1,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Omit leading definite and indefinite articles when sorting'),
+		'description' => _t('Check this option to sort values wuthout definite and indefinite articles when they are at the beginning of the text.')
+	),
 );
 
 class TextAttributeValue extends AttributeValue implements IAttributeValue {
@@ -288,7 +296,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray(
 			$pa_element_info, 
-			array('minChars', 'maxChars', 'regex', 'mustBeUnique')
+			array('minChars', 'maxChars', 'regex', 'mustBeUnique', 'moveArticles')
 		);
 		$vn_strlen = mb_strlen($ps_value);
 		if ($vn_strlen < $va_settings['minChars']) {
@@ -320,7 +328,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		return array(
 			'value_longtext1' => $ps_value,
-			'value_sortable' => $this->sortableValue($ps_value)
+			'value_sortable' => $this->sortableValue($ps_value, $va_settings)
 		);
 	}
 	# ------------------------------------------------------------------
@@ -541,8 +549,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	 * 
 	 * @return string
 	 */
-	public function sortableValue(?string $value) {
-		return mb_strtolower(substr(trim(caSortableValue($value)), 0, 100));
+	public function sortableValue(?string $value, ?array $options=null) {
+		return mb_strtolower(substr(trim(caSortableValue($value, $options)), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

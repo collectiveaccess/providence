@@ -333,9 +333,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
 
 		// pull from cache
-		if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
-			return DateRangeAttributeValue::$s_date_cache[$vs_cache_key];
-		}
+// 		if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
+// 			return DateRangeAttributeValue::$s_date_cache[$vs_cache_key];
+// 		}
 
 		// if neither start nor end date are set, the setHistoricTimestamps() call below will
 		// fail and the TEP will return the text for whatever happened to be parsed previously 
@@ -452,7 +452,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
-				'class' => $vs_class
+				'class' => $vs_class,
+				'placeholder' => $pa_options['placeholder'] ?? null
 			)
 		);
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2021 Whirl-i-Gig
+ * Copyright 2004-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2122,7 +2122,6 @@ class TilepicParser {
 			}
 		} else {
 			if ($pb_print_errors) { print "Couldn't open file $ps_filepath"; }
-			fclose($fh);
 			return false;
 		}
 	}

@@ -2590,6 +2590,9 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 
 						if (
 							!$va_attr["IS_NULL"]
@@ -2628,6 +2631,9 @@ class BaseModel extends BaseObject {
 					case (FT_TIMERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 						
 						if (
 							!$va_attr["IS_NULL"]
@@ -5753,8 +5759,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 
 				# -- delete old file if its name is different from the one we just wrote (otherwise, we overwrote it)
-				if ($filepath != $this->getFilePath($field)) {
-					@unlink($this->getFilePath($field));
+				if (($filepath != $this->getFilePath($field)) && file_exists($filepath = $this->getFilePath($field))) {
+					@unlink($filepath);
 				}
 
 
@@ -6090,9 +6096,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
 						// transform entries to item values
 						$t_list = Datamodel::getInstance('ca_lists', true);
-						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
+						if (isset($va_attr['LIST']) && (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v)))) { // 
 							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
-							print_R($item);
 							$v = $item['item_value'] ?? null;
 						}
 					}
@@ -6418,7 +6423,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'class' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 				'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 				'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
-				'value' => $value
+				'value' => $value,
+				'placeholder' => $pa_options['placeholder'] ?? null
 			));
 		}
 		
@@ -6448,7 +6454,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					'value' => $value,     
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
-					'no_tooltips' => true
+					'no_tooltips' => true,
+					'placeholder' => $pa_options['placeholder'] ?? null
 			)));
 		}
 		
@@ -8509,7 +8516,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force', 'bundleCode'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -8702,7 +8709,7 @@ $pa_options["display_form_field_tips"] = true;
 					
 					if ($va_attr['DISPLAY_TYPE'] == DT_STATEPROV_LIST) {
 						$vs_element = caHTMLSelect($ps_field.'_select', array(), array('id' => $ps_field.'_select'), array('value' => $vm_field_value));
-						$vs_element .= caHTMLTextInput($ps_field.'_name', array('id' => $ps_field.'_text', 'value' => $vm_field_value));
+						$vs_element .= caHTMLTextInput($ps_field.'_name', array('id' => $ps_field.'_text', 'value' => $vm_field_value, 'placeholder' => $pa_options['placeholder'] ?? null));
 						break;
 					}
 
@@ -9067,7 +9074,7 @@ $pa_options["display_form_field_tips"] = true;
 							if ($vn_display_height > 1) {
 								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" disabled="disabled"' : '').' wrap="soft" '.$vs_js.' id=\''.$pa_options["id"]."' style='{$vs_dim_style}' ".$vs_css_class_attr.">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>'."\n";
 							} else {
-								$vs_element = '<input name="'.$pa_options["name"].'" type="text" size="'.($pa_options['size'] ? $pa_options['size'] : $vn_display_width).'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').' value="'.$this->escapeHTML($vm_field_value).'" '.$vs_js.' id=\''.$pa_options["id"]."' {$vs_css_class_attr} style='{$vs_dim_style}'/>\n";
+								$vs_element = '<input name="'.$pa_options["name"].'" type="text" size="'.($pa_options['size'] ? $pa_options['size'] : $vn_display_width).'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').' value="'.$this->escapeHTML($vm_field_value).'" '.$vs_js.' id=\''.$pa_options["id"]."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['placeholder'] ? "placeholder='".htmlentities($pa_options['placeholder'])."'" : "")." />\n";
 							}
 							
 							if (isset($va_attr['UNIQUE_WITHIN']) && is_array($va_attr['UNIQUE_WITHIN'])) {
@@ -9361,6 +9368,7 @@ $pa_options["display_form_field_tips"] = true;
 					}
 				}
 
+				$ps_formatted_element = str_replace("^BUNDLECODE", isset($pa_options['bundleCode']) ? $pa_options['bundleCode'] : '', $ps_formatted_element);
 				$ps_formatted_element = str_replace("^ERRORS", $vs_errors, $ps_formatted_element);
 				$ps_formatted_element = str_replace("^EXTRA", isset($pa_options['extraLabelText']) ? $pa_options['extraLabelText'] : '', $ps_formatted_element);
 				$vs_element = $ps_formatted_element;
@@ -9494,6 +9502,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
 		if ($this->inTransaction()) { $o_trans = $this->getTransaction(); $t_item_rel->setTransaction($o_trans); }
+		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -9656,6 +9667,9 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -10578,27 +10592,35 @@ $pa_options["display_form_field_tips"] = true;
                 $params = [$id];
 			    if ($rel_info['left_table'] == $table) {
 			        $sql = "
-						SELECT l.{$rel_pk}
-						FROM {$many_table} l
-						INNER JOIN {$rel_info['left_table']} AS r ON r.{$rel_info['left_table_field']} = l.{$rel_info['linking_table_left_field']}
+						SELECT lnk.{$rel_pk}
+						FROM {$many_table} lnk
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_left_field']}
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
 						WHERE
-							({$rel_info['right_table_field']} = ?)";
+							(r.{$rel_info['right_table_field']} = ?)";
+						
+					if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+						$sql .= " AND l.type_id IN (?)";
+						$params[] = $restrict_to_types;
+					}
 			    } elseif($rel_info['right_table'] == $table) {
 			        $sql = "
-						SELECT l.{$rel_pk}
-						FROM {$many_table} l
-						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = l.{$rel_info['linking_table_right_field']}
+						SELECT lnk.{$rel_pk}
+						FROM {$many_table} lnk
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_right_field']}
 						WHERE
-							({$rel_info['left_table_field']} = ?)";
+							(l.{$rel_info['left_table_field']} = ?)";
+						
+					if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+						$sql .= " AND r.type_id IN (?)";
+						$params[] = $restrict_to_types;
+					}
 			    } else {
 			        continue;
 			    }
-			    if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
-			        $sql .= " AND r.type_id IN (?)";
-			        $params[] = $restrict_to_types;
-			    }
 			    if (is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types)) {
-			        $sql .= " AND l.type_id IN (?)";
+			        $sql .= " AND lnk.type_id IN (?)";
 			        $params[] = $restrict_to_relationship_types;
 			    }
 			    
@@ -10823,6 +10845,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool
 	 */
 	public function changeTagRank($pn_relation_id, $pn_rank) {
+		global $g_request;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_ixt = new ca_items_x_tags($pn_relation_id);
@@ -10839,8 +10862,8 @@ $pa_options["display_form_field_tips"] = true;
 			return false;
 		}
 		
-		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+		if ($g_request && $g_request->isLoggedIn() && ($user_id = $g_request->getUserID())) {
+			if ($t_ixt->get('user_id') != $user_id) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
 				return false;
 			}
@@ -12092,7 +12115,9 @@ $pa_options["display_form_field_tips"] = true;
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = $o_trans ? $o_trans->getDb() : new Db();
 			$vs_pk = $t_instance->primaryKey();
-			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ?", [$ps_idno]);
+			
+			$delete_sql = ($t_instance->hasField('deleted')) ? ' AND deleted = 0' : '';	// filter deleted
+			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ? {$delete_sql}", [$ps_idno]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
@@ -12315,6 +12340,21 @@ $pa_options["display_form_field_tips"] = true;
 							$pa_values['parent_id'][$i][1] = $ids[$v[1]];
 						}
 					}
+				}
+			}
+		}
+		
+		//
+		// Convert dates
+		//
+		foreach($pa_values as $vs_field => $va_field_values) {
+			if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+				$d = $va_field_values[0][1];
+				if($dt = caDateToHistoricTimestamps($d)) {
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+					unset($pa_values[$vs_field]);
 				}
 			}
 		}

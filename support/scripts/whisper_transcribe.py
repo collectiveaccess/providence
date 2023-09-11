@@ -17,15 +17,17 @@ parser.add_argument('--output', nargs=1,
                     help='Path to file of vtt transcription', required=True)
 parser.add_argument('--model', nargs=1, default='base',
                     help='Specify whisper model size, base model set as default')
+parser.add_argument('--tmpdir', nargs=1, default='/tmp',
+                                    help='Specify whisper temporary directory')
 
 args = parser.parse_args()
 
-def transcribe_audio(input, output, model):
+def transcribe_audio(input, output, model, tmpdir):
     vttFilename = output
     if pathlib.PurePath(vttFilename).suffix != '.vtt':
         vttFilename = vttFilename + '.vtt'
     
-    model = whisper.load_model(model)
+    model = whisper.load_model(model, None, tmpdir)
     
     try:
         transcribe = model.transcribe(audio=input)
@@ -46,4 +48,4 @@ def transcribe_audio(input, output, model):
 
     return vttFilename
 
-transcribe_audio(args.input[0], args.output[0], args.model)
+transcribe_audio(args.input[0], args.output[0], args.model, args.tmpdir[0])

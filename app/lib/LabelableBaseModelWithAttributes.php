@@ -600,13 +600,15 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$t_instance = null;
 		$vs_table = get_called_class();
 		
+		$include_deleted = caGetOption('includeDeleted', $pa_options, false);
+		
 		$t_instance = new $vs_table;
 		if (!is_array($pa_values)) {
 			if ((int)$pa_values > 0) { 
 				$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
 				if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
 			} elseif($pa_values === '*') {
-				$pa_values = (caGetOption('includeDeleted', $pa_options, false) || !$t_instance->hasField('deleted')) ? [] : ['deleted' => 0];
+				$pa_values = ($include_deleted || !$t_instance->hasField('deleted')) ? [] : ['deleted' => 0];
 			}
 		}
 		
@@ -661,14 +663,14 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	
 		// Check for intrinsics in value array
 		if (is_array($pa_values) && !sizeof($pa_values)) { 
-			return parent::find($t_instance->hasField('deleted') ? ['deleted' => 0] : '*', $pa_options);
+			return parent::find((!$include_deleted && $t_instance->hasField('deleted')) ? ['deleted' => 0] : '*', $pa_options);
 		}
 		$vb_has_simple_fields = false;
 		foreach ($pa_values as $vs_field => $va_field_values) {
 			foreach ($va_field_values as  $va_field_value) {
 				$vs_op = $va_field_value[0];
 				$vm_value = $va_field_value[1];
-				if ($vm_value === '*') { return parent::find($t_instance->hasField('deleted') ? ['deleted' => 0] : '*', $pa_options); }
+				if ($vm_value === '*') { return parent::find((!$include_deleted && $t_instance->hasField('deleted')) ? ['deleted' => 0] : '*', $pa_options); }
 				if ($t_instance->hasField($vs_field)) { $vb_has_simple_fields = true; break; }
 			}
 		}
@@ -1114,7 +1116,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$va_sql_params[] = $pa_check_access;
 		}
 					
-		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0)" : '';
+		$vs_deleted_sql = (!$include_deleted && $t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0)" : '';
 		
 		$va_sql = [];
 		if ($vs_wheres = join(" {$ps_boolean} ", $va_label_sql)) { $va_sql[] = "({$vs_wheres})"; }
@@ -2271,7 +2273,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$omit_blanks_sql = '';
 		if (caGetOption('omitBlanks', $options, false)) {
 			$omit_blanks_sql = " AND (l.".$this->getLabelDisplayField()." <> ?)";
-			$va_params[] = '['._t('BLANK').']';
+			$va_params[] = '['.caGetBlankLabelText($this->tableName()).']';
 		}
 		
 		if (!$t_label->hasField('is_preferred')) { 
@@ -2333,6 +2335,28 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		return true;
+	}
+	# ------------------------------------------------------------------
+	/** 
+	 * Check if currently loaded row uses a default label 
+	 *
+	 * @param int $pn_locale_id Locale id to use for default label. If not set the user's current locale is used.
+	 * @return boolean True if only label for the record is a default label
+	 */
+	public function isDefaultLabel($locale_id=null) {
+		global $g_ui_locale_id;
+		
+		if(!is_null($locale_id) && !is_numeric($locale_id)) {
+			$locale_id = ca_locales::codeToID($locale_id);
+		}
+		if(!$locale_id) { $locale_id = $g_ui_locale_id; }
+		
+		$table = $this->tableName();
+		$label_table = $this->getLabelTableName();
+		if($label_table::find([$this->getLabelDisplayField() => '['.caGetBlankLabelText($table).']', 'locale_id' => $locale_id], ['returnAs' => 'count']) > 0) {
+			return true;
+		}
+		return false;
 	}
 	# ------------------------------------------------------------------
 	/** 
@@ -2454,7 +2478,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
-	 *			forceLabelForNew = 
+	 *			forceLabelForNew = Value to force into bundle. Used to set default label for new unsaved records. [Default is null]
+	 *			forceValues = An array of form values to display in the editing form. Used to prepopulate forms for new records prior to save. Array is key'ed on bundle. Values with key 'preferred_labels' will be displayed in the returned bundle. [Default is null]
 	 * @return string Rendered HTML bundle
 	 */
 	public function getPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
@@ -2494,7 +2519,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		// generate list of inital form values; the label bundle Javascript call will
 		// use the template to generate the initial form
 		$va_inital_values = array();
-		$va_new_labels_to_force_due_to_error = array();
+		
+		$va_new_labels_to_force_due_to_error = [];
 		
 		if ($this->getPrimaryKey()) {
 			if (is_array($va_labels) && sizeof($va_labels)) {
@@ -2529,6 +2555,18 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		}
 		
 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
+		
+		foreach($forced_values['preferred_labels'] ?? [] as $fpl) {
+			if(isset($fpl['label_id'])) {
+				$va_inital_values[$fpl['label_id']] = $fpl;
+				unset($fpl['label_id']);
+			} else {
+				$va_new_labels_to_force_due_to_error[] = $fpl;
+			}
+		}
+		
 		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 		$o_view->setVar('label_initial_values', $va_inital_values);
 		
@@ -2561,6 +2599,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_bundle_settings
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			forceValues = An array of form values to display in the editing form. Used to prepopulate forms for new records prior to save. Array is key'ed on bundle. Values with key 'nonpreferred_labels' will be displayed in the returned bundle. [Default is null]
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -2627,8 +2666,19 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 		}
 		
+		$va_new_labels_to_force_due_to_error = [];
 		if (is_array($this->opa_failed_nonpreferred_label_inserts) && sizeof($this->opa_failed_nonpreferred_label_inserts)) {
 			$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
+		}
+		
+		$forced_values = caGetOption('forcedValues', $pa_options, null);
+		foreach($forced_values['nonpreferred_labels'] ?? [] as $fpl) {
+			if(isset($fpl['label_id'])) {
+				$va_inital_values[$fpl['label_id']] = $fpl;
+				unset($fpl['label_id']);
+			} else {
+				$va_new_labels_to_force_due_to_error[] = $fpl;
+			}
 		}
 		
 		$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);

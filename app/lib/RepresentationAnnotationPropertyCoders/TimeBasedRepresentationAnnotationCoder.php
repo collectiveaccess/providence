@@ -111,7 +111,7 @@
 		 * Returns the property value or null if the property doesn't exist 
 		 *
 		 */
-		public function getProperty($ps_property, $pb_return_raw_value=false) {
+		public function getProperty($ps_property, $pb_return_raw_value=false, ?array $options=null) {
 			if (!($va_info = $this->getPropertyInfo($ps_property))) { return null; }	// invalid property
 			
 			if ($pb_return_raw_value) {
@@ -123,7 +123,7 @@
 					$o_timecode_parser = new TimecodeParser();
 					$o_timecode_parser->setParsedValueInSeconds($this->opa_property_values[$ps_property]);
 					
-					return $o_timecode_parser->getText('COLON_DELIMITED');
+					return $o_timecode_parser->getText(caGetOption($options, 'vtt', false) ? 'VTT' : 'COLON_DELIMITED');
 					break;
 				default:
 					// unsupported property?

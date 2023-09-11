@@ -161,7 +161,9 @@
 		});
 		
 		jQuery('a.developerBundleCode').on('click', function(e) {
-			caUI.utils.copyToClipboard(jQuery(this).text(), <?= json_encode(_t('Copied code to clipboard')); ?>, { header: <?= json_encode(_t('Developer tools')); ?>, life: 1000, openDuration: 'fast', closeDuration: 'fast' });
+			let code = jQuery(this).data('code');
+			if(!code) { code = jQuery(this).text(); }
+			caUI.utils.copyToClipboard(code, <?= json_encode(_t('Copied code to clipboard')); ?>, { header: <?= json_encode(_t('Developer tools')); ?>, life: 1000, openDuration: 'fast', closeDuration: 'fast' });
 			e.preventDefault();
 		});
 	});

@@ -215,7 +215,7 @@
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	is_array($pa_values[$vn_sub_element_id]) ||
+			                	is_array($pa_values[$vn_sub_element_id] ?? null) ||
 			                	((strlen($pa_values[$vn_sub_element_id] ?? '') && ($pa_values[$vn_sub_element_id] != $pv))
 			            		||
 			            		(strlen($pa_values[$vs_element_code] ?? '') && ($pa_values[$vs_element_code] != $pv)))
@@ -590,6 +590,32 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Remove Attribute with extreme prejudice, don't check required, min, max, etc
+		 *
+		 */
+		public function purgeAttribute($pn_attribute_id, $ps_error_source=null, $pa_extra_info=null, $pa_options=null) {
+			$t_attr = new ca_attributes($pn_attribute_id);
+			$t_attr->purify($this->purify());
+			if (!$t_attr->getPrimaryKey()) { return false; }
+			$vn_element_id = (int)$t_attr->get('element_id');
+
+			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.ca_metadata_elements::getElementCodeForId($vn_element_id); }
+
+			if (!($t_element = ca_metadata_elements::getInstance($t_attr->get('element_id')))) { return false; }
+
+			$this->opa_attributes_to_remove[] = array(
+				'attribute_id' => $pn_attribute_id,
+				'error_source' => $ps_error_source,
+				'element_id' => $t_attr->get('element_id')
+			);
+
+			$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$t_attr->get('element_id')] = true;
+
+			return true;
+		}
+
+		# ------------------------------------------------------------------
+		/**
 		 * remove attribute from current row
 		 */
 		public function _removeAttribute($pn_attribute_id, $po_trans=null, $pa_options=null) {
@@ -642,6 +668,28 @@
 					}
 				}
 			}
+			return $this->update(['queueIndexing' => true]);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Purges all attributes regardless of element with extreme prejudice.
+		 *
+		 * @param array $pa_options
+		 * @return bool True on success, false on error
+		 */
+		public function purgeAttributes($pa_options=null) {
+			if(!$this->getPrimaryKey()) { return null; }
+
+			if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
+				foreach($va_element_codes as $vs_element_code) {
+					$va_attributes = $this->getAttributesByElement($vs_element_code);
+
+					foreach($va_attributes as $o_attribute) {
+						$this->purgeAttribute($o_attribute->getAttributeID(), null, null, []);
+					}
+				}
+			}
+
 			return $this->update(['queueIndexing' => true]);
 		}
 		# ------------------------------------------------------------------
@@ -1715,10 +1763,10 @@
 						$ps_field_proc = preg_replace("![\.]+!", "_", $ps_field);
 						if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, []))) { $vs_rel_types_proc = "_{$vs_rel_types}"; $vs_rel_types = "/{$vs_rel_types}";  }
 					
-						return $vs_buf.caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field))).$vs_autocomplete), $pa_options);
+						return $vs_buf.caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'placeholder' => $pa_options['placeholder'] ?? null, 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field))).$vs_autocomplete), $pa_options);
 					}
 				} else {
-					return caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field)))), $pa_options);
+					return caHTMLTextInput(caGetOption('name', $pa_options, $ps_field).$vs_rel_types.$vs_autocomplete.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'placeholder' => $pa_options['placeholder'] ?? null, 'class' => $pa_options['class'], 'id' => caGetOption('id', $pa_options, str_replace('.', '_', caGetOption('name', $pa_options, $ps_field)))), $pa_options);
 				}
 			}
 			
@@ -1734,7 +1782,8 @@
 								'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 								'class' => (isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '',
 								'format' => '^ELEMENT',
-								'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT'
+								'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
+								'placeholder' => $pa_options['placeholder'] ?? null
 							)));
 				}
 			}
@@ -1915,7 +1964,7 @@
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
-			// fine element breaks by container
+			// find element breaks by container
 			foreach($va_element_set as $va_element) {
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
 					if(isset($va_element['settings']) && isset($va_element["settings"]["lineBreakAfterNumberOfElements"])) {
@@ -1933,8 +1982,10 @@
 			}
 			
 			$element_datatype = $t_element->get('datatype');
-			$t_element_code = $t_element->get('element_code');
+			$element_code = $t_element->get('element_code');
+			$element_id = $t_element->get('element_id');
 			$table_name = $this->tableName();
+			
 			$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
 			
 			$root_element_id = $group_key = $t_element->getPrimaryKey();
@@ -1979,8 +2030,8 @@
 				$label = (sizeof($va_element_set) > 1) ? $va_label['name'] : '';
 				
 				if($element_datatype == 0){ //Only show field level bundle codes inside containers    
-					$bundle_code = "{$table_name}.{$t_element_code}.{$va_element['element_code']}";
-					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode'>{$bundle_code}</a>)</span>" : $label;
+					$bundle_code = "{$table_name}.{$element_code}.{$va_element['element_code']}";
+					$label = ($show_bundle_codes !== 'hide') ? "{$label} <span class='developerBundleCode'>(<a href='#' class='developerBundleCode' data-code='{$bundle_code}'>{$va_element['element_code']}</a>)</span>" : $label;
 				}
 				
 				if(!is_array($va_element['settings'])) { $va_element['settings'] = []; }
@@ -2048,17 +2099,17 @@
 			$o_view->setVar('t_element', $t_element);
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('request', $po_request);
-			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));
+			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$element_id);
 			$o_view->setVar('elements', $va_elements_by_container);
-			$o_view->setVar('error_source_code', $this->tableName().'.'.$t_element->get('element_code'));
+			$o_view->setVar('error_source_code', $this->tableName().'.'.$element_code);
 			$o_view->setVar('element_ids', $va_element_ids);
 			$o_view->setVar('element_info', $va_element_info);
-			$o_view->setVar('element_set_label', $this->getAttributeLabel($t_element->get('element_id')));
+			$o_view->setVar('element_set_label', $this->getAttributeLabel($element_id));
 			$o_view->setVar('element_code', $t_element->get('element_code'));
 			$o_view->setVar('placement_code', $ps_placement_code);
 			$o_view->setVar('render_mode', ($element_datatype == 3) ? $t_element->getSetting('render') : null);	// only set for list attributes (as of 26 Sept 2010 at least)
 			
-			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
+			if ($t_restriction = $this->getTypeRestrictionInstance($element_id)) {
 				// If batch mode force minimums to zero
 				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
 				
@@ -2069,11 +2120,38 @@
 				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
+			// Convert any forced values to use element_id keys required by failed_insert_attribute_list
+			$forced_values_proc = $forced_existing_values_proc = [];
+			if(is_array($forced_values = caGetOption('forcedValues', $pa_options, null)) && isset($forced_values[$t_element->get('element_code')])) {
+				foreach($forced_values[$element_code] as $v) {
+					if(!is_array($v)) { continue; }
+					$v_proc = [];
+					
+					$attr_id = null;
+					foreach($v as $kk => $vv) {
+						if($kk === 'attribute_id') { $attr_id = $vv; unset($v[$kk]); continue; }
+						$e_id = ($kk === 'locale_id')  ? 'locale_id' : ca_metadata_elements::getElementID($kk);
+						if(!$e_id) { continue; }
+						$v_proc[$e_id] = $vv;
+					}
+					
+					if($attr_id) {
+						$forced_existing_values_proc[$attr_id] = $v_proc;
+					} else {
+						$forced_values_proc[$element_id] = $v_proc;
+					}
+				}
+			}
+			
 			// These are lists of associative arrays representing attributes that were rejected in a save() action
 			// during the current request. They are used to maintain the state of the form so the user can modify the
-			// input that caused the error
-			$o_view->setVar('failed_insert_attribute_list', $this->getFailedAttributeInserts($pm_element_code_or_id));
-			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
+			// input that caused the error. The inserts list is also used to force values into forms for new not-yet-saved
+			// records. Forced values do not include error messages and appear as default values.
+			$fi = $this->getFailedAttributeInserts($pm_element_code_or_id) ?? [];
+			$fa = $this->getFailedAttributeUpdates($pm_element_code_or_id) ?? [];
+		
+			$o_view->setVar('failed_insert_attribute_list', $fi + $forced_values_proc);
+			$o_view->setVar('failed_update_attribute_list', $fa + $forced_existing_values_proc);
 		
 			// Set the list of existing attributes for the current row
 			$vs_sort = $pa_bundle_settings['sort'] ?? null;
@@ -2081,6 +2159,7 @@
 			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
 			
 			$o_view->setVar('attribute_list', $va_attribute_list);
+			
 			
 			// Pass list of element default values
 			$o_view->setVar('element_value_defaults', $va_element_value_defaults);

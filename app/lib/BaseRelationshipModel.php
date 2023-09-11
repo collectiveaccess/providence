@@ -400,7 +400,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vs_right_table_name = $this->getRightTableName();
 		
 		$restrict_to_relationship_types = caGetOption(['restrictToRelationshipTypes', 'restrict_to_relationship_types'], $pa_options, null);
-		$vb_dont_include_subtypes_in_type_restriction = caGetOptions('dont_include_subtypes_in_type_restriction', $pa_options, false);
+		$vb_dont_include_subtypes_in_type_restriction = (bool)caGetOption('dont_include_subtypes_in_type_restriction', $pa_options, false);
 		
 		$o_db = $this->getDb();
 		$t_rel_type = new ca_relationship_types();
@@ -747,8 +747,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	# ------------------------------------------------------
 	private function _processRelationshipHierarchy($pn_id, $pa_hier, $pa_types, $pn_level) {
 		$va_types_to_return = [];
-		if(!is_array($pa_hier[$pn_id])) { return []; }
-		if (!is_array($pa_types[$pn_id])) { return [];}
+		if(!is_array($pa_hier[$pn_id] ?? null)) { return []; }
+		if (!is_array($pa_types[$pn_id] ?? null) ) { return [];}
 		foreach($pa_types[$pn_id] as $vs_sub_types => $va_list) {	// items in this level
 			ksort($va_list);
 			foreach($va_list as $vs_key => $va_list_by_type_id) {

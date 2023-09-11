@@ -67,6 +67,7 @@
 	$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
 	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
 	
+	$batch			= $this->getVar('batch');
 	
 	$home_location_idno = null;
 	if ($t_subject->hasField('home_location_id')) {
@@ -75,13 +76,17 @@
 	}
 	
     if (!$this->request->isAjax()) {
-	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+    	if ($batch) {
+			print caBatchEditorRelationshipModeControl($t_subject, $vs_id_prefix);
+		} else {
+			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+			print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+		}
 	}
 	
 	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
 ?>
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 	<div class="bundleContainer">
 			<div class="caHistoryTrackingButtonBar labelInfo">
 <?php
@@ -207,7 +212,7 @@ switch($display_mode) {
 						}, [])) && ($current_value = array_shift($current_value))) { 
 							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'><div class='caHistoryTrackingContent'>{$current_value['icon']} {$current_value['display']}<div class='caHistoryTrackingEntryDate'>{$current_value['date']}</div></div>";
 							
-                                if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request)) {
+                                if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request, $current_value['tracked_type_id'])) {
 ?>
                                     <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($current_value['current_table_num']); ?>" data-primary_id="<?= $current_value['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                 }
@@ -243,9 +248,9 @@ switch($display_mode) {
 										    $color = $settings['pastValueColor'];
 											break;	
 									}
-
+									
                                     print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'><div class='caHistoryTrackingContent'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>";
-                                    if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
+                                    if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request, $history_entry['tracked_type_id'])) {
 ?>
                                         <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                     }
@@ -289,7 +294,7 @@ switch($display_mode) {
 						<?= $history_entry['icon']; ?>
 						<div><?= $history_entry['display']; ?></div>					
 <?php
-					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
+					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request, $history_entry['tracked_type_id'])) {
 ?>
 						<div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
 					}

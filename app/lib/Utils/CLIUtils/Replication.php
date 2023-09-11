@@ -483,15 +483,14 @@ trait CLIUtilsReplication {
 			CLIUtils::addError(_t("You must specify a source"));
 			return false;
 		}
-		// if (!($guid = $po_opts->getOption('guid'))) {
-// 			CLIUtils::addError(_t("You must specify a guid"));
-// 			return false;
-// 		}
+		if (!($table = $po_opts->getOption('table'))) {
+			$table = 'ca_objects';
+		}
 		
 		$o_replicator = new Replicator();
 		
 		print "Replicating {$source}\n";
-		$o_replicator->syncPublic($source);
+		$o_replicator->syncPublic($source, ['table' => $table]);
 	}
 	# -------------------------------------------------------
 	/**
@@ -527,5 +526,65 @@ trait CLIUtilsReplication {
 	public static function sync_public_for_sourceHelp() {
 		return _t("To come.");
 	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function add_set_items_to_sets_in_log($po_opts=null) {
+		$db = new Db();
+		
+		$qr = $db->query("SELECT set_id, set_code FROM ca_sets WHERE deleted = 0");
+		
+		while($qr->nextRow()) {
+			$set_id = $qr->get('set_id');
+			$set_code = $qr->get('set_code');
+			print "Processing {$set_code}\n";
+			
+			$t_set = new ca_sets($set_id);
+			
+			$item_ids = $t_set->getItemIDs();
+			if(!is_array($item_ids) || !sizeof($item_ids)) { continue; }
+			
+			$qr_log = $db->query("SELECT log_id FROM ca_change_log WHERE logged_table_num = 105 AND logged_row_id IN (?)", [array_keys($item_ids)]);
+			
+			$log_ids = $qr_log->getAllFieldValues('log_id');
+			
+			foreach($log_ids as $log_id) {
+				$qr_subjects = $db->query("SELECT * FROM ca_change_log_subjects WHERE log_id = ?", [$log_id]);
+				if(($qr_subjects->numRows() === 1) && $qr_subjects->nextRow() && ($qr_subjects->get('subject_table_num') == 105)) {
+					$db->query("INSERT INTO ca_change_log_subjects (log_id, subject_table_num, subject_row_id) VALUES (?, ?, ?)", [$log_id, 103, $set_id]);
+				}
+			}
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function add_set_items_to_sets_in_logParamList() {
+		return [];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function add_set_items_to_sets_in_logUtilityClass() {
+		return _t('Replication');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function add_set_items_to_sets_in_logShortHelp() {
+		return _t("Add missing change log subject records for set items");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function add_set_items_to_sets_in_logHelp() {
+		return _t("To come.");
+	}
+	# -------------------------------------------------------
 	# -------------------------------------------------------
 }

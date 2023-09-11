@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2022 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,8 @@ if ($use_classic_interface || $is_batch) {
 	return;
 }
 
+$force_values = $this->getVar('forceValues');
+
 $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object representation
@@ -57,6 +59,8 @@ $right_sub_type_id 	= ($t_item_rel->getRightTableName() == $t_subject->tableName
 $rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id, ['restrict_to_relationship_types' => caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $settings, null)]);
 
 $read_only			= (isset($settings['readonly']) && $settings['readonly']);
+$dont_show_add		= (isset($settings['dontShowAddButton']) && $settings['dontShowAddButton']);
+$dont_show_delete	= (isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton']);
 
 $num_per_page 		= caGetOption('numPerPage', $settings, 10);
 $initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCharacterData' => false]);
@@ -125,7 +129,7 @@ if (!RequestHTTP::isAjax()) {
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
-<?php if (!$read_only) { ?>
+<?php if (!$read_only && !$dont_show_delete) { ?>
 			<div style="float: right;">
 				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
@@ -425,7 +429,7 @@ if (!RequestHTTP::isAjax()) {
 			
 		</div>
 <?php 
-	if (!$read_only) {
+	if (!$read_only && !$dont_show_add) {
 ?>
 		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
@@ -487,8 +491,8 @@ if (!RequestHTTP::isAjax()) {
 			},
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
-		
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 		});
 		if (caUI.initPanel) {
 			<?= $id_prefix; ?>MediaBrowserPanel = caUI.initPanel({ 

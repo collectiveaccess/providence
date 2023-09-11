@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Data source'), 'DESCRIPTION' => _t('Source in external format to map CollectiveAccess path to. The format of the external element is determined by the target. For XML-based formats this will typically be an XPath specification; for delimited targets this will be a column number.'),
-				'BOUNDS_LENGTH' => array(0,1024)
+				'BOUNDS_LENGTH' => array(0,8192)
 		),
 		'destination' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -721,6 +721,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Always replace values?'),
 			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
 		);	
+		$settings['replaceIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Replace if expression'),
+			'description' => _t('Replace existing data with imported data if the expression is true.')
+		);
 		$settings['source'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

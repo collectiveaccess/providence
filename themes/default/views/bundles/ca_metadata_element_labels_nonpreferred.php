@@ -83,7 +83,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'NPLabels',
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['name']); ?>,
+		bundlePreview: <?= caEscapeForBundlePreview($this->getVar('bundle_preview')); ?>,
 		readonly: <?= $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});

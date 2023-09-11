@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -155,6 +155,15 @@ BaseRefinery::$s_refinery_settings['storageLocationSplitter'] = array(
 		'default' => '',
 		'label' => _t('Extract relationship type'),
 		'description' => _t('If set splitter will attempt to extract relationship type from data. By default it will look for text enclosed in parens. Set to {} or [] or look for text enclosed with those brackets instead.')
+	),
+	'storageLocationSplitter_relationshipOrientation' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Relationship type orientation'),
+		'description' => _t('Sets directionality of storage location-storage location relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default.')
 	),
 	'storageLocationSplitter_relationshipTypeDelimiter' => array(
 		'formatType' => FT_TEXT,

@@ -1225,7 +1225,7 @@ class Installer {
 					
 					// Allow for <table>_table (Ex. ca_objects_table)
 					if(!($table = \Datamodel::tableExists($bundle) ? $bundle : null)) {
-						$tbundle = preg_replace('!_table$!', '', $bundle);
+						$tbundle = preg_replace('!(_table|_related_list)$!', '', $bundle);
 						if(($tbundle !== $bundle) && \Datamodel::tableExists($tbundle)) {
 							$table = $tbundle;
 						}
@@ -2437,7 +2437,7 @@ class Installer {
 											$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no types are defined; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
 										}
 									} else {
-										$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no relationship table was set; set in relationship type restriction setting %3 for %4', $bad_type, $table, $setting_value, $source));
+										$this->addError('processSettings', _t('Relationship type %1 is not valid for %2 because no relationship table was set; set in relationship type restriction setting %3 for %4', join('; ', $ret), $table, $setting_value, $source));
 									}
 									$setting_name = 'restrict_to_relationship_types';
 									break;

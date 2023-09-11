@@ -73,7 +73,16 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 				_t("Default") => "Order",
 				_t("Label") => "TermPrefLabel"
 			),
-		];		
+		];	
+		$g_information_service_settings_AAT['language'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Language'),
+			'useLocaleList' => true,
+			'description' => _t('Language to use for returned AAT terms. The language must be supported by the AAT.')
+		];	
 		WLPlugInformationServiceAAT::$s_settings = $g_information_service_settings_AAT;
 		parent::__construct();
 		$this->info['NAME'] = 'AAT';
@@ -109,6 +118,8 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		if ( ! is_array( $pa_results ) ) {
 			return false;
 		}
+		
+		$key = ($pa_options['settings']['language'] ?? null) ? 'skosLabel' : 'TermPrefLabel';
 
 		if ( $pa_params['isRaw'] ) {
 			return $pa_results;
@@ -123,8 +134,8 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			}
 
 			$vs_label = ( caGetOption( 'format', $pa_options, null, [ 'forceToLowercase' => true ] ) !== 'short' )
-				? $va_values['TermPrefLabel']['value']
-				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values['TermPrefLabel']['value'] . " ["
+				? $va_values[$key]['value']
+				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values[$key]['value'] . " ["
 				  . $va_values['Parents']['value'] . "]";
 			$vs_label = preg_replace( '/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label );
 			$vs_label = preg_replace( '/[\<\>]/', '', $vs_label );
@@ -141,6 +152,13 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
 		$vs_additional_filter = $pa_options['settings']['additionalFilter'] ?? null;
+		$lang_select = $lang_filter = null;
+		if($lang = ($pa_options['settings']['language'] ?? null)) {
+			$lang = substr($lang, 0, 2);
+			$lang_select = "?skosLabel";
+			$lang_filter = "skos:prefLabel ?skosLabel . filter(lang(?skosLabel) = '{$lang}')";
+		}
+		
 		if ($vs_additional_filter){
 			$vs_additional_filter = "$vs_additional_filter ;";
 		}
@@ -148,15 +166,16 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		if(!strlen($vs_order_by = caGetOption( 'orderBy', $pa_options['settings'], ''))) {
 			$vs_order_by = 'Order';
 		}
-		$vs_query = urlencode( 'SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull '.$lang_select.' {
 	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ; ' . $vs_additional_filter . '
-	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel]; '.$lang_filter.'
 	{?ID gvp:parentStringAbbrev ?Parents}
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 	 ' . $vs_sparql_suffix . '
 	} 	ORDER BY ?' . $vs_order_by . '
 		LIMIT ' . $pa_params['limit'] );
+		
 		return $vs_query;
 	}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
+require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
 
 class BaseQuickAddController extends ActionController {
 	# -------------------------------------------------------
@@ -189,9 +190,12 @@ class BaseQuickAddController extends ActionController {
 					}	
 					break;
 				case 'ca_entities':
-					// Force surname to text to ensure organization name is visible
 					if(caGetListItemSettingValue('entity_types', caGetListItemIdno($vn_type_id), 'entity_class') === 'ORG') {
+						// Force surname to text to ensure organization name is visible
 						$va_force_new_label['surname'] = $v;
+					} elseif($this->request->config->get('ca_entities_split_name_on_quickadd_load')) {
+						// Prepopulate with split name
+						$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($v));
 					}
 					break;
 			}				

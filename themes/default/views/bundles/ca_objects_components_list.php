@@ -89,9 +89,9 @@ if (!$this->request->isAjax()) {
 ?>
 				<div><?= _t('No components defined'); ?></div>
 <?php
-	}
-			
+	}			
 ?>
+				<div class='button labelInfo caAddItemButton'><?= '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label; ?></a></div>
 			</div>
 		</div>
 	</div>

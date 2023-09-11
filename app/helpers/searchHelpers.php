@@ -1510,12 +1510,13 @@
 		// Try to use custom user interface labels for fields when set
 		$ui_bundle_label_map = [];
 		if (isset($options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $options['request'], $pn_type_id))) {
-			$va_screens = $t_ui->getScreens();
+			$va_screens = $t_ui->getScreens($pn_type_id);
 			foreach($va_screens as $va_screen) {
-				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
+				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id'], $pn_type_id))) {
 					foreach($va_placements as $va_placement) {
 						// Older installations have the bundle name prefixed with "ca_attribute_"
-						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
+						$vs_bundle_name = caConvertBundleNameToCode($va_placement['bundle_name'], ['convertOldStyleNamesOnly' => true]);
+						
 						$va_bundle_bits = explode('.', $vs_bundle_name);
 						if (!Datamodel::tableExists($va_bundle_bits[0])) {
 							array_unshift($va_bundle_bits, $ps_table);
@@ -1911,13 +1912,14 @@
 	/**
 	 *
 	 */
-	function caFlattenContainers(ca_search_forms $t_search_form, string $table) {
-		$bundles = $t_search_form->getAvailableBundles($table, ['omitGeneric' => true, 'omitBundles' => ['deleted']]);
+	function caFlattenContainers(ca_search_forms $t_search_form, string $table, ?array $options=null) {
+		$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
+		$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted']]);
 		foreach ($bundles as $id => $bundle_info) {
 			$element_code = caGetBundleNameForSearchSearchBuilder($b=$bundle_info['bundle']);
 			
 			if (ca_metadata_elements::getElementDatatype($element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
-				if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code))) {
+				if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code, ['useDisambiguationLabels' => $use_disambiguation_labels]))) {
 			
 					foreach($sub_elements as $sub_element) {
 						if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
@@ -1966,7 +1968,7 @@
 			function ($pa_bundle) use ($t_subject, $po_query_builder_config) {
 				return caMapBundleToSearchBuilderFilterDefinition($t_subject, $pa_bundle, $po_query_builder_config);
 			},
-			caFlattenContainers($t_search_form, $vs_table)
+			caFlattenContainers($t_search_form, $vs_table, ['useDisambiguationLabels' => true])
 		));
 		$va_exclude = $po_query_builder_config->get('query_builder_exclude_' . $vs_table);
 		$filters = array_filter($filters, function ($vo_filter) use ($va_exclude) {
@@ -2118,13 +2120,11 @@
 			if (!$va_select_options) {
 				$va_select_options = array();
 				$t_list = new ca_lists();
-				$va_items = $t_list->getItemsForList($vs_list_code, ['returnHierarchyLevels' => true]);
+				$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
 				if (is_array($va_items)) {
 					$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
 					foreach ($va_items as $va_item) {
-						foreach ($va_item as $va_item_details) {
-							$va_select_options[$is_item_val_fld ? $va_item_details['item_value'] : $va_item_details['idno']] = str_repeat("&nbsp;", (int)$va_item_details['LEVEL'] * 5).$va_item_details['name_singular'];
-						}
+						$va_select_options[$is_item_val_fld ? $va_item['item_value'] : $va_item['idno']] = str_repeat("&nbsp;", (int)$va_item['LEVEL'] * 5).$va_item['name_singular'];
 					}
 				}
 			}
@@ -2285,5 +2285,308 @@
 			return $search_expression.'*';
 		}
 		return $search_expression;
+	}
+	# ---------------------------------------
+	/**
+	 * Format search result description data for debugging
+	 *
+	 * @param int $id row_id to display data for
+	 * @array $result_desc_data 
+	 * @array $options Options include:
+	 *		request = 
+	 *		maxTitleLength = 
+	 *
+	 * @return string
+	 */
+	function caFormatSearchResultDesc(int $id, array $result_desc_data, ?array $options=null) : ?string {
+		$request = caGetOption('request', $options, null);
+		$max_title_length = caGetOption('maxTitleLength', $options, 40);
+		if(is_array($result_desc_data[$id] ?? null)) {
+			$m = $result_desc_data[$id];
+			$s = "";
+			
+			$by_table = [];
+			if(is_array($m['desc'] ?? null)) {
+				foreach($m['desc'] as $d) {
+					if(!isset($by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']])) {
+						$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']] = 0;
+					}
+					$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+				}
+			} elseif(is_array($m['access_point'])) {
+				$apinfo = $m['access_point'];
+				if(!isset($by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']])) { 
+					$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']] = 0; 
+				}
+				$by_table[$apinfo['table']][$apinfo['field_row_id']][$apinfo['field_num']][$apinfo['word']]++;
+			}
+			$lines = $titles = [];
+			foreach($by_table as $t => $by_row_id) {
+				$t_instance = Datamodel::getInstance($t);
+				foreach($by_row_id as $row_id => $by_field) {
+					$t_instance->load($row_id);
+					$t_subject = method_exists($t_instance, 'getSubjectTableInstance') ? $t_instance->getSubjectTableInstance() : $t_instance;
+					
+					$title = caTruncateStringWithEllipsis($t_subject->get("preferred_labels"), $max_title_length);
+					if(!($subject_name = $request ? caEditorLink($request, $title, '', $t_subject->tableName(), $t_subject->getPrimaryKey()) : $title)) {
+						$subject_name = $title;
+					}
+					$titles[$row_id] = "<em>".caUcFirstUTF8Safe(method_exists($t_instance, 'getTypeName') ? $t_instance->getTypeName() : $t_instance->getProperty('NAME_SINGULAR'))."</em> {$subject_name}";
+					
+					foreach($by_field as $field_num => $words) {
+						$lines[$row_id][] = _t("<em>%1</em>: %2",  mb_strtolower(caFieldNumToDisplayText($t, $field_num)), caMakeCommaListWithConjunction(array_keys($words)));
+					}
+				}
+			}
+			if(!sizeof($lines)) { return null; }
+			$s .= "<ul>";
+			foreach($lines as $row_id => $m) {
+				$s .= "<li>{$titles[$row_id]}</li>\n";
+				$s .= join("\n", array_map(function($v) { return "<li>{$v}</li>\n"; }, $m));
+			}
+			$s .= "</ul>";
+			return $s;
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get text excerpt for search hit
+	 *
+	 * @param SearchResult $result
+	 * @param int $start
+	 * @param int $hits_per_page
+	 * @param array $options
+	 *
+	 * @return array
+	 */
+	function caGetHitsForPage(SearchResult $result, int $start, int $hits_per_page, ?array $options=null) : array {
+		$result->seek($start);
+		
+		$hits = [];
+		
+		$c = 0;
+		while($result->nextHit()) {
+			$hits[] = $result->getPrimaryKey();
+			$c++;
+			
+			if($c >= $hits_per_page) { break; }
+		}
+		$result->seek($start);
+		return $hits;
+	}
+	# ---------------------------------------
+	/**
+	 * Get text excerpt for search hit
+	 *
+	 * @param int $id row_id to display data for
+	 * @array $result_desc_data 
+	 * @array $options Options include: 
+	 *		maxExcerpts = Maximum number of excerpts to be returned. Searches matching on multiple fields may return different excepts for each. [Default is null]
+	 *
+	 * @return array
+	 */
+	function caTextExcerptForSearchResult(int $id, ?array $result_desc_data, ?array $options=null) : ?array {
+		$max_excerpts = caGetOption('maxExcerpts', $options, null);
+		if(is_array($result_desc_data[$id] ?? null)) {
+			$m = $result_desc_data[$id];
+			$s = "";
+			$by_table = $by_table_counts = [];
+			foreach($m['desc'] as $d) {
+				$by_table[$d['table']][$d['field_row_id']][$d['field_num']][$d['word']]++;
+				$by_table_counts[$d['table']]++;
+			}
+			asort($by_table_counts, SORT_NUMERIC);
+			$by_table_counts = array_reverse($by_table_counts);
+			
+			$word_list = $excerpts = [];
+			foreach($by_table_counts as $t => $c) {
+				$by_row_id = $by_table[$t];
+				$t_instance = Datamodel::getInstance($t);
+				foreach($by_row_id as $row_id => $by_field) {
+					$t_instance->load($row_id);
+					$t_subject = method_exists($t_instance, 'getSubjectTableInstance') ? $t_instance->getSubjectTableInstance() : $t_instance;
+					
+					foreach($by_field as $field_num => $words) {
+						$word_list = array_unique(array_merge($word_list, array_keys($words)));
+						$bundle_code = caFieldNumToBundleCode($t, $field_num);
+						if(!($excerpt = trim(caGetTextExcerpt($t_subject->get($bundle_code), array_keys($words))))) { continue; }
+						$excerpts[] = $excerpt;
+						
+						if(($max_excerpts > 0) && (sizeof($excerpts) >= $max_excerpts)) { break(3); }
+					}
+				}
+			}
+			
+			return array_map(function($v) use ($word_list) {
+				return caHighlightText($v, $word_list);
+			}, array_unique($excerpts));
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caFieldNumToDisplayText($table_name_or_num, string $field_num) : ?string {
+		$prefix = strtoupper(substr($field_num, 0, 1));
+		
+		switch($prefix) {
+			case 'A':
+				$element_id = substr($field_num, 1);
+				$l = ca_metadata_elements::getElementLabel($element_id);
+				if(($root_id = ca_metadata_elements::getElementHierarchyID($element_id)) && ($root_id != $element_id)) {
+					$p = ca_metadata_elements::getElementLabel($root_id);
+					return "{$p} ➜ {$l}";
+				}
+				return $l;
+				break;
+			case 'I':
+				if($t_instance = Datamodel::getInstance($table_name_or_num)) {
+					$field_name = $t_instance->fieldName(substr($field_num, 1));
+					$field_info = $t_instance->getFieldInfo($field_name);
+					return $field_info['LABEL'];
+				}
+				break;
+			default:
+				return $field_num;
+				break;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 *
+	 */
+	function caFieldNumToBundleCode($table_name_or_num, string $field_num) : ?string {
+		$prefix = strtoupper(substr($field_num, 0, 1));
+		
+		$table = Datamodel::getTableName($table_name_or_num);
+		switch($prefix) {
+			case 'A':
+				$element_code = ca_metadata_elements::getElementCodeForId(substr($field_num, 1));
+				$parent_code = ca_metadata_elements::getParentCode($element_code);
+				return $parent_code ? "{$table}.{$parent_code}.{$element_code}" : "{$table}.{$element_code}";
+				break;
+			case 'I':
+				if($t_instance = Datamodel::getInstance($table_name_or_num)) {
+					$field_name = $t_instance->fieldName(substr($field_num, 1));
+					return "{$table}.{$field_name}";
+				}
+				break;
+			default:
+				return null;
+				break;
+		}
+	}
+	# ---------------------------------------
+	/**
+		Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
+	 */
+	function caExtractTextFromPDF(string $filepath) : ?array {
+		if ($miner_path = caPDFMinerInstalled()) {
+			$locations = [];
+			$o_search_config = caGetSearchConfig();
+			
+			// Try to extract text
+			$tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
+			exec($miner_path.' -t text '.caEscapeShellArg($filepath).' > '.caEscapeShellArg($tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			$extracted_text = file_get_contents($tmp_filename);
+			//$this->handle['content'] = $this->ohandle['content'] = $extracted_text;
+			@unlink($tmp_filename);
+	
+			$tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT_LOCATIONS');
+			exec($miner_path.' -A -t xml '.caEscapeShellArg($filepath).' > '.caEscapeShellArg($tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			
+			$xml = new XMLReader();
+			if ($xml->open($tmp_filename)) {
+			
+			// Structure of locations array is [<word>][] = array(page, x1, y1, x2, y2, size)
+			$current_page = null;
+			$text_line_content = '';
+			$page_content = '';
+			$text_line_locs = [];
+			$in_text_element = false;
+			$current_text_loc = null;
+			
+			$whitespace_regex = $o_search_config->get('whitespace_tokenizer_regex');
+			while (@$xml->read()) {
+					switch ($xml->name) {
+						case 'page':		// new page
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								$locations['__pages__'][$current_page] = $page_content;
+								$page_content = '';
+								continue(2); 
+							}
+							$text_line_content = '';
+							$current_page = (int)$xml->getAttribute('id');
+							break;
+						case 'textline':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								// end of line
+							
+								$start = $end = null;
+								$acc = '';
+								for($i=0; $i < mb_strlen($text_line_content); $i++) {
+									if (preg_match("!{$whitespace_regex}!u", mb_substr($text_line_content, $i, 1))) {
+										// word boundary
+										if ($acc) {
+											$acc = mb_strtolower($acc);
+											$start = $text_line_locs[$start];
+											$end = $text_line_locs[$end];
+											$locations[$acc][] = array(
+												'p' => $current_page,
+												'x1' => $start['x1'], 'y1' => $start['y1'],
+												'x2' => $end['x2'], 'y2' => $end['y2']
+												//'size' => $start['size']
+											);
+										}
+										$start = $end = null;
+										$acc = '';
+									} else {
+										if(is_null($start)) { $start = $i; }
+										$end = $i;
+										$acc .= ($c = mb_substr($text_line_content, $i, 1));
+									}
+								}
+							} else {
+								// new line of text
+								$page_content .= $text_line_content;
+								$text_line_content = '';
+								$text_line_locs = array();
+							}
+							break;
+						case 'textbox':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) {
+								$page_content .= "\n";
+							}
+							break;
+						case 'text':
+							if ($in_text_element = ($xml->nodeType == XMLReader::ELEMENT)) {
+								$tmp = explode(",", (string)$xml->getAttribute('bbox'));
+								$current_text_loc = array(
+									'x1' => $tmp[0],
+									'y1' => $tmp[1],
+									'x2' => $tmp[2],
+									'y2' => $tmp[3]
+									//'font' => $xml->getAttribute('font'),
+									//'size' => $xml->getAttribute('size')
+								);	
+							} else {
+								$current_text_loc = null;
+							}
+							break;
+						case '#text':		// bit of text to record (usually a single character)
+							if ($in_text_element) {
+								$current_text_loc['chars'] = mb_strlen((string)$xml->value);
+								$text_line_locs[mb_strlen($text_line_content)] = $current_text_loc;
+								$text_line_content .= (string)$xml->value;
+							}
+							break;
+					}
+				}
+			}
+			return $locations;
+		}
+		return null;
 	}
 	# ---------------------------------------

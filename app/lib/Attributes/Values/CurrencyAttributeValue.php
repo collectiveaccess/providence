@@ -272,7 +272,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_currency_specifier = $va_parsed_value['currency'];
 			$vs_decimal_value = $va_parsed_value['value'];
 		} else {
-			$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
+			$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel'] ?? null), 'CurrencyAttributeValue->parseValue()');
 			return false;
 		}
 

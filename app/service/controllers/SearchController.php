@@ -178,7 +178,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								// Stash details of first search for use in "flat" response
 								$ftable = $table;
 								$fsearch = $search;
-								$fcount = sizeof($r);
+								$fcount = $qr->numHits();
 								$fresult = $r;
 							}
 						}

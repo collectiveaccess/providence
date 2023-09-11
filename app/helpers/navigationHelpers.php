@@ -35,6 +35,7 @@
    */
    
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	
  	# ------------------------------------------------------------------------------------------------
  	/**
@@ -189,7 +190,7 @@
 		
 		if (caGetOption('absolute', $pa_options, false)) {
 			$o_config = Configuration::load();
-			$vs_url = $o_config->get('site_host').$vs_url;
+			$vs_url = $o_config->get('site_host').$o_config->get('ca_url_root').$vs_url;
 		}
 		
 		return $vs_url;

@@ -205,7 +205,7 @@ class ResultContext {
 		if ($ps_search_expression) { return $ps_search_expression; }				// return specified search expression if passed and no display expression is available
 		
 		// Try to return display expression for current search expression if no expression has been passed as a parameter
-		if ($vs_display_expression = $va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)]) { 
+		if ($vs_display_expression = ($va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)] ?? null)) { 
 			return $vs_display_expression; 
 		}
 		
@@ -292,6 +292,29 @@ class ResultContext {
 			return sizeof($va_context['result_list'] ?? []);
 		}
 		return 0;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns a description of search results, including which fields caused the item to be included.
+	 *
+	 * @return array
+	 */
+	public function getResultDesc() : ?array {
+		if ($context = $this->getContext()) {
+			return $context['result_desc'] ?? null;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Sets the result description the current context. The result description includes matching
+	 * information from the search engine detailing which fields matched for each item in the resultset.
+	 *
+	 * @param array $result_desc 
+	 * @return array 
+	 */
+	public function setResultDesc(array $result_desc) {
+		return $this->setContextValue('result_desc', $result_desc);
 	}
 	# ------------------------------------------------------------------
 	/**

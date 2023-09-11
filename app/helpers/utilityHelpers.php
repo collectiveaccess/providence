@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1630,25 +1630,29 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'.
 	 *
-	 * @param string $ps_mimetype A media MIME type
+	 * @param string $mimetype A media MIME type
+	 * @param array $options Options include:
+	 *		forIIIF = return IIIF presentation type values rather than CA-standard media class names. [Default is false]
 	 *
 	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
-	function caGetMediaClass($ps_mimetype) {
-		$va_tmp = explode("/", $ps_mimetype);
+	function caGetMediaClass(string $mimetype, ?array $options=null) : string {
+		$tmp = explode("/", $mimetype);
 
-		switch($va_tmp[0]) {
+		$for_iiif = caGetOption('forIIIF', $options, false);
+	
+		switch($tmp[0]) {
 			case 'image':
-				return 'image';
+				return $for_iiif ? 'Image' : 'image';
 				break;
 			case 'video':
-				return 'video';
+				return $for_iiif ? 'Video' : 'video';;
 				break;
 			case 'audio':
-				return 'audio';
+				return $for_iiif ? 'Sound' : 'audio';
 				break;
 			default:
-				switch($ps_mimetype) {
+				switch($mimetype) {
 					case 'application/pdf':
 					case 'application/postscript':
 					case 'text/xml':
@@ -1660,27 +1664,27 @@ function caFileIsIncludable($ps_file) {
 					case 'application/vnd.ms-powerpoint':
 					case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
 					case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-						return 'document';
+						return $for_iiif ? 'Text' : 'document';
 						break;
 					case 'x-world/x-qtvr':
 					case 'application/x-shockwave-flash':
-						return 'video';
+						return $for_iiif ? 'Video' : 'video';
 						break;
 					case 'application/dicom':
-						return 'image';
+						return $for_iiif ? 'Image' : 'image';;
 						break;
 					case 'application/ply':
 					case 'application/stl':
 					case 'text/prs.wavefront-obj':
 					case 'application/surf':
 					case 'model/gltf+json':
-						return '3d';
+						return $for_iiif ? '3D' : '3d';
 						break;
 					case 'x-world/x-qtvr':
-						return 'vr';
+						return $for_iiif ? 'VR' : 'vr';
 						break;
 					case 'application/octet-stream':
-						return 'binary';
+						return $for_iiif ? 'Binary' : 'binary';
 						break;
 				}
 				break;
@@ -2928,6 +2932,7 @@ function caFileIsIncludable($ps_file) {
 		if(!$locale) { $locale = $g_ui_locale; }
 		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
 		
+		$currency_specifier = $decimal_value = null;
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
 		try {
 			// either
@@ -2967,7 +2972,7 @@ function caFileIsIncludable($ps_file) {
 
 			foreach($va_params_raw as $vs_param_raw) {
 				$va_tmp = explode('=', $vs_param_raw);
-				$va_opts[$va_tmp[0]] = $va_tmp[1];
+				$va_opts[$va_tmp[0]] = urldecode($va_tmp[1]);
 			}
 		}
 
@@ -3707,13 +3712,21 @@ function caFileIsIncludable($ps_file) {
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
 		$pn_precision = caGetOption('precision', $pa_options, null);
 
-		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
-			$va_measurements = explode(strtolower($ps_delimiter), mb_strtolower($ps_expression));
+		if ($delimiter = caGetOption('delimiter', $pa_options, 'x')) {
+			if(is_array($delimiter)) {
+				$va_measurements = [];
+				foreach($delimiter as $d) {
+					if(strpos($ps_expression, $d) !== false) {
+						$va_measurements = explode(strtolower($d), mb_strtolower($ps_expression));
+						break;
+					}
+				}
+			} else {
+				$va_measurements = explode(strtolower($delimiter), mb_strtolower($ps_expression));
+			}
 		} else {
-			$ps_delimiter = '';
 			$va_measurements = array($ps_expression);
 		}
-		
 		$va_glyphs = array_keys(caGetFractionalGlyphTable());
 		
         $va_unit_map = [];
@@ -4167,6 +4180,7 @@ function caFileIsIncludable($ps_file) {
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
 	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *		maxLength = Maximum length of returned value. [Default is 255]
+	 *		moveArticles = Move articles at the beginnning of the text to the end. [Default is true]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned truncated to "maxLength" value, but otherwise unchanged.
 	 */
@@ -4178,13 +4192,14 @@ function caFileIsIncludable($ps_file) {
 		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
 		$omit_article = caGetOption('omitArticle', $options, true);
+		$move_articles = caGetOption('moveArticles', $options, true);
 
 		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
 		$display_value = preg_replace('![ ]+!', ' ', $display_value);
 		
 		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
 		
-		if($locale) {
+		if($locale && $move_articles) {
 			// Move articles to end of string
 			$articles = caGetArticlesForLocale($locale) ?: [];
 
@@ -4921,4 +4936,88 @@ function caFileIsIncludable($ps_file) {
 		}
 		return null;
     }
+	# ----------------------------------------
+	/**
+	 * Convert a bundle name from configuration/profile into a usable bundle code.
+	 * In older (pre v1.7.9) versions of CollectiveAccess  attribute editor, search form 
+	 * and display placements consisted of a "ca_attribute_" prefix + the code of the
+	 * attribute (Eg. ca_attribute_description). This syntax is still supported, but
+	 * standard <table>.<element code> (Eg. ca_objects.descriotion) is now encouraged
+	 * for consistency and readability. 
+	 *
+	 * This helper will convert a name into a code. By default names old style
+	 * names are stripped of their ca_attribute_ prefix and the remainder returned.
+	 * <table>.<element code> names are stripped of their table specifiers and returned. 
+	 * <table>.<element code>.<subelement code> names are stripped of both table and subelement
+	 * code, with only element code returned. All other name forms are returned without
+	 * modification.
+	 *
+	 * If the 'convertOldStyleNamesOnly' option is set only old-style names are converted,
+	 * with all other forms returned without modification. 
+	 *
+	 * If the 'includeTablePrefix' option is set table codes will be returned with element codes
+	 * for new-style names in the form <table>.<element code>. Sub-element codes are stripped 
+	 * regardless of how 'includeTablePrefix' is set.
+	 *
+	 * @param string $name
+	 * @param array $options Options include:
+	 *		convertOldStyleNamesOnly = only convert old style 'ca_attribute_' prefixed names. [Default is false]
+	 *		includeTablePrefix = Include table in returned value when converting new-style names .[Default is false]
+	 *
+	 * @return string
+	 */
+	function caConvertBundleNameToCode(string $name, ?array $options=null) : string {
+		if(substr($name, 0, 13) === 'ca_attribute_') {
+			return str_replace('ca_attribute_', '', $name);
+		}
+		if(!($options['convertOldStyleNamesOnly'] ?? false)) {
+			$tmp = explode('.', $name);
+			if(sizeof($tmp) > 1) {
+				if(Datamodel::tableExists($tmp[0])) {
+					if($options['includeTablePrefix'] ?? false) {
+						return $tmp[0].'.'.$tmp[1];
+					}
+					return $tmp[1];
+				}
+			}
+		}
+ 		return $name;
+ 	}
+	# ----------------------------------------
+	/**
+	 * Verify that path relative to a base directory is valid and doesn't include
+	 * path traversal that takes it out of the base directory.
+	 *
+	 * @param string $relative_filepath
+	 * @param string $base_directory
+	 * @param array $options Options include:
+	 *		throwException = Throw application exception is path is invalid. [Default is false]
+	 *
+	 * @return string Return absolute path or null if path is invalid
+	 */
+	function caSanitizeRelativeFilepath(string $relative_filepath, string $base_directory, ?array $options=null) : ?string {
+		$f = realpath($base_directory.'/'.$relative_filepath);
+		
+		if(!is_null($f)) {
+			$bd = realpath($base_directory);
+		
+			if(is_null($bd) || !preg_match("!^{$bd}/!u", $f)) { 
+				$f = null;
+			}
+		}
+		
+		if(is_null($f) && caGetOption('throwException', $options, false)) {
+			throw new ApplicationException(_t('Relative file path is invalid'));
+		}
+		return $f;
+	}
+	# ----------------------------------------
+	/**
+	 * Check if background processing queue is enabled
+	 *
+	 * @return bool
+	 */
+	function caProcessingQueueIsEnabled() : bool {
+		return defined('__CA_QUEUE_ENABLED__') && __CA_QUEUE_ENABLED__;
+	}
 	# ----------------------------------------

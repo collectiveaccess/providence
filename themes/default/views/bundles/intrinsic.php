@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2017 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,39 +26,39 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
- 	$vs_element 			= $this->getVar('form_element');
- 	$va_settings 			= $this->getVar('settings');
- 	$t_instance				= $this->getVar('t_instance');
- 	$vs_bundle_name 		= $this->getVar('bundle_name');
- 	$vb_batch				= $this->getVar('batch');
+$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vs_element 			= $this->getVar('form_element');
+$va_settings 			= $this->getVar('settings');
+$t_instance				= $this->getVar('t_instance');
+$vs_bundle_name 		= $this->getVar('bundle_name');
+$vb_batch				= $this->getVar('batch');
 
-	// fetch data for bundle preview
-	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
-	if(is_array($vs_bundle_preview)) { $vs_bundle_preview = ''; }
- 	
- 	$va_errors = array();
- 	if(is_array($va_action_errors = $this->getVar('errors'))) {
- 		foreach($va_action_errors as $o_error) {
- 			$va_errors[] = $o_error->getErrorDescription();
- 		}
- 	}
- 	if ($vb_batch) {
-		print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
-	} else {
-		if(!caGetOption('forACLAccessScreen', $va_settings, false)) {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $vs_bundle_preview));
+// fetch data for bundle preview
+$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
+if(is_array($vs_bundle_preview)) { $vs_bundle_preview = ''; }
+
+$va_errors = array();
+if(is_array($va_action_errors = $this->getVar('errors'))) {
+	foreach($va_action_errors as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
+	}
+}
+if ($vb_batch) {
+	print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
+} else {
+	if(!caGetOption('forACLAccessScreen', $va_settings, false)) {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $vs_bundle_preview));
 
 ?>
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-				jQuery('#' + '<?= $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?= caEscapeForBundlePreview($vs_bundle_preview); ?>);
-			});
-		</script>
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			jQuery('#' + '<?= $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?= caEscapeForBundlePreview($vs_bundle_preview); ?>);
+		});
+	</script>
 <?php
-		}
 	}
-	print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$vs_bundle_name}", $va_settings);
+}
+print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$vs_bundle_name}", $va_settings);
 ?>
 	<div>
 <?php

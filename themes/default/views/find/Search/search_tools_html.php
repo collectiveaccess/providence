@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,81 +25,82 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$t_subject = $this->getVar('t_subject');
+$t_subject = $this->getVar('t_subject');
+$table = $t_subject->tableName();
 ?>
 <div id="searchToolsBox">
 	<div class="bg">
 <?php
-	if(is_array($va_export_mappings = $this->getVar('exporter_list')) && sizeof($va_export_mappings)>0) {
+	if(is_array($export_mappings = $this->getVar('exporter_list')) && sizeof($export_mappings)>0) {
 ?>
 		<div class="col">
-			<?php
+<?php
 			print _t("Export results with mapping") . ":<br/>";
 			print caFormTag($this->request, 'ExportData', 'caExportWithMappingForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]);
-			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList', 'class' => 'searchToolsSelect'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', ['value' => 1]);
 			print caHTMLHiddenInput('find_type', ['value' => $this->getVar('find_type')]);
+			print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caExportWithMappingInBackground']);
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm', null, ['aria-label' => _t('Export')]);
-			?>
+?>
 			</form>
 		</div>
+		<br class='clear'/>
 <?php
 	}
-	if (is_array($va_forms = $this->getVar('label_formats')) && sizeof($va_forms)) {
+	if (is_array($forms = $this->getVar('label_formats')) && sizeof($forms)) {
 ?>
 		<div class="col">
+			<?= _t("Print results as labels"); ?>: <br/>
+			<?= caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]); ?>
 <?php
-			print _t("Print results as labels").":<br/>";
-			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]);
-	
-			$options = [];
-			foreach($this->getVar('label_formats') as $vn_ => $va_form_info) {
-				$options[$va_form_info['name']] = $va_form_info['code'];
-			}
+				$options = [];
+				foreach($this->getVar('label_formats') as $form_info) {
+					$options[$form_info['name']] = $form_info['code'];
+				}
+				uksort($options, 'strnatcasecmp');
 			
-			uksort($options, 'strnatcasecmp');
-			
-			print caHTMLSelect('label_form', $options, ['class' => 'searchToolsSelect'], ['value' => $this->getVar('current_label_form'), 'width' => '150px'])."\n";
-			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm', null, ['aria-label' => _t('Download labels')]);
+				print caHTMLSelect('label_form', $options, ['id' => 'labelsSelect', 'class' => 'searchToolsSelect'], ['value' => $this->getVar('current_label_form'), 'width' => '150px'])."\n";
+				print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caPrintLabelsFormInBackground']);
+				print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm', null, ['aria-label' => _t('Download labels')]);
 ?>
-			<input type='hidden' name='download' value='1'/></form>
+				<div class="caLabelsDownloadOptionsPanelOptions" id="caLabelsDownloadOptionsPanelOptions"></div>
+				<input type='hidden' name='download' value='1' id='caPrintLabelsFormDownloadFlag'/>
+			</form>
 		</div><!-- end col -->
+		<br class='clear'/>
 <?php
 	}
 ?>
 	<div class="col">
+		<?= _t("Download results using"); ?>: <br/>
+		<?= caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true)); ?>
 <?php
-		print _t("Download results as").":<br/>";
-		print caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true)); 
-
-		$options = [];
-		foreach($this->getVar('export_formats') as $vn_i => $va_format_info) {
-			$options[$va_format_info['name']] = $va_format_info['code'];
-		}
-		print caHTMLSelect('export_format', $options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
-		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm', null, ['aria-label' => _t('Download results')]);
+			$options = [];
+			foreach($this->getVar('export_formats') as $format_info) {
+				$options[$format_info['name']] = $format_info['code'];
+			}
+			print caHTMLSelect('export_format', $options, array('id' => 'resultsSelect', 'class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
+		
+			print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caExportInBackground']);
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm', null, ['aria-label' => _t('Download results')]);
 ?>
-		<input type='hidden' name='download' value='1'/></form>
+		<div class="caResultsDownloadOptionsPanelOptions" id="caResultsDownloadOptionsPanelOptions"></div>	
+			
+		<input type='hidden' name='download' value='1' id='caExportFormDownloadFlag'/></form>
 	</div>
+	<br class='clear'/>
 <?php
 	if($this->request->user->canDoAction('can_download_ca_object_representations')) {
-?>	
-	<div class="col">
-<?php
-		print _t("Download media as").":<br/>";
-?>
-		<form id="caDownloadMediaFromSearchResult">
-<?php
 		$options = []; 
 		
-		if($this->request->user->canDoAction('can_download_ca_object_representations') && in_array($t_subject->tableName(), $this->request->config->get('allow_representation_downloads_from_find_for'))) {
-			foreach($this->getVar('ca_object_representation_download_versions') as $vs_version) {
+		if($this->request->user->canDoAction('can_download_ca_object_representations') && in_array($table, $this->request->config->get('allow_representation_downloads_from_find_for'))) {
+			foreach($this->getVar('ca_object_representation_download_versions') as $version) {
 				foreach([
-					'selected' => _t('Selected results: %1 (representation)', $vs_version),
-					'all' => _t('All results: %1 (representation)', $vs_version)
-				] as $vs_mode => $vs_label) {
-					$options[$vs_label] = "{$vs_mode}_{$vs_version}";
+					'selected' => _t('Selected results: %1 (representation)', $version),
+					'all' => _t('All results: %1 (representation)', $version)
+				] as $mode => $label) {
+					$options[$label] = "{$mode}_{$version}";
 				}
 			}
 		}
@@ -111,34 +112,118 @@
 			foreach([
 				'selected' => _t('Selected results: %1 (field)', $display_label),
 				'all' => _t('All results: %1 (field)', $display_label)
-			] as $vs_mode => $vs_label) {
-				$options[$vs_label] = "{$vs_mode}_attribute{$element['element_id']}";
+			] as $mode => $label) {
+				$options[$label] = "{$mode}_attribute{$element['element_id']}";
 			}
 		}
 		
 		ksort($options);
 		
-		print caHTMLSelect('mode', $options, array('id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'), array('value' => null, 'width' => '150px'))."\n";
-?>
+		if(sizeof($options)) {
+?>	
+	<div class="col">
+		<?= _t("Download media as"); ?>:<br/>
+		<form id="caDownloadMediaFromSearchResult">
+			<?= caHTMLSelect('mode', $options, ['id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'], ['value' => null, 'width' => '150px']); ?>
 			<a href='#' onclick="caDownloadRepresentations(jQuery('#caDownloadRepresentationMode').val());" class="button"><?= caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 	</div>
 <?php
+		}
 	}
 ?>
 
 		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
+
+<?php
+	if(caProcessingQueueIsEnabled()) {
+?>	
+	<div style="position: absolute; bottom: 15px; left: 15px;">
+		<?= caHTMLCheckBoxInput('background', ['id' => 'caProcessInBackground']); ?>
+		<?= _t('Process in background'); ?>
+	</div>
+<?php
+	}
+?>
 </div><!-- end searchToolsBox -->
 
 <script type="text/javascript">
+	let searchToolsBoxIsExpanded = 0;
+	jQuery(document).ready(function() {
+		jQuery('#resultsSelect').on('change', caUpdateResultsOptionsForm);
+		caUpdateResultsOptionsForm();
+		
+		jQuery('#labelsSelect').on('change', caUpdateLabelsOptionsForm);
+		caUpdateLabelsOptionsForm();
+
+<?php
+	if(caProcessingQueueIsEnabled()) {
+?>			
+		jQuery('#caProcessInBackground').on('click', function(e) {
+			jQuery('#caExportWithMappingInBackground, #caPrintLabelsFormInBackground, #caExportInBackground').val(jQuery(this).is(':checked') ? 1 : 0);
+		});
+<?php
+		if(Session::getVar($t_subject->tableName().'_search_export_in_background')) {
+?>
+			jQuery('#caProcessInBackground').click();		
+<?php
+		}
+	}
+?>
+	});
+	
+	function caUpdateResultsOptionsForm(animation=true, use_download_selection=false) {
+		var val = jQuery("#resultsSelect").val();
+		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { 
+			caUpdatePanelOptionsVisibility('caResultsDownloadOptionsPanelOptions', animation);
+			return; 
+		}
+		jQuery("#caResultsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintResultsOptions'); ?>/type/results/form/' + val, function(t, r, x) {
+			if(x.status == 200) {
+				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
+				jQuery('#caResultsDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);
+				searchToolsBoxIsExpanded++;
+			} else {
+				caUpdatePanelOptionsVisibility('caResultsDownloadOptionsPanelOptions', animation);
+			}
+		});
+	}
+	
+	function caUpdateLabelsOptionsForm(animation=true, use_download_selection=false) {
+		var val = jQuery("#labelsSelect").val();
+		if((val === undefined) || (val.match(/^(_docx|_tab|_csv|_xlsx)/))) { 
+			caUpdatePanelOptionsVisibility('caLabelsDownloadOptionsPanelOptions', animation);
+			return; 
+		}
+		jQuery("#caLabelsDownloadOptionsPanelOptions").load('<?= caNavUrl($this->request, '*', '*', 'PrintResultsOptions'); ?>/type/labels/form/' + val, function(t, r, x) {
+			if(x.status == 200) {
+				if(animation) { jQuery('#searchToolsBox').animate({'width': '600px', 'left': '12.5%'}, 250); } else { jQuery('#searchToolsBox').css('width', '600px'); }
+				jQuery('#caLabelsDownloadOptionsPanelOptions').slideDown(animation ? 250 : 0);
+				searchToolsBoxIsExpanded++;
+			} else {
+				caUpdatePanelOptionsVisibility('caLabelsDownloadOptionsPanelOptions', animation);
+			}
+		});
+	}
+	
+	function caUpdatePanelOptionsVisibility(id, animation) {
+		if(jQuery('#' + id).is(":visible")) {
+			jQuery('#' + id).slideUp(animation ? 250 : 0);
+			searchToolsBoxIsExpanded--;
+		}
+		if(searchToolsBoxIsExpanded === 0) {
+			if(animation) { jQuery('#searchToolsBox').animate({'width': '400px', 'left': '25%'}, 250); } else { jQuery('#searchToolsBox').css('width', '400px'); }
+		}
+	}
+	
 	function caDownloadRepresentations(mode) {
 		var tmp = mode.split('_');
 		if(tmp[0] == 'all') {	// download all search results
-			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/all/version/' + tmp[1] + '/download/1');
 		} else {
-			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
 		}
 	}
 </script>

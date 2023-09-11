@@ -30,10 +30,9 @@ namespace GraphQLServices\Helpers\Lightbox;
 /**
  *
  */
-function getLightboxList(\ca_users $u) : ?array {
+function getLightboxList($t_set, \ca_users $u) : ?array {
 	// TODO: check access for user
-	$t_sets = new \ca_sets();
-	$lightboxes = $t_sets->getSetsForUser(["table" => 'ca_objects', "user_id" => $u->getPrimaryKey(), "checkAccess" => [0,1], "parents_only" => true]);
+	$lightboxes = $t_set->getSetsForUser(["table" => 'ca_objects', "user_id" => $u->getPrimaryKey(), "checkAccess" => [0,1], "parents_only" => true]);
 	
 	return array_map(function($v) {
 		return [

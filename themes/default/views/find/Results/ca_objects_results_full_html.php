@@ -46,7 +46,7 @@
 		# --- get the height of the image so can calculate padding needed to center vertically
 		$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'small');
 		$vn_padding_top = 0;
-		$vn_padding_top_bottom =  ((250 - $va_media_info["HEIGHT"]) / 2);
+		$vn_padding_top_bottom =  is_array($va_media_info) ? ((250 - $va_media_info["HEIGHT"]) / 2) : 0;
 		
 		print "<div class='objectFullImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px;'>";
 ?>

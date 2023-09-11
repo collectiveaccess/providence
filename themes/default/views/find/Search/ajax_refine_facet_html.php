@@ -116,8 +116,8 @@
 		# ------------------------------------------------------------
 		case 'none':
 ?>
-	<div class="browseSelectPanelList">
-		<table class='browseSelectPanelListTable' id='<?= $vs_facet_name; ?>_facet_container'>
+	<div class="browseSelectPanelList" id='<?= $vs_facet_name; ?>_facet_container'>
+		<table class='browseSelectPanelListTable'>
 <?php
 			$va_row = array();
 			foreach($va_facet as $vn_i => $va_item) {
@@ -160,7 +160,7 @@
 ?>
 		</div>
 	</div>
-	<div class="browseSelectPanelList">
+	<div class="browseSelectPanelList" id='<?= $vs_facet_name; ?>_facet_container'>
 <?php
 			foreach($va_facet as $vs_group => $va_items) {
 				$va_row = array();
@@ -169,7 +169,7 @@
 				}
 				print "<div class='browseSelectPanelListGroupHeading'><a name='{$vs_group}' class='browseSelectPanelListGroupHeading'>{$vs_group}</a></div>\n";
 ?>
-		<table class='browseSelectPanelListTable' id='<?= $vs_facet_name; ?>_facet_container'>
+		<table class='browseSelectPanelListTable'>
 <?php
 				foreach($va_items as $va_item) {
 				    $vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";

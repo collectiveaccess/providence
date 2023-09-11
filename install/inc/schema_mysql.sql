@@ -1829,7 +1829,7 @@ create table ca_task_queue
    completed_on                   int unsigned,
    priority                       smallint unsigned              not null default 0,
    handler                        varchar(20)                    not null,
-   parameters                     text                           not null,
+   parameters                     longtext                           not null,
    notes                          longtext                       null,
    error_code                     smallint unsigned              not null default 0,
    primary key (task_id)
@@ -2516,7 +2516,7 @@ create table ca_data_importer_items (
    item_id           int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    group_id             int unsigned         not null,
-   source               varchar(1024)         not null,
+   source               varchar(8192)         not null,
    destination          varchar(1024)         not null,
    settings          longtext          not null,
 
@@ -4927,30 +4927,37 @@ create table ca_sets (
     tagging_status tinyint unsigned not null default 0,
     rating_status tinyint unsigned not null default 0,
 	set_code    varchar(100) null,
+	set_code_sort varchar(100) null,
 	table_num	tinyint unsigned not null,
 	access		tinyint unsigned not null default 0,	
 	status		tinyint unsigned not null default 0,
 	hier_left	decimal(30,20) unsigned not null,
 	hier_right	decimal(30,20) unsigned not null,
     deleted     tinyint unsigned not null default 0,
-    `rank`        int unsigned not null default 0,
-	
+    `rank`      int unsigned not null default 0,
+    source_id   int unsigned,
+    
 	primary key (set_id),
       
 	key i_user_id (user_id),
 	key i_type_id (type_id),
-	unique key u_set_code (set_code),
+	key i_set_code (set_code),
 	key i_hier_left (hier_left),
 	key i_hier_right (hier_right),
 	key i_parent_id (parent_id),
 	key i_hier_set_id (hier_set_id),
 	key i_table_num (table_num),
+	key i_source_id (source_id),
+	key i_set_code_sort (set_code_sort),
       
    constraint fk_ca_sets_parent_id foreign key (parent_id)
       references ca_sets (set_id) on delete restrict on update restrict,
       
    constraint fk_ca_sets_user_id foreign key (user_id)
-      references ca_users (user_id) on delete restrict on update restrict
+      references ca_users (user_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_sets_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 create index i_set_filter on ca_sets(set_id, deleted, access); 
 
@@ -7827,6 +7834,29 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
+
+create table ca_user_export_downloads (
+  download_id		    int unsigned        not null AUTO_INCREMENT,
+  created_on        	int unsigned        not null,
+  generated_on        	int unsigned        null,
+  user_id             	int unsigned        null,
+  download_type    		varchar(30)	   		not null,
+  metadata				longtext			not null,
+  status		 		varchar(30)    		not null default 'QUEUED',
+  downloaded_on			int unsigned		null,
+  error_code            smallint unsigned   not null default 0,
+  export_file           blob            not null,
+
+  primary key (download_id),
+
+  constraint fk_ca_export_download_user_id foreign key (user_id)
+    references ca_users (user_id) on delete restrict on update restrict,
+
+  index i_user_id (user_id)
+
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7837,4 +7867,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (184, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (191, unix_timestamp());

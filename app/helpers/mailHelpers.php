@@ -201,14 +201,13 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 			$o_mail->Body = $body_html;
 		}
 		$o_mail->send();
-			print_r($options);
+		
 		if(caGetOption('logSuccess', $options, true)) {
 			$log->logInfo('['.caGetOption('source', $options, 'Registration').'] '._t(caGetOption('successMessage', $options, 'Email was sent to %1'), join(';', $to)));
 		}
 		return true;
 	} catch (Exception $e) {
 		$g_last_email_error = $e->getMessage();
-		
 		if(caGetOption('logSuccess', $options, true)) {
 			$log->logError('['.caGetOption('source', $options, 'Registration').'] '._t(caGetOption('failureMessage', $options, 'Could not send email to %1: %2'), join(';', $to), $e->getMessage()));
 		}

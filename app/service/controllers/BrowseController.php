@@ -85,6 +85,16 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'facet',
 							'type' => Type::string(),
 							'description' => _t('Name of facet')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -94,7 +104,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$facet = $args['facet'];
 						
 						$user_access_values = caGetUserAccessValues();
-						$facet_values = $browse->getFacet($facet, ['checkAccess' => $user_access_values]);
+						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 						if(!is_array($facet_values)) {
 							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
@@ -154,6 +164,16 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'key',
 							'type' => Type::string(),
 							'description' => _t('Browse key')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -163,8 +183,8 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$user_access_values = caGetUserAccessValues();
 						$facets = $browse->getInfoForAvailableFacets(['checkAccess' => $user_access_values]);
 						
-						$ret = array_map(function($f, $n) use ($browse) { 
-							$facet_values = $browse->getFacet($n, ['checkAccess' => $user_access_values]);
+						$ret = array_map(function($f, $n) use ($browse, $args) { 
+							$facet_values = $browse->getFacet($n, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 							$vret = array_map(function($v) {
 								return [
@@ -224,7 +244,13 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'limit',
 							'type' => Type::int(),
 							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
+						
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -232,7 +258,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						list($browse_info, $browse) = self::browseParams($args);
 						
 						if($browse->numCriteria() == 0) {
-							$browse->addCriteria("_search", array("*"));
+							$browse->addCriteria("_search", ["*"]);
 							$browse->execute(['checkAccess' => caGetUserAccessValues()]);	
 						}
 						return self::getMutationResponse($browse, $browse_info, $args);
@@ -319,6 +345,11 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Filter values')
 						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
+						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -372,6 +403,16 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'facet',
 							'type' => Type::string(),
 							'description' => _t('Name of facet')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return facet values starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of facet values to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -383,7 +424,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						
 						
 						$user_access_values = caGetUserAccessValues();
-						$facet_values = $browse->getFacet($facet, ['checkAccess' => $user_access_values]);
+						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 						if(!is_array($facet_values)) {
 							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
@@ -469,6 +510,21 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -527,6 +583,21 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -573,14 +644,29 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'sort',
 							'type' => Type::string(),
 							'description' => _t('Sort fields')
+						],
+						[
+							'name' => 'start',
+							'type' => Type::int(),
+							'description' => _t('Return records starting at index')
+						],
+						[
+							'name' => 'limit',
+							'type' => Type::int(),
+							'description' => _t('Maximum number of records to return')
+						],
+						[
+							'name' => 'mediaVersions',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media version to return')
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+						$args['key'] = '';
 						list($browse_info, $browse) = self::browseParams($args);
 						
-						$browse->removeAllCriteria();
+						//$browse->removeAllCriteria();
 						
 						$user_access_values = caGetUserAccessValues();
 						$browse->execute(['checkAccess' => $user_access_values]);	
@@ -656,18 +742,20 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 		
 		$start = caGetOption('start', $args, 0);
 		$limit = caGetOption('limit', $args, null);
-						
+		$media_versions = caGetOption('mediaVersions', $args, null);
+		if(is_array($media_versions) && !sizeof($media_versions)) { $media_versions = null; }
+		
 		$i = 0;
 		
-		$media_versions = [];
 		$user_access_values = caGetUserAccessValues();
 		
 		// TODO: make caGetDisplayImagesForAuthorityItems() more efficient
 		$qr->seek($start);
 		$m = caGetDisplayImagesForAuthorityItems($table, $qr->getAllFieldValues($qr->primaryKey()), ['return' => 'data', 'versions' => ['small', 'medium', 'large', 'iiif', 'original', 'h264_hi', 'mp3', 'compressed'], 'useRelatedObjectRepresentations' => ($table !== 'ca_objects')]);
-		$m = array_map(function($versions) {
+		$m = array_map(function($versions) use ($media_versions) {
 		    $acc = [];
 			foreach ($versions as $v => $info) {
+				if(is_array($media_versions) && !in_array($v, $media_versions, true)) { continue; }
 				if(!strlen($info['url'])) { continue; }
 				$acc[$v] = [
 					'version' => $v,

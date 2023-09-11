@@ -1046,7 +1046,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		$width 	=	caParseFormElementDimension($options["viewer_width"] ?? ($properties["width"] ?? null), ['returnAs' => 'pixels', 'assumePixels' => true]);
 		$height =	caParseFormElementDimension($options["viewer_height"] ?? ($properties["height"] ?? null), ['returnAs' => 'pixels', 'assumePixels' => true]);
-				
+	
 		$id 	= 	$options["id"] ?? "video_player";
 		$name 	= 	$options["name"] ?? $id;
 		$class 	= 	$options["class"] ?? "caVideoPlayer";
@@ -1063,10 +1063,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$captions = 		caGetOption("captions", $options, [], array('castTo' => 'array'));	
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
+				
+				$autoplay =			caGetOption("autoplay", $options, false);
 				ob_start();
 ?>
-			<div class="<?= $class; ?> video-responsive" style="width: <?= $width; ?>px; height:<?= $height; ?>px;">
-				<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
+			<div class="<?= $class; ?> video-responsive" style="width: <?= $width; ?>; height:<?= $height; ?>;">
+				<video preload="metadata" <?= $autoplay ? 'autoplay="1"' : ''; ?> id="<?= $id; ?>" playsinline="1" controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
 				  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
 						if(is_array($captions)) {

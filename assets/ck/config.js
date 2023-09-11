@@ -37,7 +37,8 @@ CKEDITOR.editorConfig = function( config ) {
 	
 	startupFocus : false;
 	
-	config.extraPlugins = 'camediacontent,calinks,font,colorbutton,pastefromword';
+	config.extraPlugins = 'camediacontent,calinks,font,colorbutton,pastefromword,removeformat';
+	config.forcePasteAsPlainText = true;
     config.allowedContent = true;
 	config.disableNativeSpellChecker = false;
 	config.scayt_autoStartup = false;

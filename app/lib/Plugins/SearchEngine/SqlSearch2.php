@@ -75,6 +75,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	static public $whitespace_tokenizer_regex;
 	static public $punctuation_tokenizer_regex;
+	static public $separator_tokenizer_regex;
 	
 	static private $word_cache = [];					// cached word-to-word_id values used when indexing
 	static private $metadata_elements; 					// cached metadata element info
@@ -84,6 +85,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	static protected $filter_stop_words = null;
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($db=null) {
 		global $g_ui_locale;
 		
@@ -100,10 +104,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$this->initDbStatements();
 
 		if(!(self::$whitespace_tokenizer_regex = $this->search_config->get('whitespace_tokenizer_regex'))) {
-			self::$whitespace_tokenizer_regex = '[\s\"\—\-]+';
+			self::$whitespace_tokenizer_regex = '[\\s"“”\\—]+';
 		}
 		if(!(self::$punctuation_tokenizer_regex = $this->search_config->get('punctuation_tokenizer_regex'))) {
-			self::$punctuation_tokenizer_regex = '[\.,;:\(\)\{\}\[\]\|\\\+_\!\&«»\']+';
+			self::$punctuation_tokenizer_regex = '[,;:\(\)\{\}\[\]\|\\\+_\!\&«»\'’]+';
+		}
+		if(!(self::$separator_tokenizer_regex = $this->search_config->get('separator_tokenizer_regex'))) {
+			self::$separator_tokenizer_regex = '[\._\-\/]+';
 		}
 		
 		if(self::$filter_stop_words) {
@@ -140,6 +147,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			WLPlugSearchEngineSqlSearch2::$metadata_elements = ca_metadata_elements::getRootElementsAsList();
 		}
 		$this->debug = false;
+		
+		$this->get_result_desc_data = $this->search_config->get('return_search_result_description_data');
 	}
 	# -------------------------------------------------------
 	# Initialization and capabilities
@@ -213,9 +222,11 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$filters
 		);
 		if(!is_array($hits)) { $hits = []; }
-		arsort($hits, SORT_NUMERIC);	// sort by boost
-
-		return new WLPlugSearchEngineSqlSearchResult(array_keys($hits), $subject_tablenum);
+		
+		$hits = caSortArrayByKeyInValue($hits, ['boost'], 'desc', ['mode' => SORT_NUMERIC]); // sort by boost
+		
+		// Return list of hits
+		return new WLPlugSearchEngineSqlSearchResult(array_keys($hits), $hits, $subject_tablenum);
 	}
 	# -------------------------------------------------------
 	/**
@@ -275,15 +286,23 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				
 	 				$acc = array_intersect_key($acc, $hits);
+	 				
+	 				if($this->get_result_desc_data) {
+						foreach($acc as $k => $v) {
+							if(isset($hits[$k])) {
+								$acc[$k]['index_ids'] = array_unique(array_merge($acc[$k]['index_ids'], $hits[$k]['index_ids']));
+							}
+						}
+					}
 	 				foreach($acc as $row_id => $boost) {
-	 					$acc[$row_id] += $hits[$row_id];	// add boost
+	 					$acc[$row_id]['boost'] += $hits[$row_id]['boost'];	// add boost
 	 				}
 	 				break;
 	 			case 'OR':
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				$acc = array_replace($hits, $acc);
 	 				foreach($acc as $row_id => $boost) {
-	 					$acc[$row_id] += $hits[$row_id];	// add boost
+	 					$acc[$row_id]['boost'] += $hits[$row_id]['boost'];	// add boost
 	 				}
 	 				break;
 	 			case 'NOT':
@@ -303,21 +322,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 					$acc = [];
 	 					foreach($vals as $row_id) {
 	 						// assume constant boost = 1 here
-	 						$acc[$row_id] = 1;
+	 						$acc[$row_id] = ['boost' => 1, 'index_ids' => []];
 	 					}
 	 				} else {
 	 					$acc = array_diff_key($acc, $hits);	
 	 					foreach($acc as $row_id => $boost) {
-							$acc[$row_id] += $hits[$row_id];	// add boost
+							$acc[$row_id]['boost'] += $hits[$row_id]['boost'];	// add boost
 						}
 	 				}
 	 				break;
 	 			default:
 	 				throw new ApplicationException(_t('Invalid boolean operator: %1', $op));
 	 				break;	
-	 		}
-	 		
+	 		}	
 	 	}
+	 	
 	 	return $acc;
 	}
 	# -------------------------------------------------------
@@ -330,7 +349,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$acc = [];
 	 	foreach($terms as $i => $term) {
-	 		$hits = $this->_processQueryTerm($subject_tablenum, $term);
+	 		$hits = $this->_processQueryTerm($subject_tablenum, $term) ?? [];
 	 		$op = $this->_getBooleanOperator($signs, $i);
 
 	 		switch($op) {
@@ -338,24 +357,24 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				
 	 				$acc = array_intersect_key($acc, $hits);
-	 				foreach($acc as $row_id => $boost) {
-						$acc[$row_id] += $hits[$row_id];	// add boost
+	 				foreach($acc as $row_id => $b) {
+						$acc[$row_id]['boost'] += $b['boost'];	// add boost
 					}
 	 				break;
 	 			case 'OR':
 	 				if ($i == 0) { $acc = $hits; break; }
 	 				$acc = array_replace($hits, $acc);
-	 				foreach($acc as $row_id => $boost) {
-	 					$acc[$row_id] += $hits[$row_id];	// add boost
+	 				foreach($acc as $row_id => $b) {
+	 					$acc[$row_id]['boost'] += $b['boost'];	// add boost
 	 				}
 	 				break;
 	 			case 'NOT':
-	 				if ($i == 0) {
-	 					// invert set
+	 				if ($i == 0) {	
+						$acc = $hits; // will be negated in _processQueryBoolean()			
 	 				} else {
 	 					$acc = array_diff_key($acc, $hits);	
-	 					foreach($acc as $row_id => $boost) {
-							$acc[$row_id] += $hits[$row_id];	// add boost
+	 					foreach($acc as $row_id => $b) {
+							$acc[$row_id]['boost'] += $b['boost'];	// add boost
 						}
 	 				}
 	 				break;
@@ -384,7 +403,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	$words = [$term->text];
 	 	if($field && !is_array($ap)) {
-	 		array_unshift($words, $field);
+	 		$words[0] = $field.':'.$words[0];
 	 		$field = null;
 	 	}
 	 	$indexing_options = caGetOption('indexing_options', $ap, null);
@@ -504,23 +523,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$table = $t->tableName();
 			
 				$qr_res = $this->db->query("
-					SELECT {$pk} row_id, 100 boost
+					SELECT 0 index_id, {$pk} row_id, 100 boost
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
 			} elseif($use_boost) {
 				$qr_res = $this->db->query("
-					SELECT swi.row_id, SUM(swi.boost) boost
+					SELECT swi.index_id, swi.row_id, swi.boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 					WHERE
 						swi.table_num = ? AND {$word_field} {$word_op} ?
 						{$field_sql}
 						{$private_sql}
-					GROUP BY swi.row_id
 				", $params);
 			} else {
 				$qr_res = $this->db->query("
-					SELECT DISTINCT swi.row_id, 100 boost
+					SELECT swi.index_id, swi.row_id, 100 boost
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 					WHERE
@@ -647,7 +665,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			
 			$qr_res = $this->db->query("
-				SELECT swi.row_id, ca.boost, ca.field_container_id
+				SELECT swi.index_id, swi.row_id, ca.boost, ca.field_container_id
 				FROM {$results_temp_table} ca
 				INNER JOIN ca_sql_search_word_index AS swi ON swi.index_id = ca.row_id {$field_sql}
 			", $params);
@@ -728,7 +746,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					break;
 				case _t('modified'):
 					$qr_res = $this->db->query("
-							SELECT ccl.logged_row_id row_id, 1 boost
+							SELECT '_change_log_' as index_id, ccl.logged_row_id row_id, 1 boost
 							FROM ca_change_log ccl
 							WHERE
 								(ccl.log_datetime BETWEEN ? AND ?)
@@ -738,7 +756,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 								(ccl.changetype = 'U')
 								{$user_sql}
 						UNION
-							SELECT ccls.subject_row_id row_id, 1 boost
+							SELECT '_change_log_' as index_id, ccls.subject_row_id row_id, 1 boost
 							FROM ca_change_log ccl
 							INNER JOIN ca_change_log_subjects AS ccls ON ccls.log_id = ccl.log_id
 							WHERE
@@ -780,13 +798,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$rel_type_sql = " AND rel_type_id IN (?)";
 				$params[] = $ap['relationship_type_ids'];
 			}
-			$qr_res = $this->db->query($z="
-				SELECT swi.row_id, SUM(swi.boost) boost
+			$qr_res = $this->db->query("
+				SELECT swi.index_id, swi.row_id, swi.boost
 				FROM ca_sql_search_word_index swi
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 				WHERE
 					swi.table_num = ? AND swi.field_table_num = ? AND swi.field_num = 'COUNT' AND sw.word BETWEEN ? AND ? {$rel_type_sql}
-				GROUP BY swi.row_id
 			", $params);
 			return $this->_arrayFromDbResult($qr_res);
 		}
@@ -805,7 +822,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						(int)$lower_index, (int)$upper_index
 					];
 					$qr_res = $this->db->query("
-						SELECT t.{$pk} row_id, 100 boost
+						SELECT '_idno_' as index_id, t.{$pk} row_id, 100 boost
 						FROM {$table} t
 						WHERE
 							t.{$idno_sort_fld}_num BETWEEN ? AND ?
@@ -903,6 +920,18 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$qr_res = $this->db->query($qinfo['sql'], $params);
 			
 			$row_ids = $this->_arrayFromDbResult($qr_res);
+			unset($ap['element_info']);
+			
+			foreach($row_ids as $row_id => $row_info) {
+				$row_ids[$row_id]['access_point'] = [
+					'ap' => $ap['access_point'],
+					'table' => Datamodel::getTableName($ap['table_num']),
+					'field_row_id' => $row_id,
+					'field_num' => $ap['field_num'],
+					'word' => $text
+				];
+			}
+			
 			if ((int)$ap['table_num'] === (int)$subject_tablenum) {
 				return $row_ids;
 			}
@@ -949,7 +978,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}	
 			
-			return $subject_ids;
+			return array_map(function($v) { return ['row_id' => $v, 'boost' => 1, 'index_ids' => []]; }, $subject_ids);
 		}
 		return null;	// can't process here - try using search index
 	}
@@ -1439,6 +1468,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 * @return array Tokenized terms
 	 */
 	static public function tokenize(?string $content, ?bool $for_search=false, ?int $index=0) : array {
+		if(!self::$whitespace_tokenizer_regex) {
+			self::$whitespace_tokenizer_regex = caGetSearchConfig()->get('whitespace_tokenizer_regex');
+		}
 		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 
 		switch($alphabet = caIdentifyAlphabet($content)) {
@@ -1454,8 +1486,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			default:
 				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
+				
 				$words = array_map(function($v) {
-					return mb_strtolower(preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8')));
+					$w = preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
+					$w = preg_replace('!^'.self::$separator_tokenizer_regex.'!u', '', $w);
+					$w = preg_replace('!'.self::$separator_tokenizer_regex.'$!u', '', $w);
+					return mb_strtolower($w);
 				}, $words);
 				break;
 		}
@@ -1835,13 +1871,60 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	private function _arrayFromDbResult(DbResult $qr_res) {
-		$vals = $qr_res->getAllFieldValues(['row_id', 'boost']);
+		$vals = $qr_res->getAllFieldValues(['index_id', 'row_id', 'boost']);
 	 	if(!isset($vals['row_id'])) { return []; }
 	 	$hits = [];
 	 	foreach($vals['row_id'] as $i => $row_id) {
-	 		$hits[$row_id] = $vals['boost'][$i];
+	 		if(!isset($hits[$row_id])) { 
+	 			$hits[$row_id]['boost'] = 0; 
+	 			$hits[$row_id]['index_ids'] = []; 
+	 		}
+	 		$hits[$row_id]['boost'] += ($vals['boost'][$i] ?? 0);
+	 		
+	 		if(!$vals['index_id'][$i]) { continue; }
+	 		
+	 		if(($max_index_count = (int)$this->search_config->get('search_result_description_maximum_index_matches')) < 1) {
+	 			$max_index_count = 3;
+	 		}
+	 		
+	 		if(($this->get_result_desc_data  && sizeof($hits[$row_id]['index_ids']) < $max_index_count)) {
+	 			$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 		}
 	 	}
 	 	return $hits;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function _resolveHitInformation($res) {
+		$res_proc = [];
+		if(!$this->get_result_desc_data) { return []; }
+		$index_ids = array_unique(array_reduce($res, function($c, $v) {
+			$ids = array_filter($v['index_ids'] ?? [], 'is_numeric');
+			return array_merge($c, $ids);
+		}, []));
+		
+		if(sizeof($index_ids)) {
+			$qr_res = $this->db->query("
+				SELECT swi.index_id, sw.word, swi.row_id, swi.field_table_num, swi.field_num, swi.field_row_id, swi.rel_type_id, swi.field_container_id FROM ca_sql_search_word_index swi 
+				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
+				WHERE swi.index_id in (?)
+			", [$index_ids]);
+	
+			$index_id_info = [];
+			while($qr_res->nextRow()) {
+				$row = $qr_res->getRow();
+				$row['table'] = Datamodel::getTableName($row['field_table_num']);
+		
+				$row_id = $row['row_id'];
+				unset($row['row_id']);
+		
+				$res[$row_id]['desc'][] = $row;
+				unset($res[$row_id]['index_ids']);
+			}
+		}
+		return $res;
 	}
 	# -------------------------------------------------------
 	/**

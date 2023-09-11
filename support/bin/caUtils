@@ -146,7 +146,7 @@
                     print $output;
                 }
 			}
-			print "\nFor more information visit http://www.collectiveaccess.org\n\n";
+			print "\nFor more information visit https://www.collectiveaccess.org\n\n";
 		} else {
 			//
 			// Execute command
@@ -227,7 +227,7 @@
 			}
 		}
 
-		print "\nFor more information visit http://www.collectiveaccess.org\n\n";
+		print "\nFor more information visit https://www.collectiveaccess.org\n\n";
 	}
 
 	# --------------------------------------------------------

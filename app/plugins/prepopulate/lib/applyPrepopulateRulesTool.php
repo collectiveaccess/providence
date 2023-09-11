@@ -114,7 +114,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 				print CLIProgressBar::start($qr->numHits(), _t('Processing %1', $t));
 				while($qr->nextHit()) {
 					print CLIProgressBar::next(1, $qr->get("{$t}.preferred_labels"));
-					if (!$this->prepopulateInstance->prepopulateFields($qr->getInstance(),$options)) {
+					if (!$this->prepopulateInstance->prepopulateFields($opts = ['instance' => $qr->getInstance()],$options)) {
 						print "ERROR\n";
 					}
 				}

@@ -474,13 +474,15 @@ class DisplayTemplateParser {
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
-					
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
+
 					$va_get_options = [
-						'limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $check_access, 
+						'returnAsCount' => true, 'checkAccess' => $check_access, 
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
-						'locale' => caGetOption('locale', $pa_options, null)
+						'locale' => caGetOption('locale', $pa_options, null),
+						'filterNonPrimaryRepresentations' => $filter_non_primary_reps
 					];
 					
 					if (!is_null($vb_omit_blanks)) { 
@@ -622,7 +624,7 @@ class DisplayTemplateParser {
 					$va_get_options['maxLevelsFromBottom'] = (int)$o_node->maxLevelsFromBottom ?: null;
 					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
 					$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_reps;
-					
+
 					$locale = caGetOption('locale', $o_node->locale, null);
 					if($o_node->locale) {
 						$va_get_options['locale'] = $locale = $o_node->locale;
@@ -961,9 +963,10 @@ class DisplayTemplateParser {
 					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
+						$relative_to = (string)$o_node->relativeTo;
 						
-						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
-							$vs_linking_context = array_shift($va_tmp);
+						if ($t_instance->isRelationship() && ($relative_to || (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true]))) && sizeof($va_tmp))) {
+							$vs_linking_context = $relative_to ? $relative_to : array_shift(explode('.', array_shift($va_tmp)));
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
 								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".Datamodel::primaryKey($vs_linking_context), ['returnAsArray' => true, 'primaryIDs' => $pa_options['primaryIDs'] ?? null]);
 							}
@@ -1142,7 +1145,7 @@ class DisplayTemplateParser {
 			}
 			
 			if(strlen($pn_index)) {
-				$va_tag_vals = $va_tag_vals[$pn_index];	
+				$va_tag_vals = $va_tag_vals[$pn_index] ?? null;	
 				$vs_relative_to_container = null;
 			}
 		}
@@ -1244,6 +1247,9 @@ class DisplayTemplateParser {
                                 $va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['filters' => $va_parsed_tag_opts['filters'], 'returnAsArray' => true, 'returnWithStructure' => false], $va_get_specs[$vs_tag]['isRelated'] ? $va_remove_opts_for_related : []));
                                 if (!is_array($va_val_list)) { $va_val_list = array(); }
                             
+                            	$delimiter = caGetOption('delimiter', $va_parsed_tag_opts['options'], '; ');
+                            	$va_val_list = array_map(function($v) use ($delimiter) { return is_array($v) ? join($delimiter, $v) : $v; }, $va_val_list);
+                          
                                 if (!caGetOption('skipWhen', $pa_options, false)) { 
                                     if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_val_list)))) {
                                         $va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
@@ -1277,6 +1283,15 @@ class DisplayTemplateParser {
 			}
 		}
 		
+		// standard values (always present)
+		$config = Configuration::load();
+		$va_vals['__protocol__'] = $config->get('site_protocol');
+		$va_vals['__hostname__'] = $config->get('site_hostname');
+		$va_vals['__host__'] = $config->get('site_host');
+		$va_vals['__url_root__'] = $config->get('ca_url_root');
+		$va_vals['__theme__'] = $config->get('theme');
+		$va_vals['__base_url__'] = $config->get('site_host').$config->get('ca_url_root');
+				
 		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					// Return nothing when relationship type is set and a value is referenced but not set
 
 		return $va_vals;
@@ -1887,7 +1902,7 @@ class DisplayTemplateParser {
                 
                     $i = $pa_options['tagIndex'] + 1;
                     foreach($t as $z) {
-                        if ($pa_values[$z]) { 
+                        if ($pa_values[$z] ?? null) { 
                             $next_unit = $pa_options['dimensionsUnitMap']['units'][$i] ?? null;  
                             break;
                         } 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -396,6 +396,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * @return array|null
 	 */
 	public function getRules($options=null) {
+		if(!is_array($options)) { $options = []; }
 		if(!($id = $this->getPrimaryKey())) { return null; }
 		
 		$for_editing_form = caGetOption('forEditingForm', $options, false);

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,7 @@ var caUI = caUI || {};
 			deleteButtonClassName: 'caDeleteLabelButton',
 
 			defaultLocaleID: null,
+			defaultAccess: null,
 			bundlePreview: '',
 			readonly: 0,
 
@@ -55,7 +56,7 @@ var caUI = caUI || {};
 
 		if (!that.readonly) {
 			jQuery(container + " ." + that.addButtonClassName).click(function() {
-				that.addLabelToLabelBundle(container);
+				that.addLabelToLabelBundle();
 				that.showUnsavedChangesWarning(true);
 
 				return false;
@@ -87,10 +88,13 @@ var caUI = caUI || {};
 				jQuery.each(this.templateValues, function(i, v) {
 					templateValues[v] = '';
 				});
-				templateValues.n = 'new_' + this.getCount();
+				id = templateValues.n = 'new_' + this.getCount();
 				isNew = true;
 			}
 			templateValues.fieldNamePrefix = this.fieldNamePrefix; // always pass field name prefix to template
+			
+			// Set default access value
+			if(!templateValues['access']) { templateValues['access'] = this.defaultAccess; }
 
 			var jElement = jQuery(this.container + ' textarea.' + this.templateClassName).template(templateValues);
 			jQuery(this.container + " ." + this.labelListClassName).append(jElement);
@@ -130,15 +134,16 @@ var caUI = caUI || {};
 			var i;
 			for (i=0; i < this.templateValues.length; i++) {
 				if (this.templateValues[i] === 'locale_id') { continue; }
-				if (jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id).length) {
-					jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id + " option[value='" + templateValues[this.templateValues[i]] +"']").prop('selected', true);
+				let key = this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id;
+				if ((jQuery(key).length) && (this.templateValues[i] !== undefined)) {
+					jQuery(key + " option[value='" + templateValues[this.templateValues[i]] +"']").prop('selected', true);
 				}
 			}
 			if(!templateValues.locale_id) { templateValues.locale_id = that.defaultLocaleID; }
 
 			if (isNew) {
 				if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
-					// There's a locale drop-dow to mess with
+					// There's a locale drop-down to mess with
 					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 				} else {
 					// No locale drop-down, or it somehow doesn't include the locale we want

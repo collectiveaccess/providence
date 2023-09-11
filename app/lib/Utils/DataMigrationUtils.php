@@ -79,6 +79,7 @@ class DataMigrationUtils {
 	 * @see DataMigrationUtils::_getID()
 	 */
 	static function getEntityID($pa_entity_name, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
+		if(is_null($pa_entity_name)) { return null; }
 		$pa_entity_name = ca_entity_labels::normalizeLabel($pa_entity_name, $options);
 		return DataMigrationUtils::_getID('ca_entities', $pa_entity_name, null, $pn_type_id, $locale_id, $pa_values, $options);
 	}
@@ -626,8 +627,8 @@ class DataMigrationUtils {
 		$is_corporation = false;
 		if ((strpos($text, '_') === false) && ($n = self::_procSurname($text, ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]))) {
 			$text = $n['surname'];
-			$suffix_for_name = $n['suffix'];
-			$is_corporation = $n['is_corporation'];
+			$suffix_for_name = $n['suffix'] ?? null;
+			$is_corporation = $n['is_corporation'] ?? false;
 		}
 		$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
 	

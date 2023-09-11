@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,7 +93,9 @@ var caUI = caUI || {};
 			listSortItems: null, // if set, limits sorting to items specified by selector
 			
 			loadedSort: null,			// Dynamically loaded sort order
-			loadedSortDirection: null
+			loadedSortDirection: null,
+			
+			buttons: []
 		}, options);
 		
 		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
@@ -393,6 +395,15 @@ var caUI = caUI || {};
 			} else {
 				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).css("display", "none");
 			}
+			
+			// attach other buttons
+			if(this.buttons) {
+				for(var i in this.buttons) {
+					let b = this.buttons[i];
+					//console.log('button', this.buttons[i]);
+					jQuery("#" +this.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
+				}
+			}
 
 			// set default locale for new
 			if (isNew) {
@@ -544,8 +555,10 @@ var caUI = caUI || {};
 		}
 		jQuery.each(that.initialValueOrder, function(i, k) {
 			var v = that.initialValues[k];
-			v['_key'] = k;
-			initialValuesSorted.push(v);
+			if(v) {
+				v['_key'] = k;
+				initialValuesSorted.push(v);
+			}
 		});
 
 		// perform configured sort

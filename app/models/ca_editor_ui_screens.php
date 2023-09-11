@@ -790,6 +790,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 1,
 							'label' => _t('Documentation URL'),
 							'description' => _t('URL pointing to documentation for this field. Leave blank if you wish to use the default URL for this metadata element.')
+						),
+						'dontShowDeleteButton' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => 10, 'height' => 1,
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Do not show delete button'),
+							'description' => _t('If checked the delete control will not be provided.')
 						)
 					);
 					if ($va_elements[$bundle_proc]['datatype'] == 1) {		// 1=text
@@ -853,7 +862,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '0',
 								'label' => _t('Do not show delete button'),
-								'description' => _t('If checked the delete relationship control will not be provided.')
+								'description' => _t('If checked the delete control will not be provided.')
 							),
 							'display_template' => array(
 								'formatType' => FT_TEXT,
@@ -1008,6 +1017,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Last item color'),
 								'description' => _t('If set last item in list will use this color.')
 							),
+							'dontShowAddButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Do not show add button'),
+								'description' => _t('If checked the add control will not be provided.')
+							),
 							'dontShowDeleteButton' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_CHECKBOXES,
@@ -1015,7 +1033,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '0',
 								'label' => _t('Do not show delete button'),
-								'description' => _t('If checked the delete relationship control will not be provided.')
+								'description' => _t('If checked the delete control will not be provided.')
 							),
 							'display_template' => array(
 								'formatType' => FT_TEXT,
@@ -1082,7 +1100,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'width' => "275px", 'height' => "40px",
 								'takesLocale' => false,
-								'default' => '0',
+								'default' => null,
 								'options' => [_t('Preferred label') => 'preferred_labels', _t('Identifier') => $t_rel->getProperty('ID_NUMBERING_ID_FIELD')],
 								'label' => _t('Prepopulate quick add fields with search text'),
 								'description' => _t('Select quickadd form fields to be pre-filled with the user-entered search value. If no fields are selected then the preferred label will be prepopulated by default.')
@@ -1170,7 +1188,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => 10, 'height' => 1,
 								'takesLocale' => false,
 								'default' => false,
-								'label' => _t('Show set representtion button?'),
+								'label' => _t('Show set representation button?'),
 								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
 							)
 						);
@@ -2117,7 +2135,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                         'takesLocale' => false,
                                         'default' => '0',
                                         'label' => _t('Do not show delete button'),
-                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                        'description' => _t('If checked the delete control will not be provided.')
                                     )
                                 ];
 							    break;
@@ -2143,7 +2161,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                         'takesLocale' => false,
                                         'default' => '0',
                                         'label' => _t('Do not show delete button'),
-                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                        'description' => _t('If checked the delete control will not be provided.')
                                     )
                                 ];
 							    break;
@@ -2585,7 +2603,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						return false;
 					}
 				} else {
-					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings'] ?? []);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->set('rank', $vn_i + 1);
 					

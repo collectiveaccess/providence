@@ -48,7 +48,7 @@
 					'ca_objects', 'ca_object_lots', 'ca_places', 'ca_entities',
 					'ca_occurrences', 'ca_collections', 'ca_storage_locations',
 					'ca_object_representations', 'ca_representation_annotations',
-					'ca_list_items'
+					'ca_list_items', 'ca_sets'
 				];
 			}
 			
@@ -1940,6 +1940,60 @@
 		 *
 		 */
 		public static function generate_missing_guidsHelp() {
+			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guids($po_opts=null) {
+			$o_db = new Db();
+
+			$tables = Datamodel::getTableNames();
+			
+			print CLIProgressBar::start(sizeof($tables), _t('Removing unused GUIDs'));
+			foreach($tables as $table) {
+				if(in_array($table, ['ca_application_vars', 'ca_guids', 'ca_change_log', 'ca_change_log_subjects', 'ca_change_log_snapshots'])) { continue; }
+				if(!($t_instance = Datamodel::getInstance($table))) { continue; }
+				
+				print CLIProgressBar::next(1, _t('Removing unused for table %1', $t_instance->tableName()));
+				if(!ca_guids::removeUnusedGUIDs($table)) {
+					CLIUtils::addError(_t("Could not remove unused GUIDs for %1.", $table));
+				}
+			}
+			print CLIProgressBar::finish();
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsShortHelp() {
+			return _t('Generate missing guids');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsHelp() {
 			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
 		}
 		# -------------------------------------------------------

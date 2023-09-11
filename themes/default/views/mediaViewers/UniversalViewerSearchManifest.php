@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017-2018 Whirl-i-Gig
+ * Copyright 2017-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,48 +29,45 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$va_data = $this->getVar('data');
-	$vs_identifier = $this->getVar('identifier');
-	$t_instance = $this->getVar('t_instance');
-	$vo_request = $this->getVar('request');
-	
-	$va_locs = $this->getVar('locations');
-	
-	$va_resources = [];
-	
-	foreach($va_locs['locations'] as $p => $va_loc_parts) {
-	    if (!is_array($va_loc_parts)) { continue; }
-	    foreach($va_loc_parts as $va_loc) {
-            $x = (int)(($va_loc['x1p']) * $va_data['width']);
-            $y = (int)(($va_loc['y1p']) * $va_data['height']);
-            $w = (int)(($va_loc['x2p']) * $va_data['width']) - (int)(($va_loc['x1p']) * $va_data['width']);
-            $h = (int)(($va_loc['y2p']) * $va_data['height']) - (int)(($va_loc['y1p']) * $va_data['height']);
-    
-            $va_resources[] = [
-              "@id" => "anno_{$vs_identifier}:{$p}",
-              "@type" => "oa:Annotation",
-              "motivation" => "sc:painting",
-              "resource" => [
-                "@type" => "cnt:ContentAsText",
-                "chars"=> $va_loc['word']
-              ],
-              "on" => "{$vs_identifier}:{$p}#xywh={$x},{$y},{$w},{$h}"
-            ];
-        }
+$data = $this->getVar('data');
+$identifier = $this->getVar('identifier');
+$t_instance = $this->getVar('t_instance');
+$request = $this->getVar('request');
+$locs = $this->getVar('locations');
+$resources = [];
+
+foreach($locs['locations'] as $p => $loc_parts) {
+	if (!is_array($loc_parts)) { continue; }
+	foreach($loc_parts as $loc) {
+		$x = (int)(($loc['x1p']) * $data['width']);
+		$y = (int)(($loc['y1p']) * $data['height']);
+		$w = (int)(($loc['x2p']) * $data['width']) - (int)(($loc['x1p']) * $data['width']);
+		$h = (int)(($loc['y2p']) * $data['height']) - (int)(($loc['y1p']) * $data['height']);
+
+		$resources[] = [
+		  "@id" => "anno_{$identifier}:{$p}",
+		  "@type" => "oa:Annotation",
+		  "motivation" => "sc:painting",
+		  "resource" => [
+			"@type" => "cnt:ContentAsText",
+			"chars"=> $loc['word']
+		  ],
+		  "on" => "{$identifier}:{$p}#xywh={$x},{$y},{$w},{$h}"
+		];
 	}
-	
-	
-	$va_manifest = [
-        "@context" => "http://iiif.io/api/search/0/context.json",
-        "@id" => "{$vs_identifier}_results",
-        "@type" => "sc:AnnotationList",
-        "within" => [
-            "@type" => "sc:Layer",
-            "total" => sizeof($va_locs)
-        ],
-        "startIndex" => 0,
-        "resources" => $va_resources
-    ];
-	
-	print caFormatJson(json_encode($va_manifest, JSON_UNESCAPED_SLASHES));
+}
+
+
+$manifest = [
+	"@context" => "http://iiif.io/api/search/0/context.json",
+	"@id" => "{$identifier}_results",
+	"@type" => "sc:AnnotationList",
+	"within" => [
+		"@type" => "sc:Layer",
+		"total" => sizeof($locs)
+	],
+	"startIndex" => 0,
+	"resources" => $resources
+];
+
+print caFormatJson(json_encode($manifest, JSON_UNESCAPED_SLASHES));

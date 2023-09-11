@@ -136,9 +136,9 @@ class GraphQLServiceController extends \BaseServiceController {
 		$config = \Configuration::load();
 		$key = $config->get('graphql_services_jwt_token_key');
 		$exp_offset = caGetOption('refresh', $options, false) ? 
-			(int)$config->get('graphql_services_jwt_access_token_lifetime') 
+			(int)$config->get('graphql_services_jwt_refresh_token_lifetime') 
 			: 
-			(int)$config->get('graphql_services_jwt_refresh_token_lifetime');
+			(int)$config->get('graphql_services_jwt_access_token_lifetime');
 			
 		if ($exp_offset <= 0) { $exp_offset = 900; }
 		
@@ -173,8 +173,9 @@ class GraphQLServiceController extends \BaseServiceController {
 	 * @param array $options Options include:
 	 *		returnAs = Format of return value. If set to 'array' an array with user information will be returned on success. Default is boolean signalling successful authentication. 
 	 *		actions = List of actions user must have to authenticate. [Default is null]
-	 *		requireActions = Determine whether user requires all specified actions (set to 'all') or any action (set to 'any') to authenticate. Only used is the 'actions' option is set. [Default is 'all']
+	 *		requireActions = Determine whether user requires all specified actions (set to 'all') or any action (set to 'any') to authenticate. Only used if the 'actions' option is set. [Default is 'all']
 	 *		throw = Throw exception on authentication failure. [Default is true]
+	 *		allowAnonymous = 
 	 *
 	 * @return mixed Boolean unless returnAs option is set to 'array'
 	 *
