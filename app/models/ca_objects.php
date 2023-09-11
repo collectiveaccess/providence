@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,6 @@
  /**
    *
    */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
@@ -865,14 +864,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('placement_code', $ps_placement_code);	
+		$o_view->setVar('placement_id', caGetOption('placement_id', $pa_bundle_settings, null));	
 		
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-		$o_view->setVar('t_subject', $this);
 		
-		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('t_subject', $t_subject = ($this->isComponent() ? $this->getParentInstance() : $this));
+		$o_view->setVar('component_list', $qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult')));
+		$o_view->setVar('component_count', $qr_components ? $qr_components->numHits() : 0);
 		
 		return $o_view->render('ca_objects_components_list.php');
 	}
@@ -928,7 +930,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 		} else {
 			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 		}

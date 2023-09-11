@@ -532,9 +532,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					} else {
 						$vs_idno_stub = preg_replace("!{$vs_suffix}$!", '', $vs_idno_stub);	
 					}
+					if(strlen($vs_sep) === 0) { $vs_sep = '-'; }
 					do {
 						$vs_suffix = (int)$vs_suffix + 1;
-						$vs_idno = trim($vs_idno_stub).($vs_sep ?? '-').trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
+						$vs_idno = trim($vs_idno_stub).($vs_sep).trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
 					} while($t_lookup->load([$vs_idno_fld => $vs_idno]));
 				} else {
 					$vs_idno = $vs_idno_stub;
@@ -2008,7 +2009,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_objects_components_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
-						if (!$this->canTakeComponents()) { return null; }
+						if (!$this->canTakeComponents() && !$this->isComponent()) { return null; }
 						$vs_element .= $this->getComponentListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;

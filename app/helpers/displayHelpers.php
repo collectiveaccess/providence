@@ -1499,7 +1499,7 @@ jQuery(document).ready(function() {
 
 			$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
 			$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
+			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 
 			if (method_exists($t_item, 'getComponentCount')) {
 				if ($vn_component_count = $t_item->getComponentCount()) {
@@ -3260,6 +3260,7 @@ jQuery(document).ready(function() {
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 * 		addRelParameter =
 	 *      absolute = Return absolute urls [Default is false]
+	 *		bundle = 
 	 *
 	 * @return array A list of HTML links
 	 */
@@ -3278,7 +3279,7 @@ jQuery(document).ready(function() {
 		}
 
 		$va_links = array();
-		$va_link_opts = ['absolute' => isset($pa_options['absolute']) ? $pa_options['absolute'] : false];
+		$va_link_opts = ['absolute' => $pa_options['absolute'] ?? false, 'bundle' => $pa_options['bundle'] ?? 'ca_object_components_list'];
 
 		global $g_request;
 		if (!$g_request) { return $pa_text; }
