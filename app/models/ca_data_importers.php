@@ -2368,6 +2368,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue( 5 );
 							}
+							
+							if ( isset( $va_item['settings']['skipRowIfParentDoesNotExist'] )
+							     && (bool) $va_item['settings']['skipRowIfParentDoesNotExist']
+							     && ($vn_item_id == $vn_parent_id_mapping_item_id)
+							     && strlen($vm_val)
+							) {
+								if(
+									(!is_numeric($vm_val) || !$vs_subject_table::find([$t_subject->primaryKey() => (int)$vm_val]))
+									&&
+									!$vs_subject_table::find([$t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vm_val])
+								) {
+									if ( $log_skip ) {
+										$o_log->logInfo( _t( '[%1] Skipped row %2 because parent %3 does not exist',
+											$vs_idno, $vn_row, $vm_val ) );
+									}
+									continue( 5 );
+								}
+							}
+												
 							if ( isset( $va_item['settings']['skipGroupIfEmpty'] )
 							     && (bool) $va_item['settings']['skipGroupIfEmpty']
 							     && ! strlen( $vm_val )

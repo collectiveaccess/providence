@@ -1633,6 +1633,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'generic':
 							case 'ca_objects_components_list':
+								$va_additional_settings['containerTemplate'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => '<div>',
+									'width' => "475px", 'height' => 5,
+									'label' => _t('Component display container template'),
+									'description' => _t('Markup to place components within. Markup wraps the series of components formatted using component display templates. Use the placeholder <em>^COMPONENTS</em> to place the component list within the container markup.')
+								];
 								$va_additional_settings['displayTemplate'] = [
 									'formatType' => FT_TEXT,
 									'displayType' => DT_FIELD,
