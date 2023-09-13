@@ -525,6 +525,10 @@ class MultipartIDNumber extends IDNumber {
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];
+			if ($separator) {
+				$field_limit_sql .= " AND {$field} NOT LIKE ?";
+				$params[] = $stub.$separator.'%'.$separator.'%';
+			}
 		} 
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
