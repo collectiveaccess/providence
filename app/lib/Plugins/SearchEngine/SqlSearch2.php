@@ -616,7 +616,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$field_lc = mb_strtolower($field);
 		$field_elements = explode('.', $field_lc);
 		if ($this->isChangeLog($field)) {
-			if (!$this->tep->parse($text)) { return []; }
+			if (!$this->tep->parse($text)) {
+				throw new SearchException(_t('Could not perform search as could not parse date: %1', $text));
+			}
 			$range = $this->tep->getUnixTimestamps();
 			$user_id = null;
 			$user_sql = '';
