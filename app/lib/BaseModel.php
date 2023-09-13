@@ -10608,7 +10608,7 @@ $pa_options["display_form_field_tips"] = true;
 						SELECT lnk.{$rel_pk}
 						FROM {$many_table} lnk
 						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
-						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_right_field']}
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_left_field']}
 						WHERE
 							(l.{$rel_info['left_table_field']} = ?)";
 						
