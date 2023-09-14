@@ -314,7 +314,7 @@ class SearchQuery implements Iterator, Countable {
 		
 AND_QUERY;
 
-		return $this->appendArgumentsAndExecute( $hits );
+		return $this->appendArguments( $hits );
 	}
 
 	public function addNot( SearchQuery $hits ): SearchQuery {
@@ -332,7 +332,7 @@ AND_QUERY;
 		WHERE $newWithTableName.row_id IS NULL
 NOT_QUERY;
 
-		return $this->appendArgumentsAndExecute( $hits );
+		return $this->appendArguments( $hits );
 	}
 
 	public function addOr( SearchQuery $hits ): SearchQuery {
@@ -350,7 +350,7 @@ NOT_QUERY;
 		GROUP BY row_id
 OR_QUERY;
 
-		return $this->appendArgumentsAndExecute( $hits );
+		return $this->appendArguments( $hits );
 	}
 
 	/**
@@ -368,11 +368,9 @@ OR_QUERY;
 	 *
 	 * @return $this
 	 */
-	public function appendArgumentsAndExecute( SearchQuery $hits ): SearchQuery {
+	public function appendArguments( SearchQuery $hits ): SearchQuery {
 
 		$this->addArguments( $hits->getArguments() );
-
-		$this->execute();
 
 		return $this;
 	}
