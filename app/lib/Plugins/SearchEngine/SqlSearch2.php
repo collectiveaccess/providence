@@ -450,11 +450,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						{$private_sql}
 				")->setArguments($params);
 			}
-			$query->execute();
-			if (!$query->getNumRecords()) {
-				// We may as well stop here as there are no results
-				return $query;
-			}
 			$results[$i] = $query;
 		}
 		// Use the first query as the basis of the search
@@ -592,7 +587,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$i++;
 			}
 		}
-		$search_query->execute();
 		return $search_query;
 	}
 	# -------------------------------------------------------
