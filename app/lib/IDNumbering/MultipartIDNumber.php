@@ -153,28 +153,14 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $value
 	 * @return array List of values
 	 */
-	protected function explodeValue($value) {
+	protected function explodeValue($value, $parentPlaceholder=false) {
 		$separator = $this->getSeparator();
-		
-		if ($separator && $this->formatHas('PARENT', 0)) {
-			// starts with PARENT element so explode in reverse since parent value may include separators
-			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "_PARENT_", $value);
-		
-			$element_vals = explode($separator, $v_proc);
 
-			$i = 0;
-			foreach ($this->getElements() as $element_info) {
-				switch ($element_info['type']) {
-					case 'PARENT':
-						$element_vals[$i] = $this->getParentValue();
-						break;
-					default:
-						if(!array_key_exists($i, $element_vals)) { $element_vals[$i] = null; }
-						break;
-				}
-				$i++;
-			}
-			$element_vals = array_map(function($v) { return preg_replace("!^_PARENT_!", '', $v); }, $element_vals);
+		if (!$parentPlaceholder && $this->formatHas('PARENT', 0)) {
+			// starts with PARENT element so replace with placeholder as parent value may include separators
+			$v_proc = preg_replace( "!^" . preg_quote( $this->getParentValue(), '!' ) . "!", "_PARENT_", $value );
+			$element_vals = $this->explodeValue( $v_proc, true );
+			$element_vals = array_map(function($v) { return preg_replace("!^_PARENT_!", $this->getParentValue(), $v); }, $element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
