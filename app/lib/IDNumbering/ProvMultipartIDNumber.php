@@ -3,18 +3,6 @@
 require_once(__CA_LIB_DIR__."/IDNumbering/MultipartIDNumber.php");
 
 class ProvMultipartIDNumber extends MultipartIDNumber {
-	# -------------------------------------------------------
-	/**
-	 * Initialize the plugin
-	 *
-	 * @param string $format A format to set as current [Default is null]
-	 * @param mixed $type A type to set a current [Default is __default__]
-	 * @param string $value A value to set as current [Default is null]
-	 * @param Db $db A database connection to use for all queries. If omitted a new connection (may be pooled) is allocated. [Default is null]
-	 */
-	public function __construct($format=null, $type=null, $value=null, $db=null) {
-		parent::__construct($format, $type, $value, $db);
-	}
 	/**
 	 * Custom functionality to split apart PROV IDNOs.
 	 *
