@@ -156,7 +156,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		if($lang = ($pa_options['settings']['language'] ?? null)) {
 			$lang = substr($lang, 0, 2);
 			$lang_select = "?skosLabel";
-			$lang_filter = "skos:prefLabel ?skosLabel . filter(lang(?skosLabel) = '{$lang}')";
+			$lang_filter = "skos:prefLabel ?skosLabel . filter strstarts(lang(?skosLabel), '{$lang}')";
 		}
 		
 		if ($vs_additional_filter){
