@@ -120,16 +120,17 @@ class AccessRestrictions {
 		}
 
 		// check controller
-		$vs_controller_path = join("/",(is_array($pa_module_path) ? $pa_module_path : array()))."/".ucfirst($ps_controller).'Controller';
-		if(is_array($this->opa_acr[$vs_controller_path])){
+		$module = join("/",(is_array($pa_module_path) ? $pa_module_path : []));
+		$vs_controller_path = ($module ? "/{$module}" : '').ucfirst($ps_controller).'Controller';
+		if(is_array($this->opa_acr[$vs_controller_path] ?? null)){
 			foreach($this->opa_acr[$vs_controller_path] as $va_group){
 				$va_groups_to_check[] = $va_group;
 			}
 		}
 
 		// check action
-		$vs_action_path = join("/",(is_array($pa_module_path) ? $pa_module_path : array()))."/".ucfirst($ps_controller)."Controller/".$ps_action;
-		if(is_array($this->opa_acr[$vs_action_path])){
+		$vs_action_path = ($module ? "/{$module}" : '').ucfirst($ps_controller)."Controller/".$ps_action;
+		if(is_array($this->opa_acr[$vs_action_path] ?? null)){
 			foreach($this->opa_acr[$vs_action_path] as $va_group){
 				$va_groups_to_check[] = $va_group;
 			}
