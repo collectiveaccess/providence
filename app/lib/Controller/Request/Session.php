@@ -103,7 +103,7 @@ class Session {
  		
  		// Use persistent (SQL-based) cache when cache back-end is file-based as Stash 
  		// tends to invalidate keys early in some enviroments causing forced logouts
- 		if(defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
+ 		if(!defined('__CA_IS_SERVICE_REQUEST__') && defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
  			self::$s_cache_type = 'PersistentCache';
  		}
 
@@ -126,7 +126,8 @@ class Session {
 			if (!$session_id) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				$secure = (__CA_SITE_PROTOCOL__ === 'https');
-				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__ || (defined('__CA_SET_COOKIE_FOR_SERVICE_REQUEST__') && __CA_SET_COOKIE_FOR_SERVICE_REQUEST__))) { setcookie(Session::$name, $_COOKIE[Session::$name] = $session_id = caGenerateGUID(), Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
+				$_COOKIE[Session::$name] = $session_id =  caGenerateGUID();
+				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__ || (defined('__CA_SET_COOKIE_FOR_SERVICE_REQUEST__') && __CA_SET_COOKIE_FOR_SERVICE_REQUEST__))) { setcookie(Session::$name, $session_id, Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized

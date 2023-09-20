@@ -138,6 +138,16 @@ class Replicator {
 	 */
 	protected $missing_guid_created = [];
 	
+	/**
+	 *
+	 */
+	protected $unresolved_guids = [];
+	
+	/**
+	 *
+	 */
+	protected $set_intrinsics_json = null;
+	
 	# --------------------------------------------------------------------------------------------------------------
 	public function __construct() {
 		$this->opo_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
@@ -250,9 +260,9 @@ class Replicator {
 				$set_intrinsics_default = is_array($set_intrinsics_config['__default__']) ? $set_intrinsics_config['__default__'] : [];
 				$set_intrinsics_source = is_array($set_intrinsics_config[$source_system_guid]) ? $set_intrinsics_config[$source_system_guid] : [];
 				$set_intrinsics = array_replace($set_intrinsics_default, $set_intrinsics_source);
-				$set_intrinsics_json = null;
+				$this->set_intrinsics_json = null;
 				if (is_array($set_intrinsics) && sizeof($set_intrinsics)) {
-					$set_intrinsics_json = json_encode($set_intrinsics);
+					$this->set_intrinsics_json = json_encode($set_intrinsics);
 				}
 				
 				$this->target = $o_target;
@@ -515,6 +525,9 @@ class Replicator {
 										if($source_log_entry['changetype'] !== 'I') {
 											// ... which means synthesizing log from current state if update
                                 			$this->_findMissingGUID($source_log_subject['guid'], 0, $single_log_id_mode);
+                                			                            			
+											// try to push unresolved guids
+                                			$this->_processUnresolvedGUIDs($single_log_id_mode);    
                                 		}
                                     }
                                 }	// end subject loop							
@@ -559,14 +572,14 @@ class Replicator {
 					
 					$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
 						->addGetParameter('system_guid', $source_system_guid)
-						->addGetParameter('setIntrinsics', $set_intrinsics_json)
+						->addGetParameter('setIntrinsics', $this->set_intrinsics_json)
 						->setRequestBody($this->source_log_entries)
 						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 						->request();
 						
                     $this->logDebug(_t("[%1] Pushed %2 primary entries.", $this->source_key, sizeof($this->source_log_entries)), Zend_Log::DEBUG);
 					$response_data = $o_resp->getRawData();
-
+					
 					if (!$o_resp->isOk() || !isset($response_data['replicated_log_id'])) {
 						$this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
 						break;
@@ -584,6 +597,9 @@ class Replicator {
 					   
 					   	$this->log(_t("[%1] Pushed %2 log entries. Incrementing log index to %3 (%4).", $source_key, $num_log_entries, $replicated_log_id, date(DATE_RFC2822, $last_log_entry['log_datetime'])), Zend_Log::DEBUG);
 						$this->log(_t("[%1] Last replicated log ID is: %2 (%3).", $source_key, $response_data['replicated_log_id'], date(DATE_RFC2822, $last_log_entry['log_datetime'])), Zend_Log::DEBUG);
+																					
+						// try to push unresolved guids
+						$this->_processUnresolvedGUIDs($single_log_id_mode);  
 					}
 
 					if (isset($response_data['warnings']) && is_array($response_data['warnings']) && sizeof($response_data['warnings'])) {
@@ -594,7 +610,10 @@ class Replicator {
 					}
 				}
 
-				if($is_ok) {
+				if($is_ok) {															
+					// try to push unresolved guids
+					//$this->_processUnresolvedGUIDs($single_log_id_mode);  
+					
 					$this->log(_t("Sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
 
 					// run dedup if configured
@@ -676,20 +695,20 @@ class Replicator {
 			$filtered_log_for_missing_guid = [];  
 			ksort($log_for_missing_guid, SORT_NUMERIC);
 		   
-			//$this->logDebug(_t("[%1] Missing log for %2 is %3", $this->source_key, $missing_guid, print_R($log_for_missing_guid, true)), Zend_Log::DEBUG);
+			$this->logDebug(_t("[%1] Missing log for %2 is %3", $this->source_key, $missing_guid, print_R($log_for_missing_guid, true)), Zend_Log::DEBUG);
 			
 			// was missing guid eventually deleted?
 			foreach($log_for_missing_guid as $missing_entry) {
 				if(($missing_entry['changetype'] === 'D') && ($missing_entry['guid'] === $missing_guid)) {
 					$this->logDebug(_t("[%1] Skipped %2 because it was eventually deleted.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
-					return null;
+					return true;
 				}
 			}
 			
 			$skip_guids = [];
 			$unresolved_dependent_guids = [];
 			foreach($log_for_missing_guid as $missing_entry) {
-				if (($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] >= $this->last_log_id)) {
+				if (!$single_log_id_mode && ($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] >= $this->last_log_id)) {
 					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it is in the future; current log_id is %3", $this->source_key, $missing_entry['log_id'], $this->last_log_id), Zend_Log::WARN);    
 					continue;
 				}
@@ -748,6 +767,7 @@ class Replicator {
 						if(isset($missing_entry['snapshot']['lot_id_guid']) && ($missing_entry['snapshot']['lot_id_guid'] === $dep_guid)) { continue; }
 						if(!is_array($dep_guid_already_exists[$dep_guid])) { 
 							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 does not yet exist on target", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),Zend_Log::DEBUG);
+							$this->unresolved_guids[$dep_guid] = 1;
 							continue(2);
 						}
 					}
@@ -928,11 +948,11 @@ class Replicator {
 				
 				$size = sizeof($entries);
 				if ($size > 0) {
-					$this->logDebug(_t("[%1] Immediately pushing missing log entries starting with %2 for %3", $this->source_key, $first_missing_log_id, $missing_guid), Zend_Log::DEBUG);
+					$this->logDebug(_t("[%1] Immediately pushing missing log entries starting with %2 for %3: %4", $this->source_key, $first_missing_log_id, $missing_guid, print_r($entries, true)), Zend_Log::DEBUG);
 		
 					$o_backlog_resp = $this->target->setRequestMethod('POST')->setEndpoint('applylog')
 						->addGetParameter('system_guid', $this->source_guid)
-						->addGetParameter('setIntrinsics', $set_intrinsics_json)
+						->addGetParameter('setIntrinsics', $this->set_intrinsics_json)
 						->setRequestBody($entries)
 						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 						->request();
@@ -958,6 +978,42 @@ class Replicator {
 		$this->missing_guid_created[$missing_guid] = true;
 		return true;
 	}	
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _processUnresolvedGUIDs(?bool $single_log_id_mode=false) {
+		// try to push unresolved guids
+		$pushed = $skipped = $failed = 0;
+		if(is_array($this->unresolved_guids) && sizeof($this->unresolved_guids)) {
+			$this->log(_t("[%1 Trying to push %2 unresolved guids", $this->source_key, sizeof($this->unresolved_guids)), Zend_Log::DEBUG);
+			$o_guid_already_exists = $this->target->setRequestMethod('POST')->setEndpoint('hasGUID')
+				->setRequestBody(array_keys($this->unresolved_guids))
+				->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+				->request();
+			$guid_already_exists = $o_guid_already_exists->getRawData();
+
+			foreach($guid_already_exists as $guid => $guid_info) {
+				if(!is_array($guid_info)) {
+					if(!($ret = $this->_findMissingGUID($guid, 0, $single_log_id_mode))) {
+						$this->log(_t("[%1] Could not push unresolved guid %2: %3", $this->source_key, $guid, print_r($ret, true)), Zend_Log::DEBUG);
+						$failed++;
+					} else {
+						$this->log(_t("[%1 Pushed unresolved guid %2", $this->source_key, $guid), Zend_Log::DEBUG);
+						unset($this->unresolved_guids[$guid]);
+						$pushed++;
+					}
+				} else {
+					unset($this->unresolved_guids[$guid]);
+					$skipped++;
+				}
+			}
+		}
+		if($pushed || $skipped || $failed) {
+			$this->log(_t("[%1] Pushed %2; skipped %3; %4 failed unresolved guids; list if now %5", $this->source_key, $pushed, $skipped, $failed, print_R($this->unresolved_guids, true)), Zend_Log::DEBUG);
+		}
+		return true;
+	}
 	# --------------------------------------------------------------------------------------------------------------
 	/**
 	 *
