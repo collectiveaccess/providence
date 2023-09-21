@@ -2269,7 +2269,7 @@ if (!$pb_omit_editing_info) {
 		if (!isset($options['maximumLength'])) { $options['maximumLength'] =  ($va_settings['maximum_length'] ?? null) ? $va_settings['maximum_length'] : null; }
 		if (!isset($options['filter'])) { $options['filter'] = caGetOption('filter', $va_settings, null); }
 		
-		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $options, null));
+		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $va_settings, caGetOption('locale', $options, null)));
 		$options['delimiter'] = caGetOption('delimiter', $options, caGetOption('delimiter', $va_settings, '; '));
 		$options['dateFormat'] = caGetOption('dateFormat', $options, caGetOption('dateFormat', $va_settings, ''));
 		$options['useSingular'] = (isset($va_settings['sense']) && ($va_settings['sense'] == 'singular')) ? true : false;
