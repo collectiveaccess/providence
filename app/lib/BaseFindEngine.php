@@ -474,7 +474,6 @@ class BaseFindEngine extends BaseObject {
 		list($sort_field, $sort_filter) = array_pad(explode('|', $sort_field), 2, null);
 		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
 		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
-			//throw new ApplicationException(_t('Invalid sort field: %1', $sort_table));
 			return $hits;
 		}
 		
@@ -611,6 +610,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _sortByLabels($t_table, string $hit_table, ?string $label_field=null, ?string $direction='asc', ?array $options=null) {
+		global $g_ui_locale_id;
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -629,23 +630,33 @@ class BaseFindEngine extends BaseObject {
 		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
-			SELECT l.{$table_pk}
+			SELECT l.{$table_pk}, l.locale_id
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
-			{$pref_sql}
+			{$pref_sql} and l.locale_id = 1
 			ORDER BY l.`{$label_field}` {$direction}
 			{$limit_sql}
 		";
 		$qr_sort = $this->db->query($sql);
-		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
 		
-		return array_flip($sort_keys);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			if(($g_ui_locale_id == $row['locale_id']) && isset($sort_keys[$row[$table_pk]][$row['locale_id']])) {
+				unset($sort_keys[$row[$table_pk]][$row['locale_id']]);
+			}
+			
+			$sort_keys[$row[$table_pk]][$row['locale_id']] = $row[$table_pk];
+		}
+		return caExtractValuesByUserLocale($sort_keys);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 */
 	private function _sortByRelatedLabels($t_table, $t_rel_table, string $hit_table, ?string $rel_label_field=null, ?string $direction='asc', ?array $options=null) {
+		global $g_ui_locale_id;
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -672,7 +683,7 @@ class BaseFindEngine extends BaseObject {
 		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
-			SELECT t.{$table_pk}
+			SELECT t.{$table_pk}, rl.locale_id
 			FROM {$table} t
 			{$join_sql}
 			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
@@ -682,9 +693,17 @@ class BaseFindEngine extends BaseObject {
 			{$limit_sql}
 		";
 		$qr_sort = $this->db->query($sql);
-		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
 		
-		return array_flip($sort_keys);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			if(($g_ui_locale_id == $row['locale_id']) && isset($sort_keys[$row[$table_pk]][$row['locale_id']])) {
+				unset($sort_keys[$row[$table_pk]][$row['locale_id']]);
+			}
+			
+			$sort_keys[$row[$table_pk]][$row['locale_id']] = $row[$table_pk];
+		}
+		return caExtractValuesByUserLocale($sort_keys);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -805,6 +824,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _sortByHistoryTrackingCurrentValue($t_table, string $hit_table, ?string $policy=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
+		global $g_ui_locale_id;
+		
 		$table_num = $t_table->tableNum();
 		$table_name = $t_table->tableName();
 		
@@ -816,7 +837,7 @@ class BaseFindEngine extends BaseObject {
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
 		
-		$sql = "SELECT htcv.row_id
+		$sql = "SELECT htcv.row_id, l.locale_id
 				FROM ca_history_tracking_current_values htcv
 				INNER JOIN ca_history_tracking_current_value_labels AS l ON htcv.tracking_id = l.tracking_id
 				INNER JOIN {$hit_table} AS ht ON ht.row_id = htcv.row_id
@@ -825,17 +846,23 @@ class BaseFindEngine extends BaseObject {
 				ORDER BY l.value_sort {$direction}
 					{$limit_sql}";
 		$qr_sort = $this->db->query($sql, [$table_num, $policy]);
+		
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
-			$sort_keys[$row['row_id']] = true;
+			if(($g_ui_locale_id == $row['locale_id']) && isset($sort_keys[$row[$table_pk]])) {
+				unset($sort_keys[$row['row_id']]);
+			}
+			
+			$sort_keys[$row['row_id']][$row['locale_id']] = $row['row_id'];
 		}
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h][$g_ui_locale_id] = $h; }
 		}
-		return $sort_keys;
+		
+		return caExtractValuesByUserLocale($sort_keys);
 	}
 	# ------------------------------------------------------------------
 	/**

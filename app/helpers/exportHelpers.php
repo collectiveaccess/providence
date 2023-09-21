@@ -75,7 +75,6 @@ function caExportFormatForTemplate(string $table, string $template) : ?string {
 	}
 	return null;
 }
-
 # ----------------------------------------
 /**
  *

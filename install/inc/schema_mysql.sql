@@ -7742,8 +7742,8 @@ create table ca_history_tracking_current_value_labels
    tracking_id                    int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   value                          varchar(8192)                 not null,
-   value_sort                     varchar(255)                   not null,
+   value                          varchar(8192)                  not null,
+   value_sort                     varchar(1024)                  not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    sdatetime                      decimal(30,20),
@@ -7867,4 +7867,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (191, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (192, unix_timestamp());
