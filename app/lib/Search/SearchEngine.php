@@ -185,6 +185,18 @@ class SearchEngine extends SearchBase {
 					$ps_search = preg_replace("/".caQuoteRegexDelimiter(trim($va_rewrite_regex[0]), '/')."/", trim($va_rewrite_regex[1]), $ps_search);
 				}
 			}
+
+			// Also rewrite related tables
+			foreach ($va_rewrite_regexs as $regex_table => $regexes) {
+				if ($regex_table !== $this->ops_tablename && is_array($regexes)) {
+					foreach($regexes as $vs_regex_name => $va_rewrite_regex) {
+						if (preg_match("/(". $regex_table . '\.[^:]*):\"([^:]*)\"/', $ps_search, $matches )) {
+							$search_value = preg_replace("/".caQuoteRegexDelimiter(trim($va_rewrite_regex[0]), '/')."/", trim($va_rewrite_regex[1]), $matches[2]);
+							$ps_search = str_replace($matches[0], $matches[1] . ':"'.$search_value.'"', $ps_search);
+						}
+					}
+				}
+			}
 		}
 
 		$t_table = Datamodel::getInstanceByTableName($this->ops_tablename, true);
