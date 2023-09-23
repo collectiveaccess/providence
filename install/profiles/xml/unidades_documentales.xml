@@ -2191,7 +2191,7 @@
             </label>
           </labels>
         </item>
-        <item idno="eng" enabled="1" default="0" value="INglés" rank="164">
+        <item idno="eng" enabled="1" default="0" value="Inglés" rank="164">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>English</name_singular>
@@ -17038,7 +17038,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
               <typename>depicts</typename>
               <typename_reverse>is depicted by</typename_reverse>
             </label>
-            <label locale="en_US">
+            <label locale="es_ES">
               <typename>representa</typename>
               <typename_reverse>es representado por</typename_reverse>
             </label>
