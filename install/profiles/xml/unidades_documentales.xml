@@ -744,8 +744,8 @@
               <description/>
             </label>
             <label locale="es_ES" preferred="1">
-              <name_singular>Uso solo en librería</name_singular>
-              <name_plural>Uso solo en librería</name_plural>
+              <name_singular>Uso solo en biblioteca</name_singular>
+              <name_plural>Uso solo en biblioteca</name_plural>
               <description/>
             </label>
           </labels>
@@ -2149,7 +2149,7 @@
             </label>
           </labels>
         </item>
-        <item idno="ara" enabled="1" default="0" value="ara" rank="161">
+        <item idno="ara" enabled="1" default="0" value="Árabe" rank="161">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Árabe</name_singular>
@@ -2163,7 +2163,7 @@
             </label>
           </labels>
         </item>
-        <item idno="ben" enabled="1" default="0" value="ben" rank="162">
+        <item idno="ben" enabled="1" default="0" value="Bengali" rank="162">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Bengali</name_singular>
@@ -2177,7 +2177,7 @@
             </label>
           </labels>
         </item>
-        <item idno="chi" enabled="1" default="0" value="chi" rank="163">
+        <item idno="chi" enabled="1" default="0" value="Chino" rank="163">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Chinese</name_singular>
@@ -2191,7 +2191,7 @@
             </label>
           </labels>
         </item>
-        <item idno="eng" enabled="1" default="0" value="eng" rank="164">
+        <item idno="eng" enabled="1" default="0" value="INglés" rank="164">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>English</name_singular>
@@ -2205,7 +2205,7 @@
             </label>
           </labels>
         </item>
-        <item idno="fre" enabled="1" default="0" value="fre" rank="165">
+        <item idno="fra" enabled="1" default="0" value="Francés" rank="165">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Francés</name_singular>
@@ -2219,7 +2219,7 @@
             </label>
           </labels>
         </item>
-        <item idno="ger" enabled="1" default="0" value="ger" rank="166">
+        <item idno="ger" enabled="1" default="0" value="Alemán" rank="166">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Alemán</name_singular>
@@ -2233,7 +2233,7 @@
             </label>
           </labels>
         </item>
-        <item idno="hin" enabled="1" default="0" value="hin" rank="167">
+        <item idno="hin" enabled="1" default="0" value="Hindustaní" rank="167">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Hindustani</name_singular>
@@ -2247,7 +2247,7 @@
             </label>
           </labels>
         </item>
-        <item idno="ita" enabled="1" default="0" value="ita" rank="168">
+        <item idno="ita" enabled="1" default="0" value="Italiano" rank="168">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Italian</name_singular>
@@ -2261,7 +2261,7 @@
             </label>
           </labels>
         </item>
-        <item idno="jpn" enabled="1" default="0" value="jpn" rank="169">
+        <item idno="jpn" enabled="1" default="0" value="Japonés" rank="169">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Jananese</name_singular>
@@ -2275,7 +2275,7 @@
             </label>
           </labels>
         </item>
-        <item idno="may" enabled="1" default="0" value="may" rank="170">
+        <item idno="may" enabled="1" default="0" value="Malayo" rank="170">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Malay</name_singular>
@@ -2289,7 +2289,7 @@
             </label>
           </labels>
         </item>
-        <item idno="por" enabled="1" default="0" value="por" rank="171">
+        <item idno="por" enabled="1" default="0" value="Portugués" rank="171">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Portugués</name_singular>
@@ -2303,7 +2303,7 @@
             </label>
           </labels>
         </item>
-        <item idno="rus" enabled="1" default="0" value="rus" rank="172">
+        <item idno="rus" enabled="1" default="0" value="Ruso" rank="172">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Ruso</name_singular>
@@ -2317,7 +2317,7 @@
             </label>
           </labels>
         </item>
-        <item idno="spa" enabled="1" default="0" value="spa" rank="173">
+        <item idno="spa" enabled="1" default="0" value="Español" rank="173">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Español</name_singular>
@@ -2327,6 +2327,15 @@
             <label locale="en_US" preferred="1">
               <name_singular>Spanish</name_singular>
               <name_plural>Spanish</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="sue" enabled="1" default="0" value="Sueco" rank="173">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Sueco</name_singular>
+              <name_plural>Sueco</name_plural>
               <description/>
             </label>
           </labels>
@@ -2361,7 +2370,7 @@
             </label>
           </labels>
         </item>
-        <item idno="class_type_sonoro" enabled="1" default="0" value="class_type_sonoro" rank="178" type="concept">
+        <item idno="class_type_sonoro" enabled="1" default="0" value="Sonoro" rank="178" type="concept">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Sonoro</name_singular>
@@ -2370,7 +2379,7 @@
             </label>
           </labels>
         </item>
-        <item idno="class_type_visuales" enabled="1" default="0" value="Visuales" rank="179" type="concept">
+        <item idno="class_type_visuales" enabled="1" default="0" value="Visual" rank="179" type="concept">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Visual</name_singular>
@@ -3438,11 +3447,11 @@
                 </label>
               </labels>
             </item>
-            <item idno="subcategory_utensilios" enabled="1" default="0" value="Utensilios, herramientas y equipo" rank="296" type="concept">
+            <item idno="subcategory_utensilios" enabled="1" default="0" value="Utensilios, herramientas y equipos" rank="296" type="concept">
               <labels>
                 <label locale="es_ES" preferred="1">
-                  <name_singular>Utensilios, herramientas y equipo</name_singular>
-                  <name_plural>Utensilios, herramientas y equipo</name_plural>
+                  <name_singular>Utensilios, herramientas y equipos</name_singular>
+                  <name_plural>Utensilios, herramientas y equipos</name_plural>
                   <description/>
                 </label>
               </labels>
@@ -3490,6 +3499,15 @@
                 <label locale="es_ES" preferred="1">
                   <name_singular>Arte visuales</name_singular>
                   <name_plural>Artes visuales</name_plural>
+                  <description/>
+                </label>
+              </labels>
+            </item>
+            <item idno="subcategory_bellas_artes" enabled="1" default="0" value="Bellas artes" rank="294" type="hierarchy_name">
+              <labels>
+                <label locale="es_ES" preferred="1">
+                  <name_singular>Bellas Artes</name_singular>
+                  <name_plural>Bellas Artes</name_plural>
                   <description/>
                 </label>
               </labels>
@@ -3647,6 +3665,15 @@
                 <label locale="es_ES" preferred="1">
                   <name_singular>Numismática, filatelia y objetos conmemorativos</name_singular>
                   <name_plural>Numismática, filatelia y objetos conmemorativos</name_plural>
+                  <description/>
+                </label>
+              </labels>
+            </item>
+            <item idno="subcategory_silografia" enabled="1" default="0" value="Silografía" rank="296" type="concept">
+              <labels>
+                <label locale="es_ES" preferred="1">
+                  <name_singular>Silografía</name_singular>
+                  <name_plural>Silografía</name_plural>
                   <description/>
                 </label>
               </labels>
