@@ -1028,24 +1028,14 @@
       <items>
         <item idno="in" enabled="1" default="0" value="in" rank="79">
           <labels>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>inlån</name_singular>
-              <name_plural>inlån</name_plural>
+            <label locale="es_ES" preferred="1">
+              <name_singular>préstamo entrante</name_singular>
+              <name_plural>préstamos entrantes</name_plural>
               <description/>
             </label>
             <label locale="en_US" preferred="1">
               <name_singular>loan in</name_singular>
               <name_plural>loans in</name_plural>
-              <description/>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>loan in</name_singular>
-              <name_plural>loans in</name_plural>
-              <description/>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>prêt</name_singular>
-              <name_plural>prêts</name_plural>
               <description/>
             </label>
           </labels>
@@ -1062,14 +1052,9 @@
               <name_plural>loans out</name_plural>
               <description/>
             </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>retour</name_singular>
-              <name_plural>retours</name_plural>
-              <description/>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>utlån</name_singular>
-              <name_plural>utlån</name_plural>
+            <label locale="es_ES" preferred="1">
+              <name_singular>préstamo saliente</name_singular>
+              <name_plural>préstamos salientes</name_plural>
               <description/>
             </label>
           </labels>
@@ -1629,6 +1614,15 @@
                       <name_singular>Fondo Documental</name_singular>
                       <name_plural>Fondos Documentales</name_plural>
                       <description>conjunto de documentos producidas por una persona física o institución a lo largo de un periodo de tiempo en relación a una actividad que le es propia y más y menos homogénea, clasificados, ordenados y descritos según un cuadro de clasificación archivística. De este modo, el fondo documental es el resultado de la actividad de archivo, mas allá del propio conjunto de documentos en su soporte físico o digital.</description>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="coleccion_bc" enabled="1" default="0" value="Colección de bienes culturales" rank="296" type="concept">
+                  <labels>
+                    <label locale="es_ES" preferred="1">
+                      <name_singular>Colección de bienes culturales</name_singular>
+                      <name_plural>Colecciones de bienes culturales</name_plural>
+                      <description>conjunto relativamente coherente y significativo de objetos materiales e inmateriales (obras, artefactos, mentefactos, especímenes, documentos, archivos, testimonios, etc.) que un individuo o un establecimiento, estatal o privado, se han ocupado de reunir, clasificar, seleccionar y conservar en un contexto de seguridad para comunicarlo, por lo general, a un público más o menos amplio.</description>
                     </label>
                   </labels>
                 </item>
@@ -7928,6 +7922,7 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
       <labels>
         <label locale="en_US">
           <name>Tradición Documental</name>
+          <description>Carácter o atributo de un documento de archivo, que se origina en el objetivo que persigue cada uno de sus ejemplares y permite clasificar tales ejemplares en original, copia, copia certificada, borrador y minuta. Campo cerrado en el que se debe elegir entre una de las opciones de acuerdo al tipo de documento</description>
         </label>
       </labels>
       <settings>
@@ -10855,12 +10850,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <label locale="es_ES">
               <name>Items/Elementos</name>
             </label>
-            <label locale="fr_FR">
-              <name>Items</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Objekt</name>
-            </label>
           </labels>
           <bundlePlacements>
             <placement code="ca_set_items">
@@ -11118,8 +11107,8 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <label locale="en_CA">
               <name>Display list</name>
             </label>
-            <label locale="fr_FR">
-              <name>Liste</name>
+            <label locale="es_ES">
+              <name>Lista de vizualización</name>
             </label>
             <label locale="sv_SE">
               <name>Display lista</name>
