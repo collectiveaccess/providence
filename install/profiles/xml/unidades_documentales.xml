@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 23 Septiembre 2023 at 21:17:15 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 24 Septiembre 2023 at 14:40:07 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -322,6 +322,18 @@
               <description>todos aquellos objetos, seres o sitios que constituyen la expresión o el testimonio de la creación humana y la evolución de la naturaleza y que tienen un valor arqueológico, histórico, artístico, científico o técnico excepcional</description>
             </label>
           </labels>
+        </item>
+        <item idno="objeto_externo" enabled="1" default="0" value="objetos_externos" rank="425" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Objeto externo</name_singular>
+              <name_plural>Objetos Externos</name_plural>
+              <description/>
+            </label>
+          </labels>
+          <settings>
+            <setting name="render_in_new_menu">1</setting>
+          </settings>
         </item>
       </items>
     </list>
@@ -1028,14 +1040,14 @@
       <items>
         <item idno="in" enabled="1" default="0" value="in" rank="79">
           <labels>
-            <label locale="es_ES" preferred="1">
-              <name_singular>préstamo entrante</name_singular>
-              <name_plural>préstamos entrantes</name_plural>
-              <description/>
-            </label>
             <label locale="en_US" preferred="1">
               <name_singular>loan in</name_singular>
               <name_plural>loans in</name_plural>
+              <description/>
+            </label>
+            <label locale="es_ES" preferred="1">
+              <name_singular>préstamo entrante</name_singular>
+              <name_plural>préstamos entrantes</name_plural>
               <description/>
             </label>
           </labels>
@@ -1158,6 +1170,19 @@
               <description/>
             </label>
           </labels>
+        </item>
+        <item idno="funcionario" enabled="1" default="0" value="funcionario" rank="426" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Funcionario</name_singular>
+              <name_plural>Funcionarios</name_plural>
+              <description/>
+            </label>
+          </labels>
+          <settings>
+            <setting name="entity_class">IND</setting>
+            <setting name="render_in_new_menu">1</setting>
+          </settings>
         </item>
       </items>
     </list>
@@ -4249,6 +4274,33 @@
             </label>
           </labels>
         </item>
+        <item idno="espesor" enabled="1" default="0" value="espesor" rank="422" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Espesor</name_singular>
+              <name_plural>Espesor</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="peso" enabled="1" default="0" value="peso" rank="423" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Peso</name_singular>
+              <name_plural>Peso</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="duracion" enabled="1" default="0" value="duracion" rank="424" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Duración</name_singular>
+              <name_plural>Duración</name_plural>
+              <description>Si el video debe ir en Loop esta información debe ser consignada en notas</description>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="todo_parte_list" hierarchical="0" system="0" vocabulary="0">
@@ -6661,7 +6713,7 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
         </label>
       </labels>
       <elements>
-        <metadataElement code="langmaterialline1" datatype="Container">
+        <metadataElement code="material" datatype="Text">
           <labels>
             <label locale="en_US">
               <name>Material</name>
@@ -6681,39 +6733,21 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
             <setting name="displayDelimiter">; </setting>
             <setting name="displayTemplate"/>
             <setting name="readonlyTemplate"/>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="isDependentValue">0</setting>
+            <setting name="dependentValueTemplate"/>
+            <setting name="mustBeUnique">0</setting>
+            <setting name="referenceMediaIn"/>
           </settings>
-          <elements>
-            <metadataElement code="material" datatype="Text">
-              <labels>
-                <label locale="en_US">
-                  <name>Material</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="fieldWidth">80</setting>
-                <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-                <setting name="usewysiwygeditor">0</setting>
-                <setting name="doesNotTakeLocale">0</setting>
-                <setting name="canBeUsedInSort">1</setting>
-                <setting name="suggestExistingValues">0</setting>
-                <setting name="suggestExistingValueSort">value</setting>
-                <setting name="canBeUsedInSearchForm">1</setting>
-                <setting name="canBeUsedInDisplay">1</setting>
-                <setting name="canMakePDF">0</setting>
-                <setting name="canMakePDFForValue">0</setting>
-                <setting name="displayDelimiter">; </setting>
-                <setting name="isDependentValue">0</setting>
-                <setting name="mustBeUnique">0</setting>
-                <setting name="regex"/>
-                <setting name="default_text"/>
-                <setting name="displayTemplate"/>
-                <setting name="dependentValueTemplate"/>
-                <setting name="referenceMediaIn"/>
-              </settings>
-            </metadataElement>
-          </elements>
         </metadataElement>
         <metadataElement code="language" datatype="List" list="language_types">
           <labels>
@@ -6809,22 +6843,6 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -9991,6 +10009,73 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="registro_documentacion" datatype="Container">
+      <labels>
+        <label locale="es_ES">
+          <name>Registro y Documentación</name>
+          <description>[Refiere a la información sobre el registro y la documentación del documento/fondo/colección]</description>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="archivo_adjunto" datatype="Media">
+          <labels>
+            <label locale="es_ES">
+              <name>Archivo Adjunto</name>
+              <description> Se utiliza para adjuntar documentos digitales que complementen la descripción del registro </description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">; </setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="archivo_descripcion" datatype="Text">
+          <labels>
+            <label locale="es_ES">
+              <name>Descripción</name>
+              <description>Se utiliza para describir el archivo que se está adjuntando (qué tipo de archivo es, qué está registrando, etc) </description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">; </setting>
+            <setting name="isDependentValue">0</setting>
+            <setting name="dependentValueTemplate"/>
+            <setting name="mustBeUnique">0</setting>
+            <setting name="referenceMediaIn"/>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -11886,11 +11971,11 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Código de Referencia</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="usewysiwygeditor"/>
-                <setting name="label" locale="es_ES">Código de Referencia</setting>
               </settings>
             </placement>
             <placement code="ca_collections4">
@@ -12304,6 +12389,9 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
             <placement code="ca_entities11">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Propietarios Anteriores</setting>
+                <setting name="add_label" locale="es_ES">añadir propietario</setting>
+                <setting name="description" locale="es_ES">Quien posee la responsabilidad del cuidado del bien. Se basa en su posesión física y que no siempre implica la propiedad jurídica ni el derecho a controlar el acceso a los bienes. También llamado custodia. Ingresar el apellido y nombre del propietario anterior [normalizado por control de autoridades]. Se debe reconstruir toda la cadena de custodia.</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -12316,15 +12404,20 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-                <setting name="label" locale="es_ES">Propietarios Anteriores</setting>
-                <setting name="add_label" locale="es_ES">añadir propietario</setting>
-                <setting name="description" locale="es_ES">Quien posee la responsabilidad del cuidado del bien. Se basa en su posesión física y que no siempre implica la propiedad jurídica ni el derecho a controlar el acceso a los bienes. También llamado custodia. Ingresar el apellido y nombre del propietario anterior [normalizado por control de autoridades]. Se debe reconstruir toda la cadena de custodia.</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_fecha_propiedad12">
               <bundle>ca_attribute_fecha_propiedad</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_sustraction11">
               <bundle>ca_attribute_sustraction</bundle>
@@ -12790,49 +12883,67 @@ Ej. El acceso a la documentación es exclusivamente a través de la lectora de m
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_relatedmaterial">
-              <bundle>ca_attribute_relatedmaterial</bundle>
-              <settings>
-                <setting name="label" locale="es_ES">Unidades de Descripcion Relacionadas</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">item</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Unidades de descripción relacionadas</setting>
+                <setting name="description" locale="es_ES">Se utiliza para informar acerca de las unidades de descripción que se encuentran en el mismo archivo y que tienen alguna relación con la unidad de descripción por el principio de procedencia o por cualquier otra clase de asociación. Establecer la relación a partir del código de identificación unívoco de la unidad de descripción que se desea relacionar</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects4">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Objetos relacionados de la colección</setting>
+                <setting name="description" locale="es_ES">Refiere a los  códigos de identificación unívocos de los bienes relacionados que pertenecen a la colección&#13;
+</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">item</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
+            <placement code="ca_objects5">
+              <bundle>ca_objects</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Objetos relacionados externos de la colección</setting>
+                <setting name="description" locale="es_ES">Refiere a los códigos de identificación unívocos de los bienes relacionados externos a la colección o dades de descripción que se encuentran en una institución externa y que tienen alguna relación con la unidad de descripción por el principio de procedencia o por cualquier otra clase de asociación. Establecer la relación a partir del código de identificación unívoco de la unidad de descripción que se desea relacionar&#13;
+</setting>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">objeto_externo</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -12901,7 +13012,7 @@ Ej. El acceso a la documentación es exclusivamente a través de la lectora de m
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="process" default="1">
+        <screen idno="process" default="0">
           <labels>
             <label locale="en_US">
               <name>Process</name>
@@ -13127,6 +13238,35 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_entities4">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">funcionario</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Responsable de la carga en el inventario</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar el apellido y nombre del responsable del ingreso de los datos del inventario del bien [normalizado por control de autoridades]. Ej. Gomez, Martín</setting>
+              </settings>
+            </placement>
+            <placement code="access4">
+              <bundle>access</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -13139,6 +13279,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_attribute_registro_document">
+              <bundle>ca_attribute_registro_documentacion</bundle>
+            </placement>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
               <settings>
@@ -13165,6 +13308,16 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="expand_collapse_no_value">bubbles</setting>
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_object_representations_acce">
+              <bundle>ca_object_representations_access_status</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="label" locale="es_ES">Acceso a objeto digital</setting>
+                <setting name="description" locale="es_ES">Se utiliza para aclarar el tipo de acceso autorizado para el objeto digital. Campo cerrado en el que se debe elegir entre una de las opciones</setting>
               </settings>
             </placement>
           </bundlePlacements>
