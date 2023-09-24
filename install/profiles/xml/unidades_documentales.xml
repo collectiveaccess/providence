@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 24 Septiembre 2023 at 15:41:51 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 24 Septiembre 2023 at 18:00:23 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -4561,6 +4561,51 @@
         </item>
       </items>
     </list>
+    <list code="tipos_niveles_descripcion" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="es_ES">
+          <name>Niveles de descripcion</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="fondo_documental" enabled="1" default="0" value="Fondo" rank="428" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Fondo Documental</name_singular>
+              <name_plural>Fondos Documentales</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="seccion" enabled="1" default="0" value="seccion" rank="429" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Sección</name_singular>
+              <name_plural>Secciones</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="serie" enabled="1" default="0" value="serie" rank="430" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Serie</name_singular>
+              <name_plural>Series</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="agrupacion_documental" enabled="1" default="0" value="agrupacion documental" rank="431" type="concept">
+          <labels>
+            <label locale="es_ES" preferred="1">
+              <name_singular>Agrupación Documentsal</name_singular>
+              <name_plural>Agrupaciones Documentales</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -4613,29 +4658,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="set_presentation_type" datatype="List" list="set_presentation_types">
-      <labels>
-        <label locale="en_US">
-          <name>Presentation type</name>
-          <description>Determines how set is rendered when displayed to the public in the Pawtucket/Pawtucket2 front-end.</description>
-        </label>
-        <label locale="es_ES">
-          <name>Tipo de presentación</name>
-          <description>Determina como de muestra el set al publico en el Front end de Pawtucket</description>
-        </label>
-      </labels>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_sets</table>
-          <type>public_presentation</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="set_item_is_primary" datatype="List" list="set_item_is_primary">
       <labels>
         <label locale="en_US">
@@ -4653,32 +4675,6 @@
           <type>public_presentation</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="set_chron_date_element_code" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Chronology element code</name>
-          <description>Element code of date range element to be used when placing set items into chronological order.</description>
-        </label>
-        <label locale="es_ES">
-          <name>Código de elemento cronológico</name>
-          <description>Código de una fecha o rango de fechas a usarse para ubicar items en orden cronológico</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_sets</table>
-          <type>public_presentation</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -5815,22 +5811,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="movements_notes" datatype="Container">
@@ -6162,7 +6142,7 @@
     <metadataElement code="tipo_documental" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Documentary type</name>
+          <name>Document type</name>
           <description>Class of documents that are distinguished by the similarity of their physical and/or intellectual characteristics.</description>
         </label>
         <label locale="es_ES">
@@ -6177,22 +6157,6 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6219,22 +6183,6 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -8616,6 +8564,15 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <type>fondo</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="dimensiones" datatype="Container">
@@ -8888,6 +8845,16 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <type>internal</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
@@ -9932,6 +9899,14 @@ Ej. Argentina. Museo Casa de Ricardo Rojas. RR. Fondo Ricardo Rojas. Archivo Vis
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="scope_content" datatype="Text">
@@ -9986,6 +9961,16 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <type>internal</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
@@ -10095,6 +10080,29 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <type>bien_cultural</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="nivel_descripcion" datatype="List" list="tipos_niveles_descripcion">
+      <labels>
+        <label locale="es_ES">
+          <name>Nivel de descripción</name>
+          <description>Especificar si es Fondo, Sección, Serie o Agrupación Colección Documental</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">select</setting>
+        <setting name="restrictToTypes">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>fondo</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">0</setting>
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
@@ -17004,6 +17012,133 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="fondos_documetales_ui" type="ca_collections" color="cfc03a" typeRestrictions="fondo" includeSubtypes="0">
+      <labels>
+        <label locale="es_ES">
+          <name>Editor de Fondos Documentales</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="screen_28_0" default="0" color="000000" typeRestrictions="fondo" includeSubtypes="0">
+          <labels>
+            <label locale="es_ES">
+              <name>Identificación</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_collections1">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">museo</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Institución</setting>
+                <setting name="description" locale="es_ES">Nombre de la institución que custodia el documento/fondo/colección [normalizado por control de autoridades]</setting>
+              </settings>
+            </placement>
+            <placement code="idno1">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="usewysiwygeditor"/>
+                <setting name="label" locale="es_ES">Código de referencia</setting>
+                <setting name="description" locale="es_ES">Identificación única del documento/fondo/colección. En caso de no contar con un código de referencia consignar el número de inventario local</setting>
+              </settings>
+            </placement>
+            <placement code="ca_collections4">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">fondo</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Agrupación a la que pertenece</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_extent3">
+              <bundle>ca_attribute_extent</bundle>
+            </placement>
+            <placement code="ca_attribute_nivel_descripcion">
+              <bundle>ca_attribute_nivel_descripcion</bundle>
+            </placement>
+            <placement code="preferred_labels6">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="usewysiwygeditor"/>
+                <setting name="label" locale="es_ES">Título</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_title_type7">
+              <bundle>ca_attribute_title_type</bundle>
+            </placement>
+            <placement code="ca_attribute_unitdate8">
+              <bundle>ca_attribute_unitdate</bundle>
+            </placement>
+            <placement code="ca_attribute_date_period9">
+              <bundle>ca_attribute_date_period</bundle>
+            </placement>
+            <placement code="ca_places10">
+              <bundle>ca_places</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">created</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="label" locale="es_ES">Lugar de creación</setting>
+                <setting name="description" locale="es_ES">Refiere al lugar en donde tuvo lugar la creación, diseño o producción de la colección o sus componentes, o la ubicación original de la colección</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_signatura_topogra">
+              <bundle>ca_attribute_signatura_topografica</bundle>
+            </placement>
+            <placement code="ca_attribute_nota_ubicacion12">
+              <bundle>ca_attribute_nota_ubicacion</bundle>
+            </placement>
+            <placement code="ca_attribute_movements_notes11">
+              <bundle>ca_attribute_movements_notes</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_representation_annotations_x_entities">
@@ -17997,6 +18132,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             <label locale="es_ES">
               <typename>es ubicación de</typename>
               <typename_reverse>está ubicado en</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="created" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>lugar de creacion de</typename>
+              <typename_reverse>fue creado en</typename_reverse>
             </label>
           </labels>
         </type>
