@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 23 Septiembre 2023 at 20:22:24 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 23 Septiembre 2023 at 21:17:15 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -6662,7 +6662,7 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
             Note any distinctive alphabets, scripts, symbol systems or abbreviations employed.</description>
         </label>
         <label locale="es_ES">
-          <name>Lengua / Escritura(s) de los Docuemntos</name>
+          <name>Lengua / Escritura(s) de los Documentos</name>
           <description>campos referidos a la información sobre la lengua y la escritura</description>
         </label>
       </labels>
@@ -9960,6 +9960,42 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="nota_ubicacion" datatype="Text">
+      <labels>
+        <label locale="es_ES">
+          <name>Nota de Ubicacion</name>
+          <description>Nota donde se exone la ubicación del objeto, que no esta formateada para poder ser modelada como ubicaciones.</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="fecha_propiedad" datatype="DateRange">
+      <labels>
+        <label locale="es_ES">
+          <name>Fecha de propiedad</name>
+          <description>Refiere a las fechas en las que estuvo bajo custodia del propietario anterior. Ej. 1930 - 1940</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -12060,6 +12096,16 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_nota_ubicacion18">
+              <bundle>ca_attribute_nota_ubicacion</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_list_items5">
               <bundle>ca_list_items</bundle>
               <settings>
@@ -12246,6 +12292,16 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_numero_administra">
+              <bundle>ca_attribute_numero_administrativo</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_codigo_anterior2">
               <bundle>ca_attribute_codigo_anterior</bundle>
               <settings>
@@ -12256,15 +12312,30 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_numero_administra">
-              <bundle>ca_attribute_numero_administrativo</bundle>
+            <placement code="ca_entities11">
+              <bundle>ca_entities</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">propietario_anterior</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Propietarios Anteriores</setting>
+                <setting name="add_label" locale="es_ES">añadir propietario</setting>
+                <setting name="description" locale="es_ES">Quien posee la responsabilidad del cuidado del bien. Se basa en su posesión física y que no siempre implica la propiedad jurídica ni el derecho a controlar el acceso a los bienes. También llamado custodia. Ingresar el apellido y nombre del propietario anterior [normalizado por control de autoridades]. Se debe reconstruir toda la cadena de custodia.</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_fecha_propiedad12">
+              <bundle>ca_attribute_fecha_propiedad</bundle>
             </placement>
             <placement code="ca_attribute_sustraction11">
               <bundle>ca_attribute_sustraction</bundle>
@@ -17202,6 +17273,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             <label locale="es_ES">
               <typename>cultura</typename>
               <typename_reverse>originado en</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="propietario_anterior" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>fue su propietario anterior</typename>
+              <typename_reverse>fue el propietario anterior de</typename_reverse>
             </label>
           </labels>
         </type>
