@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 24 Septiembre 2023 at 14:40:07 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 24 Septiembre 2023 at 15:41:51 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -10076,6 +10076,31 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="condicion_bc" datatype="List" list="diplomatic_traditions_types">
+      <labels>
+        <label locale="es_ES">
+          <name>Condicion</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">0</setting>
+        <setting name="canBeUsedInSearchForm">0</setting>
+        <setting name="canBeUsedInDisplay">0</setting>
+        <setting name="render">select</setting>
+        <setting name="restrictToTypes">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>bien_cultural</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -15656,17 +15681,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_reference_code2">
-              <bundle>ca_attribute_reference_code</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_nro_inventario">
@@ -15683,9 +15699,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
               <bundle>ca_attribute_category</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15693,19 +15708,26 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">coleccion_bc</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Colección</setting>
+                <setting name="description" locale="es_ES">Conjunto artificial de bienes acumulados sobre la base de una característica común sin tener en cuenta su procedencia (de origen). Ej. Colección Numismática Argentina&#13;
+</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_condicion_bc5">
+              <bundle>ca_attribute_condicion_bc</bundle>
             </placement>
             <placement code="ca_attribute_nombre_del_objeto">
               <bundle>ca_attribute_nombre_del_objeto</bundle>
@@ -15757,14 +15779,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_objects_components_list11">
-              <bundle>ca_objects_components_list</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="displayTemplate">&lt;l&gt;^ca_objects.preferred_labels.name&lt;/l&gt; (^ca_objects.idno)</setting>
-              </settings>
+            <placement code="ca_attribute_component11">
+              <bundle>ca_attribute_component</bundle>
             </placement>
             <placement code="ca_attribute_elements12">
               <bundle>ca_attribute_elements</bundle>
@@ -15940,6 +15956,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_nota_ubicacion24">
+              <bundle>ca_attribute_nota_ubicacion</bundle>
+            </placement>
             <placement code="ca_storage_locations23">
               <bundle>ca_storage_locations</bundle>
               <settings>
@@ -16072,6 +16091,30 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
+            </placement>
+            <placement code="ca_entities5">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">propietario_anterior</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Propietarios Anteriores</setting>
+                <setting name="description" locale="es_ES">Quien posee la responsabilidad del cuidado de los documentos. Se basa en su posesión física y que no siempre implica la propiedad jurídica ni el derecho a controlar el acceso a los documentos. También llamado custodia. Ingresar el apellido y nombre del propietario anterior [normalizado por control de autoridades]. Se debe reconstruir toda la cadena de custodia del documento/fondo/colección. Si el propietario anterior es el productor del fondo/colección no debe completarse este campo</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_fecha_propiedad6">
+              <bundle>ca_attribute_fecha_propiedad</bundle>
             </placement>
             <placement code="ca_attribute_sustraction6">
               <bundle>ca_attribute_sustraction</bundle>
@@ -16222,6 +16265,16 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_conservation_stat">
+              <bundle>ca_attribute_conservation_status</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_occurrences15">
               <bundle>ca_occurrences</bundle>
               <settings>
@@ -16242,16 +16295,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_conservation_stat">
-              <bundle>ca_attribute_conservation_status</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="ca_entities5">
@@ -16515,42 +16558,75 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_relatedmaterial">
-              <bundle>ca_attribute_relatedmaterial</bundle>
-              <settings>
-                <setting name="label" locale="es_ES">Unidades de Descripcion Relacionadas</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">item</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Unidades de descripción relacionadas</setting>
+                <setting name="description" locale="es_ES">Se utiliza para informar acerca de las unidades de descripción que se encuentran en el mismo archivo y que tienen alguna relación con la unidad de descripción por el principio de procedencia o por cualquier otra clase de asociación. Establecer la relación a partir del código de identificación unívoco de la unidad de descripción que se desea relacionar</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects3">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Objetos relacionados de la colección</setting>
+                <setting name="description" locale="es_ES">Refiere a los  códigos de identificación unívocos de los bienes relacionados que pertenecen a la colección</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">bien_cultural</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_relations_note3">
+            <placement code="ca_objects4" typeRestrictions="bien_cultural,item,objeto_externo">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">objeto_externo</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Objetos relacionados de la externos</setting>
+                <setting name="description" locale="es_ES">Refiere a los  códigos de identificación unívocos de los bienes relacionados que pertenecen a la colección o unidades de descripción que se encuentran en una institución externa y que tienen alguna relación con la unidad de descripción por el principio de procedencia o por cualquier otra clase de asociación</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_relations_note3" typeRestrictions="bien_cultural,item,objeto_externo">
               <bundle>ca_attribute_relations_note</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -16826,6 +16902,27 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_entities3">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Responsable de la carga en el inventario</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar el apellido y nombre del responsable del ingreso de los datos del inventario del bien [normalizado por control de autoridades]. Ej. Gomez, Martín</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">funcionario</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_processinfo">
               <bundle>ca_attribute_processinfo</bundle>
               <settings>
@@ -16860,6 +16957,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_attribute_registro_document">
+              <bundle>ca_attribute_registro_documentacion</bundle>
+            </placement>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
               <settings>
@@ -16888,6 +16988,16 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="expand_collapse_no_value">bubbles</setting>
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_object_representations_acce">
+              <bundle>ca_object_representations_access_status</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Acceso a objeto digital</setting>
+                <setting name="description" locale="es_ES">Se utiliza para aclarar el tipo de acceso autorizado para el objeto digital. Campo cerrado en el que se debe elegir entre una de las opciones</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
               </settings>
             </placement>
           </bundlePlacements>
