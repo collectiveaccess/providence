@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 25 Septiembre 2023 at 0:06:22 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 25 Septiembre 2023 at 13:25:45 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -1044,7 +1044,7 @@
           <name>Entity Types</name>
         </label>
         <label locale="es_ES">
-          <name>Tipos de etidades</name>
+          <name>Tipos de entidades</name>
         </label>
       </labels>
       <items>
@@ -1089,19 +1089,6 @@
               <description/>
             </label>
           </labels>
-        </item>
-        <item idno="funcionario" enabled="1" default="0" value="funcionario" rank="426" type="concept">
-          <labels>
-            <label locale="es_ES" preferred="1">
-              <name_singular>Funcionario</name_singular>
-              <name_plural>Funcionarios</name_plural>
-              <description/>
-            </label>
-          </labels>
-          <settings>
-            <setting name="entity_class">IND</setting>
-            <setting name="render_in_new_menu">1</setting>
-          </settings>
         </item>
       </items>
     </list>
@@ -10392,6 +10379,79 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="rango_fechas" datatype="DateRange">
+      <labels>
+        <label locale="es_ES">
+          <name>Fechas</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="isLifespan">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_object_lots</table>
+          <type>visu</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_lots</table>
+          <type>alta_patrimonial</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="porcentaje_visu" datatype="Text">
+      <labels>
+        <label locale="es_ES">
+          <name>Porcentaje de la colección</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="maxChars">100</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_object_lots</table>
+          <type>visu</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="visu_completado" datatype="List" list="yn_list">
+      <labels>
+        <label locale="es_ES">
+          <name>Visu completado</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">select</setting>
+        <setting name="restrictToTypes">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_object_lots</table>
+          <type>visu</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -13565,7 +13625,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">funcionario</setting>
+                <setting name="restrict_to_relationship_types">registrado</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
@@ -13574,7 +13634,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -15353,6 +15412,26 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_entities2">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Responsable de la carga en el inventario</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">registrado</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_descrules2">
               <bundle>ca_attribute_descrules</bundle>
               <settings>
@@ -15475,15 +15554,6 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_acquisition_sourc" typeRestrictions="acquisition">
-              <bundle>ca_attribute_acquisition_source</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
             <placement code="ca_attribute_acquisition_date" typeRestrictions="acquisition">
               <bundle>ca_attribute_acquisition_date</bundle>
               <settings>
@@ -15502,6 +15572,53 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_rango_fechas6" typeRestrictions="alta_patrimonial,visu">
+              <bundle>ca_attribute_rango_fechas</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_acquisition_sourc" typeRestrictions="alta_patrimonial,visu">
+              <bundle>ca_attribute_acquisition_source</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_porcentaje_visu8" typeRestrictions="visu">
+              <bundle>ca_attribute_porcentaje_visu</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities7">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">responsable</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Responsable administrativo</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_out_reason8" typeRestrictions="out">
               <bundle>ca_attribute_out_reason</bundle>
               <settings>
@@ -15511,14 +15628,50 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_visu_completado11" typeRestrictions="visu">
+              <bundle>ca_attribute_visu_completado</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_norma_legal8">
               <bundle>ca_attribute_norma_legal</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_expediente9">
               <bundle>ca_attribute_expediente</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_objects10">
               <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">ca_objects.processinfo</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -15608,7 +15761,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">funcionario</setting>
+                <setting name="restrict_to_relationship_types">registrado</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
@@ -17475,7 +17628,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">funcionario</setting>
+                <setting name="restrict_to_relationship_types">registrado</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
@@ -17484,7 +17637,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -17574,6 +17726,47 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
               </settings>
             </placement>
           </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="localization_editor" type="ca_storage_locations" color="c722c7">
+      <labels>
+        <label locale="es_ES">
+          <name>Editor de Ubicaciones</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="screen_27_0" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Identificación</name>
+            </label>
+          </labels>
+          <bundlePlacements/>
+        </screen>
+        <screen idno="screen_27_1" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Conservación</name>
+            </label>
+          </labels>
+          <bundlePlacements/>
+        </screen>
+        <screen idno="screen_27_2" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Notas</name>
+            </label>
+          </labels>
+          <bundlePlacements/>
+        </screen>
+        <screen idno="screen_27_3" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Control</name>
+            </label>
+          </labels>
+          <bundlePlacements/>
         </screen>
       </screens>
     </userInterface>
@@ -17785,6 +17978,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </label>
           </labels>
         </type>
+        <type code="registrado" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>el es responsable de registro de</typename>
+              <typename_reverse>fue registrado por</typename_reverse>
+            </label>
+          </labels>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_entities_x_occurrences">
@@ -17798,6 +17999,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             <label locale="es_ES">
               <typename>asistió a</typename>
               <typename_reverse>fue asistido por</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="registrado" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>es el responsable de registro de</typename>
+              <typename_reverse>fue registrado por</typename_reverse>
             </label>
           </labels>
         </type>
@@ -17981,6 +18190,22 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </label>
           </labels>
         </type>
+        <type code="registrado" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>fue registrado por</typename>
+              <typename_reverse>es el responsable de registro de</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="responsable" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>su responsable administrativo es</typename>
+              <typename_reverse>es el responsable administrativo de</typename_reverse>
+            </label>
+          </labels>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_object_lots_x_occurrences">
@@ -18138,6 +18363,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             <label locale="es_ES">
               <typename>fue su propietario anterior</typename>
               <typename_reverse>fue el propietario anterior de</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="registrado" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>fue registrado por</typename>
+              <typename_reverse>es el responsable de registro de</typename_reverse>
             </label>
           </labels>
         </type>
@@ -18841,6 +19074,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </label>
           </labels>
         </type>
+        <type code="registrado" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>fue registrado por</typename>
+              <typename_reverse>es el responsable de registro de</typename_reverse>
+            </label>
+          </labels>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_movements_x_objects">
@@ -18898,6 +19139,14 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             <label locale="es_ES">
               <typename>fue movido por</typename>
               <typename_reverse>mueve</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="registrado" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>fue registrado por</typename>
+              <typename_reverse>es el responsable de registro de</typename_reverse>
             </label>
           </labels>
         </type>
