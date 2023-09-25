@@ -666,7 +666,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	
 						$info = $result->getMediaInfo('ca_object_representations.media', $version);
 				
-						if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
 							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
 								$image = "image".$supercol.$column.$line;
 								$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
