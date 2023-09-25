@@ -368,7 +368,7 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * @param string $output_filename
  * @param array $options Options include:
  *		output = where to output data. Values may be FILE (write to file) or STREAM. [Default is stream]
- *		display = ca_bundle_displays object loaded with currently selected displat. [Default is null]
+ *		display = ca_bundle_displays object loaded with currently selected display. [Default is null]
  *
  * @return ?array|bool If output is FILE, path to file or null if file could not be generated. If output is STREAM null returned on error; true returned on success
  *
