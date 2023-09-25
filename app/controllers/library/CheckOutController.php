@@ -211,7 +211,6 @@ class CheckOutController extends ActionController {
 			$app_name = Configuration::load()->get('app_display_name');
 			$sender_email = $library_config->get('notification_sender_email');
 			$sender_name = $library_config->get('notification_sender_name');
-			$subject = _t('Receipt for check out');
 			
 			$checked_out_items = $reserved_items = [];
 			$t_object = new ca_objects();
@@ -258,7 +257,10 @@ class CheckOutController extends ActionController {
 				}
 			}
 			if($library_config->get('send_item_checkout_receipts') && ((sizeof($checked_out_items) > 0) || (sizeof($reserved_items) > 0)) && ($user_email = $this->request->user->get('ca_users.email'))) {
-				if (!caSendMessageUsingView(null, $user_email, $sender_email, "[{$app_name}] {$subject}", "library_checkout_receipt.tpl", ['subject' => $subject, 'from_user_id' => $user_id, 'sender_name' => $sender_name, 'sender_email' => $sender_email, 'sent_on' => time(), 'checkout_date' => caGetLocalizedDate(), 'checkouts' => $checked_out_items, 'reservations' => $reserved_items], null, [], ['source' => 'Library checkout receipt'])) {
+				if(!($subject = $library_config->get('item_checkout_receipt_subject_template'))) {
+					$subject = _t('[%1] Receipt for check out', $app_name);
+				}
+				if (!caSendMessageUsingView(null, $user_email, $sender_email, "{$subject}", "library_checkout_receipt.tpl", ['subject' => $subject, 'from_user_id' => $user_id, 'sender_name' => $sender_name, 'sender_email' => $sender_email, 'sent_on' => time(), 'checkout_date' => caGetLocalizedDate(), 'checkouts' => $checked_out_items, 'reservations' => $reserved_items], null, [], ['source' => 'Library checkout receipt'])) {
 					global $g_last_email_error;
 					$ret['errors'][] = _t('Could not send receipt: %1', $g_last_email_error);
 				}
