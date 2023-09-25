@@ -684,6 +684,7 @@ class ca_change_log extends BaseModel {
 				    $qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
                 }
                 
+                $self_as_subject_set = false;
 				while($qr_subjects->nextRow()) {
 					// skip subjects without GUID -- we don't care about those
 					$subject_table_num = $qr_subjects->get('subject_table_num');
@@ -723,6 +724,8 @@ class ca_change_log extends BaseModel {
 					}
 
 					$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
+					
+					if($vs_guid == $vs_subject_guid) { $self_as_subject_set = true; }
 				}
 				
 				if ($va_row['snapshot']['attribute_guid']) {
@@ -730,6 +733,14 @@ class ca_change_log extends BaseModel {
 				        'subject_table_num' => 4,
 				        'subject_row_id' => $va_row['snapshot']['attribute_id'],
 				        'guid' => $va_row['snapshot']['attribute_guid']
+				    ];
+				}
+				
+				if(!$self_as_subject_set) {
+					 $va_row['subjects'][] = [
+				        'subject_table_num' => $logged_table_num,
+				        'subject_row_id' => $logged_row_id,
+				        'guid' => $vs_guid
 				    ];
 				}
 

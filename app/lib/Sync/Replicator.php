@@ -733,6 +733,16 @@ class Replicator {
 				
 				// Add guids for dependencies referenced by this log entry
 				if(is_array($missing_entry['snapshot'])) {
+					// check parent
+					if($parent_guid = ($missing_entry['snapshot']['parent_id_guid'] ?? null)) {
+						$parent_access = $this->_hasAccess($this->source, [$parent_guid]);
+						if(!in_array((int)$parent_guid[$parent_guid], $this->access_list, true)) {
+							$missing_entry['snapshot']['parent_id_guid'] = null;
+							$missing_entry['snapshot']['parent_id'] = null;	
+							$this->logDebug(_t("[%1] Removed parent_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $parent_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
+						}
+					}
+					
 					$missing_log_entry_pk = Datamodel::primaryKey($missing_entry['logged_table_num']);
 					
 					$dependent_guids = array_values(array_filter($missing_entry['snapshot'], function($v, $k) use ($missing_entry, $missing_guid) { 
@@ -999,7 +1009,7 @@ class Replicator {
 						$this->log(_t("[%1] Could not push unresolved guid %2: %3", $this->source_key, $guid, print_r($ret, true)), Zend_Log::DEBUG);
 						$failed++;
 					} else {
-						$this->log(_t("[%1 Pushed unresolved guid %2", $this->source_key, $guid), Zend_Log::DEBUG);
+						$this->log(_t("[%1] Pushed unresolved guid %2", $this->source_key, $guid), Zend_Log::DEBUG);
 						unset($this->unresolved_guids[$guid]);
 						$pushed++;
 					}
@@ -1125,6 +1135,7 @@ class Replicator {
 			$res = $resp->getRawData();
 			
 			foreach($res as $r) {
+				$this->log(_t("[%1] Replicating %2.", $source, $r), Zend_Log::INFO);
 				$this->replicate(['source' => $source, 'log_id' => $r['log_id']]);
 			}
 			return true;
@@ -1146,7 +1157,37 @@ class Replicator {
 				->request();
 			
 			$guids = $resp->getRawData();
-			self::syncGUIDs($source, $guids);
+			$this->log(_t("[%1] There are %2 public records for source.", $source, sizeof($guids)), Zend_Log::INFO);
+			
+			$targets = $this->getTargetsAsServiceClients();
+			
+			foreach($targets as $o_target) {
+				$i = 0;
+				$guids_to_sync = [];
+				
+				do {
+					$chk_guids = array_slice($guids, $i, 500);
+				
+					if(!is_array($chk_guids) || !sizeof($chk_guids)) { break; }
+				
+					$o_guid_already_exists = $o_target->setRequestMethod('POST')->setEndpoint('hasGUID')
+						->setRequestBody($chk_guids)
+						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+						->request();
+					$guid_already_exists = $o_guid_already_exists->getRawData();
+					
+					foreach($guid_already_exists as $guid => $guid_info) {
+						if(is_array($guid_info)) { continue; }
+						$guids_to_sync[] = $guid;
+					}
+					
+					$i += 500;
+				} while($i < sizeof($guids));
+				
+				$guids_to_sync = array_unique($guids_to_sync);
+			}
+			$this->log(_t("[%1] Found %2 unsynced public records.", $source, sizeof($guids_to_sync)), Zend_Log::INFO);
+			self::syncGUIDs($source, $guids_to_sync);
 			return true;
 		}
 		throw new ApplicationException(_t('Invalid source'));
