@@ -1492,7 +1492,11 @@ class SearchResult extends BaseObject {
 							||
 							!sizeof(SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])
 						){ 
-							continue;
+							if($pa_options['includeSelf'] ?? false) {
+								SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5] = [];
+							} else {
+								continue;
+							}
 						}
 						
 						$child_ids = SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5];
