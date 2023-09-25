@@ -310,7 +310,8 @@ class SetEditorController extends BaseEditorController {
 		$is_background = ($this->request->getParameter('background', pInteger) === 1);
 		$export_format = $this->request->getParameter('export_format', pString);
 		$set_id = $this->request->getParameter('set_id', pInteger);
-		
+        $display_id = $this->request->getParameter('display_id', pString);
+        
 		// Check is report should be force-backgrounded because the number of results exceeds the background result size 
 		// threshold declared in the chosen template.
 		if(
@@ -399,7 +400,7 @@ class SetEditorController extends BaseEditorController {
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		caExportResult($this->request, $res, $export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
+		caExportResult($this->request, $res, $export_format, '_output', ['display' => $display_id ? new ca_bundle_displays($display_id) : null, 'printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
 		
 		return;
 	}
