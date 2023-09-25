@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 25 Septiembre 2023 at 13:25:45 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 25 Septiembre 2023 at 14:21:16 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -10452,6 +10452,89 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="nro_patrimonial" datatype="Container">
+      <labels>
+        <label locale="es_ES">
+          <name>Objeto / Número Patrimonial</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="canBeUsedInSearchForm">0</setting>
+        <setting name="canBeUsedInDisplay">0</setting>
+      </settings>
+      <elements>
+        <metadataElement code="codigo_objeto" datatype="Text">
+          <labels>
+            <label locale="es_ES">
+              <name>Código Objeto</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">; </setting>
+            <setting name="isDependentValue">0</setting>
+            <setting name="dependentValueTemplate"/>
+            <setting name="mustBeUnique">0</setting>
+            <setting name="referenceMediaIn"/>
+          </settings>
+        </metadataElement>
+        <metadataElement code="nro" datatype="Text">
+          <labels>
+            <label locale="es_ES">
+              <name>Número Patrimonial</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="canMakePDF">0</setting>
+            <setting name="canMakePDFForValue">0</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">; </setting>
+            <setting name="isDependentValue">0</setting>
+            <setting name="dependentValueTemplate"/>
+            <setting name="mustBeUnique">0</setting>
+            <setting name="referenceMediaIn"/>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -15590,8 +15673,8 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_porcentaje_visu8" typeRestrictions="visu">
-              <bundle>ca_attribute_porcentaje_visu</bundle>
+            <placement code="ca_attribute_out_reason8" typeRestrictions="out">
+              <bundle>ca_attribute_out_reason</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
@@ -15619,8 +15702,8 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="label" locale="es_ES">Responsable administrativo</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_out_reason8" typeRestrictions="out">
-              <bundle>ca_attribute_out_reason</bundle>
+            <placement code="ca_attribute_porcentaje_visu8" typeRestrictions="visu">
+              <bundle>ca_attribute_porcentaje_visu</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
@@ -15654,6 +15737,9 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="expand_collapse_no_value">dont_force</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_nro_patrimonial14">
+              <bundle>ca_attribute_nro_patrimonial</bundle>
             </placement>
             <placement code="ca_objects10">
               <bundle>ca_objects</bundle>
