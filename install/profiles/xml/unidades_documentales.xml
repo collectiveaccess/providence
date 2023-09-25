@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 24 Septiembre 2023 at 18:00:23 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 24 Septiembre 2023 at 22:18:06 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -6797,6 +6797,14 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="otherfindingaid" datatype="Text">
@@ -7183,6 +7191,12 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
           <description>Record specialized or other important information not accommodated by any of the
             defined elements of description.</description>
         </label>
+        <label locale="es_ES">
+          <name>Nota Pública</name>
+          <description>Se utiliza para consignar información especial o cualquier otra información significativa relacionada a un bien que no haya podido ser incluida en las otras áreas, y que se encuentre autorizada a ser compartidas de manera pública. Esta información debe ser subsidiaria o complementaria respecto a la contenida en los demás campos. No incluir información para la cual se disponga de un campo específico. Siempre se deberá realizar una breve explicación de la información que se detalle
+Ej. El título y la fecha de ejecución de la obra fueron atribuídos por la historiadora del arte Giunta, Andrea
+</description>
+        </label>
       </labels>
       <settings>
         <setting name="fieldWidth">80</setting>
@@ -7305,6 +7319,10 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
         <label locale="en_US">
           <name>Date(s) of descriptions</name>
           <description>Record the date(s) the entry was prepared and/or revised.</description>
+        </label>
+        <label locale="es_ES">
+          <name>Fecha/s de la descripción</name>
+          <description> Se utiliza para consignar la fecha de carga del inventario del bien siguiendo el formato año- mes- día (AAAA-MM-DD). Ej. 1942-08-01  </description>
         </label>
       </labels>
       <settings>
@@ -8155,6 +8173,15 @@ Para las entidades, consignar datos como el nombre oficial, fechas de existencia
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="group" datatype="Collections">
@@ -8566,7 +8593,6 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
         </restriction>
         <restriction>
           <table>ca_collections</table>
-          <type>fondo</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -8850,8 +8876,6 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
         </restriction>
         <restriction>
           <table>ca_collections</table>
-          <type>internal</type>
-          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -9759,6 +9783,14 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="library" datatype="Text">
@@ -9776,6 +9808,14 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -9800,6 +9840,14 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="prices" datatype="Text">
@@ -9812,6 +9860,14 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -9841,6 +9897,14 @@ Ej. Argentina. Museo Casa de Ricardo Rojas. RR. Fondo Ricardo Rojas. Archivo Vis
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="desc_bibliography" datatype="Text">
@@ -9853,6 +9917,14 @@ Ej. Argentina. Museo Casa de Ricardo Rojas. RR. Fondo Ricardo Rojas. Archivo Vis
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -9946,6 +10018,14 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="nota_ubicacion" datatype="Text">
@@ -9966,8 +10046,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
         <restriction>
           <table>ca_collections</table>
-          <type>internal</type>
-          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -9986,6 +10064,14 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -10053,6 +10139,14 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
@@ -14107,7 +14201,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="standard_collection_ui" type="ca_collections">
+    <userInterface code="standard_collection_ui" type="ca_collections" typeRestrictions="museo" includeSubtypes="0">
       <labels>
         <label locale="en_US">
           <name>Collection editor</name>
@@ -14116,732 +14210,702 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
           <name>Editor de colecciones</name>
         </label>
       </labels>
-      <screens>
-        <screen idno="identity" default="1">
+            <screens>
+        <screen idno="screen_28_0" default="0" color="000000">
           <labels>
-            <label locale="en_US">
-              <name>Identity</name>
-            </label>
             <label locale="es_ES">
               <name>Identificación</name>
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse">bubbles</setting>
-                <setting name="open_hierarchy">1</setting>
-                <setting name="auto_shrink"/>
-              </settings>
-            </placement>
-            <placement code="idno">
-              <bundle>idno</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="usewysiwygeditor"/>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_repository">
-              <bundle>ca_attribute_repository</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" locale="es_ES">Título</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" locale="es_ES">Agregar título</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="usewysiwygeditor"/>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_unitdate">
-              <bundle>ca_attribute_unitdate</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_extent">
-              <bundle>ca_attribute_extent</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_adminbiohist">
-              <bundle>ca_attribute_adminbiohist</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_tipo_documental">
-              <bundle>ca_attribute_tipo_documental</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_autorship_note">
-              <bundle>ca_attribute_autorship_note</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="content" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Content and Structure</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_scopecontent">
-              <bundle>ca_attribute_scopecontent</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_arrangement">
-              <bundle>ca_attribute_arrangement</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="access_use" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Access and Use</name>
-            </label>
-            <label locale="es_ES">
-              <name>Acceso y Uso</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_accessrestrict">
-              <bundle>ca_attribute_accessrestrict</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_physaccessrestric">
-              <bundle>ca_attribute_physaccessrestrict</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_techaccessrestric">
-              <bundle>ca_attribute_techaccessrestrict</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_reproduction">
-              <bundle>ca_attribute_reproduction</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_langmaterial">
-              <bundle>ca_attribute_langmaterial</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_otherfindingaid">
-              <bundle>ca_attribute_otherfindingaid</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="acquisition" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Acquisition and Appraisal</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_custohist">
-              <bundle>ca_attribute_custohist</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_acqinfo">
-              <bundle>ca_attribute_acqinfo</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_appraisal">
-              <bundle>ca_attribute_appraisal</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_accruals">
-              <bundle>ca_attribute_accruals</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="related" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Related Materials</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_originalsloc">
-              <bundle>ca_attribute_originalsloc</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_altformavail">
-              <bundle>ca_attribute_altformavail</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_relatedmaterial">
-              <bundle>ca_attribute_relatedmaterial</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_collections">
+            <placement code="ca_collections1">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">museo</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Institución</setting>
+                <setting name="description" locale="es_ES">Nombre de la institución que custodia el documento/fondo/colección [normalizado por control de autoridades]</setting>
+              </settings>
+            </placement>
+            <placement code="idno1">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="usewysiwygeditor"/>
+                <setting name="label" locale="es_ES">Código de referencia</setting>
+                <setting name="description" locale="es_ES">Identificación única del documento/fondo/colección. En caso de no contar con un código de referencia consignar el número de inventario local</setting>
+              </settings>
+            </placement>
+            <placement code="ca_collections4">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">fondo</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Agrupación a la que pertenece</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_extent3">
+              <bundle>ca_attribute_extent</bundle>
+            </placement>
+            <placement code="ca_attribute_nivel_descripcion">
+              <bundle>ca_attribute_nivel_descripcion</bundle>
+            </placement>
+            <placement code="preferred_labels6">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="usewysiwygeditor"/>
+                <setting name="label" locale="es_ES">Título</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_title_type7">
+              <bundle>ca_attribute_title_type</bundle>
+            </placement>
+            <placement code="ca_attribute_unitdate8">
+              <bundle>ca_attribute_unitdate</bundle>
+            </placement>
+            <placement code="ca_attribute_date_period9">
+              <bundle>ca_attribute_date_period</bundle>
+            </placement>
+            <placement code="ca_places10">
+              <bundle>ca_places</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">created</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="label" locale="es_ES">Lugar de creación</setting>
+                <setting name="description" locale="es_ES">Refiere al lugar en donde tuvo lugar la creación, diseño o producción de la colección o sus componentes, o la ubicación original de la colección</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_signatura_topogra">
+              <bundle>ca_attribute_signatura_topografica</bundle>
+            </placement>
+            <placement code="ca_attribute_nota_ubicacion12">
+              <bundle>ca_attribute_nota_ubicacion</bundle>
+            </placement>
+            <placement code="ca_attribute_movements_notes11">
+              <bundle>ca_attribute_movements_notes</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="screen_28_1" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Contexto</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_entities1">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">productor</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Productor</setting>
+                <setting name="description" locale="es_ES">Entidad, familia o persona que ha producido, acumulado y conservado los documentos en el desarrollo de su propia actividad. No debe confundirse con el/la donante, propietario/a y/o albacea [normalizado por control de autoridades]</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities2">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">creador</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Creador</setting>
+                <setting name="description" locale="es_ES">Institución, familia o persona que ha producido, acumulado y conservado los documentos en el desarrollo de su propia actividad pero que, finalizada esta, el fondo documental fue intervenido por otra institución, familia o persona, alterando la función inicial que le dio origen [normalizado por control de autoridades]</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_adminbiohist2">
+              <bundle>ca_attribute_adminbiohist</bundle>
+            </placement>
+            <placement code="ca_attribute_custohist3">
+              <bundle>ca_attribute_custohist</bundle>
+            </placement>
+            <placement code="ca_object_lots4">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Ingreso</setting>
+                <setting name="description" locale="es_ES">[campos relacionados a la información de ingreso del bien]</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">acquisition</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_bibliography">
-              <bundle>ca_attribute_bibliography</bundle>
+            <placement code="ca_object_lots6">
+              <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">out</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Baja</setting>
+                <setting name="description" locale="es_ES"> [campos relacionados a la información de baja del bien]</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences7">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Funciones</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar las funciones a partir de las cuales se produce un documento/fondo/colección (utilizar para sección)</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences8">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Actividades</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar las actividades a partir de las cuales se produce un documento/fondo/colección (utilizar para series)</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">activities</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities9">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Propietario Anterior</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">propietario_anterior</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_fecha_propiedad10">
+              <bundle>ca_attribute_fecha_propiedad</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="screen_28_2" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Contenido y Estructura</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_appraisal1">
+              <bundle>ca_attribute_appraisal</bundle>
+            </placement>
+            <placement code="ca_attribute_accruals2">
+              <bundle>ca_attribute_accruals</bundle>
+            </placement>
+            <placement code="ca_attribute_arrangement3">
+              <bundle>ca_attribute_arrangement</bundle>
+            </placement>
+            <placement code="ca_attribute_conservation_stat">
+              <bundle>ca_attribute_conservation_status</bundle>
+            </placement>
+            <placement code="ca_occurrences4">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">maintenance</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Reportes de condicion relacionados</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities5">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_occurrences6">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Acontecimientos relacionado</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_list_items_related_list7">
+              <bundle>ca_list_items_related_list</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Asuntos</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">guide_term</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places8">
+              <bundle>ca_places</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
               </settings>
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="notes" default="0">
+        <screen idno="screen_28_3" default="0" color="000000">
           <labels>
-            <label locale="en_US">
-              <name>Notes, etc.</name>
+            <label locale="es_ES">
+              <name>Acceso y uso</name>
             </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_accessrestrict1">
+              <bundle>ca_attribute_accessrestrict</bundle>
+            </placement>
+            <placement code="ca_attribute_reproduction2">
+              <bundle>ca_attribute_reproduction</bundle>
+            </placement>
+            <placement code="ca_entities3">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Propietario de derechos</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_relationship_types">rightsHolder</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_langmaterial4">
+              <bundle>ca_attribute_langmaterial</bundle>
+            </placement>
+            <placement code="ca_attribute_phystech5">
+              <bundle>ca_attribute_phystech</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Características físicas y requisitos técnicos</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_other_find_aid6">
+              <bundle>ca_attribute_other_find_aid</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="screen_28_4" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Materiales Relacionados</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_originalsloc1">
+              <bundle>ca_attribute_originalsloc</bundle>
+            </placement>
+            <placement code="ca_attribute_altformavail2">
+              <bundle>ca_attribute_altformavail</bundle>
+            </placement>
+            <placement code="ca_objects3">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">item</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+                <setting name="label" locale="es_ES">Unidades de descripción relacionadas</setting>
+                <setting name="description" locale="es_ES">Se utiliza para informar acerca de las unidades de descripción que se encuentran en el mismo archivo y que tienen alguna relación con la unidad de descripción por el principio de procedencia o por cualquier otra clase de asociación. Establecer la relación a partir del código de identificación unívoco de la unidad de descripción que se desea relacionar</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects4">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Objetos relacionados de la colección</setting>
+                <setting name="description" locale="es_ES">Refiere a los  códigos de identificación unívocos de los bienes relacionados que pertenecen a la colección</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">bien_cultural</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects5">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Objetos relacionados externos de la colección</setting>
+                <setting name="description" locale="es_ES">Refiere a los códigos de identificación unívocos de los bienes relacionados externos a la colección</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">objeto_externo</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_relations_note6">
+              <bundle>ca_attribute_relations_note</bundle>
+            </placement>
+            <placement code="ca_attribute_bibliography6">
+              <bundle>ca_attribute_bibliography</bundle>
+            </placement>
+            <placement code="ca_attribute_library8">
+              <bundle>ca_attribute_library</bundle>
+            </placement>
+            <placement code="ca_occurrences7">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Investigaciones relacionadas </setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar el/los título/s de la/s investigación/es relacionada/s al bien. Se debe seguir la forma de citación  propuesta por las normas APA guia-normas-apa-7-ed-2020-08-12.pdf</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">investigacion</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_external_links10">
+              <bundle>ca_attribute_external_links</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="screen_28_5" default="0" color="000000">
+          <labels>
+            <label locale="es_ES">
+              <name>Procesos</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_occurrences1">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Exposiciones relacionadas</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar las exposiciones en las que participó el bien. Se debe seguir la forma de citación  propuesta por las normas APA (Modo de citación APA - campo URL vínculo biblioteca, Koha). guia-normas-apa-7-ed-2020-08-12.pdf&#13;
+Ej. Baur, S. &amp; Duprat, A. (2020). Norah Borges: una mujer en la vanguardia. Museo Nacional de Bellas Artes. &#13;
+</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">exposiciones</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_loans2">
+              <bundle>ca_loans</bundle>
+            </placement>
+            <placement code="ca_occurrences3">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Evento relacionado</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar los eventos culturales en los que participó el bien. Se debe seguir la forma de citación  propuesta por las normas APA (Modo de citación APA - campo URL vínculo biblioteca, Koha). guia-normas-apa-7-ed-2020-08-12.pdf&#13;
+Ej. Museo Histórico Nacional (2021, 30 de octubre). La Noche de los Museos. https://museohistoriconacional.cultura.gob.ar/actividad/la-noche-de-los-museos-3/</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">event</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_object_lots4">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Visu relacionado</setting>
+                <setting name="description" locale="es_ES">Refiere a la información del visu. Consignar la información según lo establecen las normativas vigentes. Establecer el apellido y nombre del responsable seguido de la fecha. Seguir el formato año- mes- día (AAAA-MM-DD).&#13;
+Ej. Peréz, Noelia 2020-04-02&#13;
+</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">visu</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_object_lots5">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="es_ES">Alta patrimonial relacionada</setting>
+                <setting name="description" locale="es_ES">Se utiliza para consignar el alta patrimonial del bien</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">dont_force</setting>
+                <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="restrict_to_types">alta_patrimonial</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">0</setting>
+                <setting name="showCurrentUsingDate">effective_date</setting>
+                <setting name="disableQuickadd">0</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="disableSorts">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_prices6">
+              <bundle>ca_attribute_prices</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="screen_28_6" default="0" color="000000">
+          <labels>
             <label locale="es_ES">
               <name>Notas</name>
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_note">
+            <placement code="ca_attribute_note1">
               <bundle>ca_attribute_note</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
             </placement>
-            <placement code="ca_attribute_profiledesc">
-              <bundle>ca_attribute_profiledesc</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
+            <placement code="ca_attribute_quotation2">
+              <bundle>ca_attribute_quotation</bundle>
+            </placement>
+            <placement code="ca_attribute_internal_notes2">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_desc_bibliography">
+              <bundle>ca_attribute_desc_bibliography</bundle>
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="access_points" default="0">
+        <screen idno="screen_28_7" default="0" color="000000">
           <labels>
-            <label locale="en_US">
-              <name>Access Points</name>
+            <label locale="es_ES">
+              <name>Control de la descripción</name>
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_list_items">
-              <bundle>ca_list_items</bundle>
-              <settings>
-                <setting name="label" locale="en_US">CA Custom Subject Authority</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-              </settings>
+            <placement code="ca_attribute_archivistnote1">
+              <bundle>ca_attribute_archivistnote</bundle>
             </placement>
-            <placement code="ca_attribute_lcsh_terms">
-              <bundle>ca_attribute_lcsh_terms</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
+            <placement code="ca_attribute_descrules2">
+              <bundle>ca_attribute_descrules</bundle>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
+            <placement code="ca_attribute_processinfo3">
+              <bundle>ca_attribute_processinfo</bundle>
             </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_events">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related events</setting>
-                <setting name="label" locale="es_ES">Eventos relacionados</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="admin" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Record admin</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="source_id">
-              <bundle>source_id</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="status">
-              <bundle>status</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="access">
+            <placement code="access4">
               <bundle>access</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
             </placement>
           </bundlePlacements>
         </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="standard_storage_locations_ui" type="ca_storage_locations">
-      <labels>
-        <label locale="en_US">
-          <name>Storage locations editor</name>
-        </label>
-        <label locale="es_ES">
-          <name>Editor de ubicaciones de almacenamieto</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
+        <screen idno="screen_28_8" default="0" color="000000">
           <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
             <label locale="es_ES">
-              <name>Información Básica</name>
+              <name>Multimedia</name>
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse">bubbles</setting>
-                <setting name="open_hierarchy">1</setting>
-                <setting name="auto_shrink"/>
-              </settings>
+            <placement code="ca_attribute_registro_document">
+              <bundle>ca_attribute_registro_documentacion</bundle>
             </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" locale="es_ES">Nombre</setting>
-                <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" locale="es_ES">Agregar nombre</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="usewysiwygeditor"/>
-              </settings>
-            </placement>
-            <placement code="idno">
-              <bundle>idno</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="usewysiwygeditor"/>
-              </settings>
-            </placement>
-            <placement code="status">
-              <bundle>status</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="sort">1</setting>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="location" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Location</name>
-            </label>
-            <label locale="es_ES">
-              <name>Ubicación</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="hierarchy_location">
-              <bundle>hierarchy_navigation</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse">bubbles</setting>
-                <setting name="open_hierarchy">1</setting>
-                <setting name="auto_shrink"/>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="contents" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Contents</name>
-            </label>
-            <label locale="es_ES">
-              <name>Contenidos</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse">bubbles</setting>
-                <setting name="open_hierarchy">1</setting>
-                <setting name="auto_shrink"/>
-              </settings>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="altnames" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Alternate names</name>
-            </label>
-            <label locale="es_ES">
-              <name>Nombre alternativo</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse">bubbles</setting>
-                <setting name="open_hierarchy">1</setting>
-                <setting name="auto_shrink"/>
-              </settings>
-            </placement>
-            <placement code="nonpreferred_labels">
-              <bundle>nonpreferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" locale="es_ES">Nombres Alternativos</setting>
-                <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" locale="es_ES">Agregar nombre</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">bubbles</setting>
-                <setting name="expand_collapse_no_value">bubbles</setting>
-                <setting name="usewysiwygeditor"/>
-              </settings>
+            <placement code="ca_object_representations2">
+              <bundle>ca_object_representations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17012,134 +17076,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="fondos_documetales_ui" type="ca_collections" color="cfc03a" typeRestrictions="fondo" includeSubtypes="0">
-      <labels>
-        <label locale="es_ES">
-          <name>Editor de Fondos Documentales</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="screen_28_0" default="0" color="000000" typeRestrictions="fondo" includeSubtypes="0">
-          <labels>
-            <label locale="es_ES">
-              <name>Identificación</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_collections1">
-              <bundle>ca_collections</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">museo</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-                <setting name="label" locale="es_ES">Institución</setting>
-                <setting name="description" locale="es_ES">Nombre de la institución que custodia el documento/fondo/colección [normalizado por control de autoridades]</setting>
-              </settings>
-            </placement>
-            <placement code="idno1">
-              <bundle>idno</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="usewysiwygeditor"/>
-                <setting name="label" locale="es_ES">Código de referencia</setting>
-                <setting name="description" locale="es_ES">Identificación única del documento/fondo/colección. En caso de no contar con un código de referencia consignar el número de inventario local</setting>
-              </settings>
-            </placement>
-            <placement code="ca_collections4">
-              <bundle>ca_collections</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">fondo</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-                <setting name="label" locale="es_ES">Agrupación a la que pertenece</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_extent3">
-              <bundle>ca_attribute_extent</bundle>
-            </placement>
-            <placement code="ca_attribute_nivel_descripcion">
-              <bundle>ca_attribute_nivel_descripcion</bundle>
-            </placement>
-            <placement code="preferred_labels6">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="usewysiwygeditor"/>
-                <setting name="label" locale="es_ES">Título</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_title_type7">
-              <bundle>ca_attribute_title_type</bundle>
-            </placement>
-            <placement code="ca_attribute_unitdate8">
-              <bundle>ca_attribute_unitdate</bundle>
-            </placement>
-            <placement code="ca_attribute_date_period9">
-              <bundle>ca_attribute_date_period</bundle>
-            </placement>
-            <placement code="ca_places10">
-              <bundle>ca_places</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_relationship_types">created</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-                <setting name="label" locale="es_ES">Lugar de creación</setting>
-                <setting name="description" locale="es_ES">Refiere al lugar en donde tuvo lugar la creación, diseño o producción de la colección o sus componentes, o la ubicación original de la colección</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_signatura_topogra">
-              <bundle>ca_attribute_signatura_topografica</bundle>
-            </placement>
-            <placement code="ca_attribute_nota_ubicacion12">
-              <bundle>ca_attribute_nota_ubicacion</bundle>
-            </placement>
-            <placement code="ca_attribute_movements_notes11">
-              <bundle>ca_attribute_movements_notes</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-  </userInterfaces>
+    </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_representation_annotations_x_entities">
       <types>
@@ -17312,6 +17249,38 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             <label locale="es_ES">
               <typename>esta relacionada a</typename>
               <typename_reverse>esta relacionada a</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="creador" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>es creador de</typename>
+              <typename_reverse>fue creado por</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="productor" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>es productor de</typename>
+              <typename_reverse>fue producido por</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="propietario_anterior" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>es propietario anterior de</typename>
+              <typename_reverse>fue propiedad de</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="rightsHolder" default="0">
+          <labels>
+            <label locale="es_ES">
+              <typename>es titular de derechos de</typename>
+              <typename_reverse>su titular de derechos es</typename_reverse>
             </label>
           </labels>
         </type>
