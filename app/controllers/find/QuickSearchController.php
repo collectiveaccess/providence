@@ -150,8 +150,9 @@ class QuickSearchController extends BaseFindController {
 				break;
 		}
 		
-		$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $o_search->getSearchResultDesc() : [];
-		$result_context->setResultDescription($result_desc);
+		$page_hits = caGetHitsForPage($qr, 0, $this->opn_num_results_per_item_type);
+		$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $o_search->getResultDesc($page_hits) : [];
+		$result_context->setResultDesc($result_desc);
 		
 		return $qr;
 	}

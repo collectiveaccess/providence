@@ -43,6 +43,7 @@ require_once(__CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php");
 class SearchEngine extends SearchBase {
 
 	private $opn_tablenum;
+	protected $ops_tablename;
 	private $opa_tables;
 	// ----
 	
@@ -108,13 +109,6 @@ class SearchEngine extends SearchBase {
 	 */
 	public function getSearchedTerms() {
 		return $this->opo_engine->getSearchedTerms();
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getSearchResultDesc() {
-		return $this->opo_engine->getSearchResultDesc();
 	}
 	# ------------------------------------------------------------------
 	# Search
@@ -234,20 +228,21 @@ class SearchEngine extends SearchBase {
 
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
+		$result_desc = [];
 
 		if (!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $options))) {
 			$vn_created_on = $o_cache->getParameter('created_on');
 			if((time() - $vn_created_on) < $vn_cache_timeout) {
 				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
-				
+				$result_desc = $this->opo_search_config->get('return_search_result_description_data') ? $o_cache->getRawResultDesc() : [];
 				
 				if ($vs_sort != '_natural') {
 					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $vs_sort, $vs_sort_direction);
 				} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
 					$va_hits = array_reverse($va_hits);
 				}
-				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
+				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $result_desc, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
 				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
@@ -339,8 +334,8 @@ class SearchEngine extends SearchBase {
 				
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vb_do_acl ? null : $vn_limit);
-				
-										
+				$result_desc = $this->opo_search_config->get('return_search_result_description_data') ? $o_res->getRawResultDesc() : [];
+							
 				if (($options['expandToIncludeParents'] ?? false) && sizeof($va_hits)) {
 					$qr_exp = caMakeSearchResult($this->opn_tablenum, $va_hits);
 					if (!is_array($va_type_ids) || !sizeof($va_type_ids)) { $va_type_ids = null; }
@@ -381,11 +376,11 @@ class SearchEngine extends SearchBase {
 				$va_hits = array_reverse($va_hits);
 			}
 			
-			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
+			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $result_desc, $this->opn_tablenum);
 			
 			// cache for later use
 			if(!$vb_no_cache) {
-				$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, array('created_on' => time()), null, $options);
+				$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, $result_desc, ['created_on' => time()], null, $options);
 			}
 
 			// log search
@@ -420,14 +415,14 @@ class SearchEngine extends SearchBase {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * @param $pa_hits Array of row_ids to filter. 
+	 * @param $hits Array of row_ids to filter. 
 	 */
-	public function filterHitsBySets($pa_hits, $pa_set_ids, $options=null) {
-		if (!sizeof($pa_hits)) { return $pa_hits; }
-		if (!sizeof($pa_set_ids)) { return $pa_hits; }
-		if (!($t_table = Datamodel::getInstanceByTableNum($this->opn_tablenum, true))) { return $pa_hits; }
+	public function filterHitsBySets($hits, $pa_set_ids, $options=null) {
+		if (!sizeof($hits)) { return $hits; }
+		if (!sizeof($pa_set_ids)) { return $hits; }
+		if (!($t_table = Datamodel::getInstanceByTableNum($this->opn_tablenum, true))) { return $hits; }
 		
-		$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, md5(isset($options['search']) ? $options['search'] : rand(0, 1000000)));
+		$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($hits, md5(isset($options['search']) ? $options['search'] : rand(0, 1000000)));
 			
 		$vs_table_name = $t_table->tableName();
 		$vs_table_pk = $t_table->primaryKey();
@@ -463,7 +458,7 @@ class SearchEngine extends SearchBase {
 		
 		$va_hits = $qr_res->getAllFieldValues($vs_table_pk);
 		
-		$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
+		$o_res = new WLPlugSearchEngineCachedResult($va_hits, [], $this->opn_tablenum);
 		
 		if ($po_result) {
 			$po_result->init($o_res, []);
@@ -1315,6 +1310,41 @@ class SearchEngine extends SearchBase {
 		}
 		
 		return $va_fields;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array describing how _search facet matched found records
+	 * To avoid a significant performance hit details are returned only for ids of hits passed in 
+	 * the $hits parameter rather than for the entire result set.
+	 *
+	 * @oaram array $hits List of ids to return matching data for
+	 * 
+	 * @return array
+	 */
+	public function getResultDesc(array $hits) : ?array {
+		$result_desc = [];
+		foreach($hits as $id) {
+			if(isset($this->seach_result_desc[$id])) {
+				$result_desc[$id] = &$this->seach_result_desc[$id];
+			}
+		}
+		
+		return $this->resolveResultDescData($result_desc);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Resolve raw data describing why each hit in the result set was matched to processed data
+	 * including the table name, table and field numbers, for which specific terms match. Resolution is
+	 * a relatively expensive operation, so only data for required hits (rather than the full result set of a
+	 * search) should be passed.
+	 *
+	 * @param array $data Raw data returned from SearchResult/BrowseResult->getResultDesc()
+	 * 
+	 * @return array
+	 */
+	public function resolveResultDescData(array $data) {
+		// Call engine to convert result desc data
+		return $this->opo_engine->_resolveHitInformation($data);
 	}
 	# ------------------------------------------------------------------
 }

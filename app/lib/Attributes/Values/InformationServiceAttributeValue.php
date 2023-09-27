@@ -369,7 +369,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		
         if (!$pb_for_search) {
         	// Add additional UI elements for services that require them (Eg. Numishare)
-        	$additional_ui_controls = $this->opo_plugin->getAdditionalFields($pa_element_info);
+        	$additional_ui_controls = method_exists($this->opo_plugin, 'getAdditionalFields') ? $this->opo_plugin->getAdditionalFields($pa_element_info) : [];
 			$additional_ui_elements = trim(join(' ', array_map(function($v) { return $v['html']; }, $additional_ui_controls)));
 			
     		$additional_ui_gets = array_map(function($v) { 

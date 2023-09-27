@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,17 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- include_once(__CA_LIB_DIR__.'/Datamodel.php');
- include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
- include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
+include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
+include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
+include_once(__CA_LIB_DIR__.'/ResultDescTrait.php');
 
 class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
+	use ResultDescTrait;
+	
 	private $opo_config;
 	
 	private $opa_hits;
@@ -47,12 +44,18 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 	protected $opo_subject_instance;
 	
 	# -------------------------------------------------------
-	public function __construct($pa_hits, $pn_table_num) {
+	/**
+	 *
+	 */
+	public function __construct($pa_hits, $result_desc, $pn_table_num) {
 		$this->opn_subject_tablenum = $pn_table_num;
 		
 		$this->setHits($pa_hits);
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function setHits($pa_hits) {
 		$this->opa_hits = $pa_hits;
 		$this->opn_current_row = -1;
@@ -63,10 +66,16 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getHits($pn_limit=null) {
 		return ($pn_limit > 0) ? array_slice($this->opa_hits, $this->opn_current_row + 1, $pn_limit) : $this->opa_hits;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function seek($pn_index) {
 		if (($pn_index >= 0) && ($pn_index < sizeof($this->opa_hits))) {
 			$this->opn_current_row = (int)$pn_index - 1;
@@ -75,14 +84,23 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		return false;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function currentRow() {
 		return $this->opn_current_row;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function numHits() {
 		return is_array($this->opa_hits) ? sizeof($this->opa_hits) : 0;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function nextHit() {
 		if ($this->opn_current_row < sizeof($this->opa_hits) - 1) {
 			$this->opn_current_row++;
@@ -91,6 +109,9 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		return false;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function get($ps_field, $pa_options=null) {
 
 		if (($ps_field == $this->ops_subject_primary_key) || ($ps_field == ($this->ops_subject_table_name.'.'.$this->ops_subject_primary_key))) {
@@ -106,6 +127,5 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		// false=can't get value; signals to SearchResult::get() that it should try to load the field if it can
 		return false;
 	}
-	# -------------------------------------------------------
+	# ------------------------------------------------------------------
 }
-?>

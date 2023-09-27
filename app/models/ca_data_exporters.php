@@ -2069,7 +2069,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								} elseif ($settings['convertCodesToDisplayText']) {
 									$va_display_val_options['output'] = 'text';
 								}
-								$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+								
+								if($vs_modifier) {
+									$t_item = ca_list_items::findAsInstance(['item_id' => $vo_val->getItemID()]);
+									$vs_display_value = $t_item->get('ca_list_items.'.$vs_modifier);
+								} else {
+									$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+								}
 								$o_log->logDebug(_t("Found value %1.", $vs_display_value));
 
 								break;

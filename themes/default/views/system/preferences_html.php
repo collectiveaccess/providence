@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,13 +24,10 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
- 	
-	$t_user = $this->getVar('t_user');
-	$vs_group = $this->getVar('group');
- 
- ?>
+ */	
+$t_user = $this->getVar('t_user');
+$vs_group = $this->getVar('group');
+?>
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
@@ -55,8 +52,6 @@
 ?>
 		<input type="hidden" name="action" value="<?= $this->request->getAction(); ?>"/>
 	</form>
-<?php
-	print $vs_control_box;
-?>
+<?= $vs_control_box; ?>
 </div>
 	<div class="editorBottomPadding"><!-- empty --></div>

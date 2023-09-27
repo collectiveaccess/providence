@@ -1138,7 +1138,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function getItemForDisplayByItemID($pn_item_id, $pa_options=null) {
 	    $pb_return_plural = !is_array($pa_options) ? (bool)$pa_options : (caGetOption('return', $pa_options, 'singular') == 'plural');
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		$vs_cache_key = caMakeCacheKeyFromOptions(is_array($pa_options) ? $pa_options : [], "{$pn_item_id}");
+		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pn_item_id}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
 			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
@@ -1453,6 +1453,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *  forceEnabled = enable all list items regardless of the value of the item's is_enabled value [Default is false]
 	 *
 	 *  deferHierarchyLoad = defer hierarchy browser loads until user clicks on expand button. [Default is false]
+	 *
+	 *  useSingular = Return singular name. [Default is true] 
 	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1461,6 +1463,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if($o_trans = caGetOption('transaction', $pa_options, null)) {
 			$t_list->setTransaction($o_trans);
 		}
+		
+		$singular = caGetOption('useSingular', $pa_options, true);
 		
 		$va_list_items = null;
 		$defer_hierarchy_load = caGetOption('deferHierarchyLoad', $pa_options, false);
@@ -1625,10 +1629,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (!caGetOption('forceEnabled', $pa_options, false) && (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids)))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
 			
 			if($separate_disabled && !$va_item['is_enabled']) {
-				$disabled_option_list[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
+				$disabled_option_list[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item[$singular ? 'name_singular' : 'name_plural'];
 				continue;
 			}
-			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
+
+			$va_options[$va_item[$pa_options['key'] ?? null] ?? null] = str_repeat('&nbsp;', intval(($va_item['LEVEL'] ?? 0)) * 3).' '.$va_item['name_singular'];
+
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value

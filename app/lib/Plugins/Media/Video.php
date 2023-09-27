@@ -1063,10 +1063,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$captions = 		caGetOption("captions", $options, [], array('castTo' => 'array'));	
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
+				
+				$autoplay =			caGetOption("autoplay", $options, false);
 				ob_start();
 ?>
 			<div class="<?= $class; ?> video-responsive" style="width: <?= $width; ?>; height:<?= $height; ?>;">
-				<video preload="metadata" id="<?= $id; ?>" playsinline="1" controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
+				<video preload="metadata" <?= $autoplay ? 'autoplay="1"' : ''; ?> id="<?= $id; ?>" playsinline="1" controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
 				  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
 						if(is_array($captions)) {

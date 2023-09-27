@@ -37,6 +37,7 @@
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
+include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
 
 class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueueHandler {
@@ -141,6 +142,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			]
 		));
 		
+		$t_download = ca_user_export_downloads::findAsInstance(['download_id' => $parameters['download_id'], 'user_id' => $parameters['user_id']]);
+		
 		$o_app = AppController::getInstance($req, $resp);
 		
 		if(!($user = ca_users::findAsInstance(['user_id' => $parameters['user_id']]))) {
@@ -152,6 +155,13 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid table or id. Table was '%1'; id was '%2'", $table, $id)); 
 			$this->error->setError(551, _t("Invalid table or id. Table was '%1'; id was '%2'", $table, $id),"dataExport->process()");
 			return false;
+		}
+		
+		if($t_download) {
+			$t_download->set([
+				'status' => 'PROCESSING'
+			]);
+			$t_download->update();
 		}
 		
 		try {
@@ -167,7 +177,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export failed', __CA_APP_DISPLAY_NAME__), 'data_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -182,7 +192,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Label export failed', __CA_APP_DISPLAY_NAME__), 'label_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -203,7 +213,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed');
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -218,7 +228,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); // @TODO: real error messages...
+						$parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Set export failed', __CA_APP_DISPLAY_NAME__), 'set_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -227,8 +237,55 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					$this->error->setError(551, _t("[TaskQueue::dataExport::process] Invalid mode %1", $mode),"dataExport->process()");
 					break;
 			}
-		} catch(TypeError $e) {
-			die("Type error: " . $e->getMessage());
+			
+			if(is_array($res)) {
+				if($t_download) {
+					$md = $t_download->get('ca_user_export_downloads.metadata');
+					$md['extension'] = Media::getExtensionForMimetype($res['mimetype']);
+					$t_download->set([
+						'generated_on' => _t('now'),
+						'status' => 'COMPLETE',
+						'export_file' => $res['path'],
+						'metadata' => $md
+					]);
+					if(!$t_download->update()) {
+						$md['error'] = join('; ', $t_download->getErrors());
+						$t_download->clearMedia('export_file');
+						$t_download->set([
+							'generated_on' => _t('now'),
+							'status' => 'ERROR',
+							'metadata' => $md
+						]);
+						$t_download->update();
+					}
+				}
+				
+			} else {
+				if($t_download) {
+					$md = $t_download->get('ca_user_export_downloads.metadata');
+					$md['error'] = $parameters['errors'] ?: _t('Unknown error');
+					$t_download->set([
+						'generated_on' => _t('now'),
+						'status' => 'ERROR',
+						'error_code' => 531,	
+						'metadata' => $md
+					]);
+					$t_download->update();
+				}
+			}
+		} catch(Exception $e) {
+			if($t_download) {
+				$md = $t_download->get('ca_user_export_downloads.metadata');
+				$md['error'] = $e->getMessage();
+					
+				$t_download->set([
+					'generated_on' => _t('now'),
+					'status' => 'ERROR',
+					'error_code' => 531,	
+					'metadata' => $md
+				]);
+				$t_download->update();
+			}
 		}
 		return false;
 	}

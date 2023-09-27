@@ -174,6 +174,8 @@
 					$vs_bundle_name_proc = $vs_table.'_'.str_replace(".", "_", $vs_bundle_name);
 					$vn_access = $this->request->getParameter($vs_bundle_name_proc, pInteger);
 					
+					$vs_bundle_name = preg_replace("!^{$vs_table}[_\.]{1}!", "", $vs_bundle_name);
+					$vs_bundle_name = preg_replace("!^ca_attribute_!", "", $vs_bundle_name);
 					$va_bundle_access_settings[$vs_table.'.'.$vs_bundle_name] = $vn_access;
 				}
 			}

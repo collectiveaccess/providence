@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,24 +30,19 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-  *
-  */
+interface IWLPlugSearchEngineResult {
+	# -------------------------------------------------------
+	# Initialization and state
+	# -------------------------------------------------------
+	public function __construct($results, $result_desc, $table_num);
 	
-	interface IWLPlugSearchEngineResult {
-		# -------------------------------------------------------
-		# Initialization and state
-		# -------------------------------------------------------
-		public function __construct($pa_results, $pn_table_num);
-		
-		# -------------------------------------------------------
-		# 
-		# -------------------------------------------------------
-		public function numHits();
-		public function nextHit();
-		public function get($ps_field, $pa_options=null);
-		public function seek($pn_index);
-		public function currentRow();
-		# -------------------------------------------------------
-	}
-?>
+	# -------------------------------------------------------
+	# 
+	# -------------------------------------------------------
+	public function numHits();
+	public function nextHit();
+	public function get($field, $options=null);
+	public function seek($index);
+	public function currentRow();
+	# -------------------------------------------------------
+}

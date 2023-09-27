@@ -61,6 +61,12 @@ final class GarbageCollection {
 			// Purge CSRF tokens that haven't been updated for at least a day from persistent cache
 			if($show_cli) { CLIUtils::addMessage(_t('Removing old CSRF tokens...')); }
 			PersistentCache::clean(time() - 86400, 'csrf_tokens');
+			
+			// Purge login sessions that haven't been updated for at least a day from persistent cache
+			if($show_cli) { CLIUtils::addMessage(_t('Removing old sessions...')); }
+			PersistentCache::clean(time() - 86400, 'SessionVars');
+			PersistentCache::clean(time() - 86400, 'SessionIDToServiceAuthTokens');
+			PersistentCache::clean(time() - 86400, 'ServiceAuthTokensToSessionID');
 		}
 	}
 	# -------------------------------------------------------
