@@ -414,7 +414,7 @@ class ca_item_comments extends BaseModel {
 				break;
 		}
 		if(intval($limit) > 0){
-			$vs_limit = " LIMIT ".intval($limit);
+			$limit = " LIMIT ".intval($limit);
 		}
 		if($has_comment){
 			$va_wheres[] = "cic.comment IS NOT NULL";
@@ -428,7 +428,7 @@ class ca_item_comments extends BaseModel {
 			SELECT cic.*, u.user_id, u.fname, u.lname, u.email user_email
 			FROM ca_item_comments cic
 			LEFT JOIN ca_users AS u ON u.user_id = cic.user_id
-			{$vs_where} ORDER BY cic.created_on DESC {$vs_limit}
+			{$vs_where} ORDER BY cic.created_on DESC {$limit}
 		");
 		
 		if ($return_as === 'searchResult') {

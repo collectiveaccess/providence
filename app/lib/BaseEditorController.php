@@ -342,6 +342,7 @@ class BaseEditorController extends ActionController {
 				$this->_afterSave($t_subject, $vb_is_insert);
 			} elseif($t_subject->hasErrorNumInRange(3600, 3699) || $t_subject->hasErrorNumInRange(2592, 2599)) {
 				$vb_no_save_error = true;
+				$this->view->setVar('forced_values', $va_opts['ifv']);
 			}
 			if($t_subject->numErrors() > 0) {
 				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
@@ -410,10 +411,12 @@ class BaseEditorController extends ActionController {
 		if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
 			$va_error_list = [];
 			foreach($va_errors as $o_e) {
+				$error_num = (int)$o_e->getErrorNumber();
+				if($error_num == 2592) { continue; } // don't show "relationship failed" error, as more specific errors will also be present
 				$bundle = array_shift(explode('/', $o_e->getErrorSource()));
 				$va_error_list[] = "<li><u>".$t_subject->getDisplayLabel($bundle).'</u>: '.$o_e->getErrorDescription()."</li>\n";
 
-				switch($error_num = (int)$o_e->getErrorNumber()) {
+				switch($error_num) {
 					case 1100:	// duplicate/invalid idno
 						if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
 							$vb_no_save_error = true;
@@ -809,6 +812,16 @@ class BaseEditorController extends ActionController {
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld})");
 			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'SUMMARY',
+				'metadata' => ['searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}", 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($table, $template), 'mode' => 'SUMMARY', 'table' => $table, 'findType' => 'summary']
+			]);
+			$download_id = $t_download->insert();
+			
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -822,7 +835,8 @@ class BaseEditorController extends ActionController {
 					'sortDirection' => null,
 					'searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}",
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', [$table, $vn_subject_id]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
@@ -2974,11 +2988,10 @@ class BaseEditorController extends ActionController {
 			$t_target->load($rel_id);
 		}
 
-		$rep_ids = $t_target->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
-		if(!is_array($rep_ids) || !sizeof($rep_ids)) {
+		$selected_rep_id = $t_target->getPrimaryRepresentationID();
+		if(!$selected_rep_id) {
 			throw new ApplicationException(_t('ID has no associated media'));
 		}
-		$selected_rep_id = $rep_ids[0];
 		$existing_reps = $t_subject->getRepresentations() ?? [];
 		
 		if(sizeof($selected_reps = array_filter($existing_reps, function($v) use ($selected_rep_id) {
@@ -2988,9 +3001,9 @@ class BaseEditorController extends ActionController {
 			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
 				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
 			} else {
-				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlimk media')];;
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlink media')];
 			}
-		} elseif($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
+		} elseif($t_subject->addRelationship('ca_object_representations', $selected_rep_id, null)) {
 			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
 		} else {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];

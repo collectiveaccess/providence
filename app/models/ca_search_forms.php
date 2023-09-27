@@ -875,7 +875,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                     }
  
 // Don't include fields in self-related records (Eg. objects related to objects) as it appears to confuse more than help                  
-                    if(is_array($va_fields['related']) && is_array($va_fields['related']['fields'])) {
+                    if(is_array($va_fields['related'] ?? null) && is_array($va_fields['related']['fields'] ?? null)) {
                         foreach($va_fields['related']['fields'] as $f => $finfo) {
 							$va_field_list["{$vs_table}.related.{$f}"] = $finfo;
                         }

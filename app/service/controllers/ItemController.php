@@ -102,7 +102,12 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
 						
-						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'bundles' => $data];
+						return [
+							'table' => $rec->tableName(), 
+							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 
+							'bundles' => $data,
+							'manifestUrl' => $rec->getAppConfig()->get('site_host').$rec->getAppConfig()->get('ca_url_root').'/service/IIIF/manifest/'.$args['table'].':'.$rec->getPrimaryKey()
+						];
 					}
 				],
 				// ------------------------------------------------------------
@@ -152,7 +157,12 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
 						
-						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 'bundles' => $data];
+						return [
+							'table' => $rec->tableName(), 
+							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 
+							'bundles' => $data,
+							'manifestUrl' => $rec->getAppConfig()->get('site_host').$rec->getAppConfig()->get('ca_url_root').'/service/IIIF/manifest/'.$args['table'].':'.$rec->getPrimaryKey()
+						];
 					}
 				],
 				// ------------------------------------------------------------

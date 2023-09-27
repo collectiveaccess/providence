@@ -299,7 +299,7 @@ class ResultContext {
 	 *
 	 * @return array
 	 */
-	public function getResultDescription() : ?array {
+	public function getResultDesc() : ?array {
 		if ($context = $this->getContext()) {
 			return $context['result_desc'] ?? null;
 		}
@@ -313,7 +313,7 @@ class ResultContext {
 	 * @param array $result_desc 
 	 * @return array 
 	 */
-	public function setResultDescription(array $result_desc) {
+	public function setResultDesc(array $result_desc) {
 		return $this->setContextValue('result_desc', $result_desc);
 	}
 	# ------------------------------------------------------------------
@@ -454,6 +454,7 @@ class ResultContext {
 				return ($va_context['sort'] ?? null) ? $va_context['sort'] : null;
 			}
 		} else {
+			$ps_sort = str_replace("~", "%", $ps_sort);
 			$ps_sort = str_replace("|", "/", $ps_sort);	// convert relationship type "|" separator used in web UI to "/" separator used in BaseFindEngine sort
 			$this->opb_sort_has_changed = true;
 			$this->setContextValue('sort', $ps_sort);

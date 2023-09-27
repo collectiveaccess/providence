@@ -1832,6 +1832,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vs_format = str_replace('^EXTRA', '', $vs_format);
 
 			$vs_format = str_replace('^ELEMENT', caHTMLSelect($ps_field, $va_opts, array('id' => $ps_field), array('value' => $this->get('list_id'))), $vs_format);
+			$vs_format = str_replace('^BUNDLECODE', '', $vs_format);
 
 			if (!isset($pa_options['no_tooltips']) || !$pa_options['no_tooltips']) {
 				TooltipManager::add('#list_id', "<h3>{$vs_field_label}</h3>".$this->getFieldInfo('list_id', 'DESCRIPTION'), $pa_options['tooltip_namespace'] ?? null);

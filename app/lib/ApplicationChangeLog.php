@@ -1367,7 +1367,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								// Convert list-based attributes to text
 								if ($vn_list_id = $t_element->get('list_id')) {
 									$t_list = new ca_lists();
-									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $vs_attr_val, true);
+									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $vs_attr_val);
 								}
 								
 								if (!$vs_attr_val) { 

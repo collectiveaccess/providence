@@ -310,7 +310,8 @@ class SetEditorController extends BaseEditorController {
 		$is_background = ($this->request->getParameter('background', pInteger) === 1);
 		$export_format = $this->request->getParameter('export_format', pString);
 		$set_id = $this->request->getParameter('set_id', pInteger);
-		
+        $display_id = $this->request->getParameter('display_id', pString);
+        
 		// Check is report should be force-backgrounded because the number of results exceeds the background result size 
 		// threshold declared in the chosen template.
 		if(
@@ -346,6 +347,17 @@ class SetEditorController extends BaseEditorController {
 
 			$exp = 'ca_sets.set_code:'.$t_set->get('set_code');
 			$exp_display = _t('Set: %1', $t_set->get('set_code'));
+			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'SETS',
+				'metadata' => ['searchExpression' => $exp, 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($subject_table, $export_format), 'mode' => 'LABELS', 'table' => $subject_table, 'findType' => null]
+			]);
+			$download_id = $t_download->insert();
+			
 						
 			if ($o_tq->addTask(
 				'dataExport',
@@ -360,7 +372,8 @@ class SetEditorController extends BaseEditorController {
 					'sortDirection' => null,
 					'searchExpression' => $exp,
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', ['ca_sets', $set_id, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
@@ -387,7 +400,7 @@ class SetEditorController extends BaseEditorController {
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		caExportResult($this->request, $res, $export_format, '_output', ['printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
+		caExportResult($this->request, $res, $export_format, '_output', ['display' => $display_id ? new ca_bundle_displays($display_id) : null, 'printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
 		
 		return;
 	}

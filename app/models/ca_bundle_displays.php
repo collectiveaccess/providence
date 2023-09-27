@@ -977,7 +977,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-		//	return CompositeCache::fetch($cache_key);
+			return CompositeCache::fetch($cache_key);
 		}
 		
 		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
@@ -1143,7 +1143,7 @@ if (!$pb_omit_editing_info) {
 				continue;	
 			}
 			
-			switch($va_all_elements[$vn_element_id]['datatype']) {
+			switch($va_all_elements[$vn_element_id]['datatype'] ?? null) {
 				case __CA_ATTRIBUTE_VALUE_TEXT__:
 					$va_even_more_settings = array(
 						'newlines' => array(
@@ -1210,7 +1210,7 @@ if (!$pb_omit_editing_info) {
 						)		
 					);
 					
-					if ($va_all_elements[$vn_element_id]['datatype'] == 6) {
+					if (($va_all_elements[$vn_element_id]['datatype'] ?? null) == 6) {
 						$va_even_more_settings['display_currency_conversion'] = array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_CHECKBOXES,
@@ -2269,7 +2269,7 @@ if (!$pb_omit_editing_info) {
 		if (!isset($options['maximumLength'])) { $options['maximumLength'] =  ($va_settings['maximum_length'] ?? null) ? $va_settings['maximum_length'] : null; }
 		if (!isset($options['filter'])) { $options['filter'] = caGetOption('filter', $va_settings, null); }
 		
-		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $options, null));
+		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $va_settings, caGetOption('locale', $options, null)));
 		$options['delimiter'] = caGetOption('delimiter', $options, caGetOption('delimiter', $va_settings, '; '));
 		$options['dateFormat'] = caGetOption('dateFormat', $options, caGetOption('dateFormat', $va_settings, ''));
 		$options['useSingular'] = (isset($va_settings['sense']) && ($va_settings['sense'] == 'singular')) ? true : false;
@@ -2311,6 +2311,11 @@ if (!$pb_omit_editing_info) {
 		
 		if(!$pb_show_hierarchy && $vs_template) {
 			unset($options['template']);
+			
+			// Hack to rewrite object-object lot relationship in standard relationship syntax for display template
+			if(($va_bundle_bits[0] === 'ca_objects') && ($va_bundle_bits[1] === 'lot_id')) {
+				$va_bundle_bits = ['ca_object_lots'];
+			}
 			
 			if ($t_instance = Datamodel::getInstanceByTableName($va_bundle_bits[0], true)) {
 				$va_bundle_bits_proc = $va_bundle_bits;

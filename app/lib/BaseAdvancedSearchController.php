@@ -173,9 +173,6 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 				$vo_result = $po_search->search($vs_search, $va_search_opts);
 			}
 			
-			$result_desc = ($this->request->user->getPreference('show_search_result_desc') === 'show') ? $po_search->getSearchResultDesc() : [];
-			$this->view->setVar('result_desc', $result_desc);
-			$this->opo_result_context->setResultDescription($result_desc);
 			
 			$this->opo_result_context->validateCache();
 
@@ -191,16 +188,24 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 				if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
 			}
 
-			$vo_result->seek(($vn_page_num - 1) * $vn_items_per_page);
 
 			$this->view->setVar('num_hits', $vo_result->numHits());
 			$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
  			$this->view->setVar('start', ($vn_page_num - 1) * $vn_items_per_page);
 			if ($vn_page_num > $vn_num_pages) { $vn_page_num = 1; }
 
+			$vo_result->seek($start = ($vn_page_num - 1) * $vn_items_per_page);
 			$this->view->setVar('page', $vn_page_num);
 			$this->view->setVar('search', $vs_search);
 			$this->view->setVar('result', $vo_result);
+			
+			$result_desc = [];
+			if($this->request->user->getPreference('show_search_result_desc') === 'show') {
+				$page_hits = caGetHitsForPage($vo_result, $start, $vn_items_per_page);
+				$result_desc = $po_search->getResultDesc($page_hits);
+			}
+			$this->view->setVar('result_desc', $result_desc);
+			$this->opo_result_context->setResultDesc($result_desc);
 		}
 
 		//

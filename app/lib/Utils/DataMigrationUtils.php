@@ -627,8 +627,8 @@ class DataMigrationUtils {
 		$is_corporation = false;
 		if ((strpos($text, '_') === false) && ($n = self::_procSurname($text, ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]))) {
 			$text = $n['surname'];
-			$suffix_for_name = $n['suffix'];
-			$is_corporation = $n['is_corporation'];
+			$suffix_for_name = $n['suffix'] ?? null;
+			$is_corporation = $n['is_corporation'] ?? false;
 		}
 		$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
 	

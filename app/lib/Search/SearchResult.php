@@ -1039,6 +1039,7 @@ class SearchResult extends BaseObject {
 	 *			removeLastItems = Number of levels from bottom of hierarchy before returning. [Default is null]
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
+	 *			includeSelf = Return current row when fetching children or descendants. By default only children or descendants are returned. [Default is false]
 	 * 			hierarchyDelimiter = Characters to place in between separate hiearchy levels. Defaults to the 'delimiter' option.
 	 *          filterTypes = A list of types. Only hierarchy items with specified types will be returned. [Default is null]
  	 *
@@ -1455,7 +1456,15 @@ class SearchResult extends BaseObject {
 					goto filter;
 					break;
 				case 'children':
+				case 'descendants':
+				case 'branch':
 					// grab children 
+					if($va_path_components['hierarchical_modifier'] === 'descendants') {
+						$pa_options['allDescendants'] = true;
+					} elseif($va_path_components['hierarchical_modifier'] === 'branch') {
+						$pa_options['allDescendants'] = true;
+						$pa_options['includeSelf'] = true;
+					}
 					$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 					if ($va_path_components['related']) {
 						// [RELATED TABLE CHILDREN]
@@ -1483,9 +1492,18 @@ class SearchResult extends BaseObject {
 							||
 							!sizeof(SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])
 						){ 
-							continue;
+							if($pa_options['includeSelf'] ?? false) {
+								SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5] = [];
+							} else {
+								continue;
+							}
 						}
-						$qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5], $pa_options);
+						
+						$child_ids = SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5];
+						if(($pa_options['includeSelf'] ?? false) && !($va_path_components['related'] ?? false)) {
+							array_unshift($child_ids, $vn_id);
+						}
+						$qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], $child_ids, $pa_options);
 						
 						$va_tmp = array($va_path_components['table_name']);
 						if ($va_path_components['field_name']) { $va_tmp[] = $va_path_components['field_name']; }
@@ -3115,11 +3133,14 @@ class SearchResult extends BaseObject {
 		if (method_exists($pt_instance, 'setLabelTypeList')) {
 			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
 		}
-		if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+		
+		$convert_codes_to_idno = caGetOption('convertCodesToIdno', $pa_options, false);
+		
+		if ($convert_codes_to_idno && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = caGetListItemIdno($vs_prop);
-		} elseif (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+		} elseif($convert_codes_to_idno && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
 			$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
-	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+	    } elseif($convert_codes_to_idno && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('type_code');
 		}
@@ -3134,14 +3155,17 @@ class SearchResult extends BaseObject {
 		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
 		
 		$vs_table_name = $pa_path_components['table_name'];
+		
+		$convert_codes_to_value = caGetOption('convertCodesToValue', $pa_options, false);
+		
 		if (method_exists($pt_instance, 'setLabelTypeList')) {
 			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
 		}
-		if (isset($pa_options['convertCodesToValue']) && $pa_options['convertCodesToValue'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+		if ($convert_codes_to_value && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = caGetListItemValueForID($vs_prop);
-		} elseif (isset($pa_options['convertCodesToValue']) && $pa_options['convertCodesToValue'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+		} elseif($convert_codes_to_value && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
 			return $vs_prop;
-	    } elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+	    } elseif($convert_codes_to_value && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('type_code');
 		}
@@ -3155,30 +3179,30 @@ class SearchResult extends BaseObject {
 		$vs_prop = $ps_prop;
 		
 		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
-		$vb_convert_codes_to_display_text = ((isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText']) || ($pa_options['output'] == 'text'));
+		$convert_codes_to_display_text = (caGetOption('convertCodesToDisplayText', $pa_options, false) || ($pa_options['output'] == 'text'));
 		
 		$vs_table_name = $pa_path_components['table_name'];
 		if (method_exists($pt_instance, 'setLabelTypeList') && ($vs_label_list_name = $this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"))) {
 			$pt_instance->setLabelTypeList($vs_label_list_name);
 		}
 		
-		if ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+		if ($convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
 			$vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-		} elseif ($vb_convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+		} elseif ($convert_codes_to_display_text && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
             $vs_prop = SearchResult::$opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
-		} elseif ($vb_convert_codes_to_display_text && is_array($options = $pt_instance->getFieldInfo($vs_field_name,"OPTIONS")) && (($k = array_search($vs_prop, $options)) !== false)) {
+		} elseif ($convert_codes_to_display_text && is_array($options = $pt_instance->getFieldInfo($vs_field_name,"OPTIONS")) && (($k = array_search($vs_prop, $options)) !== false)) {
 			$vs_prop = $k;
-        } elseif ($vb_convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
+        } elseif ($convert_codes_to_display_text && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
             $t_locale = new ca_locales($vs_prop);
             $vs_prop = $t_locale->getName();
-        } elseif ($vb_convert_codes_to_display_text && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
+        } elseif ($convert_codes_to_display_text && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
             foreach($va_list as $vs_option => $vs_value) {
                 if ($vs_value == $vs_prop) {
                     $vs_prop = $vs_option;
                     break;
                 }
             }
-		} elseif($vb_convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
+		} elseif($convert_codes_to_display_text && method_exists($pt_instance, "isRelationship") && $pt_instance->isRelationship() && ($vs_field_name == 'type_id')) {
 		    $t_rel_type = new ca_relationship_types($vs_prop);
 		    return $t_rel_type->get('ca_relationship_types.preferred_labels');
 		}
@@ -3697,6 +3721,12 @@ class SearchResult extends BaseObject {
 		} elseif ($modifier == 'children') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'children';
+		} elseif ($modifier == 'descendants') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'descendants';
+		} elseif ($modifier == 'branch') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'branch';
 		} elseif ($modifier == 'siblings') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'siblings';
@@ -3852,7 +3882,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	static public function _isHierarchyModifier($pm_modifier) {
-		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'siblings'];
+		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'descendants', 'branch', 'siblings'];
 	
 		if (is_array($pm_modifier)) {
 			return (sizeof(array_intersect($va_hierarchy_modifiers, $pm_modifier)) > 0);
@@ -3914,6 +3944,41 @@ class SearchResult extends BaseObject {
 		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return raw data from engine documenting how hits in the current result set were matched.
+	 * This data is generally not useful as-is for display or UI management, and must be resolved
+	 * into references to matched tables and fiedls using SearchEngine::resolveResultDescData()
+	 *
+	 * @return array()
+	 */
+	public function getRawResultDesc() : array {
+		return $this->opo_engine_result->getRawResultDesc() ?? [];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return array describing how search terms matched found records
+	 * To avoid a significant performance hit details are returned only for ids of hits passed in 
+	 * the $hits parameter rather than for the entire result set.
+	 *
+	 * @oaram array $hits List of ids to return matching data for
+	 * 
+	 * @return array
+	 */
+	public function getResultDesc(array $hits) : ?array {
+		$result_desc = [];
+		$result_desc_full = $this->opo_engine_result->getResultDesc();
+		
+		foreach($hits as $id) {
+			if(isset($result_desc_full[$id])) {
+				$result_desc[$id] = &$result_desc_full[$id];
+			}
+		}
+		
+		$o_search = new SearchEngine();
+		
+		return $o_search->resolveResultDescData($result_desc);
 	}
 	# ------------------------------------------------------------------
 }

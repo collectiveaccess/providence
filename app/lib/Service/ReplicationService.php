@@ -121,6 +121,7 @@ class ReplicationService {
 		}
 		
 		$abort_sync_on_failed_media_upload = (bool)$o_replication_conf->get('abort_sync_on_failed_media_upload');
+		$telescope = (bool)$o_replication_conf->get('telescope');
 
 		$pa_options = array();
 		if($ps_skip_if_expression = $po_request->getParameter('skipIfExpression', pString, null, array('retainBackslashes' => false))) {
@@ -175,7 +176,7 @@ class ReplicationService {
 
 			$va_media = [];
 			// passing a 4th param here changes the behavior slightly
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['forceValuesForAllAttributeSLots' => true]), $va_media);
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]), $va_media);
 
 			if(sizeof($va_media) > 0) {
 				$va_push_list = [];
@@ -243,7 +244,7 @@ class ReplicationService {
 				}
 			}
 		} else {
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['forceValuesForAllAttributeSLots' => true]));
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]));
 		}
 
         foreach($va_log as $i => $l) {
@@ -349,7 +350,7 @@ class ReplicationService {
 				// skip log entry (still counts as "applied")
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id;
-				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
+				//ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
 				continue;
 			} catch (CA\Sync\LogEntry\InvalidLogEntryException $e) {
 				// skip log entry (still counts as "applied")
@@ -540,8 +541,8 @@ class ReplicationService {
 		$va_results = [];
 		if(is_array($va_guids_to_check)) {
 			foreach($va_guids_to_check as $vs_guid) {
-			    $vn_access_for_guid = ca_guids::getAccessForGUID($vs_guid, $va_access);
-			    $va_results[$vs_guid] = is_null($vn_access_for_guid) ? '?' : (in_array($vn_access_for_guid, $va_access) ? 1 : 0);
+			    $access_for_guid = ca_guids::getAccessForGUID($vs_guid, $va_access);
+			    $va_results[$vs_guid] = is_null($access_for_guid) ? '?' : ($access_for_guid ? 1 : 0);
 			}
 		}
 		return $va_results;
@@ -605,14 +606,23 @@ class ReplicationService {
 		}
 		
 		$pk = Datamodel::primaryKey($table);
+		$t = Datamodel::getInstance($table);
 		
 		$db = new Db();
-		$qr = $db->query("
-			SELECT g.guid 
-			FROM ca_guids g
-			INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
-			WHERE t.access IN (?)
-		", [$table_num, $access]);
+		if($t->hasField('access')) {
+			$qr = $db->query("
+				SELECT g.guid 
+				FROM ca_guids g
+				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+				WHERE t.access IN (?)
+			", [$table_num, $access]);
+		} else {
+			$qr = $db->query("
+				SELECT g.guid 
+				FROM ca_guids g
+				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+			", [$table_num]);
+		}
 		
 		
 		return $qr->getAllFieldValues('guid');	

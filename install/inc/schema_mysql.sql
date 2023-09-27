@@ -4941,7 +4941,7 @@ create table ca_sets (
       
 	key i_user_id (user_id),
 	key i_type_id (type_id),
-	unique key u_set_code (set_code),
+	key i_set_code (set_code),
 	key i_hier_left (hier_left),
 	key i_hier_right (hier_right),
 	key i_parent_id (parent_id),
@@ -7742,8 +7742,8 @@ create table ca_history_tracking_current_value_labels
    tracking_id                    int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   value                          varchar(8192)                 not null,
-   value_sort                     varchar(255)                   not null,
+   value                          varchar(8192)                  not null,
+   value_sort                     varchar(1024)                  not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    sdatetime                      decimal(30,20),
@@ -7834,6 +7834,29 @@ create table if not exists ca_representation_transcriptions (
 
 
 /*==========================================================================*/
+
+create table ca_user_export_downloads (
+  download_id		    int unsigned        not null AUTO_INCREMENT,
+  created_on        	int unsigned        not null,
+  generated_on        	int unsigned        null,
+  user_id             	int unsigned        null,
+  download_type    		varchar(30)	   		not null,
+  metadata				longtext			not null,
+  status		 		varchar(30)    		not null default 'QUEUED',
+  downloaded_on			int unsigned		null,
+  error_code            smallint unsigned   not null default 0,
+  export_file           blob            not null,
+
+  primary key (download_id),
+
+  constraint fk_ca_export_download_user_id foreign key (user_id)
+    references ca_users (user_id) on delete restrict on update restrict,
+
+  index i_user_id (user_id)
+
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -7844,4 +7867,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (189, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (192, unix_timestamp());

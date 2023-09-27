@@ -446,7 +446,6 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 				if (!$vb_dont_delete_original_media) {
 					$vs_old_media_path = $t_instance->getMediaPath($vs_field, $v);
 					if (($vs_old_media_path) && ($vs_filepath.".".$vs_ext != $vs_old_media_path) && ($vs_input_file != vs_old_media_path)) {
-						//@unlink($t_instance->getMediaPath($vs_field, $v));
 						$va_old_media_to_delete[] = $vs_old_media_path;
 					}
 				}
@@ -468,7 +467,7 @@ include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 				$t_instance->setMediaInfo($vs_field, $va_merged_media_desc);
 				
 				try {
-					$t_instance->update(['force' => true]);
+					$t_instance->update(['force' => true, 'dontImportEmbeddedMetadata' => true]);
 					if ($t_instance->numErrors()) {
 						# get rid of files we just created
 						foreach($va_output_files as $vs_to_delete) {

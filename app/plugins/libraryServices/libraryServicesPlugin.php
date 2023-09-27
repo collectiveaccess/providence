@@ -86,8 +86,10 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 					foreach($va_items_by_user as $vn_user_id => $va_items_for_user) {
 						if ($t_user->load($vn_user_id)) {
 							if ($vs_user_email = $t_user->get('email')) {
-								$vs_subject = _t('Notice of items coming due for return');
-								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_coming_due.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Libary item due'])) {
+								if(!($vs_subject = $this->opo_library_services_config->get('coming_due_subject_template'))) {
+									$vs_subject = _t('[%1] Notice of items coming due for return', $vs_app_name);
+								}
+								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "{$vs_subject}", "library_coming_due.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Libary item due'])) {
 									// mark record
 									foreach($va_items_for_user as $va_item) {
 										if ($t_checkout->load($va_item['checkout_id'])) {
@@ -123,8 +125,10 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 					foreach($va_items_by_user as $vn_user_id => $va_items_for_user) {
 						if ($t_user->load($vn_user_id)) {
 							if ($vs_user_email = $t_user->get('email')) {
-								$vs_subject = _t('Notice of overdue items');
-								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_overdue.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library item overdue'])) {
+								if(!($vs_subject = $this->opo_library_services_config->get('overdue_subject_template'))) {
+									$vs_subject = _t('[%1] Notice of overdue items', $vs_app_name);
+								}
+								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "{$vs_subject}", "library_overdue.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library item overdue'])) {
 									// mark record
 									foreach($va_items_for_user as $va_item) {
 										if ($t_checkout->load($va_item['checkout_id'])) {
@@ -160,8 +164,10 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 					foreach($va_items_by_user as $vn_user_id => $va_items_for_user) {
 						if ($t_user->load($vn_user_id)) {
 							if ($vs_user_email = $t_user->get('email')) {
-								$vs_subject = _t('Notice of reserved available items');
-								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_reservation_available.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library reserved item available'])) {
+								if(!($vs_subject = $this->opo_library_services_config->get('reservation_available_subject_template'))) {
+									$vs_subject = _t('[%1] Notice of reserved available items', $vs_app_name);
+								}
+								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "{$vs_subject}", "library_reservation_available.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library reserved item available'])) {
 									// mark record
 									foreach($va_items_for_user as $va_item) {
 										if ($t_checkout->load($va_item['checkout_id'])) {
