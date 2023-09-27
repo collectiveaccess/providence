@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
 "POT-Creation-Date: 30\n"
-"PO-Revision-Date: 2023-09-27 07:49-0400\n"
+"PO-Revision-Date: 2023-09-27 07:57-0400\n"
 "Last-Translator: Seth <Seth@collectiveacess.org>\n"
 "Language-Team: Dutch (Netherlands) (http://www.transifex.com/"
 "collectiveaccess/collectiveaccess-providence/language/nl_NL/)\n"
@@ -22522,7 +22522,7 @@ msgid "themes/motifs"
 msgstr "thema's/motieven"
 
 msgid "video content"
-msgstr "Inhoudstype"
+msgstr "inhoudstype"
 
 #, fuzzy
 msgid "Artwork"
@@ -22577,7 +22577,7 @@ msgid "Number"
 msgstr "Aantal getagde items"
 
 msgid "component prefix"
-msgstr "Component"
+msgstr "component"
 
 msgid "Sub-number"
 msgstr "Sub-elementen"
@@ -22595,7 +22595,7 @@ msgid "Accession type"
 msgstr "Verwervingsstatus"
 
 msgid "Object number"
-msgstr "object"
+msgstr "Object"
 
 msgid "Lot number"
 msgstr "Voeg lot toe"
@@ -22625,7 +22625,7 @@ msgid "Representations"
 msgstr "Mediavoorstellingen"
 
 msgid "Collection"
-msgstr "collectie"
+msgstr "Collectie"
 
 msgid "Entity"
 msgstr "Entiteit"
@@ -22652,13 +22652,13 @@ msgid "Representation annotations"
 msgstr "aantekening op voorstelling"
 
 msgid "Lots"
-msgstr "lots"
+msgstr "Toetredingen"
 
 msgid "Basic search"
 msgstr "Zoek"
 
 msgid "Advanced search"
-msgstr "geavanceerd zoeken naar %1"
+msgstr "Geavanceerd zoeken naar %1"
 
 msgid "Search builder"
 msgstr "Zoek"
@@ -22694,10 +22694,10 @@ msgid "Duplication"
 msgstr "Kopieertools"
 
 msgid "Lists"
-msgstr "lijsten"
+msgstr "Lijsten"
 
 msgid "Displays"
-msgstr "weergaves"
+msgstr "Weergaves"
 
 msgid "Quick search"
 msgstr "Snelzoeken"
@@ -22706,13 +22706,13 @@ msgid "User profile"
 msgstr "Gebruikersprofiel"
 
 msgid "My watched items"
-msgstr "gevolgde items"
+msgstr "Mevolgde items"
 
 msgid "My project teams"
 msgstr "Uw projectteams"
 
 msgid "My displays"
-msgstr "weergaves"
+msgstr "Weergaves"
 
 msgid "Edit display"
 msgstr "Bewerken"
