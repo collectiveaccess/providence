@@ -170,8 +170,9 @@ class BaseLabel extends BaseModel {
 				$t_locale = new ca_locales();
 				$vs_locale = $t_locale->localeIDToCode($this->get('locale_id'));
 			}
-			$vs_display_value = caSortableValue($this->get($vs_display_field), ['locale' => $vs_locale, 'maxLength' => 255]);
-			
+		
+			$field_len = $this->getFieldInfo($vs_sort_field, 'BOUNDS_LENGTH');
+			$vs_display_value = caSortableValue($this->get($vs_display_field), ['locale' => $vs_locale, 'maxLength' => $field_len[1] ?? 255]);
 			$this->set($vs_sort_field, $vs_display_value);
 		}
 	}

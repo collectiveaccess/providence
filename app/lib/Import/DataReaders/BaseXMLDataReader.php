@@ -237,7 +237,8 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function nextRow() {
-		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
+		if(!$this->opo_handle) { return false; }
+		if(!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
 		
 		$this->opa_row_buf = array();
 		$this->_extractXMLValues($o_row);

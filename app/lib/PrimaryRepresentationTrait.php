@@ -41,7 +41,7 @@ trait PrimaryRepresentationTrait {
 	 *
 	 */
 	public function update($options=null) {
-		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, defined('__CA_IS_REPLICATION__'));
+		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, false);
 		if($rc = parent::update($options)) {
 			if(!$dont_check_primary_value && ($this->_setPrimary() === false)) {
 				$this->postError(2700, _t('Could not set primary representation: %1', join('; ', $this->getErrors())), 'PrimaryRepresentationTrait::update');
@@ -61,7 +61,7 @@ trait PrimaryRepresentationTrait {
 	 * @return bool
 	 */
 	public function delete($delete_related=false, $options=null, $fields=null, $table_list=null) {
-		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, defined('__CA_IS_REPLICATION__'));
+		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, false);
 		if($rc = parent::delete($delete_related, $options, $fields, $table_list)) {
 			if(!$dont_check_primary_value && ($this->_setPrimary() === false)) {
 				$this->postError(2700, _t('Could not set primary representation: %1', join('; ', $this->getErrors())), 'PrimaryRepresentationTrait::delete');

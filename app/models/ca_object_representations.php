@@ -642,6 +642,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	private function _importEmbeddedMetadata($options=null) {
+		if(caGetOption('dontImportEmbeddedMetadata', $options, false)) { return true; }
 		if(!($path = caGetOption('path', $options, $this->getMediaPath('media', 'original')))) {
 			$path = $this->getOriginalMediaPath('media');
 		}

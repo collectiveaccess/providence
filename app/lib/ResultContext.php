@@ -454,6 +454,7 @@ class ResultContext {
 				return ($va_context['sort'] ?? null) ? $va_context['sort'] : null;
 			}
 		} else {
+			$ps_sort = str_replace("~", "%", $ps_sort);
 			$ps_sort = str_replace("|", "/", $ps_sort);	// convert relationship type "|" separator used in web UI to "/" separator used in BaseFindEngine sort
 			$this->opb_sort_has_changed = true;
 			$this->setContextValue('sort', $ps_sort);

@@ -1636,7 +1636,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
-	function caGetMediaClass(string $mimetype, ?array $options=null) : string {
+	function caGetMediaClass(string $mimetype, ?array $options=null) : ?string {
 		$tmp = explode("/", $mimetype);
 
 		$for_iiif = caGetOption('forIIIF', $options, false);
@@ -4197,8 +4197,6 @@ function caFileIsIncludable($ps_file) {
 		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
 		$display_value = preg_replace('![ ]+!', ' ', $display_value);
 		
-		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
-		
 		if($locale && $move_articles) {
 			// Move articles to end of string
 			$articles = caGetArticlesForLocale($locale) ?: [];
@@ -4223,6 +4221,7 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 		$display_value = join(' ', $padded);
+		$display_value = mb_substr($display_value, 0, $max_length, 'UTF-8');
 		return $display_value;
 	}
 	# ----------------------------------------
@@ -5002,6 +5001,17 @@ function caFileIsIncludable($ps_file) {
 			$bd = realpath($base_directory);
 		
 			if(is_null($bd) || !preg_match("!^{$bd}/!u", $f)) { 
+				// see if sub-directory is symlink
+				$tmp = explode('/', $relative_filepath);
+				$tbd = $base_directory;
+				while($t = array_shift($tmp)) {
+					if(!sizeof($tmp)) { break; }
+					$tbd .= '/'.$t;
+					if(realpath($tbd) !== $tbd) {
+						return caSanitizeRelativeFilepath(join('/', $tmp), $tbd);
+					}
+				}
+				
 				$f = null;
 			}
 		}

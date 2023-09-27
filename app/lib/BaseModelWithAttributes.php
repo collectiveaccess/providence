@@ -1476,10 +1476,11 @@
 		/**
 		 *
 		 */
-		public function getTypeName($pn_type_id=null) {
+		public function getTypeName($pn_type_id=null, $options=null) {
+			$singular = caGetOption('useSingular', $options, true);
 			if ($pn_type_id && !is_numeric($pn_type_id)) { $pn_type_id = $this->getTypeIDForCode($pn_type_id); }
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
-				return $t_list_item->getLabelForDisplay(false);
+				return $t_list_item->get('ca_list_items.preferred_labels.'.($singular ? 'name_singular' : 'name_plural'));
 			}
 			return null;
 		}

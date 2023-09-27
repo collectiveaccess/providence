@@ -75,7 +75,6 @@ function caExportFormatForTemplate(string $table, string $template) : ?string {
 	}
 	return null;
 }
-
 # ----------------------------------------
 /**
  *
@@ -369,7 +368,7 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * @param string $output_filename
  * @param array $options Options include:
  *		output = where to output data. Values may be FILE (write to file) or STREAM. [Default is stream]
- *		display = ca_bundle_displays object loaded with currently selected displat. [Default is null]
+ *		display = ca_bundle_displays object loaded with currently selected display. [Default is null]
  *
  * @return ?array|bool If output is FILE, path to file or null if file could not be generated. If output is STREAM null returned on error; true returned on success
  *
@@ -667,7 +666,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	
 						$info = $result->getMediaInfo('ca_object_representations.media', $version);
 				
-						if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
 							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
 								$image = "image".$supercol.$column.$line;
 								$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();

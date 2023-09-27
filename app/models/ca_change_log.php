@@ -242,6 +242,8 @@ class ca_change_log extends BaseModel {
 			$pn_from_datetime = $d;
 		}
 		
+		$telescope = caGetOption('telescope', $pa_options, false);
+		
 		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
 		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
 
@@ -381,8 +383,11 @@ class ca_change_log extends BaseModel {
 		        }
 		        $vb_synth_attr_log_entry = true;
 		    }
+		    
+		    $telescoped_snapshots = [];
 			while($qr_results->nextRow()) {
 				$va_row = $qr_results->getRow();
+				$log_id = (int)$qr_results->get('log_id');
 				$logged_table_num = $qr_results->get('logged_table_num');
 				$logged_row_id = $qr_results->get('logged_row_id');
 
@@ -491,6 +496,14 @@ class ca_change_log extends BaseModel {
 						    $va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow(37, $vm_val); // 37 = ca_locales
 						    $va_snapshot['locale_code'] = ca_locales::IDToCode($vm_val);
 							break;
+						case 'is_primary':
+							if(in_array('PrimaryRepresentationTrait', class_uses($t_instance))) {
+								// force to current value if primary, as is_primary changes were not always logged in the past
+								if($t_instance->load($logged_row_id) && ($cur_is_primary = (int)$t_instance->get('is_primary'))) {
+									$va_snapshot['is_primary'] = 1;
+								}
+							}
+							break;
 						default:
 						deflabel:
 							if(
@@ -598,9 +611,9 @@ class ca_change_log extends BaseModel {
 										$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
 
 										// don't sync relationships involving deleted records
-										if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
-											continue 3;
-										}
+										// if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+// 											continue 3;
+// 										}
 									}
 								}
 								//if (!isset($va_snapshot[$vs_fld . '_guid'])) { $va_snapshot[$vs_fld . '_guid'] = null; }
@@ -644,10 +657,24 @@ class ca_change_log extends BaseModel {
                         }
                     }
                 }
-
-
-				if ($va_snapshot['SKIP']) { $va_row['SKIP'] = true; unset($va_snapshot['SKIP']); }	// row skipped because it's invalid, not on the whitelist, etc.
+                
+				if ($va_snapshot['SKIP']) { 
+					$va_row['SKIP'] = true; 
+					unset($va_snapshot['SKIP']); 
+				}	// row skipped because it's invalid, not on the whitelist, etc.
 				$va_row['snapshot'] = $va_snapshot;
+				
+				if($telescope && ($va_row['changetype'] != 'D')) {
+					if(!isset($telescoped_snapshots[$vs_guid])) {
+						$telescoped_snapshots[$vs_guid][$log_id] = $va_snapshot;
+					} else {
+						foreach($telescoped_snapshots[$vs_guid] as $log_id => $telescoped_data) {
+							$telescoped_snapshots[$vs_guid][$log_id] = array_merge($telescoped_data, $va_snapshot);
+							$va_ret[$log_id]['snapshot'] = $telescoped_snapshots[$vs_guid][$log_id];
+							continue(2);
+						}
+					}
+				}
 
 				// get subjects
 				if ($vb_synth_attr_log_entry) {
@@ -657,6 +684,7 @@ class ca_change_log extends BaseModel {
 				    $qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
                 }
                 
+                $self_as_subject_set = false;
 				while($qr_subjects->nextRow()) {
 					// skip subjects without GUID -- we don't care about those
 					$subject_table_num = $qr_subjects->get('subject_table_num');
@@ -696,6 +724,8 @@ class ca_change_log extends BaseModel {
 					}
 
 					$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
+					
+					if($vs_guid == $vs_subject_guid) { $self_as_subject_set = true; }
 				}
 				
 				if ($va_row['snapshot']['attribute_guid']) {
@@ -705,8 +735,16 @@ class ca_change_log extends BaseModel {
 				        'guid' => $va_row['snapshot']['attribute_guid']
 				    ];
 				}
+				
+				if(!$self_as_subject_set) {
+					 $va_row['subjects'][] = [
+				        'subject_table_num' => $logged_table_num,
+				        'subject_row_id' => $logged_row_id,
+				        'guid' => $vs_guid
+				    ];
+				}
 
-				$va_ret[(int) $qr_results->get('log_id')] = $va_row;
+				$va_ret[$log_id] = $va_row;
 			}
 		}
 

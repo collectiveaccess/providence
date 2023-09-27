@@ -216,9 +216,6 @@ class BaseEditorController extends ActionController {
 		);
 		
 		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
-		// $params['forced_values'] = [
-// 			'art_date_container' => [['art_date' => 'xxx']]
-// 		];
 		$this->view->setVar('forced_values', $params['forced_values'] ?? null);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {

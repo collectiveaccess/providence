@@ -629,7 +629,7 @@
 			// generate labels for all cataloguing locales
 			$locales = ca_locales::getCataloguingLocaleList();
 			foreach($locales as $l) {
-				$v = strip_tags($this->getCurrentValueForDisplay($policy, ['locale' => $l['code']]));
+				$v = strip_tags($this->getCurrentValueForDisplay($policy, ['row_id' => $row_id, 'locale' => $l['code']]));
 				$e->replaceLabel(['value' => $v], $l['code'], null, true);
 			}
 			self::$s_history_tracking_newly_added_current_values[$values['tracked_table_num']][$values['tracked_row_id']][$policy] = 
@@ -934,7 +934,7 @@
 		    if(!$policy) { $policy = $this->getInspectorHistoryTrackingDisplayPolicy('policy'); }
 		    if(!self::checkPolicyTypeRestrictions($policy, caGetOption('restrictToTypes', $options, []))) { return null; }
 		    
-		    if (is_array($history = $this->getHistory(['policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null), 'useTemplate' => caGetOption('useTemplate', $options, null)])) && (sizeof($history) > 0)) {
+		    if (is_array($history = $this->getHistory(['row_id' => caGetOption('row_id', $options, null), 'policy' => $policy, 'limit' => 1, 'currentOnly' => true, 'locale' => caGetOption('locale', $options, null), 'row_id' => caGetOption('row_id', $options, null), 'useTemplate' => caGetOption('useTemplate', $options, null)])) && (sizeof($history) > 0)) {
                 $current_value = array_shift(array_shift($history));
                 return is_array($current_value) ? $current_value : null;
             }
@@ -945,7 +945,7 @@
 		 *
 		 */
 		public function getCurrentValueForDisplay($policy=null, $options=null) {
-			$options['restrictToTypes'] = [$this->getTypeCode()];
+			$options['restrictToTypes'] = $this->getTypeCode() ? [$this->getTypeCode()] : null;
 			$current_value = $this->getCurrentValue($policy, $options);
 		    if (is_array($current_value)) {
 		   		return isset($current_value['display']) ? $current_value['display'] : null;

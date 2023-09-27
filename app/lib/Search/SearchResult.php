@@ -1039,6 +1039,7 @@ class SearchResult extends BaseObject {
 	 *			removeLastItems = Number of levels from bottom of hierarchy before returning. [Default is null]
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
+	 *			includeSelf = Return current row when fetching children or descendants. By default only children or descendants are returned. [Default is false]
 	 * 			hierarchyDelimiter = Characters to place in between separate hiearchy levels. Defaults to the 'delimiter' option.
 	 *          filterTypes = A list of types. Only hierarchy items with specified types will be returned. [Default is null]
  	 *
@@ -1455,7 +1456,15 @@ class SearchResult extends BaseObject {
 					goto filter;
 					break;
 				case 'children':
+				case 'descendants':
+				case 'branch':
 					// grab children 
+					if($va_path_components['hierarchical_modifier'] === 'descendants') {
+						$pa_options['allDescendants'] = true;
+					} elseif($va_path_components['hierarchical_modifier'] === 'branch') {
+						$pa_options['allDescendants'] = true;
+						$pa_options['includeSelf'] = true;
+					}
 					$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 					if ($va_path_components['related']) {
 						// [RELATED TABLE CHILDREN]
@@ -1483,9 +1492,18 @@ class SearchResult extends BaseObject {
 							||
 							!sizeof(SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5])
 						){ 
-							continue;
+							if($pa_options['includeSelf'] ?? false) {
+								SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5] = [];
+							} else {
+								continue;
+							}
 						}
-						$qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5], $pa_options);
+						
+						$child_ids = SearchResult::$opa_hierarchy_children_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5];
+						if(($pa_options['includeSelf'] ?? false) && !($va_path_components['related'] ?? false)) {
+							array_unshift($child_ids, $vn_id);
+						}
+						$qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], $child_ids, $pa_options);
 						
 						$va_tmp = array($va_path_components['table_name']);
 						if ($va_path_components['field_name']) { $va_tmp[] = $va_path_components['field_name']; }
@@ -3703,6 +3721,12 @@ class SearchResult extends BaseObject {
 		} elseif ($modifier == 'children') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'children';
+		} elseif ($modifier == 'descendants') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'descendants';
+		} elseif ($modifier == 'branch') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'branch';
 		} elseif ($modifier == 'siblings') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'siblings';
@@ -3858,7 +3882,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	static public function _isHierarchyModifier($pm_modifier) {
-		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'siblings'];
+		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'descendants', 'branch', 'siblings'];
 	
 		if (is_array($pm_modifier)) {
 			return (sizeof(array_intersect($va_hierarchy_modifiers, $pm_modifier)) > 0);

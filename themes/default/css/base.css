@@ -1382,6 +1382,10 @@ div.formLabelUploadSizeNote {
     float: right;
 }
 
+.bundleSubLabel .addComponent { 
+    float: right;
+}
+
 .batchEditSelected {
 	display: none;
 }
