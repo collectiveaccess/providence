@@ -19883,7 +19883,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </types>
     </relationshipTable>
   </relationshipTypes>
-  </relationshipTypes>
   <roles>
     <role code="admin">
       <name>Administrators</name>
