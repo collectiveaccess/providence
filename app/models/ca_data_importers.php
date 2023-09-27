@@ -1589,8 +1589,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			array_keys($existing_record_policy_setting_info['options'])
 		)) {
 			$vs_existing_record_policy = 'none';
-		}		
-		
+		}
 		
 		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
 		$vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD');
@@ -2161,9 +2160,31 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 				$vb_output_subject_preferred_label = false;
 				$va_content_tree = array();
+				
+				// Process dynamic (tag-containing) group names.
+				// For these group names we substitute the tag with a value from the current
+				// row and then consolidate items from all items with this value into a single group.
+				// Blank values are forced into an single group ___undefined_var__
+				$va_items_by_group_proc = $va_items_by_group;
+			
+				foreach($va_items_by_group_proc as $vn_group_id => $va_items) {
+					$va_group = $va_mapping_groups[$vn_group_id];
+					if(strpos($va_group['group_code'], '^') !== false) {	
+						if($gg = BaseRefinery::parsePlaceholder($va_group['group_code'], $va_raw_row, [], 0, ['reader' => $o_reader, 'returnAsString' => true])) {
+							$proc_group_id = $gg;
+						} else {
+							$proc_group_id = "___undefined_var__";
+						}
+						if(!is_array($va_items_by_group_proc[$proc_group_id])) { $va_items_by_group_proc[$proc_group_id] = []; }
+						
+						$va_items_by_group_proc[$proc_group_id] = array_merge($va_items_by_group_proc[$proc_group_id], $va_items);
+						unset($va_items_by_group_proc[$vn_group_id]);
+						if(!isset($va_mapping_groups[ $proc_group_id ])) { $va_mapping_groups[ $proc_group_id ] = $va_group; }
+					}
+				}
 
 				$vb_use_parent_as_subject = false;
-				foreach($va_items_by_group as $vn_group_id => $va_items) {
+				foreach($va_items_by_group_proc as $vn_group_id => $va_items) {
 
 					$va_group             = $va_mapping_groups[ $vn_group_id ];
 					$vs_group_destination = $va_group['destination'];
@@ -3088,7 +3109,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									// but will not be set for repeats so we set them here
 
 									if ( sizeof( $va_group_buf ) > 1 ) {
-										foreach ( $va_items_by_group[ $vn_group_id ] as $va_gitem ) {
+										foreach ( $va_items_by_group_proc[ $vn_group_id ] as $va_gitem ) {
 											if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'],
 												$va_gmatches )
 											) {
@@ -3190,7 +3211,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					unset( $va_log_import_error_opts['importer_item'] );
 
 					if ( sizeof( $va_group_buf ) > 1 ) {
-						foreach ( $va_items_by_group[ $vn_group_id ] as $va_gitem ) {
+						foreach ( $va_items_by_group_proc[ $vn_group_id ] as $va_gitem ) {
 							if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'], $va_gmatches ) ) {
 								$va_gitem_dest     = explode( ".", $va_gitem['destination'] );
 								$vs_gitem_terminal = $va_gitem_dest[ sizeof( $va_gitem_dest ) - 1 ];
