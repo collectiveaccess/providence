@@ -606,14 +606,23 @@ class ReplicationService {
 		}
 		
 		$pk = Datamodel::primaryKey($table);
+		$t = Datamodel::getInstance($table);
 		
 		$db = new Db();
-		$qr = $db->query("
-			SELECT g.guid 
-			FROM ca_guids g
-			INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
-			WHERE t.access IN (?)
-		", [$table_num, $access]);
+		if($t->hasField('access')) {
+			$qr = $db->query("
+				SELECT g.guid 
+				FROM ca_guids g
+				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+				WHERE t.access IN (?)
+			", [$table_num, $access]);
+		} else {
+			$qr = $db->query("
+				SELECT g.guid 
+				FROM ca_guids g
+				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+			", [$table_num]);
+		}
 		
 		
 		return $qr->getAllFieldValues('guid');	
