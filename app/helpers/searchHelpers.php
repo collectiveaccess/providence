@@ -2520,6 +2520,9 @@
 			$current_text_loc = null;
 			
 			$whitespace_regex = $o_search_config->get('whitespace_tokenizer_regex');
+			$punctuation_regex = $o_search_config->get('punctuation_tokenizer_regex');
+			$separator_regex = $o_search_config->get('separator_tokenizer_regex');
+			
 			while (@$xml->read()) {
 					switch ($xml->name) {
 						case 'page':		// new page
@@ -2540,16 +2543,22 @@
 								for($i=0; $i < mb_strlen($text_line_content); $i++) {
 									if (preg_match("!{$whitespace_regex}!u", mb_substr($text_line_content, $i, 1))) {
 										// word boundary
-										if ($acc) {
-											$acc = mb_strtolower($acc);
-											$start = $text_line_locs[$start];
-											$end = $text_line_locs[$end];
-											$locations[$acc][] = array(
-												'p' => $current_page,
-												'x1' => $start['x1'], 'y1' => $start['y1'],
-												'x2' => $end['x2'], 'y2' => $end['y2']
-												//'size' => $start['size']
-											);
+										$acc_tokens = caTokenizeString($acc);
+										if (is_array($acc_tokens) && sizeof($acc_tokens)) {
+											foreach($acc_tokens as $acc) {
+												$acc = mb_strtolower($acc);
+												$acc = preg_replace("!{$punctuation_regex}!", "", $acc);
+												$acc = preg_replace("!{$separator_regex}!", "", $acc);
+												
+												$start = $text_line_locs[$start];
+												$end = $text_line_locs[$end];
+												$locations[$acc][] = array(
+													'p' => $current_page,
+													'x1' => $start['x1'], 'y1' => $start['y1'],
+													'x2' => $end['x2'], 'y2' => $end['y2']
+													//'size' => $start['size']
+												);
+											}
 										}
 										$start = $end = null;
 										$acc = '';
