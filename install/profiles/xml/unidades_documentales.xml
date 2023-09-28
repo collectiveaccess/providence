@@ -1633,7 +1633,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="fondo" enabled="1" default="0" value="Fondo" rank="296" type="concept">
+                <item idno="fondo" enabled="1" default="0" value="fondo" rank="296" type="concept">
                   <labels>
                     <label locale="es_ES" preferred="1">
                       <name_singular>Fondo Documental</name_singular>
@@ -1641,6 +1641,37 @@
                       <description>conjunto de documentos producidas por una persona física o institución a lo largo de un periodo de tiempo en relación a una actividad que le es propia y más y menos homogénea, clasificados, ordenados y descritos según un cuadro de clasificación archivística. De este modo, el fondo documental es el resultado de la actividad de archivo, mas allá del propio conjunto de documentos en su soporte físico o digital.</description>
                     </label>
                   </labels>
+                  <items>
+                    <item idno="subfondo" enabled="1" default="0" value="subfondo" rank="296" type="concept">
+                      <labels>
+                        <label locale="es_ES" preferred="1">
+                          <name_singular>Subfondo</name_singular>
+                          <name_plural>Subfondo</name_plural>
+                          <description>n subfondo es una subdivisión de un fondo más grande. Se utiliza para agrupar y organizar aún más los documentos u objetos dentro de un fondo principal. Un subfondo generalmente representa una parte significativa de la colección que tiene características o contenido común. Por ejemplo, dentro del "Fondo del Archivo Histórico de la Ciudad de Nueva York", podría haber un "Subfondo de Documentos del Gobierno Municipa</description>
+                        </label>
+                      </labels>
+                      <items>
+                        <item idno="serie" enabled="1" default="0" value="serie" rank="296" type="concept">
+                          <labels>
+                            <label locale="es_ES" preferred="1">
+                              <name_singular>Serie</name_singular>
+                              <name_plural>Subfondo Documentales</name_plural>
+                              <description>Una serie es una unidad de organización más específica que se encuentra dentro de un subfondo o un fondo. Las series agrupan documentos u objetos que comparten un tema, una función o un formato similar. Por ejemplo, dentro del "Subfondo de Documentos del Gobierno Municipal", podría haber una "Serie de Actas de Sesiones del Consejo Municipal". Las series son una forma de organizar los materiales para facilitar su acceso y gestión.</description>
+                            </label>
+                          </labels>
+                        </item>
+                        <item idno="agrupacion_documental" enabled="1" default="0" value="agrupacion_documental" rank="296" type="concept">
+                          <labels>
+                            <label locale="es_ES" preferred="1">
+                              <name_singular>Agrupación Documental</name_singular>
+                              <name_plural>Agrupaciones Documentales</name_plural>
+                              <description>Se refiere a la reunión o agrupación de documentos, objetos, registros o materiales relacionados de manera temática o funcional. Estas agrupaciones se realizan con el propósito de organizar y gestionar de manera más eficiente la información y los objetos en un archivo o museo. </description>
+                            </label>
+                          </labels>
+                        </item>
+                      </items>
+                    </item>
+                  </items>
                 </item>
                 <item idno="coleccion_bc" enabled="1" default="0" value="Colección de bienes culturales" rank="296" type="concept">
                   <labels>
@@ -4606,7 +4637,7 @@
         </label>
       </labels>
       <items>
-        <item idno="fondo_documental" enabled="1" default="0" value="Fondo" rank="428" type="concept">
+        <item idno="fondo_documental" enabled="1" default="0" value="fondo" rank="428" type="concept">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Fondo Documental</name_singular>
@@ -4633,7 +4664,7 @@
             </label>
           </labels>
         </item>
-        <item idno="agrupacion_documental" enabled="1" default="0" value="agrupacion documental" rank="431" type="concept">
+        <item idno="agrupacion_documental" enabled="1" default="0" value="agrupacion_documental" rank="431" type="concept">
           <labels>
             <label locale="es_ES" preferred="1">
               <name_singular>Agrupación Documentsal</name_singular>
@@ -9286,6 +9317,44 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="inexhibitions_yn" datatype="List" list="yn_list">
+      <labels>
+        <label locale="es_ES">
+          <name>Expuesta SI/NO</name>
+          <description>Refiere a un campo cerrado en donde se deberá elegir sólo una opción según corresponda. Sí o No</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="listWidth">40</setting>
+        <setting name="listHeight">200px</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="implicitNullOption">0</setting>
+        <setting name="nullOptionText">Not set</setting>
+        <setting name="useDefaultWhenNull">0</setting>
+        <setting name="canBeUsedInSort">1</setting>
+        <setting name="render">select</setting>
+        <setting name="auto_shrink">0</setting>
+        <setting name="maxColumns">3</setting>
+        <setting name="canBeUsedInSearchForm">1</setting>
+        <setting name="canBeUsedInDisplay">1</setting>
+        <setting name="canMakePDF">0</setting>
+        <setting name="canMakePDFForValue">0</setting>
+        <setting name="displayDelimiter">; </setting>
+        <setting name="restrictToTypes">2</setting>
+        <setting name="displayTemplate"/>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="restrictions" datatype="Container">
       <labels>
         <label locale="es_ES">
@@ -9302,34 +9371,6 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
           <labels>
             <label locale="es_ES">
               <name>Disponible para exposicion SI/NO</name>
-              <description>Refiere a un campo cerrado en donde se deberá elegir sólo una opción según corresponda. Sí o No</description>
-            </label>
-          </labels>
-          <settings>
-            <setting name="listWidth">40</setting>
-            <setting name="listHeight">200px</setting>
-            <setting name="doesNotTakeLocale">1</setting>
-            <setting name="requireValue">0</setting>
-            <setting name="implicitNullOption">0</setting>
-            <setting name="nullOptionText">Not set</setting>
-            <setting name="useDefaultWhenNull">0</setting>
-            <setting name="canBeUsedInSort">1</setting>
-            <setting name="render">select</setting>
-            <setting name="auto_shrink">0</setting>
-            <setting name="maxColumns">3</setting>
-            <setting name="canBeUsedInSearchForm">1</setting>
-            <setting name="canBeUsedInDisplay">1</setting>
-            <setting name="canMakePDF">0</setting>
-            <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayDelimiter">; </setting>
-            <setting name="restrictToTypes">2</setting>
-            <setting name="displayTemplate"/>
-          </settings>
-        </metadataElement>
-        <metadataElement code="inexhibitions_yn" datatype="List" list="yn_list">
-          <labels>
-            <label locale="es_ES">
-              <name>Expuesta SI/NO</name>
               <description>Refiere a un campo cerrado en donde se deberá elegir sólo una opción según corresponda. Sí o No</description>
             </label>
           </labels>
@@ -13362,7 +13403,17 @@ Ej. El acceso a la documentación es exclusivamente a través de la lectora de m
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_inloans_yn8">
+            <placement code="ca_attribute_inexhibitions_yn8">
+              <bundle>ca_attribute_inexhibitions_yn</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_inloans_yn9">
               <bundle>ca_attribute_inloans_yn</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -13372,7 +13423,7 @@ Ej. El acceso a la documentación es exclusivamente a través de la lectora de m
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_value9">
+            <placement code="ca_attribute_value10">
               <bundle>ca_attribute_value</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -13382,7 +13433,7 @@ Ej. El acceso a la documentación es exclusivamente a través de la lectora de m
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_insurance10">
+            <placement code="ca_attribute_insurance11">
               <bundle>ca_attribute_insurance</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -13392,7 +13443,7 @@ Ej. El acceso a la documentación es exclusivamente a través de la lectora de m
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_quote11">
+            <placement code="ca_attribute_quote12">
               <bundle>ca_attribute_quote</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -17398,7 +17449,17 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_inloans_yn6">
+            <placement code="ca_attribute_inexhibitions_yn6">
+              <bundle>ca_attribute_inexhibitions_yn</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_inloans_yn7">
               <bundle>ca_attribute_inloans_yn</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -17408,7 +17469,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_value7">
+            <placement code="ca_attribute_value8">
               <bundle>ca_attribute_value</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -17418,7 +17479,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_insurance8">
+            <placement code="ca_attribute_insurance9">
               <bundle>ca_attribute_insurance</bundle>
               <settings>
                 <setting name="readonly"/>
@@ -17428,7 +17489,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_quote9">
+            <placement code="ca_attribute_quote10">
               <bundle>ca_attribute_quote</bundle>
               <settings>
                 <setting name="readonly"/>
