@@ -12,7 +12,7 @@ services:
       - mysql 
 
   mysql:
-    image: mysql:5.7
+    image: mysql:8
     volumes:
       - mysql_data:/var/lib/mysql 
     command: --max_allowed_packet=32505856 ## useful for loading massive database
