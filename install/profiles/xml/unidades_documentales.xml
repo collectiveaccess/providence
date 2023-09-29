@@ -1642,12 +1642,12 @@
                     </label>
                   </labels>
                   <items>
-                    <item idno="subfondo" enabled="1" default="0" value="subfondo" rank="296" type="concept">
+                    <item idno="seccion" enabled="1" default="0" value="subfondo" rank="296" type="concept">
                       <labels>
                         <label locale="es_ES" preferred="1">
-                          <name_singular>Subfondo</name_singular>
-                          <name_plural>Subfondo</name_plural>
-                          <description>n subfondo es una subdivisión de un fondo más grande. Se utiliza para agrupar y organizar aún más los documentos u objetos dentro de un fondo principal. Un subfondo generalmente representa una parte significativa de la colección que tiene características o contenido común. Por ejemplo, dentro del "Fondo del Archivo Histórico de la Ciudad de Nueva York", podría haber un "Subfondo de Documentos del Gobierno Municipa</description>
+                          <name_singular>Sección</name_singular>
+                          <name_plural>Secciones</name_plural>
+                          <description>una seccion es una subdivisión de un fondo más grande. Se utiliza para agrupar y organizar aún más los documentos u objetos dentro de un fondo principal. Un subfondo generalmente representa una parte significativa de la colección que tiene características o contenido común. Por ejemplo, dentro del "Fondo del Archivo Histórico de la Ciudad de Nueva York", podría haber un "Subfondo de Documentos del Gobierno Municipa</description>
                         </label>
                       </labels>
                       <items>
@@ -1655,21 +1655,21 @@
                           <labels>
                             <label locale="es_ES" preferred="1">
                               <name_singular>Serie</name_singular>
-                              <name_plural>Subfondo Documentales</name_plural>
+                              <name_plural>Serie</name_plural>
                               <description>Una serie es una unidad de organización más específica que se encuentra dentro de un subfondo o un fondo. Las series agrupan documentos u objetos que comparten un tema, una función o un formato similar. Por ejemplo, dentro del "Subfondo de Documentos del Gobierno Municipal", podría haber una "Serie de Actas de Sesiones del Consejo Municipal". Las series son una forma de organizar los materiales para facilitar su acceso y gestión.</description>
                             </label>
                           </labels>
                         </item>
-                        <item idno="agrupacion_documental" enabled="1" default="0" value="agrupacion_documental" rank="296" type="concept">
-                          <labels>
-                            <label locale="es_ES" preferred="1">
-                              <name_singular>Agrupación Documental</name_singular>
-                              <name_plural>Agrupaciones Documentales</name_plural>
-                              <description>Se refiere a la reunión o agrupación de documentos, objetos, registros o materiales relacionados de manera temática o funcional. Estas agrupaciones se realizan con el propósito de organizar y gestionar de manera más eficiente la información y los objetos en un archivo o museo. </description>
-                            </label>
-                          </labels>
-                        </item>
                       </items>
+                    </item>
+                    <item idno="agrupacion_documental" enabled="1" default="0" value="agrupacion_documental" rank="296" type="concept">
+                      <labels>
+                        <label locale="es_ES" preferred="1">
+                          <name_singular>Agrupación Documental</name_singular>
+                          <name_plural>Agrupaciones Documentales</name_plural>
+                          <description>Se refiere a la reunión o agrupación de documentos, objetos, registros o materiales relacionados de manera temática o funcional. Estas agrupaciones se realizan con el propósito de organizar y gestionar de manera más eficiente la información y los objetos en un archivo o museo. </description>
+                        </label>
+                      </labels>
                     </item>
                   </items>
                 </item>
