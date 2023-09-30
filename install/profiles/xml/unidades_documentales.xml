@@ -1510,24 +1510,6 @@
             <setting name="render_in_new_menu">1</setting>
           </settings>
         </item>
-        <item idno="functions" enabled="1" default="0" value="funciones" rank="408" type="concept">
-          <labels>
-            <label locale="es_ES" preferred="1">
-              <name_singular>funcion</name_singular>
-              <name_plural>funciones</name_plural>
-              <description/>
-            </label>
-          </labels>
-        </item>
-        <item idno="activities" enabled="1" default="0" value="actividades" rank="409" type="concept">
-          <labels>
-            <label locale="es_ES" preferred="1">
-              <name_singular>actividad</name_singular>
-              <name_plural>actividades</name_plural>
-              <description/>
-            </label>
-          </labels>
-        </item>
       </items>
     </list>
     <list code="occurrence_label_types" hierarchical="0" system="0" vocabulary="0">
@@ -10708,6 +10690,44 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
+        <metadataElement code="funciones" datatype="Text">
+      <labels>
+        <label locale="es_ES">
+          <name>Funciones</name>
+          <description>Se utiliza para consignar las funciones a partir de las cuales se produce un documento/fondo/colección (utilizar para sección)</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>seccion</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="actividades" datatype="Text">
+      <labels>
+        <label locale="es_ES">
+          <name>Actividades</name>
+          <description>Se utiliza para consignar las actividades a partir de las cuales se produce un documento/fondo/colección (utilizar para series)</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>serie</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -12954,50 +12974,6 @@ Ej. Unidad documental: 1 documento, 4 folios, papel&#13;
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
-            <placement code="ca_occurrences7">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="label" locale="es_ES">Funciones</setting>
-                <setting name="description" locale="es_ES">Se utiliza para consignar las funciones a partir de las cuales se produce un documento/fondo/colección (utilizar para sección)</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">functions</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_occurrences8">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="label" locale="es_ES">Actividades</setting>
-                <setting name="description" locale="es_ES">Se utiliza para consignar las actividades a partir de las cuales se produce un documento/fondo/colección (utilizar para series)</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">activities</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
-            </placement>
             <placement code="ca_attribute_numero_administra">
               <bundle>ca_attribute_numero_administrativo</bundle>
               <settings>
@@ -15028,48 +15004,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
-            <placement code="ca_occurrences7">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="label" locale="es_ES">Funciones</setting>
-                <setting name="description" locale="es_ES">Se utiliza para consignar las funciones a partir de las cuales se produce un documento/fondo/colección (utilizar para sección)</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
+            <placement code="ca_attribute_funciones7">
+              <bundle>ca_attribute_funciones</bundle>
             </placement>
-            <placement code="ca_occurrences8">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="label" locale="es_ES">Actividades</setting>
-                <setting name="description" locale="es_ES">Se utiliza para consignar las actividades a partir de las cuales se produce un documento/fondo/colección (utilizar para series)</setting>
-                <setting name="readonly"/>
-                <setting name="expand_collapse_value">dont_force</setting>
-                <setting name="expand_collapse_no_value">dont_force</setting>
-                <setting name="restrict_to_types">activities</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">0</setting>
-                <setting name="showCurrentUsingDate">effective_date</setting>
-                <setting name="disableQuickadd">0</setting>
-                <setting name="prepopulateQuickaddFields">0</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="disableSorts">0</setting>
-              </settings>
+            <placement code="ca_attribute_actividades8">
+              <bundle>ca_attribute_actividades</bundle>
             </placement>
             <placement code="ca_entities9">
               <bundle>ca_entities</bundle>
@@ -20790,11 +20729,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="river" access="edit"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="edit"/>
         <permission table="ca_occurrences" type="maintenance" access="edit"/>
         <permission table="ca_occurrences" type="event" access="edit"/>
         <permission table="ca_occurrences" type="exposiciones" access="edit"/>
-        <permission table="ca_occurrences" type="functions" access="edit"/>
         <permission table="ca_occurrences" type="investigacion" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="edit"/>
@@ -21695,11 +21632,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="river" access="edit"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="edit"/>
         <permission table="ca_occurrences" type="maintenance" access="edit"/>
         <permission table="ca_occurrences" type="event" access="edit"/>
         <permission table="ca_occurrences" type="exposiciones" access="edit"/>
-        <permission table="ca_occurrences" type="functions" access="edit"/>
         <permission table="ca_occurrences" type="investigacion" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="edit"/>
@@ -22592,11 +22527,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="river" access="edit"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="edit"/>
         <permission table="ca_occurrences" type="maintenance" access="edit"/>
         <permission table="ca_occurrences" type="event" access="edit"/>
         <permission table="ca_occurrences" type="exposiciones" access="edit"/>
-        <permission table="ca_occurrences" type="functions" access="edit"/>
         <permission table="ca_occurrences" type="investigacion" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="edit"/>
@@ -23490,11 +23423,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -24388,11 +24319,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -25286,11 +25215,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -26184,11 +26111,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -27082,11 +27007,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -27980,11 +27903,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -28878,11 +28799,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -29776,11 +29695,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -30674,11 +30591,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -31572,11 +31487,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -32470,11 +32383,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -33368,11 +33279,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="river" access="edit"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="edit"/>
         <permission table="ca_occurrences" type="maintenance" access="edit"/>
         <permission table="ca_occurrences" type="event" access="edit"/>
         <permission table="ca_occurrences" type="exposiciones" access="edit"/>
-        <permission table="ca_occurrences" type="functions" access="edit"/>
         <permission table="ca_occurrences" type="investigacion" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="edit"/>
@@ -34266,11 +34175,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="river" access="edit"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="edit"/>
         <permission table="ca_occurrences" type="maintenance" access="edit"/>
         <permission table="ca_occurrences" type="event" access="edit"/>
         <permission table="ca_occurrences" type="exposiciones" access="edit"/>
-        <permission table="ca_occurrences" type="functions" access="edit"/>
         <permission table="ca_occurrences" type="investigacion" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="edit"/>
@@ -35164,11 +35071,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="none"/>
         <permission table="ca_places" type="river" access="none"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -36062,11 +35967,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="none"/>
         <permission table="ca_places" type="river" access="none"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -36960,11 +36863,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="none"/>
         <permission table="ca_occurrences" type="maintenance" access="none"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="none"/>
-        <permission table="ca_occurrences" type="functions" access="none"/>
         <permission table="ca_occurrences" type="investigacion" access="none"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -37858,11 +37759,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="none"/>
         <permission table="ca_occurrences" type="maintenance" access="none"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="none"/>
-        <permission table="ca_occurrences" type="functions" access="none"/>
         <permission table="ca_occurrences" type="investigacion" access="none"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -38756,11 +38655,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -39654,11 +39551,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -40552,11 +40447,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -41450,11 +41343,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -42349,11 +42240,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
@@ -43252,11 +43141,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="edit"/>
         <permission table="ca_places" type="river" access="none"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="none"/>
         <permission table="ca_occurrences" type="maintenance" access="none"/>
         <permission table="ca_occurrences" type="event" access="none"/>
         <permission table="ca_occurrences" type="exposiciones" access="none"/>
-        <permission table="ca_occurrences" type="functions" access="none"/>
         <permission table="ca_occurrences" type="investigacion" access="none"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="edit"/>
@@ -44150,11 +44037,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_places" type="other" access="read"/>
         <permission table="ca_places" type="river" access="read"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
-        <permission table="ca_occurrences" type="activities" access="read"/>
         <permission table="ca_occurrences" type="maintenance" access="read"/>
         <permission table="ca_occurrences" type="event" access="read"/>
         <permission table="ca_occurrences" type="exposiciones" access="read"/>
-        <permission table="ca_occurrences" type="functions" access="read"/>
         <permission table="ca_occurrences" type="investigacion" access="read"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
