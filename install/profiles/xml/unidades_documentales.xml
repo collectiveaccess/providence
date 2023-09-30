@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
   <profileName>SNGRAN</profileName>
-  <profileDescription>Perfil creado el 25 Septiembre 2023 at 14:21:16 por CollectiveAccess Administrator</profileDescription>
+  <profileDescription>Perfil creado el 30 Septiembre 2023 at 13:49:18 por CollectiveAccess Administrator</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="es" country="ES">Español</locale>
@@ -4524,7 +4524,7 @@
             <label locale="es_ES" preferred="1">
               <name_singular>Original/Formal</name_singular>
               <name_plural>Originales/Formales</name_plural>
-              <description>Para cuando el título de la unidad de descripción aparezca destacado sobre el resto de la documentación por su posición (portada, cubierta, etc.) o por su tipografía (letras capitales, más grandes, etc.), siempre y cuando haya sido puesto por el productor del fondo o el autor y constituya una frase coherente desde el punto de vista gramatical.&#13;
+              <description>Para cuando el título de la unidad de descripción aparezca destacado sobre el resto de la documentación por su posición (portada, cubierta, etc.) o por su tipografía (letras capitales, más grandes, etc.), siempre y cuando haya sido puesto por el productor del fondo o el autor y constituya una frase coherente desde el punto de vista gramatical.
 </description>
             </label>
           </labels>
@@ -5273,12 +5273,12 @@
       <labels>
         <label locale="en_US">
           <name>Source of description</name>
-          <description>Source of item description. This should be a formal citation if possible. For&#13;
+          <description>Source of item description. This should be a formal citation if possible. For
             informal sources a narrative description is acceptable.</description>
         </label>
         <label locale="es_ES">
           <name>Fuente de descripción</name>
-          <description>Fuente de la descripción del item. En lo posible esto debería ser una cita formal. &#13;
+          <description>Fuente de la descripción del item. En lo posible esto debería ser una cita formal. 
             Para fuentes informales se acepta una descripción en forma de narrativa.</description>
         </label>
       </labels>
@@ -5630,8 +5630,8 @@
       <labels>
         <label locale="en_US">
           <name>Library of Congress Subject Headings</name>
-          <description>Library of Congress Subject headings describing this object. To add a new&#13;
-            heading simply type the first few letters of the heading and choose the desired one from&#13;
+          <description>Library of Congress Subject headings describing this object. To add a new
+            heading simply type the first few letters of the heading and choose the desired one from
             the displayed list of possible matches.</description>
         </label>
       </labels>
@@ -5685,7 +5685,7 @@
       <labels>
         <label locale="en_US">
           <name>Repository</name>
-          <description>This element identifies the name and location of the repository that hold the&#13;
+          <description>This element identifies the name and location of the repository that hold the
             materials being described.</description>
         </label>
       </labels>
@@ -6089,7 +6089,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-<metadataElement code="unitdate" datatype="Container">
+    <metadataElement code="unitdate" datatype="Container">
       <labels>
         <label locale="en_US">
           <name>Dates</name>
@@ -8631,7 +8631,7 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="tipo_de_objeto" datatype="List" list="objects_types_bc">
+    <metadataElement code="tipo_de_objeto" datatype="List">
       <labels>
         <label locale="es_ES">
           <name>Tipo de objeto</name>
@@ -9307,24 +9307,8 @@ Ej. 2 [juego de té, eligiendo en el campo anterior “todo”] Juego de té com
         </label>
       </labels>
       <settings>
-        <setting name="listWidth">40</setting>
-        <setting name="listHeight">200px</setting>
-        <setting name="doesNotTakeLocale">1</setting>
-        <setting name="requireValue">0</setting>
-        <setting name="implicitNullOption">0</setting>
-        <setting name="nullOptionText">Not set</setting>
-        <setting name="useDefaultWhenNull">0</setting>
-        <setting name="canBeUsedInSort">1</setting>
         <setting name="render">select</setting>
-        <setting name="auto_shrink">0</setting>
-        <setting name="maxColumns">3</setting>
-        <setting name="canBeUsedInSearchForm">1</setting>
-        <setting name="canBeUsedInDisplay">1</setting>
-        <setting name="canMakePDF">0</setting>
-        <setting name="canMakePDFForValue">0</setting>
-        <setting name="displayDelimiter">; </setting>
         <setting name="restrictToTypes">2</setting>
-        <setting name="displayTemplate"/>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -10414,7 +10398,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <settings>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="regex"/>
             <setting name="fieldWidth">40</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="usewysiwygeditor">0</setting>
@@ -10422,16 +10405,17 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="canBeUsedInSort">1</setting>
             <setting name="suggestExistingValues">0</setting>
             <setting name="suggestExistingValueSort">value</setting>
-            <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayTemplate"/>
             <setting name="displayDelimiter">; </setting>
             <setting name="isDependentValue">0</setting>
-            <setting name="dependentValueTemplate"/>
             <setting name="mustBeUnique">0</setting>
+            <setting name="regex"/>
+            <setting name="default_text"/>
+            <setting name="displayTemplate"/>
+            <setting name="dependentValueTemplate"/>
             <setting name="referenceMediaIn"/>
           </settings>
         </metadataElement>
@@ -10444,7 +10428,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <settings>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="regex"/>
             <setting name="fieldWidth">40</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="usewysiwygeditor">0</setting>
@@ -10452,16 +10435,17 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="canBeUsedInSort">1</setting>
             <setting name="suggestExistingValues">0</setting>
             <setting name="suggestExistingValueSort">value</setting>
-            <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayTemplate"/>
             <setting name="displayDelimiter">; </setting>
             <setting name="isDependentValue">0</setting>
-            <setting name="dependentValueTemplate"/>
             <setting name="mustBeUnique">0</setting>
+            <setting name="regex"/>
+            <setting name="default_text"/>
+            <setting name="displayTemplate"/>
+            <setting name="dependentValueTemplate"/>
             <setting name="referenceMediaIn"/>
           </settings>
         </metadataElement>
@@ -10487,9 +10471,9 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayTemplate"/>
             <setting name="displayDelimiter">; </setting>
             <setting name="restrictToTypes">2</setting>
+            <setting name="displayTemplate"/>
           </settings>
         </metadataElement>
         <metadataElement code="nro_acta" datatype="Text">
@@ -10501,7 +10485,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <settings>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="regex"/>
             <setting name="fieldWidth">40</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="usewysiwygeditor">0</setting>
@@ -10509,16 +10492,17 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="canBeUsedInSort">1</setting>
             <setting name="suggestExistingValues">0</setting>
             <setting name="suggestExistingValueSort">value</setting>
-            <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayTemplate"/>
             <setting name="displayDelimiter">; </setting>
             <setting name="isDependentValue">0</setting>
-            <setting name="dependentValueTemplate"/>
             <setting name="mustBeUnique">0</setting>
+            <setting name="regex"/>
+            <setting name="default_text"/>
+            <setting name="displayTemplate"/>
+            <setting name="dependentValueTemplate"/>
             <setting name="referenceMediaIn"/>
           </settings>
         </metadataElement>
@@ -10627,7 +10611,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <settings>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="regex"/>
             <setting name="fieldWidth">40</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="usewysiwygeditor">0</setting>
@@ -10635,16 +10618,17 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="canBeUsedInSort">1</setting>
             <setting name="suggestExistingValues">0</setting>
             <setting name="suggestExistingValueSort">value</setting>
-            <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayTemplate"/>
             <setting name="displayDelimiter">; </setting>
             <setting name="isDependentValue">0</setting>
-            <setting name="dependentValueTemplate"/>
             <setting name="mustBeUnique">0</setting>
+            <setting name="regex"/>
+            <setting name="default_text"/>
+            <setting name="displayTemplate"/>
+            <setting name="dependentValueTemplate"/>
             <setting name="referenceMediaIn"/>
           </settings>
         </metadataElement>
@@ -10657,7 +10641,6 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
           <settings>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="regex"/>
             <setting name="fieldWidth">40</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="usewysiwygeditor">0</setting>
@@ -10665,16 +10648,17 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
             <setting name="canBeUsedInSort">1</setting>
             <setting name="suggestExistingValues">0</setting>
             <setting name="suggestExistingValueSort">value</setting>
-            <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="canMakePDF">0</setting>
             <setting name="canMakePDFForValue">0</setting>
-            <setting name="displayTemplate"/>
             <setting name="displayDelimiter">; </setting>
             <setting name="isDependentValue">0</setting>
-            <setting name="dependentValueTemplate"/>
             <setting name="mustBeUnique">0</setting>
+            <setting name="regex"/>
+            <setting name="default_text"/>
+            <setting name="displayTemplate"/>
+            <setting name="dependentValueTemplate"/>
             <setting name="referenceMediaIn"/>
           </settings>
         </metadataElement>
@@ -10690,7 +10674,7 @@ Ejemplo de alcance y contenido de un documento: Le agradece el envío de los Ana
         </restriction>
       </typeRestrictions>
     </metadataElement>
-        <metadataElement code="funciones" datatype="Text">
+    <metadataElement code="funciones" datatype="Text">
       <labels>
         <label locale="es_ES">
           <name>Funciones</name>
@@ -13876,6 +13860,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -15006,9 +14991,23 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
             </placement>
             <placement code="ca_attribute_funciones7">
               <bundle>ca_attribute_funciones</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_actividades8">
               <bundle>ca_attribute_actividades</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_entities9">
               <bundle>ca_entities</bundle>
@@ -15633,6 +15632,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -15756,6 +15756,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15765,6 +15766,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15774,6 +15776,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15783,6 +15786,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15792,6 +15796,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15801,12 +15806,14 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="ca_entities7">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Responsable administrativo</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -15819,9 +15826,9 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-                <setting name="label" locale="es_ES">Responsable administrativo</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_porcentaje_visu8" typeRestrictions="visu">
@@ -15830,6 +15837,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15839,6 +15847,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15848,6 +15857,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -15857,11 +15867,19 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
+                <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_nro_patrimonial14">
               <bundle>ca_attribute_nro_patrimonial</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_objects10">
               <bundle>ca_objects</bundle>
@@ -15877,6 +15895,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">ca_objects.processinfo</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -15896,6 +15915,7 @@ Ej. Peréz, Noelia 2020-04-02&#13;
             <placement code="ca_occurrences1">
               <bundle>ca_occurrences</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Procesos de Conservación Relacionados</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -15908,14 +15928,15 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-                <setting name="label" locale="es_ES">Procesos de Conservación Relacionados</setting>
               </settings>
             </placement>
             <placement code="ca_object_lots1">
               <bundle>ca_object_lots</bundle>
               <settings>
+                <setting name="label" locale="es_ES">Procesos de gestión relacionados</setting>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">dont_force</setting>
                 <setting name="expand_collapse_no_value">dont_force</setting>
@@ -15927,9 +15948,9 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
-                <setting name="label" locale="es_ES">Procesos de gestión relacionados</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -15946,9 +15967,23 @@ Ej. Peréz, Noelia 2020-04-02&#13;
           <bundlePlacements>
             <placement code="ca_attribute_note1">
               <bundle>ca_attribute_note</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_internal_notes2">
               <bundle>ca_attribute_internal_notes</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -15978,18 +16013,38 @@ Ej. Peréz, Noelia 2020-04-02&#13;
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_descrules2">
               <bundle>ca_attribute_descrules</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_processinfo3">
               <bundle>ca_attribute_processinfo</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="access4">
               <bundle>access</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17855,6 +17910,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
                 <setting name="showCurrentOnly">0</setting>
                 <setting name="showCurrentUsingDate">effective_date</setting>
                 <setting name="disableQuickadd">0</setting>
+                <setting name="prepopulateQuickaddFields">0</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="disableSorts">0</setting>
               </settings>
@@ -19901,6 +19957,106 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <action>can_manage_system_bundle_displays</action>
       </actions>
     </role>
+    <role code="cataloguer">
+      <name>Cataloguers</name>
+      <description>Confers actions needed by those editing catalogue entries</description>
+      <actions>
+        <action>can_search</action>
+        <action>can_quicksearch</action>
+        <action>can_browse</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+    </role>
+    <role code="researcher">
+      <name>Researcher</name>
+      <description>Allows users to only search and view - but not edit - catalogue entries</description>
+      <actions>
+        <action>can_search</action>
+        <action>can_quicksearch</action>
+        <action>can_browse</action>
+        <action>can_set_preferences</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+      </actions>
+    </role>
+    <role code="moderator">
+      <name>User content moderator</name>
+      <description>Allows users to moderate user generated tags and comments</description>
+      <actions>
+        <action>can_manage_user_comments</action>
+        <action>can_manage_user_tags</action>
+      </actions>
+    </role>
     <role code="resp_RyD_bc_MCRR">
       <name>Responsable R y D - Bienes Culturales -  Museo Ricardo Rojas</name>
       <description>Entrega acceso de edición a todos los campos de Bienes Culturales para el Museo Ricardo Rojas</description>
@@ -20303,7 +20459,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="edit"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="edit"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="edit"/>
@@ -20321,7 +20476,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="edit"/>
         <permission table="ca_occurrences" bundle="status" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="edit"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="edit"/>
         <permission table="ca_collections" bundle="access" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="edit"/>
@@ -20373,7 +20527,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="hierarchy_navigation" access="edit"/>
         <permission table="ca_collections" bundle="idno" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_internal_notes" access="edit"/>
-
         <permission table="ca_collections" bundle="ca_attribute_lcsh_terms" access="edit"/>
         <permission table="ca_collections" bundle="locale_id" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="edit"/>
@@ -20394,7 +20547,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="edit"/>
         <permission table="ca_collections" bundle="status" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="edit"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="edit"/>
         <permission table="ca_storage_locations" bundle="access" access="edit"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="edit"/>
@@ -20710,8 +20862,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="edit"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="edit"/>
         <permission table="ca_object_lots" type="out" access="edit"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
@@ -21206,7 +21356,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="edit"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="edit"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="edit"/>
@@ -21224,7 +21373,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="edit"/>
         <permission table="ca_occurrences" bundle="status" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="edit"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="edit"/>
         <permission table="ca_collections" bundle="access" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="edit"/>
@@ -21276,7 +21424,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="hierarchy_navigation" access="edit"/>
         <permission table="ca_collections" bundle="idno" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_internal_notes" access="edit"/>
-
         <permission table="ca_collections" bundle="ca_attribute_lcsh_terms" access="edit"/>
         <permission table="ca_collections" bundle="locale_id" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="edit"/>
@@ -21297,7 +21444,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="edit"/>
         <permission table="ca_collections" bundle="status" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="edit"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="edit"/>
         <permission table="ca_storage_locations" bundle="access" access="edit"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="edit"/>
@@ -21613,8 +21759,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="edit"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="edit"/>
         <permission table="ca_object_lots" type="out" access="edit"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
@@ -22101,7 +22245,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="edit"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="edit"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="edit"/>
@@ -22119,7 +22262,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="edit"/>
         <permission table="ca_occurrences" bundle="status" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="edit"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="edit"/>
         <permission table="ca_collections" bundle="access" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="edit"/>
@@ -22171,7 +22313,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="hierarchy_navigation" access="edit"/>
         <permission table="ca_collections" bundle="idno" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_internal_notes" access="edit"/>
-
         <permission table="ca_collections" bundle="ca_attribute_lcsh_terms" access="edit"/>
         <permission table="ca_collections" bundle="locale_id" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="edit"/>
@@ -22192,7 +22333,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="edit"/>
         <permission table="ca_collections" bundle="status" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="edit"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="edit"/>
         <permission table="ca_storage_locations" bundle="access" access="edit"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="edit"/>
@@ -22508,8 +22648,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="edit"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="edit"/>
         <permission table="ca_object_lots" type="out" access="edit"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
@@ -22991,13 +23129,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -23015,7 +23151,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -23072,7 +23207,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -23088,7 +23222,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -23404,8 +23537,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -23887,13 +24018,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -23911,7 +24040,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -23968,7 +24096,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -23984,7 +24111,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -24300,8 +24426,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -24783,13 +24907,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -24807,7 +24929,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -24864,7 +24985,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -24880,7 +25000,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -25196,8 +25315,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -25679,13 +25796,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -25703,7 +25818,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -25760,7 +25874,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -25776,7 +25889,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -26092,8 +26204,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -26575,13 +26685,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -26599,7 +26707,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -26656,7 +26763,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -26672,7 +26778,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -26988,8 +27093,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -27471,13 +27574,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -27495,7 +27596,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -27552,7 +27652,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -27568,7 +27667,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -27884,8 +27982,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -28367,13 +28463,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -28391,7 +28485,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -28448,7 +28541,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -28464,7 +28556,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -28780,8 +28871,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -29263,13 +29352,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -29287,7 +29374,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -29344,7 +29430,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -29360,7 +29445,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -29676,8 +29760,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -30159,13 +30241,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -30183,7 +30263,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -30240,7 +30319,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -30256,7 +30334,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -30572,8 +30649,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -31055,13 +31130,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -31079,7 +31152,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -31136,7 +31208,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -31152,7 +31223,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -31468,8 +31538,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -31951,13 +32019,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -31975,7 +32041,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -32032,7 +32097,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -32048,7 +32112,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -32364,8 +32427,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -32847,13 +32908,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -32871,7 +32930,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -32928,7 +32986,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -32944,7 +33001,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -33260,8 +33316,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="edit"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="edit"/>
         <permission table="ca_object_lots" type="out" access="edit"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
@@ -33743,13 +33797,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -33767,7 +33819,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -33824,7 +33875,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -33840,7 +33890,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -34156,8 +34205,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="edit"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="edit"/>
         <permission table="ca_object_lots" type="out" access="edit"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
@@ -34639,13 +34686,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -34663,7 +34708,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -34720,7 +34764,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -34736,7 +34779,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -35052,8 +35094,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="none"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="none"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -35535,13 +35575,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -35559,7 +35597,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -35616,7 +35653,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -35632,7 +35668,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -35948,8 +35983,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="none"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="none"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -36431,13 +36464,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -36455,7 +36486,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -36512,7 +36542,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -36528,7 +36557,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -36844,8 +36872,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="none"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="none"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -37327,13 +37353,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -37351,7 +37375,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -37408,7 +37431,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -37424,7 +37446,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -37740,8 +37761,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="none"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="none"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -38223,13 +38242,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -38247,7 +38264,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -38304,7 +38320,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -38320,7 +38335,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -38636,8 +38650,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -39119,13 +39131,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -39143,7 +39153,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -39200,7 +39209,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -39216,7 +39224,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -39532,8 +39539,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -40015,13 +40020,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -40039,7 +40042,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -40096,7 +40098,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -40112,7 +40113,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -40428,8 +40428,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -40911,13 +40909,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -40935,7 +40931,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -40992,7 +40987,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -41008,7 +41002,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -41324,8 +41317,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -41808,13 +41799,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -41832,7 +41821,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -41889,7 +41877,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -41905,7 +41892,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -42221,8 +42207,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
@@ -42708,13 +42692,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="none"/>
         <permission table="ca_occurrences" bundle="idno" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="none"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="none"/>
         <permission table="ca_occurrences" bundle="locale_id" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="none"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="none"/>
@@ -42772,7 +42754,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_storage_locations" access="none"/>
         <permission table="ca_collections" bundle="ca_storage_locations_related_list" access="none"/>
         <permission table="ca_collections" bundle="ca_tour_stops" access="none"/>
-
         <permission table="ca_collections" bundle="collection_id" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_custohist" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_description" access="none"/>
@@ -42784,13 +42765,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="hierarchy_navigation" access="none"/>
         <permission table="ca_collections" bundle="idno" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_internal_notes" access="none"/>
-
         <permission table="ca_collections" bundle="ca_attribute_lcsh_terms" access="none"/>
         <permission table="ca_collections" bundle="locale_id" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="none"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="none"/>
@@ -42806,7 +42785,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="none"/>
         <permission table="ca_collections" bundle="status" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="none"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="none"/>
         <permission table="ca_storage_locations" bundle="access" access="none"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="none"/>
@@ -43122,8 +43100,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="none"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
         <permission table="ca_object_lots" type="out" access="none"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="none"/>
         <permission table="ca_entities" type="org" access="none"/>
@@ -43605,13 +43581,11 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="read"/>
         <permission table="ca_occurrences" bundle="idno" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_lcsh_terms" access="read"/>
         <permission table="ca_occurrences" bundle="locale_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_occurrences" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_occurrences" bundle="occurrence_id" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_otherfindingaid" access="read"/>
@@ -43629,7 +43603,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_occurrences" bundle="source_id" access="read"/>
         <permission table="ca_occurrences" bundle="status" access="read"/>
         <permission table="ca_occurrences" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_occurrences" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_accessrestrict" access="read"/>
@@ -43686,7 +43659,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_note" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_originalsloc" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_otherfindingaid" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_physaccessrestrict" access="read"/>
@@ -43702,7 +43674,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_techaccessrestrict" access="read"/>
-
         <permission table="ca_collections" bundle="ca_attribute_unitdate" access="read"/>
         <permission table="ca_storage_locations" bundle="access" access="read"/>
         <permission table="ca_storage_locations" bundle="authority_references_list" access="read"/>
@@ -44018,8 +43989,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" type="acquisition" access="read"/>
         <permission table="ca_object_lots" type="alta_patrimonial" access="read"/>
         <permission table="ca_object_lots" type="out" access="read"/>
-
-
         <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_object_lots" type="visu" access="read"/>
         <permission table="ca_entities" type="org" access="read"/>
