@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 require_once(__CA_LIB_DIR__.'/ApplicationPluginManager.php');
@@ -570,7 +566,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_opts = array();
 		foreach($va_exporters as $va_importer_info) {
-			$va_opts[$va_importer_info['label']." (".$va_importer_info['exporter_code'].")"] = $va_importer_info['exporter_id'];
+			$va_opts[$va_importer_info['label']." (".$va_importer_info['exporter_code'].")"] = $va_importer_info['exporter_code'];
 		}
 		ksort($va_opts);
 		return caHTMLSelect($ps_name, $va_opts, $pa_attributes, $pa_options);
@@ -778,6 +774,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							$pa_errors[] = $m = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
 							$o_log->logWarn($m);
 						}
+					}
+					
+					if(isset($va_options['original_values']) && ((is_array($va_options['original_values']) && sizeof($va_options['original_values'])) || strlen($va_options['original_values']))) {
+						$va_original_values = is_array($va_options['original_values']) ? $va_options['original_values'] : [$va_options['original_values']];
+					}
+					if(isset($va_options['replacement_values']) && ((is_array($va_options['replacement_values']) && sizeof($va_options['replacement_values'])) || strlen($va_options['replacement_values']))) {
+						$va_replacement_values = is_array($va_options['replacement_values']) ? $va_options['replacement_values'] : [$va_options['replacement_values']];
 					}
 
 					$va_options['_id'] = (string)$o_id->getValue();	// stash ID for future reference
@@ -2030,16 +2033,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} elseif($vs_source) { // trying to find the source only makes sense if the source is set
 				$va_values = $t_attr->getAttributeValues();
-
 				$va_src_tmp = explode('.', $vs_source);
 				$vs_modifier = null;
+				
+				if($t_attr->get('table_num') == Datamodel::getTableNum($va_src_tmp[0])) {
+					array_shift($va_src_tmp);
+				}
 				if(sizeof($va_src_tmp) == 2) {
-					if($t_attr->get('table_num') == Datamodel::getTableNum($va_src_tmp[0])) {
-						$vs_source = $va_src_tmp[1];
-					} else {
-					    $vs_source = $va_src_tmp[0];
-					    $vs_modifier = $va_src_tmp[1];
-					}
+					$vs_source = $va_src_tmp[0];
+					$vs_modifier = $va_src_tmp[1];
+				} elseif(sizeof($va_src_tmp) == 1) {
+					$vs_source = $va_src_tmp[0];
 				}
 
 				if(preg_match("/^_CONSTANT_:(.*)$/",$vs_source,$va_matches)) {
@@ -2059,7 +2063,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					
 						$va_display_val_options = is_array($va_get_options) ? $va_get_options : []; 
 						switch($vo_val->getDatatype()) {
-							case __CA_ATTRIBUTE_VALUE_LIST__: //if ($vo_val instanceof ListAttributeValue) {
+							case __CA_ATTRIBUTE_VALUE_LIST__: 
 								// figure out list_id -- without it we can't pull display values
 								$t_element = new ca_metadata_elements($vo_val->getElementID());
 								$va_display_val_options = array('list_id' => $t_element->get('list_id'));
@@ -2069,7 +2073,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								} elseif ($settings['convertCodesToDisplayText']) {
 									$va_display_val_options['output'] = 'text';
 								}
-								
 								if($vs_modifier) {
 									$t_item = ca_list_items::findAsInstance(['item_id' => $vo_val->getItemID()]);
 									$vs_display_value = $t_item->get('ca_list_items.'.$vs_modifier);
