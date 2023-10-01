@@ -415,8 +415,17 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
-			'label' => _t('Skip row if data already present'),
+			'label' => _t('Skip mapping if data already present'),
 			'description' => _t('Skip mapping if data is already present in CollectiveAccess.')
+		);
+		$settings['skipIfRowDataPresent'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if data already present'),
+			'description' => _t('Skip row if data is already present in CollectiveAccess.')
 		);
 		$settings['skipIfNoReplacementValue'] = array(
 			'formatType' => FT_TEXT,
