@@ -2379,6 +2379,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 							// Evaluate skip-if-empty options before setting default value, adding prefix/suffix or formatting with templates
 							// because "empty" refers to the source value before this sort of additive processing.
+							if ( isset( $va_item['settings']['skipRowIfDataPresent'] )
+							     && (bool) $va_item['settings']['skipRowIfDataPresent']
+							     && $t_subject->isLoaded() && strlen($t_subject->get($va_item['destination']))
+							) {
+								if ( $log_skip ) {
+									$o_log->logInfo( _t( '[%1] Skipped row %2 because data present in %3 in group %4 and skipRowIfDataPresent is set',
+										$vs_idno, $vn_row, $va_item['destination'], $vn_group_id ) );
+								}
+								continue( 5 );
+							}
 							if ( isset( $va_item['settings']['skipRowIfEmpty'] )
 							     && (bool) $va_item['settings']['skipRowIfEmpty']
 							     && ! strlen( $vm_val )
