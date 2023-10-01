@@ -291,10 +291,10 @@ function caGetErrorMessage(int $error_code, string $locale=null) {
   *
   * @return string
   */
-function caGetThemeUrlPath() : string {
+function caGetThemeUrlPath(?bool $use_default_theme=false) : string {
 	$tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
 	array_pop($tmp);
-	return defined('__CA_THEME_URL__') ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
+	return defined('__CA_THEME_URL__') && !$use_default_theme ? __CA_THEME_URL__ : join("/", $tmp).'/themes/default';
 }
 # ----------------------------------------
  /**
