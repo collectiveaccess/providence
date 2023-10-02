@@ -633,7 +633,7 @@ class BaseFindEngine extends BaseObject {
 			SELECT l.{$table_pk}, l.locale_id
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
-			{$pref_sql} and l.locale_id = 1
+			{$pref_sql}
 			ORDER BY l.`{$label_field}` {$direction}
 			{$limit_sql}
 		";
