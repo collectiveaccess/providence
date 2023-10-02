@@ -27,7 +27,7 @@
  * Template configuration:
  *
  * @name PDF display
- * @type omit
+ * @type page
  * @pageSize letter
  * @pageOrientation portrait
  * @tables ca_objects
