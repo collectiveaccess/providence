@@ -775,10 +775,16 @@ class ItemService extends BaseJSONService {
 
 		// intrinsic fields
 		if(is_array($pa_data["intrinsic_fields"]) && sizeof($pa_data["intrinsic_fields"])) {
+			// Ensure Type ID is set before building anything.
+			if ($t_instance->getTypeFieldName() && isset($pa_data["intrinsic_fields"][$t_instance->getTypeFieldName()])) {
+				$t_instance->set($t_instance->getTypeFieldName(), $pa_data["intrinsic_fields"][$t_instance->getTypeFieldName()]);
+			}
+
 			// Ensure Parent field set before generating IDNO
 			if ($vs_parent_field_name = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 				if (isset($pa_data["intrinsic_fields"][$vs_parent_field_name])) {
 					$t_instance->set( $vs_parent_field_name, $pa_data["intrinsic_fields"][$vs_parent_field_name]);
+					$t_instance->isChild();
 				}
 			}
 			
@@ -970,7 +976,7 @@ class ItemService extends BaseJSONService {
 			}
 		} else if ($va_post["remove_all_attributes"]) {
 			$t_instance->removeAttributes();
-		} else if ($pa_data["purge_all_attributes"]) {
+		} else if ($va_post["purge_all_attributes"]) {
 			$t_instance->purgeAttributes();
 		}
 
