@@ -20617,7 +20617,6 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
-        <permission table="ca_storage_locations" source="local" access="edit" default="0"/>
       </sourceLevelAccessControl>
     </role>
     <role code="aux_ppal_RyD_MCRR">
