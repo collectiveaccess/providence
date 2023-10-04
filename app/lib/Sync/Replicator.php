@@ -233,13 +233,15 @@ class Replicator {
 			$single_log_id_mode = false;
 			if(caGetOption('source', $options, null) && $single_log_id = caGetOption('log_id', $options, null)) {
 				$single_log_id_mode = 1;
+				
+				$this->logDebug(_t("[%1] Set single log mode.", $source_key), Zend_Log::INFO);
 			}
 
 			// Get GUID for data source
 			$o_result = $o_source->setEndpoint('getsysguid')->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)->request();
 			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
 				$this->log(
-					"Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.",
+					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
 					\Zend_Log::ERR
 				);
 				continue;
@@ -280,7 +282,7 @@ class Replicator {
 					->request();
 				;
 				if (!$o_result || !is_array($res = $o_result->getRawData()) || isset($res['errors'])) {
-				    $this->log(_t("There were errors getting last replicated log id for source %1 and target %2: %3.", $source_key, $target_key, join('; ', $res['errors'])), Zend_Log::ERR);
+				    $this->log(_t("[%1] There were errors getting last replicated log id for source %1 and target %2: %3.", $source_key, $target_key, join('; ', $res['errors'])), Zend_Log::ERR);
 				    continue;
 				}
 				
@@ -293,7 +295,7 @@ class Replicator {
 					if($replicated_log_id > 0) {
 						$replicated_log_id = ((int) $replicated_log_id) + 1;
 					} else {
-						$this->log(_t("Couldn't get last replicated log id for source %1 and target %2. Starting at the beginning.",
+						$this->log(_t("[%1] Couldn't get last replicated log id for source %1 and target %2. Starting at the beginning.",
 							$source_key, $target_key), Zend_Log::WARN);
 						$replicated_log_id = 1;
 					}
@@ -325,7 +327,7 @@ class Replicator {
 					continue;
 				}
 
-				$this->log(_t("Starting replication for source %1 and target %2, log id is %3.",
+				$this->log(_t("[%1] Starting replication for source %1 and target %2, log id is %3.",
 					$source_key, $target_key, $replicated_log_id), Zend_Log::INFO);
 
 				// get skip if expression
@@ -405,10 +407,10 @@ class Replicator {
 					
 				    $this->last_log_id = null;
 				    if (sizeof($this->sent_log_ids) > 1000000) {
-				    	$this->logDebug(_t("Reset sent log list because it was over 1000000 entries. Memory usage was %1", caGetMemoryUsage()), Zend_Log::DEBUG);
+				    	$this->logDebug(_t("[%1] Reset sent log list because it was over 1000000 entries. Memory usage was %2", $source_key, caGetMemoryUsage()), Zend_Log::DEBUG);
 				    	$this->sent_log_ids = [];
 				    }
-				    $this->logDebug(_t("Memory usage: %1", caGetMemoryUsage()), Zend_Log::DEBUG);
+				    $this->logDebug(_t("[%1] Memory usage: %2", $source_key, caGetMemoryUsage()), Zend_Log::DEBUG);
 				
 					// get change log from source, starting with the log id we got above
 					$this->source_log_entries = $o_source->setEndpoint('getlog')->clearGetParameters()
@@ -424,7 +426,7 @@ class Replicator {
 						->request()->getRawData();
 									
 					if (!is_array($this->source_log_entries) || !sizeof($this->source_log_entries)) {
-						$this->logDebug(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
+						$this->logDebug(_t("[%1] No new log entries found for source %1 and target %2. Skipping this combination now.",
 							$source_key, $target_key), Zend_Log::INFO);
 						break;
 					}
@@ -522,7 +524,7 @@ class Replicator {
                                         $this->filtered_log_entries[$log_id] = $source_log_entry;
         
 										// Should insert on server...
-										if($source_log_entry['changetype'] !== 'I') {
+										if(($source_log_entry['changetype'] !== 'I') || $single_log_id_mode){
 											// ... which means synthesizing log from current state if update
                                 			$this->_findMissingGUID($source_log_subject['guid'], 0, $single_log_id_mode);
                                 			                            			
@@ -554,7 +556,7 @@ class Replicator {
 					}
 					
 					if (!is_array($this->source_log_entries) || !sizeof($this->source_log_entries)) {
-						$this->logDebug(_t("No new log entries found for source %1 and target %2. Will try pulling new ones.",
+						$this->logDebug(_t("[1] No new log entries found for source %1 and target %2. Will try pulling new ones.",
 							$source_key, $target_key), Zend_Log::INFO);
 					}
 
@@ -581,7 +583,7 @@ class Replicator {
 					$response_data = $o_resp->getRawData();
 					
 					if (!$o_resp->isOk() || !isset($response_data['replicated_log_id'])) {
-						$this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
+						$this->log(_t("[%1] There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
 						break;
 					} else {
 						foreach($this->source_log_entries as $mlog_id => $entry) {						
@@ -591,7 +593,7 @@ class Replicator {
 							$this->sent_log_ids[$mlog_id] = true;
 						}
 						$replicated_log_id = ($this->last_log_id > 0) ? ($this->last_log_id + 1) : ((int) $response_data['replicated_log_id']) + 1;
-						$this->log(_t("Chunk sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::DEBUG);
+						$this->log(_t("[%1] Chunk sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::DEBUG);
 						$num_log_entries = sizeof($this->source_log_entries);
 						$last_log_entry = array_pop($this->source_log_entries);
 					   
@@ -604,7 +606,7 @@ class Replicator {
 
 					if (isset($response_data['warnings']) && is_array($response_data['warnings']) && sizeof($response_data['warnings'])) {
 						foreach ($response_data['warnings'] as $log_id => $warns) {
-							$this->log(_t("There were warnings while processing sync for source %1, target %2, log id %3: %4.",
+							$this->log(_t("[%1] There were warnings while processing sync for source %1, target %2, log id %3: %4.",
 								$source_key, $target_key, $log_id, join(' ', $warns)), Zend_Log::WARN);
 						}
 					}
@@ -614,7 +616,7 @@ class Replicator {
 					// try to push unresolved guids
 					//$this->_processUnresolvedGUIDs($single_log_id_mode);  
 					
-					$this->log(_t("Sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
+					$this->log(_t("[%1] Sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
 
 					// run dedup if configured
 					$dedup_after_replication = $this->opo_replication_conf->get('targets')[$target_key]['deduplicateAfterReplication'];
@@ -631,21 +633,21 @@ class Replicator {
 						$dedup_response = $o_dedup_response->getRawData();
 
 						if (!$o_dedup_response->isOk()) {
-							$this->log(_t("There were errors while processing deduplication for at target %1: %2.", $target_key, join(' ', $o_dedup_response->getErrors())), Zend_Log::ERR);
+							$this->log(_t("[%1] There were errors while processing deduplication for at target %2: %3.", $source_key, $target_key, join(' ', $o_dedup_response->getErrors())), Zend_Log::ERR);
 						} else {
-							$this->log(_t("Dedup at target %1 successful.", $target_key), Zend_Log::INFO);
+							$this->log(_t("[%1] Dedup at target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
 							if(isset($dedup_response['report']) && is_array($dedup_response['report'])) {
 								foreach($dedup_response['report'] as $t => $c) {
-									$this->log(_t("De-duped %1 records for %2.", $c, $t), Zend_Log::DEBUG);
+									$this->log(_t("[%1] De-duped %2 records for %3.", $source_key, $c, $t), Zend_Log::DEBUG);
 								}
 							}
 						}
 					}
 				} else {
-					$this->log(_t("Sync for source %1 and target %2 finished, but there were errors.", $source_key, $target_key), Zend_Log::ERR);
+					$this->log(_t("[%1] Sync for source %1 and target %2 finished, but there were errors.", $source_key, $target_key), Zend_Log::ERR);
 				}
 			}
-			$this->log(_t("Sync for source %1 and target %2 took %3.", $source_key, $target_key, caFormatInterval(time() - $start_time)), Zend_Log::DEBUG);
+			$this->log(_t("[%1] Sync for source %1 and target %2 took %3.", $source_key, $target_key, caFormatInterval(time() - $start_time)), Zend_Log::DEBUG);
 		}
 	}
 	# --------------------------------------------------------------------------------------------------------------
@@ -721,7 +723,7 @@ class Replicator {
 					continue; // Skip rows for which we have no access;
 				}
 				
-				if(isset($this->source_log_entries[$missing_entry['log_id']]) || isset($this->filtered_log_entries[$missing_entry['log_id']])) {
+				if(!$single_log_id_mode && (isset($this->source_log_entries[$missing_entry['log_id']]) || isset($this->filtered_log_entries[$missing_entry['log_id']]))) {
 					$this->logDebug(_t("[%1] Remove log_id %2 for %3 from the missing log because it part of the source log.", $this->source_key, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
 					continue;
 				}
@@ -1135,7 +1137,7 @@ class Replicator {
 			$res = $resp->getRawData();
 			
 			foreach($res as $r) {
-				$this->log(_t("[%1] Replicating %2.", $source, $r), Zend_Log::INFO);
+				$this->log(_t("[%1] Replicating from %2.", $source, $r['log_id']), Zend_Log::INFO);
 				$this->replicate(['source' => $source, 'log_id' => $r['log_id']]);
 			}
 			return true;
