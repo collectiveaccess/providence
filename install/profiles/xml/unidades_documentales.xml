@@ -393,12 +393,39 @@
             </label>
           </labels>
         </item>
-        <item idno="MCY_BC" enabled="1" default="0" value="MCY_BC" rank="440" type="concept">
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>MCY_BC</name_singular>
               <name_plural>MCY_BC</name_plural>
-              <description>MCY_BC</description>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
+              <description/>
             </label>
           </labels>
         </item>
@@ -884,6 +911,42 @@
             </label>
           </labels>
         </item>
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_BC</name_singular>
+              <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
@@ -1103,6 +1166,42 @@
             </label>
           </labels>
         </item>
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_BC</name_singular>
+              <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
@@ -1192,6 +1291,42 @@
             <label locale="en_US" preferred="1">
               <name_singular>MCRR_BC</name_singular>
               <name_plural>MCRR_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_BC</name_singular>
+              <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
               <description/>
             </label>
           </labels>
@@ -1458,6 +1593,42 @@
             </label>
           </labels>
         </item>
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_BC</name_singular>
+              <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="occurrence_types" hierarchical="1" system="0" vocabulary="0">
@@ -1585,6 +1756,42 @@
             <label locale="en_US" preferred="1">
               <name_singular>MCRR_BC</name_singular>
               <name_plural>MCRR_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_BC</name_singular>
+              <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
               <description/>
             </label>
           </labels>
@@ -1726,6 +1933,42 @@
             <label locale="en_US" preferred="1">
               <name_singular>MCRR_BC</name_singular>
               <name_plural>MCRR_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_BC" enabled="1" default="1" value="MCY_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_BC</name_singular>
+              <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
               <description/>
             </label>
           </labels>
@@ -1915,6 +2158,33 @@
             <label locale="en_US" preferred="1">
               <name_singular>MCY_BC</name_singular>
               <name_plural>MCY_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCY_UD" enabled="1" default="1" value="MCY_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>MCY_UD</name_singular>
+              <name_plural>MCY_UD</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_BC" enabled="1" default="1" value="PSJ_BC" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_BC</name_singular>
+              <name_plural>PSJ_BC</name_plural>
+              <description/>
+            </label>
+          </labels>
+        </item>
+        <item idno="PSJ_UD" enabled="1" default="1" value="PSJ_UD" rank="91">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>PSJ_UD</name_singular>
+              <name_plural>PSJ_UD</name_plural>
               <description/>
             </label>
           </labels>
@@ -20308,25 +20578,46 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_object_lots" source="MY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
-        <permission table="ca_list_items" source="local" access="edit" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="local" access="edit" default="0"/>
       </sourceLevelAccessControl>
     </role>
     <role code="aux_ppal_RyD_MCRR">
@@ -20391,24 +20682,45 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_object_lots" source="MY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="edit" default="0"/>
       </sourceLevelAccessControl>
     </role>
@@ -20475,25 +20787,46 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="internal" access="none" default="0"/>
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="read" default="0"/>
         <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
       </sourceLevelAccessControl>
@@ -20562,26 +20895,47 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="read" default="0"/>
         <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
       </sourceLevelAccessControl>
@@ -20650,32 +21004,53 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="read" default="0"/>
         <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
       </sourceLevelAccessControl>
     </role>
     <role code="aux_arch_MCRR">
-      <name>Responsable Principal Archivo - Ricardo Rojas</name>
+      <name>Auxiliar Archivo - Ricardo Rojas</name>
       <description>Entrega acceso de lectura a todos los campos de Bienes Culturales y de edición a las Unidades Documentales del Museo Ricardo Rojas</description>
       <actions>
         <action>can_quicksearch</action>
@@ -20738,26 +21113,47 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="read" default="0"/>
         <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
       </sourceLevelAccessControl>
@@ -20826,26 +21222,47 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="read" default="0"/>
         <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
       </sourceLevelAccessControl>
@@ -20914,26 +21331,47 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="read" default="0"/>
         <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
       </sourceLevelAccessControl>
@@ -21912,26 +22350,47 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="none" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_list_items" source="local" access="edit" default="0"/>
       </sourceLevelAccessControl>
     </role>
@@ -22010,6 +22469,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_object_lots" bundle="nonpreferred_labels" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
         <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_inloans_yn" access="none"/>
       </bundleLevelAccessControl>
       <typeLevelAccessControl>
         <permission table="ca_object_lots" type="acquisition" access="none"/>
@@ -22041,31 +22501,728 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
-        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_entities" source="isadg" access="none" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_collections" source="isadg" access="none" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
       </sourceLevelAccessControl>
     </role>
-    <role code="exter_invest_MCRR">
-      <name>Usuario Externo Investigador - Ricardo Rojas</name>
-      <description>Otorga permisos correspondientes al rol Usuario Externo Investigador  para el Museo Ricardo Rojas</description>
+    <role code="prensa_MCRR">
+      <name>Prensa / Comunicación - Ricardo Rojas</name>
+      <description>Otorga permisos correspondientes al rol Prensa o Comunicación a los Bienes Culturales y Unidades Documentales del Museo Ricardo Rojas</description>
+      <actions>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="ca_movements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_numero_administrativo" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots_related_list" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_descrules" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_insurance" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_signatura_topografica" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_sustraction" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_unitdate" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_value" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_codigo_anterior" access="none"/>
+        <permission table="ca_object_lots" bundle="ca_storage_locations" access="none"/>
+        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="none"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_collections" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_maintenance_report" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_inloans_yn" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_requirements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_storage_requirements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_exhibition_requirements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_relatedmaterial" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_relations_note" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_bibliography" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_library" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_external_links" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_assembly_requierements" access="none"/>      
+        <permission table="ca_objects" bundle="ca_attribute_restrictions" access="none"/>
+      </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_occurrences" type="investigacion" access="none"/>
+        <permission table="ca_occurrences" type="exposiciones" access="none"/>
+        <permission table="ca_object_lots" type="acquisition" access="none"/>
+        <permission table="ca_object_lots" type="visu" access="none"/>
+        <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
+        <permission table="ca_object_lots" type="out" access="none"/>
+        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
+        <permission table="ca_object_lots" type="visu" access="none"/>
+        <permission table="ca_places" type="neighborhood" access="none"/>
+        <permission table="ca_places" type="city" access="none"/>
+        <permission table="ca_places" type="socken" access="none"/>
+        <permission table="ca_places" type="county" access="none"/>
+        <permission table="ca_places" type="continent" access="none"/>
+        <permission table="ca_places" type="country" access="none"/>
+        <permission table="ca_places" type="state" access="none"/>
+        <permission table="ca_places" type="location" access="none"/>
+        <permission table="ca_places" type="other" access="none"/>
+        <permission table="ca_places" type="river" access="none"/>
+        <permission table="ca_storage_locations" type="cabinet" access="none"/>
+        <permission table="ca_storage_locations" type="building" access="none"/>
+        <permission table="ca_storage_locations" type="drawer" access="none"/>
+        <permission table="ca_storage_locations" type="campus" access="none"/>
+        <permission table="ca_storage_locations" type="shelf" access="none"/>
+        <permission table="ca_storage_locations" type="floor" access="none"/>
+        <permission table="ca_storage_locations" type="room" access="none"/>
+      </typeLevelAccessControl>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="external" access="none" default="0"/>
+        <permission table="ca_objects" source="internal" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="isadg" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="isadg" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+      </sourceLevelAccessControl>
+    </role>
+    <role code="direccion_MCRR">
+      <name>Dirección / Coordinación - Ricardo Rojas</name>
+      <description>Otorga permisos correspondientes al rol Dirección o Coordinación a los Bienes Culturales y Unidades Documentales del Museo Ricardo Rojas</description>
+      <actions>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="ca_movements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_numero_administrativo" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots_related_list" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_unitdate" access="none"/>
+        <permission table="ca_object_lots" bundle="ca_storage_locations" access="none"/>
+        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="none"/>
+      </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
+        <permission table="ca_object_lots" type="out" access="none"/>
+        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
+        <permission table="ca_object_lots" type="visu" access="none"/>
+        <permission table="ca_places" type="neighborhood" access="none"/>
+        <permission table="ca_places" type="city" access="none"/>
+        <permission table="ca_places" type="socken" access="none"/>
+        <permission table="ca_places" type="county" access="none"/>
+        <permission table="ca_places" type="continent" access="none"/>
+        <permission table="ca_places" type="country" access="none"/>
+        <permission table="ca_places" type="state" access="none"/>
+        <permission table="ca_places" type="location" access="none"/>
+        <permission table="ca_places" type="other" access="none"/>
+        <permission table="ca_places" type="river" access="none"/>
+        <permission table="ca_storage_locations" type="cabinet" access="none"/>
+        <permission table="ca_storage_locations" type="building" access="none"/>
+        <permission table="ca_storage_locations" type="drawer" access="none"/>
+        <permission table="ca_storage_locations" type="campus" access="none"/>
+        <permission table="ca_storage_locations" type="shelf" access="none"/>
+        <permission table="ca_storage_locations" type="floor" access="none"/>
+        <permission table="ca_storage_locations" type="room" access="none"/>
+      </typeLevelAccessControl>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="external" access="none" default="0"/>
+        <permission table="ca_objects" source="internal" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="isadg" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="isadg" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+      </sourceLevelAccessControl>
+    </role>
+    <role code="educacion_MCRR">
+      <name>Educación - Ricardo Rojas</name>
+      <description>Otorga permisos correspondientes al rol Educación a los Bienes Culturales y Unidades Documentales del Museo Ricardo Rojas</description>
+      <actions>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="ca_movements" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots_related_list" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_unitdate" access="none"/>
+        <permission table="ca_object_lots" bundle="ca_storage_locations" access="none"/>
+        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_signatura_topografica" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_sustraction" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_maintenance_report" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_insurance" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_requirements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_storage_requirements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_exhibition_requirements" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_assembly_requierements" access="none"/>  
+        <permission table="ca_objects" bundle="ca_attribute_descrules" access="none"/>    
+      </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_object_lots" type="acquisition" access="none"/>
+        <permission table="ca_object_lots" type="alta_patrimonial" access="none"/>
+        <permission table="ca_object_lots" type="out" access="none"/>
+        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
+        <permission table="ca_object_lots" type="visu" access="none"/>
+        <permission table="ca_places" type="neighborhood" access="none"/>
+        <permission table="ca_places" type="city" access="none"/>
+        <permission table="ca_places" type="socken" access="none"/>
+        <permission table="ca_places" type="county" access="none"/>
+        <permission table="ca_places" type="continent" access="none"/>
+        <permission table="ca_places" type="country" access="none"/>
+        <permission table="ca_places" type="state" access="none"/>
+        <permission table="ca_places" type="location" access="none"/>
+        <permission table="ca_places" type="other" access="none"/>
+        <permission table="ca_places" type="river" access="none"/>
+        <permission table="ca_storage_locations" type="cabinet" access="none"/>
+        <permission table="ca_storage_locations" type="building" access="none"/>
+        <permission table="ca_storage_locations" type="drawer" access="none"/>
+        <permission table="ca_storage_locations" type="campus" access="none"/>
+        <permission table="ca_storage_locations" type="shelf" access="none"/>
+        <permission table="ca_storage_locations" type="floor" access="none"/>
+        <permission table="ca_storage_locations" type="room" access="none"/>
+      </typeLevelAccessControl>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="external" access="none" default="0"/>
+        <permission table="ca_objects" source="internal" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="isadg" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="isadg" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+      </sourceLevelAccessControl>
+    </role>
+    <role code="administracion_MCRR">
+      <name>Administracion - Ricardo Rojas</name>
+      <description>Otorga permisos correspondientes al rol Administración a los Bienes Culturales y Unidades Documentales del Museo Ricardo Rojas</description>
+      <actions>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="ca_movements" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots" access="none"/>
+        <permission table="ca_objects" bundle="ca_object_lots_related_list" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_unitdate" access="none"/>
+        <permission table="ca_object_lots" bundle="ca_storage_locations" access="none"/>
+        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_signatura_topografica" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_movements_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_maintenance_report" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_descrules" access="none"/>    
+      </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_object_lots" type="out" access="none"/>
+        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
+        <permission table="ca_places" type="neighborhood" access="none"/>
+        <permission table="ca_places" type="city" access="none"/>
+        <permission table="ca_places" type="socken" access="none"/>
+        <permission table="ca_places" type="county" access="none"/>
+        <permission table="ca_places" type="continent" access="none"/>
+        <permission table="ca_places" type="country" access="none"/>
+        <permission table="ca_places" type="state" access="none"/>
+        <permission table="ca_places" type="location" access="none"/>
+        <permission table="ca_places" type="other" access="none"/>
+        <permission table="ca_places" type="river" access="none"/>
+        <permission table="ca_storage_locations" type="cabinet" access="none"/>
+        <permission table="ca_storage_locations" type="building" access="none"/>
+        <permission table="ca_storage_locations" type="drawer" access="none"/>
+        <permission table="ca_storage_locations" type="campus" access="none"/>
+        <permission table="ca_storage_locations" type="shelf" access="none"/>
+        <permission table="ca_storage_locations" type="floor" access="none"/>
+        <permission table="ca_storage_locations" type="room" access="none"/>
+      </typeLevelAccessControl>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="external" access="none" default="0"/>
+        <permission table="ca_objects" source="internal" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="isadg" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="isadg" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+      </sourceLevelAccessControl>
+    </role>
+    <role code="ministro_MCRR">
+      <name>DNM / DGP / SPC / MINISTRO - Ricardo Rojas</name>
+      <description>Otorga permisos correspondientes al rol DNM / DGP / SPC / MINISTRO a los Bienes Culturales y Unidades Documentales del Museo Ricardo Rojas</description>
+      <actions>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="external" access="none" default="0"/>
+        <permission table="ca_objects" source="internal" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="read" default="0"/>
+        <permission table="ca_entities" source="isadg" access="read" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="read" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="read" default="0"/>
+        <permission table="ca_collections" source="isadg" access="read" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="read" default="0"/>
+      </sourceLevelAccessControl>
+    </role>
+    <role code="exter_invest">
+      <name>Usuario Externo Investigador</name>
+      <description>Otorga permisos correspondientes al rol Usuario Externo Investigador para obtener información cruzada de todos los Museos en el sistema.</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -22966,36 +24123,28 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_list_items" type="Root node for list_item_types" access="none"/>
       </typeLevelAccessControl>
       <sourceLevelAccessControl>
-        <permission table="ca_objects" source="external" access="none" default="0"/>
-        <permission table="ca_objects" source="internal" access="none" default="0"/>
         <permission table="ca_objects" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_objects" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_objects" source="MCY_BC" access="read" default="0"/>
-        <permission table="ca_objects" source="Root node for object_sources" access="none" default="0"/>
         <permission table="ca_object_lots" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_object_lots" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_object_lots" source="Root node for object_lot_sources" access="none" default="0"/>
-        <permission table="ca_entities" source="isadg" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_entities" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_entities" source="Root node for entity_sources" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_places" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_places" source="Root node for place_sources" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_occurrences" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_occurrences" source="Root node for occurrence_sources" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="read" default="0"/>
         <permission table="ca_collections" source="isadg" access="none" default="0"/>
         <permission table="ca_collections" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_collections" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_collections" source="Root node for collection_sources" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
-        <permission table="ca_storage_locations" source="Root node for storage_location_sources" access="none" default="0"/>
-        <permission table="ca_loans" source="Root node for loan_sources" access="none" default="0"/>
-        <permission table="ca_object_representations" source="Root node for object_representation_sources" access="none" default="0"/>
-        <permission table="ca_list_items" source="local" access="read" default="0"/>
-        <permission table="ca_list_items" source="Root node for list_item_sources" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="read" default="0"/>
       </sourceLevelAccessControl>
     </role>
   </roles>
