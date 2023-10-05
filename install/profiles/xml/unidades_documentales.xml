@@ -22381,6 +22381,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -22664,6 +22694,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -22950,6 +23010,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -23239,6 +23329,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -23528,6 +23648,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -23817,6 +23967,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -24106,6 +24286,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -24395,6 +24605,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -25594,6 +25834,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="edit" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -25924,6 +26194,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -26267,6 +26567,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -26586,6 +26916,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -26915,6 +27275,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -27235,6 +27625,36 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
         <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_BC" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCRR_UD" access="read" default="0"/>
         <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
@@ -27273,9 +27693,636 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_storage_locations" source="MNG_UD" access="none" default="0"/>
       </sourceLevelAccessControl>
     </role>
-    <role code="ministro_MCRR">
-      <name>DNM / DGP / SPC / MINISTRO - Ricardo Rojas</name>
-      <description>Otorga permisos correspondientes al rol DNM / DGP / SPC / MINISTRO a los Bienes Culturales y Unidades Documentales del Museo Ricardo Rojas</description>
+    <role code="resp_RyD_EJMMJN">
+      <name>Responsable R y D -  Estancia Jesus Maria Museo Jesuitico Nacional</name>
+      <description>Entrega acceso de edición a todos los campos de Bienes Culturales y de lectura a los campos de Unidades Documentales de la Estancia Jesus Maria Museo Jesuitico Nacional</description>
+      <actions>
+        <action>can_set_access_control</action>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_objects" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_object_lots" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_entities" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_places" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_places" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_places" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_places" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_places" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_places" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_occurrences" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_storage_locations" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNG_UD" access="none" default="0"/>
+      </sourceLevelAccessControl>
+    </role>
+    <role code="aux_ppal_RyD_EJMMJN">
+      <name>Auxiliar Principal R y D - Estancia Jesus Maria Museo Jesuitico Nacional</name>
+      <description>Entrega acceso de edición a todos los campos de Bienes Culturales y de lectura a los campos de Unidades Documentales de la Estancia Jesus Maria Museo Jesuitico Nacional</description>
+      <actions>
+        <action>can_quicksearch</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_view_sets</action>
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_create_ca_places</action>
+        <action>can_edit_ca_places</action>
+        <action>can_delete_ca_places</action>
+        <action>can_search_ca_places</action>
+        <action>can_browse_ca_places</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_delete_ca_lists</action>
+      </actions>
+      <sourceLevelAccessControl>
+        <permission table="ca_objects" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_objects" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_objects" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_objects" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_objects" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_object_lots" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_object_lots" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_object_lots" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_entities" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_entities" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_entities" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_entities" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_places" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_places" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_places" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_places" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_places" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_places" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_places" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_places" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_places" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_places" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_places" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_occurrences" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_occurrences" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_occurrences" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_collections" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_collections" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_collections" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCRR_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MCY_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PSJ_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="EJMMJN_BC" access="edit" default="0"/>
+        <permission table="ca_storage_locations" source="EJMMJN_UD" access="read" default="0"/>
+        <permission table="ca_storage_locations" source="MHNA_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHNA_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNAD_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNAD_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNEJAG_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNEJAG_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRPJAT_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRPJAT_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PNA_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="PNA_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CNS_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CNS_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CHI_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="CHI_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHNOR_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHNOR_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRIIH_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MRIIH_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MBCA_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MBCA_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHT_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHT_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHS_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MHS_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MM_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MM_UD" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNG_BC" access="none" default="0"/>
+        <permission table="ca_storage_locations" source="MNG_UD" access="none" default="0"/>
+        <permission table="ca_list_items" source="local" access="edit" default="0"/>
+      </sourceLevelAccessControl>
+    </role>   
+    <role code="ministro">
+      <name>DNM / DGP / SPC / MINISTRO </name>
+      <description>Otorga permisos correspondientes al rol DNM / DGP / SPC / MINISTRO a los Bienes Culturales y Unidades Documentales</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
