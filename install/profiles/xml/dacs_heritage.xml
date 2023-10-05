@@ -4184,7 +4184,7 @@
           <labels>
             <label locale="en_US">
               <typename>has format</typename>
-              <typename_reverse>if format of</typename_reverse>
+              <typename_reverse>is format of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4205,26 +4205,6 @@
             <label locale="en_US">
               <typename>has version</typename>
               <typename_reverse>is version of</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isFormatOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is format of</typename>
-              <typename_reverse>has format</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isPartOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is part of</typename>
-              <typename_reverse>contains</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4270,41 +4250,11 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight>event</subTypeRight>
         </type>
-        <type code="references" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>references</typename>
-              <typename_reverse>references</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
         <type code="relation" default="0">
           <labels>
             <label locale="en_US">
               <typename>relation</typename>
               <typename_reverse>relation</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="replaces" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>replaces</typename>
-              <typename_reverse>replaces</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="requires" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>requires</typename>
-              <typename_reverse>requires</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4342,7 +4292,7 @@
           <labels>
             <label locale="en_US">
               <typename>has format</typename>
-              <typename_reverse>if format of</typename_reverse>
+              <typename_reverse>is format of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4368,71 +4318,11 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight>event</subTypeRight>
         </type>
-        <type code="isFormatOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is format of</typename>
-              <typename_reverse>has format</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isPartOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is part of</typename>
-              <typename_reverse>has part</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isReferencedBy" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is referenced by</typename>
-              <typename_reverse>references</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isReplacedBy" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is replaced by</typename>
-              <typename_reverse>replaces</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isRequiredBy" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is required by</typename>
-              <typename_reverse>requires</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="isVersionOf" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>is version of</typename>
-              <typename_reverse>has version</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
         <type code="references" default="0">
           <labels>
             <label locale="en_US">
               <typename>references</typename>
-              <typename_reverse>references</typename_reverse>
+              <typename_reverse>is referenced by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4452,7 +4342,7 @@
           <labels>
             <label locale="en_US">
               <typename>replaces</typename>
-              <typename_reverse>replaces</typename_reverse>
+              <typename_reverse>is replaced by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4462,7 +4352,7 @@
           <labels>
             <label locale="en_US">
               <typename>requires</typename>
-              <typename_reverse>requires</typename_reverse>
+              <typename_reverse>is required by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
