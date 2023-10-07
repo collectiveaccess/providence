@@ -46332,7 +46332,7 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </sourceLevelAccessControl>
     </role>
     <role code="resp_bibl_MNAD">
-      <name>Responsable Biblioteca - Museo Nacional Estancia Jesuitica de Alta Gracia</name>
+      <name>Responsable Biblioteca - Museo Nacional de Arte Decorativo</name>
       <description>Entrega acceso de lectura a todos los campos de los Bienes Culturales y de Unidades Documentales del Museo Nacional de Arte Decorativo</description>
       <actions>
         <action>can_quicksearch</action>
@@ -46645,8 +46645,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </sourceLevelAccessControl>
     </role>
     <role code="aux_bibl_MNAD">
-      <name>Auxiliar Biblioteca - Museo Histórico Nacional</name>
-      <description>Entrega acceso de lectura a todos los campos de los Bienes Culturales y de Unidades Documentales del Museo Histórico Nacional</description>
+      <name>Auxiliar Biblioteca - Museo Nacional de Arte Decorativo</name>
+      <description>Entrega acceso de lectura a todos los campos de los Bienes Culturales y de Unidades Documentales del Museo Nacional de Arte Decorativo</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -46958,8 +46958,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </sourceLevelAccessControl>
     </role>
     <role code="invest_MNAD">
-      <name>Investigación - Museo Histórico Nacional</name>
-      <description>Restinge el acceso a  campos de Bienes Culturales y Unidades Documentales del Museo Histórico Nacional </description>
+      <name>Investigación - Museo Nacional de Arte Decorativo</name>
+      <description>Restinge el acceso a  campos de Bienes Culturales y Unidades Documentales del Museo Nacional de Arte Decorativo </description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -47291,9 +47291,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_storage_locations" source="MNG_UD" access="none" default="0"/>
       </sourceLevelAccessControl>
     </role>
-    <role code="conserv_MHNA">
-      <name>Conservación - Museo Histórico Nacional</name>
-      <description>Otorga permisos correspondientes al rol Conservación sobre los Bienes Culturales y Unidades Documentales del - Museo Histórico Nacional</description>
+    <role code="conserv_MNAD">
+      <name>Conservación - Museo Nacional de Arte Decorativo</name>
+      <description>Otorga permisos correspondientes al rol Conservación sobre los Bienes Culturales y Unidades Documentales del Museo Nacional de Arte Decorativo</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -48403,9 +48403,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_storage_locations" source="MNG_UD" access="none" default="0"/>
       </sourceLevelAccessControl>
     </role>
-    <role code="museografia_MHNA">
-      <name>Museografía / Producción - Museo Histórico Nacional</name>
-      <description>Otorga permisos correspondientes al rol Museografía o Producción a los Bienes Culturales y Unidades Documentales del Museo Histórico Nacional</description>
+    <role code="museografia_MNAD">
+      <name>Museografía / Producción - Museo Nacional de Arte Decorativo</name>
+      <description>Otorga permisos correspondientes al rol Museografía o Producción a los Bienes Culturales y Unidades Documentales del Museo Nacional de Arte Decorativo</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -54485,8 +54485,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </sourceLevelAccessControl>
     </role>
     <role code="prensa_MNEJAG">
-      <name>Prensa / Comunicación - Museo  Nacional Arte Decorativo</name>
-      <description>Otorga permisos correspondientes al rol Prensa o Comunicación a los Bienes Culturales y Unidades Documentales del Museo Nacional Arte Decorativo</description>
+      <name>Prensa / Comunicación - Museo Nacional Estancia Jesuitica de Alta Gracia</name>
+      <description>Otorga permisos correspondientes al rol Prensa o Comunicación a los Bienes Culturales y Unidades Documentales del Museo Nacional Estancia Jesuitica de Alta Gracia</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -54855,8 +54855,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </sourceLevelAccessControl>
     </role>
     <role code="direccion_MNEJAG">
-      <name>Dirección / Coordinación - Museo Nacional Arte Decorativo</name>
-      <description>Otorga permisos correspondientes al rol Dirección o Coordinación a los Bienes Culturales y Unidades Documentales del Museo Nacional Arte Decorativo</description>
+      <name>Dirección / Coordinación - Museo Nacional Estancia Jesuitica de Alta Gracia</name>
+      <description>Otorga permisos correspondientes al rol Dirección o Coordinación a los Bienes Culturales y Unidades Documentales del Museo Nacional Estancia Jesuitica de Alta Gracia</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -55201,8 +55201,8 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
       </sourceLevelAccessControl>
     </role>
     <role code="educacion_MNEJAG">
-      <name>Educación - Museo Nacional Arte Decorativo</name>
-      <description>Otorga permisos correspondientes al rol Educación a los Bienes Culturales y Unidades Documentales del Museo Nacional Arte Decorativo</description>
+      <name>Educación - Museo Nacional Estancia Jesuitica de Alta Gracia</name>
+      <description>Otorga permisos correspondientes al rol Educación a los Bienes Culturales y Unidades Documentales del Museo Nacional Estancia Jesuitica de Alta Gracia</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
@@ -55556,9 +55556,9 @@ Ej. En el elemento Unidades de descripción relacionada se listaron agrupamiento
         <permission table="ca_storage_locations" source="MNG_UD" access="none" default="0"/>
       </sourceLevelAccessControl>
     </role>
-    <role code="administracion_MNAD">
-      <name>Administracion - Museo Nacional Arte Decorativo</name>
-      <description>Otorga permisos correspondientes al rol Administración a los Bienes Culturales y Unidades Documentales del Museo Nacional Arte Decorativo</description>
+    <role code="administracion_MNEJAG">
+      <name>Administracion - Museo Nacional Estancia Jesuitica de Alta Gracia</name>
+      <description>Otorga permisos correspondientes al rol Administración a los Bienes Culturales y Unidades Documentales del Museo Nacional Estancia Jesuitica de Alta Gracia</description>
       <actions>
         <action>can_quicksearch</action>
         <action>can_set_preferences</action>
