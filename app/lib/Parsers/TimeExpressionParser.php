@@ -312,8 +312,29 @@ class TimeExpressionParser {
 							break(2);
 						# ----------------------
 						case TEP_TOKEN_INTEGER:
-							// is this a quarter century expression?
-							if (((int)$va_token['value'] > 0) && ((int)$va_token['value'] <= 21)) {
+							if((strlen($va_token['value']) === 8) && preg_match("!^[\d]+$!", $va_token['value'])) {
+								// is this an 8-digit compacted ISO date?
+								$year = (int)substr($va_token['value'], 0, 4);
+								$month = (int)substr($va_token['value'], 4, 2);
+								$day = (int)substr($va_token['value'], 6, 2);
+								
+								if(($month >= 1) && ($month <=12) && ($day >= 1) && ($day <= $this->daysInMonth($month, $year))) {
+									$va_dates['start'] = array(
+										'month' => $month, 'day' => $day, 'year' => $year, 'era' => TEP_ERA_AD,
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+									);
+									$va_dates['end'] = array(
+										'month' => $month, 'day' => $day, 'year' => $year, 'era' => TEP_ERA_AD,
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+									);
+									
+									$this->skipToken();
+									$vn_state = TEP_STATE_ACCEPT;
+									$vb_can_accept = true;
+									break(2);
+								} 
+							} elseif (((int)$va_token['value'] > 0) && ((int)$va_token['value'] <= 21)) {
+								// is this a quarter century expression?
 								$va_peek = $this->peekToken(2);
 								if ($va_peek['type'] == TEP_TOKEN_ALPHA) {
 									if (preg_match('!^Q([\d]{1})$!i', $va_peek['value'], $va_matches)) {
