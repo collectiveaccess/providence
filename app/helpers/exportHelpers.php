@@ -386,6 +386,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	
 	$table = $result->tableName();
 	
+	$template_type = caGetOption('printTemplateType', $options, 'results');
+	
 	$type = $display_id = null;
 	if($t_display = caGetOption('display', $options, null)) {
 		$display_id = $t_display->getPrimaryKey();
@@ -393,7 +395,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	$export_config = $template_info = null;
 	
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
-		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), substr($template, 5));
+		$template_info = caGetPrintTemplateDetails($template_type, substr($template, 5));
 		$type = 'pdf';
 	} elseif (!(bool)$config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
 		$display_id = substr($template, 9);
@@ -424,7 +426,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		} else {
 			throw new ApplicationException(_t("Invalid format %1", $template));
 		}
-		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), 'display');
+		$template_info = caGetPrintTemplateDetails($template_type, 'display');
 		$type = 'pdf';
 	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_!', $template, $m)) {
 		switch($m[1]) {
@@ -944,10 +946,10 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			
 			if($output === 'STREAM') { 
 				$request->isDownload(true);
-				caExportViewAsPDF($view, $template_info, $filename, array_merge($options, ['printTemplateType' => 'results']));
+				caExportViewAsPDF($view, $template_info, $filename, array_merge($options, ['printTemplateType' => $template_type]));
 			} else {
 				$tmp_filename = caGetTempFileName('caExportResult', '');
-				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename, 'printTemplateType' => 'results'])) {
+				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename, 'printTemplateType' => $template_type])) {
 					return null;
 				}
 				return [
