@@ -572,8 +572,8 @@ class DataMigrationUtils {
 					$suffix = '';
 				}
 				return [
-					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
-					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
+					'surname' => trim($surname), 'forename' =>  trim($forename), 'middlename' => '',
+					'prefix' => '', 'suffix' => trim($suffix), 'displayname' => trim($text)
 				];
 			case 'HIRAGANA':
 			case 'KATAKANA':
@@ -588,8 +588,8 @@ class DataMigrationUtils {
 					$suffix = '';
 				}
 				return [
-					'surname' => $surname, 'forename' =>  $forename, 'middlename' => '',
-					'prefix' => '', 'suffix' => $suffix, 'displayname' => $text
+					'surname' => trim($surname), 'forename' =>  trim($forename), 'middlename' => '',
+					'prefix' => '', 'suffix' => trim($suffix), 'displayname' => trim($text)
 				];
 				break;
 		}
@@ -1071,6 +1071,9 @@ class DataMigrationUtils {
 		$vs_label_display_fld 			= $t_instance->getLabelDisplayField();
 		
 		if(!is_array($pa_label)) { $pa_label[$vs_label_display_fld] = $pa_label; }
+		
+		$pa_label = array_map('trim', $pa_label);
+		
 		$vs_label 						= $pa_label[$vs_label_display_fld];
 		
 		$log_reference 					= caGetOption('logReference', $options, null);
@@ -1214,7 +1217,7 @@ class DataMigrationUtils {
 				
 					if ($pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
 						// entities only
-						$va_params = array($vs_label_spec => array('displayname' => $pa_label['displayname']));
+						$va_params = array($vs_label_spec => array('displayname' => trim($pa_label['displayname'])));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 					} elseif($vs_table_class == 'ca_entities') {
