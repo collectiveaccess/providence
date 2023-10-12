@@ -1710,7 +1710,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						(($this->getProperty('ID_NUMBERING_ID_FIELD') == $bundle_code) && (bool)$this->getAppConfig()->get('require_valid_id_number_for_'.$this->tableName()))
 					) {
 						$vs_label .= ' '.$vs_required_marker;
-					} elseif ((in_array($this->getFieldInfo($ps_bundle_name, 'FIELD_TYPE'), array(FT_NUMBER, FT_HISTORIC_DATERANGE, FT_DATERANGE)) && !$this->getFieldInfo($ps_bundle_name, 'IS_NULL'))) {
+					} elseif (
+						in_array($this->getFieldInfo($ps_bundle_name, 'FIELD_TYPE'), array(FT_NUMBER, FT_HISTORIC_DATERANGE, FT_DATERANGE)) 
+						&& 
+						!$this->getFieldInfo($ps_bundle_name, 'IS_NULL')
+						&& 
+						!in_array($this->getFieldInfo($ps_bundle_name, 'DISPLAY_TYPE'), array(DT_SELECT, DT_CHECKBOXES, DT_RADIO_BUTTONS)) 
+					) {
 						$vs_label .= ' '.$vs_required_marker;
 					}
 				}
