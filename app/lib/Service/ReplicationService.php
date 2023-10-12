@@ -585,7 +585,7 @@ class ReplicationService {
 				$v['log_id'] = null;
 			}
 			return $v;
-		}, ca_guids::getInfoForGUIDs($guids));
+		}, ca_guids::getInfoForGUIDs($guids) ?? []);
 		return $ret;
 		
 	}
