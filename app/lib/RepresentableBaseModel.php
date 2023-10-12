@@ -1574,6 +1574,9 @@
 		 * @return array
 		 */
 		public static function getTranscriptionStatusForIDs(array $ids, array $options=null) {
+			if(!sizeof($ids)) {
+				return ['representations' => [], 'items' => []];
+			}
 			$db = new Db();
 			
 			$table = get_called_class();
