@@ -71,7 +71,7 @@ class Elevator Extends BaseMediaUrlPlugin {
 	 * @return bool|array False if url is not valid, array with information about the url if valid.
 	 */
 	public function parse(string $url, array $options=null) {
-		if(!defined('__ELEVATOR_API_URL__') && __ELEVATOR_API_URL__) { return null; }
+		if(!defined('__ELEVATOR_API_URL__') || !__ELEVATOR_API_URL__) { return null; }
 		if(!defined('__ELEVATOR_KEY__')) { return null; }
 		if(!defined('__ELEVATOR_SECRET__')) { return null; }
 		
