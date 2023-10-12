@@ -239,12 +239,20 @@ class TimecodeParser {
 			case 'vtt':
 				$ps_format = 'VTT';
 				break;
+			case 'hours_minutes_seconds_long':
+				$ps_format = 'HOURS_MINUTES_SECONDS_LONG';
+				break;
+			case 'hours_minutes_long':
+				$ps_format = 'HOURS_MINUTES_LONG';
+				break;
 		}
 		
 		switch($ps_format) {
 			case 'COLON_DELIMITED':
 			case 'HOURS_MINUTES_SECONDS':
+			case 'HOURS_MINUTES_SECONDS_LONG':
 			case 'HOURS_MINUTES':
+			case 'HOURS_MINUTES_LONG':
 			case 'VTT':
 				$vn_time_in_seconds = (float)$this->opn_parsed_value_in_seconds;
 				
@@ -275,6 +283,12 @@ class TimecodeParser {
 						case 'VTT':
 							$vs_seconds = sprintf("%06.3f", $vn_seconds);
 							return sprintf("%02d", $vn_hours).":".sprintf("%02d", $vn_minutes).($pb_omit_seconds ? '' : ":".$vs_seconds);
+							break;
+						case 'HOURS_MINUTES_LONG':
+							return (($vn_hours > 0) ? "{$vn_hours} hr " : '').(($vn_minutes > 0) ? "{$vn_minutes} min " : '');
+							break;
+						case 'HOURS_MINUTES_SECONDS_LONG':
+							return  trim((($vn_hours > 0) ? "{$vn_hours} hr " : '').(($vn_minutes > 0) ? "{$vn_minutes} min " : '').($pb_omit_seconds ? '' : sprintf("%02.1f", $vn_seconds)." sec"));
 							break;
 						case 'HOURS_MINUTES':
 							return (($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '');
