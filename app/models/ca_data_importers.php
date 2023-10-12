@@ -1758,9 +1758,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 							switch($vs_action_code = strtolower($va_action['action'])) {
 								case 'set':
-									//$va_rule_set_values[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
+									$original_values = $replacement_values = null;
+									if(isset($va_action['replacementValues']) && is_array($va_action['replacementValues']) && isset($va_action['source']) && strlen($va_action['source'])) {
+										$original_values = array_map('mb_strtolower', array_keys($va_action['replacementValues']));
+										$replacement_values = array_values($va_action['replacementValues']);
+										
+										$v = is_array($va_row_with_replacements[$va_action['source']] ?? null) ? $va_row_with_replacements[$va_action['source']][0] : ($va_row_with_replacements[$va_action['source']] ?? null);
+										
+										$va_rule_set_values[$va_action['target']] = self::replaceValue($v, ['settings' => ['original_values' => $original_values, 'replacement_values' => $replacement_values]], []);
+										break;
+									}
+								
 									$va_rule_set_values[$va_action['target']] = DisplayTemplateParser::processTemplate( $va_action['template'],
-									$va_row_with_replacements, ['getFrom' => $o_reader]);
+										$va_row_with_replacements, ['getFrom' => $o_reader]);
 									break;
 								case 'transform':
 									$targets = is_array($va_action['targets']) ? $va_action['targets'] : [$va_action['target']];
@@ -2599,11 +2609,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && strlen( $va_item['settings']['formatWithTemplate'] )
 							) {
 								$vm_val
-									= DisplayTemplateParser::processTemplate( $va_item['settings']['formatWithTemplate'],
+									= trim(DisplayTemplateParser::processTemplate( $va_item['settings']['formatWithTemplate'],
 									array_replace( $use_raw ? $va_raw_row : $va_row_with_replacements , array(
 										(string) $va_item['source'] => ca_data_importers::replaceValue( $vm_val,
 											$va_item, [ 'log' => $o_log, 'logReference' => $vs_idno ] )
-									) ), array( 'getFrom' => $o_reader ) );
+									) ), array( 'getFrom' => $o_reader ) ));
 							}
 							
 							if ( isset( $va_item['settings']['skipIfExpression'] )
@@ -3269,7 +3279,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_content_tree["related.{$vs_subject_table}"] = $va_self_related_content;
 					}
 				}
-			
+				
+				//
+				// Remove duplicate labels
+				//
+				$seen_pref_label_md5 = [];
+				foreach($va_content_tree[$vs_subject_table] as $i => $mapped_data) {
+					foreach($mapped_data as $k => $v) { 
+						if(!in_array($k, ['preferred_labels', 'nonpreferred_labels'])) { continue; }
+						foreach($v as $kx => $vx) {
+							if(substr($kx, 0, 1) === '_') { unset($v[$kx]); }
+						}
+						ksort($v);
+						$mapped_data_key = md5(print_R($v, true));
+						if(isset($seen_pref_label_md5[$mapped_data_key])) {
+							unset($va_content_tree[$vs_subject_table][$i]);
+							$o_log->logDebug(_t('Removed %1 data %2 for %3 because it is duplicated', $k, print_R($v, true), $vs_idno));
+						}
+						$seen_pref_label_md5[$mapped_data_key] = true;
+					}
+						
+				}
 
 				$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds [%3]', $vs_idno, $t->getTime(4), $vn_row));
 				$o_log->logDebug(_t("Content tree is\n%1", print_r($va_content_tree, true)));
@@ -4391,7 +4421,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$value = $row_with_replacements[$source] = self::_processAppliedRegexes($o_reader, $mapping_items[$item_id], 0, $mapping_items[$item_id]['settings']['applyRegularExpressions'], $value, $row, $row_with_replacements);
 		}
 		if (!in_array('formatWithTemplate', $skip) && isset($mapping_items[$item_id]['settings']['formatWithTemplate']) && strlen($mapping_items[$item_id]['settings']['formatWithTemplate'])) {
-			$value = $row_with_replacements[$source] = DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['formatWithTemplate'], $row_with_replacements, ['getFrom' => $o_reader]);
+			$value = $row_with_replacements[$source] = trim(DisplayTemplateParser::processTemplate($mapping_items[$item_id]['settings']['formatWithTemplate'], $row_with_replacements, ['getFrom' => $o_reader]));
 		}
 		
 		return $value;
