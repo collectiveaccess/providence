@@ -1579,12 +1579,24 @@ jQuery(document).ready(function() {
 			//
 			// Output related counts
 			//
-			if (is_array($va_show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($va_show_counts_for)) {
-				foreach($va_show_counts_for as $vs_rel_table) {
-					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count', 'limit' => 100000])) > 0) {
-						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, Datamodel::getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
-					}
+			if (is_array($show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($show_counts_for)) {
+				$links = [];
+				foreach($show_counts_for as $rel_table) {
+					$show_counts_config = caParseTableTypesFromSpecification($rel_table);
+					if(is_array($show_counts_config) && sizeof($show_counts_config)) {
+						if(sizeof($show_counts_config['types']) > 0) {
+							foreach($show_counts_config['types'] as $type_id => $type_info) {
+								if(($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000, 'restrictToTypes' => [$type_id]])) > 0) {
+									$links[$show_counts_config['table'].'/'.$type_info['idno']] = caSearchLink($po_view->request, _t('%1 related %2', $count, ($count === 1) ? $type_info['name_singular'] : $type_info['name_plural']), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey(), ['type_id' => $type_id]);
+								}
+							}
+						} elseif (($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000])) > 0) {
+							$links[$show_counts_config['table']] = caSearchLink($po_view->request, _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
+						}
+					} 
 				}
+				ksort($links, SORT_NATURAL|SORT_FLAG_CASE);
+				$vs_buf .= join("<br/>\n", $links);
 			}
 
 			//
@@ -2041,6 +2053,68 @@ jQuery(document).ready(function() {
         }
 
         return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Parse table and types from specifier
+	 *
+	 * @param string $spec Inspector view object
+	 * @param array $options Options include:
+	 *		None available yes
+	 *
+	 * @return array|null
+	 */
+	function caParseTableTypesFromSpecification(string $spec, ?array $options=null) : ?array {
+		$config = Configuration::load();
+		$tmp = explode('/', $spec);
+		
+		$table = $types = $relationship_types = null;
+		switch(sizeof($tmp)) {
+			case 1:
+				$table = $spec;
+				break;
+			case 2:
+				$table = $tmp[0];
+				$types = preg_split('![;,]+!', $tmp[1]);
+				break;
+			case 3:
+			default:
+				$table = $tmp[0];
+				$types = preg_split('![;,]+!', $tmp[1]);
+				$relationship_types = preg_split('![;,]+!', $tmp[2]);
+				break;
+		}
+		
+		if(!($t_instance = Datamodel::getInstance($table, true))) {
+			return null;
+		}
+		$by_type = (bool)$config->get($table.'_breakout_find_by_type_in_menu');
+		$dont_expand_hierarchically = $config->getList($table.'_find_dont_expand_hierarchically') ?? [];
+		
+		if($by_type && !$types) { $types = ['*']; }
+		
+		$types_proc = [];
+		if(is_array($types)) {
+			$type_list = $t_instance->getTypeList();
+			if($types[0] === '*') {
+				$types_proc = $type_list;
+			} else {
+				$type_ids = [];
+				foreach($types as $type) {
+					$type_ids = array_merge($type_ids, caMakeTypeIDList($table, $type, ['dontIncludeSubtypesInTypeRestriction' => in_array($type, $dont_expand_hierarchically)]) ?? []);
+				}
+				foreach($type_ids as $type_id) {
+					if(!($type_list[$type_id] ?? null)) { continue; }
+					$types_proc[$type_id] = $type_list[$type_id];
+				}
+			}
+		}
+		
+		$relationship_types_proc = [];
+		if(is_array($relationship_types)) {
+		
+		}
+		return ['table' => $table, 'types' => $types_proc, 'relationship_types' => $relationship_types_proc];
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
