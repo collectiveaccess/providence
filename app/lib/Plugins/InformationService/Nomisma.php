@@ -41,12 +41,15 @@ $g_information_service_settings_nomisma = [
 		'multiple' => 1,
 		'default' => '',
 		'options' => array(
+		    _t('Authorizing Entities') => 'foaf:Person,foaf:Organization',
 			_t('Mints') => 'nmo:Mint',
 			_t('Regions') => 'nmo:Region',
 			_t('Materials') => 'nmo:Material',
+		    _t('Manufacture Methods') => 'nmo:Manufacture',
+		    _t('Object Types') => 'nmo:ObjectType',
 			_t('Demoninations') => 'nmo:Denomination',
-			_t('Hoards') => 'nmo:Hoard',
-			_t('Person') => 'foaf:Person',
+		    _t('Portraits') => 'foaf:Person,wordnet:Deity',
+			_t('Hoards') => 'nmo:Hoard'			
 		),
 		'width' => 50, 'height' => 5,
 		'label' => _t('Use ontologies'),
@@ -116,8 +119,11 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		} elseif($pb_phrase) {
 			$vs_search = '\"'.$ps_search.'\"';
 		} else {
-			$va_search = preg_split('/[\s]+/', $ps_search);
-			$vs_search = join(' AND ', $va_search);
+		    $vs_search = $ps_search;
+		    
+		    //Lucene query syntax conversion does not function in Nomisma
+			//$va_search = preg_split('/[\s]+/', $ps_search);
+			//$vs_search = join(' AND ', $va_search);
 		}
 		
 		if($pa_settings['ontologies'] && !is_array($pa_settings['ontologies'])) { $pa_settings['ontologies'] = [$pa_settings['ontologies']]; }
@@ -134,12 +140,15 @@ PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX spatial: <http://jena.apache.org/spatial#>
 PREFIX xsd:	<http://www.w3.org/2001/XMLSchema#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX wordnet:	<http://ontologi.es/WordNet/class/>
 
 SELECT * WHERE {
-   ?data skos:prefLabel ?label .
+   ?data skos:prefLabel ?label . FILTER (langMatches(lang(?label), "en")) .
+   ?data skos:inScheme nm: .
    ?data rdf:type ?t .
    OPTIONAL { 
     ?data skos:broader ?parent .
+    ?parent skos:prefLabel ?parentLabel . FILTER (langMatches(lang(?label), "en")) .
     ?data geo:location ?l .
     ?l geo:lat ?lat.
     ?l geo:long ?long .
@@ -166,8 +175,8 @@ LIMIT '.(int)$pn_limit);
 			if(isset($res[$vs_id])) { continue; }
 
 			$parent = '';
-			if(preg_match("/([a-z0-9_\- ]+)$/", $va_values['parent']['value'], $va_matches)) {
-				$parent = caUcFirstUTF8Safe(str_replace('/', ':', $va_matches[0]));
+			if(array_key_exists('parentLabel', $va_values)){
+			    $parent = $va_values['parentLabel']['value'];
 			}
 			
 			$vs_label = (caGetOption('format', $pa_options, null, ['forceToLowercase' => true]) === 'short') ? $va_values['label']['value'] : ($parent ? $parent . " ➜ " : "") . $va_values['label']['value'] . " [" . $vs_id . "]";
