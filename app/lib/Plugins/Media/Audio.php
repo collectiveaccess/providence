@@ -781,7 +781,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if(caGetOption('user_interface', $options, false, ['forceLowercase' => true]) !== 'mediaelement') {
 ?>
 					<div class="<?= $class; ?> audio-responsive" style="width: <?= $width; ?>; height: <?= $height; ?>;">
-						<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
+						<audio id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
 						  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
 								if(is_array($captions)) {
@@ -790,7 +790,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 									}
 								}
 ?>
-						</video>
+						</audio>
 					</div>
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
