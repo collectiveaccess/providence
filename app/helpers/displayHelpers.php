@@ -1582,7 +1582,7 @@ jQuery(document).ready(function() {
 			if (is_array($show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($show_counts_for)) {
 				$links = [];
 				foreach($show_counts_for as $rel_table) {
-					$show_counts_config = caParseTableTypesFromSpecification($rel_table);
+					$show_counts_config = caParseTableTypesFromSpecification($t_item->tableName(), $rel_table);
 					if(is_array($show_counts_config) && sizeof($show_counts_config)) {
 						if(sizeof($show_counts_config['types']) > 0) {
 							foreach($show_counts_config['types'] as $type_id => $type_info) {
@@ -2058,50 +2058,46 @@ jQuery(document).ready(function() {
 	/**
 	 * Parse table and types from specifier
 	 *
-	 * @param string $spec Inspector view object
+	 * @pram string $table Table for which related values are to be fetched
+	 * @param string $spec Related table specification
 	 * @param array $options Options include:
 	 *		None available yes
 	 *
 	 * @return array|null
 	 */
-	function caParseTableTypesFromSpecification(string $spec, ?array $options=null) : ?array {
+	function caParseTableTypesFromSpecification(string $table, string $spec, ?array $options=null) : ?array {
 		$config = Configuration::load();
 		$tmp = explode('/', $spec);
 		
-		$table = $types = $relationship_types = null;
+		$rel_table = $types = null;
 		switch(sizeof($tmp)) {
 			case 1:
-				$table = $spec;
+				$rel_table = $spec;
 				break;
 			case 2:
-				$table = $tmp[0];
-				$types = preg_split('![;,]+!', $tmp[1]);
-				break;
-			case 3:
 			default:
-				$table = $tmp[0];
+				$rel_table = $tmp[0];
 				$types = preg_split('![;,]+!', $tmp[1]);
-				$relationship_types = preg_split('![;,]+!', $tmp[2]);
 				break;
 		}
 		
-		if(!($t_instance = Datamodel::getInstance($table, true))) {
+		if(!($t_rel_instance = Datamodel::getInstance($rel_table, true))) {
 			return null;
 		}
-		$by_type = (bool)$config->get($table.'_breakout_find_by_type_in_menu');
-		$dont_expand_hierarchically = $config->getList($table.'_find_dont_expand_hierarchically') ?? [];
+		$by_type = (bool)$config->get($rel_table.'_breakout_find_by_type_in_menu');
+		$dont_expand_hierarchically = $config->getList($rel_table.'_find_dont_expand_hierarchically') ?? [];
 		
 		if($by_type && !$types) { $types = ['*']; }
 		
 		$types_proc = [];
 		if(is_array($types)) {
-			$type_list = $t_instance->getTypeList();
+			$type_list = $t_rel_instance->getTypeList();
 			if($types[0] === '*') {
 				$types_proc = $type_list;
 			} else {
 				$type_ids = [];
 				foreach($types as $type) {
-					$type_ids = array_merge($type_ids, caMakeTypeIDList($table, $type, ['dontIncludeSubtypesInTypeRestriction' => in_array($type, $dont_expand_hierarchically)]) ?? []);
+					$type_ids = array_merge($type_ids, caMakeTypeIDList($rel_table, $type, ['dontIncludeSubtypesInTypeRestriction' => in_array($type, $dont_expand_hierarchically)]) ?? []);
 				}
 				foreach($type_ids as $type_id) {
 					if(!($type_list[$type_id] ?? null)) { continue; }
@@ -2109,12 +2105,7 @@ jQuery(document).ready(function() {
 				}
 			}
 		}
-		
-		$relationship_types_proc = [];
-		if(is_array($relationship_types)) {
-		
-		}
-		return ['table' => $table, 'types' => $types_proc, 'relationship_types' => $relationship_types_proc];
+		return ['table' => $rel_table, 'types' => $types_proc];
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
