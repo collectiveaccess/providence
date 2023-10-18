@@ -400,14 +400,32 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip row if expression'),
 			'description' => _t('Skip the row if value for the expression is true.')
 		);
+		$settings['skipRowIfParentDoesNotExist'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if parent record does not exist (parent_id mappings only)'),
+			'description' => _t('Skip the row if in a parent_id mapping no parent with the id or identifier exists.')
+		);
 		$settings['skipIfDataPresent'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
-			'label' => _t('Skip row if data already present'),
+			'label' => _t('Skip mapping if data already present'),
 			'description' => _t('Skip mapping if data is already present in CollectiveAccess.')
+		);
+		$settings['skipIfRowDataPresent'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if data already present'),
+			'description' => _t('Skip row if data is already present in CollectiveAccess.')
 		);
 		$settings['skipIfNoReplacementValue'] = array(
 			'formatType' => FT_TEXT,

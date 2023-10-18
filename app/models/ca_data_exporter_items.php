@@ -685,7 +685,7 @@ class ca_data_exporter_items extends BaseModel {
 
 		if(is_array($pa_replacements)){
 			foreach($pa_replacements as $vs_search => $vs_replace){
-				$ps_text = @preg_replace("!".$vs_search."!", $vs_replace, $ps_text);
+				$ps_text = preg_replace("!".$vs_search."!", $vs_replace, $ps_text);
 				if(is_null($ps_text)){
 					return $vs_original_text;
 				}

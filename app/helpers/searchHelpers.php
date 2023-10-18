@@ -1766,7 +1766,18 @@
 		
 		if ($pn_display_id > 0) {
             $t_display =  new ca_bundle_displays($pn_display_id); 
-            $va_display_bundles = array_map(function ($v) { return $v['bundle_name']; }, $t_display->getPlacements());	
+            $va_display_bundles = array_map(function ($v) { return $v['bundle_name']; }, $t_display->getPlacements());
+            
+            foreach($va_display_bundles as $id => $bname) {
+            	if(preg_match("!\.history_tracking_current_value$!", $bname)) {
+            		$t_placement = new ca_bundle_display_placements($id);
+            		if(!($policy = $t_placement->getSetting('policy'))) { continue; }
+            		$policy_info = $ps_table::getPolicyConfig($policy);
+            		if(!($label = caExtractSettingValueByLocale($t_placement->get('settings'), 'label', $g_ui_locale) ?? $policy_info['name'] ?? null)) { continue; }
+            		$va_base_fields[$bname.'%policy='.$policy] = $label;
+            	}
+            }
+            
 			$va_base_fields = array_filter($va_base_fields, function($v, $k) use ($va_display_bundles, $config_sorts) { 
 				
 				if (isset($config_sorts[$k])) { return true; }
@@ -2120,13 +2131,11 @@
 			if (!$va_select_options) {
 				$va_select_options = array();
 				$t_list = new ca_lists();
-				$va_items = $t_list->getItemsForList($vs_list_code, ['returnHierarchyLevels' => true]);
+				$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
 				if (is_array($va_items)) {
 					$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
 					foreach ($va_items as $va_item) {
-						foreach ($va_item as $va_item_details) {
-							$va_select_options[$is_item_val_fld ? $va_item_details['item_value'] : $va_item_details['idno']] = str_repeat("&nbsp;", (int)$va_item_details['LEVEL'] * 5).$va_item_details['name_singular'];
-						}
+						$va_select_options[$is_item_val_fld ? $va_item['item_value'] : $va_item['idno']] = str_repeat("&nbsp;", (int)$va_item['LEVEL'] * 5).$va_item['name_singular'];
 					}
 				}
 			}
@@ -2479,5 +2488,125 @@
 				return null;
 				break;
 		}
+	}
+	# ---------------------------------------
+	/**
+		Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
+	 */
+	function caExtractTextFromPDF(string $filepath) : ?array {
+		if ($miner_path = caPDFMinerInstalled()) {
+			$locations = [];
+			$o_search_config = caGetSearchConfig();
+			
+			// Try to extract text
+			$tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
+			exec($miner_path.' -t text '.caEscapeShellArg($filepath).' > '.caEscapeShellArg($tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			$extracted_text = file_get_contents($tmp_filename);
+			//$this->handle['content'] = $this->ohandle['content'] = $extracted_text;
+			@unlink($tmp_filename);
+	
+			$tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT_LOCATIONS');
+			exec($miner_path.' -A -t xml '.caEscapeShellArg($filepath).' > '.caEscapeShellArg($tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			
+			$xml = new XMLReader();
+			if ($xml->open($tmp_filename)) {
+			
+			// Structure of locations array is [<word>][] = array(page, x1, y1, x2, y2, size)
+			$current_page = null;
+			$text_line_content = '';
+			$page_content = '';
+			$text_line_locs = [];
+			$in_text_element = false;
+			$current_text_loc = null;
+			
+			$whitespace_regex = $o_search_config->get('whitespace_tokenizer_regex');
+			$punctuation_regex = $o_search_config->get('punctuation_tokenizer_regex');
+			$separator_regex = $o_search_config->get('separator_tokenizer_regex');
+			
+			while (@$xml->read()) {
+					switch ($xml->name) {
+						case 'page':		// new page
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								$locations['__pages__'][$current_page] = $page_content;
+								$page_content = '';
+								continue(2); 
+							}
+							$text_line_content = '';
+							$current_page = (int)$xml->getAttribute('id');
+							break;
+						case 'textline':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								// end of line
+							
+								$start = $end = null;
+								$acc = '';
+								for($i=0; $i < mb_strlen($text_line_content); $i++) {
+									if (preg_match("!{$whitespace_regex}!u", mb_substr($text_line_content, $i, 1))) {
+										// word boundary
+										$acc_tokens = caTokenizeString($acc);
+										if (is_array($acc_tokens) && sizeof($acc_tokens)) {
+											foreach($acc_tokens as $acc) {
+												$acc = mb_strtolower($acc);
+												$acc = preg_replace("!{$punctuation_regex}!", "", $acc);
+												$acc = preg_replace("!{$separator_regex}!", "", $acc);
+												
+												$start = $text_line_locs[$start];
+												$end = $text_line_locs[$end];
+												$locations[$acc][] = array(
+													'p' => $current_page,
+													'x1' => $start['x1'], 'y1' => $start['y1'],
+													'x2' => $end['x2'], 'y2' => $end['y2']
+													//'size' => $start['size']
+												);
+											}
+										}
+										$start = $end = null;
+										$acc = '';
+									} else {
+										if(is_null($start)) { $start = $i; }
+										$end = $i;
+										$acc .= ($c = mb_substr($text_line_content, $i, 1));
+									}
+								}
+							} else {
+								// new line of text
+								$page_content .= $text_line_content;
+								$text_line_content = '';
+								$text_line_locs = array();
+							}
+							break;
+						case 'textbox':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) {
+								$page_content .= "\n";
+							}
+							break;
+						case 'text':
+							if ($in_text_element = ($xml->nodeType == XMLReader::ELEMENT)) {
+								$tmp = explode(",", (string)$xml->getAttribute('bbox'));
+								$current_text_loc = array(
+									'x1' => $tmp[0],
+									'y1' => $tmp[1],
+									'x2' => $tmp[2],
+									'y2' => $tmp[3]
+									//'font' => $xml->getAttribute('font'),
+									//'size' => $xml->getAttribute('size')
+								);	
+							} else {
+								$current_text_loc = null;
+							}
+							break;
+						case '#text':		// bit of text to record (usually a single character)
+							if ($in_text_element) {
+								$current_text_loc['chars'] = mb_strlen((string)$xml->value);
+								$text_line_locs[mb_strlen($text_line_content)] = $current_text_loc;
+								$text_line_content .= (string)$xml->value;
+							}
+							break;
+					}
+				}
+			}
+			return $locations;
+		}
+		return null;
 	}
 	# ---------------------------------------

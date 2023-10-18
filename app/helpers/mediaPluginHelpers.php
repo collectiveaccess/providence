@@ -511,6 +511,42 @@ function caWhisperInstalled(array $options=null) {
 }
 # ------------------------------------------------------------------------------------------------
 /**
+ * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
+ *
+ * @param string $ps_pdfminer_path path to PDFMiner
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
+	if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
+
+	if (!caIsValidFilePath($ps_pdfminer_path)) { 
+		CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+
+	if (!@is_readable($ps_pdfminer_path)) { 
+		CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	if ((caGetOSFamily() == OS_WIN32) && $ps_pdfminer_path) { 
+		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
+		return $ps_pdfminer_path; 
+	} // don't try exec test on Windows
+
+	caExec($ps_pdfminer_path." --version > /dev/null",$va_output,$vn_return);
+	
+	$vb_ret = ($vn_return == 100 || $vn_return == 0);
+
+	CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
+	
+	return $vb_ret ? $ps_pdfminer_path : false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
  * Extracts media metadata using ExifTool
  *
  * @param string $ps_filepath file path

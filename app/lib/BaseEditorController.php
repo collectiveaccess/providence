@@ -216,9 +216,6 @@ class BaseEditorController extends ActionController {
 		);
 		
 		// Pass any values for be forced into the form from plugins (Eg. prepopulate on a new record) 
-		// $params['forced_values'] = [
-// 			'art_date_container' => [['art_date' => 'xxx']]
-// 		];
 		$this->view->setVar('forced_values', $params['forced_values'] ?? null);
 
 		if (!($vs_view = caGetOption('view', $pa_options, null))) {
@@ -714,7 +711,7 @@ class BaseEditorController extends ActionController {
 		
 
 		$t_display = new ca_bundle_displays();
-		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
+		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()), 'context' => 'editor_summary')));
 
 		if ((!($vn_display_id = (int)$this->request->getParameter('display_id', pString))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
@@ -815,6 +812,16 @@ class BaseEditorController extends ActionController {
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 			$exp_display = $t_subject->getWithTemplate("^{$table}.preferred_labels (^{$table}.{$idno_fld})");
 			
+			$t_download = new ca_user_export_downloads();
+			$t_download->set([
+				'created_on' => _t('now'),
+				'user_id' => $this->request->getUserID(),
+				'status' => 'QUEUED',
+				'download_type' => 'SUMMARY',
+				'metadata' => ['searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}", 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($table, $template), 'mode' => 'SUMMARY', 'table' => $table, 'findType' => 'summary']
+			]);
+			$download_id = $t_download->insert();
+			
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -828,7 +835,8 @@ class BaseEditorController extends ActionController {
 					'sortDirection' => null,
 					'searchExpression' => $t_subject->primaryKey(true).":{$vn_subject_id}",
 					'searchExpressionForDisplay' => $exp_display,
-					'user_id' => $this->request->getUserID()
+					'user_id' => $this->request->getUserID(),
+					'download_id' => $download_id
 				],
 				["priority" => 100, "entity_key" => join(':', [$table, $vn_subject_id]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
@@ -1537,11 +1545,6 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 		$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
-
-		//$o_export = new DataExporter();
-		//$this->view->setVar('export_mimetype', $o_export->exportMimetype($pn_mapping_id));
-		//$this->view->setVar('export_data', $o_export->export($pn_mapping_id, $t_subject, null, array('returnOutput' => true, 'returnAsString' => true)));
-		//$this->view->setVar('export_filename', preg_replace('![\W]+!', '_', substr($t_subject->getLabelForDisplay(), 0, 40).'_'.$o_export->exportTarget($pn_mapping_id)).'.'.$o_export->exportFileExtension($pn_mapping_id));
 
 		$this->render('../generic/export_xml.php');
 	}
@@ -2980,11 +2983,10 @@ class BaseEditorController extends ActionController {
 			$t_target->load($rel_id);
 		}
 
-		$rep_ids = $t_target->get('ca_object_representations.representation_id', ['returnAsArray' => true]);
-		if(!is_array($rep_ids) || !sizeof($rep_ids)) {
+		$selected_rep_id = $t_target->getPrimaryRepresentationID();
+		if(!$selected_rep_id) {
 			throw new ApplicationException(_t('ID has no associated media'));
 		}
-		$selected_rep_id = $rep_ids[0];
 		$existing_reps = $t_subject->getRepresentations() ?? [];
 		
 		if(sizeof($selected_reps = array_filter($existing_reps, function($v) use ($selected_rep_id) {
@@ -2994,9 +2996,9 @@ class BaseEditorController extends ActionController {
 			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
 				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
 			} else {
-				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlimk media')];;
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlink media')];
 			}
-		} elseif($t_subject->addRelationship('ca_object_representations', $rep_ids[0], null)) {
+		} elseif($t_subject->addRelationship('ca_object_representations', $selected_rep_id, null)) {
 			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
 		} else {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];

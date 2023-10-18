@@ -614,11 +614,11 @@ trait CLIUtilsImportExport {
 		$rdf = (bool)$opts->getOption('rdf');
 
 		if (!$rdf && !$search && !$id) {
-			CLIUtils::addError('You must specify either an idno or a search expression to select a record or record set for export or activate RDF mode.');
+			CLIUtils::addError(_t('You must specify either an idno or a search expression to select a record or record set for export or activate RDF mode.'));
 			return false;
 		}
 		if (!($filename = $opts->getOption('file'))) {
-			CLIUtils::addError('You must specify a file to write export output to.');
+			CLIUtils::addError(_t('You must specify a file to write export output to.'));
 			return false;
 		}
 
@@ -640,21 +640,21 @@ trait CLIUtilsImportExport {
 		// RDF mode
 		if($rdf){
 			if (!($config = $opts->getOption('config'))) {
-				CLIUtils::addError('You must specify a configuration file that contains the export definition for the RDF mode.');
+				CLIUtils::addError(_t('You must specify a configuration file that contains the export definition for the RDF mode.'));
 				return false;
 			}
 
 			// test config syntax
 			if(!Configuration::load($config)){
-				CLIUtils::addError('Syntax error in configuration file %s.',$config);
+				CLIUtils::addError(_t('Syntax error in configuration file %s.',$config));
 				return false;
 			}
 
 			if(ca_data_exporters::exportRDFMode($config, $filename,array('showCLIProgressBar' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level))){
-				CLIUtils::addMessage("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow'));
+				CLIUtils::addMessage(_t("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow')));
 				return true;
 			} else {
-				CLIUtils::addError("Could not run RDF mode export");
+				CLIUtils::addError(_t("Could not run RDF mode export"));
 				return false;
 			}
 		}
@@ -662,40 +662,40 @@ trait CLIUtilsImportExport {
 		// Search or ID mode
 
 		if (!($mapping = $opts->getOption('mapping'))) {
-			CLIUtils::addError('You must specify a mapping for export.');
+			CLIUtils::addError(_t('You must specify a mapping for export.'));
 			return false;
 		}
 
 		if (!(ca_data_exporters::loadExporterByCode($mapping))) {
-			CLIUtils::addError('Mapping %1 does not exist', $mapping);
+			CLIUtils::addError(_t('Mapping %1 does not exist', $mapping));
 			return false;
 		}
 
 		if(sizeof($va_errors = ca_data_exporters::checkMapping($mapping))>0){
-			CLIUtils::addError("Mapping %1 has errors: %2",$mapping,join("; ",$va_errors));
+			CLIUtils::addError(_t("Mapping %1 has errors: %2",$mapping,join("; ",$va_errors)));
 			return false;
 		}
 
 		if($individual_files && !is_dir($filename)) {
 			if(!@mkdir($filename)) {
-				CLIUtils::addError("Could not create directory for export files");
+				CLIUtils::addError(_t("Could not create directory for export files"));
 				return false;
 			}
 		}
 
 		if($search){
 			if(!ca_data_exporters::exportRecordsFromSearchExpression($mapping, $search, $filename, ['showCLIProgressBar' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level, 'individualFiles' => $individual_files, 'filenameTemplate' => $filename_template, 'includeDeleted' => $include_deleted])){
-				CLIUtils::addError("Could not export mapping %1", $mapping);
+				CLIUtils::addError(_t("Could not export mapping %1", $mapping));
 				return false;
 			} else {
-				CLIUtils::addMessage("Exported data to %1", $filename);
+				CLIUtils::addMessage(_t("Exported data to %1", $filename));
 			}
 		} else if($id){
 			if($export = ca_data_exporters::exportRecord($mapping, $id, ['singleRecord' => true, 'logDirectory' => $log_dir, 'logLevel' => $log_level, 'individualFiles' => $individual_files, 'filenameTemplate' => $filename_template])){
 				file_put_contents($filename, $export);
-				CLIUtils::addMessage("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow'));
+				CLIUtils::addMessage(_t("Exported data to %1", CLIUtils::textWithColor($filename, 'yellow')));
 			} else {
-				CLIUtils::addError("Could not export mapping %1", $mapping);
+				CLIUtils::addError(_t("Could not export mapping %1", $mapping));
 				return false;
 			}
 		}

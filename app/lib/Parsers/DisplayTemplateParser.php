@@ -477,7 +477,7 @@ class DisplayTemplateParser {
 					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
 
 					$va_get_options = [
-						'limit' => $vn_limit, 'returnAsCount' => true, 'checkAccess' => $check_access, 
+						'returnAsCount' => true, 'checkAccess' => $check_access, 
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
@@ -656,6 +656,14 @@ class DisplayTemplateParser {
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".children.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
+							case 'descendants':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".descendants.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'branch':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".branch.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
 							case 'siblings':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
@@ -782,6 +790,14 @@ class DisplayTemplateParser {
 								break;
 							case 'children':
 								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".children.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'descendants':
+								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".descendants.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'branch':
+								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".branch.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							case 'siblings':

@@ -2519,7 +2519,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		// generate list of inital form values; the label bundle Javascript call will
 		// use the template to generate the initial form
 		$va_inital_values = array();
-		$va_new_labels_to_force_due_to_error = array();
+		
+		$va_new_labels_to_force_due_to_error = [];
 		
 		if ($this->getPrimaryKey()) {
 			if (is_array($va_labels) && sizeof($va_labels)) {
@@ -2549,7 +2550,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				}
 			}
 		}
-		$va_new_labels_to_force_due_to_error = [];
 		if (is_array($this->opa_failed_preferred_label_inserts) && sizeof($this->opa_failed_preferred_label_inserts)) {
 			$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 		}

@@ -700,6 +700,7 @@ if (!$pb_omit_editing_info) {
 	 *			user_id = Restricts returned displays to those accessible by the current user. If omitted then all displays, regardless of access are returned.
 	 *			restrictToTypes = Restricts returned displays to those bound to the specified type. Default is to not restrict by type.
 	 *			access = Restricts returned displays to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then displays where the user has at least read access will be returned. 
+	 *          context = context to filter display list for. [Default is null – no filtering performed]
 	 * @return array Array of displays keyed on display_id and then locale_id. Keys for the per-locale value array include: display_id,  display_code, user_id, table_num,  label_id, name (display name of display), locale_id (locale of display name), bundle_display_content_type (display name of content this display pertains to)
 	 */
 	 public function getBundleDisplays($options=null) {
@@ -808,6 +809,16 @@ if (!$pb_omit_editing_info) {
 			
 			$va_displays[$qr_res->get('display_id')][$qr_res->get('locale_id')]['settings'] = caUnserializeForDatabase($va_displays[$qr_res->get('display_id')][$qr_res->get('locale_id')]['settings']);
 		}
+		if($context = caGetOption('context', $options, null)) {
+			foreach($va_displays as $display_id => $info) {
+				if(!is_array($info)) { continue; }
+				$info = array_shift($info);
+				if (is_array($info['settings']['show_only_in']) && sizeof($info['settings']['show_only_in']) && !in_array($context, $info['settings']['show_only_in'])) { 
+					unset($va_displays[$display_id]);
+					continue; 
+				}
+			}
+		}
 		return $va_displays;
 	}
 	# ------------------------------------------------------
@@ -838,12 +849,6 @@ if (!$pb_omit_editing_info) {
 			(isset($options['addDefaultDisplayIfEmpty']) &&  ($options['addDefaultDisplayIfEmpty']) && (!sizeof($va_available_displays)))
 		) {
 			$va_content[_t('Default')] = 0;
-		}
-		
-		$ps_context = caGetOption('context', $options, null);
-		foreach($va_available_displays as $vn_display_id => $info) {
-		    if ($ps_context && is_array($info['settings']['show_only_in']) && sizeof($info['settings']['show_only_in']) && !in_array($ps_context, $info['settings']['show_only_in'])) { continue; }
-			$va_content[$info['name']] = $vn_display_id;
 		}
 		
 		if (sizeof($va_content) == 0) { return ''; }
@@ -2269,7 +2274,7 @@ if (!$pb_omit_editing_info) {
 		if (!isset($options['maximumLength'])) { $options['maximumLength'] =  ($va_settings['maximum_length'] ?? null) ? $va_settings['maximum_length'] : null; }
 		if (!isset($options['filter'])) { $options['filter'] = caGetOption('filter', $va_settings, null); }
 		
-		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $options, null));
+		$options['locale'] = ca_locales::IDToCode(caGetOption('locale', $va_settings, caGetOption('locale', $options, null)));
 		$options['delimiter'] = caGetOption('delimiter', $options, caGetOption('delimiter', $va_settings, '; '));
 		$options['dateFormat'] = caGetOption('dateFormat', $options, caGetOption('dateFormat', $va_settings, ''));
 		$options['useSingular'] = (isset($va_settings['sense']) && ($va_settings['sense'] == 'singular')) ? true : false;
@@ -2311,6 +2316,11 @@ if (!$pb_omit_editing_info) {
 		
 		if(!$pb_show_hierarchy && $vs_template) {
 			unset($options['template']);
+			
+			// Hack to rewrite object-object lot relationship in standard relationship syntax for display template
+			if(($va_bundle_bits[0] === 'ca_objects') && ($va_bundle_bits[1] === 'lot_id')) {
+				$va_bundle_bits = ['ca_object_lots'];
+			}
 			
 			if ($t_instance = Datamodel::getInstanceByTableName($va_bundle_bits[0], true)) {
 				$va_bundle_bits_proc = $va_bundle_bits;

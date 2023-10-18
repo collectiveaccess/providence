@@ -336,7 +336,6 @@ trait CLIUtilsMedia {
 		$o_db = new Db();
 
 		$t_rep = new ca_object_representations();
-		$t_rep->setMode(ACCESS_WRITE);
 
 		$va_versions = array("original");
 		$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
@@ -389,7 +388,7 @@ trait CLIUtilsMedia {
 			if ($vs_sql_where) { $vs_sql_where .= " AND mimetype = 'application/pdf'"; } else { $vs_sql_where = " WHERE mimetype = 'application/pdf'"; }
 
 			$qr_reps = $o_db->query("
-				SELECT representation_id, media_id
+				SELECT representation_id, media
 				FROM ca_object_representations
 				{$vs_sql_where}
 				ORDER BY representation_id

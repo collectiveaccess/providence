@@ -215,7 +215,7 @@
 			                $pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
 			                $vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 			                if (
-			                	is_array($pa_values[$vn_sub_element_id]) ||
+			                	is_array($pa_values[$vn_sub_element_id] ?? null) ||
 			                	((strlen($pa_values[$vn_sub_element_id] ?? '') && ($pa_values[$vn_sub_element_id] != $pv))
 			            		||
 			            		(strlen($pa_values[$vs_element_code] ?? '') && ($pa_values[$vs_element_code] != $pv)))
@@ -1476,10 +1476,11 @@
 		/**
 		 *
 		 */
-		public function getTypeName($pn_type_id=null) {
+		public function getTypeName($pn_type_id=null, $options=null) {
+			$singular = caGetOption('useSingular', $options, true);
 			if ($pn_type_id && !is_numeric($pn_type_id)) { $pn_type_id = $this->getTypeIDForCode($pn_type_id); }
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
-				return $t_list_item->getLabelForDisplay(false);
+				return $t_list_item->get('ca_list_items.preferred_labels.'.($singular ? 'name_singular' : 'name_plural'));
 			}
 			return null;
 		}

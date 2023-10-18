@@ -6096,7 +6096,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
 						// transform entries to item values
 						$t_list = Datamodel::getInstance('ca_lists', true);
-						if (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v))) { // 
+						if (isset($va_attr['LIST']) && (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v)))) { // 
 							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
 							$v = $item['item_value'] ?? null;
 						}
@@ -10592,27 +10592,35 @@ $pa_options["display_form_field_tips"] = true;
                 $params = [$id];
 			    if ($rel_info['left_table'] == $table) {
 			        $sql = "
-						SELECT l.{$rel_pk}
-						FROM {$many_table} l
-						INNER JOIN {$rel_info['left_table']} AS r ON r.{$rel_info['left_table_field']} = l.{$rel_info['linking_table_left_field']}
+						SELECT lnk.{$rel_pk}
+						FROM {$many_table} lnk
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_left_field']}
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
 						WHERE
-							({$rel_info['right_table_field']} = ?)";
+							(r.{$rel_info['right_table_field']} = ?)";
+						
+					if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+						$sql .= " AND l.type_id IN (?)";
+						$params[] = $restrict_to_types;
+					}
 			    } elseif($rel_info['right_table'] == $table) {
 			        $sql = "
-						SELECT l.{$rel_pk}
-						FROM {$many_table} l
-						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = l.{$rel_info['linking_table_right_field']}
+						SELECT lnk.{$rel_pk}
+						FROM {$many_table} lnk
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_left_field']}
 						WHERE
-							({$rel_info['left_table_field']} = ?)";
+							(l.{$rel_info['left_table_field']} = ?)";
+						
+					if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+						$sql .= " AND r.type_id IN (?)";
+						$params[] = $restrict_to_types;
+					}
 			    } else {
 			        continue;
 			    }
-			    if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
-			        $sql .= " AND r.type_id IN (?)";
-			        $params[] = $restrict_to_types;
-			    }
 			    if (is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types)) {
-			        $sql .= " AND l.type_id IN (?)";
+			        $sql .= " AND lnk.type_id IN (?)";
 			        $params[] = $restrict_to_relationship_types;
 			    }
 			    

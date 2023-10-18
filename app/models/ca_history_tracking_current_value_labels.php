@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,7 +85,7 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_value_labels'] 
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable value', 'DESCRIPTION' => 'Sortable version of value',
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

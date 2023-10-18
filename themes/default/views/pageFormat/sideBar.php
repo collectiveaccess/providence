@@ -17,7 +17,7 @@
 		if ($vs_widgets = $this->getVar('nav')->getHTMLWidgets()) {
 			print "<div id='widgets'>{$vs_widgets}</div><!-- end widgets -->";
 		}
-		print "<div id='leftNavSidebar'>".$this->getVar('nav')->getHTMLSideNav('sidebar')."<div class='editorBottomPadding'><!-- empty --></div></div>";
+		print "<div id='leftNavSidebar'>".$this->getVar('nav')->getHTMLSideNav('sidebar', ['hideDisabled' => !preg_match("!^editor/!", $this->request->getModulePath())])."<div class='editorBottomPadding'><!-- empty --></div></div>";
 	}
 ?>
 

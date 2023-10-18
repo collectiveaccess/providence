@@ -587,7 +587,7 @@ function caDetailItemComments($po_request, $pn_item_id, $t_item, $va_comments, $
 			$va_tag_links[] = caNavLink($po_request, $vs_tag, '', '', 'MultiSearch', 'Index', array('search' => $vs_tag));
 		}
 		$vs_tmp .= "<h2>"._t("Tags")."</h2>\n
-			<div id='tags'>".implode($va_tag_links, ", ")."</div>";
+			<div id='tags'>".implode(", ", $va_tag_links)."</div>";
 	}
 	if($po_request->isLoggedIn()){
 		$vs_tmp .= "<button type='button' class='btn btn-default' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'CommentForm', array("tablename" => $t_item->tableName(), "item_id" => $t_item->getPrimaryKey()))."\"); return false;' >"._t("Add your tags and comment")."</button>";

@@ -234,6 +234,10 @@ abstract class Base {
 					if(!isset($this->opa_log['snapshot'][$vs_f])) { $this->opa_log['snapshot'][$vs_f] = null; }
 				}
 			}
+			
+			unset($this->opa_log['snapshot']['source_id']);
+			unset($this->opa_log['snapshot']['source_code']);
+			
 			return $this->opa_log['snapshot'];
 		}
 
@@ -377,7 +381,7 @@ abstract class Base {
 							}
 						}
 					} elseif ($va_snapshot[$vs_field]) {
-						throw new InvalidLogEntryException("No parent_guid field found");
+						throw new InvalidLogEntryException(_t("No parent_guid for %1 field found: %2", $vs_field, print_R($va_snapshot, true)));
 					}
 				}
 			}

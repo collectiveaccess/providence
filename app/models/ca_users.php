@@ -734,7 +734,7 @@ class ca_users extends BaseModel {
 				$vb_has_changed = true;
 				$va_vars[$ps_key] = $vs_proc_val;
 			} else {
-				if (!is_array($vs_proc_val) && !is_array($va_vars[$ps_key]) && (string)$vs_proc_val != (string)$va_vars[$ps_key]) {
+				if (!is_array($vs_proc_val) && !is_array($va_vars[$ps_key] ?? null) && (string)$vs_proc_val != (string)($va_vars[$ps_key] ?? '')) {
 					$vb_has_changed = true;
 					$va_vars[$ps_key] = $vs_proc_val;
 				}
