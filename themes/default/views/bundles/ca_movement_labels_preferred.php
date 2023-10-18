@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,6 +111,7 @@
 		deleteButtonClassName: 'caDeleteLabelButton',
 		readonly: <?= $read_only ? "1" : "0"; ?>,
 		bundlePreview: <?= caEscapeForBundlePreview($this->getVar('bundle_preview')); ?>,
-		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		defaultAccess: <?= json_encode(caGetDefaultItemValue('access_statuses')); ?>
 	});
 </script>

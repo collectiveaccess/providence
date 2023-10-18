@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,11 +30,11 @@
  * ----------------------------------------------------------------------
  */
   
- /**
-  *
-  */
+/**
+ *
+ */
  
- class GeographicMapItem {
+class GeographicMapItem {
  	# -------------------------------------------------------------------
  	private $opa_coordinate_list = array();
  	private $ops_label = '';							// the overall "title" for the item (used for tooltips)
@@ -42,6 +42,7 @@
  	private $ops_ajax_content_url = '';		// the URL to use when loading content via Ajax call
  	private $ops_ajax_content_id = null;		// the id to pin onto the end of the Ajax URL
  	private $ops_color = null;
+ 	private $ops_group = null;
  	# -------------------------------------------------------------------
  	/**
  	 * @param $pa_item_info - optional array of settings to initialize map item with. Supported settings are:
@@ -80,6 +81,10 @@
  			
  			if (isset($pa_item_info['color'])) {
  				$this->setColor($pa_item_info['color']);
+ 			}
+ 			
+ 			if (isset($pa_item_info['group'])) {
+ 				$this->setGroup($pa_item_info['group']);
  			}
  		}
  	}
@@ -255,6 +260,27 @@
 	}
 	# -------------------------------------------------------------------
  	/**
+ 	 * Sets group for this item. Group is used to control visibility of a set it map items
+ 	 *
+ 	 * @param $ps_group - name of group
+ 	 * @return boolean - always returns true
+ 	 */
+	public function setGroup($ps_group) {
+		$this->ops_group = $ps_group;
+		
+		return true;
+	}
+	# -------------------------------------------------------------------
+ 	/**
+ 	 * Gets the currently set group for the item
+ 	 *
+ 	 * @return string - the currently set group 
+ 	 */
+	public function getGroup() {
+		return $this->ops_group;
+	}
+	# -------------------------------------------------------------------
+ 	/**
 	 * Return extents of map item - a bounding box for the item in other words.
 	 *
 	 * @param $pa_options - options to use when fitting map extents to current mapped items. Options are:
@@ -331,5 +357,4 @@
 		return array("east" => $vn_east, "west" => $vn_west, "north" => $vn_north, "south" => $vn_south);
 	}
  	# -------------------------------------------------------------------
- }
- ?>
+}

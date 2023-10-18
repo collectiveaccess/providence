@@ -154,17 +154,8 @@ function caDisplayException(Exception $e, ?array $options=null) : void {
 	}
 
 	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
-	$o_log->logDebug(print_r($e->getTrace(), true));
-	
-	if(defined("__CA_IS_SERVICE_REQUEST__")) {
-		$show_debugging = ((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || $config->get('graphql_services_debug'));
-		header("Content-type: application/json");
-		print json_encode([
-			'ok' => false, 'errors' => ['message' => $e->getMessage(), 'extensions' => ['category' => caGetOption('category', $options, null)],"locations" => $show_debugging ? ['file' => $errfile, 'line' => $errline] : null]
-		]);
-	} else {
-		require_once(fatalErrorHtmlView());
-	}
+	$o_log->logDebug($e->getTraceAsString());
+	require_once(fatalErrorHtmlView());
 	exit;
 }
 
@@ -305,7 +296,7 @@ function caGetThemeUrlPath() : string {
   */
 function caGetDefaultLogo() : string {
 	if(function_exists('caGetLoginLogo')) { 
-		return caGetLoginLogo();
+		return caGetLoginLogo() ?? '';
 	}
 	$url = caGetThemeUrlPath()."/graphics/logos/logo.svg";
 	$width = 327;

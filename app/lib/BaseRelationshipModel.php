@@ -806,7 +806,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * 
 	 */
 	public function getTypeID($pn_id = NULL) {
-		if ($pn_id) {
+		if ($pn_id && BaseModel::hasField('type_id')) {
 			$qr_res = $this->getDb()->query("SELECT type_id FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", array((int)$pn_id));
 			if($qr_res->nextRow()) {
 				return $qr_res->get('type_id');

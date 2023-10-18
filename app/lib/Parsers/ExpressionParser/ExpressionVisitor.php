@@ -105,8 +105,14 @@ class ExpressionVisitor implements Visitor\Visit {
 			'trim'			=> xcallable('trim'),
 			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
 			'dateIsRange'	=> xcallable('caDateIsRange'),
-			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); })
+			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); }),
+			'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); })
 		);
+
+		// Let application plugins add their own expression functions
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(array('expressions' => $this->opa_functions, 'instance' => $this));
+		$this->opa_functions = $va_tmp['expressions'];
 		return;
 	}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -715,6 +715,7 @@ jQuery(document).ready(function() {
 				if (isset($va_metadata_data) && is_array($va_metadata_data)) {
 					$vs_buf .= "<tr><th>".preg_replace('!^METADATA_!', '', $vs_metadata_type)."</th><th colspan='2'><!-- empty --></th></tr>\n";
 					foreach($va_metadata_data as $vs_key => $vm_value) {
+						if(!in_array($vs_key, ['FILE', 'IFD0', 'EXIF'])) { continue; }
 						$vs_buf .=  "<tr valign='top'><td><!-- empty --></td><td>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vm_value, 0, $vs_key)."</td></tr>\n";
 						$vn_metadata_rows++;
 					}
@@ -737,11 +738,17 @@ jQuery(document).ready(function() {
 	 *
 	 * @return string - formated metadata for display to user
 	 */
-	function _caFormatMediaMetadataArray($pa_array, $pn_level=0, $ps_key=null) {
+	function _caFormatMediaMetadataArray($pa_array, $pn_level=0, $ps_key=null, ?array $options=null) {
 		if(!is_array($pa_array)) { return $pa_array; }
 
-		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
+		$no_table = caGetOption('noTable', $options, false);
+		
+		$vs_buf = $no_table ? '' : "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
+			if(is_array($vs_val)) {
+				$vs_buf .= _caFormatMediaMetadataArray($vs_val, $pn_level++, null, ['noTable' => true]);
+				continue;
+			}
 			if (preg_match("!^Undefined!i", $vs_key)) { continue; }
 			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
 			switch($vs_key) {
@@ -757,7 +764,7 @@ jQuery(document).ready(function() {
 			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
 		}
-		$vs_buf .= "</table></div>\n";
+		$vs_buf .= $no_table ? '' : "</table></div>\n";
 		return $vs_buf;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -793,11 +800,19 @@ jQuery(document).ready(function() {
 
 		$vs_buf = '';
 		if (is_array($va_found_ids) && sizeof($va_found_ids)) {
+			$default_to_summary_view_conf = $po_request->config->getList("{$vs_table_name}_editor_defaults_to_summary_view");
+			if(is_array($default_to_summary_view_conf) && sizeof($default_to_summary_view_conf)) {
+				$t_table = Datamodel::getInstance($vs_table_name, true);
+				$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $po_request, $t_table->getTypeID($pn_id));
+				$default_to_summary_view = $t_ui ? in_array($t_ui->get('editor_code'), $default_to_summary_view_conf, true) : false;
+			} else {
+				$default_to_summary_view = (bool)$po_request->config->get("{$vs_table_name}_editor_defaults_to_summary_view");
+			}
 			if ($vn_prev_id > 0) {
 				if(
 					$po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_prev_id))
 					&&
-					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
+					!$default_to_summary_view
 				){
 					$vs_buf .= caNavLink($po_request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
 				} else {
@@ -815,7 +830,7 @@ jQuery(document).ready(function() {
 				if(
 					$po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_next_id))
 					&&
-					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
+					!$default_to_summary_view
 				){
 					$vs_buf .= '&nbsp;'.caNavLink($po_request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
 				} else {
@@ -940,6 +955,7 @@ jQuery(document).ready(function() {
 
 		$vs_style               = null;
 		$vs_idno                = null;
+		$vn_num_objects			= 0;
 
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
@@ -993,7 +1009,7 @@ jQuery(document).ready(function() {
 		} else {
 			if ($vn_item_id) {
 				if(!$po_view->request->config->get("{$vs_priv_table_name}_inspector_disable_headline")) {
-					if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
+					if(!method_exists($t_item, 'isSaveable') || $t_item->isSaveable($po_view->request)) {
 						$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
 					}else{
 						$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
@@ -1522,14 +1538,14 @@ jQuery(document).ready(function() {
 
 					$vs_buf .= '<br/><br/><em>'. ((($vn_c = sizeof($va_nonconforming_objects)) == 1) ? _t('There is %1 object with non-conforming numbering', $vn_c) : _t('There are %1 objects with non-conforming numbering', $vn_c))."</em>\n";
 
-					$vs_buf .= "<a href='#' onclick='jQuery(\"#inspectorNonConformingNumberList\").toggle(250); return false;'>".caNavIcon(__CA_NAV_ICON_ADD__, '18px');
+					$vs_buf .= "<a href='#' onclick='jQuery(\"#inspectorNonConformingNumberList\").toggle(250); return false;'>".caNavIcon(__CA_NAV_ICON_FOLDER_OPEN__, '16px');
 
 					$vs_buf .= "<div id='inspectorNonConformingNumberList' class='inspectorNonConformingNumberList'><div class='inspectorNonConformingNumberListScroll'><ol>\n";
 					foreach($va_nonconforming_objects as $vn_object_id => $va_object_info) {
 						$vs_buf .= '<li>'.caEditorLink($po_view->request, $va_object_info['idno'], '', 'ca_objects', $vn_object_id)."</li>\n";
 					}
 					$vs_buf .= "</ol></div>";
-					$vs_buf .= caNavLink($po_view->request, _t('Re-number objects').' &rsaquo;', 'button', $po_view->request->getModulePath(), $po_view->request->getController(), 'renumberObjects', array('lot_id' => $t_item->getPrimaryKey()));
+					$vs_buf .= caNavLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, '16px').' '._t('Re-number objects'), 'button', $po_view->request->getModulePath(), $po_view->request->getController(), 'renumberObjects', array('lot_id' => $t_item->getPrimaryKey()));
 					$vs_buf .= "</div>\n";
 				}
 
@@ -1540,10 +1556,10 @@ jQuery(document).ready(function() {
 					$vs_buf .= "<div class='inspectorLotObjectTypeControls'><form action='#' id='caAddObjectToLotForm'>";
 					if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
 						// strict menu
-						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)));
+						$vs_buf .= _t('Add new %1', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)));
 					} else {
 						// all types
-						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
+						$vs_buf .= _t('Add new %1', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
 					}
 
 					$vs_buf .= "&nbsp;<a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon(__CA_NAV_ICON_ADD__, '16px') . '</a>';
@@ -1565,7 +1581,7 @@ jQuery(document).ready(function() {
 			//
 			if (is_array($va_show_counts_for = $po_view->request->config->getList($t_item->tableName().'_show_related_counts_in_inspector_for')) && sizeof($va_show_counts_for)) {
 				foreach($va_show_counts_for as $vs_rel_table) {
-					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count'])) > 0) {
+					if (($vn_count = (int)$t_item->getRelatedItems($vs_rel_table, ['returnAs' => 'count', 'limit' => 100000])) > 0) {
 						$vs_buf .= caSearchLink($po_view->request, _t('%1 related %2', $vn_count, Datamodel::getTableProperty($vs_rel_table, ($vn_count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $vs_rel_table, $t_item->primaryKey(true).":".$t_item->getPrimaryKey())."<br/>\n";
 					}
 				}
@@ -1637,7 +1653,7 @@ jQuery(document).ready(function() {
 							_t('new set') => 'new',
 						));
 						$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm", null, ['aria-label' => _t('Duplicate items')]);
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "16px"), "button", "caDupeSetItemsForm", null, ['aria-label' => _t('Duplicate items')]);
 						$vs_buf .= "</form>";
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					}
@@ -1726,7 +1742,7 @@ jQuery(document).ready(function() {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
 						$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildForm', 'administrate/setup/list_item_editor/ListItemEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t('Add a %1 to this list', $vs_type_list).caHTMLHiddenInput($t_list_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_list_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm', null, ['aria-label' => _t('Add a %1 to this list', $vs_type_list)]);
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '16px'), '', 'NewChildForm', null, ['aria-label' => _t('Add a %1 to this list', $vs_type_list)]);
 						$vs_buf .= "</form></div>\n";
 					}
 			}
@@ -2011,7 +2027,7 @@ jQuery(document).ready(function() {
 
         $o_app_plugin_manager = new ApplicationPluginManager();
         $va_hookAppend = $o_app_plugin_manager->hookAppendToEditorInspector(array("t_item"=>$t_item));
-        if (is_string($va_hookAppend["caEditorInspectorAppend"])) {
+        if (is_string($va_hookAppend["caEditorInspectorAppend"] ?? null)) {
             $vs_buf .= $va_hookAppend["caEditorInspectorAppend"];
         }
 
@@ -2330,7 +2346,7 @@ jQuery(document).ready(function() {
 	 * @return array An array of tags, or an array of arrays when parseOptions option is set.
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
-		$key = caMakeCacheKeyFromOptions($pa_options, $ps_template);
+		$key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_template);
 		if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 		
 		$va_tags = caExtractTagsFromTemplate($ps_template, $pa_options);
@@ -3035,16 +3051,16 @@ jQuery(document).ready(function() {
 		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems']) && sizeof($pa_options['relatedItems'])) {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
-				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'];
-				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
-				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
-				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];
-				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'];
-				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'];
-				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'];
+				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['relationship_type_id'] ?? null) ? ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'] : null;
+				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['item_type_id'] = $va_relation['item_type_id'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'] ?? null;
+				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'] ?? null;
 
 				if (isset($va_relation['surname'])) {		// pass forename and surname entity label fields to support proper sorting by name
 					$va_items[$va_relation[$vs_rel_pk]]['surname'] = $va_relation['surname'];
@@ -3057,7 +3073,7 @@ jQuery(document).ready(function() {
 
                 if ($vs_template) {
                 	$pk = is_object($qr_rel_items) ? $qr_rel_items->primaryKey() : null;
-                	$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ? $va_relation['relation_id'] : $va_relation[$pk]), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+                	$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ?? null ? $va_relation['relation_id'] : $va_relation[$pk] ?? null), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
                 } else {
                     $va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
                 }
@@ -3068,7 +3084,7 @@ jQuery(document).ready(function() {
 			unset($va_tmp);
 		}
 
-		if(is_array($pa_options['sortOrder'])) {
+		if(is_array($pa_options['sortOrder'] ?? null)) {
 			$va_items_sorted = [];
 			foreach($pa_options['sortOrder'] as $id) {
 				$va_items_sorted[$id] = $va_items[$id];
@@ -3108,13 +3124,18 @@ jQuery(document).ready(function() {
 			}
 
 			$po_request = caGetOption('request',$pa_options);
-			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'])) {
+			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'] ?? null)) {
 				$va_item['hasInterstitialUI'] = true;
 			} else {
 				$va_item['hasInterstitialUI'] = false;
 			}
 
-			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
+			if(!($va_item['relation_id'] ?? null)) {
+				$va_item['relation_id'] = $va_item[$vs_rel_pk] ?? null;
+			}
+			$va_item['relation_id'] = (int)$va_item['relation_id'] ;
+			
+			$va_initial_values[$va_item['relation_id']] = array_merge(
 				$va_item,
 				array(
 					'label' => $vs_display
@@ -3346,7 +3367,7 @@ jQuery(document).ready(function() {
 	 */
 	function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_settings, $pa_options=null) {
 		$vs_template = null;
-		if(strlen(trim($pa_bundle_settings['display_template']))) {
+		if(strlen(trim($pa_bundle_settings['display_template'] ?? null))) {
 			$vs_template = trim($pa_bundle_settings['display_template']);
 		}
 
@@ -3426,7 +3447,7 @@ jQuery(document).ready(function() {
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 
-		$definition = caGetOption($g_ui_locale, $pa_settings['definition'], null);
+		$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
 		if(is_array($definition)) { $definition = join ("", $definition); }
 		if (!($vs_definition = trim($definition))) { return ''; }
 
@@ -3448,6 +3469,8 @@ jQuery(document).ready(function() {
 		$config = Configuration::load();
 		$default_sorts = $config->getAssoc("{$related_table}_default_bundle_display_sorts");
 	
+		$type_specific_sorts = null;
+		
 		if(!is_array($default_sorts) || !is_array($default_sort_options = caGetOption('options', $default_sorts, null))) { $default_sort_options = []; }
 		if(is_array($rel_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && sizeof($rel_types)) {
 			$path = array_keys(Datamodel::getPath($table, $related_table));
@@ -3547,10 +3570,12 @@ jQuery(document).ready(function() {
 		} else {
 			$sort_fields_proc = $default_sort_options = [];
 			
+			// Expand global sort list to include parents when sort is on container field
 			foreach($va_sort_fields as $sf => $n) {
 				$tmp = explode('.', $sf);
-				if(sizeof($tmp) > 2) {
-					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = ca_metadata_elements::getElementLabel($tmp[1]);
+				if((sizeof($tmp) > 2) && !in_array($tmp[1], ['preferred_labels', 'nonpreferred_labels']))  {
+					if(!($label = ca_metadata_elements::getElementLabel($tmp[1]))) { continue; }
+					$sort_fields_proc[$k=join('.', array_slice($tmp, 0, 2))] = $label;
 					$default_sort_options[$k] = true;
 				}
 				$sort_fields_proc[$sf] = $n;
@@ -4822,7 +4847,7 @@ jQuery(document).ready(function() {
 			if ($pb_barcodes && ($vs_barcode_file = caParseBarcodeViewTag($vs_tag, $po_view, $pm_subject, $pa_options))) {
 				$va_barcode_files_to_delete[] = $vs_barcode_file;
 			} elseif ((strpos($vs_tag, "^") !== false) || (strpos($vs_tag, "<") !== false)) {
-				$po_view->setVar($vs_tag, $pm_subject->getWithTemplate($vs_tag, array('checkAccess' => $pa_access_values)));
+				$po_view->setVar($vs_tag, $pm_subject->getWithTemplate($vs_tag, array('autoConvertLineBreaks' => true, 'checkAccess' => $pa_access_values)));
 			} elseif (strpos($vs_tag, ".") !== false) {
 				$po_view->setVar($vs_tag, $pm_subject->get($vs_tag, array('checkAccess' => $pa_access_values)));
 			} else {
@@ -4921,7 +4946,7 @@ jQuery(document).ready(function() {
 				return $pa_settings[$ps_key][$ps_locale];
 			} elseif(is_array($va_locales_for_language = ca_locales::localesForLanguage($ps_locale, ['codesOnly' => true]))) {
 				foreach($va_locales_for_language as $vs_locale) {
-					if($pa_settings[$ps_key][$vs_locale]) { return $pa_settings[$ps_key][$vs_locale]; }
+					if($pa_settings[$ps_key][$vs_locale] ?? null) { return $pa_settings[$ps_key][$vs_locale]; }
 				}
 			}
 		}
@@ -5193,6 +5218,7 @@ jQuery(document).ready(function() {
 	 */
 	function caGetRepresentationDownloadFileName(string $table, array $data, ?array $options=null) : string {
 		$config = Configuration::load();
+		if(isset($data['extension']) && (in_array(strtolower($data['extension']), ['m4v', 'm4a']))) { $data['extension'] = 'mp4'; }
 		switch($mode = caGetOption('mode', $options, $config->get(["{$table}_downloaded_file_naming", 'downloaded_file_naming']))) {
 			case 'idno':
 				$filename = $data['idno'].(strlen($data['index']) ? '_'.$data['index'] : '').'.'.$data['extension'];
@@ -5413,5 +5439,40 @@ jQuery(document).ready(function() {
 			;
 			return $rec_label;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetTextExcerpt(?string $content, array $search_terms, ?array $options=null) : ?string {
+		$before = caGetOption('before', $options, 100);
+		$after = caGetOption('after', $options, 100);
+		$search_terms = array_map(function($v) {
+			$t = preg_replace('![i]{0,1}\*!', '', $v);
+			return $t;
+		}, $search_terms);
+		
+		$excerpts = [];
+		for($s=0; $s < sizeof($search_terms); $s++) {
+			$n = sizeof($search_terms) - $s;
+			while($n > 0) {
+				$terms = array_map(function($v) {
+					return preg_quote($v, '!')."[^\s]*";
+				}, array_slice($search_terms, $s, $n));
+				$regex = trim(join('[ ]+', $terms));
+				if(preg_match("/(?<![A-Za-z0-9]){$regex}/iu", $content, $m)) {
+					if($m[0]){
+						$index = mb_strpos($content, $m[0]);
+						$start = (($index-$before) > 0) ? ($index-$before) : 0;
+						$length = $before + $after + mb_strlen($m[0]);
+						if($length > (mb_strlen($content) - $start)) { $length = (mb_strlen($content) - $start); }
+						$extext = mb_substr($content, $start, $length);
+						$excerpts[] = "<p>... {$extext} ...</p>";
+					}
+				}
+				$n--;
+			}
+		}
+		return join('', array_unique($excerpts));
 	}
 	# ------------------------------------------------------------------

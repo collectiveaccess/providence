@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,7 +54,7 @@
 				
 				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
 				
-				$va_available_bundles = $t_screen->getAvailableBundles($vs_table);
+				$va_available_bundles = $t_screen->getAvailableBundles($vs_table, ['omitSettingsForms' => true]);
 				foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
 					
 					$vn_access = isset($va_bundle_access_settings[$vs_table.'.'.$vs_bundle_name]) ? $va_bundle_access_settings[$vs_table.'.'.$vs_bundle_name] : $vn_default_bundle_access_level;

@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------
 //
 // Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
-// Copyright 2015-2022 Whirl-i-Gig
+// Copyright 2015-2023 Whirl-i-Gig
 //
 // For more information visit http://www.CollectiveAccess.org
 //
@@ -66,7 +66,7 @@
 %token  div       ÷
 
 // Regular expressions
-%token  regex     /.+?/[a-z]*
+%token  regex     (?<![\\])/.+?(?<![\\])/[a-z]*
 %token  regex_match      \=\~
 %token  regex_nomatch    \!\~
 

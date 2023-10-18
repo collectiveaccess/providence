@@ -219,11 +219,7 @@ use Zend\Stdlib\Glob;
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
 			if (ExternalCache::contains($vs_cache_key, 'PrintTemplateDetails')) {
 				$va_list = ExternalCache::fetch($vs_cache_key, 'PrintTemplateDetails');
-				if(!is_array($files = Glob::glob("{$vs_template_path}/*.{php,css}", Glob::GLOB_BRACE))) {
-					$files = [$vs_template_path];
-				}
 				
-				$vn_template_rev = file_exists($vs_template_path) ? array_shift(array_map("filemtime", $files)) : 0;
 				if(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplateDetails') >= filemtime($vs_template_path)) {
 					return $va_list;
 				}

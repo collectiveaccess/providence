@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2022 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -560,7 +560,7 @@
 			}
 
 			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for ownership by \"%1\"...", $vs_user)); }
-			$va_files = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true);
+			$va_files = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true, ['includeRoot' => true]);
 
 			foreach($va_files as $vs_path) {
 				chown($vs_path, $vs_user);
@@ -1944,6 +1944,60 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 *
+		 */
+		public static function remove_unused_guids($po_opts=null) {
+			$o_db = new Db();
+
+			$tables = Datamodel::getTableNames();
+			
+			print CLIProgressBar::start(sizeof($tables), _t('Removing unused GUIDs'));
+			foreach($tables as $table) {
+				if(in_array($table, ['ca_application_vars', 'ca_guids', 'ca_change_log', 'ca_change_log_subjects', 'ca_change_log_snapshots'])) { continue; }
+				if(!($t_instance = Datamodel::getInstance($table))) { continue; }
+				
+				print CLIProgressBar::next(1, _t('Removing unused for table %1', $t_instance->tableName()));
+				if(!ca_guids::removeUnusedGUIDs($table)) {
+					CLIUtils::addError(_t("Could not remove unused GUIDs for %1.", $table));
+				}
+			}
+			print CLIProgressBar::finish();
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsShortHelp() {
+			return _t('Generate missing guids');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_guidsHelp() {
+			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		}
+		# -------------------------------------------------------
+		/**
 		 * @param Zend_Console_Getopt $po_opts
 		 * @return bool
 		 */
@@ -2653,11 +2707,18 @@
 			
 			print CLIProgressBar::start($count, _t('Processing'));
 			do {
-				$qr_res = $o_db->query("SELECT value_id, value_longtext1, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
+				$qr_res = $o_db->query("SELECT value_id, value_longtext1, value_decimal1, value_decimal2, element_id FROM ca_attribute_values WHERE value_id > ? and (value_longtext1 <> '' OR value_decimal1 IS NOT NULL) ORDER BY value_id LIMIT 10000", [$last_value_id]);
 			
 				$c = 0;
 				while($qr_res->nextRow()) {
-					$v = $qr_res->get('value_longtext1');
+					switch(ca_metadata_elements::getElementDatatype($qr_res->get('element_id'))) {
+						case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+							$v = caGetLocalizedHistoricDateRange($qr_res->get('value_decimal1'), $qr_res->get('value_decimal2'));
+							break;
+						default:
+							$v = $qr_res->get('value_longtext1');
+							break;
+					}
 					$value_id = $qr_res->get('value_id');
 					if (strlen($v) > 0) {
 						$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);

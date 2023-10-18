@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,65 +25,67 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_rel_types		= $this->getVar('relationship_types');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
 
-	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
-	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
-	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
-	
-	$vs_color 			= 	((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
-	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
-	
-	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
-	
-	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	
-	// params to pass during object lookup
-	$va_lookup_params = array(
-		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
-	);
-	
-	$va_errors = [];
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// object
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');
+$va_settings 		= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$va_rel_types		= $this->getVar('relationship_types');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$va_settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
+
+$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
+
+$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
+
+$vs_color 			= 	((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
+$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
+
+$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+
+$force_values = $this->getVar('forceValues');
+
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+
+// params to pass during object lookup
+$va_lookup_params = array(
+	'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+);
+
+$va_errors = [];
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
+
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $va_settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {		
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+}	
 
-	$count = $this->getVar('relationship_count');
-	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
-	
-	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
-	
-		if ($vb_batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-		} else {		
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
-	}	
-	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -393,7 +395,8 @@
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && method_exists($t_item_rel, "isSelfRelationship") && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 <?php
 	}
 ?>

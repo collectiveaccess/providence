@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -422,6 +422,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$root = $element['NODE'];
 			} else {
 				$element_set[$element['NODE']['parent_id']][$element['NODE']['rank']][$element['NODE']['element_id']] = $element['NODE'];
+				ksort($element_set[$element['NODE']['parent_id']][$element['NODE']['rank']]);
 			}
 		}
 
@@ -647,7 +648,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
 				
 				
- 				if($va_properties['showMediaElementBundles']) {
+ 				if($va_properties['showMediaElementBundles'] ?? false) {
  				    if (!is_array($va_restrictions = $this->getTypeRestrictions())) { $va_restrictions = []; }
  				    
                     $va_select_opts = ['-' => ''];
@@ -666,8 +667,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
                         }
                         $va_properties['options'] = $va_select_opts;
                     } 
-                } elseif($va_properties['showLocaleList']) {
-                	$locales = ca_locales::getLocaleList();
+                } elseif(($va_properties['showLocaleList'] ?? false)) {
+                	// showLocaleList = list all available locales
+                	$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => false]);
+                	$va_properties['options'] = [];
+                	foreach($locales as $locale_id => $l) {
+                		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
+                	}
+                } elseif($va_properties['useLocaleList'] ?? false) {
+                	// useLocaleList = show cataloguing locales only
+                	$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => true]);
                 	$va_properties['options'] = [];
                 	foreach($locales as $locale_id => $l) {
                 		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
@@ -688,7 +697,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					$attributes['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
 				}
 				
-				if($va_properties['useList']) {
+				if($va_properties['useList'] ?? false) {
                 	$t_list = new ca_lists($va_properties['useList']);
 					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 					$vs_return .= $t_list->getListAsHTMLFormElement($va_properties['useList'], $vs_input_name, $attributes, $va_opts);
@@ -901,7 +910,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$va_record['settings'] = caUnserializeForDatabase($qr_tmp->get('settings'));
 
 			if ($pb_return_stats) {
-				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')];
+				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')] ?? 0;
 
 				if(!$pb_root_elements_only && !$va_record['ui_counts'] && $va_record['parent_id']) {
 					$t_element->load($va_record['parent_id']);
@@ -913,7 +922,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					$va_record['ui_counts'] = $va_counts_by_attribute[$t_element->get('element_code')];
 				}
 
-				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code];
+				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code] ?? null;
 			}
 			$va_return[$vn_element_id] = $va_record;
 		}
@@ -1032,11 +1041,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @return array
 	 */
-	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $options=null){
-		$cache_key = caMakeCacheKeyFromOptions($options, $pm_table_name_or_num.'/'.$pm_type_name_or_id);
-		// if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
-// 			return $cached_data[$cache_key];
-// 		}
+	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, ?array $options=null){
+		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'/'.$pm_type_name_or_id);
+		if(!($no_cache = caGetOption('noCache', $options, false)) && CompositeCache::contains('ElementsSortable') && is_array($cached_data = CompositeCache::fetch('ElementsSortable')) && isset($cached_data[$cache_key])) {
+			return $cached_data[$cache_key];
+		}
 		
 		$elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, $pm_type_name_or_id, true, false, false, null, $options);
 		if (!is_array($elements) || !sizeof($elements)) { return []; }
@@ -1207,12 +1216,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 
-		$vs_sql_where = '';
-		if ($vn_element_id) {
-			$vs_sql_where = " WHERE cmtr.element_id = {$vn_element_id} AND cme.deleted = 0";
-		} else {
-			$vs_sql_where = " WHERE cme.deleted = 0";
-		}
+		$sql_where = $element_id ? " WHERE cmtr.element_id = {$element_id} AND cme.deleted = 0" : " WHERE cme.deleted = 0";
 
 		$qr_restrictions = $vo_db->query("
 			SELECT cmtr.*, cme.element_code
@@ -1226,6 +1230,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_restrictions->nextRow()) {
 			if (!($t_table = Datamodel::getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 
+			$type_id = null;
 			if($t_table->isRelationship()) {
 				$type_name = $t_table->getRelationshipTypename('ltor', $qr_restrictions->get('type_id'));
 			} elseif ($type_id = $qr_restrictions->get('type_id')) {
@@ -1362,8 +1367,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
+		$settings = self::getElementSettingsForId($pm_element_code_or_id);
 		if ($attr_value = Attribute::getValueInstance($datatype, [], true)) {
-			return $attr_value->sortableValue($value);
+			return $attr_value->sortableValue($value, $settings);
 		}
 		return null;
 	}
@@ -1828,7 +1834,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vs_format = str_replace('^ELEMENT', caHTMLSelect($ps_field, $va_opts, array('id' => $ps_field), array('value' => $this->get('list_id'))), $vs_format);
 
 			if (!isset($pa_options['no_tooltips']) || !$pa_options['no_tooltips']) {
-				TooltipManager::add('#list_id', "<h3>{$vs_field_label}</h3>".$this->getFieldInfo('list_id', 'DESCRIPTION'), $pa_options['tooltip_namespace']);
+				TooltipManager::add('#list_id', "<h3>{$vs_field_label}</h3>".$this->getFieldInfo('list_id', 'DESCRIPTION'), $pa_options['tooltip_namespace'] ?? null);
 			}
 			return $vs_format;
 		}

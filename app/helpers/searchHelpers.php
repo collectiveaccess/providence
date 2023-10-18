@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -530,7 +530,8 @@
 					$o_browse->addCriteria($facet, $value);
 				}
 				$o_browse->addCriteria("_search", [caMatchOnStem($ps_search_expression)], [$search_expression_for_display]);
-				$o_browse->execute();
+				$o_browse->execute($va_options);
+
 				$qr_res = $o_browse->getResults($va_options);
 				
 				if($vn_i == 0) { MetaTagManager::setHighlightText($o_browse->getSearchedTerms() ?? $ps_search_expression); }
@@ -1506,12 +1507,12 @@
 			}
 		} 
 		
-		// Try to use customer user interface labels for fields when set
+		// Try to use custom user interface labels for fields when set
 		$ui_bundle_label_map = [];
 		if (isset($options['request']) && ($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $options['request'], $pn_type_id))) {
-			$va_screens = $t_ui->getScreens();
+			$va_screens = $t_ui->getScreens($pn_type_id);
 			foreach($va_screens as $va_screen) {
-				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id']))) {
+				if (is_array($va_placements = $t_ui->getScreenBundlePlacements($va_screen['screen_id'], $pn_type_id))) {
 					foreach($va_placements as $va_placement) {
 						// Older installations have the bundle name prefixed with "ca_attribute_"
 						$vs_bundle_name = str_replace('ca_attribute_', '', $va_placement['bundle_name']);
@@ -2131,7 +2132,7 @@
 			$va_result['values'] = $va_select_options;
 			$va_result['operators'] = $va_operators_by_type['select'];
 		} elseif($vs_name === "{$vs_table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
-			$va_result['operators'] = array_merge($va_operators_by_type['select'], ['between']);
+			$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 		} else {
 			$va_result['input'] = 'text';
 		}

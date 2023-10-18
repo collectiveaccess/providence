@@ -203,7 +203,11 @@ class RelatedListController extends BaseSearchController {
 
 		$va_res = caMakeSearchResult($t_related->tableName(), $va_relation_ids, $va_search_opts);
 		$o_res = $va_res['result'];
-		$va_relation_ids_to_related_ids = $va_res['index'];
+		$va_relation_ids_to_related_ids = [];
+		$x = array_flip($va_relation_ids);
+		foreach($va_res['index'] as $rel_id) {
+			$va_relation_ids_to_related_ids[$x[$rel_id]] = $rel_id;
+		}
 
 		$this->getView()->setVar('relationIDsToRelatedIDs', $va_relation_ids_to_related_ids);
 

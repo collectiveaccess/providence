@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2018 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -319,7 +319,7 @@
  		# -------------------------------------------------------
  		public function addCriteria() {
  			$ps_facet_name = $this->request->getParameter('facet', pString);
- 			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
+ 			$this->opo_browse->addCriteria($ps_facet_name, explode('|', $this->request->getParameter('id', pString)));
  			
  			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();
@@ -328,7 +328,7 @@
  		public function modifyCriteria() {
  			$ps_facet_name = $this->request->getParameter('facet', pString);
  			$this->opo_browse->removeCriteria($ps_facet_name, array($this->request->getParameter('mod_id', pString)));
- 			$this->opo_browse->addCriteria($ps_facet_name, array($this->request->getParameter('id', pString)));
+ 			$this->opo_browse->addCriteria($ps_facet_name, explode('|', $this->request->getParameter('id', pString)));
  			
  			//$this->view->setVar('open_refine_controls', true);
  			$this->Index();

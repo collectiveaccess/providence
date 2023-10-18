@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2019 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -627,6 +627,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Apply one or more regular expression-based substitutions to a source value prior to import.'),
 			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
+		);
+		
+		$va_settings['includeDeleted'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Include deleted records'),
+			'description' => _t('Include deleted records in the exported data set.')
 		);
 		
 		$this->setAvailableSettings($va_settings);

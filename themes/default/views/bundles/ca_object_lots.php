@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,76 +25,78 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object_lot
-	$t_subject 			= $this->getVar('t_subject');		// object
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$va_settings 		= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$va_rel_types		= $this->getVar('relationship_types');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$va_settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
-	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
-	
-	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
-	
-	$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	$t_item->load($vn_lot_id = $t_subject->get('lot_id'));
-	
-	$va_force_new_values = $this->getVar('forceNewValues');
-	$va_initial_values = $this->getVar('initialValues');
-	
-	// put brackets around idno_stub for presentation
-	foreach($va_initial_values as $vn_i => $va_lot_info) {
-		if ($va_initial_values[$vn_i]['idno_stub']) {
-			$va_initial_values[$vn_i]['idno_stub'] = '['.$va_initial_values[$vn_i]['idno_stub'].'] ';
-		}
-	}
-	
-	// put brackets around idno_stub for presentation
-	foreach($va_force_new_values as $vn_i => $va_lot_info) {
-		if ($va_force_new_values[$vn_i]['idno_stub']) {
-			$va_force_new_values[$vn_i]['idno_stub'] = '['.$va_force_new_values[$vn_i]['idno_stub'].'] ';
-		}
-	}
-	
-	$va_errors = [];
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
-	}
 
-	// params to pass during lookup
-	$va_lookup_params = array(
-		'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$vb_quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-		'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
-	);
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// object_lot
+$t_subject 			= $this->getVar('t_subject');		// object
+$t_item_rel 		= $this->getVar('t_item_rel');
+$va_settings 		= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$va_rel_types		= $this->getVar('relationship_types');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$va_settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
 
-	$count = $this->getVar('relationship_count');
-	$num_per_page = caGetOption('numPerPage', $va_settings, 10);
-	
-	if (!RequestHTTP::isAjax()) {
-		if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
-	
-		if ($vb_batch) {
-			print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-		} else {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-		}
-		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+$force_values = $this->getVar('forceValues');
+
+$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+
+$dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $va_settings, false) ? 'none' : null; 
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+$t_item->load($vn_lot_id = $t_subject->get('lot_id'));
+
+$va_force_new_values = $this->getVar('forceNewValues') ?? [];
+$va_initial_values = $this->getVar('initialValues');
+
+// put brackets around idno_stub for presentation
+foreach($va_initial_values as $vn_i => $va_lot_info) {
+	if ($va_initial_values[$vn_i]['idno_stub']) {
+		$va_initial_values[$vn_i]['idno_stub'] = '['.$va_initial_values[$vn_i]['idno_stub'].'] ';
 	}
-	
-	$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+}
+
+// put brackets around idno_stub for presentation
+foreach($va_force_new_values as $vn_i => $va_lot_info) {
+	if ($va_force_new_values[$vn_i]['idno_stub']) {
+		$va_force_new_values[$vn_i]['idno_stub'] = '['.$va_force_new_values[$vn_i]['idno_stub'].'] ';
+	}
+}
+
+$va_errors = [];
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
+
+// params to pass during lookup
+$va_lookup_params = array(
+	'types' => isset($va_settings['restrict_to_types']) ? $va_settings['restrict_to_types'] : (isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (!$vb_quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+);
+
+$count = $this->getVar('relationship_count');
+$num_per_page = caGetOption('numPerPage', $va_settings, 10);
+
+if (!RequestHTTP::isAjax()) {
+	if(caGetOption('showCount', $va_settings, false)) { print $count ? "({$count})" : ''; }
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+}
+
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -420,6 +422,7 @@
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_object_lots')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 <?php } ?>
 		});
 	});

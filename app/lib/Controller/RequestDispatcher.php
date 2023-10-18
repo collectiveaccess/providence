@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2022 Whirl-i-Gig
+ * Copyright 2007-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -179,6 +179,7 @@ class RequestDispatcher extends BaseObject {
 	}
 	# -------------------------------------------------------
 	public function dispatch($pa_plugins) {
+		$va_params = null;
 		$this->setPlugins($pa_plugins);
 		if ($this->isDispatchable()) {
 			do {
@@ -239,14 +240,19 @@ class RequestDispatcher extends BaseObject {
 					}
 				}
 
-				if(!$this->request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)){
+				if(!$this->request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)) {
 					switch($this->request->getScriptName()){
 						case "service.php":
 							// service auth requests for deprecated service API are allowed to go through to
 							// dispatch because in that case logging in requires running actual controller code. 
-							// this is bad practice and should be removed once the old API is no longer supported.
-							
-							if(in_array('json', array_map('strtolower', $this->opa_module_path)) || !$this->request->isServiceAuthRequest()) {
+							// this is bad practice and should be removed once the old API is no longer supported.`
+							if(
+								in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) 
+								||
+								(in_array(strtolower($this->ops_controller), ['replication', 'simple', 'statistics']))
+								|| 
+								!$this->request->isServiceAuthRequest()
+							) {
 								$this->response->setHTTPResponseCode(401,_t("Access denied"));
 								$this->response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
 								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!

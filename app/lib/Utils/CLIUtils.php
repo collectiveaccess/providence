@@ -39,6 +39,7 @@ require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Media.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Search.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ImportExport.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Replication.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/ContentManagement.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Cron.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Performance.php');
@@ -53,6 +54,7 @@ class CLIUtils extends CLIBaseUtils {
 	use CLIUtilsSearch;
 	use CLIUtilsConfiguration;
 	use CLIUtilsImportExport;
+	use CLIUtilsReplication;
 	use CLIUtilsContentManagement;
 	use CLIUtilsCron;
 	use CLIUtilsPerformance;

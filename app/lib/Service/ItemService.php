@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,7 +138,7 @@ class ItemService extends BaseJSONService {
 			if(caGetOption('returnWithStructure', $va_options, true)) {	// unroll structured response into flat list
 				$vm_return = array_reduce($vm_return,
 					function($c, $v) { 
-						return array_merge($c, array_values($v));
+						return array_merge($c, is_array($v) ? array_values($v) : [$v]);
 					}, []
 				);
 			}
@@ -963,6 +963,8 @@ class ItemService extends BaseJSONService {
 			}
 		} else if ($va_post["remove_all_attributes"]) {
 			$t_instance->removeAttributes();
+		} else if ($pa_data["purge_all_attributes"]) {
+			$t_instance->purgeAttributes();
 		}
 
 		if(is_array($va_post["attributes"]) && sizeof($va_post["attributes"])) {
@@ -1107,6 +1109,14 @@ class ItemService extends BaseJSONService {
                 }
             }
         }
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+		$this->opo_app_plugin_manager->hookItemServiceSaveItem(array(
+				'id' => $this->opn_id,
+				'table_num' => $t_instance->tableNum(),
+				'table_name' => $t_instance->tableName(),
+				'instance' => $t_instance,
+				'is_insert' => false)
+		);
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {

@@ -313,7 +313,8 @@ class TaskQueue extends BaseObject {
 						SET started_on = NULL
 						WHERE task_id = ?"
 					, (int)$qr_tasks->get("task_id"));
-					continue;
+					$this->unregisterProcess($vn_proc_id);
+					return false;
 				}
 				
 				$proc_parameters = unserialize(base64_decode($qr_tasks->get("parameters")));

@@ -324,7 +324,7 @@ abstract class IDNumber implements IIDNumbering {
 		}
 		$format = mb_strtolower($format);
 		$types = [];
-		if (is_array($this->formats[$format])) {
+		if (is_array($this->formats[$format] ?? null)) {
 			foreach($this->formats[$format] as $type => $info) {
 				$types[$type] = true;
 			}
@@ -361,7 +361,7 @@ abstract class IDNumber implements IIDNumbering {
 		$format = mb_strtolower($format);
 		$type = mb_strtolower($type);
 		if ($format && $type) {
-			if (is_array($this->formats[$format][$type]['elements'])) {
+			if (is_array($this->formats[$format][$type]['elements'] ?? null)) {
 				$is_child = $this->isChild();
 				$elements = [];
 				foreach($this->formats[$format][$type]['elements'] as $k => $element_info) {

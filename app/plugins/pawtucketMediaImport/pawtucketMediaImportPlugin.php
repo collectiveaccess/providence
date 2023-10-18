@@ -29,16 +29,18 @@
 	class pawtucketMediaImportPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
 		private $opo_config;
+		/** @var KLogger  */
+		private $opo_log;
 		# -------------------------------------------------------
 		public function __construct($ps_plugin_path) {
 			$this->description = _t('Pawtucket Media Import Processor');
 			$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'plugin.conf');
-
+			$this->opo_log = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log']);
 			parent::__construct();
 		}
 		# -------------------------------------------------------
 		/**
-		 * Override checkStatus() to return true - the historyMenu plugin always initializes ok
+		 * Override checkStatus() to return true - the pawtucketMediaImport plugin always initializes ok
 		 */
 		public function checkStatus() {
 			return array(
@@ -50,12 +52,13 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Insert activity menu
+		 * Run periodic tasks
 		 */
 		public function hookPeriodicTask() {
 			$ret = ca_media_upload_sessions::processSessions(['limit' => 20]);
-			
-			print "Processed {$ret} sessions\n";
+			$this->opo_log->logInfo(__CLASS__ . ": Processed $ret sessions");
+			// Allow plugins after pawtuckeMediaImport to also process
+			return true;
 		}
 		# -------------------------------------------------------
 	}

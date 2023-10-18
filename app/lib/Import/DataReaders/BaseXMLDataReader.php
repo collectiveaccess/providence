@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -168,8 +168,12 @@ class BaseXMLDataReader extends BaseDataReader {
 				$this->opo_xpath->registerNamespace($prefix, $ns);
 			}
 		}
-		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
-
+		if(!is_array($this->ops_xpath)) { $this->ops_xpath = [$this->ops_xpath]; }
+		
+		foreach($this->ops_xpath as $xp) {
+			$this->opo_handle = $this->opo_xpath->query($xp, null, $this->opb_register_root_tag);
+			if($this->opo_handle && ($this->opo_handle->count() > 0)) { break; }
+		}
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;
 	}

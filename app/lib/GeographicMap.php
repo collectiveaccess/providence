@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,7 @@
  	 *			viewPath - path to views; will use standard system view path if not defined
  	 *			request = current request; required for generation of editor links
  	 *			color = hex color to use for item marker; can include bundle display template tags for inclusion of colors stored in metadata elements
+ 	 *			group = group item belongs to. Items will be output in feature group layers corresponding to each group code.
  	 * @return array Returns an array with two keys: 'points' = number of unique markers added to map; 'items' = number of result hits than were plotted at least once on the map
  	 */
  	public function mapFrom($po_data_object, $ps_georeference_field_name, $pa_options=null) {
@@ -119,6 +120,7 @@
  		$pa_options['label'] = caGetOption('label', $pa_options, null);
  		$pa_options['content'] = caGetOption('content', $pa_options, null);
  		$vs_color = caGetOption('color', $pa_options, null);
+ 		$vs_group = caGetOption('group', $pa_options, null);
  		$vb_render_label_as_link = caGetOption('renderLabelAsLink', $pa_options, false);
  		
  		
@@ -247,12 +249,12 @@
                                         $va_pair = explode(',', $vs_pair);
                                         $va_coordinate_pairs[] = ['latitude' => $va_pair[0], 'longitude' => $va_pair[1]];
                                     }
-                                    $this->addMapItem(new GeographicMapItem(['coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color]));
+                                    $this->addMapItem(new GeographicMapItem(['coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color, 'group' => $vs_group]));
                                 } else {
                                     $va_coord = explode(',', $va_path[0]);
                                     list($lng, $radius) = explode('~', $va_coord[1]);
                                     if (!$radius) { list($lng, $angle) = explode('*', $va_coord[1]); }
-                                    $d = ['latitude' => $va_coord[0], 'longitude' => $lng, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color];
+                                    $d = ['latitude' => $va_coord[0], 'longitude' => $lng, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color, 'group' => $vs_group];
                                     if ($radius) { $d['radius'] = $radius; }
                                     if ($angle) { $d['angle'] = $angle; }
                                     $this->addMapItem(new GeographicMapItem($d));

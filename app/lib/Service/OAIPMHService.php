@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -322,7 +322,7 @@ class OAIPMHService extends BaseService {
 	private function getRecord($oaiData) {
 		if($ps_identifier = $this->opo_request->getParameter('identifier', pString)) {
 			if(!($vs_item_id = OaiIdentifier::oaiIdToItem($ps_identifier))) {
-				$this->throwError(self::OAI_ERR_ID_DOES_NOT_EXIST, _t('Identifier is empty'));
+				$this->throwError(self::OAI_ERR_ID_DOES_NOT_EXIST, strlen($ps_identifier) ? _t('Identifier %1 does not exist', $ps_identifier) : _t('Identifier %1 is empty'));
 				return false;
 			}
 		}
@@ -577,7 +577,7 @@ class OAIPMHService extends BaseService {
 				} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
 					$o_search->setTypeExclusions($type_exclusion);
 				}
-				$qr_res = $o_search->search($vs_range ? 'modified:"'.$vs_range.'"' : '*', array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'checkAccess' => $vb_dont_enforce_access_settings || $vb_show_deleted ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
+				$qr_res = $o_search->search($vs_range ? 'modified:"'.$vs_range.'"' : '*', array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'checkAccess' => ($vb_dont_enforce_access_settings || $vb_show_deleted) ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 			} else {
 				$o_browse = caGetBrowseInstance($this->table);
 		
@@ -597,16 +597,23 @@ class OAIPMHService extends BaseService {
 						$o_browse->addCriteria($this->opa_provider_info['setFacet'], $set_value);
 					}
 				}
-				$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => $vb_dont_enforce_access_settings || $vb_show_deleted ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
+				$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => ($vb_dont_enforce_access_settings || $vb_show_deleted) ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 				$qr_res = $o_browse->getResults();
 			}
 		} else {
-			if(is_array($type_res = caGetOption('restrictToTypes', $this->opa_provider_info, null)) && sizeof($type_res)) {
-				$o_search->setTypeRestrictions($type_res);
-			} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
-				$o_search->setTypeExclusions($type_exclusion);
+			$q = strlen($this->opa_provider_info['query']) ? $this->opa_provider_info['query'] : "*";
+			
+			if($q === '*') {
+				$table = $this->table;
+				$qr_res = $table::findAsSearchResult('*', ['includeDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL'], 'restrictToTypes' => caGetOption('restrictToTypes', $this->opa_provider_info, null), 'excludeTypes' => caGetOption('excludeTypes', $this->opa_provider_info, null)]);
+			} else {
+				if(is_array($type_res = caGetOption('restrictToTypes', $this->opa_provider_info, null)) && sizeof($type_res)) {
+					$o_search->setTypeRestrictions($type_res);
+				} elseif(is_array($type_exclusion = caGetOption('excludeTypes', $this->opa_provider_info, null)) && sizeof($type_exclusion)) {
+					$o_search->setTypeExclusions($type_exclusion);
+				}
+				$qr_res = $o_search->search($q, array('no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'showDeleted' => $vb_show_deleted, 'checkAccess' => ($vb_dont_enforce_access_settings || $vb_show_deleted) ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 			}
-			$qr_res = $o_search->search(strlen($this->opa_provider_info['query']) ? $this->opa_provider_info['query'] : "*", array('no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'showDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings || $vb_show_deleted ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL']));
 		}
 
 		if (!$qr_res) {

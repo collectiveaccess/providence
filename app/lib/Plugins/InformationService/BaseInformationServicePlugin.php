@@ -190,4 +190,25 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 		return array();
 	}
 	# ------------------------------------------------
+	/** 
+	 * Can be overridden in implementation to render additional form elements
+	 * in user interface. Returns array of HTML form elements.
+	 *
+	 * @param array $pa_settings element settings
+	 * @return array
+	 */
+	public function getAdditionalFields(array $pa_element_info) : array {
+		return [];
+	}
+	# ------------------------------------------------
+	/** 
+	 * Can be overridden in implementation to return array of values for additiona fields.
+	 *
+	 * @param ca_attribute_values Attribute value
+	 * @return array
+	 */
+	public function getAdditionalFieldValues($attribute_value) : array {
+		return [];
+	}
+	# ------------------------------------------------
 }

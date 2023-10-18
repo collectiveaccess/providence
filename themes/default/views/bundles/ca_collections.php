@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,6 +39,8 @@
 	$placement_code = $this->getVar('placement_code');
 	$placement_id	= (int)$settings['placement_id'];
 	$batch			= $this->getVar('batch');
+	
+	$force_values = $this->getVar('forceValues');
 	
 	$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
 	$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_collections') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -405,7 +407,8 @@
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			isSelfRelationship:<?= ($t_item_rel && $t_item_rel->isSelfRelationship()) ? 'true' : 'false'; ?>,
-			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>
+			subjectTypeID: <?= (int)$t_subject->getTypeID(); ?>,
+			forceNewRelationships: <?= json_encode($force_values); ?>
 		});
 	});
 </script>

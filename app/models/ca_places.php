@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -504,8 +504,10 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	 * Override insert() to check parent_id and default to default hierarchy if none is specified.
 	 */ 
 	public function insert($pa_options=null) {
-		if((int)$this->get('parent_id') <= 0) {
-			if ($default_hierarchy_id = caGetDefaultItemID('place_hierarchies')) {
+		if(((int)$this->get('parent_id') <= 0) && (!preg_match('!^Root node for!', $this->get('idno'))))  {
+			if(($hierarchy_id = $this->get('hierarchy_id')) && ($root_id = ca_places::find(['hierarchy_id' => $hierarchy_id], ['returnAs' => 'firstId']))) {
+				// noop
+			} elseif ($default_hierarchy_id = caGetDefaultItemID('place_hierarchies')) {
 				$root_id = ca_places::find(['hierarchy_id' => $default_hierarchy_id], ['returnAs' => 'firstId']);
 			} elseif(is_array($hierarchies = $this->getHierarchyList()) && sizeof($hierarchies)) {
 				$first_hierarchy = array_shift($hierarchies);

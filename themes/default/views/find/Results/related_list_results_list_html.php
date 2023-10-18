@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,27 +26,26 @@
  * ----------------------------------------------------------------------
  */
 
-	/** @var ca_bundle_displays $t_display */
-	$t_display				= $this->getVar('t_display');
-	$va_display_list 		= $this->getVar('display_list');
-	/** @var EntitySearchResult $vo_result */
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
-	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar					= $this->getVar('access_restrictions');
-	$va_rel_id_typenames 	= $this->getVar('relationIdTypeNames');
-	$va_rel_id_index	 	= $this->getVar('relationIDsToRelatedIDs');
+/** @var ca_bundle_displays $t_display */
+$t_display				= $this->getVar('t_display');
+$va_display_list 		= $this->getVar('display_list');
+/** @var EntitySearchResult $vo_result */
+$vo_result 				= $this->getVar('result');
+$vn_items_per_page 		= $this->getVar('current_items_per_page');
+$vs_current_sort 		= $this->getVar('current_sort');
+$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+$vs_default_action		= $this->getVar('default_action');
+$vo_ar					= $this->getVar('access_restrictions');
+$va_rel_id_typenames 	= $this->getVar('relationIdTypeNames');
+$va_rel_id_index	 	= $this->getVar('relationIDsToRelatedIDs');
 
-	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
-	$vs_primary_table		= $this->getVar('primaryTable');
-	$vn_primary_id			= $this->getVar('primaryID');
-	$vs_related_table		= $this->getVar('relatedTable');
-	$vs_related_rel_table	= $this->getVar('relatedRelTable');
-	/** @var BundlableLabelableBaseModelWithAttributes $t_related_instance */
-	$t_related_instance		= $this->getVar('relatedInstance');
-
+$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
+$vs_primary_table		= $this->getVar('primaryTable');
+$vn_primary_id			= $this->getVar('primaryID');
+$vs_related_table		= $this->getVar('relatedTable');
+$vs_related_rel_table	= $this->getVar('relatedRelTable');
+/** @var BundlableLabelableBaseModelWithAttributes $t_related_instance */
+$t_related_instance		= $this->getVar('relatedInstance');
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm<?= $vs_interstitial_prefix; ?>">
@@ -184,5 +183,4 @@
 			}).disableSelection();
 		</script>
 <?php
-	}
-?>
+}

@@ -161,7 +161,7 @@ class StatisticsAggregator {
 		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
 		$local_site = $config->get('local_site');
 		$sites = self::getSites();
-		return isset($sites[$local_site]) ? $sites[$local_site] : null;
+		return isset($sites[$local_site]) ? array_merge($sites[$local_site], ['code' => $local_site]) : null;
 	}
 	# ------------------------------------------------------------------
 	/**

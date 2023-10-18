@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,7 +137,7 @@
 		return false;
 	}
 <?php
-	if (sizeof($searches) > 0) {
+	if (!Configuration::load()->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
 ?>
 		jQuery(document).ready(function() {
 			caQuickSearchShowHideResults('show', '<?= str_replace("/", "-", array_shift(array_keys($searches))); ?>');

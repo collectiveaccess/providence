@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -432,8 +432,12 @@
  					list($vs_directory, $vn_start) = explode("@@", $vs_tmp);
  					if (!$vs_directory) { continue; }
  					
- 					$va_tmp = explode('/', $vs_directory);
- 					if ($va_tmp)
+ 					$va_tmp = array_filter(explode('/', $vs_directory), function($v) { 
+						$v = trim($v);
+						if(!strlen($v)) { return false; }
+ 						return !in_array($v[0], ['.', '~']);
+ 					});
+ 					$vs_directory = join('/', $va_tmp);
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
@@ -451,6 +455,13 @@
  				Session::setVar('lastMediaImportDirectoryPath', $ps_directory);
 
 				$va_tmp = ($ps_directory === '/') ? [''] : explode('/', $ps_directory);
+				$va_tmp = array_filter(explode('/', $ps_directory), function($v) { 
+					$v = trim($v);
+					if(!strlen($v)) { return false; }
+					return !in_array($v[0], ['.', '~']);
+				});
+ 				$ps_directory = join('/', $va_tmp);
+ 					
 				$vn_level = sizeof($va_tmp);
 				if ($ps_directory[0] == '/') { $vn_level--; }
 				

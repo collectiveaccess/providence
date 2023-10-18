@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,10 +56,12 @@
 	 */
    	function initializeLocale($ps_locale) {
    		global $_, $_locale;
+   		global $g_translation_cache;
    		
 	    $ps_locale = preg_replace("![^A-Za-z_]+!", "", $ps_locale);
    		
 		MemoryCache::flush('translation');
+		$g_translation_cache = [];
 
    		if (!($va_locale_paths = validateLocale($ps_locale))) {
    		    // cookie invalid, deleting

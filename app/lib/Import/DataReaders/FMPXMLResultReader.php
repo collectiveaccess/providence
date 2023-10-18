@@ -144,7 +144,11 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		}
 		
 		// get rows
-		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath);
+		if(!is_array($this->ops_xpath )) { $this->ops_xpath  = [$this->ops_xpath]; }
+		foreach($this->ops_xpath as $xp) {
+			$this->opo_handle = $this->opo_xpath->query($xp);
+			if($this->opo_handle && ($this->opo_handle->count() > 0)) { break; }
+		}
 
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;

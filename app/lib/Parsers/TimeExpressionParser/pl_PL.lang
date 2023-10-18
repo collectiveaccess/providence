@@ -25,7 +25,7 @@ monthTable = {
 dayListDisplay = [ Niedziela, Poniedziałek, Wtorek, Środa, Czwartek, Piątek, Sobota ]
 
 rangePreConjunctions = [ od, między ]
-rangeConjunctions = [ -, do, a, ..]
+rangeConjunctions = [–, -, do, a, ..]
 
 dateTimeConjunctions = [ o, @ ]
 

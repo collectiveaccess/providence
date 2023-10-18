@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -127,6 +127,15 @@ BaseRefinery::$s_refinery_settings['collectionSplitter'] = array(
 		'default' => '',
 		'label' => _t('Relationship type'),
 		'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a "child" element in the collection hierarchy.')
+	),
+	'collectionSplitter_relationshipOrientation' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Relationship type orientation'),
+		'description' => _t('Sets directionality of collection-collection relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default.')
 	),
 	'collectionSplitter_extractRelationshipType' => array(
 		'formatType' => FT_TEXT,

@@ -865,14 +865,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('placement_code', $ps_placement_code);	
+		$o_view->setVar('placement_id', caGetOption('placement_id', $pa_bundle_settings, null));	
 		
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-		$o_view->setVar('t_subject', $this);
 		
-		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('t_subject', $t_subject = ($this->isComponent() ? $this->getParentInstance() : $this));
+		$o_view->setVar('component_list', $qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult')));
+		$o_view->setVar('component_count', $qr_components ? $qr_components->numHits() : 0);
 		
 		return $o_view->render('ca_objects_components_list.php');
 	}

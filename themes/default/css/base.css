@@ -627,7 +627,7 @@ h3.currentSort div {
     margin-top:5px;
 }
 .inspectorNonConformingNumberListScroll {
-    height:100px;
+    max-height:100px;
     overflow:auto;
     margin:0px;
     padding:0px;
@@ -1311,6 +1311,19 @@ div.formLabelUploadSizeNote {
 	margin:-6px 0px 0px 0px;
 }
 
+.bundleMessage {
+	display: none;
+	clear:both;
+	background-color:#fbfbfb;
+	padding:  8px 7px 0px 7px;
+	position:relative;
+	font-weight:normal;
+	font-size:14px;
+	line-height:1em;
+	margin-top: 0px;
+	text-align: center;
+}
+
 .editorBundleReturnToHomeControls {
 	display: none;
 	clear: both;
@@ -1987,6 +2000,10 @@ td.listtableAggregateTotals {
 	text-align: left;
 }
 
+table.caListItem {
+	width: 100%;
+}
+
 /* misc */
 
 #caSetList img.deleteIcon, #caSetList img.editIcon {
@@ -2166,19 +2183,15 @@ div.search-hier-browser-box {
 .labelInfo #image{
     text-align:center;
 }
-.labelInfo div{
-    /*margin-top:5px;*/
-}
-/* 
-	.labelInfo .form-button{
-	float:right;
-	margin: 0px;
-	padding: 0px;
-}
-*/
 
 .labelLocale {
-    font-size: 8px;
+    font-size: 11px;
+}
+
+.labelOption {
+    font-size: 12px;
+    max-width: 130px;
+    padding: 2px;
 }
 
 .labelDisplay {
@@ -2842,6 +2855,7 @@ table.representationAnnotationListItem {
     width: 100%;
     height: 100%;
     background-color: #000;
+	margin-top: 40px;
 }
 
 #caMediaOverlayTileViewer {
@@ -3011,7 +3025,7 @@ img.caRepToolsRotateControlButton:hover {
 }
 
 .caAudioPlayer {
-	position: absolute;
+	position: relative;
 	top: 50%;
 	left:0;
 	right:0;
@@ -3019,8 +3033,8 @@ img.caRepToolsRotateControlButton:hover {
 	margin-right: auto;
 	padding: 0px;
 	
-    width: 600px;
-    height: 40px;
+	width: 100%;
+	height: 120px;
 }
 
 .caAudioPlayerEmbedded {
@@ -3062,7 +3076,7 @@ div.caMediaOverlayControls {
 }
 
 .plyr {
-    position: absolute;
+    position: relative;
     width: 100%;
     height: 100%;
     top: 0;
@@ -3090,7 +3104,7 @@ div.caMediaOverlayControls {
     position: relative;
     width: 100%;
     height: 100%;
-    top: 0;
+    top: 100px;
     left: 0;
     right: 0;
 }
@@ -6006,12 +6020,12 @@ a.caItemLoadNextBundles {
 	margin-left: 12px;
 }
 
-.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
+.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton, .roundedRel .caSetRepresentationButton {
     position: relative;
     margin: 0 3px 0 3px;
 }
 
-.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
+.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton, .listRel .caSetRepresentationButton {
     float: right;
     margin: 0 3px 0 3px;
 }
@@ -7069,6 +7083,10 @@ div.caHistoryTracking {
 	border-top: 1px dotted #e6e6e6;
 	padding: 10px;
 	min-height: 60px;
+}
+
+div.caHistoryTrackingContent {
+	width: 90%;
 }
 
 div.caHistoryTrackingTab {
@@ -8310,4 +8328,8 @@ div.typePill {
 	font-size: 10px;
 	font-weight: normal;
 	margin: 3px 3px 6px 0;
+}
+
+#algebraSetControls {
+	display: none;
 }

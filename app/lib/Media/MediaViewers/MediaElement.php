@@ -61,7 +61,8 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 				$va_viewer_opts = [
 					'id' => $vs_id, 'class' => caGetOption('class', $pa_data['display'], null),
 					'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
-					'user_interface' => caGetOption('user_interface', $pa_data['display'], null)
+					'user_interface' => caGetOption('user_interface', $pa_data['display'], null),
+					'controls' => caGetOption('controls', $pa_data['display'], null)
 				];
 				
 				if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
@@ -88,7 +89,8 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 				$va_viewer_opts = [
 					'id' => $vs_id, 'class' => caGetOption('class', $pa_data['display'], null),
 					'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
-					'user_interface' => caGetOption('user_interface', $pa_data['display'], null)
+					'user_interface' => caGetOption('user_interface', $pa_data['display'], null),
+					'controls' => caGetOption('controls', $pa_data['display'], null)
 				];
 				
 				if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
@@ -103,7 +105,8 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 				$va_viewer_opts = [
 					'id' => $vs_id, 'class' => caGetOption('class', $pa_data['display'], null),
 					'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
-					'user_interface' => caGetOption('user_interface', $pa_data['display'], null)
+					'user_interface' => caGetOption('user_interface', $pa_data['display'], null),
+					'controls' => caGetOption('controls', $pa_data['display'], null)
 				];
 				
 				$t_instance->useBlobAsMediaField(true);

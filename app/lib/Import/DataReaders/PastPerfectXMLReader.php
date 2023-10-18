@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,7 @@ class PastPerfectXMLReader extends BaseXMLDataReader {
 	/**
 	 * XPath to select
 	 */
-	protected $ops_xpath = '/VFPData/export';
+	protected $ops_xpath = ['/VFPData/export', '/VFPData/reportdata'];
 	
 	
 	/**
