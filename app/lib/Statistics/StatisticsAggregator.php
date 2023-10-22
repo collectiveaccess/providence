@@ -107,7 +107,7 @@ class StatisticsAggregator {
 	 *
 	 * @return array Data or null if site is not found
 	 */
-	static public function getDataForsite($site) {
+	static public function getDataForSite($site) {
 		$data = PersistentCache::fetch('site_statistics', 'statistics');
 		
 		return is_array($data[$site]) ? $data[$site] : null;
@@ -122,6 +122,12 @@ class StatisticsAggregator {
 		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
 		if (!is_array($sites = $config->getAssoc('sites'))) {
 			return null;
+		}
+		
+		$data = PersistentCache::fetch('site_statistics', 'statistics');
+		
+		foreach($sites as $site => $site_info) {	// filter sites without data
+			if(!isset($data[$site])) { unset($sites[$site]); }
 		}
 		return $sites;
 	}
