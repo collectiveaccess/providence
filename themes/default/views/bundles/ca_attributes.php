@@ -135,7 +135,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 					// user interface elements beyond the value entry fields (Eg. Numishare)
 					// 
 					foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
-						if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $v; }
+						if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $k; }
 						$va_initial_values[$vn_attr_id][$k] = $v;
 					}
 					break;	
