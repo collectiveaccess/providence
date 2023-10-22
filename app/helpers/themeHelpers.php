@@ -1562,7 +1562,6 @@ function caGetCollectionLevelSummary($po_request, $va_collection_ids, $vn_level)
 			if($vn_rel_object_count){
 				$vs_output .= " <span class='small'>(".$vn_rel_object_count." record".(($vn_rel_object_count == 1) ? "" : "s").")</span>";
 			}
-			$vs_output .= "<br/>";
 			if(!$vb_dont_show_top_level_description){
 				$vs_desc = "";
 				if($vs_sub_collection_desc_template && ($vs_desc = $qr_collections->getWithTemplate($vs_sub_collection_desc_template))){
