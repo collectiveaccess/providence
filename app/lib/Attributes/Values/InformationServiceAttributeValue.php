@@ -333,13 +333,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			    ];
 			}
 		}
-
-		return array(
-			'value_longtext1' => '',	// text
-			'value_longtext2' => '',	// url
-			'value_decimal1' => null,	// id
-			'value_blob' => null		// extra info
-		);
+		return null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -366,7 +360,6 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		if(!$this->opo_plugin) {
 			$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 		}
-		
         if (!$pb_for_search) {
         	// Add additional UI elements for services that require them (Eg. Numishare)
         	$additional_ui_controls = method_exists($this->opo_plugin, 'getAdditionalFields') ? $this->opo_plugin->getAdditionalFields($pa_element_info) : [];
@@ -377,6 +370,22 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
     		}, $additional_ui_controls);
     		
     		$additional_ui_gets_str = sizeof($additional_ui_gets) ? ','.join(',', $additional_ui_gets) : '';
+    		
+    		$additional_fields = $this->opo_plugin->getAdditionalFields($pa_element_info);
+    		
+    		$hidden_val = '{{'.$pa_element_info['element_id'].'}}';
+    		if(is_array($additional_fields)) {
+    			foreach($additional_fields as $f) {
+    				switch($f['name']) {
+    					case 'id':
+    						$hidden_val .= "|{$vs_service}:{{id}}";
+    						break;
+    					default: 
+    						$hidden_val .= "|{{{$f['name']}}}";
+    						break;
+    				}
+    			}
+    		}
     		
             $vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
             	$additional_ui_elements.
@@ -394,7 +403,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
                 caHTMLHiddenInput(
                     '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
                     array(
-                        'value' => '{{'.$pa_element_info['element_id'].'}}',
+                        'value' => $hidden_val,
                         'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
                     )
                 );

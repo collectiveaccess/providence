@@ -86,7 +86,13 @@ jQuery.fn.template = function( objValues ){
 					);
  			}
 		}
- 
+		
+		// Remove any undefined values
+ 		strHTML = strHTML.replace(
+					new RegExp( "[\\{]+[A-Za-z0-9_]+[\\}]+", "gi" ),
+					''
+					);
+					
 		// At this point, our HTML will have fully replaced
 		// values. Now, let's convert it into a jQuery DOM
 		// element and return it.
