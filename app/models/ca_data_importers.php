@@ -3568,6 +3568,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											break;
 										case 'nonpreferred_labels':
 											if ($vb_skip_if_data_present && ($t_subject->getLabelCount(false, $vn_locale_id) > 0)) { continue(2); }
+											
+											if(preg_match("!_with_replace$!", $vs_existing_record_policy)) {
+												$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+											} 
 											$t_subject->addLabel(
 												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format]
 											);
