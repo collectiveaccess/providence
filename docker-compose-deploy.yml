@@ -14,10 +14,10 @@ services:
       - mysql
 
   mysql:
-    image: mysql:5.7
+    image: mysql:8
     volumes:
       - mysql_data:/var/lib/mysql 
-    command: --max_allowed_packet=32505856 ## useful for loading massive database
+    command: --max_allowed_packet=32505856 --innodb-buffer-pool-size=42949672960 --innodb-read-io-threads=8 --innodb-write-io-threads=8 --innodb-flush-neighbors=0
     ports:
       - ${MYSQL_LOCALHOST_PORT-127.0.0.1:3396}:3306
 
