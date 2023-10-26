@@ -10148,7 +10148,7 @@ $pa_options["display_form_field_tips"] = true;
 		// Reindex modified relationships
 		$o_indexer = $this->getSearchIndexer();
 		foreach($to_reindex_relations as $relation_id => $row) {
-			$o_indexer->indexRow($rel_table_num, $relation_id, $row, false, null, [$item_pk => true]);
+			$o_indexer->indexRow($rel_table_num, $relation_id, $row, false, null, [$item_pk => true], ['queueIndexing' => caGetOption('queueIndexing', $options, true)]);
 		}
 		
 		return sizeof($to_reindex_relations);
