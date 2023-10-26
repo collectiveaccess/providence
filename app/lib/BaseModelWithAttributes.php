@@ -2817,6 +2817,17 @@
 
 			$va_exclude_attributes_by_codes = caGetOption('excludeAttributesByCodes', $pa_options, array());
 			if(!is_array($va_exclude_attributes_by_codes)) { $va_exclude_attributes_by_codes = []; }
+			
+			$va_restrictToAttributesByCodes = array_map(function($v) {
+				$tmp = explode('.', $v);
+				return array_pop($tmp);
+			}, $va_restrictToAttributesByCodes);
+			
+			$va_exclude_attributes_by_codes = array_map(function($v) {
+				$tmp = explode('.', $v);
+				return array_pop($tmp);
+			}, $va_exclude_attributes_by_codes);
+			
 
 			if (!($t_dupe = Datamodel::getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
