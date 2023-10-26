@@ -747,10 +747,19 @@ class Replicator {
 					// check parent
 					if($parent_guid = ($missing_entry['snapshot']['parent_id_guid'] ?? null)) {
 						$parent_access = $this->_hasAccess($this->source, [$parent_guid]);
-						if(!in_array((int)$parent_guid[$parent_guid], $this->access_list, true)) {
+						if(!in_array((int)$parent_access[$parent_guid], $this->access_list, true)) {
 							$missing_entry['snapshot']['parent_id_guid'] = null;
 							$missing_entry['snapshot']['parent_id'] = null;	
 							$this->logDebug(_t("[%1] Removed parent_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $parent_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
+						}
+					}
+					
+					if($user_guid = ($missing_entry['snapshot']['user_id_guid'] ?? null)) {
+						$user_access = $this->_hasAccess($this->source, [$user_guid]);
+						if(!in_array((int)$user_access[$user_guid], $this->access_list, true)) {
+							$missing_entry['snapshot']['user_id_guid'] = null;
+							$missing_entry['snapshot']['user_id'] = null;	
+							$this->logDebug(_t("[%1] Removed user_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $user_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
 						}
 					}
 					
@@ -786,6 +795,7 @@ class Replicator {
 						if(isset($missing_entry['snapshot']['value_guid']) && ($missing_entry['snapshot']['value_guid'] === $dep_guid)) { continue; }
 						if(isset($missing_entry['snapshot']['parent_id_guid']) && ($missing_entry['snapshot']['parent_id_guid'] === $dep_guid)) { continue; }
 						if(isset($missing_entry['snapshot']['lot_id_guid']) && ($missing_entry['snapshot']['lot_id_guid'] === $dep_guid)) { continue; }
+						
 						if(!is_array($dep_guid_already_exists[$dep_guid])) { 
 							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 does not yet exist on target", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),Zend_Log::DEBUG);
 							$this->unresolved_guids[$dep_guid] = 1;
