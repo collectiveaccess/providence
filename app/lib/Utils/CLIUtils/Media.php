@@ -962,4 +962,111 @@ trait CLIUtilsMedia {
 		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribe($po_opts=null) {
+		$quiet = $po_opts->getOption('quiet');
+		$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
+		$skip_mimetypes = caGetOption('skip-mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
+		
+		if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+		if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
+
+
+		if ($vn_id = (int)$po_opts->getOption('id')) {
+			$vn_start = $vn_id;
+			$vn_end = $vn_id;
+		}
+
+		$va_ids = [];
+		if ($vs_ids = (string)$po_opts->getOption('ids')) {
+			if (sizeof($va_tmp = explode(",", $vs_ids))) {
+				foreach($va_tmp as $vn_id) {
+					if ((int)$vn_id > 0) {
+						$va_ids[] = (int)$vn_id;
+					}
+				}
+			}
+		}
+		
+		if (is_array($va_ids) && sizeof($va_ids)) {
+			$criteria = ['representation_id' => ['IN', $va_ids]];
+		} elseif (($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) {
+			$criteria = ['representation_id' => ['BETWEEN', [$vn_start, $vn_end]]];
+		} elseif(($vn_start > 0) && ($vn_end == null)) {
+			$criteria = ['representation_id' => ['>=', $vn_start]];
+		}
+		
+		$o_tq = new TaskQueue();
+		
+		$qr = ca_object_representations::findAsSearchResult($criteria);
+		if(!$quiet) { print CLIProgressBar::start($qr->numHits(), _t('Transcribing media')); }
+		while($qr->nextHit()) {
+			$t_rep = $qr->getInstance();
+			$input_mimetype = $t_rep->get('mimetype');
+			if(caTranscribeAVMedia($input_mimetype) && ($t_rep->numCaptionFiles() == 0)) {
+				if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
+					if(!caMimetypeIsValid($input_mimetype, $pa_mimetypes)) { continue; }
+				}
+				if(is_array($skip_mimetypes) && sizeof($skip_mimetypes)) {
+					if(caMimetypeIsValid($input_mimetype, $skip_mimetypes)) { continue; }
+				}
+				$o_tq->addTask(
+					'mediaTranscription',
+					array(
+						"TABLE" => $t_rep->tableName(), "FIELD" => 'media',
+						"PK" => $t_rep->primaryKey(), "PK_VAL" => $t_rep->getPrimaryKey(),
+					
+						"INPUT_MIMETYPE" => $input_mimetype,
+					
+						"OPTIONS" => []
+					),
+					["priority" => 200, "entity_key" => md5(join("/", [$t_rep->tableName(), 'media', $t_rep->getPrimaryKey()])), "row_key" => join("/", array($t_rep->tableName(), $t_rep->getPrimaryKey())), 'user_id' => null]);	
+			}
+			
+			if(!$quiet) { print CLIProgressBar::next(1, $t_rep->get('ca_object_representations.preferred_labels.name')); }
+		}
+		
+		if(!$quiet) {
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Complete'));
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeParamList() {
+		return [
+			"mimetypes|m-s" => _t("Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
+			"skip-mimetypes|x-s" => _t("Do not reprocess specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
+			"start_id|s-n" => _t('Representation id to start reloading at'),
+			"end_id|e-n" => _t('Representation id to end reloading at'),
+			"id|i-n" => _t('Representation id to reload'),
+			"ids|l-s" => _t('Comma separated list of representation ids to reload')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeUtilityClass() {
+		return _t('Media');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeShortHelp() {
+		return _t("Force Whisper-based transcription of audio/visual media.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeHelp() {
+		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
+	}
+	# -------------------------------------------------------
 }
