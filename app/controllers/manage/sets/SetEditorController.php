@@ -394,7 +394,7 @@ class SetEditorController extends BaseEditorController {
 		set_time_limit(7200);
 	
 		$res = $subject_table::createResultSet($record_ids);
-		$res->filterNonPrimaryRepresentations(false);
+		if(method_exists($res, 'filterNonPrimaryRepresentations')) { $res->filterNonPrimaryRepresentations(false); }
 		
 		$filename_stub = $t_set->get('ca_sets.preferred_labels.name');
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
