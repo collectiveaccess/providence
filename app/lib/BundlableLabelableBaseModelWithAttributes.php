@@ -2306,7 +2306,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 3:		// table_name.field_name.sub_element	
 				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
 				$vs_prefix = $vs_suffix = $vs_suffix_string = '';
-				if (caGetOption('includeSourceSuffix', $options, true)) { $vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')'; }
+				if (caGetOption('includeSourceSuffix', $options, false)) { $vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')'; }
 				if ($va_tmp[0] !== $this->tableName()) {
 					$vs_suffix = $vs_suffix_string;
 				}
