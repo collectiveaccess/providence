@@ -1230,6 +1230,7 @@
 
 			$va_results = array();
 
+			$check_access = $pa_options['checkAccess'] ?? null;
 			if (is_array($va_criteria) && (sizeof($va_criteria) > 0)) {
 				if (!$vb_results_cached) {
 
@@ -1242,6 +1243,11 @@
 
 						$va_facet_info = $this->getInfoForFacet($vs_facet_name);
 						if(!is_array($va_facet_info)) { continue; }
+						
+						$pa_options['checkAccess'] = $check_access;
+						if (is_array($force_access = caGetOption('force_access', $va_facet_info, null))) {
+							$pa_options['checkAccess'] = $force_access;
+						}
 						
 						$vb_is_relative_to_parent = (($va_facet_info['relative_to'] ?? false) && $this->_isParentRelative($va_facet_info['relative_to']));
 						
@@ -3395,6 +3401,10 @@
 			if (!is_array($va_criteria = $this->getCriteria($ps_facet_name))) { $va_criteria = []; }
 
 			$va_facet_info = $this->opa_browse_settings['facets'][$ps_facet_name];
+			
+			if (is_array($force_access = caGetOption('force_access', $va_facet_info, null))) {
+				$pa_options['checkAccess'] = $force_access;
+			}
 
 			$t_subject = $this->getSubjectInstance();
 
