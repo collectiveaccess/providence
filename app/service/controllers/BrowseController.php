@@ -465,6 +465,107 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						];
 					}
 				],
+				// -----------------
+				'countsForShareURLs' => [
+					'type' => BrowseSchema::get('BrowseCounts'),
+					'description' => _t('Counts for browses'),
+					'args' => [
+						[
+							'name' => 'jwt',
+							'type' => Type::string(),
+							'description' => _t('JWT'),
+							'defaultValue' => self::getBearerToken()
+						],
+						[
+							'name' => 'table',
+							'type' => Type::string(),
+							'description' => _t('Table to browse on')
+						],
+						[
+							'name' => 'browse',
+							'type' => Type::string(),
+							'description' => _t('Name of browse (if configured)')
+						],
+						[
+							'name' => 'urls',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('List of browse share URLs')
+						]
+					],
+					'resolve' => function ($rootValue, $args) {
+						$u = self::authenticate($args['jwt']);
+						$table = $args['table'] ?? 'ca_objects';
+						$browse = $args['browse'] ?? null;
+						
+						$config = caGetBrowseConfig();
+						if(is_array($browse_types = $config->get('browseTypes'))) {
+							foreach($browse_types as $k => $v) {
+								$browse_types[strtolower($k)] = $v;
+							}
+						}
+						
+						$access = $config->getList('public_access_settings');
+						
+						$res = [];
+						if(is_array($urls = $args['urls']) && sizeof($urls)) {
+							foreach($urls as $url) {
+								$u = parse_url($url);
+								$p = $u['path'];
+								$pbits = explode('/', $p);
+								if(sizeof($pbits) % 2) { array_shift($pbits); }
+								
+								$params = [];
+								for($i=0; $i < sizeof($pbits); $i += 2) {
+									$params[strtolower($pbits[$i])] = $pbits[$i + 1];
+								}
+								
+								if(!$browse && isset($params['browse'])) { $browse = strtolower($params['browse']); }
+								
+								$browse_opts = [
+									'table' => $table,
+									'checkAccess'=> $access
+								];
+								
+								$o_browse = caGetBrowseInstance($table);
+								
+								if($browse && isset($browse_types[$browse])) {
+									$browse_opts['table'] = $browse_types[$browse]['table'];
+									if(sizeof($browse_types[$browse]['restrictToTypes'] ?? [])) {
+										$o_browse->setTypeRestrictions($browse_types[$browse]['restrictToTypes']);
+									}
+								}
+								
+								if($params['facets'] ?? null) {
+									$facets = explode(';', urldecode($params['facets']));
+									$facet_list = [];
+									
+									foreach($facets as $fspec) {
+										$ftmp = explode(':', $fspec);
+										$facet = array_shift($ftmp);
+										$values = preg_split('![\|,]+!', array_shift($ftmp));
+										$o_browse->addCriteria($facet, $values); 
+										
+										foreach($values as $v) {
+											$facet_list[] = [
+												'name' => $facet,
+												'value' => $v
+											];
+										}
+									}
+									$o_browse->execute($browse_opts);
+									$qr = $o_browse->getResults($browse_opts);
+									$res[] = [
+										'browse' => $url,
+										'facets' => $facet_list,
+										'item_count' => $qr->numHits()
+									];
+								}
+							}
+						}
+						
+						return ['counts' => $res];
+					}
+				],
 			]
 		]);
 		
