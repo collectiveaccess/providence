@@ -553,9 +553,9 @@ class IIIFService {
 					$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				}
 				
-				if ($t_instance = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true)) {
-					if ($t_instance->load($t_attr->get('row_id'))) {
-						if (!$t_instance->isReadable($request)) {
+				if ($t_row = Datamodel::getInstanceByTableNum($t_attr->get('table_num'), true)) {
+					if ($t_row->load($t_attr->get('row_id'))) {
+						if (!$t_row->isReadable($request)) {
 							// not readable
 							throw new IIIFAccessException(_t('Access denied'), 403);
 						}
