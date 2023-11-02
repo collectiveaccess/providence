@@ -4878,7 +4878,7 @@
           <setting name="render">makeEditorLink</setting>
           <setting name="label" locale="en_US">Creator</setting>
           <setting name="delimiter">;</setting>
-          <setting name="format">^preferred_labels</setting>
+          <setting name="format">^ca_entities.preferred_labels.displayname</setting>
         </settings>
       </placement>
       <placement code="unitdate">
