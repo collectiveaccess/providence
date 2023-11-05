@@ -3666,7 +3666,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		
 		# cancel and pending queued tasks against this record
-		$tq = new TaskQueue();
+		$tq = new TaskQueue(['transction' => $this->getTransaction()]);
 		$tq->cancelPendingTasksForRow(join("/", array($this->tableName(), $vn_id)));
 
 		$this->_FILES_CLEAR = array();
@@ -3797,7 +3797,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) { return null; }
 
-		$o_tq = new TaskQueue();
+		$o_tq = new TaskQueue(['transction' => $this->getTransaction()]);
 		$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 		$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $ps_version));
 
@@ -4359,7 +4359,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		
 		# if media is mirrored, delete file off of mirrored server
 		if (is_array($va_volume_info["mirrors"] ?? null) && sizeof($va_volume_info["mirrors"]) > 0) {
-			$o_tq = new TaskQueue();
+			$o_tq = new TaskQueue(['transction' => $this->getTransaction()]);
 			$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 			$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $ps_version));
 
@@ -4435,7 +4435,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 	
 		$vb_is_fetched_file = $vb_is_archive = false;
 	 	
-		$o_tq = new TaskQueue();
+		$o_tq = new TaskQueue(['transction' => $this->getTransaction()]);
 		$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 
 		# only set file if something was uploaded
