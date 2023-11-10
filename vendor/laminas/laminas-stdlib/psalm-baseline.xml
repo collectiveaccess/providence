@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.8.1@f73f2299dbc59a3e6c4d66cff4605176e728ee69">
+  <file src="src/AbstractOptions.php">
+    <DocblockTypeContradiction occurrences="1">
+      <code>! is_array($options) &amp;&amp; ! $options instanceof Traversable</code>
+    </DocblockTypeContradiction>
+    <MixedArgument occurrences="3">
+      <code>$key</code>
+      <code>$key</code>
+      <code>$letter</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="6">
+      <code>$array[$normalizedKey]</code>
+      <code>$key</code>
+      <code>$key</code>
+      <code>$letter</code>
+      <code>$value</code>
+      <code>$value</code>
+    </MixedAssignment>
+    <RawObjectIteration occurrences="1">
+      <code>$this</code>
+    </RawObjectIteration>
+  </file>
+  <file src="src/ArrayObject.php">
+    <DocblockTypeContradiction occurrences="1">
+      <code>! is_array($data) &amp;&amp; ! is_object($data)</code>
+    </DocblockTypeContradiction>
+    <InvalidStringClass occurrences="1">
+      <code>new $class($this-&gt;storage)</code>
+    </InvalidStringClass>
+    <LessSpecificReturnStatement occurrences="1">
+      <code>new $class($this-&gt;storage)</code>
+    </LessSpecificReturnStatement>
+    <MixedArgument occurrences="6">
+      <code>$ar['flag']</code>
+      <code>$ar['iteratorClass']</code>
+      <code>$ar['storage']</code>
+      <code>$v</code>
+      <code>$v</code>
+      <code>$v</code>
+    </MixedArgument>
+    <MixedArgumentTypeCoercion occurrences="2">
+      <code>$function</code>
+      <code>$function</code>
+    </MixedArgumentTypeCoercion>
+    <MixedArrayAccess occurrences="3">
+      <code>$ar['flag']</code>
+      <code>$ar['iteratorClass']</code>
+      <code>$ar['storage']</code>
+    </MixedArrayAccess>
+    <MixedArrayOffset occurrences="4">
+      <code>$this-&gt;storage[$key]</code>
+      <code>$this-&gt;storage[$key]</code>
+      <code>$this-&gt;storage[$key]</code>
+      <code>$this-&gt;storage[$key]</code>
+    </MixedArrayOffset>
+    <MixedAssignment occurrences="5">
+      <code>$ar</code>
+      <code>$k</code>
+      <code>$ret</code>
+      <code>$ret</code>
+      <code>$v</code>
+    </MixedAssignment>
+    <MoreSpecificReturnType occurrences="1">
+      <code>Iterator</code>
+    </MoreSpecificReturnType>
+    <PossiblyInvalidPropertyAssignmentValue occurrences="1">
+      <code>$input</code>
+    </PossiblyInvalidPropertyAssignmentValue>
+    <PropertyNotSetInConstructor occurrences="1">
+      <code>$iteratorClass</code>
+    </PropertyNotSetInConstructor>
+    <RedundantConditionGivenDocblockType occurrences="2">
+      <code>is_callable($function)</code>
+      <code>is_callable($function)</code>
+    </RedundantConditionGivenDocblockType>
+  </file>
+  <file src="src/ArrayUtils.php">
+    <DocblockTypeContradiction occurrences="1">
+      <code>! is_array($iterator) &amp;&amp; ! $iterator instanceof Traversable</code>
+    </DocblockTypeContradiction>
+    <MixedArgumentTypeCoercion occurrences="1">
+      <code>$callback</code>
+    </MixedArgumentTypeCoercion>
+    <MixedArrayOffset occurrences="4">
+      <code>$array[$key]</code>
+      <code>$array[$key]</code>
+      <code>$array[$key]</code>
+      <code>$array[$key]</code>
+    </MixedArrayOffset>
+    <MixedAssignment occurrences="9">
+      <code>$a[$key]</code>
+      <code>$a[$key]</code>
+      <code>$a[$key]</code>
+      <code>$a[]</code>
+      <code>$array[$key]</code>
+      <code>$h</code>
+      <code>$key</code>
+      <code>$value</code>
+      <code>$value</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="1">
+      <code>$iterator-&gt;toArray()</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="src/ErrorHandler.php">
+    <InvalidArgument occurrences="1">
+      <code>[static::class, 'addError']</code>
+    </InvalidArgument>
+    <MixedArgument occurrences="1">
+      <code>$stack</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="2">
+      <code>$errorException</code>
+      <code>$stack</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>null|ErrorException</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="1">
+      <code>$errorException</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="src/FastPriorityQueue.php">
+    <DocblockTypeContradiction occurrences="1">
+      <code>is_int($priority)</code>
+    </DocblockTypeContradiction>
+    <MixedArgument occurrences="11">
+      <code>$item['priority']</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority]</code>
+      <code>$values</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="4">
+      <code>$item['data']</code>
+      <code>$item['priority']</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority][$index]</code>
+      <code>$this-&gt;values[$this-&gt;maxPriority][$key]</code>
+    </MixedArrayAccess>
+    <MixedArrayAssignment occurrences="1">
+      <code>$this-&gt;values[$priority][]</code>
+    </MixedArrayAssignment>
+    <MixedAssignment occurrences="11">
+      <code>$array[]</code>
+      <code>$data[]</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$this-&gt;maxPriority</code>
+      <code>$this-&gt;maxPriority</code>
+      <code>$this-&gt;maxPriority</code>
+      <code>$this-&gt;maxPriority</code>
+      <code>$value</code>
+      <code>$values</code>
+    </MixedAssignment>
+    <PossiblyNullArrayOffset occurrences="9">
+      <code>$this-&gt;priorities</code>
+      <code>$this-&gt;priorities</code>
+      <code>$this-&gt;subPriorities</code>
+      <code>$this-&gt;values</code>
+      <code>$this-&gt;values</code>
+      <code>$this-&gt;values</code>
+      <code>$this-&gt;values</code>
+      <code>$this-&gt;values</code>
+      <code>$this-&gt;values</code>
+    </PossiblyNullArrayOffset>
+  </file>
+  <file src="src/Glob.php">
+    <InvalidOperand occurrences="2">
+      <code>! $flags</code>
+      <code>! $flags</code>
+    </InvalidOperand>
+    <PossiblyNullArrayOffset occurrences="1">
+      <code>$pattern</code>
+    </PossiblyNullArrayOffset>
+    <PossiblyNullOperand occurrences="2">
+      <code>$next</code>
+      <code>$next</code>
+    </PossiblyNullOperand>
+    <UnusedVariable occurrences="1">
+      <code>$depth</code>
+    </UnusedVariable>
+  </file>
+  <file src="src/Message.php">
+    <DocblockTypeContradiction occurrences="2">
+      <code>! is_array($spec) &amp;&amp; ! $spec instanceof Traversable</code>
+      <code>is_scalar($key)</code>
+    </DocblockTypeContradiction>
+    <MixedArrayOffset occurrences="1">
+      <code>$this-&gt;metadata[$key]</code>
+    </MixedArrayOffset>
+    <MixedAssignment occurrences="4">
+      <code>$key</code>
+      <code>$key</code>
+      <code>$value</code>
+      <code>$value</code>
+    </MixedAssignment>
+    <MixedOperand occurrences="1">
+      <code>$this-&gt;getContent()</code>
+    </MixedOperand>
+    <ParamNameMismatch occurrences="1">
+      <code>$value</code>
+    </ParamNameMismatch>
+  </file>
+  <file src="src/MessageInterface.php">
+    <MissingReturnType occurrences="1">
+      <code>setMetadata</code>
+    </MissingReturnType>
+  </file>
+  <file src="src/Parameters.php">
+    <MixedAssignment occurrences="1">
+      <code>$this[$name]</code>
+    </MixedAssignment>
+  </file>
+  <file src="src/PriorityList.php">
+    <InvalidReturnStatement occurrences="1">
+      <code>$node ? $node['data'] : false</code>
+    </InvalidReturnStatement>
+    <MissingClosureReturnType occurrences="1">
+      <code>function ($item) use ($flag) {</code>
+    </MissingClosureReturnType>
+    <MixedInferredReturnType occurrences="1">
+      <code>next</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="1">
+      <code>$node ? $node['data'] : false</code>
+    </MixedReturnStatement>
+    <RedundantCastGivenDocblockType occurrences="2">
+      <code>(int) $priority</code>
+      <code>(int) $priority</code>
+    </RedundantCastGivenDocblockType>
+  </file>
+  <file src="src/PriorityQueue.php">
+    <DocblockTypeContradiction occurrences="1">
+      <code>null === $this-&gt;queue</code>
+    </DocblockTypeContradiction>
+    <InvalidStringClass occurrences="1">
+      <code>new $this-&gt;queueClass()</code>
+    </InvalidStringClass>
+    <LessSpecificReturnStatement occurrences="1">
+      <code>$this-&gt;queue</code>
+    </LessSpecificReturnStatement>
+    <MissingClosureReturnType occurrences="2">
+      <code>function ($item) {</code>
+      <code>function ($item) {</code>
+    </MissingClosureReturnType>
+    <MissingConstructor occurrences="1">
+      <code>$queue</code>
+    </MissingConstructor>
+    <MixedArgument occurrences="1">
+      <code>$item['priority']</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="13">
+      <code>$item['data']</code>
+      <code>$item['data']</code>
+      <code>$item['data']</code>
+      <code>$item['data']</code>
+      <code>$item['data']</code>
+      <code>$item['data']</code>
+      <code>$item['priority']</code>
+      <code>$item['priority']</code>
+      <code>$item['priority']</code>
+      <code>$item['priority']</code>
+      <code>$item['priority']</code>
+      <code>$item['priority']</code>
+      <code>$item['priority']</code>
+    </MixedArrayAccess>
+    <MixedArrayOffset occurrences="1">
+      <code>$this-&gt;items[$key]</code>
+    </MixedArrayOffset>
+    <MixedAssignment occurrences="9">
+      <code>$highestPriority</code>
+      <code>$highestPriority</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$value</code>
+    </MixedAssignment>
+    <MoreSpecificReturnType occurrences="1">
+      <code>SplPriorityQueue</code>
+    </MoreSpecificReturnType>
+    <PossiblyNullPropertyAssignmentValue occurrences="1">
+      <code>null</code>
+    </PossiblyNullPropertyAssignmentValue>
+    <PossiblyUndefinedVariable occurrences="1">
+      <code>$key</code>
+    </PossiblyUndefinedVariable>
+    <PropertyTypeCoercion occurrences="1">
+      <code>new $this-&gt;queueClass()</code>
+    </PropertyTypeCoercion>
+    <RedundantCastGivenDocblockType occurrences="2">
+      <code>(int) $priority</code>
+      <code>(string) $class</code>
+    </RedundantCastGivenDocblockType>
+    <RedundantConditionGivenDocblockType occurrences="1">
+      <code>null !== $this-&gt;queue</code>
+    </RedundantConditionGivenDocblockType>
+  </file>
+  <file src="src/SplPriorityQueue.php">
+    <ImplementedReturnTypeMismatch occurrences="1">
+      <code>void</code>
+    </ImplementedReturnTypeMismatch>
+    <MethodSignatureMismatch occurrences="1">
+      <code>public function insert($datum, $priority)</code>
+    </MethodSignatureMismatch>
+    <MixedArrayAccess occurrences="2">
+      <code>$item['data']</code>
+      <code>$item['priority']</code>
+    </MixedArrayAccess>
+    <MixedAssignment occurrences="5">
+      <code>$array[]</code>
+      <code>$data[]</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+    </MixedAssignment>
+  </file>
+  <file src="src/SplQueue.php">
+    <MixedAssignment occurrences="3">
+      <code>$array[]</code>
+      <code>$item</code>
+      <code>$item</code>
+    </MixedAssignment>
+  </file>
+  <file src="src/SplStack.php">
+    <MixedAssignment occurrences="3">
+      <code>$array[]</code>
+      <code>$item</code>
+      <code>$item</code>
+    </MixedAssignment>
+  </file>
+  <file src="src/StringUtils.php">
+    <DocblockTypeContradiction occurrences="2">
+      <code>static::$hasPcreUnicodeSupport === null</code>
+      <code>static::$wrapperRegistry === null</code>
+    </DocblockTypeContradiction>
+    <RedundantCastGivenDocblockType occurrences="2">
+      <code>(string) $wrapper</code>
+      <code>(string) $wrapper</code>
+    </RedundantCastGivenDocblockType>
+    <RedundantConditionGivenDocblockType occurrences="1">
+      <code>is_string($str)</code>
+    </RedundantConditionGivenDocblockType>
+  </file>
+  <file src="src/StringWrapper/AbstractStringWrapper.php">
+    <ImplementedReturnTypeMismatch occurrences="1">
+      <code>string|false</code>
+    </ImplementedReturnTypeMismatch>
+    <ParamNameMismatch occurrences="1">
+      <code>$string</code>
+    </ParamNameMismatch>
+    <PossiblyFalseArgument occurrences="1">
+      <code>$breakWidth</code>
+    </PossiblyFalseArgument>
+    <PossiblyFalseOperand occurrences="15">
+      <code>$breakWidth</code>
+      <code>$breakWidth</code>
+      <code>$lastString</code>
+      <code>$lastString</code>
+      <code>$lastStringLeft</code>
+      <code>$lastStringRight</code>
+      <code>$padStringLength</code>
+      <code>$padStringLength</code>
+      <code>$padStringLength</code>
+      <code>$this-&gt;strlen($input)</code>
+      <code>$this-&gt;substr($string, $lastStart, $current - $lastStart + $breakWidth)</code>
+      <code>$this-&gt;substr($string, $lastStart, $current - $lastStart)</code>
+      <code>$this-&gt;substr($string, $lastStart, $current - $lastStart)</code>
+      <code>$this-&gt;substr($string, $lastStart, $current - $lastStart)</code>
+      <code>$this-&gt;substr($string, $lastStart, $lastSpace - $lastStart)</code>
+    </PossiblyFalseOperand>
+    <PossiblyInvalidArgument occurrences="2">
+      <code>$repeatCountLeft</code>
+      <code>$repeatCountRight</code>
+    </PossiblyInvalidArgument>
+    <PossiblyNullArgument occurrences="2">
+      <code>$this-&gt;getEncoding()</code>
+      <code>$this-&gt;getEncoding()</code>
+    </PossiblyNullArgument>
+    <RedundantCastGivenDocblockType occurrences="3">
+      <code>(int) $width</code>
+      <code>(string) $break</code>
+      <code>(string) $string</code>
+    </RedundantCastGivenDocblockType>
+  </file>
+  <file src="src/StringWrapper/Iconv.php">
+    <PossiblyNullArgument occurrences="4">
+      <code>$length</code>
+      <code>$this-&gt;getEncoding()</code>
+      <code>$this-&gt;getEncoding()</code>
+      <code>$this-&gt;getEncoding()</code>
+    </PossiblyNullArgument>
+  </file>
+  <file src="src/StringWrapper/MbString.php">
+    <PossiblyNullArgument occurrences="3">
+      <code>$this-&gt;getEncoding()</code>
+      <code>$this-&gt;getEncoding()</code>
+      <code>$this-&gt;getEncoding()</code>
+    </PossiblyNullArgument>
+  </file>
+  <file src="src/StringWrapper/Native.php">
+    <NonInvariantDocblockPropertyType occurrences="1">
+      <code>$encoding</code>
+    </NonInvariantDocblockPropertyType>
+  </file>
+  <file src="src/StringWrapper/StringWrapperInterface.php">
+    <MissingReturnType occurrences="1">
+      <code>isSupported</code>
+    </MissingReturnType>
+  </file>
+  <file src="test/ArrayObjectTest.php">
+    <ArgumentTypeCoercion occurrences="2">
+      <code>'ArrayIterator'</code>
+      <code>'RecursiveArrayIterator'</code>
+    </ArgumentTypeCoercion>
+    <InvalidArgument occurrences="1">
+      <code>'Bacon'</code>
+    </InvalidArgument>
+    <MissingClosureParamType occurrences="4">
+      <code>$a</code>
+      <code>$a</code>
+      <code>$b</code>
+      <code>$b</code>
+    </MissingClosureParamType>
+    <MixedArgument occurrences="3">
+      <code>$a</code>
+      <code>$ar['foo']['bar']</code>
+      <code>$b</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="2">
+      <code>$ar['foo']['bar']</code>
+      <code>$ar['foo']['bar']</code>
+    </MixedArrayAccess>
+    <RedundantConditionGivenDocblockType occurrences="1">
+      <code>assertSame</code>
+    </RedundantConditionGivenDocblockType>
+    <UndefinedInterfaceMethod occurrences="1">
+      <code>getArrayCopy</code>
+    </UndefinedInterfaceMethod>
+  </file>
+  <file src="test/ArrayUtilsTest.php">
+    <DeprecatedMethod occurrences="2">
+      <code>ArrayUtils::filter($data, $callback, $flag)</code>
+      <code>ArrayUtils::filter([], "INVALID")</code>
+    </DeprecatedMethod>
+    <DuplicateArrayKey occurrences="1">
+      <code>'-10000' =&gt; null</code>
+    </DuplicateArrayKey>
+    <InvalidArgument occurrences="1">
+      <code>testValidIteratorsReturnArrayRepresentation</code>
+    </InvalidArgument>
+    <InvalidReturnStatement occurrences="1"/>
+    <InvalidReturnType occurrences="1"/>
+    <MissingClosureParamType occurrences="4">
+      <code>$key</code>
+      <code>$key</code>
+      <code>$value</code>
+      <code>$value</code>
+    </MissingClosureParamType>
+    <MixedArgument occurrences="1">
+      <code>$test</code>
+    </MixedArgument>
+    <UndefinedFunction occurrences="1">
+      <code>"INVALID"</code>
+    </UndefinedFunction>
+  </file>
+  <file src="test/ConsoleHelperTest.php">
+    <MixedArgument occurrences="6">
+      <code>$colorized</code>
+      <code>$colorized</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="4">
+      <code>$colorized</code>
+      <code>$colorized</code>
+      <code>$colorized</code>
+      <code>$colorized</code>
+    </MixedAssignment>
+    <MixedMethodCall occurrences="8">
+      <code>colorize</code>
+      <code>colorize</code>
+      <code>colorize</code>
+      <code>colorize</code>
+      <code>write</code>
+      <code>write</code>
+      <code>writeErrorMessage</code>
+      <code>writeLine</code>
+    </MixedMethodCall>
+    <UndefinedThisPropertyAssignment occurrences="1">
+      <code>$this-&gt;helper</code>
+    </UndefinedThisPropertyAssignment>
+    <UndefinedThisPropertyFetch occurrences="12">
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+      <code>$this-&gt;helper</code>
+    </UndefinedThisPropertyFetch>
+  </file>
+  <file src="test/ErrorHandlerTest.php">
+    <ArgumentTypeCoercion occurrences="3">
+      <code>'ErrorException'</code>
+      <code>'ErrorException'</code>
+      <code>'ErrorException'</code>
+    </ArgumentTypeCoercion>
+    <PossiblyNullReference occurrences="2">
+      <code>getFile</code>
+      <code>getFile</code>
+    </PossiblyNullReference>
+    <UndefinedInterfaceMethod occurrences="1">
+      <code>getSeverity</code>
+    </UndefinedInterfaceMethod>
+  </file>
+  <file src="test/FastPriorityQueueTest.php">
+    <InvalidScalarArgument occurrences="1">
+      <code>'foo'</code>
+    </InvalidScalarArgument>
+    <MissingClosureParamType occurrences="2">
+      <code>$e</code>
+      <code>$e</code>
+    </MissingClosureParamType>
+    <MixedArgument occurrences="2">
+      <code>$unserialized</code>
+      <code>$unserialized</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="23">
+      <code>$datum</code>
+      <code>$expected[]</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$item</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$test[]</code>
+      <code>$unserialized</code>
+      <code>$value</code>
+      <code>$value</code>
+      <code>$value</code>
+      <code>$value</code>
+      <code>$value</code>
+      <code>$value</code>
+    </MixedAssignment>
+    <UnusedClosureParam occurrences="2">
+      <code>$e</code>
+      <code>$e</code>
+    </UnusedClosureParam>
+    <UnusedVariable occurrences="1">
+      <code>$value</code>
+    </UnusedVariable>
+  </file>
+  <file src="test/GlobTest.php">
+    <MixedArgument occurrences="2">
+      <code>$expectedFileName</code>
+      <code>$result[$i]</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="1">
+      <code>$expectedFileName</code>
+    </MixedAssignment>
+    <RedundantConditionGivenDocblockType occurrences="1">
+      <code>assertIsArray</code>
+    </RedundantConditionGivenDocblockType>
+  </file>
+  <file src="test/OptionsTest.php">
+    <InternalMethod occurrences="1">
+      <code>addToAssertionCount</code>
+    </InternalMethod>
+    <InvalidArgument occurrences="2">
+      <code>'asd'</code>
+      <code>new TestOptions(['test_field' =&gt; 1])</code>
+    </InvalidArgument>
+  </file>
+  <file src="test/ParametersTest.php">
+    <ArgumentTypeCoercion occurrences="5">
+      <code>'ArrayAccess'</code>
+      <code>'ArrayObject'</code>
+      <code>'Countable'</code>
+      <code>'Serializable'</code>
+      <code>'Traversable'</code>
+    </ArgumentTypeCoercion>
+    <UndefinedPropertyFetch occurrences="6">
+      <code>$parameters-&gt;bar</code>
+      <code>$parameters-&gt;baz</code>
+      <code>$parameters-&gt;five</code>
+      <code>$parameters-&gt;foo</code>
+      <code>$parameters-&gt;foo</code>
+      <code>$parameters-&gt;foof</code>
+    </UndefinedPropertyFetch>
+  </file>
+  <file src="test/PriorityListTest.php">
+    <MixedArrayOffset occurrences="2">
+      <code>$orders1[$this-&gt;list-&gt;key()]</code>
+      <code>$orders2[$key]</code>
+    </MixedArrayOffset>
+    <MixedAssignment occurrences="4">
+      <code>$key</code>
+      <code>$orders1[$this-&gt;list-&gt;key()]</code>
+      <code>$orders2[$key]</code>
+      <code>$value</code>
+    </MixedAssignment>
+    <NullArgument occurrences="5">
+      <code>null</code>
+      <code>null</code>
+      <code>null</code>
+      <code>null</code>
+      <code>null</code>
+    </NullArgument>
+    <TypeDoesNotContainType occurrences="1">
+      <code>assertEmpty</code>
+    </TypeDoesNotContainType>
+  </file>
+  <file src="test/PriorityQueueTest.php">
+    <MixedArgument occurrences="3">
+      <code>$unserialized</code>
+      <code>$unserialized</code>
+      <code>$unserialized</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="3">
+      <code>$item</code>
+      <code>$test[]</code>
+      <code>$unserialized</code>
+    </MixedAssignment>
+  </file>
+  <file src="test/SplPriorityQueueTest.php">
+    <MixedArgument occurrences="2">
+      <code>$unserialized</code>
+      <code>$unserialized</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="1">
+      <code>$unserialized</code>
+    </MixedAssignment>
+  </file>
+  <file src="test/SplQueueTest.php">
+    <MixedArgument occurrences="2">
+      <code>$unserialized</code>
+      <code>$unserialized</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="1">
+      <code>$unserialized</code>
+    </MixedAssignment>
+  </file>
+  <file src="test/SplStackTest.php">
+    <MixedArgument occurrences="2">
+      <code>$unserialized</code>
+      <code>$unserialized</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="1">
+      <code>$unserialized</code>
+    </MixedAssignment>
+  </file>
+  <file src="test/StringUtilsTest.php">
+    <MixedArgument occurrences="1">
+      <code>$str</code>
+    </MixedArgument>
+  </file>
+  <file src="test/StringWrapper/CommonStringWrapperTest.php">
+    <MixedArgument occurrences="1">
+      <code>$expected</code>
+    </MixedArgument>
+  </file>
+  <file src="test/StringWrapper/IconvTest.php">
+    <TooManyArguments occurrences="1">
+      <code>new Iconv('utf-8')</code>
+    </TooManyArguments>
+  </file>
+  <file src="test/StringWrapper/IntlTest.php">
+    <TooManyArguments occurrences="1">
+      <code>new Intl('utf-8')</code>
+    </TooManyArguments>
+  </file>
+  <file src="test/StringWrapper/MbStringTest.php">
+    <TooManyArguments occurrences="1">
+      <code>new MbString('utf-8')</code>
+    </TooManyArguments>
+  </file>
+</files>

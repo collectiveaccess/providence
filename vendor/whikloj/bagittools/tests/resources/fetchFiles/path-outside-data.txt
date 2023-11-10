@@ -1,0 +1,1 @@
+http://example.org/worldwide/information.jpg - data/../..//etc/conf/oops.txt

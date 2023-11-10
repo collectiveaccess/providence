@@ -1,0 +1,12 @@
+language: php
+sudo: false
+php:
+  - 5.6
+  - 7.2
+env:
+  - USE_PEAR=true
+  - USE_PEAR=false
+install:
+  - if $USE_PEAR ; then pear install -f package.xml ; else composer install && composer require pear/validate_ispn ; fi
+script:
+  - if $USE_PEAR ; then pear run-tests -r tests/ ; else phpunit ; fi

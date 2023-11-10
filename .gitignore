@@ -16,7 +16,7 @@ build
 *.po~
 .vagrant*
 /import/*
-/vendor/*
+#/vendor/*
 /app/lib/core/Parsers/dompdf/lib/fonts/*fm.php
 /app/log/log*.txt
 /app/log/*.log

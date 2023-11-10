@@ -1,0 +1,48 @@
+{
+    "name": "cache/hierarchical-cache",
+    "description": "A helper trait and interface to your PSR-6 cache to support hierarchical keys.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "cache",
+        "psr-6",
+        "hierarchy",
+        "hierarchical"
+    ],
+    "authors": [
+        {
+            "name": "Aaron Scherer",
+            "email": "aequasi@gmail.com",
+            "homepage": "https://github.com/aequasi"
+        },
+        {
+            "name": "Tobias Nyholm",
+            "email": "tobias.nyholm@gmail.com",
+            "homepage": "https://github.com/nyholm"
+        }
+    ],
+    "homepage": "http://www.php-cache.com/en/latest/",
+    "require": {
+        "php": ">=7.4",
+        "cache/adapter-common": "^1.0",
+        "psr/cache": "^1.0 || ^2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5.20 || ^9.5.10"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Cache\\Hierarchy\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    }
+}

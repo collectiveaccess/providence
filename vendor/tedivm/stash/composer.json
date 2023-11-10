@@ -1,0 +1,46 @@
+{
+  "name": "tedivm/stash",
+  "description": "The place to keep your cache.",
+  "keywords": [
+    "cache",
+    "caching",
+    "sessions",
+    "memcached",
+    "redis",
+    "apc",
+    "psr-6",
+    "psr6"
+  ],
+  "homepage": "http://github.com/tedious/Stash",
+  "type": "library",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Robert Hafner",
+      "email": "tedivm@tedivm.com"
+    },
+    {
+      "name": "Josh Hall-Bachner",
+      "email": "charlequin@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">7.0",
+    "psr/cache": "~1.0"
+  },
+  "require-dev": {
+    "php": "^7.2|^8.0",
+    "friendsofphp/php-cs-fixer": "^2.8",
+    "phpunit/phpunit": "^9.0",
+    "php-coveralls/php-coveralls": "^2.0",
+    "dms/phpunit-arraysubset-asserts": "^0.4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Stash\\": "src/Stash/"
+    }
+  },
+  "provide": {
+    "psr/cache-implementation": "1.0.0"
+  }
+}

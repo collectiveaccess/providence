@@ -1,0 +1,16 @@
+{
+    "name": "collectiveaccess/service-wrapper",
+    "type": "library",
+    "description": "A simple PHP wrapper for the CollectiveAccess web service API",
+    "keywords": ["collectiveaccess", "providence"],
+    "homepage": "https://www.collectiveaccess.org",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": ">=7.2"
+    },
+    "autoload": {
+        "psr-0" : {
+            "CollectiveAccessService" : "src"
+        }
+    }
+}

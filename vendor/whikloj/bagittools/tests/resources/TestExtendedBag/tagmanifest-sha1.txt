@@ -1,0 +1,4 @@
+2c3d2bbd1e910743d69978ab46d2c519b2a361b9  bag-info.txt
+8010d7758f1793d0221c529fef818ff988dda141  bagit.txt
+fdead00cc124f82eef20c051e699518c43adc561  manifest-sha1.txt
+e939f78371e07a59c7a91e113618fd70cfa1e7ca  alt_tags/random_tags.txt

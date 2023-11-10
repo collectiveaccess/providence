@@ -1,0 +1,2 @@
+78add78a2265eee5ab1898ed156d002e38dccd46  data/houses-of-parliament.jpg
+a5559e3304e0a91418f435628413e2faf313a26c  data/texts/A Christmas Carol.txt
