@@ -1524,7 +1524,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							];
 						}
 					} else {
-						switch($vs_bundle) {
+						switch($bundle) {
 							case 'hierarchy_tools':
 								$va_additional_settings = [									
 									'numPerPage' => array(
