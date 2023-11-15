@@ -828,6 +828,7 @@ class BaseFindEngine extends BaseObject {
 		
 		$table_num = $t_table->tableNum();
 		$table_name = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
 		
 		if(!method_exists($t_table, 'getPolicyConfig')) { return []; }
 		if(!is_array($policy_info = $table_name::getPolicyConfig($policy))) {
@@ -1150,7 +1151,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $element_code, string $direction) {
 		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -1164,7 +1165,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		
-		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code);
 		$join_sql = join("\n", $joins);
 		
 		$sql = "SELECT cav.value_sortable val
