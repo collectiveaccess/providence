@@ -29,17 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
 define("__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__", 20);
 
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/InformationServiceManager.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
 global $_ca_attribute_settings;
@@ -360,6 +354,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		if(!$this->opo_plugin) {
 			$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 		}
+		
+		$vs_element = '';
+		
         if (!$pb_for_search) {
         	// Add additional UI elements for services that require them (Eg. Numishare)
         	$additional_ui_controls = method_exists($this->opo_plugin, 'getAdditionalFields') ? $this->opo_plugin->getAdditionalFields($pa_element_info) : [];
