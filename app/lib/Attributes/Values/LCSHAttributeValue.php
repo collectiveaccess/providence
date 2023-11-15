@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
 define("__CA_ATTRIBUTE_VALUE_LCSH__", 13);
 
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
 global $_ca_attribute_settings;
@@ -332,7 +327,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 							return false;
 						}
 					} else {
-						$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]; status was %3', $value, $service_url, $vn_status), 'LCSHAttributeValue->parseValue()');
+						$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $value, $service_url), 'LCSHAttributeValue->parseValue()');
 						return false;
 					}
 				} else {
