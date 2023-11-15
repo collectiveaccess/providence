@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
  */
 require_once(__CA_LIB_DIR__.'/Media/IMediaViewer.php');
 require_once(__CA_LIB_DIR__.'/Media/BaseMediaViewer.php');
@@ -72,7 +68,7 @@ class ThreeJS extends BaseMediaViewer implements IMediaViewer {
 				}
 				
 				$viewer_opts = array_merge($viewer_opts, [
-					'id' => $id, 'viewer_width' => caGetOption('viewer_width', $data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $data['display'], '100%')
+					'id' => $identifier, 'viewer_width' => caGetOption('viewer_width', $data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $data['display'], '100%')
 				]);
 				
 				if (!$t_instance->hasMediaVersion('media', $version = caGetOption('display_version', $data['display'], 'original'))) {
@@ -85,7 +81,7 @@ class ThreeJS extends BaseMediaViewer implements IMediaViewer {
 				$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $version, $viewer_opts));
 			} elseif (is_a($t_instance, "ca_site_page_media")) {
 				$viewer_opts = array_merge($viewer_opts, [
-					'id' => $id, 'viewer_width' => caGetOption('viewer_width', $data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $data['display'], '100%')
+					'id' => $identifier, 'viewer_width' => caGetOption('viewer_width', $data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $data['display'], '100%')
 				]);
 				
 				if (!$t_instance->hasMediaVersion('media', $version = caGetOption('display_version', $data['display'], 'original'))) {
