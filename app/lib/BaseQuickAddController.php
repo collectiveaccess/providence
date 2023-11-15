@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
@@ -65,6 +60,8 @@ class BaseQuickAddController extends ActionController {
 		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
 		$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
 		$vs_n = $this->request->getParameter('n', pString);
+		
+		$vn_subject_id = $t_subject->getPrimaryKey();
 		
 		// table name and row_id from calling record (what we're quick-adding on)
 		// only set for ca_objects quick-adds
