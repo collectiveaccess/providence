@@ -1301,6 +1301,12 @@
 										} else {
 											$va_joins[] = "INNER JOIN ca_attributes AS caa ON caa.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND caa.table_num = ".$t_item->tableNum();
 											$va_wheres[] = "caa.element_id = ".$t_element->getPrimaryKey();
+											
+											if(($va_facet_info['omit_blank_values'] ?? false) && ($o_value = CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'))) && is_array($flds = $o_value->queryFields()) && sizeof($flds)) {
+												$va_joins[] = "INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = caa.attribute_id";
+												$va_wheres[] = "cav.".$flds[0]." <> ''";
+											
+											}
 										}
 									} else {
 										if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
