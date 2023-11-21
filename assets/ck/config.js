@@ -34,6 +34,7 @@ CKEDITOR.editorConfig = function( config ) {
 	config.removeDialogTabs = 'image:advanced;link:advanced';
 	
 	config.baseFloatZIndex = 99999;
+	config.coreStyles_italic = { element: "i", overrides: "em" };
 	
 	startupFocus : false;
 	
