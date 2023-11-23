@@ -1230,6 +1230,7 @@
 
 			$va_results = array();
 
+			$check_access = $pa_options['checkAccess'] ?? null;
 			if (is_array($va_criteria) && (sizeof($va_criteria) > 0)) {
 				if (!$vb_results_cached) {
 
@@ -1242,6 +1243,11 @@
 
 						$va_facet_info = $this->getInfoForFacet($vs_facet_name);
 						if(!is_array($va_facet_info)) { continue; }
+						
+						$pa_options['checkAccess'] = $check_access;
+						if (is_array($force_access = caGetOption('force_access', $va_facet_info, null))) {
+							$pa_options['checkAccess'] = $force_access;
+						}
 						
 						$vb_is_relative_to_parent = (($va_facet_info['relative_to'] ?? false) && $this->_isParentRelative($va_facet_info['relative_to']));
 						
@@ -1295,6 +1301,12 @@
 										} else {
 											$va_joins[] = "INNER JOIN ca_attributes AS caa ON caa.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND caa.table_num = ".$t_item->tableNum();
 											$va_wheres[] = "caa.element_id = ".$t_element->getPrimaryKey();
+											
+											if(($va_facet_info['omit_blank_values'] ?? false) && ($o_value = CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'))) && is_array($flds = $o_value->queryFields()) && sizeof($flds)) {
+												$va_joins[] = "INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = caa.attribute_id";
+												$va_wheres[] = "cav.".$flds[0]." <> ''";
+											
+											}
 										}
 									} else {
 										if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
@@ -3395,6 +3407,10 @@
 			if (!is_array($va_criteria = $this->getCriteria($ps_facet_name))) { $va_criteria = []; }
 
 			$va_facet_info = $this->opa_browse_settings['facets'][$ps_facet_name];
+			
+			if (is_array($force_access = caGetOption('force_access', $va_facet_info, null))) {
+				$pa_options['checkAccess'] = $force_access;
+			}
 
 			$t_subject = $this->getSubjectInstance();
 

@@ -114,7 +114,7 @@ function _t($ps_key) {
 	if (sizeof($va_args = func_get_args()) > 1) {
 		$vn_num_args = sizeof($va_args) - 1;
 		for($vn_i=$vn_num_args; $vn_i >= 1; $vn_i--) {
-			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
+			$vs_str = str_replace("%{$vn_i}", is_array($va_args[$vn_i]) ? join('; ', $va_args[$vn_i]) : $va_args[$vn_i], $vs_str);
 		}
 	}
 	return $vs_str;

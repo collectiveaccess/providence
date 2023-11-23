@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
-require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_user_representation_annotations'] = array(
  	'NAME_SINGULAR' 	=> _t('user representation annotation'),
@@ -554,6 +547,14 @@ class ca_user_representation_annotations extends BundlableLabelableBaseModelWith
  		
  		$o_db = $this->getDb();
  		
+ 		$params = [(int)$this->get('representation_id')];
+ 		
+ 		$vs_access_sql = '';
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
+			$vs_access_sql = ' AND coar.access IN (?)';
+			$params[] = $pa_options['checkAccess'];
+		}
+ 		
  		$qr_reps = $o_db->query("
  			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
  			FROM ca_object_representations caor
@@ -563,7 +564,7 @@ class ca_user_representation_annotations extends BundlableLabelableBaseModelWith
  				{$vs_access_sql}
  			ORDER BY
  				l.name ASC 
- 		", (int)$this->get('representation_id'));
+ 		", $params);
  		
  		$va_reps = array();
  		while($qr_reps->nextRow()) {

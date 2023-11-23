@@ -104,7 +104,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		$exp = $parameters["searchExpressionForDisplay"];
 		
 		$params['searchExpressionForDisplay'] = array(
-			'label' => $is_summary ? _('Subject') : _('Query'),
+			'label' => $is_summary ? _t('Subject') : _t('Query'),
 			'value' => $exp
 		);
 		

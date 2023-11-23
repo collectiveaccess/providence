@@ -711,7 +711,7 @@ class BaseEditorController extends ActionController {
 		
 
 		$t_display = new ca_bundle_displays();
-		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()))));
+		$va_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID()), 'context' => 'editor_summary')));
 
 		if ((!($vn_display_id = (int)$this->request->getParameter('display_id', pString))) || !isset($va_displays[$vn_display_id])) {
 			$vn_display_id = $this->request->user->getVar($t_subject->tableName().'_summary_display_id');
@@ -1546,11 +1546,6 @@ class BaseEditorController extends ActionController {
 
 		$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
 
-		//$o_export = new DataExporter();
-		//$this->view->setVar('export_mimetype', $o_export->exportMimetype($pn_mapping_id));
-		//$this->view->setVar('export_data', $o_export->export($pn_mapping_id, $t_subject, null, array('returnOutput' => true, 'returnAsString' => true)));
-		//$this->view->setVar('export_filename', preg_replace('![\W]+!', '_', substr($t_subject->getLabelForDisplay(), 0, 40).'_'.$o_export->exportTarget($pn_mapping_id)).'.'.$o_export->exportFileExtension($pn_mapping_id));
-
 		$this->render('../generic/export_xml.php');
 	}
 	# ------------------------------------------------------------------
@@ -1687,7 +1682,7 @@ class BaseEditorController extends ActionController {
 		
 		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
-		$this->response->addContent(json_encode(['sort' => array_keys($d), 'data' => $d]));
+		$this->response->addContent(json_encode(['sort' => array_keys($d ?? []), 'data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**

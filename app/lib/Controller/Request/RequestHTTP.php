@@ -1034,13 +1034,23 @@ class RequestHTTP extends Request {
 	 * @return string
 	 */
 	public function getHash() {
-		return md5(
-			serialize($this->getParameters(array('POST', 'GET', 'REQUEST'))) .
-			$this->getRawPostData() .
-			$this->getRequestMethod() .
-			$this->getFullUrlPath() .
-			$this->getScriptName() .
+		$params = $this->getParameters(['POST', 'GET', 'REQUEST', 'PATH']);
+		unset($params['noCache']);
+		unset($params['nocache']);
+		ksort($params);
+	
+		$path_elements = [$this->getModulePath(), $this->getController(), $this->getAction(), $this->getActionExtra()];
+		
+		$data = [
+			$this->getRequestMethod(),
+			http_build_query($params),
+			$this->getScriptName(),
+			join('/', $path_elements),
+			$this->getRawPostData(),
 			($this->isLoggedIn() ? $this->getUserID() : '')
+		];
+		return md5(
+			serialize(join('|', $data))
 		);
 	}
 	# ----------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1073,7 +1073,9 @@ class Installer {
 			}
 
 			// create ui screens
+			$rank = 0;
 			foreach($ui['screens'] as $screen) {
+				$rank++; 
 				$screen_idno = $screen["idno"];
 				$is_default = $screen["default"];
 
@@ -1101,6 +1103,7 @@ class Installer {
 				$t_ui_screens->set('idno',$screen_idno);
 				$t_ui_screens->set('ui_id', $ui_id);
 				$t_ui_screens->set('is_default', $is_default);
+				$t_ui_screens->set('rank', $rank);
 				if ($color = $screen["color"]) { $t_ui_screens->set('color', $color); }
 
 				if($t_ui_screens->getPrimaryKey()) {

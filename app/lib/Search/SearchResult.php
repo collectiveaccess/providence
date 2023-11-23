@@ -1896,11 +1896,11 @@ class SearchResult extends BaseObject {
 			if(is_array($vm_val)) {
 				foreach($vm_val as $i => $v) {
 					if(is_array($v)) { continue; }
-					if($v === strip_tags($v)) {
+					if($v === strip_tags($v, ['a', 'i', 'b', 'em', 'strong'])) {
 						$vm_val[$i] = nl2br($v);
 					}
 				}
-			} elseif($vm_val === strip_tags($vm_val)) {
+			} elseif($vm_val === strip_tags($vm_val, ['a', 'i', 'b', 'em', 'strong'])) {
 				$vm_val = nl2br($vm_val);
 			}
 		} elseif ($vb_convert_line_breaks) {

@@ -777,20 +777,24 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$captions = 		caGetOption("captions", $options, [], ['castTo' => 'array']);
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				ob_start();
+				
+				$caption_count = is_array($captions) ? sizeof($captions) : 0;
+				
+				$tag = (($caption_count || ($ui == 'plyr-video')) && ($ui !== 'plyr-audio')) ? 'video' : 'audio';
 
-				if(caGetOption('user_interface', $options, false, ['forceLowercase' => true]) !== 'mediaelement') {
+				if($ui = caGetOption('user_interface', $options, false, ['forceLowercase' => true]) !== 'mediaelement') {
 ?>
 					<div class="<?= $class; ?> audio-responsive" style="width: <?= $width; ?>; height: <?= $height; ?>;">
-						<video id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
+						<<?= $tag; ?> id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >
 						  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
-								if(is_array($captions)) {
+								if($caption_count > 0) {
 									foreach($captions as $locale_id => $caption_track) {
 										print '<track kind="captions" src="'.$caption_track['url'].'" srclang="'.substr($caption_track["locale_code"] ?? null, 0, 2).'" label="'.$caption_track['locale'].'" default>';	
 									}
 								}
 ?>
-						</video>
+						</<?= $tag; ?>>
 					</div>
 					<script type="text/javascript">
 						jQuery(document).ready(function() {

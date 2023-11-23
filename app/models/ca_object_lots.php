@@ -623,7 +623,7 @@ class ca_object_lots extends RepresentableBaseModel {
  	/**
  	 * 
  	 * @param array $pa_options Options include:
- 	 *      reindex = force any idno that is out of the current 1-based index to be renumbered. Eg. if there are 12 objects in the lot, any one numbers > 12 will be renumbered to be between 1 and 12. [Default is false]
+ 	 *      reindex = force any idno that is out of the current 1-based index to be renumbered. Eg. if there are 12 objects in the lot, any one numbered > 12 will be renumbered to be between 1 and 12. [Default is false]
  	 * @return array List of objects with non-conforming idnos, or false if there are no non-conforming objects
  	 */
  	 public function getObjectsWithNonConformingIdnos($pa_options=null) {
@@ -713,7 +713,7 @@ class ca_object_lots extends RepresentableBaseModel {
 					$tmp = $va_lot_num;
 					
 					$cur_num_tmp = explode($vs_separator, $t_object->get('idno'));
-			        $n = (int)$cur_num_tmp[sizeof($va_lot_num)] + 1;
+			        $n = (int)$cur_num_tmp[sizeof($va_lot_num)];
 			        
 			        switch($va_object_info['_reason']) {
 			            case 'out-of-lot':

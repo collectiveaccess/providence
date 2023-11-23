@@ -1710,7 +1710,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						(($this->getProperty('ID_NUMBERING_ID_FIELD') == $bundle_code) && (bool)$this->getAppConfig()->get('require_valid_id_number_for_'.$this->tableName()))
 					) {
 						$vs_label .= ' '.$vs_required_marker;
-					} elseif ((in_array($this->getFieldInfo($ps_bundle_name, 'FIELD_TYPE'), array(FT_NUMBER, FT_HISTORIC_DATERANGE, FT_DATERANGE)) && !$this->getFieldInfo($ps_bundle_name, 'IS_NULL'))) {
+					} elseif (
+						in_array($this->getFieldInfo($ps_bundle_name, 'FIELD_TYPE'), array(FT_NUMBER, FT_HISTORIC_DATERANGE, FT_DATERANGE)) 
+						&& 
+						!$this->getFieldInfo($ps_bundle_name, 'IS_NULL')
+						&& 
+						!in_array($this->getFieldInfo($ps_bundle_name, 'DISPLAY_TYPE'), array(DT_SELECT, DT_CHECKBOXES, DT_RADIO_BUTTONS)) 
+					) {
 						$vs_label .= ' '.$vs_required_marker;
 					}
 				}
@@ -1960,6 +1966,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'hierarchy_location':
 						if ($this->isHierarchical()) {
 							$vs_element .= $this->getHierarchyLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						}
+						break;
+					# -------------------------------
+					// Tools for managing hierarchy
+					case 'hierarchy_tools':
+						if ($this->isHierarchical()) {
+							$vs_element .= $this->getHierarchyToolsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						}
 						break;
 					# -------------------------------
@@ -2293,7 +2306,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 3:		// table_name.field_name.sub_element	
 				if (!($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true))) { break; }
 				$vs_prefix = $vs_suffix = $vs_suffix_string = '';
-				if (caGetOption('includeSourceSuffix', $options, true)) { $vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')'; }
+				if (caGetOption('includeSourceSuffix', $options, false)) { $vs_suffix_string = ' ('._t('from %1', $t_instance->getProperty('NAME_PLURAL')).')'; }
 				if ($va_tmp[0] !== $this->tableName()) {
 					$vs_suffix = $vs_suffix_string;
 				}
@@ -3004,6 +3017,75 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
 		$o_view->setVar('recordSet', caGetOption('recordSet', $pa_options, null));
 		return $o_view->render('hierarchy_location.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getHierarchyToolsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = $this->_getHierarchyToolsHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
+		return $o_view->render('hierarchy_tools.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getHierarchyToolsHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
+		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
+	
+		$data = $this->getHierarchyToolsBundleValues($ps_placement_code, $pa_bundle_settings, $pa_options);
+		
+		$o_view->setVar('items', $data['data']);
+		$o_view->setVar('itemCount', $data['totalCount']);
+		$o_view->setVar('downloadVersions', $data['downloadVersions']);
+		
+		return $o_view;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function getHierarchyToolsBundleValues($ps_placement_code, $pa_bundle_settings, $pa_options=null) {
+		global $g_request;
+		
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, caGetOption('numPerPage', $pa_bundle_settings, 10));
+		
+		// get list of values in hierarchy; for now just second level.
+		$t_root = null;
+		$table = $this->tableName();
+		if (!$this->get('parent_id')) {
+			$t_root = $this;
+		} else {
+			$t_root = $table::findAsInstance($this->getHierarchyRootID());
+		}
+		if(!$t_root) {
+			return $o_view;
+		}
+		$child_ids = $t_root->getHierarchyChildren(null, ['idsOnly' => true]);
+		
+		$cur_id = $this->getPrimaryKey();
+		
+		$items = [];
+		$item_count = 0;
+		if(is_array($child_ids) && sizeof($child_ids)) {
+			$item_count = sizeof($child_ids);
+			$child_ids = array_slice($child_ids, $start, $limit);	
+			$qr = caMakeSearchResult($this->tableName(), $child_ids, ['sort' => "{$table}.rank", 'sortDirection' => 'ASC']);
+			while($qr->nextHit()) {
+				$items[$id = $qr->getPrimaryKey()] = [
+					'id' => $id,
+					'label' => $qr->get('preferred_labels'),
+					'idno' => $qr->get('idno'),
+					'media' => $qr->get('ca_object_representations.media.preview170'),		// TODO: configrable media versions
+					'url' => $g_request ? caEditorUrl($g_request, $table, $id, false, [], ['actionExtra' => $g_request->getActionExtra()]) : null,
+					'selected' => ($cur_id == $id) ? 'selected' : ''
+				];
+			}
+		}
+		
+		$versions = $this->getAppConfig()->getList('ca_object_representation_download_versions');
+		return ['data' => $items, 'totalCount' => $item_count, 'downloadVersions' => $versions ?? [_t('default')]];
 	}
 	# ------------------------------------------------------
 	/**
@@ -6422,24 +6504,26 @@ if (!$vb_batch) {
 
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
 			$t_user = new ca_users($vn_user_id);
-			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-				$va_group_ids = array_keys($va_groups);
-			} else {
-				$va_group_ids = [];
-			}
+			if(!$t_user->canDoAction('is_administrator')) {
+				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+					$va_group_ids = array_keys($va_groups);
+				} else {
+					$va_group_ids = [];
+				}
 
-			// Join to limit what browse table items are used to generate facet
-			$va_joins_post_add[] = 'LEFT JOIN ca_acl ON '.$vs_related_table_name.'.'.$t_rel_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_rel_item->tableNum()."\n";
-			$va_wheres[] = "(
-				((
-					(ca_acl.user_id = ".(int)$vn_user_id.")
-					".((sizeof($va_group_ids) > 0) ? "OR
-					(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
-					OR
-					(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
-				) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
-				".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
-			)";
+				// Join to limit what browse table items are used to generate facet
+				$va_joins_post_add[] = 'LEFT JOIN ca_acl ON '.$vs_related_table_name.'.'.$t_rel_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_rel_item->tableNum()."\n";
+				$va_wheres[] = "(
+					((
+						(ca_acl.user_id = ".(int)$vn_user_id.")
+						".((sizeof($va_group_ids) > 0) ? "OR
+						(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+						OR
+						(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+					) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+					".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+				)";
+			}
 		}
 
 		if (is_array($pa_get_where)) {

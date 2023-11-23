@@ -587,7 +587,7 @@ function caDetailItemComments($po_request, $pn_item_id, $t_item, $va_comments, $
 			$va_tag_links[] = caNavLink($po_request, $vs_tag, '', '', 'MultiSearch', 'Index', array('search' => $vs_tag));
 		}
 		$vs_tmp .= "<h2>"._t("Tags")."</h2>\n
-			<div id='tags'>".implode($va_tag_links, ", ")."</div>";
+			<div id='tags'>".implode(", ", $va_tag_links)."</div>";
 	}
 	if($po_request->isLoggedIn()){
 		$vs_tmp .= "<button type='button' class='btn btn-default' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'CommentForm', array("tablename" => $t_item->tableName(), "item_id" => $t_item->getPrimaryKey()))."\"); return false;' >"._t("Add your tags and comment")."</button>";
@@ -1562,7 +1562,6 @@ function caGetCollectionLevelSummary($po_request, $va_collection_ids, $vn_level)
 			if($vn_rel_object_count){
 				$vs_output .= " <span class='small'>(".$vn_rel_object_count." record".(($vn_rel_object_count == 1) ? "" : "s").")</span>";
 			}
-			$vs_output .= "<br/>";
 			if(!$vb_dont_show_top_level_description){
 				$vs_desc = "";
 				if($vs_sub_collection_desc_template && ($vs_desc = $qr_collections->getWithTemplate($vs_sub_collection_desc_template))){

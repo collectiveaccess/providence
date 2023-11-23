@@ -346,6 +346,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 		} else {
 			DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
+			foreach($pa_options as $k => $v) { 
+				if(is_string($v) && !strlen($v)) { unset($pa_options[$k]); }
+			}
 			return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('dateFormat' => $vs_date_format, 'isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
 		}
 	}

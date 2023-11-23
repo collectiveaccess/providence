@@ -57,6 +57,231 @@ trait CLIUtilsMedia {
 		$vs_log_dir = $po_opts->getOption('log');
 		if ($vs_log_dir){
 			$va_log_options = array( 'logDirectory' => $vs_log_dir );
+			$vs_loglevel = $po_opts->getOption('log_level');
+			if ($vs_loglevel) {
+				$va_log_options['logLevel'] = $vs_loglevel;
+			}
+			$o_log = caGetLogger( $va_log_options, 'reprocess_media_log_directory' );
+
+			if ($o_log) { $o_log->logDebug(_t("[reprocess-media] Start preparing to reprocess media")); }
+
+			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
+				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
+
+
+				if ($vn_id = (int)$po_opts->getOption('id')) {
+					$vn_start = $vn_id;
+					$vn_end = $vn_id;
+				}
+
+				$va_ids = array();
+				if ($vs_ids = (string)$po_opts->getOption('ids')) {
+					if (sizeof($va_tmp = explode(",", $vs_ids))) {
+						foreach($va_tmp as $vn_id) {
+							if ((int)$vn_id > 0) {
+								$va_ids[] = (int)$vn_id;
+							}
+						}
+					}
+				}
+
+				$vs_sql_where = null;
+				$va_params = array();
+
+				if (sizeof($va_ids)) {
+					$vs_sql_where = "WHERE ca_object_representations.representation_id IN (?)";
+					$va_params[] = $va_ids;
+				} else {
+					if (
+						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
+					) {
+						$vs_sql_where = "WHERE ca_object_representations.representation_id >= ?";
+						$va_params[] = $vn_start;
+						if ($vn_end) {
+							$vs_sql_where .= " AND ca_object_representations.representation_id <= ?";
+							$va_params[] = $vn_end;
+						}
+					}
+				}
+
+				$vs_sql_joins = '';
+				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
+					$va_object_ids = explode(",", $vs_object_ids);
+					foreach($va_object_ids as $vn_i => $vn_object_id) {
+						$va_object_ids[$vn_i] = (int)$vn_object_id;
+					}
+					
+					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
+					$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.representation_id = ca_object_representations.representation_id";
+					$va_params[] = $va_object_ids;
+				}
+
+				if ( $o_log ) {
+					$o_log->logDebug( _t( "[reprocess-media] Running query for '$vs_sql_joins' and '$vs_sql_where' with params '"
+					                      . str_replace(array("\r", "\n"), '',var_export( $va_params, true ) . "'" )) );
+				}
+
+				$c = 0; $inc = 50;
+				do {
+					$qr_reps = $o_db->query("
+						SELECT ca_object_representations.representation_id, ca_object_representations.media, ca_object_representations.media_metadata
+						FROM ca_object_representations
+						{$vs_sql_joins}
+						{$vs_sql_where}
+						ORDER BY ca_object_representations.representation_id
+						LIMIT {$c}, {$inc}
+					", $va_params);
+					$n = $qr_reps->numRows();
+					
+					if (!$quiet) { print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media')); }
+					while($qr_reps->nextRow()) {
+						$va_media_info = $qr_reps->getMediaInfo('media');
+						if(!is_array($va_media_info)) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+						$media_metadata = caUnserializeForDatabase($qr_reps->get('ca_object_representations.media_metadata'));
+						if($oriented_only && $media_metadata['EXIF']['IFD0']['Orientation'] == 1) { print CLIProgressBar::next(1, "SKIPPED"); continue; }
+					
+						$rep_id = $qr_reps->get('ca_object_representations.representation_id');
+						//print "PROCESSING $rep_id\n";
+						
+						//if(isset($va_media_info['full'])) { print "HAS FULL\n";continue; }
+						
+						
+						$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+
+						if($unprocessed) {
+							if(!sizeof(array_filter($va_media_info, function($v) {
+								return isset($v['QUEUED']);
+							}))) {
+								if (!$quiet) { print CLIProgressBar::next(1, $vs_message); }
+								continue;
+							}
+						}
+
+
+						if (!$quiet) {
+							$vs_message = _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id')));
+							print CLIProgressBar::next(1, $vs_message);
+							if ($o_log) { $o_log->logDebug($vs_message); }
+						}
+						$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
+						if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
+							if(!caMimetypeIsValid($vs_mimetype, $pa_mimetypes)) { continue; }
+						}
+						if(is_array($skip_mimetypes) && sizeof($skip_mimetypes)) {
+							if(caMimetypeIsValid($vs_mimetype, $skip_mimetypes)) { continue; }
+						}
+
+						$t_rep->load($qr_reps->get('representation_id'));
+						$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+
+						if (is_array($pa_versions) && sizeof($pa_versions)) {
+							$t_rep->update(array('updateOnlyMediaVersions' =>$pa_versions));
+						} else {
+							$t_rep->update();
+						}
+
+						if ($t_rep->numErrors()) {
+							$vs_message = _t("Error processing representation media: %1", join('; ', $t_rep->getErrors()));
+							CLIUtils::addError($vs_message);
+							if ($o_log) { $o_log->logDebug($vs_message); }
+						}
+					}
+					if (!$quiet) { print CLIProgressBar::finish(); }
+					$c += $inc;
+				} while($n > 0);
+			}
+
+			if ((in_array('all', $pa_kinds)  || in_array('ca_attributes', $pa_kinds)) && (!$vn_start && !$vn_end)) {
+				// get all Media elements
+				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+
+				if (is_array($va_elements) && sizeof($va_elements)) {
+					if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+						$qr_c = $o_db->query("
+							SELECT count(*) c
+							FROM ca_attribute_values
+							WHERE
+								element_id in (?)
+						", array($va_element_ids));
+						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+
+						if (!$quiet) { print CLIProgressBar::start($vn_count, _t('Re-processing attribute media')); }
+						foreach($va_elements as $vs_element_code => $va_element_info) {
+							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+							$va_vals = $qr_vals->getAllFieldValues('value_id');
+							foreach($va_vals as $vn_value_id) {
+								$t_attr_val = new ca_attribute_values($vn_value_id);
+								if ($t_attr_val->getPrimaryKey()) {
+									$t_attr_val->setMode(ACCESS_WRITE);
+									$t_attr_val->useBlobAsMediaField(true);
+
+									$va_media_info = $t_attr_val->getMediaInfo('value_blob');
+									$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
+
+									if (!$quiet) {
+										$vs_message = _t( "Re-processing %1",
+											( $vs_original_filename ? $vs_original_filename . " ({$vn_value_id})"
+												: $vn_value_id ) );
+										print CLIProgressBar::next(1, $vs_message );
+										if ($o_log) { $o_log->logDebug($vs_message); }
+									}
+
+
+									$t_attr_val->set('value_blob', $t_attr_val->getMediaPath('value_blob', 'original'), array('original_filename' => $vs_original_filename));
+
+									$t_attr_val->update();
+									if ($t_attr_val->numErrors()) {
+										$vs_message = _t( "Error processing attribute media: %1",
+											join( '; ', $t_attr_val->getErrors() ) );
+										CLIUtils::addError( $vs_message );
+										if ($o_log) { $o_log->logDebug($vs_message); }
+									}
+								}
+							}
+						}
+						if (!$quiet) { print CLIProgressBar::finish(); }
+					}
+				}
+			}
+			
+			if ((in_array('all', $pa_kinds)  || in_array('icons', $pa_kinds)) && (!$vn_start && !$vn_end)) {
+				$icon_tables = ['ca_list_items', 'ca_storage_locations', 'ca_editor_uis', 'ca_editor_ui_screens', 'ca_tours', 'ca_tour_stops'];
+				
+				foreach($icon_tables as $icon_table) {
+					if (!($t_instance = Datamodel::getInstance($icon_table, true))) { continue; }
+					if (!$quiet) { print CLIProgressBar::start($icon_table::find('*', ['returnAs' => 'count']), _t('Re-processing icons')); }
+					$qr_vals = $o_db->query("SELECT ".($pk = $t_instance->primaryKey())." FROM {$icon_table}");
+					$ids = $qr_vals->getAllFieldValues($pk);
+					foreach($ids as $id) {
+						if ($t_instance->load($id)) {
+							$t_instance->setMode(ACCESS_WRITE);
+
+							$media_info = $t_instance->getMediaInfo($pk);
+
+							if (!$quiet) {
+								$vs_message = _t( "Re-processing %1 from %2", $id, $icon_table );
+								print CLIProgressBar::next(1, $vs_message );
+								if ($o_log) { $o_log->logDebug($vs_message); }
+							}
+
+
+							$t_instance->set('icon', ($p = $t_instance->getMediaPath('icon', 'original')) ? $p : $t_instance->getMediaPath('icon', 'iconlarge'));
+
+							$t_instance->update();
+							if ($t_instance->numErrors()) {
+								$vs_message = _t( "Error processing icon media: %1", join( '; ', $t_instance->getErrors() ) );
+								CLIUtils::addError( $vs_message );
+								if ($o_log) { $o_log->logDebug($vs_message); }
+							}
+						}	
+					}
+					if (!$quiet) { print CLIProgressBar::finish(); }
+				}
+			}
+
+
+			return true;
 		}
 		$vs_loglevel = $po_opts->getOption('log_level');
 		if ($vs_loglevel) {
@@ -734,6 +959,113 @@ trait CLIUtilsMedia {
 	 *
 	 */
 	public static function update_media_class_valuesHelp() {
+		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribe($po_opts=null) {
+		$quiet = $po_opts->getOption('quiet');
+		$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
+		$skip_mimetypes = caGetOption('skip-mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
+		
+		if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+		if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
+
+
+		if ($vn_id = (int)$po_opts->getOption('id')) {
+			$vn_start = $vn_id;
+			$vn_end = $vn_id;
+		}
+
+		$va_ids = [];
+		if ($vs_ids = (string)$po_opts->getOption('ids')) {
+			if (sizeof($va_tmp = explode(",", $vs_ids))) {
+				foreach($va_tmp as $vn_id) {
+					if ((int)$vn_id > 0) {
+						$va_ids[] = (int)$vn_id;
+					}
+				}
+			}
+		}
+		
+		if (is_array($va_ids) && sizeof($va_ids)) {
+			$criteria = ['representation_id' => ['IN', $va_ids]];
+		} elseif (($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) {
+			$criteria = ['representation_id' => ['BETWEEN', [$vn_start, $vn_end]]];
+		} elseif(($vn_start > 0) && ($vn_end == null)) {
+			$criteria = ['representation_id' => ['>=', $vn_start]];
+		}
+		
+		$o_tq = new TaskQueue();
+		
+		$qr = ca_object_representations::findAsSearchResult($criteria);
+		if(!$quiet) { print CLIProgressBar::start($qr->numHits(), _t('Transcribing media')); }
+		while($qr->nextHit()) {
+			$t_rep = $qr->getInstance();
+			$input_mimetype = $t_rep->get('mimetype');
+			if(caTranscribeAVMedia($input_mimetype) && ($t_rep->numCaptionFiles() == 0)) {
+				if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
+					if(!caMimetypeIsValid($input_mimetype, $pa_mimetypes)) { continue; }
+				}
+				if(is_array($skip_mimetypes) && sizeof($skip_mimetypes)) {
+					if(caMimetypeIsValid($input_mimetype, $skip_mimetypes)) { continue; }
+				}
+				$o_tq->addTask(
+					'mediaTranscription',
+					array(
+						"TABLE" => $t_rep->tableName(), "FIELD" => 'media',
+						"PK" => $t_rep->primaryKey(), "PK_VAL" => $t_rep->getPrimaryKey(),
+					
+						"INPUT_MIMETYPE" => $input_mimetype,
+					
+						"OPTIONS" => []
+					),
+					["priority" => 200, "entity_key" => md5(join("/", [$t_rep->tableName(), 'media', $t_rep->getPrimaryKey()])), "row_key" => join("/", array($t_rep->tableName(), $t_rep->getPrimaryKey())), 'user_id' => null]);	
+			}
+			
+			if(!$quiet) { print CLIProgressBar::next(1, $t_rep->get('ca_object_representations.preferred_labels.name')); }
+		}
+		
+		if(!$quiet) {
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Complete'));
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeParamList() {
+		return [
+			"mimetypes|m-s" => _t("Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
+			"skip-mimetypes|x-s" => _t("Do not reprocess specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
+			"start_id|s-n" => _t('Representation id to start reloading at'),
+			"end_id|e-n" => _t('Representation id to end reloading at'),
+			"id|i-n" => _t('Representation id to reload'),
+			"ids|l-s" => _t('Comma separated list of representation ids to reload')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeUtilityClass() {
+		return _t('Media');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeShortHelp() {
+		return _t("Force Whisper-based transcription of audio/visual media.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function transcribeHelp() {
 		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
 	}
 	# -------------------------------------------------------

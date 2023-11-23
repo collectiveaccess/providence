@@ -411,7 +411,7 @@
 		 * Update database schema
 		 */
 		public static function update_database_schema($po_opts=null) {
-			$o_config_check = new ConfigurationCheck();
+			$config_check = new ConfigurationCheck();
 			if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
 				CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
 				flush();
@@ -1371,22 +1371,22 @@
 		 *
 		 */
 		public static function clear_caches($po_opts=null) {
-			$o_config = Configuration::load();
+			$config = Configuration::load();
 
 			$ps_cache = strtolower((string)$po_opts->getOption('cache'));
 			if (!in_array($ps_cache, array('all', 'app', 'usermedia'))) { $ps_cache = 'all'; }
 
 			if (in_array($ps_cache, array('all', 'app'))) {
 				CLIUtils::addMessage(_t('Clearing application caches...'));
-				if (is_writable($o_config->get('taskqueue_tmp_directory'))) {
-					caRemoveDirectory($o_config->get('taskqueue_tmp_directory'), false);
+				if (is_writable($config->get('taskqueue_tmp_directory'))) {
+					caRemoveDirectory($config->get('taskqueue_tmp_directory'), false);
 				} else {
 					CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 				}
 				PersistentCache::flush();
 			}
 			if (in_array($ps_cache, array('all', 'usermedia'))) {
-				if (($vs_tmp_directory = $o_config->get('media_uploader_root_directory')) && (file_exists($vs_tmp_directory))) {
+				if (($vs_tmp_directory = $config->get('media_uploader_root_directory')) && (file_exists($vs_tmp_directory))) {
 					if (is_writable($vs_tmp_directory)) {
 						CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));
 						caRemoveDirectory($vs_tmp_directory, false);
@@ -1760,15 +1760,17 @@
 		 *
 		 */
 		public static function precache_content($po_opts=null) {
-			$o_config = Configuration::load();
-			if(!(bool)$o_config->get('do_content_caching')) { 
+			$config = Configuration::load();
+			if(!(bool)$config->get('do_content_caching')) { 
 				CLIUtils::addError(_t("Content caching is not enabled"));
 				return;
 			}
-			$o_cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
-			if(!is_array($va_exclude_from_precache = $o_cache_config->get('exclude_from_precache'))) { $va_exclude_from_precache = []; }
+			$access = array_unique(array_merge($config->get('public_access_settings') ?? [], $config->get('privileged_access_settings') ?? []));
+									
+			$cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
+			if(!is_array($va_exclude_from_precache = $cache_config->get('exclude_from_precache'))) { $va_exclude_from_precache = []; }
 			
-			$va_cached_actions = $o_cache_config->getAssoc('cached_actions');
+			$va_cached_actions = $cache_config->getAssoc('cached_actions');
 			if(!is_array($va_cached_actions)) { 
 				CLIUtils::addError(_t("No actions are configured for caching"));
 				return;
@@ -1782,8 +1784,8 @@
 				]
 			]);
 			
-			$vs_site_protocol = $o_config->get('site_protocol');
-			if (!($vs_site_hostname = $o_config->get('site_hostname'))) {
+			$vs_site_protocol = $config->get('site_protocol');
+			if (!($vs_site_hostname = $config->get('site_hostname'))) {
 				$vs_site_hostname = "localhost";
 			}
 			
@@ -1812,7 +1814,7 @@
 								
 								if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action)) {
 									// get ids
-									$va_ids = call_user_func_array(array($vs_table, 'find'), array(['deleted' => 0], ['restrictToTypes' => $va_types, 'returnAs' => 'ids']));
+									$va_ids = call_user_func_array(array($vs_table, 'find'), array(['deleted' => 0, 'access' => sizeof($access) ? ['in', $access] : null], ['restrictToTypes' => $va_types, 'returnAs' => 'ids']));
 								
 									if (is_array($va_ids) && sizeof($va_ids)) {
 										foreach($va_ids as $vn_id) {
@@ -2501,11 +2503,11 @@
 		}
         # -------------------------------------------------------
 		public static function reload_object_current_location_dates($po_opts=null) {
-			$o_config = Configuration::load();
+			$config = Configuration::load();
 			$o_db = new Db();
 			
 			// Reload movements-objects
-			if ($vs_movement_storage_element = $o_config->get('movement_storage_location_date_element')) {
+			if ($vs_movement_storage_element = $config->get('movement_storage_location_date_element')) {
 				$qr_movements = ca_movements::find(['deleted' => 0], ['returnAs' => 'searchResult']);
 			
 				print CLIProgressBar::start($qr_movements->numHits(), "Reloading movement dates");

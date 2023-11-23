@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -262,7 +262,7 @@ class BaseInterstitialController extends BaseEditorController {
 			'table' => $t_subject->tableName(),
 			'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
 			'display' => 'relation',
-			'bundleDisplay' => $va_bundle_values,
+			'bundleDisplay' => array_merge($va_bundle_values, ['n' => $vn_id]),
 			'errors' => $va_error_list,
 			'time' => time()
 		);

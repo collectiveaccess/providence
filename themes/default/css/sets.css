@@ -25,6 +25,7 @@
 	padding:0px;
 }
 .setItem {
+    cursor: move;
 	position: relative;
 	display: block;
 	list-style-type: none;
@@ -39,10 +40,6 @@
 
 .setItem:hover {
 	border: solid 1px #ccc;
-}
-
-.setItems a{
-	cursor:move;
 }
 
 .setItems a{

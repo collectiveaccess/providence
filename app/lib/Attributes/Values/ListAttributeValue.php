@@ -693,14 +693,14 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			    $case_switch = array_map(function($v) 
 			        { 
 			            $id_list = array_map(function($x) { return "#{$x}"; }, $v['ids']);
-			            return "if(".$v['condition'].") { jQuery('".join(',', $id_list)."').hide(); }";
+			            return "if(".$v['condition'].") { jQuery('".join(',', $id_list)."').slideUp(500); }";
 			    
 			        }, $cases);
                 $vs_show_hide_js = "
 <script type='text/javascript'>jQuery(document).ready(function() { 
     var select = {$vs_select};
 	select.change(function() {
-	    jQuery('".join(',', $all_ids_sel)."').show();
+	    jQuery('".join(',', $all_ids_sel)."').slideDown(500);
 	    ".join("\n", $case_switch)."
 
 	});

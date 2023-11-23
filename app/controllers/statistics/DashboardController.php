@@ -59,12 +59,15 @@ class DashboardController extends ActionController {
 			$sites = [StatisticsAggregator::localSite()];
 			$cur_site = $sites[0]['code'] ?? null;
 		}
+		if(sizeof($sites) === 1) {
+			$groups = [];
+		}
 		
 		$this->view->setVar('groups', $groups);
 		$this->view->setVar('sites', $sites);
 		
 		if ($cur_site && isset($sites[$cur_site])) {
-			$data = StatisticsAggregator::getDataForsite($cur_site);
+			$data = StatisticsAggregator::getDataForSite($cur_site);
 		} elseif ($cur_group && isset($groups[$cur_group])) {
 			$data = StatisticsAggregator::getAggregatedDataForGroup($cur_group);
 		} else {

@@ -254,8 +254,8 @@ class ca_guids extends BaseModel {
 	 * @return array|null
 	 * 			keys are 'row_id' and 'table_num'
 	 */
-	public static function getInfoForGUIDs(array $guids, ?array $options=null) : ?array {
-		if(!sizeof($guids)) { return null; }
+	public static function getInfoForGUIDs(?array $guids, ?array $options=null) : ?array {
+		if(!is_array($guids) || !sizeof($guids)) { return null; }
 		
 		/** @var Transaction $o_tx */
 		if($o_tx = caGetOption('transaction', $options, null)) {

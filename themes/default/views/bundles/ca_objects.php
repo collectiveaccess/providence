@@ -86,20 +86,6 @@ if (!RequestHTTP::isAjax()) {
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 }	
 
-$count = $this->getVar('relationship_count');
-$num_per_page = caGetOption('numPerPage', $settings, 10);
-
-if (!RequestHTTP::isAjax()) {
-	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
-
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {		
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
-}	
-
 $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 
 ?>

@@ -331,8 +331,8 @@ class ReplicationService {
 
 		$vn_last_applied_log_id = null;
 		
-		$va_log = json_decode($c=$po_request->getRawPostData(), true);
-		if(!is_array($va_log)) { throw new \Exception('Log must be array: '.$c); }
+		$va_log = ($post_data = $po_request->getRawPostData()) ? json_decode($post_data, true) : [];
+		if(!is_array($va_log)) { throw new \Exception('Log must be array: '.$post_data); }
 		$o_db = new Db();
 
 		// run
@@ -400,6 +400,7 @@ class ReplicationService {
 			$t_replication_log->insert();
 		} else {
 			$vn_last_applied_log_id = ca_replication_log::getLastReplicatedLogID($vs_source_system_guid);
+			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
 		}
 
 		if($vs_error) {
@@ -585,7 +586,7 @@ class ReplicationService {
 				$v['log_id'] = null;
 			}
 			return $v;
-		}, ca_guids::getInfoForGUIDs($guids));
+		}, ca_guids::getInfoForGUIDs($guids) ?? []);
 		return $ret;
 		
 	}
