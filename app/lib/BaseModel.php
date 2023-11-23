@@ -2449,7 +2449,7 @@ class BaseModel extends BaseObject {
 					break;
 			}
 			
-			if ($va_parent_info) {
+			if ($va_parent_info && (!defined('__DONT_DO_HIERARCHICAL_INDEXING__') || !__DONT_DO_HIERARCHICAL_INDEXING__)) {
 				$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 			} else {
 				$va_hier_indexing = array('left' => 1, 'right' => pow(2,32));
@@ -3057,7 +3057,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				
-if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
+if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) && (!defined('__DONT_DO_HIERARCHICAL_INDEXING__') || !__DONT_DO_HIERARCHICAL_INDEXING__)) {							
 					if ($va_parent_info) {
 						$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 					} else {
@@ -3367,7 +3367,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$this->doSearchIndexing(null, false, $va_index_options);
 				}
 													
-				if (is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
+				if ((is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) && (!defined('__DONT_DO_HIERARCHICAL_INDEXING__') || !__DONT_DO_HIERARCHICAL_INDEXING__)) {
 					$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 					if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 					foreach($va_rebuild_hierarchical_index as $vn_child_id) {
