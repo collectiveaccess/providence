@@ -50,11 +50,15 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	static $services = [
 		'Online Coins of the Roman Empire' => 'http://numismatics.org/ocre/',
 		'Coinage of the Roman Republic Online' => 'http://numismatics.org/crro/',
+		'Art of Devastation' => 'http://numismatics.org/aod/',
 		'PELLA' => 'http://numismatics.org/pella/',
 		'Seleucid Coins Online' => 'http://numismatics.org/sco/',
 		'Ptolemaic Coins Online' => 'http://numismatics.org/pco/',
 		'Antigonid Coins Online' => 'http://numismatics.org/agco/',
-		'Iron Age Coins in Britain' => 'https://iacb.arch.ox.ac.uk/'
+		'Bactrian and Indo-Greek Rulers' => 'https://numismatics.org/bigr/',
+		'IRIS' => 'https://greekcoinage.org/iris/',
+		'Iron Age Coins in Britain' => 'https://iacb.arch.ox.ac.uk/',
+		'OSCAR' => 'https://oscar.nationalmuseum.ch/'
 	];
 	# ------------------------------------------------
 	/**
@@ -100,7 +104,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 		
 		$request = caGetOption('request', $pa_options, null);
 		$service = $request ? $request->getParameter('service', pString) : null;
-		if(!self::validateService($service)) { 
+		if(strlen($service) && !self::validateService($service)) { 
 			return ['results' => []];
 		}
 		
@@ -144,9 +148,13 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
 		if (
-			!preg_match("!^(http://numismatics.org/[A-Za-z_]+/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+			!preg_match("!^(https?://numismatics\.org/[A-Za-z_]+/)id/(.*)!", $ps_url, $matches)
 			&&
 			!preg_match("!^(https://iacb\.arch\.ox\.ac\.uk/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+			&&
+			!preg_match("!^(https://greekcoinage\.org\/iris/)id/(.*)!", $ps_url, $matches)
+			&&
+			!preg_match("!^(https://oscar\.nationalmuseum\.ch/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
 		) { return []; }
 		$service = $matches[1];
 		$id = $matches[2];
@@ -217,7 +225,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	public function getAdditionalFieldValues($attribute_value) : array {
 		$uri =  $attribute_value->getUri();
 		if(
-			preg_match("!^(http://numismatics.org/[A-Za-z_]+/)!", $uri, $m)
+			preg_match("!^(https?://numismatics.org/[A-Za-z_]+/)!", $uri, $m)
 			||
 			preg_match("!^(https://iacb.arch.ox.ac.uk/)!", $uri, $m)
 		) {
