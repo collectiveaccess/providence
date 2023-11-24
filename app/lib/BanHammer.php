@@ -79,8 +79,8 @@ class BanHammer {
 	static public function verdict($request, $options=null) {
 		self::init();
 		if (!self::$config->get('enabled')) { return true; }
-		if (ca_ip_bans::isBanned($request)) { return false; }
 		if (ca_ip_whitelist::isWhitelisted($options)) { return true; }
+		if (ca_ip_bans::isBanned($request)) { return false; }
 		
 		$use_plugin = caGetOption('usePlugin', $options, null);
 		

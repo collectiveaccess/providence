@@ -284,9 +284,9 @@ class ca_ip_bans extends BaseModel {
 		$ip = RequestHTTP::ip();
 		$ip_long = ip2long($request_ip);
 		
-		foreach($whitelist as $ip) {
-			$ip_s = ip2long(str_replace("*", "0", $ip));
-			$ip_e = ip2long(str_replace("*", "255", $ip));
+		foreach($whitelist as $wip) {
+			$ip_s = ip2long(str_replace("*", "0", $wip));
+			$ip_e = ip2long(str_replace("*", "255", $wip));
 			if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
 				return true;
 			}
