@@ -33,7 +33,7 @@
 trait CLIUtilsBanHammer { 
 	# -------------------------------------------------------
 	/**
-	 * Rebuild search indices
+	 * Remove all bans
 	 */
 	public static function clear_bans($opts=null) {
 		if($reasons = $opts->getOption('reason')) {
@@ -92,6 +92,68 @@ trait CLIUtilsBanHammer {
 	 */
 	public static function clear_bansShortHelp() {
 		return _t("Clear all bans.");
+	}
+	# -------------------------------------------------------
+	/**
+	 * Remove all bans
+	 */
+	public static function clear_whitelist($opts=null) {
+		if($reasons = $opts->getOption('reason')) {
+			if(!is_array($reasons)) { $reasons = preg_split('/[;,]/', $reasons); }
+			$valid_reasons = ca_ip_whitelist::validReasons();
+			$reasons = array_filter($reasons, function($v) use ($valid_reasons) {
+				return in_array(strtolower($v), $valid_reasons, true);
+			});
+			if(!sizeof($reasons)) { 
+				CLIUtils::addError(_t('Invalid reasons specified'));
+				return false;
+			}
+		}
+		if($from = $opts->getOption('from')) {
+			if(!($dt = caDateToUnixTimestamp($from))) { 
+				CLIUtils::addError(_t('Invalid from date specified'));	
+				return false;
+			}
+		}
+		
+		if(!is_null($count = ca_ip_whitelist::removeWhitelistEntries(['reasons' => $reasons, 'from' => $from]))) {
+			CLIUtils::addMessage(($count == 1) ? _t('Removed %1 whitelist entry', $count) : _t('Removed %1 whitelist entries', $count));	
+		} else {
+			CLIUtils::addError(_t('Could not remove whitelist entries'));	
+		}
+
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clear_whitelistParamList() {
+		return [
+			"reason|r-s" => _t('Comma separated list of whitelist reasons to clear. If omitted all whitelist entries will be removed.'),
+			"from|f-s" => _t('Remove whitelist entries created on or before a date. If omitted all whitelist entries will be removed.')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clear_whitelistUtilityClass() {
+		return _t('Bans');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clear_whitelistHelp() {
+		return _t("Use this utility to clear all whitelist entries.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clear_whitelistShortHelp() {
+		return _t("Clear all whitelist entries.");
 	}
 	# -------------------------------------------------------
 }
