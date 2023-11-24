@@ -45,7 +45,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugIn  {
 		
 		$request_useragent = $_SERVER["HTTP_USER_AGENT"];
 		foreach($banned_useragents as $u) {
-			if (preg_match("!".preg_quote($u, "!")."!", $request_useragent)) {
+			if (preg_match("!".preg_quote($u, "!")."!i", $request_useragent)) {
 				return 1.0;
 			}
 		}
