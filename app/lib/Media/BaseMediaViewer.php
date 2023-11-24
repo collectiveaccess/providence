@@ -177,6 +177,7 @@ class BaseMediaViewer {
 				}
 
 		}
+		$o_view->setVar('hideAllOverlayControls', caGetOption('hideAllOverlayControls', $options, false));
 		$o_view->setVar('hideOverlayControls', caGetOption('hideOverlayControls', $options, false));
 		$o_view->setVar('controls', $controls);
 	

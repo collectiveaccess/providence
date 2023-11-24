@@ -58,7 +58,8 @@ class VideoJS extends BaseMediaViewer implements IMediaViewer {
 					'id' => $vs_id, 'class' => caGetOption('class', $pa_data['display'], null),
 					'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
 					'poster_frame_url' => $poster, 'captions' => $t_instance->getCaptionFileList(), 'autoplay' => caGetOption('autoplay', $pa_data['display'], false),
-					'controls' => caGetOption('controls', $pa_data['display'], null)
+					'controls' => caGetOption('controls', $pa_data['display'], null),
+					'dont_init_plyr' => caGetOption('dontInitPlyr', $pa_options, caGetOption('dontInitPlyr', $pa_data['display'], null)),
 				];
 				
 				if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
