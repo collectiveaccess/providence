@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_ip_bans.php
+ * app/models/ca_ip_whitelist.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2023 Whirl-i-Gig
+ * Copyright 2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,22 +29,22 @@
  * 
  * ----------------------------------------------------------------------
  */
-BaseModel::$s_ca_models_definitions['ca_ip_bans'] = array(
- 	'NAME_SINGULAR' 	=> _t('IP-based authentication block'),
- 	'NAME_PLURAL' 		=> _t('IP-based authentication blocks'),
+BaseModel::$s_ca_models_definitions['ca_ip_whitelist'] = array(
+ 	'NAME_SINGULAR' 	=> _t('IP-based authentication whitelist entries'),
+ 	'NAME_PLURAL' 		=> _t('IP-based authentication whitelist entries'),
  	'FIELDS' 			=> array(
- 		'ban_id' => array(
+ 		'whitelist_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '','LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this IP address block')
+				'DEFAULT' => '','LABEL' => _t('Whitelist id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this IP address block')
 		),
 		'ip_addr' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('IP address of commenter'), 'DESCRIPTION' => _t('The IP address of the commenter.'),
+				'LABEL' => _t('IP address of user'), 'DESCRIPTION' => _t('The IP address of the user.'),
 				'BOUNDS_LENGTH' => array(0,39)
 		),
 		'reason' => array(
@@ -52,7 +52,7 @@ BaseModel::$s_ca_models_definitions['ca_ip_bans'] = array(
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Reason'), 'DESCRIPTION' => _t('Reason for ban'),
+				'LABEL' => _t('Reason'), 'DESCRIPTION' => _t('Reason for whitelisting'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'created_on' => array(
@@ -60,19 +60,19 @@ BaseModel::$s_ca_models_definitions['ca_ip_bans'] = array(
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Ban creation date'), 'DESCRIPTION' => _t('The date and time the ban was created.')
+				'LABEL' => _t('Ban creation date'), 'DESCRIPTION' => _t('The date and time the whitelist entry was created.')
 		),
 		'expires_on' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Ban expiration date'), 'DESCRIPTION' => _t('The date and time the ban expires on. An empty value indicates an indefinite ban.')
+				'LABEL' => _t('Ban expiration date'), 'DESCRIPTION' => _t('The date and time the whitelist entry expires on. An empty value indicates indefinite whitelisting.')
 		),
  	)
 );
 
-class ca_ip_bans extends BaseModel {
+class ca_ip_whitelist extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -84,10 +84,10 @@ class ca_ip_bans extends BaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_ip_bans';
+	protected $TABLE = 'ca_ip_whitelist';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'ban_id';
+	protected $PRIMARY_KEY = 'whitelist_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -171,35 +171,20 @@ class ca_ip_bans extends BaseModel {
 	/**
 	 *
 	 */
-	static public function ban(RequestHTTP $request, ?int $ttl=null, ?string $reason=null) {
+	static public function whitelist($request, $ttl=null, $reason=null) {
 		self::init();
 		if (!($ip = RequestHTTP::ip())) { return false; }
-		if (self::isWhitelisted()) { return false; } 
+		if (self::isWhitelisted()) { return true; } 
 		
-		if (self::isBanned($request)) { return true; }
-		$ban = new ca_ip_bans();
+		$ban = new ca_ip_whitelist();
 		$ban->set('ip_addr', $ip);
 		$ban->set('reason', $reason);
 		$ban->set('expires_on', $ttl ? date('c', time() + $ttl) : null);
-		return $ban->insert();
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	static public function isBanned(RequestHTTP $request, ?string $reason=null) {
-		self::init();
-		$ip = RequestHTTP::ip();
-		if(!($entries = self::find(['ip_addr' => $ip, 'expires_on' => null], ['returnAs' => 'array']))) {
-			$entries = self::find(['ip_addr' => $ip, 'expires_on' => ['>', time()]], ['returnAs' => 'array']);
+		if($rc = $ban->insert()) {
+			// remove any exiting bans on now-whitelisted user
+			ca_ip_bans::removeBans(['ip' => $ip]);
 		}
-		if(is_array($entries) && (sizeof($entries) > 0)) {
-			if($reason) {
-				return (($entries['reason'] ?? null) === $reason);
-			}
-			return true;
-		}
-		return false;
+		return $rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -209,13 +194,13 @@ class ca_ip_bans extends BaseModel {
 	 * @param array $options Options include:
 	 *		all = Remove all bans. [Default is false]
 	 */
-	static public function clean(?array $options=null) {
+	static public function clean($options=null) {
 		self::init();
 		$db = new Db();
 		if (caGetOption('all', $options, false)) {
-			return $db->query("TRUNCATE TABLE ca_ip_bans");
+			return $db->query("TRUNCATE TABLE ca_ip_whitelist");
 		}
-		return $db->query("DELETE FROM ca_ip_bans WHERE expired_on <= ?", [time()]);
+		return $db->query("DELETE FROM ca_ip_whitelist WHERE expired_on <= ?", [time()]);
 	}
 	# ------------------------------------------------------
 	/**
@@ -227,11 +212,10 @@ class ca_ip_bans extends BaseModel {
 	 * @param array $options Options include:
 	 *		from = Remove all bans created before the specified date. Value is any valid date/time expression. [Default is null]
 	 *		reasons = Clear bans with specific reasons. Value is an array or comma separated list of ban reasons. [Default is null]
-	 *		ip = Clears bans associated with an IP address. [Default is null]
 	 * 
 	 * @return int
 	 */
-	static public function removeBans(?array $options=null) : ?int {
+	static public function removeWhitelistEntries(?array $options=null) : ?int {
 		self::init();
 		$db = new Db();
 		
@@ -240,16 +224,15 @@ class ca_ip_bans extends BaseModel {
 		}
 		if($reasons = caGetOption('reasons', $options, null)) {
 			if(!is_array($reasons)) { $reasons = preg_split('/[;,]/', $reasons); }
-			$valid_reasons = array_map('strtolower', BanHammer::getPluginNames());
+			$valid_reasons = array_map('strtolower', self::validReasons());
 			$reasons = array_filter($reasons, function($v) use ($valid_reasons) {
 				return in_array(strtolower($v), $valid_reasons, true);
 			});
 			if(!sizeof($reasons)) { return null; }
 		}
-		$ip = caGetOption('ip', $options, null);
 		
-		if (!$reasons && !$from && !$ip) {
-			if($db->query("DELETE FROM ca_ip_bans")) {
+		if (!$reasons && !$from) {
+			if($db->query("DELETE FROM ca_ip_whitelist")) {
 				return $db->affectedRows();
 			}
 			return null;
@@ -264,12 +247,8 @@ class ca_ip_bans extends BaseModel {
 			$wheres[] = "(created_on < ?)";
 			$params[] = $from;
 		}
-		if($ip) {
-			$wheres[] = "(ip_addr = ?)";
-			$params[] = $ip;
-		}
 		
-		if($db->query("DELETE FROM ca_ip_bans WHERE ".join(' AND ', $wheres), $params)) {
+		if($db->query("DELETE FROM ca_ip_whitelist WHERE ".join(' AND ', $wheres), $params)) {
 			return $db->affectedRows();
 		}
 		return null;
@@ -278,28 +257,15 @@ class ca_ip_bans extends BaseModel {
 	/**
 	 *
 	 */
-	static public function isWhitelisted(?array $options=null) {
-		self::init();
-		if (!is_array($whitelist = self::$config->get('ip_whitelist'))) { $whitelist = []; }
-		
-		$ip = RequestHTTP::ip();
-		$ip_long = ip2long($request_ip);
-		
-		foreach($whitelist as $wip) {
-			$ip_s = ip2long(str_replace("*", "0", $wip));
-			$ip_e = ip2long(str_replace("*", "255", $wip));
-			if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
-				return true;
-			}
-		}
-		
-		if(!($entries = ca_ip_whitelist::find(['ip_addr' => $ip, 'expires_on' => null], ['returnAs' => 'count']))) {
-			$entries = ca_ip_whitelist::find(['ip_addr' => $ip, 'expires_on' => ['>', time()]], ['returnAs' => 'count']);
-		}
-		if($entries > 0) {
-			return true;
-		}
-		return false;
+	static public function isWhitelisted($options=null) {
+		return ca_ip_bans::isWhitelisted($options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function validReasons() {
+		return ['CAPTCHA'];
 	}
 	# ------------------------------------------------------
 }

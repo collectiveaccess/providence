@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 include_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
 include_once(__CA_LIB_DIR__."/Controller/RequestDispatcher.php");
 include_once(__CA_LIB_DIR__."/Exceptions/ApplicationException.php");
@@ -43,10 +38,10 @@ $g_app_controller = null;
 
 class AppController {
 	# -------------------------------------------------------
-	private $opo_request;
-	private $opo_response;
-	private $opa_plugins;
-	private $opo_dispatcher;
+	private $request;
+	private $response;
+	private $plugins;
+	var $dispatcher;
 	
 	# -------------------------------------------------------
 	public static function getInstance(&$po_request=null, &$po_response=null, $dont_create=false) {
@@ -69,30 +64,29 @@ class AppController {
 	public function __construct(&$po_request=null, &$po_response=null) {
 		if (!isset($GLOBALS) || !isset($GLOBALS['AppController'])) {
 			if ($po_response) { 
-				$this->opo_response = $po_response;
+				$this->response = $po_response;
 			} else {
-				$this->opo_response = new ResponseHTTP();
+				$this->response = new ResponseHTTP();
 			}
 			if ($po_request) { 
-				$this->opo_request = $po_request;
+				$this->request = $po_request;
 			} else {
-				$this->opo_request = new RequestHTTP($this->opo_response, array('dont_redirect' => true, 'no_authentication' => true));
+				$this->request = new RequestHTTP($this->response, array('dont_redirect' => true, 'no_authentication' => true));
 			}
-			$this->opa_plugins = array();
+			$this->plugins = array();
 			
-			$this->opo_dispatcher = new RequestDispatcher($this->opo_request, $this->opo_response);
+			$this->dispatcher = new RequestDispatcher($this->request, $this->response);
 		} else {
 			die("Can't instantiate AppController twice");
 		}
 	}
 	# -------------------------------------------------------
-	public function &getRequest() {
-		return $this->opo_request;
+	public function getRequest() {
+		return $this->request;
 	}
-	
 	# -------------------------------------------------------
-	public function &getResponse() {
-		return $this->opo_response;
+	public function getResponse() {
+		return $this->response;
 	}
 	# -------------------------------------------------------
 	public function dispatch($pb_dont_send_response=false) {
@@ -111,10 +105,10 @@ class AppController {
 		foreach($this->getPlugins() as $vo_plugin) {
 			$vo_plugin->dispatchLoopStartup();
 		}
-		if (!$this->opo_dispatcher->dispatch($this->getPlugins())) {
+		if (!$this->dispatcher->dispatch($this->getPlugins())) {
 			// error dispatching
 			$va_errors = array();
-			foreach($this->opo_dispatcher->errors as $o_error) {
+			foreach($this->dispatcher->errors as $o_error) {
 				$va_errors[] = $o_error->getErrorMessage();
 			}
 			
@@ -126,35 +120,35 @@ class AppController {
 		}
 		
 		if(!$pb_dont_send_response) {
-			$this->opo_response->sendResponse();
+			$this->response->sendResponse();
 		}
 	}
 	# -------------------------------------------------------
 	public function getDispatcher() {
-		return $this->opo_dispatcher;
+		return $this->dispatcher;
 	}
 	# -------------------------------------------------------
 	# Plugins
 	# -------------------------------------------------------
 	public function registerPlugin($po_plugin) {
 		$po_plugin->initPlugin($this->getRequest(), $this->getResponse());
-		array_push($this->opa_plugins, $po_plugin);
+		array_push($this->plugins, $po_plugin);
 		
 		// update dispatcher's plugin list
-		if($this->opo_dispatcher) {
-			$this->opo_dispatcher->setPlugins($this->opa_plugins);
+		if($this->dispatcher) {
+			$this->dispatcher->setPlugins($this->plugins);
 		}
 	}
 	# -------------------------------------------------------
 	public function removeAllPlugins() {
-		$this->opa_plugins = array();
-		if($this->opo_dispatcher) {
-			$this->opo_dispatcher->setPlugins(array());
+		$this->plugins = array();
+		if($this->dispatcher) {
+			$this->dispatcher->setPlugins(array());
 		}
 	}
 	# -------------------------------------------------------
 	public function getPlugins() {
-		return $this->opa_plugins;
+		return $this->plugins;
 	}
 	# -------------------------------------------------------
 }

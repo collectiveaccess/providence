@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
-/**
-*
-*/
 require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
 # ----------------------------------------
@@ -129,10 +125,11 @@ function caExportFileInfoForTemplate(string $table, string $template) : ?string 
  * @throws ApplicationException
  */
 function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filename, $options=null) {
+	caIncrementExportCount();
+	
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
 	$pa_access_values = caGetOption('checkAccess', $options, null);
-	
 	$view->setVar('t_subject', $pt_subject);
 	
 	$vs_template_identifier = null;
@@ -222,6 +219,8 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
  * @throws ApplicationException
  */
 function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
+	caIncrementExportCount();
+	
 	if (is_array($template_identifier)) {
 		$template_info = $template_identifier;
 		$template_info['identifier'] = pathinfo($template_info['path'], PATHINFO_FILENAME);
@@ -375,6 +374,8 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * @throws ApplicationException
  */
 function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
+	caIncrementExportCount();
+	
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
@@ -1307,5 +1308,18 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 		$printed_properly = false;
 		return false;
 	}
+}
+# ----------------------------------------
+/**
+ * Log export counts for Pawtucket
+ */
+function caIncrementExportCount() : bool {
+	global $g_request, $g_set_export_count;
+	if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && $g_request && !$g_set_export_count) {
+		BanHammer::verdict($g_request, ['usePlugin' => 'ExportFrequency']);
+		$g_set_export_count = true;
+		return true;
+	}
+	return false;
 }
 # ----------------------------------------

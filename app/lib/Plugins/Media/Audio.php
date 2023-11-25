@@ -796,6 +796,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 ?>
 						</<?= $tag; ?>>
 					</div>
+<?php
+					if(!caGetOption("dont_init_plyr", $options, false)) {
+?>
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
 							options = {
@@ -809,6 +812,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						});
 					</script>
 <?php
+					}
 				} else {
 					$poster_style = ($poster_frame_url) ? "style='background-image: url(\"{$poster_frame_url}\");'" : null;
 ?>

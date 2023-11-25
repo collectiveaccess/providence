@@ -183,6 +183,7 @@ class RequestDispatcher extends BaseObject {
 		$this->setPlugins($pa_plugins);
 		if ($this->isDispatchable()) {
 			do {
+				$this->response->clearContent();
 				$vs_classname = ucfirst($this->ops_controller).'Controller';
 				
 				// first check for controller in theme...

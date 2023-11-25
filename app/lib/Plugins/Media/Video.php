@@ -1079,6 +1079,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 ?>
 				</video>
 			</div>
+<?php
+				if(!caGetOption("dont_init_plyr", $options, false)) {
+?>
 				<script type="text/javascript">
 					jQuery(document).ready(function() {
 						options = {
@@ -1092,6 +1095,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					});
 				</script>
 <?php
+				}
 				return ob_get_clean();
 				break;
 			# ------------------------------------------------

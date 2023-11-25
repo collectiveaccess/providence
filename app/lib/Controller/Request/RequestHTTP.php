@@ -100,6 +100,13 @@ class RequestHTTP extends Request {
 		$this->opo_response = $po_response;
 		parent::__construct();
 		
+		$this->init($pa_options);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function init($pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
 		$AUTH_CURRENT_USER_ID = null;
 
@@ -221,6 +228,8 @@ class RequestHTTP extends Request {
 			], 'system');
 		}
 		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."!", "", $this->ops_path_info); }
+		
+		return true;
 	}
 	# -------------------------------------------------------
 	/** 
@@ -657,12 +666,55 @@ class RequestHTTP extends Request {
 		return $va_params;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	function setParameter($ps_name, $pm_value, $ps_http_method='GET') {
 		if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
 			$this->opa_params[$ps_http_method][$ps_name] = $pm_value;
 			return true;
 		}
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Redirect request to specified controller and action, superceding any content genersted by the original controller and action.
+	 *
+	 * @param array $components Array with keys for request routing elements: module, controller, action and actionextra (if required)
+	 *
+	 * @return bool True if redirect is valid
+	 */
+	function setInternalRedirect(array $components) : bool {
+		$app = AppController::getInstance();
+		
+		$module = $controller = $action = $action_extra = null;
+		foreach($components as $k => $v) {
+			switch(strtolower($k)) {
+				case 'module':
+					$this->setModulePath($module = $v);
+					break;
+				case 'controller':
+					$this->setController($controller = $v);
+					break;
+				case 'action':
+					$this->setAction($action = $v);
+					break;
+				case 'actionextra':
+					$this->setActionExtra($action_extra = $v);
+					break;
+			}
+		}
+		if(!$controller || !$action) { return false; }
+		
+		$url = caNavUrl($this, $module, $controller, $action.($action_extra ? '/'.$action_extra : ''));
+		$_SERVER['REQUEST_URI'] = $url;
+		
+		$this->init(['dont_redirect' => true, 'no_authentication' => true]);
+		$dispatcher = $app->getDispatcher();
+		
+		$dispatcher->setRequest($this);
+		
+		return true;
 	}
 	# -------------------------------------------------------
  	/**
@@ -987,11 +1039,11 @@ class RequestHTTP extends Request {
 	}
 	# ----------------------------------------
 	public function deauthenticate() {
-		$vs_app_name = $this->config->get("app_name");
+		$app_name = $this->config->get("app_name");
     
         AuthenticationManager::deauthenticate();    
 		if ($this->isLoggedIn()) {
-			Session::setVar("{$vs_app_name}_user_id",'');
+			Session::setVar("{$app_name}_user_id", '');
 			//Session::deleteSession();
 			$this->user = null;
 		}
@@ -1004,24 +1056,23 @@ class RequestHTTP extends Request {
 	 * @return boolean
 	 * @access public
 	 */
-	public function isServiceAuthRequest() {
+	public function isServiceAuthRequest() : bool {
 		if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) { return true; }
-		if($this->getParameter("method",pString)=="auth") {
+		if($this->getParameter('method', pString) == 'auth') {
 			return true;
 		}
 
-		if($this->getParameter("method",pString)=="getUserID") {
+		if($this->getParameter("method",pString) == 'getUserID') {
+			return true;
+		}
+		
+		$action = explode("#",$_SERVER["HTTP_SOAPACTION"]); // I hope this is set no matter what Soap client you use :-)
+
+		if(strlen($action[1])>0 && trim(str_replace('"',"",$action[1])) == 'auth'){
 			return true;
 		}
 
-
-		$va_action = explode("#",$_SERVER["HTTP_SOAPACTION"]); // I hope this is set no matter what Soap client you use :-)
-
-		if(strlen($va_action[1])>0 && trim(str_replace('"',"",$va_action[1])) == "auth"){
-			return true;
-		}
-
-		if(strlen($va_action[1])>0 && trim(str_replace('"',"",$va_action[1])) == "getUserID"){
+		if(strlen($action[1])>0 && trim(str_replace('"',"",$action[1])) == 'getUserID'){
 			return true;
 		}
 		
