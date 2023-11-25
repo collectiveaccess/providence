@@ -614,6 +614,11 @@ class IIIFService {
 	 *
 	 */
 	public static function manifest($identifiers, RequestHTTP $request) : array {
+	
+		$manifest = new \CA\Media\IIIFManifests\MixedMedia();
+	
+		return $manifest->manifest();
+	
 		$o_config = Configuration::load();
 		$base_url = $o_config->get('site_host').$o_config->get('ca_url_root'); //.$request->getBaseUrlPath();
 		
