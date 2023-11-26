@@ -35,14 +35,14 @@
  	
     // Anything prefixed with "ca_" is a model
     if (substr($class, 0, 3) === 'ca_') {
-        if(require_once(__CA_MODELS_DIR__."/{$class}.php")) { return true; }
+        if(include_once(__CA_MODELS_DIR__."/{$class}.php")) { return true; }
     }
     
     $path = explode('\\', $class);
     if(sizeof($path) > 1) {
     	if($path[0] === 'CA') { array_shift($path); }
     	if(file_exists(__CA_LIB_DIR__.'/'.join('/', $path).'.php')) {
-    		require_once(__CA_LIB_DIR__.'/'.join('/', $path).'.php');
+    		include_once(__CA_LIB_DIR__.'/'.join('/', $path).'.php');
     		return true;
     	}
     }
@@ -61,14 +61,14 @@
     $paths = [__CA_LIB_DIR__, __CA_LIB_DIR__.'/Utils', __CA_LIB_DIR__.'/Parsers', __CA_LIB_DIR__.'/Media', __CA_LIB_DIR__.'/Exceptions', __CA_LIB_DIR__.'/Search', __CA_LIB_DIR__.'/Browse'];
     foreach($paths as $path) {
         if(file_exists("{$path}/{$base}.php")) {
-            if(require_once("{$path}/{$base}.php")) { $loaded = true; }   
+            if(include_once("{$path}/{$base}.php")) { $loaded = true; }   
         }
     }
     
     // Zend?
     if(preg_match("!^Zend_Search_(.*)$!", $base, $m)) {
     	$path_to_zend_lib = __CA_LIB_DIR__."/Search/Common/Parsers/Search/".str_replace("_", "/", $m[1]).".php";
-    	if(require_once($path_to_zend_lib)) { $loaded = true; }  
+    	if(include_once($path_to_zend_lib)) { $loaded = true; }  
     }
   
     // Hoa?
