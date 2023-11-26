@@ -36,7 +36,7 @@ class Document extends BaseIIIFManifest {
 	/**
 	 *
 	 */
-	public function manifest(?array $options=null) : array {
+	public function manifest(array $identifiers, ?array $options=null) : array {
 		return ['MANIFEST GOES HERE'];
 	}
 	# -------------------------------------------------------

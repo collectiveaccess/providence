@@ -36,13 +36,36 @@ abstract class BaseIIIFManifest {
 	/**
 	 *
 	 */
-	public function __construct() {
+	protected $config;
 	
+	/**
+	 *
+	 */
+	protected $base_url;
+	
+	/**
+	 *
+	 */
+	protected $manifest_url;
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct() {
+		$this->config = \Configuration::load();
+		$base_url = $this->config->get('site_host').$this->config->get('ca_url_root'); //.$request->getBaseUrlPath();
+		
+		$manifest_url = '';
+		if(isset($_SERVER['REQUEST_URI'])) {
+			$manifest_url = $this->config->get('site_host').$_SERVER['REQUEST_URI'];
+		} else {
+			$manifest_url = $base_url.join(":", $identifiers)."/manifest";
+		}
 	}
 	# -------------------------------------------------------
 	/**
 	 * Return JSON IIIF manifest
 	 */
-	abstract public function manifest(?array $options=null) : array;
+	abstract public function manifest(array $identifiers, ?array $options=null) : array;
 	# -------------------------------------------------------
 }
