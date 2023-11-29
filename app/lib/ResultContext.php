@@ -1365,8 +1365,9 @@ class ResultContextStorage {
 	 *
 	 */
 	static public function setVar($key, $value, $options=null) {
+		$prefix = defined('__CA_APP_TYPE__') ? __CA_APP_TYPE__ : '';
 		if (is_object(self::$storage)) {
-			return self::$storage->setVar($key, $value, $options);
+			return self::$storage->setVar($prefix.$key, $value, $options);
 		} else {
 			$s = self::$storage;
 			if (!($s = self::$storage)) { $s = 'Session'; }
@@ -1378,8 +1379,9 @@ class ResultContextStorage {
 	 *
 	 */
 	static public function getVar($key, $options=null) {
+		$prefix = defined('__CA_APP_TYPE__') ? __CA_APP_TYPE__ : '';
 		if (is_object(self::$storage)) {
-			return self::$storage->getVar($key);
+			return self::$storage->getVar($prefix.$key);
 		} else {
 			if (!($s = self::$storage)) { $s = 'Session'; }
 			return$s::getVar($key, $options);
