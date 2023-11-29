@@ -107,6 +107,10 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 	if(($port = (int)$o_config->get('smtp_port')) > 0){
 		$smtp_config['port'] = $port;
 	}
+			
+	if (!is_array($to) && $to) {
+		$to = preg_split('![,;\|]!', $to);
+	}
 	
 	$o_mail = new PHPMailer(true);
 
@@ -147,10 +151,6 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 				}
 				break;
 			}
-		}
-		
-		if (!is_array($to) && $to) {
-			$to = preg_split('![,;\|]!', $to);
 		}
 		
 		foreach($to as $to_email => $to_name) {
