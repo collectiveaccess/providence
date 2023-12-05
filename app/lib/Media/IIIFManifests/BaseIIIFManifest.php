@@ -53,13 +53,13 @@ abstract class BaseIIIFManifest {
 	 */
 	public function __construct() {
 		$this->config = \Configuration::load();
-		$base_url = $this->config->get('site_host').$this->config->get('ca_url_root'); //.$request->getBaseUrlPath();
+		$this->base_url = $this->config->get('site_host').$this->config->get('ca_url_root'); //.$request->getBaseUrlPath();
 		
 		$manifest_url = '';
 		if(isset($_SERVER['REQUEST_URI'])) {
-			$manifest_url = $this->config->get('site_host').$_SERVER['REQUEST_URI'];
+			$this->manifest_url = $this->config->get('site_host').$_SERVER['REQUEST_URI'];
 		} else {
-			$manifest_url = $base_url.join(":", $identifiers)."/manifest";
+			$this->manifest_url = $base_url.join(":", $identifiers)."/manifest";
 		}
 	}
 	# -------------------------------------------------------

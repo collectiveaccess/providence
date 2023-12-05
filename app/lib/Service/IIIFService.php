@@ -618,7 +618,7 @@ class IIIFService {
 		if(!is_array($identifiers)) { $identifiers = [$identifiers]; }
 		
 		$render = caGetOption('render', $options, 'MixedMedia');
-		
+		if(!$render) { $render = 'MixedMedia'; }
 		$class = "\\CA\\Media\\IIIFManifests\\{$render}";
 		if(class_exists($class))  {
 			$manifest = new $class();
