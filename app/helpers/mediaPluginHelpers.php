@@ -919,7 +919,9 @@ function caGetDefaultMediaIconTag($ps_type, $pn_width, $pn_height, $pa_options=n
 		$o_config = Configuration::load();
 		$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 		$va_icons = $o_icon_config->getAssoc($ps_type);
-		return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], array('width' => $va_selected_size['width'], 'height' => $va_selected_size['height']));
+		$alt_text_by_type = $o_icon_config->getAssoc('alt_text');
+		$alt_text = $alt_text_by_type[$ps_type] ?? _t('Default media icon');
+		return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], ['alt' => $alt_text, 'width' => $va_selected_size['width'], 'height' => $va_selected_size['height']]);
 	}
 
 	return null;

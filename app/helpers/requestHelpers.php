@@ -228,3 +228,28 @@ function caEmitHeaders($response) {
 	return false;
 }
 # ---------------------------------------------------------------------------------------------
+/**
+ *
+ * @throws CaptchaException
+ */
+function caVerifyCaptcha(string $captcha) : bool {
+	if(!$captcha){
+		throw new CaptchaException(_t("Please complete the captcha"));
+	} else {
+		$req = curl_init();
+		curl_setopt($req, CURLOPT_URL, 'https://www.google.com/recaptcha/api/siteverify');
+		curl_setopt($req, CURLOPT_HEADER, 0);
+		curl_setopt($req, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($req, CURLOPT_POST, 1);
+		$req_params = ['secret'=>__CA_GOOGLE_RECAPTCHA_SECRET_KEY__, 'response'=>$captcha];
+		curl_setopt($req, CURLOPT_POSTFIELDS, $req_params);
+		$captcha_resp = curl_exec($req);
+		$captcha_json = json_decode($captcha_resp, true);
+		if(!($captcha_json['success'] ?? false)){
+			throw new CaptchaException(_t("Your Captcha was rejected, please try again"));
+		}
+	}
+	
+	return true;
+}
+# ---------------------------------------------------------------------------------------------

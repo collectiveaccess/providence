@@ -496,7 +496,7 @@ class MultipartIDNumber extends IDNumber {
 			$i++;
 		}
 		if ($blank_count > 0) {
-			return (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1;
+			return (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1;
 		}
 
 		$stub = trim(join($separator, $tmp));
@@ -593,7 +593,7 @@ class MultipartIDNumber extends IDNumber {
 				$num = $min;
 			}
 			
-			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
+			if (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) {
 				return sprintf("%0{$zeropad_to_length}d", $num);
 			} else {
 				return $num;
@@ -677,7 +677,7 @@ class MultipartIDNumber extends IDNumber {
 				case 'NUMERIC':
 					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
 					
-					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null)) {
+					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) {
 						$v = str_pad($v, $zeropad_to_length, "0", STR_PAD_LEFT);
 					}
 					$n = $padding - strlen($v);
@@ -1256,7 +1256,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 			$tmp[$ename] = $element_values[$name.'_'.$ename];
 
-			if ($zeropad_to_length = caGetOption('zeropad_to_length', $info, null)) {
+			if ($zeropad_to_length = caGetOption('zeropad_to_length', $info, null, ['castTo' => 'int'])) {
 				$tmp[$ename] = str_pad($tmp[$ename], $zeropad_to_length, "0", STR_PAD_LEFT);
 			}
 
