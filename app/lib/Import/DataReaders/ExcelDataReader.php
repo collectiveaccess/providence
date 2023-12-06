@@ -40,6 +40,7 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 class ExcelDataReader extends BaseDataReader {
 	# -------------------------------------------------------
 	private $opo_handle = null;
+	private $sheet_num = 0;
 	private $opo_rows = null;
 	private $opa_row_buf = array();
 	private $opn_current_row = 0;
@@ -76,7 +77,7 @@ class ExcelDataReader extends BaseDataReader {
 		parent::read($ps_source, $pa_options);
 		try {
 			$this->opo_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
-			$this->opo_handle->setActiveSheetIndex(caGetOption('dataset', $pa_options, 0));
+			$this->opo_handle->setActiveSheetIndex($this->sheet_num = caGetOption('dataset', $pa_options, 0));
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
 			$this->opn_current_row = 0;
@@ -190,6 +191,19 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($pn_col, $pa_options=null) {
+		$return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		
+		switch($pn_col) {
+			case '__sheetname__':
+				$sheet = $this->opo_handle->getActiveSheet();
+				$name = $sheet->getTitle();
+				return $return_as_array ? [$name] : $name;
+				break;
+			case '__sheetnum__':
+				$num = $this->sheet_num + 1;
+				return $return_as_array ? [$num] : $num;
+				break;
+		}
 		if ($vm_ret = parent::get($pn_col, $pa_options)) { return $vm_ret; }
 		
 		if(!is_numeric($pn_col)) {
