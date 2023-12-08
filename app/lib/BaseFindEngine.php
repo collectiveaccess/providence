@@ -325,14 +325,14 @@ class BaseFindEngine extends BaseObject {
 		$sorted_hits = $this->doSort($hits, $table, $primary_sort_field, $primary_sort_direction, array_merge($options, ['relationshipTypes' => array_shift($rel_types)]));
 		
 		// secondary sorts?
-		if(is_array($sort_fields) && (sizeof($sort_fields) > 0)) {	
-			foreach($sort_fields as $i => $s) {
-				$parsed_sort_spec = self::_parseSortOpts($s);
-				$sort_fields[$i] = $parsed_sort_spec['sort'];
-				$options = array_merge($options, $parsed_sort_spec['options']);
-			}
-			$sorted_hits = $this->_secondarySortHits($hits, $sorted_hits, $table, $primary_sort_field, $primary_sort_direction, $sort_fields, $sort_directions, array_merge($options, ['relationshipTypes' => $rel_types]));
-		}
+		// if(is_array($sort_fields) && (sizeof($sort_fields) > 0)) {	
+// 			foreach($sort_fields as $i => $s) {
+// 				$parsed_sort_spec = self::_parseSortOpts($s);
+// 				$sort_fields[$i] = $parsed_sort_spec['sort'];
+// 				$options = array_merge($options, $parsed_sort_spec['options']);
+// 			}
+// 			$sorted_hits = $this->_secondarySortHits($hits, $sorted_hits, $table, $primary_sort_field, $primary_sort_direction, $sort_fields, $sort_directions, array_merge($options, ['relationshipTypes' => $rel_types]));
+// 		}
 		
 		return $sorted_hits;
 	}
