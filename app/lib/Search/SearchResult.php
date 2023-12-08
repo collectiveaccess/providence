@@ -2289,7 +2289,7 @@ class SearchResult extends BaseObject {
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
 					
-					if ($vb_return_value_id) {
+					if ($vb_return_value_id && (!$va_path_components['subfield_name'] || ($va_path_components['subfield_name'] === $vs_element_code))) {
 						$va_return_values[(int)$vn_id][] = $o_value->getValueID();
 						continue;
 					}
