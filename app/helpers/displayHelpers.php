@@ -4400,7 +4400,7 @@ jQuery(document).ready(function() {
 	/**
 	 *
 	 */
-	function caGetAvailableDownloadVersions(RequestHTTP $request, string $mimetype, ?array $options=null) {
+	function caGetAvailableDownloadVersions(RequestHTTP $request, ?string $mimetype, ?array $options=null) {
 		$download_display_info = caGetMediaDisplayInfo('download', $mimetype);
 		
 		$download_version = caGetOption(['download_version', 'display_version'], $download_display_info);
