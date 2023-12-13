@@ -3527,7 +3527,11 @@
 						}
 						$vs_element_code = $va_facet_info['element_code'];
 
-
+						$omit_blank_values = false; 
+						$flds = null;
+						if(($va_facet_info['omit_blank_values'] ?? false) && ($o_value = CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'))) && is_array($flds = $o_value->queryFields()) && sizeof($flds)) {
+							$omit_blank_values = true;
+						}
 
 						$va_facet = array();
 						$va_counts = array();
@@ -3543,12 +3547,25 @@
 							}
 
 							if (!(bool)$va_state_info['id']) {	// no option
-								$va_wheres[] = $this->ops_browse_table_name.'.'.$vs_browse_table_pk." NOT IN (select row_id from ca_attributes where table_num = ".$t_item->tableNum()." AND element_id = ".$t_element->getPrimaryKey().")";
+								if($omit_blank_values) {
+									$subquery = "
+										SELECT row_id FROM ca_attributes caa 
+										INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = caa.attribute_id
+										WHERE caa.table_num = ".$t_item->tableNum()." AND caa.element_id = ".$t_element->getPrimaryKey()." AND cav.".$flds[0]." <> ''";
+								} else {
+									$subquery = "select row_id from ca_attributes caa where table_num = ".$t_item->tableNum()." AND element_id = ".$t_element->getPrimaryKey();
+								}
+								$va_wheres[] = $this->ops_browse_table_name.'.'.$vs_browse_table_pk." NOT IN ({$subquery})";
 
 							} else {							// yes option
 								$va_joins[] = "LEFT JOIN ca_attributes AS caa ON  ".$this->ops_browse_table_name.'.'.$vs_browse_table_pk." = caa.row_id AND ".$t_item->tableNum()." = caa.table_num";
 
 								$va_wheres[] = "caa.element_id = ".$t_element->getPrimaryKey();
+								
+								if($omit_blank_values) {
+									$va_joins[] = "INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = caa.attribute_id";
+									$va_wheres[] = "cav.".$flds[0]." <> ''";	
+								}
 
 							}
 

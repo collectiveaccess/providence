@@ -996,15 +996,21 @@ trait CLIUtilsMedia {
 			$criteria = ['representation_id' => ['BETWEEN', [$vn_start, $vn_end]]];
 		} elseif(($vn_start > 0) && ($vn_end == null)) {
 			$criteria = ['representation_id' => ['>=', $vn_start]];
+		} else {
+			$criteria = '*';
 		}
 		
 		$o_tq = new TaskQueue();
 		
 		$qr = ca_object_representations::findAsSearchResult($criteria);
+		if(!$qr) {
+			CLIUtils::addMessage(_t('No media found'));
+			return;
+		}
 		if(!$quiet) { print CLIProgressBar::start($qr->numHits(), _t('Transcribing media')); }
 		while($qr->nextHit()) {
 			$t_rep = $qr->getInstance();
-			$input_mimetype = $t_rep->get('mimetype');
+			if(!($input_mimetype = $t_rep->get('mimetype'))) { continue; }
 			if(caTranscribeAVMedia($input_mimetype) && ($t_rep->numCaptionFiles() == 0)) {
 				if(is_array($pa_mimetypes) && sizeof($pa_mimetypes)) {
 					if(!caMimetypeIsValid($input_mimetype, $pa_mimetypes)) { continue; }
