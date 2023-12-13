@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -277,6 +277,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		$vs_blank_placeholder = caGetBlankLabelText($pn_table_num);
 		$o_tep = new TimeExpressionParser();
 		
+		$o_config = Configuration::load();
+		$omit_fields = $o_config->getList('omit_from_changelog_display') ?? [];
+		
 		if (!$options) { $options = []; }
 		$t_user = ($pn_user_id = caGetOption('user_id', $options, null)) ? new ca_users($pn_user_id) : null;
 		
@@ -381,6 +384,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// is this an intrinsic field?
 						if (($pn_table_num == $va_log_entry['logged_table_num'])) {
 							foreach($va_log_entry['snapshot'] as $vs_field => $vs_value) {
+								if(is_array($omit_fields) && sizeof($omit_fields) && in_array($t_item->tableName().'.'.$vs_field, $omit_fields)) { 
+									continue; 
+								}
 								$va_field_info = $t_obj->getFieldInfo($vs_field);
 								if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
 								if (isset($va_field_info['DISPLAY_TYPE']) && $va_field_info['DISPLAY_TYPE'] == DT_OMIT) { continue; }
@@ -475,7 +481,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// ---------------------------------------------------------------
 						// is this a label row?
 						if ($va_log_entry['logged_table_num'] == $vn_label_table_num) {
-							
+							if(is_array($omit_fields) && sizeof($omit_fields) && (in_array($t_item->tableName().'.preferred_labels', $omit_fields))) { 
+								continue; 
+							}
 							foreach($va_log_entry['snapshot'] as $vs_field => $vs_value) {
 								$va_changes[] = array(
 									'label' => $t_item_label->getFieldInfo($vs_field, 'LABEL'),
@@ -488,7 +496,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// is this an attribute?
 						if ($va_log_entry['logged_table_num'] == 3) {	// attribute_values
 							if ($t_element = ca_attributes::getElementInstance($va_log_entry['snapshot']['element_id'])) {
-								
+								if(is_array($omit_fields) && sizeof($omit_fields) && in_array($t_item->tableName().'.'.$t_element->get('element_code'), $omit_fields)) { 
+									continue; 
+								}
 								if ($t_element->get('parent_id') && ($t_container = ca_attributes::getElementInstance($t_element->get('hier_element_id')))) {
 									$vs_element_code = $t_container->get('element_code');
 								} else {
