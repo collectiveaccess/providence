@@ -79,7 +79,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/quicktime" 					=> "mov",
 			"video/avi" 						=> "avi",
 			"video/x-flv"						=> "flv",
-			"video/mpeg" 						=> "mp4",
+			"video/mp4" 						=> "mp4",
 			"video/MP2T"						=> "mts",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
