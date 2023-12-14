@@ -3247,6 +3247,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					// Replicate constants as needed: constant is already set for first constant in group,
 					// but will not be set for repeats so we set them here
 					foreach ( $va_group_buf as $vn_group_index => $va_group_data ) {
+						if(sizeof(array_filter(array_keys($va_group_data), function($v) { return $v[0] !== '_'; })) === 0) { 
+							// Omit entries where no content keys are present
+							continue; 
+						}
 						$va_ptr =& $va_content_tree;
 						foreach ( $va_group_tmp as $vs_tmp ) {
 							if ( ! is_array( $va_ptr[ $vs_tmp ] ?? null ) ) {
