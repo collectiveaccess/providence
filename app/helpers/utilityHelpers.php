@@ -4096,7 +4096,7 @@ function caFileIsIncludable($ps_file) {
         if (is_null($pa_use_unicode_fraction_glyphs_for)) { $pb_use_unicode_fraction_glyphs = $o_config->get('use_unicode_fractions_for_measurements'); }
 		
 		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
-		$num = ceil($pn_inches_as_float * $pn_denom);
+		$num = floor($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 
