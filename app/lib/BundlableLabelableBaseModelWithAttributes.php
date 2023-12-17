@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 require_once(__CA_LIB_DIR__."/DeduplicateBaseModel.php");
@@ -3463,6 +3458,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Copy sort settings over bundle defaults in case we're using app.conf defaults, as we'll
 		// want the bunde to reflect the settings actually used
+		$pa_bundle_settings['userSetSort'] = $user_set_sort = caGetOption('userSetSort', $pa_options, false);
+		$pa_bundle_settings['allowDragSort'] = (!$sort || ($sort === '_natural'));
 		$pa_bundle_settings['sort'] = $sort;
 		$pa_bundle_settings['sortDirection'] = $sort_direction;
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-*/ 
 require_once(__CA_LIB_DIR__.'/View.php');
 
 class BaseSettings {
@@ -580,8 +576,7 @@ jQuery(document).ready(function() {
 				} else {
 					if (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
 						$va_select_opts = array_merge([
-							_t('User defined sort order') => '',
-							_t('Order created') => 'relation_id',
+							_t('User defined sort order') => ''
 						], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
 						
 						$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });

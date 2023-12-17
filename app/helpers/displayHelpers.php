@@ -3573,26 +3573,28 @@ jQuery(document).ready(function() {
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table, $ps_related_table, $pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = []; }
+	function caEditorBundleSortControls($request, $id_prefix, $table, $related_table, $options=null) {
+		if (!is_array($options)) { $options = []; }
 
-		if(!$ps_table) { return '???'; }
+		if(!$table) { return '???'; }
 	
-		$sort = caGetOption('sort', $pa_options, null);
-		$sort_direction = caGetOption('sortDirection', $pa_options, null);
+		$sort = caGetOption('sort', $options, null);
+		$sort_direction = caGetOption('sortDirection', $options, null);
+		$user_set_sort = caGetOption('userSetSort', $options, false);
 		
 		$type_id = null;
-		if($type_ids = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_options, null)) {
+		if($type_ids = caGetOption(['restrict_to_types', 'restrictToTypes'], $options, null)) {
 			$type_id = is_array($type_ids) ? array_shift($type_ids) : $type_ids;
 		}
 		
-		if (!is_array($va_sort_fields = caGetAvailableSortFields($ps_table, $type_id, array_merge(['request' => $po_request], $pa_options, ['naturalSortLabel' => _t('default'), 'includeInterstitialSortsFor' => $ps_related_table]))) || !sizeof($va_sort_fields)) { return ''; }
+		if (!is_array($sort_fields = caGetAvailableSortFields($table, $type_id, array_merge(['request' => $request], $options, ['naturalSortLabel' => _t('current order'), 'includeInterstitialSortsFor' => $related_table]))) || !sizeof($sort_fields)) { return ''; }
 	
-		$allowed_sorts = caGetOption('allowedSorts', $pa_options, null);
+		$allowed_sorts = caGetOption('allowedSorts', $options, null);
+		$user_set_sort = caGetOption('userSetSort', $options, false);
 		
 		if(!is_array($allowed_sorts) || !sizeof($allowed_sorts)) {
 			// apply global settings
-			$default_sort_config = caGetDefaultEditorBundleSortConfiguration($ps_related_table, $ps_table, $pa_options);
+			$default_sort_config = caGetDefaultEditorBundleSortConfiguration($related_table, $table, $options);
 			$default_sorts = $default_sort_config['defaultSorts'];
 			$type_specific_sorts = $default_sort_config['typeSpecificSorts'];
 			$default_sort_options = $default_sort_config['sortOptions'];
@@ -3602,11 +3604,10 @@ jQuery(document).ready(function() {
 				$sort_direction = caGetOption('direction', $type_specific_sorts ? $type_specific_sorts : $default_sorts, null);
 			}
 			
-			
 			// Translate truncated sorts to their standard multi-field equivalents
 			// (Eg. ca_entities.type_id => ca_entities.type_id;ca_entities.preferred_labels.surname;ca_entities.preferred_labels.forename)
 			$sort_field_trans = [];
-			foreach($va_sort_fields as $sf => $n) {
+			foreach($sort_fields as $sf => $n) {
 				$t = explode(';', $sf);
 				if(sizeof($t) > 1) {
 					for($i=1; $i < sizeof($t); $i++) {
@@ -3634,8 +3635,8 @@ jQuery(document).ready(function() {
 			}, []));
 		
 			if(is_array($default_sort_options) && sizeof($default_sort_options)) {
-				$va_sort_fields = array_filter(
-					$va_sort_fields,
+				$sort_fields = array_filter(
+					$sort_fields,
 					function ($v) use ($default_sort_options) {
 						return array_key_exists($v, $default_sort_options);
 					},
@@ -3643,10 +3644,21 @@ jQuery(document).ready(function() {
 				);
 			}
 		} else {
-			$sort_fields_proc = $default_sort_options = [];
+			$allowed_sorts = array_map(function($v) {
+				return strlen($v) ? $v : '_natural';
+			}, $allowed_sorts);
 			
+			if($sort && !$user_set_sort) {
+				$allowed_sorts = array_filter($allowed_sorts, function($v) {
+					return ($v !== '_natural');
+				});
+			}
+			
+			$sort_fields_proc = $default_sort_options = [];
+		
 			// Expand global sort list to include parents when sort is on container field
-			foreach($va_sort_fields as $sf => $n) {
+			foreach($sort_fields as $sf => $n) {
+				if(!in_array($sf, $allowed_sorts)) { continue; }
 				$tmp = explode('.', $sf);
 				if((sizeof($tmp) > 2) && !in_array($tmp[1], ['preferred_labels', 'nonpreferred_labels']))  {
 					if(!($label = ca_metadata_elements::getElementLabel($tmp[1]))) { continue; }
@@ -3656,26 +3668,24 @@ jQuery(document).ready(function() {
 				$sort_fields_proc[$sf] = $n;
 					
 			}
-			$va_sort_fields = $sort_fields_proc;
+			$sort_fields = $sort_fields_proc;
 		}
-		
-		if ($sort) { unset($va_sort_fields['_natural']); }
 
-		$va_sort_fields = array_map(function($v) { return mb_strtolower($v); }, $va_sort_fields);
-		return "<div class='editorBundleSortControl'>"._t('Sort using %1 %2', caHTMLSelect("{$ps_id_prefix}_RelationBundleSortControl", 
-				array_flip($va_sort_fields), 
+		$sort_fields = array_map(function($v) { return mb_strtolower($v); }, $sort_fields);
+		return "<div class='editorBundleSortControl'>"._t('Sort using %1 %2', caHTMLSelect("{$id_prefix}_RelationBundleSortControl", 
+				array_flip($sort_fields), 
 				[
-					'onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery(this).val())", 
-					'id' => "{$ps_id_prefix}_RelationBundleSortControl", 
+					'onChange' => "caRelationBundle{$id_prefix}.sort(jQuery(this).val())", 
+					'id' => "{$id_prefix}_RelationBundleSortControl", 
 					'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], 
 				['value' => $sort, 'disabledOptions' => $default_sort_options]
 			), 
 			caHTMLSelect(
-				"{$ps_id_prefix}_RelationBundleSortDirectionControl", 
+				"{$id_prefix}_RelationBundleSortDirectionControl", 
 				[_t('↑') => 'ASC', _t('↓') => 'DESC'], 
 				[
-					'onChange' => "caRelationBundle{$ps_id_prefix}.sort(jQuery('#{$ps_id_prefix}_RelationBundleSortControl').val())", 
-					'id' => "{$ps_id_prefix}_RelationBundleSortDirectionControl", 
+					'onChange' => "caRelationBundle{$id_prefix}.sort(jQuery('#{$id_prefix}_RelationBundleSortControl').val())", 
+					'id' => "{$id_prefix}_RelationBundleSortDirectionControl", 
 					'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'
 				], 
 				['value' => strtoupper($sort_direction)]
