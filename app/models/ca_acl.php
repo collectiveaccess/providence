@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
- 
 if(!defined('__CA_ACL_NO_ACCESS__')) { define('__CA_ACL_NO_ACCESS__', 0); }
 if(!defined('__CA_ACL_READONLY_ACCESS__')) { define('__CA_ACL_READONLY_ACCESS__', 1); }
 if(!defined('__CA_ACL_EDIT_ACCESS__')) { define('__CA_ACL_EDIT_ACCESS__', 2); }
