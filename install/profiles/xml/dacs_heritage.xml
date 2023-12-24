@@ -461,14 +461,6 @@
         </label>
       </labels>
       <items>
-        <item idno="null" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="available" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
