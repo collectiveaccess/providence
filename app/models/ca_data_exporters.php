@@ -289,6 +289,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'MARC' => 'MARC',
 			'CSV' => 'CSV',
 			'JSON' => 'JSON',
+			'CTDA' => 'CTDA'
 		);
 	}
 	# ------------------------------------------------------
@@ -620,6 +621,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			case 'JSON':
 				$o_export = new ExportJSON();
 				break;
+			case 'CTDA':
+				$o_export = new ExportCTDA();
+				break;
 			default:
 				return;
 		}
@@ -644,6 +648,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'JSON':
 				$o_export = new ExportJSON();
+				break;
+			case 'CTDA':
+				$o_export = new ExportCTDA();
 				break;
 			default:
 				return;
@@ -1440,7 +1447,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_exporters::$s_exporter_cache = array();
 		ca_data_exporters::$s_exporter_item_cache = array();
 
-		require_once(__CA_LIB_DIR__.'/Search/SearchResult.php');
 		if(!($po_result instanceof SearchResult)) { return false; }
 		if(!($t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code))) { return false; }
 		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0) { return false; }
@@ -1511,6 +1517,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'JSON':
 					$o_export = new ExportJSON();
+					break;
+				case 'CTDA':
+					$o_export = new ExportCTDA();
 					break;
 				default:
 					return array(_t("Invalid exporter format"));
@@ -1623,6 +1632,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				break;
 			case 'JSON':
 				$o_export = new ExportJSON();
+				break;
+			case 'CTDA':
+				$o_export = new ExportCTDA();
 				break;
 			default:
 				return;
@@ -1936,6 +1948,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($vs_template = $settings['template']) {
 			$va_get_options['template'] = $vs_template;
 		}
+		if($filter_non_primary_representations = $settings['filterNonPrimaryRepresentations']) {
+			$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_representations;
+		}
 
 		if(($vs_locale = $settings['locale']) || ($vs_locale = caGetOption('locale', $pa_options['settings'], null))) {
 			// the global UI locale for some reason has a higher priority
@@ -1951,6 +1966,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['returnAllLocales'] = true;
 		}
 		
+		
+		$va_get_options['filterNonPrimaryRepresentations'] = $settings['filterNonPrimaryRepresentations'] ?? 1;
 		
 		// AttributeValue settings that are simply passed through by the exporter
 	
