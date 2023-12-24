@@ -135,7 +135,7 @@
 			
 			$vs_access = $va_info['access'];
 			
-			if (in_array($vs_bundle_name, array('preferred_labels', $vs_pk))) {	// don't allow preferred labels and other critical UI fields to be set to readonly
+			if (in_array($vs_bundle_name, array('preferred_labels', $vs_pk))) {	// don't allow preferred labels and other critical UI fields to be set to no access
 				print "<td>-</td>\n";
 			} else {
 				print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$vs_table}_bundle_access_none"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
