@@ -4988,6 +4988,8 @@ create table ca_set_items (
 	set_id		int unsigned not null,
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
+	representation_id int unsigned null,
+	annotation_id int unsigned null,
     type_id     int unsigned not null,
 	`rank`		int unsigned not null default 0,
 	vars        longtext not null,
@@ -4997,10 +4999,15 @@ create table ca_set_items (
 	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
+	key i_row_key (row_id, representation_id, annotation_id),
 	key i_table_num (table_num),
 	
    constraint fk_ca_set_items_set_id foreign key (set_id)
-      references ca_sets (set_id) on delete restrict on update restrict
+      references ca_sets (set_id) on delete restrict on update restrict,
+   constraint fk_ca_set_items_rep_id foreign key (representation_id)
+      references ca_object_representations (representation_id) on delete restrict on update restrict,
+   constraint fk_ca_set_items_anno_id foreign key (annotation_id)
+      references ca_representation_annotations (annotation_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
@@ -7884,4 +7891,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (193, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (194, unix_timestamp());
