@@ -25,10 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 require_once(__CA_LIB_DIR__.'/Search/ObjectSearch.php');
-require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class CheckOutController extends ActionController {
@@ -212,11 +210,20 @@ class CheckOutController extends ActionController {
 			$sender_email = $library_config->get('notification_sender_email');
 			$sender_name = $library_config->get('notification_sender_name');
 			
+			$per_transaction_checkout_notes_and_due_date = $library_config->get('per_transaction_checkout_notes_and_due_date');
+			$transaction_notes = $this->request->getParameter('transaction_notes', pString);
+			$transaction_due_date = $this->request->getParameter('transaction_due_date', pString);
+			
 			$checked_out_items = $reserved_items = [];
 			$t_object = new ca_objects();
 			foreach($item_list as $i => $item) {
 				if (!$t_object->load(array('object_id' => $item['object_id'], 'deleted' => 0))) { continue; }
 			
+				if($per_transaction_checkout_notes_and_due_date) {
+					$item['note'] = $transaction_notes;
+					$item['due_date'] = $transaction_due_date;
+				}
+				
 				$name = $t_object->getWithTemplate("^ca_objects.preferred_labels.name (^ca_objects.idno)");
 				if ($checkout_info = $t_checkout->objectIsOut($item['object_id'])) {
 					if ($checkout_info['user_id'] == $user_id) {

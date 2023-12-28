@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 
 /**
@@ -276,7 +271,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	
 	
 	
-
 	# ------------------------------------------------------
 	/**
 	 * Creates a new ca_object_checkouts instance and initialize with a new group uuid. The returned instance
@@ -392,8 +386,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			// calculate default return date
 			$ps_due_date = isset($va_checkout_config['default_checkout_date']) ? $va_checkout_config['default_checkout_date'] : null;
 		}
-		
-		$this->setMode(ACCESS_WRITE);
+
 		$this->set(array(
 			'group_uuid' => $vs_uuid,
 			'object_id' => $pn_object_id,
@@ -405,7 +398,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['checkout'])) {
 					if ($t_object->hasField($vs_attr)) {
@@ -533,7 +525,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			throw new ApplicationException(_t("Configuration for type %1 does not exist", $type_code));
 		}
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
 			'group_uuid' => $vs_uuid,
 			'object_id' => $pn_object_id,
@@ -543,7 +534,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['reserve'])) {
 					if ($t_object->hasField($vs_attr)) {
