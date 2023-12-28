@@ -1511,17 +1511,19 @@
 									$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_row_ids);
 
 									foreach($va_row_ids as $vn_row_id) {
+										$tparams = $params;
+										$twheres = $wheres;
 										if ($browse_by_first_letter) {
 											$letter = trim(mb_strtolower($vn_row_id));
 											if(preg_match("!^[^a-z]+$!", $letter)) {
-												$wheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} RLIKE '^[^A-Za-z]'";
+												$twheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} RLIKE '^[^A-Za-z]'";
 											} else {
-												$wheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} LIKE ?";
-												$params[] = trim($vn_row_id)."%";
+												$twheres[] = "{$vs_label_table_name}.{$vs_label_sort_field} LIKE ?";
+												$tparams[] = trim($vn_row_id)."%";
 											}
 										} else {
-											$wheres[] = "{$vs_label_table_name}.{$vs_label_display_field} = ?";
-											$params[] = trim($va_labels[$vn_row_id] ?? null);
+											$twheres[] = "{$vs_label_table_name}.{$vs_label_display_field} = ?";
+											$tparams[] = trim($va_labels[$vn_row_id] ?? null);
 										}	
 									
 										$vs_sql = "
@@ -1529,64 +1531,10 @@
 											FROM ".$this->ops_browse_table_name."
 											{$vs_relative_to_join}
 											WHERE
-												".join(" AND ", $wheres);
-										//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
-										$qr_res = $this->opo_db->query($vs_sql, $params);
+												".join(" AND ", $twheres);
+										$qr_res = $this->opo_db->query($vs_sql, $tparams);
 									
 										if(!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
-										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
-
-										if (!caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
-									}
-									if (caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
-									break;
-								# -----------------------------------------------------
-								case 'label':
-									
-									if ($va_facet_info['relative_to']) {
-										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], array_merge($va_facet_info, $pa_options))) {
-											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
-											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
-											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
-											
-											$wheres = array_merge($wheres, $va_relative_execute_sql_data['wheres']);
-
-											$t_target = Datamodel::getInstanceByTableName($va_facet_info['relative_to'], true);
-											$t_target_label = $t_target->getLabelTableInstance();
-
-											$vs_item_pk = $t_target->primaryKey();
-
-											$vs_label_table_name = $t_target_label->tableName();
-											$vs_label_item_pk = $t_target_label->primaryKey();
-
-											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];
-											$va_relative_to_join[] = "INNER JOIN {$vs_label_table_name} ON {$vs_label_table_name}.{$vs_label_item_pk} = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk}";
-										}
-									} else {
-										$va_relative_to_join = array("INNER JOIN {$vs_label_table_name} ON {$vs_label_table_name}.{$vs_label_item_pk} = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk}");
-									}
-									
-									
-									$vs_relative_to_join = join("\n", $va_relative_to_join);
-
-									$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_row_ids);
-
-									foreach($va_row_ids as $vn_row_id) {
-										
-											$wheres[] = "{$vs_label_table_name}.{$vs_label_display_field} = ?";
-											$params[] = trim($va_labels[$vn_row_id]);
-									
-									
-										$vs_sql = "
-											SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
-											FROM ".$this->ops_browse_table_name."
-											{$vs_relative_to_join}
-											WHERE
-												".join(" AND ", $wheres);
-										//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
-										$qr_res = $this->opo_db->query($vs_sql, $params);
-									
-										if(!is_array($va_acc[$vn_i] ?? null)) { $va_acc[$vn_i] = []; }
 										$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
 
 										if (!caGetOption('multiple', $va_facet_info, false)) { $vn_i++; }
