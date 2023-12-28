@@ -1332,6 +1332,18 @@
 							            	$files_added++;
 										}
 									}
+									if(!$files_added) {
+										$va_val['idno'] = $vs_item;
+										$va_val['_matchOn'] = $va_match_on;
+										$va_val['_dontCreate'] = $pa_item['settings']["{$ps_refinery_name}_dontCreate"] ?? false;
+										if ( isset( $pa_options['nonPreferredLabels'] )
+											 && is_array( $pa_options['nonPreferredLabels'] )
+										) {
+											$va_val['nonpreferred_labels']
+												= $pa_options['nonPreferredLabels'];
+										}
+										$va_vals[] = $va_val;
+									}
 							        $vn_c++;
 							        continue(2);
 								} 
