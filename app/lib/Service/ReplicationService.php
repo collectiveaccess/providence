@@ -609,19 +609,22 @@ class ReplicationService {
 		$pk = Datamodel::primaryKey($table);
 		$t = Datamodel::getInstance($table);
 		
+		$has_deleted = $t->hasField('deleted');
+		
 		$db = new Db();
 		if($t->hasField('access')) {
 			$qr = $db->query("
 				SELECT g.guid 
 				FROM ca_guids g
 				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
-				WHERE t.access IN (?)
+				WHERE t.access IN (?) ".($has_deleted ? 'AND t.deleted = 0' : '')."
 			", [$table_num, $access]);
 		} else {
 			$qr = $db->query("
 				SELECT g.guid 
 				FROM ca_guids g
 				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+				".($has_deleted ? 'WHERE t.deleted = 0' : '')."
 			", [$table_num]);
 		}
 		
