@@ -456,7 +456,16 @@ trait CLIUtilsImportExport {
 			CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
 			return false;
 		}
-
+		if ($start = (int)$po_opts->getOption('start')) {
+			if($start < 0) { 
+				$start = 0;
+			}
+		}
+		if ($limit = (int)$po_opts->getOption('limit')) {
+			if($limit < 0) { 
+				$limit = 0;
+			}
+		}
 
 		$vb_direct = (bool)$po_opts->getOption('direct');
 		$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
@@ -485,7 +494,9 @@ trait CLIUtilsImportExport {
 				'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
 				'addToSet' => $vs_add_to_set, 'environment' => $env,
 				'detailedLogName' => $vs_detailed_log_name,
-				'importAllDatasets' => $vb_import_all_datasets
+				'importAllDatasets' => $vb_import_all_datasets,
+				'start' => $start,
+				'limit' => $limit
 			]
 		)) {
 			CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", $t_importer->getErrorList())));
@@ -515,7 +526,9 @@ trait CLIUtilsImportExport {
 			"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
 			"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.'),
 			"log-to-tmp-directory-as-fallback" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.'),
-			"detailed-log-name" => _t('Name to use for detailed field-level error log. By default these log files are named with the date and code for the import mapping.')
+			"detailed-log-name" => _t('Name to use for detailed field-level error log. By default these log files are named with the date and code for the import mapping.'),
+			"start|h-i" => _t('Row to start import on.'),
+			"limit|i-i" => _t('Maximum number of rows to import.'),
 		);
 	}
 	# -------------------------------------------------------
