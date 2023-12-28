@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
@@ -179,8 +174,8 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num-1;
-		$this->opo_rows->seek(($pn_row_num > 0) ? $pn_row_num : 0);
-		return $this->nextRow();
+		$this->opo_rows->seek($seek = ($pn_row_num > 0) ? $pn_row_num : 0);
+		return ($seek <= 1) ? $this->nextRow() : true;
 	}
 	# -------------------------------------------------------
 	/**
