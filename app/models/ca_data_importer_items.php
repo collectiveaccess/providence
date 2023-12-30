@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__."/Import/RefineryManager.php");
 
@@ -176,10 +175,6 @@ class ca_data_importer_items extends BaseModel {
 		parent::__construct($id, $options);
 		
 		$this->initSettings();
-	}
-	# ------------------------------------------------------
-	protected function initLabelDefinitions($pa_options=null) {
-		parent::initLabelDefinitions($pa_options);
 	}
 	# ------------------------------------------------------
 	public function initSettings($initial_settings=null) {

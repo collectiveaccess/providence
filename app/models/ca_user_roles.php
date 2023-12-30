@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,6 +188,7 @@ class ca_user_roles extends BaseModel {
 	protected $FIELDS;
 	
 	protected $opo_app_plugin_manager;
+	protected $opo_widget_manager;
 	
 	static $s_action_list;
 	static $s_bundle_list;
@@ -622,17 +623,15 @@ class ca_user_roles extends BaseModel {
 				role_id IN (".join(',', $pa_role_ids).")
 		");
 		
-		$va_bundles = array();
+		$va_bundles = [];
 		while($qr_res->nextRow()) {
 			$va_role_data = $qr_res->getVars('vars');
 			if (isset($va_role_data['bundle_access_settings']) && is_array($va_role_data['bundle_access_settings'])) {
-				
-				$va_bundles;
-				
+				$va_bundles = array_merge($va_bundles, $va_role_data['bundle_access_settings']);;
 			}
 		}
-		$va_actions = array_flip($va_actions);
-		return array_keys($va_actions);
+		$va_bundles = array_flip($va_bundles);
+		return array_keys($va_bundles);
 	}
 	# -------------------------------------------------------
 	private static function _evaluateActionRequirements($pa_requirements, $pa_options=null) {

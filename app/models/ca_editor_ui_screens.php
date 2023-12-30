@@ -29,16 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
-/**
- *
- */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_type_restrictions.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_screens'] = array(
  	'NAME_SINGULAR' 	=> _t('editor UI screen'),
@@ -349,7 +344,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	                $t_p = new ca_editor_ui_bundle_placements($placement_id);
 	                $t_p->set('rank', $old_rank = $t_p->get('rank') + 1);
 	                if (!$t_p->update()) {
-	                    $this->errors = $t_o->errors;
+	                    $this->errors = $t_p->errors;
 	                    return false;
 	                }
 	            }
@@ -393,7 +388,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	                $t_p = new ca_editor_ui_bundle_placements($placement_id);
 	                $t_p->set('rank', $t_p->get('rank') + 2);
 	                if (!$t_p->update()) {
-	                    $this->errors = $t_o->errors;
+	                    $this->errors = $t_p->errors;
 	                    return false;
 	                }
 	            }
@@ -2502,8 +2497,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 *		user_id = if specified then placements are only returned if the user has at least read access to the screen
 	 * @return int Number of placements. 
 	 */
-	public function getPlacementCount($pa_options=null) {
-		return sizeof($this->getPlacementsInDisplay($pa_options));
+	public function getPlacementCount(?array $options=null) : int {
+		return sizeof($this->getPlacementsInScreen($options) ?? []);
 	}
 	# ------------------------------------------------------
 	/** 

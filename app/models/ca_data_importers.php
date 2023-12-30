@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/Import/DataReaderManager.php');
@@ -1842,7 +1838,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			    $vs_idno = self::_applyConditionalOptions($vs_type, $va_mapping_items, $vn_type_id_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements,
 					['skip' => []]
 				);
-				if(!self::_applyComparisonOptions($va_type, $va_mapping_items, $vn_type_id_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements, 
+				if(!self::_applyComparisonOptions($vs_type, $va_mapping_items, $vn_type_id_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements, 
 					['skip' => [], 'log' => $o_log, 'useRaw' => $va_raw_row]
 				)) {
 					$vs_type = $vs_type_mapping_setting;	// use constant type

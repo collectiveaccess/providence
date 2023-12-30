@@ -29,17 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
  	'NAME_SINGULAR' 	=> _t('object lot'),
@@ -741,7 +735,7 @@ class ca_object_lots extends RepresentableBaseModel {
 				
 					$t_object->update();
 					if ($t_object->numErrors()) {
-						$t->rollback();
+						$t_object->rollback();
 						$this->errors = $t_object->errors;
 						return false;
 					}

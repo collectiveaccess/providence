@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__.'/SetUniqueIdnoTrait.php'); 
@@ -1788,7 +1783,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $options Options are passed through to caMakeSearchResult()
 	 * @seealso caMakeSearchResult()
 	 */
-	public function getItemsAsSearchResult($pa_options=null) {
+	public function getItemsAsSearchResult($options=null) {
 		if(!$this->isLoaded()) { return null; }
 		$ids = $this->getItems(['idsOnly' => true]);
 
@@ -2772,7 +2767,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			
 				$created = $this->getCreationTimestamp($set_id);
 				$va_sets[$set_id = $qr_res->get('set_id')] = array_merge($qr_res->getRow(), [
-					'set_content_type' => $vs_set_type, 'set_type' => $vs_type,
+					'set_type' => $vs_type,
 					'label' => $labels[$set_id], 'count' => isset($counts[$set_id]) ? $counts[$set_id] : 0,
 					'item_type_singular' => Datamodel::getTableProperty($vn_table_num, 'NAME_SINGULAR'), 'item_type_plural' => Datamodel::getTableProperty($vn_table_num, 'NAME_PLURAL'),
 					'created' => $created['timestamp'], 'created_display' => caGetLocalizedDate($created['timestamp'])

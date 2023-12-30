@@ -321,7 +321,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
  			INNER JOIN ca_set_items AS csi ON csi.row_id = coxor.object_id
  			WHERE
  				(csi.item_id = ?) AND (csi.table_num = 57)
- 				{$vs_is_primary_sql}
+ 				AND coxor.is_primary = 1
  				{$vs_access_sql}
  			ORDER BY
  				l.name ASC 

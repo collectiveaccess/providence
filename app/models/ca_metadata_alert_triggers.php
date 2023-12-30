@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
  */
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Base.php');
@@ -282,7 +278,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 * @param BundlableLabelableBaseModelWithAttributes $t_subject
 	 * @param       $pa_trigger
 	 *
-	 * @return false
+	 * @return bool
 	 */
 	public static function fireTrigger($po_trigger, &$t_subject, array $pa_trigger, ?array $additional_data=null) {
 		$t_rule = new ca_metadata_alert_rules();
@@ -294,7 +290,6 @@ class ca_metadata_alert_triggers extends BaseModel {
 			if(!$t_rule->load($pa_trigger['rule_id'])) { return false; }
 
 			$vs_notification_key = $po_trigger->getEventKey($t_subject, $additional_data);
-
 
 			if (!is_array($va_delivery_options = caGetOption('notificationDeliveryOptions', $pa_trigger['settings'], null))) {
 				$va_delivery_options = [];
@@ -333,6 +328,7 @@ class ca_metadata_alert_triggers extends BaseModel {
 				}
 			}
 		}
+		return true;
 	}
 	# ------------------------------------------------------
 	/**

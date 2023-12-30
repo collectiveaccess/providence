@@ -403,7 +403,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_settings array of user settings
 	 * @return ca_data_exporter_items BaseModel representation of the new record
 	 */
-	public function addItem($pn_parent_id=null,$ps_element,$ps_source,$pa_settings=array()) {
+	public function addItem($pn_parent_id, $ps_element, $ps_source, $pa_settings=[]) {
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$t_item = new ca_data_exporter_items();
@@ -452,12 +452,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Remove all items from this exporter
 	 * @return boolean success state
 	 */
-	public function removeAllItems() {
+	public function removeAllItems() : bool {
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$va_items = $this->getItems(array('orderForDeleteCascade' => true));
 		$t_item = new ca_data_exporter_items();
-		$t_item->setMode(ACCESS_WRITE);
 
 		foreach($va_items as $vn_item_id => $va_item) {
 			$t_item->load($vn_item_id);
@@ -468,6 +467,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return false;
 			}
 		}
+		return true;
 	}
 	# ------------------------------------------------------
 	/**
@@ -736,7 +736,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 					$vs_parent_id = trim((string)$o_parent->getValue());
-					if(($vs_mode !== 'template') && $parent_id) {
+					if(($vs_mode !== 'template') && $vn_parent_id) {
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)) {
 							$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
 							$o_log->logWarn($m);
@@ -2175,7 +2175,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_values = $t_instance->get($vs_source, array_merge($va_get_options, ['returnAsArray' => true]));
 					if($deduplicate) { $va_values = array_unique($va_values); } 
 
-					$vs_get = join(caGetOption('delimiter', $va_get_opts, ';', ['castTo' => 'string']), is_array($va_values) ? $va_values : [$va_values]);
+					$vs_get = join(caGetOption('delimiter', $va_get_options, ';', ['castTo' => 'string']), is_array($va_values) ? $va_values : [$va_values]);
 					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
@@ -2190,7 +2190,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					if($deduplicate) { $va_values = array_unique($va_values); } 
 					
 					if($return_raw_data) { $va_values_raw = $t_instance->get($vs_source, ['returnAsArray' => true]); }
-					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
+					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $va_values));
 					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
 
 					foreach($va_values as $vn_i => $vs_text) {

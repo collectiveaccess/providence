@@ -636,6 +636,7 @@ class ca_users extends BaseModel {
 		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
 			$this->removeGUID($vn_primary_key);
 		}
+		return $vn_rc;
 	}
 	# ----------------------------------------
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
@@ -3241,7 +3242,7 @@ class ca_users extends BaseModel {
 				if (!$this->getPrimaryKey()) {
 					$this->opo_log->log(array(
 						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
+						'MESSAGE' => $err = _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
 					));
 					throw new ApplicationException($err);
 				}
@@ -3708,6 +3709,7 @@ class ca_users extends BaseModel {
 		$vs_cache_key = $ps_table_name.'/'.$pm_source_code_or_id."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_source_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_access_cache[$vs_cache_key]; }
 
+		$vn_source_id = null;
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // source-level access control only applies to these tables
 			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 			

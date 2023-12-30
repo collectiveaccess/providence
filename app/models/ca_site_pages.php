@@ -29,15 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_templates.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_page_media.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
  	'NAME_SINGULAR' 	=> _t('site page'),
@@ -703,7 +697,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
                     'type' => $va_m['info']['original']['PROPERTIES']['typename'], 
                     'dimensions' => $va_m['dimensions']['original'], 
                     'filename' => $va_m['info']['ORIGINAL_FILENAME'] ? $va_m['info']['ORIGINAL_FILENAME'] : _t('Unknown'),
-                    'metadata' => $vs_extracted_metadata,
+                    'metadata' => '',
                     'md5' => $va_m['info']['original']['PROPERTIES']['MD5'],
                     'versions' => join("; ", $va_m['versions']),
                     'page_id' => $va_m['page_id'],
@@ -711,7 +705,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 					'fetched_original_url' => $va_m['fetched_original_url'],
 					'fetched_by' => $va_m['fetched_by'],
 					'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
-                    'fetched' => $va_m['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2 uing %3 URL handler", '<a href="'.$va_m['fetched_from'].'" target="_ext" title="'.$va_m['fetched_from'].'">'.$va_m['fetched_from'].'</a>', date('c', $va_m['fetched_on']), caGetOption('fetched_by', $va_rep, 'default')): ""
+                    'fetched' => isset($va_m['fetched_from']) ? _t("<h3>Fetched from:</h3> URL %1 on %2 uing %3 URL handler", '<a href="'.($va_m['fetched_from'] ?? null).'" target="_ext" title="'.($va_m['fetched_from'] ?? null).'">'.$va_m['fetched_from'].'</a>', date('c', ($va_m['fetched_on'] ?? null)), caGetOption('fetched_by', $va_m, 'default')): ""
                 );
         }
         return $va_initial_values;

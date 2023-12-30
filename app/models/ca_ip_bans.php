@@ -283,12 +283,12 @@ class ca_ip_bans extends BaseModel {
 		if (!is_array($whitelist = self::$config->get('ip_whitelist'))) { $whitelist = []; }
 		
 		$ip = RequestHTTP::ip();
-		$ip_long = ip2long($request_ip);
+		$ip_long = ip2long($ip);
 		
 		foreach($whitelist as $wip) {
 			$ip_s = ip2long(str_replace("*", "0", $wip));
 			$ip_e = ip2long(str_replace("*", "255", $wip));
-			if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
+			if (($ip_long >= $ip_s) && ($ip_long <= $ip_e)) {
 				return true;
 			}
 		}
