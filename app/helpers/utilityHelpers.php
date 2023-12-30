@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
@@ -2284,7 +2279,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caLogEvent($ps_code, $ps_message, $ps_source=null) {
-		$t_log = new EventLog();
+		$t_log = new Eventlog();
 		return $t_log->log(array('CODE' => $ps_code, 'MESSAGE' => $ps_message, 'SOURCE' => $ps_source));
 	}
 	# ---------------------------------------
@@ -3942,6 +3937,7 @@ function caFileIsIncludable($ps_file) {
 			// Any elements means a value
 			return (is_array($pa_initial_values) && (sizeof($pa_initial_values) > 0));
 		}
+		return false;
 	}
 	# ----------------------------------------
 	/**

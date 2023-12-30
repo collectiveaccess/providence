@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 # ---------------------------------------
 /**
  * Generate URL tag for asset in current theme; if asset is not available the graphic in the default theme will be returned.
@@ -658,7 +657,7 @@ function caLightboxSetListItem($po_request, $t_set, $va_check_access = array(), 
 			$vn_i++;
 		}
 	}else{
-		$vs_primary_image_block .= "<div class='col-sm-6'><div class='lbSetImg'><div class='lbSetImgPlaceholder'>"._t("this %1 contains no items", $vs_lightbox_displayname)."</div><!-- end lbSetImgPlaceholder --></div><!-- end lbSetImg --></div>\n";
+		$vs_primary_image_block = "<div class='col-sm-6'><div class='lbSetImg'><div class='lbSetImgPlaceholder'>"._t("this %1 contains no items", $vs_lightbox_displayname)."</div><!-- end lbSetImgPlaceholder --></div><!-- end lbSetImg --></div>\n";
 		$i = 1;
 		while($vn_i < 4){
 			$vs_secondary_image_block .= "<div class='col-xs-3 col-sm-6 lbSetThumbCols'><div class='lbSetThumbPlaceholder'>".caGetThemeGraphic($po_request,'spacer.png')."</div><!-- end lbSetThumbPlaceholder --></div>";
@@ -918,6 +917,7 @@ function caGetDetailForType($pm_table, $pm_type=null, $pa_options=null) {
 			$vs_access_wheres = " AND ca_objects.access IN (".join(",", $pa_access_values).") AND ca_object_representations.access IN (".join(",", $pa_access_values).")";
 		}
 		$vs_table = $t_instance->tableName();
+		$vs_pk = $t_instance->primaryKey();
 		
 		$va_params = array();
 		if ($vs_table === 'ca_objects') {

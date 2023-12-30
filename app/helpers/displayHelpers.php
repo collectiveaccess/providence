@@ -803,7 +803,7 @@ jQuery(document).ready(function() {
 			$default_to_summary_view_conf = $po_request->config->getList("{$vs_table_name}_editor_defaults_to_summary_view");
 			if(is_array($default_to_summary_view_conf) && sizeof($default_to_summary_view_conf)) {
 				$t_table = Datamodel::getInstance($vs_table_name, true);
-				$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $po_request, $t_table->getTypeID($pn_id));
+				$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $po_request, $t_table->getTypeID($vn_item_id));
 				$default_to_summary_view = $t_ui ? in_array($t_ui->get('editor_code'), $default_to_summary_view_conf, true) : false;
 			} else {
 				$default_to_summary_view = (bool)$po_request->config->get("{$vs_table_name}_editor_defaults_to_summary_view");
@@ -2237,7 +2237,7 @@ jQuery(document).ready(function() {
 	 */
 	function caBatchMediaImportInspector($po_view, $pa_options=null) {
 		$vs_color = "444444";
-		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		$vs_buf = "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 		$vs_buf .= "<strong>"._t("Batch import media")."</strong>\n";
 
 		$global_batch_media_import_root_directory = caGetSharedMediaUploadPath();
@@ -4185,6 +4185,7 @@ jQuery(document).ready(function() {
  	function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=null) {
  		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
  		
+		$va_detail_config = caGetDetailConfig()->get($po_data->tableName());
 		$va_access_values = caGetUserAccessValues($po_request);
 
  		// options
@@ -4330,12 +4331,10 @@ jQuery(document).ready(function() {
 					$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 				}
 
-				$vs_placeholder = "<div class='detailMediaPlaceholder' aria-label='No media available'>".caGetPlaceholder($pt_object->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
+				$vs_placeholder = "<div class='detailMediaPlaceholder' aria-label='No media available'>".caGetPlaceholder($pt_subject->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
 			}
  		}	
  		
- 		
-
 		$o_view->setVar('representation_id', $vn_representation_id);
 		$o_view->setVar('representation_count', sizeof($va_rep_ids));
 		$o_view->setVar('representation_ids', $va_rep_ids);
@@ -4530,7 +4529,7 @@ jQuery(document).ready(function() {
 		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
 			throw new ApplicationException(_t('Invalid identifier %1', $ps_identifier));
 		}
-
+		$pn_subject_id = $pt_subject->getPrimaryKey();
 		$va_detail_config = caGetDetailConfig()->get($pt_subject->tableName());
 
 		$ps_display_type 					= caGetOption('display', $pa_options, 'media_overlay');
@@ -4552,9 +4551,6 @@ jQuery(document).ready(function() {
 				$pn_representation_id = (int)$va_identifier['id'];
 				$t_instance = new ca_object_representations($pn_representation_id);
 
-				if ($pb_inline) {
-					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
-				}
 				if (!$t_instance->isReadable($po_request)) { 
                     throw new ApplicationException(_t('Cannot view media'));
                 }
@@ -4564,6 +4560,10 @@ jQuery(document).ready(function() {
 				}
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype))) {
 					throw new ApplicationException(_t('Invalid viewer: %1/%2', $vs_mimetype, $ps_display_type));
+				}
+				
+				if ($pb_inline) {
+					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
 				}
 
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
@@ -4645,7 +4645,7 @@ jQuery(document).ready(function() {
 
 				if ($pb_inline) {
 					$vs_tool_bar = caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => $ps_context, 'checkAccess' => $pa_check_acccess));
-					$vs_viewer = "<div data-representation_id='{$pn_representation_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}</div></div>";
+					$vs_viewer = "<div data-value_id='{pn_value_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_value_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}</div></div>";
 				}
 
 				return $vs_viewer;
