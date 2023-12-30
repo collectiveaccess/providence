@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
@@ -1776,16 +1771,14 @@ class TimeExpressionParser {
 					$vn_end_year = (($vn_century - 1) * 100) + 99;
 				}
 				
-				if (!isset($va_dates['start']) || !$va_dates['start']) {
-					$vn_start_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'century', $vn_start_year);
-					$va_dates['start'] = array(
-						'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
-						'dont_window' => true
-					);
-					if(!is_null($era)) {
-						$va_dates['start']['era'] = $era;
-					}
+				$vn_start_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'century', $vn_start_year);
+				$va_dates['start'] = array(
+					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
+					'dont_window' => true
+				);
+				if(!is_null($era)) {
+					$va_dates['start']['era'] = $era;
 				}
 				if (!$vb_is_range) {
 					$vn_end_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'end', 'century', $vn_end_year);
@@ -3188,7 +3181,7 @@ class TimeExpressionParser {
 								}
 							} else {
 								// date range within single year with time
-								$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'month' => $va_start_pieces['month'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
+								$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
 								$vs_end_date = $this->_datetimeToText($va_end_pieces, $pa_options);
 								return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date;
 							}
@@ -3638,7 +3631,7 @@ class TimeExpressionParser {
 		return date("t", mktime(0, 0, 0, $pn_month, 1, $pn_year));
 	}
 	# -------------------------------------------------------------------
-	public function daysInYear($pn_year) {
+	public function daysInYear($year) {
 		return ((($year % 4) == 0) && ((($year % 100) != 0) || (($year %400) == 0))) ? 366 : 365;
 	}
 	# -------------------------------------------------------------------

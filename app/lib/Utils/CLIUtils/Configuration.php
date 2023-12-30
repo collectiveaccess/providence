@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2022 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,8 +28,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  * 
  * ----------------------------------------------------------------------
- */
- 
+ */ 
 trait CLIUtilsConfiguration { 
 	# -------------------------------------------------------
 	/**
@@ -436,6 +435,7 @@ trait CLIUtilsConfiguration {
 
 		CLIUtils::addMessage(_t("All done"));
 		if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished ...")); }
+		return true;
 	}
 
 	public static function push_config_changesParamList() {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2015 Whirl-i-Gig
+ * Copyright 2000-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__."/Configuration.php");
 
 /**
@@ -113,6 +108,11 @@ class ApplicationError {
  * @access private
  */	
 	private $opo_error_messages;
+	
+/**
+ * Application configuration
+ */
+	private $opo_config;
 	
 /**
  * Constructor takes optional parameters to create a new error. If parameters are omitted, an empty (non-error state)

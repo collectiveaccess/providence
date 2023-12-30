@@ -25,10 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-# ----------------------------------------------------------------------
-# --- Import classes
-# ----------------------------------------------------------------------
 require_once(__CA_LIB_DIR__."/Search/SearchBase.php");
 require_once(__CA_LIB_DIR__."/Plugins/SearchEngine/CachedResult.php");
 require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
@@ -42,7 +38,7 @@ require_once(__CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php");
 # ----------------------------------------------------------------------
 class SearchEngine extends SearchBase {
 
-	private $opn_tablenum;
+	protected $opn_tablenum;
 	protected $ops_tablename;
 	private $opa_tables;
 	// ----

@@ -31,7 +31,7 @@ var $InputFile,$OutputFile,$MaxTime=0,$refresh;
 // by default $options enables CACHING, ANSI strings and Vendor Tag tagging
 // UPDATECACHE is forcing the analysing of the file and the update of the cache, if caching enabled.
 // $cachedir is optional cache directory
-function Ogg ($OggFile, $options=0, $cachedir="/tmp") 
+function __construct($OggFile, $options=0, $cachedir="/tmp") 
 	{
 	// Check php version
 	if (intval(PHP_VERSION)<4) return($this->creturn("PHP version must be >= 4 but we show PHP v".PHP_VERSION));
@@ -577,4 +577,3 @@ function analyze() // Parse headers to retrieve identification and comments info
 	return($this->creturn(true));	
 	}
 }
-?>

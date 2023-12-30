@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
 include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
  
 class BaseSearch extends SearchEngine {
