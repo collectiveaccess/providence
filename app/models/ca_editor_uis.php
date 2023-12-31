@@ -721,7 +721,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * @return int Number of screens configured for the current UI
 	  */
 	public function getScreenCount($pn_type_id=null, $pa_options=null) {
-		global $g_request
+		global $g_request;
 		if (!$this->getPrimaryKey()) { return 0; }
 		if(!caGetOption('user_id', $pa_options, null) && $g_request) { $pa_options['user_id'] = $g_request->getUserID(); }
 		$pa_options['showAll'] = true;
