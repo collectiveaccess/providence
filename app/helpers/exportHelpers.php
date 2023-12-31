@@ -381,7 +381,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
-	$criteria_summary = caGetOption('criteriaSummary', $options, '')
+	$criteria_summary = caGetOption('criteriaSummary', $options, '');
 	
 	if(method_exists($result, 'seek')) { $result->seek(0); }
 	$view->setVar('result', $result);
