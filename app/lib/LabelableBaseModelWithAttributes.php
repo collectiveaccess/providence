@@ -83,6 +83,11 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @used getNonPreferredLabelHTMLFormBundle()
 	 */
 	private $opa_failed_nonpreferred_label_inserts = array();
+	
+	/**
+	 *
+	 */
+	private $opo_app_plugin_manager;
 	# ------------------------------------------------------------------
 	/**
 	 * Check if preferred label for a given locale is defined for the current record
@@ -3407,7 +3412,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				r.{$vs_pk} = ?
 		", $vn_id);
 		
-		$va_roles = array();
+		$va_roles = [];
 		
 		while($qr_res->nextRow()) {
 			$va_row = array();
@@ -3416,7 +3421,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 			
 			if ($vb_return_for_bundle) {
-				$va_row['label'] = $va_role['name'];
+				$va_row['label'] = $va_row['name'];
 				$va_row['id'] = $va_row['role_id'];
 				$va_roles[(int)$qr_res->get('relation_id')] = $va_row;
 			} else {

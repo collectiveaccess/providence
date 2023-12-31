@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
@@ -139,7 +135,7 @@ class WLPlugFiles Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
                     $file_list = array_merge($file_list, $ret['fileList']);
                     
                     foreach($file_list as $file_info) {
-                    	copy($file_info['path'], $output_path.pathinfo($file_info['path'], PATHINFO_BASENAME));
+                    	copy($file_info['path'], $p = $output_path.pathinfo($file_info['path'], PATHINFO_BASENAME));
                     	$log->logDebug(_t('[ExternalExport::Output::Files] Added added file %1 to ZIP archive using path %2', $file_info['path'], $p));
                     }
                     break;

@@ -27,7 +27,7 @@
  */
 require_once(__CA_LIB_DIR__."/Plugins/BanHammer/BaseBanHammerPlugin.php");
 
-class WLPlugBanHammerExportFrequency Extends BaseBanHammerPlugIn  {
+class WLPlugBanHammerExportFrequency Extends BaseBanHammerPlugin  {
 	# ------------------------------------------------------
 	/**
 	 *

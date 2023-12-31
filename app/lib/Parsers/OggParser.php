@@ -300,7 +300,7 @@ function Picturable() //boolean, says if this server/library is able to extract 
 	if ($gd=in_array("gd",$extensions))
 		{
 		$GDArray=gd_info();
-		if (intval(ereg_replace('[[:alpha:][:space:]()]+', '', $GDArray['GD Version'])) < 2) $gd=false;
+		if (intval(preg_replace('/[A-Za-z \(\)]+/', '', $GDArray['GD Version'])) < 2) $gd=false;
 		}
 	if (!gd) return($this->creturn("Module gd2 not found on this PHP server !"));
 	return($this->creturn(true));

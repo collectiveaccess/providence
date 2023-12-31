@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */ 
 require_once(__CA_LIB_DIR__."/BaseFindController.php");
 require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
@@ -806,14 +802,6 @@ class BaseBrowseController extends BaseFindController {
 		}
 		
 		return join("; ", $va_buf);
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */ 
-	public function getPartialResult($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
-		return parent::getPartialResult($pa_options);
 	}
 	# -------------------------------------------------------
 	# Sidebar info handler

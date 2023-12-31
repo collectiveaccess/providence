@@ -46,6 +46,16 @@ class ExternalExportManager {
      */
     private static $plugins = [];
     
+    /**
+     *
+     */
+    private $log_entries; 
+    
+    /**
+     *
+     */
+    private $log_id; 
+    
     # ------------------------------------------------------
     /**
      *

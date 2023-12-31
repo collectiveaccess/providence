@@ -27,7 +27,7 @@
  */
 require_once(__CA_LIB_DIR__."/Plugins/BanHammer/BaseBanHammerPlugin.php");
 
-class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugIn  {
+class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 	# ------------------------------------------------------
 	/**
 	 *

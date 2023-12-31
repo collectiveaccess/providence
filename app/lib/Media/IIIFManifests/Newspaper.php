@@ -100,7 +100,7 @@ class Newspaper extends BaseIIIFManifest {
 					continue;
 				}
 				
-				$page_data = $t_rep->getFileList(null, null, null, ['versions' => [$pversion, $pt_version]]);
+				$page_data = $t_rep->getFileList(null, null, null, ['versions' => [$pversion, $ptversion]]);
 				$mwidth = $mheight = null;
 				
 				$pages = [];
