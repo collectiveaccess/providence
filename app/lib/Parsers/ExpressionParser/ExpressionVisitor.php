@@ -161,7 +161,7 @@ class ExpressionVisitor implements Visitor\Visit {
 	public function visit(Visitor\Element $po_element, &$f_handle = null, $f_eldnah  = null) {
 		$_ = null;
 		$a = null;
-		$in = null
+		$in = null;
 		$vs_type = $po_element->getId();
 		$va_children = $po_element->getChildren();
 

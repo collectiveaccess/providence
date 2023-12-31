@@ -102,11 +102,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	/**
 	 *
 	 */
-	private $opo_app_plugin_manager;
-	
-	/**
-	 *
-	 */
 	private $disable_acl = false;
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
@@ -7427,9 +7422,10 @@ if (!$vb_batch) {
 			
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
+			$errors = null;
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
 										$ps_field,  
-										null, 
+										$errors, 
 										array_merge(
 											$pa_options,
 											array(

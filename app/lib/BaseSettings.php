@@ -34,7 +34,7 @@ require_once(__CA_LIB_DIR__.'/View.php');
 class BaseSettings {
 	# ------------------------------------------------------
 	private $opa_settings_defs;
-	private $o_instance
+	private $o_instance;
 	# ------------------------------------------------------
 	public function __construct($pa_settings_defs) {
 		$this->opa_settings_defs = $pa_settings_defs;

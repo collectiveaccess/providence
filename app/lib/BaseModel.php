@@ -294,7 +294,10 @@ class BaseModel extends BaseObject {
 	 */
 	private $opb_log_changes = true;
 
-
+	/**
+	 *
+	 */
+	protected $opo_app_plugin_manager;
 	# --------------------------------------------------------------------------------
 	# --- Error handling properties
 	# --------------------------------------------------------------------------------

@@ -83,11 +83,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @used getNonPreferredLabelHTMLFormBundle()
 	 */
 	private $opa_failed_nonpreferred_label_inserts = array();
-	
-	/**
-	 *
-	 */
-	private $opo_app_plugin_manager;
 	# ------------------------------------------------------------------
 	/**
 	 * Check if preferred label for a given locale is defined for the current record
