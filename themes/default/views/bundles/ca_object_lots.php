@@ -418,7 +418,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?>
 			showEmptyFormsOnLoad: 0,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			isSortable: <?= (($t_subject->tableName() !== 'ca_objects') && $allow_drag_sort) ? "true" : "false"); ?>,
+			isSortable: <?= (($t_subject->tableName() !== 'ca_objects') && $allow_drag_sort) ? "true" : "false"; ?>,
 			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel,div.listRel',
 <?php if($quick_add_enabled) { ?>
