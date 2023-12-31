@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2014 Whirl-i-Gig
+ * Copyright 2006-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
 
@@ -45,39 +40,39 @@ class MediaProcessingSettings {
 	var $opo_config_settings;
 	var $opa_config_settings_as_array;
 	# ---------------------------------------------------
-	public function __construct($m_table='', $ps_field_name) {
+	public function __construct($table, $field) {
 		$this->opo_config = Configuration::load();
 		
-		if ($m_table && $ps_field_name) { $this->loadSettings($m_table, $ps_field_name); }
+		if ($table && $field) { $this->loadSettings($table, $field); }
 	}
 	# ---------------------------------------------------
-	public function loadSettings($m_table, $ps_field_name) {
-		if (!is_object($m_table)) {
-			// if it's not a table instance, try using $m_table as a table name
-			if (!($t_table = Datamodel::getInstanceByTableName($m_table, true))) { 
+	public function loadSettings($table, $field) {
+		if (!is_object($table)) {
+			// if it's not a table instance, try using $table as a table name
+			if (!($t_table = Datamodel::getInstanceByTableName($table, true))) { 
 				return false; 
 			}
 		} else {
-			$t_table =& $m_table;
+			$t_table = $table;
 		}
 		
-		if (!($va_field_info = $t_table->getFieldInfo($ps_field_name))) {
+		if (!($field_info = $t_table->getFieldInfo($field))) {
 			return false;
 		}
 		
 		$this->opa_table_settings = $this->opo_config_settings = null;
 		
-		if (!isset($va_field_info['MEDIA_ACCEPT']) || !is_array($va_field_info['MEDIA_ACCEPT'] ?? null)) {
-			if (!($vs_media_processing_setting = $va_field_info['MEDIA_PROCESSING_SETTING'] ?? null)) {
+		if (!isset($field_info['MEDIA_ACCEPT']) || !is_array($field_info['MEDIA_ACCEPT'] ?? null)) {
+			if (!($media_processing_setting = $field_info['MEDIA_PROCESSING_SETTING'] ?? null)) {
 				return false;
 			}
 			$this->opo_config_settings = Configuration::load(__CA_CONF_DIR__."/media_processing.conf");
 			
-			if (!($this->opa_config_settings_as_array = $this->opo_config_settings->getAssoc($vs_media_processing_setting))) {
+			if (!($this->opa_config_settings_as_array = $this->opo_config_settings->getAssoc($media_processing_setting))) {
 				return false;
 			}
 		} else {
-			$this->opa_table_settings =& $va_field_info;
+			$this->opa_table_settings = $field_info;
 		}
 		return true;
 	}
@@ -94,16 +89,16 @@ class MediaProcessingSettings {
 	}
 	# ---------------------------------------------------
 	# Returns media type if mimetype can be accepted, null if it cannot
-	public function canAccept($ps_mimetype) {
-		$vs_media_type = null;
+	public function canAccept($mimetype) {
+		$media_type = null;
 		if ($this->opa_table_settings) {
-			$vs_media_type = $this->opa_table_settings['MEDIA_ACCEPT'][$ps_mimetype] ?? null;
+			$media_type = $this->opa_table_settings['MEDIA_ACCEPT'][$mimetype] ?? null;
 		} else {
 			if($this->opo_config_settings) {
-				$vs_media_type = $this->opa_config_settings_as_array['MEDIA_ACCEPT'][$ps_mimetype] ?? null;
+				$media_type = $this->opa_config_settings_as_array['MEDIA_ACCEPT'][$mimetype] ?? null;
 			}
 		}
-		return $vs_media_type;
+		return $media_type;
 	}
 	# ---------------------------------------------------
 	public function getMediaTypes() {
@@ -123,16 +118,16 @@ class MediaProcessingSettings {
 	# 	VERSIONS = array of version info arrays
 	#	MEDIA_VIEW_DEFAULT_VERSION = name of version to use for default display
 	#
-	public function getMediaTypeInfo($ps_media_type) {
-		$va_media_type_info = null;
+	public function getMediaTypeInfo($media_type) {
+		$media_type_info = null;
 		if ($this->opa_table_settings) {
-			$va_media_type_info = $this->opa_table_settings['MEDIA_TYPES'][$ps_media_type] ?? null;
+			$media_type_info = $this->opa_table_settings['MEDIA_TYPES'][$media_type] ?? null;
 		} else {
 			if($this->opo_config_settings) {
-				$va_media_type_info = $this->opa_config_settings_as_array['MEDIA_TYPES'][$ps_media_type] ?? null;
+				$media_type_info = $this->opa_config_settings_as_array['MEDIA_TYPES'][$media_type] ?? null;
 			}
 		}
-		return $va_media_type_info;
+		return $media_type_info;
 	}
 	# ---------------------------------------------------
 	/**
@@ -140,7 +135,6 @@ class MediaProcessingSettings {
 	 */
 	public function getMediaTypeVersions($ps_media_type) {
 		$va_version_list = array();
-		
 		
 		if ($ps_media_type === '*') {
 			$va_media_types = $this->getMediaTypes();

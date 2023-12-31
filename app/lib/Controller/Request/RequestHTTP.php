@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__."/Controller/Request.php");
 
 # ----------------------------------------
@@ -70,6 +66,7 @@ class RequestHTTP extends Request {
 	
 	private $ops_script_name;
 	private $ops_base_path;
+	private $ops_full_path;
 	private $ops_path_info;
 	private $ops_request_method;
 	private $ops_raw_post_data = "";
@@ -860,6 +857,7 @@ class RequestHTTP extends Request {
 
 		$o_event_log = new Eventlog();
 		$vs_app_name = $this->config->get("app_name");
+		$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
@@ -913,9 +911,9 @@ class RequestHTTP extends Request {
 			
 			if (!$vb_login_successful) {
 				$this->user = new ca_users();		// add user object
-
+				$vs_tmp1 = $vs_tmp2 = null;
                 if (!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) || $pa_options['allow_external_auth']) {
-                    $vs_tmp1 = $vs_tmp2 = null;
+                    
                     if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
                         if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
                             $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
@@ -988,7 +986,6 @@ class RequestHTTP extends Request {
 				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
-				$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
 			}
 			return false;

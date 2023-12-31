@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2022 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
- 
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/View.php');
 
@@ -51,13 +46,6 @@ class BaseMediaViewer {
 	 */
 	static public function getView($request) {
 		return new View($request, $request->getViewsDirectoryPath()."/mediaViewers");
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	static public function getCallbacks() {
-		return self::$s_callbacks;
 	}
 	# -------------------------------------------------------
 	/**

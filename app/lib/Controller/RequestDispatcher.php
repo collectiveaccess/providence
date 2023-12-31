@@ -46,19 +46,18 @@ class RequestDispatcher extends BaseObject {
 	private $request;
 	private $response;
 
-	private $controller_path;
-	private $application_plugins_path;
-	private $theme_plugins_path;
+	private $opa_module_path;
+	private $ops_controller;
+	private $ops_action;
+	private $ops_action_extra;
+	private $opb_is_dispatchable = false;
 
-	private $module_path;
-	private $controller;
-	private $action;
-	private $action_extra;
-	private $is_dispatchable = false;
-
-	private $plugins = null;
-
-	private $default_action;
+	private $opa_plugins = null;
+	
+	private $ops_controller_path;
+	private $ops_default_action;
+	private $ops_application_plugins_path;
+	private $ops_theme_plugins_path;
 	# -------------------------------------------------------
 	public function __construct($request=null, $response=null) {
 		parent::__construct();

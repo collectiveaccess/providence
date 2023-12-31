@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,18 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-	require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
-	require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
-	
-	// Pull in Guzzle library (web services client)
-	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');
-	use GuzzleHttp\Client;
-
+require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
+require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
+use GuzzleHttp\Client;
 
 class ULANDataReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
@@ -177,6 +168,8 @@ class ULANDataReader extends BaseXMLDataReader {
 	 */
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num;
+		
+		return true;
 	}
 	# -------------------------------------------------------
 	/**

@@ -577,7 +577,7 @@ trait ModelSettings {
 								}
 							}
 						}
-						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, [], $va_opts);
 					}
 				} elseif (
 					($vs_rel_table = ($va_properties['useRelationshipTypeList'] ?? null)) || 

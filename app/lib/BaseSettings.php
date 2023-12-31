@@ -33,6 +33,9 @@ require_once(__CA_LIB_DIR__.'/View.php');
 
 class BaseSettings {
 	# ------------------------------------------------------
+	private $opa_settings_defs;
+	private $o_instance
+	# ------------------------------------------------------
 	public function __construct($pa_settings_defs) {
 		$this->opa_settings_defs = $pa_settings_defs;
 	}
@@ -691,7 +694,6 @@ jQuery(document).ready(function() {
 		$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 		$va_available_settings = $this->getAvailableSettings();
 
-		$this->o_instance->setMode(ACCESS_WRITE);
 		$va_values = array();
 		foreach(array_keys($va_available_settings) as $vs_setting) {
 			$va_properties = $va_available_settings[$vs_setting];

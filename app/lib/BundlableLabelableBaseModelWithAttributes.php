@@ -98,6 +98,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $do_highlighting = false;
+	
+	/**
+	 *
+	 */
+	private $opo_app_plugin_manager;
+	
+	/**
+	 *
+	 */
+	private $disable_acl = false;
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
@@ -139,12 +149,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * against the ca_lists list for the table (as defined by getTypeListCode())
 	 */ 
 	public function insert($pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+			
 		$vb_we_set_transaction = false;
 		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
 		$table = $this->tableName();
 		if (!is_a($this, "BaseRelationshipModel")) {
-			global $AUTH_CURRENT_USER_ID;
 
 			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $table, 'instance' => $this));
 
@@ -272,7 +283,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Set ACL for newly created record
 		if ($this->getAppConfig()->get('perform_item_level_access_checking') && !$this->getAppConfig()->get("{$table}_dont_do_item_level_access_control")) {
-			$this->setACLUsers([$this->request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__]);
+			if($AUTH_CURRENT_USER_ID) { $this->setACLUsers([$AUTH_CURRENT_USER_ID => __CA_ACL_EDIT_DELETE_ACCESS__]); }
 			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level'));
 		}
 		
@@ -639,7 +650,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// is this relationship part of a policy?
 					foreach($history_tracking_policies as $policy) {
 						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
-						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
+						if (!is_array($h = self::getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
 					
 						$current = array_shift(array_shift($h));
 						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
@@ -766,7 +777,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function get($ps_field, $pa_options=null) {
 		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
-		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->TABLE) && ($vs_field = $va_tmp[1]))) {
+		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->tableName()) && ($vs_field = $va_tmp[1]))) {
 			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
 		}
 		if($this->_rowAsSearchResult) {
@@ -6731,7 +6742,7 @@ if (!$vb_batch) {
 						foreach($t_rel_item->getFormFields() as $vs_field => $va_field_info) {
 							if (!isset($va_rels[$vs_sort_key][$vn_id][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
 							$va_rels[$vs_sort_key][$vn_id]['intrinsic'][$vs_field] = $va_rels[$vs_sort_key][$vn_id][$vs_field];
-							unset($va_rel[$vs_sort_key][$vn_id][$vs_field]);
+							unset($va_rels[$vs_sort_key][$vn_id][$vs_field]);
 						}
 						unset($va_rels[$vs_sort_key][$vn_id]['_key']);
 						unset($va_rels[$vs_sort_key][$vn_id]['row_id']);
@@ -7349,6 +7360,8 @@ if (!$vb_batch) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
 		
+		$vb_fl_display_form_field_tips = caGetOption('display_form_field_tips', $pa_options, false);
+		
 		$vs_errors = null;
 		
 		if (!$this->opo_idno_plugin_instance) {
@@ -7416,7 +7429,7 @@ if (!$vb_batch) {
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
 										$ps_field,  
-										$va_errors, 
+										null, 
 										array_merge(
 											$pa_options,
 											array(

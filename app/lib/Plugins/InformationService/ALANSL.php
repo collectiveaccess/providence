@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,17 +29,15 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- * @file A class to interface with the ALA National Species Lists API
- */
-
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
+/**
+ * @file A class to interface with the ALA National Species Lists API
+ */
 global $g_information_service_settings_ala_nsl_search_fields;
 
 global $g_information_service_settings_ala_nsl;
@@ -218,7 +216,7 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	public function getDataForSearchIndexing($pa_settings, $ps_url) {
 		$vm_search_fields = caGetOption('searchFields', $pa_settings, $this->pa_available_search_fields);
 		if (!is_array($vm_search_fields)) {
-			$vm_search_fields = array_intersect($this->pa_available_search_fields, explode("\n", preg_replace('/\s+/g', "\n", $vm_search_fields)));
+			$vm_search_fields = array_intersect($this->pa_available_search_fields, explode("\n", preg_replace('/\s+/', "\n", $vm_search_fields)));
 		}
 		$va_data = $this->getExtraInfo($pa_settings, $ps_url);
 		return array_intersect_key(array_filter($va_data), array_flip($vm_search_fields));
