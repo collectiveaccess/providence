@@ -29,12 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */ 
 require_once(__CA_LIB_DIR__."/BaseFindController.php");
-require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 require_once(__CA_APP_DIR__.'/helpers/browseHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 
@@ -398,7 +393,6 @@ class BaseBrowseController extends BaseFindController {
 		}
 		
 		$this->view->setVar('browse_last_id', (int)$vm_id ? (int)$vm_id : (int)$this->opo_result_context->getParameter($ps_facet_name.'_browse_last_id'));
-		$this->view->setVar('facet', $va_facet);
 		
 		$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
 		if ($va_facet_info['type'] == 'attribute') {
@@ -491,19 +485,6 @@ class BaseBrowseController extends BaseFindController {
 		
 		// Get level sort criteria
 		if (!(is_array($va_sorts = $o_config->getList($this->ops_tablename.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
-		foreach($va_sorts as $vn_i => $vs_sort_fld) {
-			$va_tmp = explode(".", $vs_sort_fld);
-			
-			if ($va_tmp[1] == 'preferred_labels') {
-				$va_tmp[0] = $vs_label_table_name;
-				if (!($va_tmp[1] = $va_tmp[2])) {
-					$va_tmp[1] = $vs_label_display_field_name;
-				}
-				unset($va_tmp[2]);
-				
-				$va_sorts[$vn_i] = join(".", $va_tmp);
-			}
-		}
 		
 		// Get level sort direction
 		if (!in_array($vs_sort_dir = strtolower($o_config->get($this->ops_tablename.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) { $vs_sort_dir = 'asc'; }
@@ -806,14 +787,6 @@ class BaseBrowseController extends BaseFindController {
 		}
 		
 		return join("; ", $va_buf);
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */ 
-	public function getPartialResult($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
-		return parent::getPartialResult($pa_options);
 	}
 	# -------------------------------------------------------
 	# Sidebar info handler
