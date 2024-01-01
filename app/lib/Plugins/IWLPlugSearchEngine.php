@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,11 +28,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
- /**
-  *
-  */	
+ */	
 interface IWLPlugSearchEngine {
 	# -------------------------------------------------------
 	# Initialization, state and capabilities
@@ -54,7 +50,7 @@ interface IWLPlugSearchEngine {
 	# -------------------------------------------------------
 	# Search
 	# -------------------------------------------------------
-	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query);
+	public function search(int $subject_tablenum, string $search_expression, array $filters, $rewritten_query);
 	public function addFilter($access_point, $operator, $value);
 	public function clearFilters();
 	public function quickSearch($pn_table_num, $ps_search, $pa_options=null);

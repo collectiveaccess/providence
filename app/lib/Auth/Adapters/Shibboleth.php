@@ -40,6 +40,11 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	private $auth_config = null;
 	
+	/**
+	 *
+	 */
+	private $opo_shibAuth = null;
+	
 	# --------------------------------------------------------------------------------
 	/**
 	 *

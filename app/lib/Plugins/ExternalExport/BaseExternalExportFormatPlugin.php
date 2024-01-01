@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 
@@ -42,6 +38,8 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 	protected $properties = array(
 		
 	);
+	
+	protected $opo_config;
 
 	// plugin info
 	protected $info = [
@@ -152,7 +150,7 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 	/**
 	 *
 	 */
-	public function _processFiles($t_instance, $content_spec, $options=null) {
+	public function _processFiles(BaseModel $t_instance, array $content_spec, array $target_info, ?array $options=null) {
 		$file_list = [];
 		$file_mimetypes = [];
 		$total_filesize = 0;
@@ -164,13 +162,16 @@ abstract class BaseExternalExportFormatPlugin Extends WLPlug {
 			$instance_list = [$t_instance];
 		}
 		
+		$target_options = caGetOption('options', $target_info, []);
         $file_list_template = caGetOption('file_list_template', $target_options, '');
         
 		$restrict_to_types = caGetOption('restrictToTypes', $content_spec, null);
 		$restrict_to_mimetypes = caGetOption('restrictToMimeTypes', $content_spec, null);
 		
 		$media_index = caGetOption('mediaIndex', $options, null);
+		$target_info = caGetOption('options', $target_info, null);
 		
+		$file_list_template = caGetOption('file_list_template', $target_info, null);
 		foreach($instance_list as $t) {
 			if (is_array($restrict_to_types) && sizeof($restrict_to_types) && !in_array($t->getTypeCode(), $restrict_to_types)) { continue; }
 			foreach($content_spec['files'] as $get_spec => $export_filename_spec) {

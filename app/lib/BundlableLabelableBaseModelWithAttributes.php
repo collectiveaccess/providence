@@ -3069,7 +3069,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$t_root = $table::findAsInstance($this->getHierarchyRootID());
 		}
 		if(!$t_root) {
-			return $o_view;
+			return null;
 		}
 		$child_ids = $t_root->getHierarchyChildren(null, ['idsOnly' => true]);
 		

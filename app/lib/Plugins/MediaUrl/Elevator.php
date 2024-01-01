@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,11 +30,7 @@
  * ----------------------------------------------------------------------
  */
 namespace CA\MediaUrl\Plugins;
- 
- /**
-  *
-  */
-  require_once(__CA_LIB_DIR__.'/Plugins/MediaUrl/BaseMediaUrlPlugin.php');
+require_once(__CA_LIB_DIR__.'/Plugins/MediaUrl/BaseMediaUrlPlugin.php');
  
 class Elevator Extends BaseMediaUrlPlugin {	
 	# ------------------------------------------------
@@ -123,7 +119,7 @@ class Elevator Extends BaseMediaUrlPlugin {
 				return $content;
 			}
 			
-			if(!$dest) { rename($tmp_file, $tmp_file .= '.'.$format); }
+			if(!$dest) { rename($tmp_file, $tmp_file .= '.jpg'); }
 			
 			return array_merge($p, ['file' => $tmp_file]);
 		}
@@ -144,6 +140,7 @@ class ElevatorAPI
     private $apiKey = null;
     private $baseURL = null;
     public $fileTypes = null;
+    private $apiSecret = null;
 
     function __construct($elevatorURL, $apiKey, $apiSecret, $userId=null)
     {

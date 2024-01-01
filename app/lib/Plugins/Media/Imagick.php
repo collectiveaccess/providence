@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/**
- * Plugin for processing images using ImageMagick via the Imagick PECL extension
-*/
-
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
@@ -55,6 +46,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $metadata = array();
 	
 	var $opo_config;
+	protected $filepath;
+	protected $filepath_conv;
 	
 	var $info = array(
 		"IMPORT" => array(
@@ -1080,12 +1073,12 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$file_cleanup_list[] = $vs_archive_original = $vs_archive_original.".tif";
 
 		$vo_orig = new Imagick();
-		$vo_orig->setResourceLimits($r_handle);
+		$this->setResourceLimits($vo_orig);
 
 		foreach($pa_files as $vs_file){
 			if(file_exists($vs_file)){
 				$vo_imagick = new Imagick();
-				$vo_imagick->setResourceLimits($r_handle);
+				$this->setResourceLimits($vo_imagick);
 
 				if($vo_imagick->readImage($vs_file)){
 					$vo_orig->addImage($vo_imagick);

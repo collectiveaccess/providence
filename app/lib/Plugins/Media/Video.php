@@ -29,15 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/** 
-  * Plugin for processing video media using ffmpeg
-  */
-
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
@@ -56,7 +47,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $oproperties = [];
 	var $media_metadata = [];
 	
-	var $path_to_ffmeg = null;
+	protected $path_to_ffmeg = null;
+	protected $ops_path_to_ffmeg = null;
+	protected $ops_path_to_mediainfo = null;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -84,7 +77,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
-			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",

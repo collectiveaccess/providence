@@ -137,7 +137,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num;
 		
-		return true
+		return true;
 	}
 	# -------------------------------------------------------
 	/**

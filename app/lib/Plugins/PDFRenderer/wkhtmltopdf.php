@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
+class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugin Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
 	/** 
 	 *
@@ -138,7 +133,7 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		@unlink($vs_header_path);
 		@unlink($vs_footer_path);
 		
-		if($path = caGetOption('writeFile', $pa_options, false)) {
+		if($path = caGetOption('writeFile', $options, false)) {
 			copy($vs_output_path, $path);
 		}
 		@unlink($vs_output_path);

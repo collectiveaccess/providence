@@ -29,21 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
-# ----------------------------------------------------------------------
-# --- Import classes
-# ----------------------------------------------------------------------
-include_once(__CA_LIB_DIR__."/BaseObject.php");
 include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
 include_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
-
 
 # ----------------------------------------------------------------------
 class SearchResult extends BaseObject {
@@ -55,6 +45,9 @@ class SearchResult extends BaseObject {
 	// ----
 	
 	private $opa_options;
+	
+	private $ops_subject_pk;
+	protected $highlight = false;
 
 	/**
 	 * @var IWLPlugSearchEngineResult
@@ -2043,6 +2036,7 @@ class SearchResult extends BaseObject {
 		// Make sure spec has a table name, otherwise we can get caught in an infinite loop when we pull using the spec
 		if ((substr($va_spec[0], 0, 3) !== 'ca_') || !Datamodel::tableExists($va_spec[0])) { array_unshift($va_spec, $va_path_components['table_name']); }
 		
+		$row_ids = [];
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
 			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_rel_instance->hasField('access') && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
@@ -2080,7 +2074,7 @@ class SearchResult extends BaseObject {
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
 		
 		if ($vb_return_as_link) {
-			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
+			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), $va_ids);
 		}
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
@@ -2465,12 +2459,12 @@ class SearchResult extends BaseObject {
                                         if (preg_match("!\[([^\]]+)!", $vs_val_proc, $va_matches)) {
                                             $va_tmp = explode(',', $va_matches[1]);
                                             if ((sizeof($va_tmp) == 2) && (is_numeric($va_tmp[0])) && (is_numeric($va_tmp[1]))) {
-                                                $vs_val_proc = array('latitude' => trim($va_tmp[0]), 'longitude' => trim($va_tmp[1]), 'path' => trim($va_matches[1]), 'label' => $this->ops_text_value);
+                                                $vs_val_proc = array('latitude' => trim($va_tmp[0]), 'longitude' => trim($va_tmp[1]), 'path' => trim($va_matches[1]), 'label' => $vs_val_proc);
                                             } else {
-                                                $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                                $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $vs_val_proc);
                                             }
                                         } else {
-                                            $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                            $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $vs_val_proc);
                                         }
                                     }
 									$vb_dont_return_value = false;
@@ -2829,7 +2823,7 @@ class SearchResult extends BaseObject {
 							}
 						}
 						
-						$va_return_values[$vn_id][$vm_locale_id][] = $d;
+						$va_return_values[$vn_i][$vn_locale_id][] = $d;
 					}
 				}
 				break;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace CA\Sync\LogEntry;
 
 require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
@@ -70,7 +69,7 @@ class Attribute extends Base {
 
 			$vs_attribute_guid = $va_snapshot['attribute_guid'];
 			if(!($va_guid_info = \ca_guids::getInfoForGUID($vs_attribute_guid))) {
-				throw new InvalidLogEntryException(_t("Couldnt find ca_attributes record for guid %1.", $vs_row_guid));
+				throw new InvalidLogEntryException(_t("Couldnt find ca_attributes record for guid %1.", $vs_attribute_guid));
 			}
 		}
 	}

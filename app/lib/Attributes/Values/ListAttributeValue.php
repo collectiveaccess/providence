@@ -30,14 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
 define("__CA_ATTRIBUTE_VALUE_LIST__", 3);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 global $_ca_attribute_settings;
 
@@ -288,6 +284,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
 	 */
 	protected $ops_name_plural = 'List items';
+	
+	/**
+	 *
+	 */
+	protected $opn_item_id;
+	
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
 		parent::__construct($pa_value_array);

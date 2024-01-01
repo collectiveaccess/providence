@@ -298,7 +298,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	public function rollbackTransaction($po_caller) {
 		if (!$this->opr_db->rollBack()) {
 			$po_caller->postError(250, "Could not rollback transaction", "Db->pdo_mysql->rollbackTransaction()");
-			throw new DatabaseException(_t("Could not rollback transaction: %1", $e->getMessage()), 250, "Db->pdo_mysql->rollbackTransaction()");
+			throw new DatabaseException(_t("Could not rollback transaction"), 250, "Db->pdo_mysql->rollbackTransaction()");
 			return false;
 		}
 		return true;

@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
 require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php'); 
@@ -53,6 +49,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	private $tep;			// date/time expression parse
 	
+	protected $debug = false;
 	
 	private $q_lookup_word = null;
 	private $insert_word_sql = '';
@@ -72,6 +69,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	private $delete_dependent_sql = "";
 	private $q_delete_dependent_sql = null;
 	
+	private $lookup_word_sql = "";
+	private $opqr_insert_word = null;
+	
+	private $delete_with_field_num_sql_without_rel_type_id = "";
+	private $q_delete_with_field_num_without_rel_type_id = null;
+	
+	private $get_result_desc_data = false;
 	
 	static public $whitespace_tokenizer_regex;
 	static public $punctuation_tokenizer_regex;
@@ -214,7 +218,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
+	public function search(int $subject_tablenum, string $search_expression, array $filters, $rewritten_query) {
 		$this->initSearch($subject_tablenum, $search_expression, $filters, $rewritten_query);
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
@@ -893,7 +897,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$qinfo = $this->_queryForDateRangeAttribute(new DateRangeAttributeValue(), $ap, $text, $text_upper);
 				break;
 			case __CA_ATTRIBUTE_VALUE_TIMECODE__:
-				$qinfo = $this->_queryForNumericAttribute(new TimecodeAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
+				$qinfo = $this->_queryForNumericAttribute(new TimeCodeAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_LENGTH__:
 				$qinfo = $this->_queryForNumericAttribute(new LengthAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
@@ -1944,7 +1948,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $ap['access_point']));
 			}
 			
 			$pk = $t_table->primaryKey(true);
@@ -1952,7 +1956,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$field = $tmp[1];
 			
 			if(!$t_table->hasField($field)) { 
-				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $access_point));
+				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $ap['access_point']));
 			}
 		} else {
 			$field = 'cav.'.$attr_field;
@@ -2163,7 +2167,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $ap['access_point']));
 			}
 			
 			$pk = $t_table->primaryKey(true);

@@ -29,15 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class ItemService extends BaseJSONService {
+	# -------------------------------------------------------
+	protected $opo_app_plugin_manager = null;
+	
 	# -------------------------------------------------------
 	public function __construct($po_request, $ps_table="") {
 		parent::__construct($po_request, $ps_table);
@@ -963,7 +961,7 @@ class ItemService extends BaseJSONService {
 			}
 		} else if ($va_post["remove_all_attributes"]) {
 			$t_instance->removeAttributes();
-		} else if ($pa_data["purge_all_attributes"]) {
+		} else if ($va_post["purge_all_attributes"]) {
 			$t_instance->purgeAttributes();
 		}
 
