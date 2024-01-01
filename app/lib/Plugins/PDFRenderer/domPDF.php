@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,18 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
+class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
 	/** 
 	 *
@@ -120,7 +115,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 * @seealso domPDF::render()
 	 */
 	public function renderFile($ps_file_path, $pa_options=null) {
-		$this->renderer->load_html_file($load_html_file);
+		$this->renderer->load_html_file($ps_file_path);
 		
 		$this->renderer->render();
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,10 +30,6 @@
  * ----------------------------------------------------------------------
  */
 namespace CA\MediaUrl\Plugins;
- 
- /**
-  *
-  */
 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 
@@ -44,6 +40,10 @@ class BaseMediaUrlPlugin extends \WLPlug  {
 	 */
 	protected $info = [];
 	
+	/**
+	 * 
+	 */
+	protected $opo_config;
 	
 	# ------------------------------------------------
 	public function __construct() {

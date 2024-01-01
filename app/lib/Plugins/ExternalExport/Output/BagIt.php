@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");

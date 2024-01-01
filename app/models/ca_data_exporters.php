@@ -736,7 +736,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 					$vs_parent_id = trim((string)$o_parent->getValue());
-					if(($vs_mode !== 'template') && $vn_parent_id) {
+					if(($vs_mode !== 'template') && $vs_parent_id) {
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)) {
 							$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
 							$o_log->logWarn($m);

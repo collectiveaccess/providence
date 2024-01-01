@@ -4562,11 +4562,10 @@ jQuery(document).ready(function() {
 					throw new ApplicationException(_t('Invalid viewer: %1/%2', $vs_mimetype, $ps_display_type));
 				}
 				
+				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
 				if ($pb_inline) {
 					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
 				}
-
-				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
 
 				if ((($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
 				||

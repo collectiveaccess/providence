@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -372,7 +372,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $po_rewritten_query
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
-	public function search(int $pn_subject_tablenum, string $ps_search_expression, array $pa_filters=[], $po_rewritten_query) {
+	public function search(int $pn_subject_tablenum, string $ps_search_expression, array $pa_filters, $po_rewritten_query) {
 		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
 		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
 
@@ -417,7 +417,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$va_results = ['hits' => ['hits' => []]];
 		}
 
-		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);
+		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], [], $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	/**
@@ -760,7 +760,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		if (!is_array($pa_options)) { $pa_options = []; }
 		$vn_limit = caGetOption('limit', $pa_options, 0);
 
-		$o_result = $this->search($pn_table_num, $ps_search);
+		$o_result = $this->search($pn_table_num, $ps_search, [], null);
 		$va_pks = $o_result->getPrimaryKeyValues();
 		if($vn_limit) {
 			$va_pks = array_slice($va_pks, 0, $vn_limit);

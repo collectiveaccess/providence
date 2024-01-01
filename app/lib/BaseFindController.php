@@ -1175,7 +1175,7 @@ class BaseFindController extends ActionController {
 	 * @return array 
 	 */
 	private function _getDisplayList($display_id) {
-		$vb_dummy = null;
+		$dummy = null;
 		$t_display = new ca_bundle_displays($display_id);
 		
 		$vs_view = $this->opo_result_context->getCurrentView();

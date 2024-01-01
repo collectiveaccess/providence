@@ -29,15 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/**
- * Plugin for processing 3D object files
- */
- 
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");
@@ -45,6 +36,9 @@ include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/Parsers/PlyToStl.php");
 
+/**
+ * Plugin for processing 3D object files
+ */
 class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	var $errors = [];
 	
@@ -120,6 +114,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	# Alternative extensions for supported types
 	#
 	var $alternative_extensions = [];
+	
+	protected $metdata = [];
 	
 	# ------------------------------------------------
 	public function __construct() {

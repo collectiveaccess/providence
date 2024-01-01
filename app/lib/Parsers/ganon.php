@@ -1154,13 +1154,11 @@ class HTML_Node {
 		return $n;
 	}
 	function getNamespace() {
-		if ($tag_ns === null) {
-			$a = explode(':', $this->tag, 2);
-			if (empty($a[1])) {
-				$this->tag_ns = array('', $a[0]);
-			} else {
-				$this->tag_ns = array($a[0], $a[1]);
-			}
+		$a = explode(':', $this->tag, 2);
+		if (empty($a[1])) {
+			$this->tag_ns = array('', $a[0]);
+		} else {
+			$this->tag_ns = array($a[0], $a[1]);
 		}
 		return $this->tag_ns[0];
 	}
@@ -1171,9 +1169,7 @@ class HTML_Node {
 		}
 	}
 	function getTag() {
-		if ($tag_ns === null) {
-			$this->getNamespace();
-		}
+		$this->getNamespace();
 		return $this->tag_ns[1];
 	}
 	function setTag($tag, $with_ns = false) {
@@ -1503,7 +1499,7 @@ class HTML_Node {
 		}
 		$class = $this->class;
 		foreach ($className as $c) {
-			$class = reg_replace('`\b'.preg_quote($c).'\b`si', '', $class);
+			$class = preg_replace('`\b'.preg_quote($c).'\b`si', '', $class);
 		}
 		if ($class) {
 			$this->class = $class;
@@ -1782,7 +1778,7 @@ class HTML_Node {
 		return $this->getChildrenByAttribute('id', $id, 'equals', 'total', $recursive);
 	}
 	function getChildrenByClass($class, $recursive = true) {
-		return $this->getChildrenByAttribute('class', $id, 'equals', 'total', $recursive);
+		return $this->getChildrenByAttribute('class', $class, 'equals', 'total', $recursive);
 	}
 	function getChildrenByName($name, $recursive = true) {
 		return $this->getChildrenByAttribute('name', $name, 'equals', 'total', $recursive);

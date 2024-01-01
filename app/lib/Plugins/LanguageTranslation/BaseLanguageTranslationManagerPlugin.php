@@ -31,9 +31,6 @@
  */
 namespace CA\LanguageTranslation\Plugins;
  
-/**
- *
- */
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 
 abstract class BaseLanguageTranslationManagerPlugin extends \WLPlug  {
@@ -42,6 +39,11 @@ abstract class BaseLanguageTranslationManagerPlugin extends \WLPlug  {
 	 * 
 	 */
 	protected $info = [];
+	
+	/**
+	 *
+	 */
+	protected $opo_config;
 	
 	# ------------------------------------------------
 	public function __construct() {

@@ -38,10 +38,10 @@ class InterstitialBrowse extends BaseBrowse {
 	 * Which table does this class represent?
 	 */
 	protected $ops_tablename;
-	protected $ops_tablenum;
+	protected $opn_tablenum;
 	protected $ops_primary_key;
 	# ----------------------------------------------------------------------
-	public function __construct($pn_browse_id, $ps_context='', $ps_table) {
+	public function __construct($pn_browse_id, $ps_context, $ps_table) {
 		$this->ops_tablename = $ps_table;
 		$this->opn_tablenum = Datamodel::getTableNum($ps_table);
 	

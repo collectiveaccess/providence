@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__."/BaseObject.php");
 require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__."/Utils/ProcessStatus.php");
@@ -477,7 +476,7 @@ class TaskQueue extends BaseObject {
 					'CODE' => 'ERR', 
 					'SOURCE' => 'TaskQueue->cancelPendingTasksForRow()', 
 					'MESSAGE' => _t('Can\'t cancel pending tasks for row key "%1" because the row is being processed', $ps_row_key)));
-			$this->error = _t('Can\'t cancel pending tasks for row key "%1" because the queue is being processed', $ps_row_key);
+			$this->postError(510, _t('Can\'t cancel pending tasks for row key "%1" because the queue is being processed', $ps_row_key), 'TaskQueue->cancelPendingTasks()');
 			return false;
 		}
 		$sql_handler_criteria = '';

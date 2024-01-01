@@ -1328,7 +1328,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		$mode = caGetOption('mode', $options, null);
 	
-		$table_name = $table_name ? $table_name : get_called_class();
+		$table_name = get_called_class();
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
 		
 		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {

@@ -440,14 +440,6 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 	}
 	# -------------------------------------------------------
 	/**
-	 *
-	 */ 
-	public function getPartialResult($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
-		return parent::getPartialResult($pa_options);
-	}
-	# -------------------------------------------------------
-	/**
 	 * Returns string representing the name of the item the search will return
 	 *
 	 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned

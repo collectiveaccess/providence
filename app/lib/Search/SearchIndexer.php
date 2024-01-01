@@ -1508,7 +1508,7 @@ if (!$for_current_value_reindex) {
 								}
 							}
 						}
-						
+						$rtable_num = $t_base->tableNum();
 						foreach($references as $row_id => $elements) {
 							$content = join('; ', array_keys($values ?? []));
 							$element_fields_to_index = $this->getFieldsToIndex($element_table_num, $rtable_num);
@@ -1570,6 +1570,8 @@ if (!$for_current_value_reindex) {
 				}
 			}
 		}
+		
+		return true;
 	}
 	# ------------------------------------------------
 	/**

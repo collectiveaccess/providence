@@ -29,14 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/**
- * Plugin for processing audio media using ffmpeg
- */
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
@@ -272,7 +264,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false;
 		}
 		if (!(($this->handle) && ($this->handle["filepath"] == $filepath))) {
-			$ID3 = new getid3();
+			$ID3 = new getID3();
 			$info = $ID3->analyze($filepath);
 			
 			if ($info["mime_type"] === 'audio/x-wave') {
@@ -612,7 +604,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						unlink($vs_tmp_filename);
 					}
 				
-					$o_getid3 = new getid3();
+					$o_getid3 = new getID3();
 					$mp3_output_info = $o_getid3->analyze($filepath.".".$ext);
 					$this->properties = array();
 					if (is_array($mp3_output_info["tags"]["id3v1"]["title"] ?? null)) {
@@ -776,6 +768,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$poster_frame_url =	$options["poster_frame_url"] ?? null;
 				$captions = 		caGetOption("captions", $options, [], ['castTo' => 'array']);
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
+				$ui	=				caGetOption("ui", $options, 'plyr-audio');
 				ob_start();
 				
 				$caption_count = is_array($captions) ? sizeof($captions) : 0;
@@ -817,7 +810,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$poster_style = ($poster_frame_url) ? "style='background-image: url(\"{$poster_frame_url}\");'" : null;
 ?>
 					<div class="<?= $class; ?>" <?= $poster_style; ?>>
-						<audio id="<?= $id; ?>" src="<?= $url; ?>" <?= ($poster_url = caGetOption('posterURL', $options, null) ? "poster='{$poster_url}'" : ''); ?> type="<?= $properties["mimetype"]; ?>" controls="controls"></audio>
+						<audio id="<?= $id; ?>" src="<?= $url; ?>" <?= (($poster_url = caGetOption('posterURL', $options, null)) ? "poster='{$poster_url}'" : ''); ?> type="<?= $properties["mimetype"]; ?>" controls="controls"></audio>
 					</div>	
 					<script type="text/javascript">
 						jQuery(document).ready(function() {

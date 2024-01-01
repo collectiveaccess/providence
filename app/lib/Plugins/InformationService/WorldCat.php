@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
-
-
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -299,7 +293,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 			$r_conn = yaz_connect(WLPlugInformationServiceWorldCat::$s_worldcat_z3950_host, array('user' => $va_config['user'], 'password' => $va_config['password']));
 
 			yaz_syntax($r_conn, "usmarc");
-			yaz_range($r_conn, $vn_start + 1, $vn_start + $vn_count);
+			yaz_range($r_conn, 1, 2);
 			yaz_search($r_conn, "rpn", '@attr 1=12 @attr 4=2 "'.str_replace('"','', $vn_worldcat_id).'"');
 			yaz_wait();
 

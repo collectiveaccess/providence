@@ -1,3 +1,4 @@
+
 <?php
 /** ---------------------------------------------------------------------
  * app/lib/Plugins/Media/BinaryFile.php :
@@ -28,16 +29,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
- /**
-  *
-  */
- 
-/**
- * Plugin for processing 3D object files
- */
- 
+ */ 
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");

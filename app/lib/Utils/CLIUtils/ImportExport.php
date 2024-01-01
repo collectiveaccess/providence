@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
 trait CLIUtilsImportExport { 
 	# -------------------------------------------------------
 	/**
@@ -37,7 +36,6 @@ trait CLIUtilsImportExport {
 	 */
 	public static function import_media($po_opts=null) {
 		require_once(__CA_LIB_DIR__."/BatchProcessor.php");
-
 
 		if (!caCheckMediaDirectoryPermissions()) {
 			CLIUtils::addError(_t('The media directory is not writeable by the current user. Try again, running the import as the web server user.'));
@@ -1074,20 +1072,20 @@ trait CLIUtilsImportExport {
 		$table = $po_opts->getOption('table');
 		if (!$table) {
 			CLIUtils::addError(_t('You must specify a table'));
-			return;
+			return false;
 		}
 		if (!Datamodel::tableExists($table)) {
 			CLIUtils::addError(_t('Invalid table %1', $table));
-			return;
+			return false;
 		}
 		$id = $po_opts->getOption('id');
 		if (!$id) {
 			CLIUtils::addError(_t('You must specify an id'));
-			return;
+			return false;
 		}
 
 		$e = new ExternalExportManager();
-		$e->process($table, $id, ['target' => $target, 'logLevel' => $log_level]);
+		return (bool)$e->process($table, $id, ['target' => $target, 'logLevel' => $log_level]);
 	}
 	# -------------------------------------------------------
 	public static function run_external_exportParamList() {
@@ -1136,7 +1134,7 @@ trait CLIUtilsImportExport {
 		$log_level = $po_opts->getOption('log-level');
 
 		$e = new ExternalExportManager(['logLevel' => $log_level]);
-		$e->processPending(['target' => $target, 'logLevel' => $log_level]);
+		return (bool)$e->processPending(['target' => $target, 'logLevel' => $log_level]);
 	}
 	# -------------------------------------------------------
 	public static function run_pending_external_exportsParamList() {
@@ -1177,28 +1175,28 @@ trait CLIUtilsImportExport {
 		$file = $po_opts->getOption('file');
 		if (!$file) {
 			CLIUtils::addError(_t('A file must be specified'));
-			return;
+			return false;
 		}
 
 		if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to file %1', $file));
-			return;
+			return false;
 		}
 
 		$mapping = $po_opts->getOption('mapping');
 		if (!$mapping) {
 			CLIUtils::addError(_t('An export mapping must be specified'));
-			return;
+			return false;
 		}
-
 
 		try {
 			ca_data_exporters::writeExporterToFile($mapping, $file);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not export %1: %2', $mapping, $e->getMessage()));
-			return;
+			return false;
 		}
 		CLIUtils::addMessage(_t('Exported %1', $mapping));
+		return true;
 	}
 	# -------------------------------------------------------
 	public static function write_exporter_to_fileParamList() {
@@ -1239,18 +1237,18 @@ trait CLIUtilsImportExport {
 		$file = $po_opts->getOption('file');
 		if (!$file) {
 			CLIUtils::addError(_t('A file must be specified'));
-			return;
+			return false;
 		}
 
 		if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to file %1', $file));
-			return;
+			return false;
 		}
 
 		$table = $po_opts->getOption('table');
 		if (!$table) {
 			CLIUtils::addError(_t('A table must be specified'));
-			return;
+			return false;
 		}
 
 		$format = strtoupper($po_opts->getOption('format'));
@@ -1259,7 +1257,7 @@ trait CLIUtilsImportExport {
 		$display = $po_opts->getOption('display');
 		if(!($t_display = ca_bundle_displays::find(['display_code' => $display], ['returnAs' => 'firstModelInstance']))) {
 			CLIUtils::addError(_t('A valid display must be specified'));
-			return;
+			return false;
 		}
 
 		$search = $po_opts->getOption('search');
@@ -1267,7 +1265,7 @@ trait CLIUtilsImportExport {
 
 		if(!($o_s = caGetSearchInstance($table))) {
 			CLIUtils::addError(_t('Could not create search for %1', $table));
-			return;
+			return false;
 		}
 		$result = $o_s->search($search);
 
@@ -1294,7 +1292,7 @@ trait CLIUtilsImportExport {
 				file_put_contents($file, $output);
 				return;
 			case 'DOCX':
-				$view->render('Results/docx_results.php');
+				$output = $view->render('Results/docx_results.php');
 				file_put_contents($file, $output);
 				return;						
 			case 'CSV':
@@ -1309,7 +1307,7 @@ trait CLIUtilsImportExport {
 				break;
 			default:
 				CLIUtils::addError(_t('Invalid format %1', $format));
-				return;
+				return false;
 		}
 
 		$rows = [];
@@ -1341,7 +1339,8 @@ trait CLIUtilsImportExport {
 		}
 		fclose($r);		
 
-		CLIUtils::addMessage(_t('Exported %1', $mapping));
+		CLIUtils::addMessage(_t('Exported using %1', $display));
+		return true;
 	}
 	# -------------------------------------------------------
 	public static function export_search_using_displayParamList() {
@@ -1384,18 +1383,18 @@ trait CLIUtilsImportExport {
 		$file = $po_opts->getOption('file');
 		if (!$file) {
 			CLIUtils::addError(_t('A file must be specified'));
-			return;
+			return false;
 		}
 
 		if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to file %1', $file));
-			return;
+			return false;
 		}
 
 		$mapping = $po_opts->getOption('mapping');
 		if (!$mapping) {
 			CLIUtils::addError(_t('An import mapping must be specified'));
-			return;
+			return false;
 		}
 
 
@@ -1403,9 +1402,10 @@ trait CLIUtilsImportExport {
 			ca_data_importers::writeImporterToFile($mapping, $file);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not import mapping %1: %2', $mapping, $e->getMessage()));
-			return;
+			return false;
 		}
 		CLIUtils::addMessage(_t('Exported %1', $mapping));
+		return true;
 	}
 	# -------------------------------------------------------
 	public static function write_importer_to_fileParamList() {

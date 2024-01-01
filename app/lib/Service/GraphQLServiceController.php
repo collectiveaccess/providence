@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -359,7 +359,7 @@ class GraphQLServiceController extends \BaseServiceController {
 		$rec = $table::findAsInstance($criteria);
 
 		if(is_null($rec)) {
-			throw new \ServiceException(_t('Invalid label %1 for table %2', $identifier, $table));
+			throw new \ServiceException(_t('Invalid label %1 for table %2', $label, $table));
 		}
 		
 		return $rec;

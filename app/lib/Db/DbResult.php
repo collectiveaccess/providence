@@ -168,8 +168,8 @@ class DbResult extends DbBase {
 			}
 
 			if ($vb_convert_breaks) {
-				$vs_val = preg_replace("/([\n|\r\n){2}/", "<p/>", $vs_val);
-				$vs_val = preg_replace("/([\n|\r\n){1}/", "<br/>", $vs_val);
+				$vs_val = preg_replace("/([\n|\r\n]){2}/", "<p/>", $vs_val);
+				$vs_val = preg_replace("/([\n|\r\n]){1}/", "<br/>", $vs_val);
 			}
 		}
 		if ($pa_options["urlEncode"] ?? null) {

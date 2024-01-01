@@ -42,6 +42,12 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	 * @var array
 	 */
     private $opa_ldaps = [];
+    
+    /**
+     *
+     */
+    private $opo_auth_config;
+    
     # --------------------------------------------------------------------------------
     public function __construct() {
         if (!function_exists("ldap_connect")){
