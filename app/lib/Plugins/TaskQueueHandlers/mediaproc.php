@@ -36,7 +36,6 @@ include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 
 /**
  * TaskQueue handler plugin for deferred processing of uploaded media in FT_MEDIA fields
@@ -138,6 +137,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 		$vs_pk = 			$pa_parameters["PK"];					// Field name of primary key of record we're processing
 		$vn_id = 			$pa_parameters["PK_VAL"];				// Value of primary key
 		
+		$o_log = caGetLogger();
 		
 		$vs_input_mimetype = $pa_parameters["INPUT_MIMETYPE"];		// Mimetype of input file
 		$vs_input_file = 		$pa_parameters["FILENAME"];			// Full path to input file
@@ -162,13 +162,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 		$va_version_info 			= $o_media_proc_settings->getMediaTypeVersions($vs_media_type);
 		
 		if(!file_exists($vs_input_file)) {
-			$o_eventlog = new Eventlog();
-			$o_eventlog->log(array(
-				"CODE" => "DEBG",
-				"SOURCE" => "TaskQueue->mediaproc->process()",
-				"MESSAGE" => "Record $vs_table.field = file '$vs_input_file' did not exist; queued file was discarded"
-			));
-			$va_report['errors'][] = _t("Record %1.field = file '%2' did not exist; queued file was discarded", $vs_table, $vs_input_file);
+			$msg = _t("Record %1.field = file '%2' did not exist; queued file was discarded", $vs_table, $vs_input_file);
+			$va_report['errors'][] = $msg;
+			$o_log->logError("[TaskQueue] {$msg}");
 			return $va_report;
 		}
 		
@@ -179,36 +175,41 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 					if (!$vb_dont_delete_original_media) {
 						@unlink($vs_input_file);
 					}
-					
-					$o_eventlog = new Eventlog();
-					$o_eventlog->log(array(
-						"CODE" => "DEBG",
-						"SOURCE" => "TaskQueue->mediaproc->process()",
-						"MESSAGE" => "Record $vs_table.field = $vn_id did not exist; queued file was discarded"
-					));
 					$o_media->cleanup();
-					$va_report['errors'][] = _t("Record %1.field = %2 did not exist; queued file was discarded", $vs_table, $vn_id);
+					
+					$msg = _t("Record %1.field = %2 did not exist; queued file was discarded", $vs_table, $vn_id);
+					$va_report['errors'][] = $msg;
+					$o_log->logError("[TaskQueue] {$msg}");
+					
 					return $va_report;
 				}
 			} else {
 				# bad field name
-				$this->error->setError(551, _t("Invalid media field '%1' in table '%2'", $vs_field, $vs_table),"mediaproc->process()");	
+				$msg = _t("Invalid media field '%1' in table '%2'", $vs_field, $vs_table);
+				$o_log->logError("[TaskQueue] {$msg}");
+				$this->error->setError(551, $msg,"mediaproc->process()");	
 				return false;
 			}
 		} else {
 			# bad table name
-			$this->error->setError(550, _t("Invalid media field table '%1'", $vs_table),"mediaproc->process()");	
+			$msg = _t("Invalid media field table '%1'", $vs_table);
+			$o_log->logError("[TaskQueue] {$msg}");
+			$this->error->setError(550, $msg, "mediaproc->process()");	
 			return false;
 		}
 		
 		$va_old_media_to_delete = array();
 		if(!file_exists($vs_input_file)) {
-			$this->error->setError(505, _t("Input media file '%1' does not exist", $vs_input_file),"mediaproc->process()");
+			$msg = _t("Input media file '%1' does not exist", $vs_input_file);
+			$o_log->logError("[TaskQueue] {$msg}");
+			$this->error->setError(505, $msg, "mediaproc->process()");
 			$o_media->cleanup();
 			return false;
 		}
 		if(!is_readable($vs_input_file)) {
-			$this->error->setError(506, _t("Denied permission to read input media file '%1'", $vs_input_file),"mediaproc->process()");
+			$msg = _t("Denied permission to read input media file '%1'", $vs_input_file);
+			$o_log->logError("[TaskQueue] {$msg}");
+			$this->error->setError(506, $msg,"mediaproc->process()");
 			$o_media->cleanup();
 			return false;
 		}
@@ -218,7 +219,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 			$vs_use_icon = null;
 							
 			if (!$o_media->read($vs_input_file)) {
-				$this->error->setError(1600, _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors())),"mediaproc->process()");
+				$msg = _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors()));
+				$o_log->logError("[TaskQueue] {$msg}");
+				$this->error->setError(1600, $msg, "mediaproc->process()");
 				$o_media->cleanup();
 				return false;
 			}
@@ -235,13 +238,17 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				$vs_ext = $o_media->mimetype2extension($vs_output_mimetype);
 			
 				if (!$vs_ext) {
-					$this->error->setError(1600, _t("File could not be copied for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype),"mediaproc->process()");
+					$msg = _t("File could not be copied for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
+					$o_log->logError("[TaskQueue] {$msg}");
+					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
 				
 				if (($vs_dirhash = $this->_getDirectoryHash($va_volume_info["absolutePath"], $vn_id)) === false) {
-					$this->error->setError(1600, _t("Couldn't create subdirectory for file for %1", $vs_field),"mediaproc->process()");
+					$msg = _t("Couldn't create subdirectory for file for %1", $vs_field);
+					$o_log->logError("[TaskQueue] {$msg}");
+					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
@@ -249,7 +256,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext;
 				
 				if (!copy($vs_input_file, $vs_filepath)) {
-					$this->error->setError(504, _t("File could not be copied for %1", $vs_field),"mediaproc->process()");
+					$msg =  _t("File could not be copied for %1", $vs_field);
+					$o_log->logError("[TaskQueue] {$msg}");
+					$this->error->setError(504, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
@@ -262,7 +271,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						$vs_queue = $vs_mirror_method."mirror";
 						$tq = new TaskQueue();
 						if (!($tq->cancelPendingTasksForEntity($entity_key))) {
-							$this->error->setError(560, _t("Could not cancel pending tasks"),"mediaproc->process()");
+							$msg = _t("Could not cancel pending tasks");
+							$o_log->logError("[TaskQueue] {$msg}");
+							$this->error->setError(560, $msg, "mediaproc->process()");
 							$o_media->cleanup();
 							return false;
 						}
@@ -291,7 +302,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						{
 							continue;
 						} else {
-							$this->error->setError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue),"mediaproc->process()");
+							$msg = _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue);
+							$o_log->logError("[TaskQueue] {$msg}");
+							$this->error->setError(100, $msg, "mediaproc->process()");
 						}
 				
 					}
@@ -331,6 +344,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						}
 						if (!($o_media->transform($operation, $pa_parameters))) {
 						  $this->error = $o_media->errors[0];
+						  
+						  $msg = $this->error->getErrorMessage();
+						  $o_log->logError("[TaskQueue] {$msg}");
 						  $o_media->cleanup();
 						  return false;
 						}
@@ -340,13 +356,17 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				if (!$vs_output_mimetype) { $vs_output_mimetype = $vs_input_mimetype; }
 				
 				if (!($vs_ext = $o_media->mimetype2extension($vs_output_mimetype))) {
-					$this->error->setError(1600, _t("File could not be processed for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype),"mediaproc->process()");
+					$msg = _t("File could not be processed for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
+					$o_log->logError("[TaskQueue] {$msg}");
+					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
 				
 				if (($vs_dirhash = $this->_getDirectoryHash($va_volume_info["absolutePath"], $vn_id)) === false) {
-					$this->error->setError(1600, _t("Couldn't create subdirectory for file for %1", $vs_field),"mediaproc->process()");
+					$msg = _t("Couldn't create subdirectory for file for %1", $vs_field);
+					$o_log->logError("[TaskQueue] {$msg}");
+					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
@@ -379,7 +399,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						$vs_queue = $vs_mirror_method."mirror";
 						$tq = new TaskQueue();
 						if (!($tq->cancelPendingTasksForEntity($entity_key))) {
-							$this->error->setError(560, _t("Could not cancel pending tasks"),"mediaproc->process()");
+							$msg = _t("Could not cancel pending tasks");
+							$o_log->logError("[TaskQueue] {$msg}");
+							$this->error->setError(560, $msg, "mediaproc->process()");
 							$o_media->cleanup();
 							return false;
 						}
@@ -408,7 +430,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						{
 							continue;
 						} else {
-							$this->error->setError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue),"mediaproc->process()");
+							$msg = _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue);
+							$o_log->logError("[TaskQueue] {$msg}");
+							$this->error->setError(100, $msg, "mediaproc->process()");
 						}
 				
 					}
@@ -467,7 +491,9 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 					foreach($va_output_files as $vs_to_delete) {
 						@unlink($vs_to_delete); 
 					}
-					$this->error->setError(560, _t("Could not update %1.%2: %3", $vs_table, $vs_field, join(", ", $t_instance->getErrors())), "mediaproc->process()");
+					$msg = _t("Could not update %1.%2: %3", $vs_table, $vs_field, join(", ", $t_instance->getErrors()));
+					$o_log->logError("[TaskQueue] {$msg}");
+					$this->error->setError(560, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				} 
@@ -526,16 +552,11 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 			if (!$vb_dont_delete_original_media) {
 				@unlink($vs_input_file);
 			}
-			
-			$o_eventlog = new Eventlog();
-			$o_eventlog->log(array(
-				"CODE" => "DEBG",
-				"SOURCE" => "TaskQueue->mediaproc->process()",
-				"MESSAGE" => "Record $vs_table.field = $vn_id did not exist; queued file was discarded"
-			));
+			$msg = _t("Record {$vs_table}.field = {$vn_id} did not exist; queued file was discarded");
+			$o_log->logError("[TaskQueue] {$msg}");
 			$o_media->cleanup();
 			
-			$va_report['errors'][] = _t("Record {$vs_table}.field = {$vn_id} did not exist; queued file was discarded");
+			$va_report['errors'][] = $msg;
 			return $va_report;
 		}
 	}

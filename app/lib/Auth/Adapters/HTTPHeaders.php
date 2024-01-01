@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
 require_once(__CA_LIB_DIR__.'/Auth/PasswordHash.php');
 
@@ -39,20 +38,13 @@ class HTTPHeaderAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		if(!$ps_username) {
 			return false;
 		}
-		$o_log = new Eventlog();
 		
 		$o_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$vs_httpheader_username  = $o_auth_config->get("httpheader_username");
 		
 		// if the HTTP header is missing or blank = bad authentication
 		if (!isset($_SERVER[$vs_httpheader_username]) || $_SERVER[$vs_httpheader_username] == "" ) {
-
-			$o_log->log(array(
-				'CODE' => 'LOGF', 
-				'SOURCE' => 'HTTPHeaderAuthAdapter',
-				'MESSAGE' => _t('Could not login user %1 using http headers are missing failed %2 [%3]', $ps_username, $vs_httpheader_username, $_SERVER['REMOTE_ADDR'])
-			));
-
+			caLogEvent('LOGF', _t('Could not login user %1 using http headers are missing failed %2 [%3]', $ps_username, $vs_httpheader_username, $_SERVER['REMOTE_ADDR']), 'HTTPHeaderAuthAdapter');
 			return false;
 		}
 		
@@ -63,8 +55,6 @@ class HTTPHeaderAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		
 		return false;
 	}
-
-
 	# --------------------------------------------------------------------------------
 	public function createUserAndGetPassword($ps_username, $ps_password) {
 		// We don't create users in HTTPHeader, we create users in getUserInfo below

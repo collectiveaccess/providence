@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,10 +35,8 @@ require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
-require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__."/Logging/Batchlog.php");
 require_once(__CA_LIB_DIR__."/SMS.php");
-require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 
 class BatchProcessor {
 	# ----------------------------------------
@@ -506,7 +504,6 @@ class BatchProcessor {
 		
 		$o_config = Configuration::load();
 
-		$o_eventlog = new Eventlog();
 		$t_set = new ca_sets();
 
 		$va_notices = $va_errors = array();
@@ -534,14 +531,9 @@ class BatchProcessor {
 			return is_dir($p);
 		});
 		if(sizeof($batch_media_import_root_directories) === 0) {
-			$o_eventlog->log([
-				"CODE"    => 'ERR',
-				"SOURCE"  => "mediaImport",
-				"MESSAGE" => $vs_msg
-					= _t( "Specified import directory '%1' is not valid",
-					$pa_options['importFromDirectory'])
-			]);
-			$o_log->logError( $vs_msg );
+			$vs_msg = _t( "Specified import directory '%1' is not valid",
+					$pa_options['importFromDirectory']);
+			$o_log->logError($vs_msg);
 			BatchProcessor::$s_import_error_list[] = $vs_msg;
 			return null;
 		}
@@ -985,22 +977,17 @@ class BatchProcessor {
 					}
 
 					if ($t_instance->numErrors()) {
-						$o_eventlog->log(array(
-							"CODE" => 'ERR',
-							"SOURCE" => "mediaImport",
-							"MESSAGE" => _t("Error importing {$f} from {$vs_directory}: %1", join('; ', $t_instance->getErrors()))
-						));
-
-
+						$vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()));
 						$va_errors[$vs_relative_directory.'/'.$f] = array(
 							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 							'label' => $t_instance->getLabelForDisplay(),
 							'errors' => $t_instance->errors(),
-							'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+							'message' => $vs_msg,
 							'file' => $f,
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
+						
 						//$o_trans->rollback();
 						continue;
 					} else {
@@ -1041,17 +1028,13 @@ class BatchProcessor {
 						}
 
 						if ($t_instance->numErrors()) {
-							$o_eventlog->log(array(
-								"CODE" => 'ERR',
-								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error importing %1 from %2: ", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-							));
-
+							$vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()));
+							
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'message' => $vs_msg,
 								'file' => $f,
 								'status' => 'ERROR',
 							);

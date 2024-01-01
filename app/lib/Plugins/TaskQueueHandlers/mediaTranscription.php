@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-/**
- * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
- * See https://github.com/openai/whisper
- */
-
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/Media.php");
@@ -41,8 +36,11 @@ include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 
+/**
+ * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
+ * See https://github.com/openai/whisper
+ */
 class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
 	

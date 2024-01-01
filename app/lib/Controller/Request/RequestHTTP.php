@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/Controller/Request.php");
+require_once(__CA_LIB_DIR__."/Logging/EventLog.php");
 
 # ----------------------------------------
 # Authorization constants
@@ -855,7 +856,6 @@ class RequestHTTP extends Request {
 	public function doAuthentication($pa_options) {	
 		global $AUTH_CURRENT_USER_ID;
 
-		$o_event_log = new Eventlog();
 		$vs_app_name = $this->config->get("app_name");
 		$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
 		
@@ -916,7 +916,7 @@ class RequestHTTP extends Request {
                     
                     if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
                         if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            caLogEvent('LOGF', "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'Auth');
                             $vb_login_successful = false;
                         } else {
                             $vb_login_successful = true;
@@ -926,7 +926,7 @@ class RequestHTTP extends Request {
 
                     if (!$vb_login_successful) {																	// throw user to login screen
                         if (!$pa_options["dont_redirect_to_login"]) {
-                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                        	caLogEvent('LOGF', "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'AUTH');
                             $vs_redirect = $this->getRequestUrl(true);
 
                             if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
@@ -950,7 +950,7 @@ class RequestHTTP extends Request {
                 			$vb_login_successful = true;
                 		}
                 	} catch (Exception $e) {
-                		$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                		caLogEvent('LOGF', "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'Auth');
                 		$this->opo_response->addHeader("Location", $vs_auth_login_url);
                 		return false;
                 	}
@@ -983,15 +983,16 @@ class RequestHTTP extends Request {
 			$this->user = new ca_users();															// auth failed
 																								// throw user to login screen
 			if ($pa_options["user_name"]) {
-				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+				caLogEvent('LOGF', "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'Auth');
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
 			}
 			return false;
 		} else {		
-			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip()));
-		    
+			$msg = "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip();
+			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
+		    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log
 		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 			
 			Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
