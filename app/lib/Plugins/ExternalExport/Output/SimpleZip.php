@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 include_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
@@ -130,7 +126,7 @@ class WLPlugSimpleZip Extends BaseExternalExportFormatPlugin Implements IWLPlugE
 					}
                     break;
                 case 'file':
-                    $ret = self::_processFiles($t_instance, $content_spec, $options);
+                    $ret = self::_processFiles($t_instance, $content_spec, $target_info, $options);
                     $file_list = array_merge($file_list, $ret['fileList']);
                     
                     foreach($file_list as $file_info) {

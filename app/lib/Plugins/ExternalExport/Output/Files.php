@@ -131,7 +131,7 @@ class WLPlugFiles Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
 					}
                     break;
                 case 'file':
-                    $ret = self::_processFiles($t_instance, $content_spec, $options);
+                    $ret = self::_processFiles($t_instance, $content_spec, $target_info, $options);
                     $file_list = array_merge($file_list, $ret['fileList']);
                     
                     foreach($file_list as $file_info) {
