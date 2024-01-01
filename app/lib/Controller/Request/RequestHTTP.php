@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/Controller/Request.php");
-require_once(__CA_LIB_DIR__."/Logging/EventLog.php");
 
 # ----------------------------------------
 # Authorization constants
@@ -992,6 +991,8 @@ class RequestHTTP extends Request {
 		} else {		
 			$msg = "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip();
 			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
+			
+			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 		    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log
 		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 			
