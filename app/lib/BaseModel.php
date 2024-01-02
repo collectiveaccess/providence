@@ -3351,7 +3351,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
                 if (($fields_changed > 0) && method_exists($this, "deriveHistoryTrackingCurrentValue") && !caGetOption('dontUpdateHistoryCurrentValueTracking', $pa_options, false) && !defined('__CA_DONT_UPDATE_HISTORY_TRACKING_CACHE__')) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
-                    if ($table::isHistoryTrackingCriterion($table)) { self::updateDependentHistoryTrackingCurrentValues(); }
+                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
                 }
 				
 				if (!caGetOption(['dont_do_search_indexing', 'dontDoSearchIndexing'], $pa_options, false) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
@@ -3487,7 +3487,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
 			$table = $this->tableName();
 			$this->deriveHistoryTrackingCurrentValue(['row_id' => $vn_id]);
-			if ($table::isHistoryTrackingCriterion($table)) {  self::updateDependentHistoryTrackingCurrentValues(['row_id' => $vn_id, 'mode' => 'delete']); }
+			if ($table::isHistoryTrackingCriterion($table)) {  $this->updateDependentHistoryTrackingCurrentValues(['row_id' => $vn_id, 'mode' => 'delete']); }
 		}
 		
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
