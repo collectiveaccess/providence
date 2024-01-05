@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,21 +29,17 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- * @file A class to interact with the VIAF API
- */
-
 use \GuzzleHttp\Client;
 
 require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
-
 global $g_information_service_settings_viaf;
 $g_information_service_settings_viaf = [];
 
-
+/**
+ * @file A class to interact with the VIAF API
+ */
 class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implements IWLPlugInformationService
 {
 
@@ -75,6 +71,9 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
 
     public function lookup($pa_settings, $ps_search, $pa_options = null)
     {
+   		if(preg_match("!^http[s]{0,1}://www.viaf.org/viaf/([\d]+)!", $ps_search, $m)) {
+   			$ps_search = $m[1];
+   		}
         $vo_client = $this->getClient();
         $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&httpAccept=application/json&query=".urlencode("cql.any all \"{$ps_search}\""), [
             'headers' => [
