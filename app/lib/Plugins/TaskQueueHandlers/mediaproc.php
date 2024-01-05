@@ -235,7 +235,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				#
 				# don't process this media, just copy the file
 				#
-				$vs_ext = $o_media->mimetype2extension($vs_output_mimetype);
+				$vs_ext = Media::getExtensionForMimetype($vs_output_mimetype);
 			
 				if (!$vs_ext) {
 					$msg = _t("File could not be copied for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
@@ -355,7 +355,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				
 				if (!$vs_output_mimetype) { $vs_output_mimetype = $vs_input_mimetype; }
 				
-				if (!($vs_ext = $o_media->mimetype2extension($vs_output_mimetype))) {
+				if (!($vs_ext = Media::getExtensionForMimetype($vs_output_mimetype))) {
 					$msg = _t("File could not be processed for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(1600, $msg, "mediaproc->process()");
