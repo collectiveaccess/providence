@@ -55,11 +55,6 @@
 			exit();
 		}
 
-		if(isset($_REQUEST['processIndexingQueue']) && $_REQUEST['processIndexingQueue']) {
-			require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
-			ca_search_indexing_queue::process();
-			exit();
-		}
 		caGetSystemGuid();
 		
 		// run garbage collector
