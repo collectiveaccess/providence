@@ -40,6 +40,8 @@ class TaskQueue extends BaseObject {
 	private $handler_plugin_dirs = [];
 	private $config;
 	private $transaction = null;
+	
+	static $tasks_added = 0;
 
 	# ---------------------------------------------------------------------------
 	/**
@@ -171,6 +173,7 @@ class TaskQueue extends BaseObject {
 			$this->postError(503, join('; ', $o_db->getErrors()), 'TaskQueue->addTask()');
 			return null;
 		}
+		TaskQueue::$tasks_added++;
 		return $o_db->getLastInsertID();
 	}
 	# ---------------------------------------------------------------------------
