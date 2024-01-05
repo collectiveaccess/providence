@@ -815,7 +815,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 			if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
 				$table = $this->tableName();
-				if ($table::isHistoryTrackingCriterion($table)) { self::updateDependentHistoryTrackingCurrentValues(); }
+				if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
 			}
 			$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, $va_index_options);
 			
@@ -865,7 +865,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			
 			if (method_exists($this, "deriveHistoryTrackingCurrentValue") && $this->attributesChanged())  {
 				$table = $this->tableName();
-				if ($table::isHistoryTrackingCriterion($table)) { self::updateDependentHistoryTrackingCurrentValues(); }
+				if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
 			}
 			$this->doSearchIndexing($va_fields_changed_array, false, $va_index_options);
 			
