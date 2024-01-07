@@ -419,4 +419,27 @@ class ca_acl extends BaseModel {
 		return true;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copyACL(BaseModel $t_subject, string $target, int $target_id) {
+		$o_db = new Db();
+		
+		if ($t_target = Datamodel::getInstanceByTableName($target, false)) {
+			$subject_table_num = $t_subject->tableNum();
+			$subject_id = $t_subject->getPrimaryKey();
+			$target_table_num = $t_target->tableNum();
+			
+			return $o_db->query("
+				INSERT INTO ca_acl
+				(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+				SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, {$subject_table_num}, {$subject_id}
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ?
+			", [$subject_table_num, (int)$subject_id]);
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 }
