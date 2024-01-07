@@ -764,7 +764,7 @@ class Replicator {
 					
 					$missing_log_entry_pk = Datamodel::primaryKey($missing_entry['logged_table_num']);
 					
-					$dependent_guids = array_values(array_filter($missing_entry['snapshot'], function($v, $k, $missing_log_entry_pk) use ($missing_entry, $missing_guid) { 
+					$dependent_guids = array_values(array_filter($missing_entry['snapshot'], function($v, $k) use ($missing_entry, $missing_guid, $missing_log_entry_pk) { 
 						if($v == $missing_guid) { return false; }
 						if($v == $missing_entry['guid']) { return false; }
 						
