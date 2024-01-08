@@ -39,7 +39,7 @@ require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 require_once(__CA_LIB_DIR__."/Zend/Feed.php");
 
-global $g_information_service_settings_ResourceSpae;
+global $g_information_service_settings_ResourceSpace;
 $g_information_service_settings_ResourceSpace = array(
 		'user' => array(
 			'formatType' => FT_TEXT,
