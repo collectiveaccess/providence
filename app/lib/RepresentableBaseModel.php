@@ -738,6 +738,12 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		
+		// Copy ACL information from primary record to representation to ensure it is 
+		// accessible by all users with access to the primary
+		if($this->supportsACL() && $t_rep->supportsACL()) {
+			ca_acl::copyACL($this, $t_rep->tableName(), $t_rep->getPrimaryKey());
+		}
+		
 		if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
 			return $t_rep;
 		} 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,21 +29,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */ 
-define('__CA_LABEL_TYPE_PREFERRED__', 0);
-define('__CA_LABEL_TYPE_NONPREFERRED__', 1);
-define('__CA_LABEL_TYPE_ANY__', 2);
-
 require_once(__CA_LIB_DIR__.'/BaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/ILabelable.php');
-require_once(__CA_APP_DIR__.'/models/ca_locales.php');
-require_once(__CA_APP_DIR__.'/models/ca_users.php');
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+
+define('__CA_LABEL_TYPE_PREFERRED__', 0);
+define('__CA_LABEL_TYPE_NONPREFERRED__', 1);
+define('__CA_LABEL_TYPE_ANY__', 2);
 
 class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implements ILabelable {
 	# ------------------------------------------------------------------

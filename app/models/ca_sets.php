@@ -708,7 +708,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$va_restrict_to_type_ids[] = (int)$vm_type;
 				} else {
 					# --- look up code of set type
-					$vn_type_id = caGetListItemID('set_types', $pm_type);
+					$vn_type_id = caGetListItemID('set_types', $vm_type);
 					if($vn_type_id){
 						$va_restrict_to_type_ids[] = (int) $vn_type_id;
 					}
@@ -1881,28 +1881,35 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_representation_counts = array();
 		
 		$vs_rep_join_sql = $vs_rep_where_sql = $vs_rep_select = '';
-		if (($t_rel_table->tableName() === 'ca_objects') && (isset($pa_options['thumbnailVersion']) || isset($pa_options['thumbnailVersions']))) {
-			$vs_rep_join_sql = "LEFT JOIN ca_objects_x_object_representations AS coxor ON rel.object_id = coxor.object_id
-LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
-			$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
+		
+		if(is_a($t_rel_table, 'RepresentableBaseModel') && (isset($pa_options['thumbnailVersion']) || isset($pa_options['thumbnailVersions']))) {
+			if(is_array($path = Datamodel::getPath($t_rel_table->tableName(), 'ca_object_representations')) && (sizeof($path) === 3)) {
+				$path = array_keys($path);
+				$rel_table = $t_rel_table->tableName();
+				$rel_pk = $t_rel_table->primaryKey();
+				
+				$vs_rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
+	LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
+				$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
 			
-			$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
+				$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
 			
-			// get representation counts
-			$qr_rep_counts = $o_db->query("
-				SELECT 
-					rel.object_id, count(*) c
-				FROM ca_set_items casi
-				INNER JOIN ca_objects AS rel ON rel.object_id = casi.row_id
-				INNER JOIN ca_objects_x_object_representations AS coxor ON coxor.object_id = rel.object_id
-				WHERE
-					casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0
-				GROUP BY
-					rel.object_id
-			", (int)$vn_set_id);
+				// get representation counts
+				$qr_rep_counts = $o_db->query("
+					SELECT 
+						rel.{$rel_pk}, count(*) c
+					FROM ca_set_items casi
+					INNER JOIN {$rel_table} AS rel ON rel.{$rel_pk} = casi.row_id
+					INNER JOIN {$path[1]} AS coxor ON coxor.{$rel_pk} = rel.{$rel_pk}
+					WHERE
+						casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0
+					GROUP BY
+						rel.{$rel_pk}
+				", (int)$vn_set_id);
 			
-			while($qr_rep_counts->nextRow()) {
-				$va_representation_counts[(int)$qr_rep_counts->get('object_id')] = (int)$qr_rep_counts->get('c');
+				while($qr_rep_counts->nextRow()) {
+					$va_representation_counts[(int)$qr_rep_counts->get($rel_pk)] = (int)$qr_rep_counts->get('c');
+				}
 			}
 		}
 		
@@ -2767,7 +2774,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			
 				$created = $this->getCreationTimestamp($set_id);
 				$va_sets[$set_id = $qr_res->get('set_id')] = array_merge($qr_res->getRow(), [
-					'set_type' => $vs_type,
+					'set_content_type' => $vs_set_type, 'set_type' => $vs_type,
 					'label' => $labels[$set_id], 'count' => isset($counts[$set_id]) ? $counts[$set_id] : 0,
 					'item_type_singular' => Datamodel::getTableProperty($vn_table_num, 'NAME_SINGULAR'), 'item_type_plural' => Datamodel::getTableProperty($vn_table_num, 'NAME_PLURAL'),
 					'created' => $created['timestamp'], 'created_display' => caGetLocalizedDate($created['timestamp'])

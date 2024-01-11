@@ -4846,7 +4846,8 @@ if (!$vb_batch) {
                                     } elseif(!$is_form_upload && !$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
                                     	// Is user-selected file from media import directory
                                     	foreach($import_directory_paths as $p) {
-											if(file_exists($vs_path = caSanitizeRelativeFilepath($va_values['tmp_name'], $p))) {
+											if(file_exists($p.'/'.$va_values['tmp_name']) && caSanitizeRelativeFilepath($va_values['tmp_name'], $p)) {
+												$vs_path = $p.'/'.$va_values['tmp_name'];
 												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
 												break;
 											}
