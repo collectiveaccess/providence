@@ -4151,6 +4151,7 @@ if (!$vb_batch) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
 									$va_attr_update[$vn_element_id] = $va_val;
+									$isset = true;
 									continue;
 								}
 							} 
