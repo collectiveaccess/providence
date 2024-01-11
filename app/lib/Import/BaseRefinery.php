@@ -259,7 +259,7 @@ abstract class BaseRefinery {
 			}
 			// delimiter?
 			if(!is_null($get_at_index) && sizeof($delimiters)) {
-				$dvals = preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $mval[0]);
+				$dvals = preg_split('!('.preg_quote(join('|', $delimiters), ')!').'!', $mval[0]);
 				return $dvals[$get_at_index] ?? null;
 			}
 			return ($return_as_string && is_array($mval)) ? trim(join($delimiter, $mval)) : $mval;
