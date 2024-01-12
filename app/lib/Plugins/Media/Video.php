@@ -61,7 +61,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
 			"video/MP2T"						=> "mts",
-			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
@@ -77,7 +76,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
-			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
@@ -142,7 +140,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/MP2T"						=> "MTS",
-		"video/ogg"							=> "Ogg Theora",
 		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
 	);
@@ -208,13 +205,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		// then getID3
 		if($mimetype = caGetID3GuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$mimetype] ?? null) {
-				return $mimetype;
-			}
-		}
-
-		// lastly, OggParser
-		if($mimetype = caOggParserGuessFileFormat($filepath)) {
 			if($this->info["IMPORT"][$mimetype] ?? null) {
 				return $mimetype;
 			}
@@ -311,12 +301,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->media_metadata = caExtractMetadataWithGetID3($filepath);
 				$this->properties['timecode_offset'] = 0; // getID3 doesn't return offsets 
 				$this->properties['framerate'] = (float)$this->media_metadata['video']['frame_rate'];
-			} else {
-				// lastly, try ogg/ogv
-				$this->media_metadata = caExtractMediaMetadataWithOggParser($filepath);
-				$this->properties['timecode_offset'] = 0; // OggParser doesn't return offsets 
-				$this->properties['framerate'] = ((float)$this->media_metadata['duration'] > 0) ? (float)$this->media_metadata['framecount']/(float)$this->media_metadata['duration'] : 0;
-			}
+			} 
 		}
 
 		if(!$this->media_metadata['mime_type']) { return false; } // divineFileFormat() should prevent that, but you never know
@@ -331,11 +316,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if (($this->media_metadata["mime_type"] == 'video/x-flv') && is_array($this->media_metadata['meta']) && is_array($this->media_metadata['meta']['onMetaData'])) {
 				$w = $this->media_metadata['meta']['onMetaData']['width'] ?? null;
 				$h = $this->media_metadata['meta']['onMetaData']['height'] ?? null;
-			} else {
-				if ($this->media_metadata['mime_type'] == 'video/ogg') {
-					$w = $this->media_metadata['theora']['width'] ?? null;
-					$h = $this->media_metadata['theora']['height'] ?? null;
-				}
 			}
 			if (!$w || !$h) {
 				$w = $this->media_metadata["video"]["resolution_x"] ?? null;
@@ -416,19 +396,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				case 'video/MP2T':
 					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
-
-					$this->properties["type_specific"] = [];
-
-					$this->properties["title"] = 		"";
-					$this->properties["author"] = 		"";
-					$this->properties["copyright"] = 	"";
-					$this->properties["description"] = 	"";
-
-					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"] ?? null, "max" => $this->media_metadata["bitrate"] ?? null);
-					break;
-				case 'video/ogg':
-					$this->properties["has_video"] = (isset($this->media_metadata["theora"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->media_metadata["vorbis"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = [];
 
@@ -667,7 +634,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# ------------------------------------
 			// only support "command" option...
 			case 'video/mpeg':
-			case 'video/ogg':
 			case 'video/x-dv':
 			case 'video/mp4':
 				if (caMediaPluginFFmpegInstalled()) {
@@ -1092,7 +1058,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return ob_get_clean();
 				break;
 			# ------------------------------------------------
-			case 'video/ogg':
 			case 'video/x-matroska':
 			case "video/x-ms-asf":
 			case "video/x-ms-wmv":
