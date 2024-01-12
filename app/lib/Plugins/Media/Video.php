@@ -601,12 +601,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -frames:v 1 -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					$exists = file_exists("{$filepath}.{$ext}");
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
 						if($exists) { @unlink("{$filepath}.{$ext}"); }
 						// try again, without attempting to force aspect ratio, as this seems to cause ffmpeg to barf at specific frame sizes and input aspect ratios
-						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -frames:v 1 -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					}
 
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
@@ -625,12 +625,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != "application/x-shockwave-flash")) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -s {$preview_width}x{$preview_height} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -frames:v 1 -s {$preview_width}x{$preview_height} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					$exists = file_exists("{$filepath}.{$ext}");
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
 						if($exists) { @unlink("{$filepath}.{$ext}"); }
 						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
-						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04  -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -frames:v 1 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					}
 
 					if (($return < 0) || ($return > 1) || (!file_exists("{$filepath}.{$ext}") || !@filesize("{$filepath}.{$ext}"))) {
@@ -669,6 +669,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/mpeg':
 			case 'video/ogg':
 			case 'video/x-dv':
+			case 'video/mp4':
 				if (caMediaPluginFFmpegInstalled()) {
 					$ffmpeg_params = [];
 

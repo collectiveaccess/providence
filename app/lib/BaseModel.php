@@ -4761,7 +4761,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							#
 							# don't process this media, just copy the file
 							#
-							$ext = ($output_mimetype == 'application/octet-stream') ? pathinfo($this->_SET_FILES[$ps_field]['original_filename'], PATHINFO_EXTENSION) : $m->mimetype2extension($output_mimetype);
+							$ext = ($output_mimetype == 'application/octet-stream') ? pathinfo($this->_SET_FILES[$ps_field]['original_filename'], PATHINFO_EXTENSION) : Media::getExtensionForMimetype($output_mimetype);
 
 							if (!$ext) {
 								$this->postError(1600, _t("File could not be copied for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
@@ -4925,7 +4925,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 
 							if (!$output_mimetype) { $output_mimetype = $input_mimetype; }
 
-							if (!($ext = $m->mimetype2extension($output_mimetype))) {
+							if (!($ext = Media::getExtensionForMimetype($output_mimetype))) {
 								$this->postError(1600, _t("File could not be processed for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
