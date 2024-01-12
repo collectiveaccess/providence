@@ -110,17 +110,17 @@ class BaseXMLDataReader extends BaseDataReader {
 	/**
 	 *
 	 */
-	private $ops_xml_namespace;
+	protected $ops_xml_namespace;
 	
 	/**
 	 *
 	 */
-	private $ops_xml_namespace_prefix;
+	protected $ops_xml_namespace_prefix;
 	
 	/**
 	 *
 	 */
-	private $ops_additional_xml_namespaces;
+	protected $ops_additional_xml_namespaces;
 	# -------------------------------------------------------
 	/**
 	 *
