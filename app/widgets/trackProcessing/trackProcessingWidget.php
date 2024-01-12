@@ -27,9 +27,6 @@
  */
 require_once(__CA_LIB_DIR__.'/BaseWidget.php');
 require_once(__CA_LIB_DIR__.'/IWidget.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
-require_once(__CA_LIB_DIR__.'/Db.php');
-require_once(__CA_LIB_DIR__.'/TaskQueue.php');
 
 class trackProcessingWidget extends BaseWidget implements IWidget {
 	# -------------------------------------------------------
@@ -132,16 +129,22 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 			WHERE tq.completed_on is NULL
 		");
 		
-		$qd_jobs = $pr_jobs = [];
+		$qd_jobs = $pr_jobs = $stuck_jobs = [];
 		$vn_reported = 0;
 		while($qr_qd->nextRow() && $vn_reported < $this->limit){
 			$row = $qr_qd->getRow();
 			$created_on_display = caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp($row['created_on']));
 
 			if(!$vo_tq->rowKeyIsBeingProcessed($row["row_key"])){
-				$qd_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
-				$qd_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
-				$qd_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
+				if(!$row["completed_on"] && ($row["started_on"] > 0)) {
+					$stuck_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+					$stuck_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+					$stuck_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
+				} else {
+					$qd_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+					$qd_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+					$qd_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
+				}
 			} else {
 				$pr_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
 				$pr_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
@@ -150,12 +153,15 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 			$vn_reported ++;
 		}
 		
-		$this->opo_view->setVar('count_jobs_queued',$qr_qd->numRows());
+		$this->opo_view->setVar('count_jobs_queued',sizeof($qd_jobs));
 		$this->opo_view->setVar('count_jobs_processing',sizeof($pr_jobs));
+		$this->opo_view->setVar('count_jobs_stuck',sizeof($stuck_jobs));
 		$this->opo_view->setVar('data_jobs_queued',$qd_jobs);
 		$this->opo_view->setVar('data_jobs_processing',$pr_jobs);
-		$this->opo_view->setVar('additional_jobs_queued', max($qr_qd->numRows() - $this->limit, 0));
+		$this->opo_view->setVar('data_jobs_stuck',$stuck_jobs);
+		$this->opo_view->setVar('additional_jobs_queued', max(sizeof($qd_jobs) - $this->limit, 0));
 		$this->opo_view->setVar('additional_jobs_processing', max(sizeof($pr_jobs) - $this->limit, 0));
+		$this->opo_view->setVar('additional_jobs_stuck', max(sizeof($stuck_jobs) - $this->limit, 0));
 		
 		$vn_freq = (int)($pa_settings['refresh_interval'] ?? 60);
 		$this->opo_view->setVar('update_frequency', ($vn_freq > 0) ? $vn_freq : 60);
@@ -213,6 +219,21 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 		}
 
 		return $result;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Retry incomplete job
+	 */
+	public function methodRetryJob(string $widget_id, ?array $options) : string  {
+		$resp = [];
+		$ret = null;
+		
+		$o_tq = new TaskQueue();
+		if($task_id = caGetOption('task_id', $options, null)) {
+			$ret = $o_tq->resetIncompleteTasks([$task_id]);	
+		}	
+		$resp['OK'] = $ret ? 1 : 0;
+		return json_encode($resp);	
 	}
 	# -------------------------------------------------------
 }
