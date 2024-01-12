@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,22 +33,23 @@ require_once(__CA_LIB_DIR__.'/TaskQueue.php');
 
 class trackProcessingWidget extends BaseWidget implements IWidget {
 	# -------------------------------------------------------
-	private $opo_config;
-	private $opo_db;
+	private $config;
+	private $db;
 	# -------------------------------------------------------
 	/**
 	 * @var int
 	 */
-	private $opn_limit;
+	private $limit;
 
 	public function __construct($ps_widget_path, $pa_settings) {
 		$this->title = _t('Processing status');
 		$this->description = _t('View the current status of queued processing tasks');
 		parent::__construct($ps_widget_path, $pa_settings);
 		
-		$this->opo_config = Configuration::load($ps_widget_path.'/conf/trackProcessing.conf');
-		$this->opo_db = new Db();
-		$this->opn_limit = (int)$this->opo_config->getScalar('display_limit') ?: 100;
+		$this->config = Configuration::load($ps_widget_path.'/conf/trackProcessing.conf');
+		$this->db = new Db();
+		
+		$this->getLimit($pa_settings);
 		
 		AssetLoadManager::register('prettyDate');
 	}
@@ -57,18 +58,24 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 	 * Override checkStatus() to return true
 	 */
 	public function checkStatus() {
-		$vb_available = ((bool)$this->opo_config->get('enabled'));
+		$available = ((bool)$this->config->get('enabled'));
 
 		if(!$this->getRequest() || !$this->getRequest()->user->canDoAction("can_use_track_processing_widget")){
-			$vb_available = false;
+			$available = false;
 		}
 
 		return array(
 			'description' => $this->getDescription(),
 			'errors' => array(),
 			'warnings' => array(),
-			'available' => $vb_available,
+			'available' => $available,
 		);
+	}
+	# -------------------------------------------------------
+	private function getLimit($settings) {
+		$this->limit = $settings['display_limit'] ?? ((int)$this->config->getScalar('display_limit') ?: 100);
+		if($this->limit <= 0) { $this->limit = 100; }
+		return $this->limit;
 	}
 	# -------------------------------------------------------
 	public function renderWidget($ps_widget_id, &$pa_settings) {
@@ -76,75 +83,82 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 		$this->opo_view->setVar('request', $this->getRequest());
 		$this->opo_view->setVar('hours', $pa_settings['hours']);
 		
+		$this->getLimit($pa_settings);
+		
 		$vo_tq = new TaskQueue();
-		$qr_completed = $this->opo_db->query("
+		$qr_completed = $this->db->query("
 			SELECT tq.*, u.fname, u.lname 
 			FROM ca_task_queue tq 
 			LEFT JOIN ca_users u ON u.user_id = tq.user_id 
 			WHERE tq.completed_on > ? 
 			ORDER BY tq.completed_on desc
 		", time() - (60*60*$pa_settings['hours']));
-		$va_completed = array();
+		
+		$completed = [];
 		$vn_reported = 0;
-		while($qr_completed->nextRow() && $vn_reported < $this->opn_limit){
-			$va_row = $qr_completed->getRow();
-			$va_completed[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
-			$va_completed[$va_row["task_id"]]["created"] = $va_row["created_on"];
-			$va_completed[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
-			$va_completed[$va_row["task_id"]]["completed_on"] = $va_row["completed_on"];
-			$va_completed[$va_row["task_id"]]["error_code"] = $va_row["error_code"];
+		while($qr_completed->nextRow() && $vn_reported < $this->limit){
+			$row = $qr_completed->getRow();
+			$created_on_display = caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp($row['created_on']));
 			
-			if ((int)$va_row["error_code"] > 0) {
-				$o_e = new ApplicationError((int)$va_row["error_code"], '', '', '', false, false);
-				$va_row["error_message"] = $o_e->getErrorMessage();
+			$completed[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+			$completed[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+			$completed[$row["task_id"]]["completed_on"] = $row["completed_on"];
+			$completed[$row["task_id"]]["error_code"] = $row["error_code"];
+			
+			if ((int)$row["error_code"] > 0) {
+				$o_e = new ApplicationError((int)$row["error_code"], '', '', '', false, false);
+				$row["error_message"] = $o_e->getErrorMessage();
 			} else {
-				$va_row["error_message"] = '';
+				$row["error_message"] = '';
 			}
-			$va_completed[$va_row["task_id"]]["error_message"] = $va_row["error_message"];
+			$completed[$row["task_id"]]["error_message"] = $row["error_message"];
 			
-			if (is_array($va_report = caUnserializeForDatabase($va_row["notes"]))) {
-				$va_completed[$va_row["task_id"]]["processing_time"] = (float)$va_report['processing_time'];
+			if (is_array($report = caUnserializeForDatabase($row["notes"]))) {
+				$completed[$row["task_id"]]["processing_time"] = (float)$report['processing_time'];
 			}
 			
 			
-			$va_completed[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
+			$completed[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
 			$vn_reported ++;
 		}
-		$this->opo_view->setVar('jobs_done_additional', max($qr_completed->numRows() - $this->opn_limit, 0));
-		$this->opo_view->setVar('jobs_done',$qr_completed->numRows());
-		$this->opo_view->setVar('jobs_done_data',$va_completed);
+		$this->opo_view->setVar('count_jobs_done', $qr_completed->numRows());
+		$this->opo_view->setVar('additional_jobs_done', max($qr_completed->numRows() - $this->limit, 0));
+		$this->opo_view->setVar('data_jobs_done', $completed);
 
-		$qr_qd = $this->opo_db->query("
+		$qr_qd = $this->db->query("
 			SELECT * 
 			FROM ca_task_queue tq
 			LEFT JOIN ca_users AS u ON tq.user_id = u.user_id
 			WHERE tq.completed_on is NULL
 		");
-		$this->opo_view->setVar('jobs_queued_processing',$qr_qd->numRows());
-		$va_qd_jobs = array();
-		$va_pr_jobs = array();
+		
+		$qd_jobs = $pr_jobs = [];
 		$vn_reported = 0;
-		while($qr_qd->nextRow() && $vn_reported < $this->opn_limit){
-			$va_row = $qr_qd->getRow();
+		while($qr_qd->nextRow() && $vn_reported < $this->limit){
+			$row = $qr_qd->getRow();
+			$created_on_display = caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp($row['created_on']));
 
-			if(!$vo_tq->rowKeyIsBeingProcessed($va_row["row_key"])){
-				$va_qd_jobs[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
-				$va_qd_jobs[$va_row["task_id"]]["created"] = $va_row["created_on"];
-				$va_qd_jobs[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
-				$va_qd_jobs[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
+			if(!$vo_tq->rowKeyIsBeingProcessed($row["row_key"])){
+				$qd_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+				$qd_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+				$qd_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
 			} else {
-				$va_pr_jobs[$va_row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($va_row['handler']);
-				$va_pr_jobs[$va_row["task_id"]]["created"] = $va_row["created_on"];
-				$va_pr_jobs[$va_row["task_id"]]["by"] = caFormatPersonName( $va_row["fname"], $va_row['lname'], _t('Command line or job'));
-				$va_pr_jobs[$va_row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($va_row);
+				$pr_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+				$pr_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+				$pr_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
 			}
 			$vn_reported ++;
 		}
-		$this->opo_view->setVar('qd_job_data',$va_qd_jobs);
-		$this->opo_view->setVar('pr_job_data',$va_pr_jobs);
-		$this->opo_view->setVar('qd_job_additional', max($qr_completed->numRows() - $this->opn_limit, 0));
-		$this->opo_view->setVar('update_frequency', ($vn_freq = (int)$this->opo_config->get('update_frequency')) ? $vn_freq : 60);
-
+		
+		$this->opo_view->setVar('count_jobs_queued',$qr_qd->numRows());
+		$this->opo_view->setVar('count_jobs_processing',sizeof($pr_jobs));
+		$this->opo_view->setVar('data_jobs_queued',$qd_jobs);
+		$this->opo_view->setVar('data_jobs_processing',$pr_jobs);
+		$this->opo_view->setVar('additional_jobs_queued', max($qr_qd->numRows() - $this->limit, 0));
+		$this->opo_view->setVar('additional_jobs_processing', max(sizeof($pr_jobs) - $this->limit, 0));
+		
+		$vn_freq = (int)($pa_settings['refresh_interval'] ?? 60);
+		$this->opo_view->setVar('update_frequency', ($vn_freq > 0) ? $vn_freq : 60);
 		return $this->opo_view->render('main_html.php');
 	}
 	# -------------------------------------------------------
@@ -176,24 +190,24 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 	/**
 	 * Returns a string to render status information in html.
 	 *
-	 * @param $va_status
+	 * @param $status
 	 * @param $view
 	 */
-	public static function getStatusForDisplay($va_status, $view){
+	public static function getStatusForDisplay($status, $view){
 		$result = "";
-		foreach($va_status as $vs_code => $va_info) {
-			if(!($va_info['value'] ?? null)) { continue; }
-			switch($vs_code) {
+		foreach($status as $code => $info) {
+			if(!($info['value'] ?? null)) { continue; }
+			switch($code) {
 				case 'table':
-					$va_tmp = explode(':', $va_status['table']['value']);
-					if ($vs_link = caEditorLink($view->request, $va_info['value'], 'link', $va_tmp[0], $va_tmp[2], array(), array(), array('verifyLink' => true))) {
-						$result .= "<strong>".$va_info['label']."</strong>: ".$vs_link."<br/>\n";
+					$tmp = explode(':', $status['table']['value']);
+					if ($link = caEditorLink($view->request, caGetTableDisplayName($tmp[0], true).' ➜ '.join(' ➜ ', array_slice($tmp, 1)), 'link', $tmp[0], $tmp[2], array(), array(), array('verifyLink' => true))) {
+						$result .= "<strong>".$info['label']."</strong>: ".$link."<br/>\n";
 					} else {
-						$result .=  "<strong>".$va_info['label']."</strong>: ".$va_info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
+						$result .=  "<strong>".$info['label']."</strong>: ".$info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
 					}
 					break;
 				default:
-					$result .= "<strong>".$va_info['label']."</strong>: ".$va_info['value']."<br/>\n";
+					$result .= "<strong>".$info['label']."</strong>: ".$info['value']."<br/>\n";
 					break;
 			}
 		}
@@ -209,8 +223,26 @@ BaseWidget::$s_widget_settings['trackProcessingWidget'] = array(
 		'displayType' => DT_FIELD,
 		'width' => 6, 'height' => 1,
 		'takesLocale' => false,
-		'default' => '72',
+		'default' => 72,
 		'label' => _t('Show jobs completed less than ^ELEMENT hours ago'),
 		'description' => _t('Threshold (in hours) to display completed jobs')
+	),
+	'display_limit' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'width' => 6, 'height' => 1,
+		'takesLocale' => false,
+		'default' => 50,
+		'label' => _t('Show up to ^ELEMENT jobs per category'),
+		'description' => _t('Maximum number of jobs to display per category')
+	),
+	'refresh_interval' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'width' => 6, 'height' => 1,
+		'takesLocale' => false,
+		'default' => 60,
+		'label' => _t('Refresh display every ^ELEMENT seconds'),
+		'description' => _t('Frequency (in seconds) to refresh display')
 	)
 );

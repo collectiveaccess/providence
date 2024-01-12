@@ -60,7 +60,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 	 * @return string Name - actually more of a short description - of this task queue plugin
 	 */
 	public function getHandlerName() {
-		return _t("Background media file processor");
+		return _t("Media file processor");
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -76,27 +76,23 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 		$va_params = array();
 		
 		$va_params['input_format'] = array(
-			'label' => _t('Input format'),
-			'value' => $va_parameters["INPUT_MIMETYPE"]
+			'label' => _t('Format'),
+			'value' => Media::getTypenameForMimetype($va_parameters["INPUT_MIMETYPE"])
 		);
 		if (file_exists($va_parameters["FILENAME"]) && ($size = filesize($va_parameters["FILENAME"]))) {
 			$va_params['input_file_size'] = array(
-				'label' => _t('Input file size'),
+				'label' => _t('Filesize'),
 				'value' => sprintf("%s", caFormatFileSize($size))
 			);
 		}
 		$va_params['table'] = array(
-			'label' => _t('Data source'),
+			'label' => _t('Source'),
 			'value' => $va_parameters["TABLE"].':'.$va_parameters["FIELD"].':'.$va_parameters["PK_VAL"]
-		);
-		$va_params['temporary_filename'] = array(
-			'label' => _t('Temporary filename'),
-			'value' => $va_parameters["FILENAME"]
 		);
 		
 		if (is_array($va_parameters["VERSIONS"])) {
 			$va_params['version'] = array(
-				'label' => _t('Versions output'),
+				'label' => _t('Versions'),
 				'value' => join(", ", array_keys($va_parameters["VERSIONS"]))
 			);
 		}
