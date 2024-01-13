@@ -55,7 +55,7 @@ class CLI {
      */
     public function __construct(?string $mode=null) {
         $this->log = caGetLogger();
-        $this->mode = $this->getProcessingMode();
+        $this->mode = $this->getExecutionMode();
     }
 	# -------------------------------------------------------
     /**
@@ -207,10 +207,12 @@ class CLI {
     }
     # -------------------------------------------------------
     /**
+     * Determine execution mode (via exec() or proc_open() )
      *
+     * @return string
      * @throws ApplicationException
      */
-    public function getProcessingMode() : string {
+    public function getExecutionMode() : string {
     	$o_config = \Configuration::load();
     	$mode = strtolower($o_config->get('background_process_mode'));
     	if(!in_array($mode, ['auto', 'exec', 'proc_open'])) { $mode = 'auto'; }

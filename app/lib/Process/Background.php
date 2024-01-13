@@ -42,28 +42,54 @@ class Background {
      *
      */
     public function __construct() {
-        $this->log = caGetLogger();
+       // $this->log = caGetLogger();
     }
 	# -------------------------------------------------------
     /**
      *
      */
-    static public function run(string $queue) {
+    static public function run(string $queue) : ?int {
+    	$o_config = \Configuration::load();
     	$queue = strtolower($queue);
+    	
+    	$log = caGetLogger();
     	
     	$ret = null;
     	$cli = new \CA\Process\CLI();
+    	$socket = new \CA\Process\Socket();
+    	
+    	$mode = strtolower($o_config->get('background_process_mode'));
         switch($queue) {
         	case 'searchindexingqueue':
         		if (!\ca_search_indexing_queue::lockExists()) {
-                	$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-indexing-queue', true);	
+        			switch($mode) {
+        				case 'proc_open':
+        				case 'exec':
+        				default:
+							$log->logDebug(_t('[Background] Running search indexing queue in background using CLI::%1', $mode));
+							$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-indexing-queue', true);
+							break;
+						case 'socket':
+							$log->logDebug(_t('[Background] Running search indexing queue in background using socket'));
+							$ret = $socket->run('searchindexingqueue');
+							break;
+        			}
         		}
         		break;
         	case 'taskqueue':
-        		$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-task-queue', true);
-        		break;
-        	case 'socket':
-        		$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-task-queue', true);
+        		switch($mode) {
+					case 'proc_open':
+					case 'exec':
+					default:
+						$log->logDebug(_t('[Background] Running task queue in background using CLI::%1', $mode));
+						$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-task-queue', true);
+						break;
+					case 'socket':
+    	print "got $queue :: $mode<br>\n";
+						$log->logDebug(_t('[Background] Running task queue in background using socket'));
+						$ret = $socket->run('taskqueue');
+						break;
+				}
         		break;
         }
         

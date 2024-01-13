@@ -707,4 +707,23 @@ class TaskQueue extends BaseObject {
 		return $this->transaction ? $this->transaction->getDb() : new Db();
 	}
 	# ---------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function run(?array $options=null) : bool {
+		$tq = new TaskQueue();
+		$quiet = caGetOption('quiet', $options, true);
+
+		if(caGetOption('restart', $options, false))  { $tq->resetUnfinishedTasks(); }
+
+		if (!$quiet) { CLIUtils::addMessage(_t("Processing queued tasks...")); }
+		$tq->processQueue();	
+
+		if (!$quiet) { CLIUtils::addMessage(_t("Processing recurring tasks...")); }
+		$tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
+		if (!$quiet) {  CLIUtils::addMessage(_t("Processing complete.")); }
+		
+		return true;
+	}
+	# ---------------------------------------------------------------------------
 }
