@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -665,7 +665,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			foreach($terms as $term) {
 				$hits = $this->_processQueryTerm($subject_tablenum, $term);
 				if(!is_array($hits)) { continue; }
-				if ($i == 0) { $acc = $hits; continue; }
+				if ($i == 0) { $i++; $acc = $hits; continue; }
 				$acc = array_intersect_key($acc, $hits);
 				$i++;
 			}
