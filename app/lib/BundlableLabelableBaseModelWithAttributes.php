@@ -3647,7 +3647,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_fields_by_type = [];
 		if (is_array($va_bundles)) {
 			foreach($va_bundles as $vn_i => $va_tmp) {
-				if (isset($va_tmp['settings']['readonly']) && (bool)$va_tmp['settings']['readonly']) { continue; }			// don't attempt to save "read-only" bundles
+				$b = caConvertBundleNameToCode($va_tmp['bundle_name']);
+				if (
+					(bool)($va_tmp['settings']['readonly'] ?? false)
+				 	&&
+				 	!(($b === 'idno') && !$this->getPrimaryKey())
+				) { continue; }			// don't attempt to save "read-only" bundles
 				
 				if (($po_request->user->getBundleAccessLevel($this->tableName(), $va_tmp['bundle_name'])) < __CA_BUNDLE_ACCESS_EDIT__) {	// don't save bundles use doesn't have edit access for
 					continue;
@@ -3657,7 +3662,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_fields_by_type[$va_info['type']]['P'.$va_tmp['placement_id']] = $va_tmp['bundle_name'];
 			}
 		}
-			
+		
 		// auto-add mandatory fields if this is a new object
 		if (!is_array($va_fields_by_type['intrinsic'] ?? null)) { $va_fields_by_type['intrinsic'] = []; }
 		if (!$this->getPrimaryKey()) {
