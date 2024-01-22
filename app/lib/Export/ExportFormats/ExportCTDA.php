@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,6 +95,31 @@ class ExportCTDA extends BaseExportFormat {
 		self::$row_index++;
 		$group = self::$row_index;
 		
+		$headers = [
+			"ID",
+			"member_of",
+			"member_of_existing_entity_id",
+			"publish",
+			"model",
+			"held_by",
+			"title",
+			"rights_statement",
+			"digital_file",
+			"media_use",
+			"digital_origin",
+			"resource_type",
+			"description",
+			"local_identifier",
+			"persons",
+			"organizations",
+			"subject",
+			"temporal_subject",
+			"geographic_subject",
+			"origin_information",
+			"record_information",
+			"physical_description_note"
+		];
+		
 		$acc = $row = [];
 		for($c=0; $c < 22; $c++) {
 			$row[$c] = null;
@@ -167,7 +192,7 @@ class ExportCTDA extends BaseExportFormat {
 				self::$row_index++;
 				$row[0] = self::$row_index;
 				$row[1] = $group;
-				$row[4] =$z= $this->_mediaClassToCTDAModel(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));
+				$row[4] = $this->_mediaClassToCTDAModel(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));
 				$row[8] = $media_prefix.pathinfo($m, PATHINFO_BASENAME);
 				$row[11] = $this->_mediaClassToCTDAResourceType(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));
 				$acc[] = $row;
@@ -175,6 +200,8 @@ class ExportCTDA extends BaseExportFormat {
 		}
 		
 		$r = fopen('php://temp/maxmemory:10485760', 'w');
+		
+		fputcsv($r, $headers);
 		foreach($acc as $i => $row) {
 			foreach($row as $j => $rval) {
 				$acc[$i][$j] = strip_tags($rval, ['b', 'i', 'u', 'strong', 'em', 'p', 'br']);
