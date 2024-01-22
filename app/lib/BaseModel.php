@@ -4482,7 +4482,9 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					try {
 						$r = $media_url->fetch($vs_url);
 						if (is_array($r)) {
-							$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							if(!isset($this->_SET_FILES[$ps_field]['original_filename'])) { 
+								$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							}
 							$vs_tmp_file = $r['file'];
 						} else {
 							$this->postError(1600, _t('Could not download media'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);	
