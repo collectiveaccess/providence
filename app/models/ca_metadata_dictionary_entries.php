@@ -495,7 +495,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			$va_types = [$va_types];
 		}
 		if(!is_array($va_types)) { $va_types = [$pt_subject->getTypeID()]; }
-		if(sizeof($va_types = array_filter($va_types, 'strlen')) && Datamodel::tableExists($ps_bundle_name)) {
+		if(sizeof($va_types = array_filter($va_types, 'strlen')) && ($t_instance = Datamodel::getInstance($ps_bundle_name)) && method_exists($ps_bundle_name, 'getTypeCode') ) {
 			$va_types = array_merge($va_types, caMakeTypeIDList($ps_bundle_name, $va_types, ['dontIncludeSubtypesInTypeRestriction' => true]));
 		}
 		
