@@ -397,4 +397,3 @@ abstract class BaseGeographicMapPlugIn Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
-?>
