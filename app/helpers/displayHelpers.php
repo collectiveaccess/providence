@@ -4324,9 +4324,9 @@ jQuery(document).ready(function() {
 					$vs_lightbox_displayname_plural = $va_lightboxDisplayName["plural"];
 					$vs_tool_bar = "<div id='detailMediaToolbar'>";
 					if ($po_request->isLoggedIn()) {
-						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Lightbox', 'addItemForm', array($pt_subject->primaryKey() => $pt_subject->getPrimaryKey()))."\"); return false;' aria-label='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
+						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Lightbox', 'addItemForm', array($pt_subject->primaryKey() => $pt_subject->getPrimaryKey()))."\"); return false;' aria-label='"._t("Add item to %1", $vs_lightbox_displayname)."' title='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
 					}else{
-						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'LoginReg', 'LoginForm')."\"); return false;' aria-label='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
+						$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'LoginReg', 'LoginForm')."\"); return false;' aria-label='"._t("Login to add item to %1", $vs_lightbox_displayname)."' title='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
 					}
 					$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 				}
@@ -4380,25 +4380,25 @@ jQuery(document).ready(function() {
 		$va_detail_type_config = caGetDetailTypeConfig($ps_context);
 
 		if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."'><span class='glyphicon glyphicon-zoom-in' role='graphics-document' aria-label='Open Media View'></span></a>\n";
+			$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."' title='"._t("Open Media View")."'><span class='glyphicon glyphicon-zoom-in' role='graphics-document' aria-label='Open Media View'></span></a>\n";
 		}
 
 		if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
 		    $vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 		}
 		if ($vb_show_compare) {
-		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='graphics-document' aria-label='Compare'></i></a>";
+		   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='graphics-document' aria-label='Compare' title='Compare'></i></a>";
 		}
 
 		if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
-			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' aria-label='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
+			$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' aria-label='".$va_add_to_set_link_info['link_text']."' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
 		}
 		if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id, $pt_representation)){
 			# -- get version to download configured in media_display.conf
 			$vs_download_version = caGetAvailableDownloadVersions($po_request, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'), ['returnVersionForUser' => true]);
 			
 			if($vs_download_version){
-				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='graphics-document' aria-label='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
+				$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='graphics-document' aria-label='Download' title='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 			}
 		}
 		$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
@@ -4540,6 +4540,7 @@ jQuery(document).ready(function() {
 		$pb_hide_overlay_controls			= (bool)caGetOption('hideOverlayControls.', $pa_options, false);
 		$pa_check_acccess 					= caGetOption('checkAccess', $pa_options, null);
 		$pb_no_overlay						= (bool)caGetOption('noOverlay', $pa_options, false);
+		$item_id							= (int)caGetOption('item_id', $pa_options, null);
 
 		$vs_caption = $vs_tool_bar = '';
 
@@ -4551,6 +4552,9 @@ jQuery(document).ready(function() {
 				$pn_representation_id = (int)$va_identifier['id'];
 				$t_instance = new ca_object_representations($pn_representation_id);
 
+				if ($pb_inline) {
+					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
+				}
 				if (!$t_instance->isReadable($po_request)) { 
                     throw new ApplicationException(_t('Cannot view media'));
                 }
@@ -4561,11 +4565,8 @@ jQuery(document).ready(function() {
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype($ps_display_type, $vs_mimetype))) {
 					throw new ApplicationException(_t('Invalid viewer: %1/%2', $vs_mimetype, $ps_display_type));
 				}
-				
+
 				$va_display_info = caGetMediaDisplayInfo($ps_display_type, $vs_mimetype);
-				if ($pb_inline) {
-					$vs_caption = ($vs_template = caGetOption('captionTemplate', $pa_options, caGetOption('captionTemplate', $va_display_info, null))) ? $t_instance->getWithTemplate($vs_template) : '';
-				}
 
 				if ((($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $va_display_info, null))
 				||
@@ -4600,7 +4601,7 @@ jQuery(document).ready(function() {
 					"representation:{$pn_representation_id}", 
 					['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
 					['viewerWrapper' => caGetOption('inline', $pa_options, false) ? 'viewerInline' : null, 'context' => $ps_context, 'hideOverlayControls' => $pb_hide_overlay_controls, 
-					'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 
+					'noOverlay' => $pb_no_overlay, 'checkAccess' => $pa_check_acccess, 'item_id' => $item_id,
 					'resultList' => caGetOption('resultList', $pa_options, null), 'showRepresentationViewerNextPreviousLinks' => (bool)caGetOption('showRepresentationViewerNextPreviousLinks', $pa_options, false)]
 				);
 
@@ -4644,7 +4645,7 @@ jQuery(document).ready(function() {
 
 				if ($pb_inline) {
 					$vs_tool_bar = caRepToolbar($po_request, $t_instance, $pt_subject, array('display' => $ps_display_type, 'context' => $ps_context, 'checkAccess' => $pa_check_acccess));
-					$vs_viewer = "<div data-value_id='{pn_value_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_value_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}</div></div>";
+					$vs_viewer = "<div data-representation_id='{$pn_representation_id}' data-value_id='{$pn_value_id}' class='repViewerContCont'><div id='cont{$pn_representation_id}' class='repViewerCont'>{$vs_viewer}{$vs_tool_bar}{$vs_caption}</div></div>";
 				}
 
 				return $vs_viewer;

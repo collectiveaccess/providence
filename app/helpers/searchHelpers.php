@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2587,8 +2587,6 @@ function caExtractTextFromPDF(string $filepath) : ?array {
 								'y1' => $tmp[1],
 								'x2' => $tmp[2],
 								'y2' => $tmp[3]
-								//'font' => $xml->getAttribute('font'),
-								//'size' => $xml->getAttribute('size')
 							);	
 						} else {
 							$current_text_loc = null;
