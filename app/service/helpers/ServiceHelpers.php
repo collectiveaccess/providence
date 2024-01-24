@@ -545,7 +545,7 @@ function itemSchemaDefinitions() {
 					'description' => 'Media height (in pixels)'
 				],
 				'duration' => [
-					'type' => Type::int(),
+					'type' => Type::float(),
 					'description' => 'Media duration (in seconds)'
 				],
 				'filesize' => [
@@ -607,7 +607,7 @@ function itemSchemaDefinitions() {
 					'description' => 'Media height (in pixels)'
 				],
 				'duration' => [
-					'type' => Type::int(),
+					'type' => Type::float(),
 					'description' => 'Media duration (in seconds)'
 				],
 				'filesize' => [
