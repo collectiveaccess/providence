@@ -7728,9 +7728,6 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function addACLUsers($pa_user_ids) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
-		
 		$vn_table_num = $this->tableNum();
 		
 		$t_acl = new ca_acl();
@@ -7773,9 +7770,6 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function removeACLUsers($pa_user_ids) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
-		
 		$vn_table_num = $this->tableNum();
 		
 		$va_current_users = $this->getACLUsers();
@@ -7908,8 +7902,6 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function addACLUserGroups($pa_group_ids, $pa_options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		$vn_table_num = $this->tableNum();
 		
