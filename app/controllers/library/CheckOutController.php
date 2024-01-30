@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,10 +57,12 @@ class CheckOutController extends ActionController {
 	 * 
 	 */
 	public function Items() {
+		$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
 		$user_id = $this->request->user->canDoAction('can_do_library_checkinout_for_anyone') ? $this->request->getParameter('user_id', pInteger) : $this->request->getUserID();
 		
 		$this->view->setVar('user_id', $user_id);
 		$this->view->setVar('checkout_types', ca_object_checkouts::getObjectCheckoutTypes());
+		$this->view->setVar('config', $library_config);
 		
 		$this->render('checkout/items_html.php');
 	}
