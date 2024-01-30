@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
-require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
@@ -379,7 +374,6 @@ class BaseEditorController extends ActionController {
 				// The newly created record's parent is already set to be the current parent of the "above_id"; the net effect of all of this
 				// is to insert the newly created record between the "above_id" record and its' current parent.
 				if ($vn_above_id && ($t_instance = Datamodel::getInstanceByTableName($this->ops_table_name, true)) && $t_instance->load($vn_above_id)) {
-					$t_instance->setMode(ACCESS_WRITE);
 					$t_instance->set('parent_id', $vn_subject_id);
 					$t_instance->update();
 
@@ -599,7 +593,6 @@ class BaseEditorController extends ActionController {
 					$vn_child_count = 0;
 					foreach($va_children as $vn_child_id) {
 						$t_child->load($vn_child_id);
-						$t_child->setMode(ACCESS_WRITE);
 						$t_child->delete(true);
 						if ($t_child->numErrors() > 0) {
 							continue;
@@ -783,7 +776,7 @@ class BaseEditorController extends ActionController {
 			]
 		);
 
-		$this->render('summary_html.php');
+		return $this->render('summary_html.php');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1085,7 +1078,6 @@ class BaseEditorController extends ActionController {
 
 		// Set ACL-related intrinsic fields
 		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
-			$t_subject->setMode(ACCESS_WRITE);
 			if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
 				$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
 			}
@@ -1571,7 +1563,6 @@ class BaseEditorController extends ActionController {
 
 		if ($t_watch_list->isItemWatched($vn_subject_id, $t_subject->tableNum(), $vn_user_id)) {
 			if($t_watch_list->load(array('row_id' => $vn_subject_id, 'user_id' => $vn_user_id, 'table_num' => $t_subject->tableNum()))){
-				$t_watch_list->setMode(ACCESS_WRITE);
 				$t_watch_list->delete();
 				if ($t_watch_list->numErrors()) {
 					$va_errors = $t_item->errors;
@@ -1581,7 +1572,6 @@ class BaseEditorController extends ActionController {
 				}
 			}
 		} else {
-			$t_watch_list->setMode(ACCESS_WRITE);
 			$t_watch_list->set('user_id', $vn_user_id);
 			$t_watch_list->set('table_num', $t_subject->tableNum());
 			$t_watch_list->set('row_id', $vn_subject_id);
@@ -1632,6 +1622,7 @@ class BaseEditorController extends ActionController {
 		$ps_sort = $this->request->getParameter("sort", pString);
 		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
 
+		$form_name = $this->request->getParameter("formName", pString);
 
 		switch($ps_bundle) {
 			case '__inspector__':
@@ -1656,7 +1647,8 @@ class BaseEditorController extends ActionController {
 				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction], $vs_label));
+				$bundle_label = null;
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
 				break;
 		}
 	}
@@ -2220,7 +2212,7 @@ class BaseEditorController extends ActionController {
                 if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
-                $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => null]));
                 return;
                 break;
 			case 'attribute':
@@ -2228,7 +2220,7 @@ class BaseEditorController extends ActionController {
                 if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
-                $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                $this->response->addContent($vs_viewer_name::searchViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => null]));
                 return;
                 break;
         }
@@ -2258,7 +2250,7 @@ class BaseEditorController extends ActionController {
                 if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
-                $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => null]));
                 return;
                 break;
 			case 'attribute':
@@ -2266,7 +2258,7 @@ class BaseEditorController extends ActionController {
                 if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
                     throw new ApplicationException(_t('Invalid viewer'));
                 }
-                $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => $va_display_info]));
+                $this->response->addContent($vs_viewer_name::autocomplete($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => $t_subject, 't_instance' => $t_instance, 'display' => null]));
                 return;
                 break;
         }
@@ -2737,7 +2729,7 @@ class BaseEditorController extends ActionController {
 	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		if (!$t_subject->isLoaded()) { 
-			throw new ApplicationException(_t('Invalid id '.$vn_su));
+			throw new ApplicationException(_t('Invalid id %1', $vn_subject_id));
 		}
 		if (!$this->_checkAccess($t_subject)) { 
 			throw new ApplicationException(_t('Access denied'));
@@ -2845,7 +2837,7 @@ class BaseEditorController extends ActionController {
 			} elseif(!is_array($policies = $target::getHistoryTrackingCurrentValuePolicies($target))) {
 				$resp = ['ok' => 0, 'message' => _t('No policies available'), 'updated' => [], 'errors' => [], 'timestamp' => time()];	
 			} else {
-				$policies = array_filter($policies, function($v) use ($table) { return array_key_exists('ca_storage_locations', $v['elements']); });
+				$policies = array_filter($policies, function($v) { return array_key_exists('ca_storage_locations', $v['elements']); });
 		
 				$updated = $already_home = $errors = [];
 				$msg = '';

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_labels.php");
@@ -44,8 +40,8 @@ require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
  	'NAME_SINGULAR' 	=> _t('object representation'),
@@ -2397,16 +2393,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * Returns information for representation attached to the current item with the specified MD5 hash. 
 	 # Provided interface compatibility with RepresentableBaseModel classes.
 	 *
-	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+	 * @param string $md5 The MD5 hash to return representation info for. 
 	 * @param array $options No options are currently supported.
 	 *
 	 * @return array An array of representation_ids, or null if there is no match
 	 */
-	public function representationWithMD5($ps_md5, $options=null) {
-		$va_rep_list = array();
-		
-		if ($this->get('md5') == $ps_md5) {
-			return [$this->getPrimaryKey];
+	public function representationWithMD5(string $md5, $options=null) {
+		if ($this->get('md5') == $md5) {
+			return [$this->getPrimaryKey()];
 		}
 		return null;
 	}

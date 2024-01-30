@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2017 Whirl-i-Gig
+ * Copyright 2006-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 include_once(__CA_LIB_DIR__."/Db/DbBase.php");
-
-include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
@@ -175,8 +168,8 @@ class DbResult extends DbBase {
 			}
 
 			if ($vb_convert_breaks) {
-				$vs_val = preg_replace("/(\n|\r\n){2}/","<p/>",$vs_val);
-				$vs_val = ereg_replace("\n","<br/>",$vs_val);
+				$vs_val = preg_replace("/([\n|\r\n]){2}/", "<p/>", $vs_val);
+				$vs_val = preg_replace("/([\n|\r\n]){1}/", "<br/>", $vs_val);
 			}
 		}
 		if ($pa_options["urlEncode"] ?? null) {
@@ -675,7 +668,6 @@ class DbResult extends DbBase {
 	 * @return string
 	 */
 	function getDate($ps_field, $pa_options=null) {
-
 		$va_field = $this->getFieldInfo($ps_field);
 		if (is_object($va_field["instance"])) {
 			if (!in_array($vn_field_type = $va_field["instance"]->getFieldInfo($va_field["field"], "FIELD_TYPE"), array(FT_DATE, FT_TIME, FT_DATETIME, FT_TIMESTAMP, FT_HISTORIC_DATETIME, FT_HISTORIC_DATERANGE, FT_DATERANGE))) {
@@ -719,6 +711,8 @@ class DbResult extends DbBase {
 					break;
 			}
 		}
+		
+		return null;
 	}
 	
 	/**

@@ -58,9 +58,6 @@ class SimpleService {
 		$va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
 
 		switch(strtolower($va_endpoint_config['type'])) {
-			case 'stats':
-				$vm_return = self::runStatsEndpoint($va_endpoint_config, $po_request);
-				break;
 			case 'refineablesearch':
 				$vm_return = self::runRefineableSearchEndpoint($va_endpoint_config, $po_request);
 				break;
@@ -377,7 +374,7 @@ class SimpleService {
 		$va_search_opts = array(
 					'sort' => ($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort'], 
 					'sort_direction' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'], 
-					'appendToSearch' => $vs_append_to_search,
+					'appendToSearch' => '',
 					'checkAccess' => $pa_config['checkAccess'],
 					'no_cache' => true,
 					'dontCheckFacetAvailability' => true,

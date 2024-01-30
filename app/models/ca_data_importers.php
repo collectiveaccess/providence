@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/Import/DataReaderManager.php');
@@ -1368,6 +1364,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		detailedLogName = [Default is null]
 	 *		reader = Reader instance preloaded with data for import. If set reader content will be used rather than reading the file pointed to by $ps_source. [Default is null]
 	 *		checkFileExtension = Verify the file extension of the source file is supported by the mapping. [Default is false]
+	 *		start = Zero-based index to start import at. [Default is 0]
+	 *		limit = Maximum number of rows to import. [Default is null - import all rows]
 	 */
 	public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		$this->num_import_errors = 0;
@@ -1409,7 +1407,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t('Import of %1 failed because mapping %2 does not exist.', $ps_source, $ps_mapping));
 			return null;
 		}
+
+		$start 	= caGetOption('start', $pa_options, 0);
+		$limit 	= caGetOption('limit', $pa_options, null);
 		$vn_num_initial_rows_to_skip = $t_mapping->getSetting('numInitialRowsToSkip');
+		if($start > 0) { $vn_num_initial_rows_to_skip = 0; } 
 		
 		// Path to use for logging
 		$this->log_path = $log_path = caGetOption('logDirectory', $pa_options, caGetLogPath(null, 'batch_metadata_import_log_directory'));
@@ -1531,6 +1533,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (!$o_reader->setCurrentDataset($vn_dataset)) { continue; }
 		
 		$va_log_import_error_opts['dataset'] = $vn_dataset;
+		
+		if($start > 0) {
+			$o_reader->seek($start);
+			$o_log->logDebug(_t('Starting read at %1 using start option', $start));
+		}
 		
 		$vn_num_items = $o_reader->numRows();
 		$o_log->logDebug(_t('Found %1 rows in input source', $vn_num_items));
@@ -1702,10 +1709,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_row = 0;
 		$this->num_records_processed = 0;
 		while ($o_reader->nextRow()) {
+			if(($limit > 0) && ($vn_row >= $limit)) { 
+				$o_log->logDebug(_t('Stopped importing at row %1 because limit option value of %2 was reached', $vn_row, $limit));
+				break;
+			}
 			$va_mandatory_field_values = array();
 			$vs_preferred_label_for_log = null;
 		
-			if ($vn_row < $vn_num_initial_rows_to_skip) {	// skip over initial header rows
+			if (($vn_num_initial_rows_to_skip > 0) && ($vn_row < $vn_num_initial_rows_to_skip)) {	// skip over initial header rows
 				$o_log->logDebug(_t('Skipped initial row %1 of %2', $vn_row, $vn_num_initial_rows_to_skip));
 				$vn_row++;
 				continue;
@@ -1827,7 +1838,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			    $vs_idno = self::_applyConditionalOptions($vs_type, $va_mapping_items, $vn_type_id_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements,
 					['skip' => []]
 				);
-				if(!self::_applyComparisonOptions($va_type, $va_mapping_items, $vn_type_id_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements, 
+				if(!self::_applyComparisonOptions($vs_type, $va_mapping_items, $vn_type_id_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements, 
 					['skip' => [], 'log' => $o_log, 'useRaw' => $va_raw_row]
 				)) {
 					$vs_type = $vs_type_mapping_setting;	// use constant type
@@ -3247,6 +3258,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					// Replicate constants as needed: constant is already set for first constant in group,
 					// but will not be set for repeats so we set them here
 					foreach ( $va_group_buf as $vn_group_index => $va_group_data ) {
+						if(sizeof(array_filter(array_keys($va_group_data), function($v) { return $v[0] !== '_'; })) === 0) { 
+							// Omit entries where no content keys are present
+							continue; 
+						}
 						$va_ptr =& $va_content_tree;
 						foreach ( $va_group_tmp as $vs_tmp ) {
 							if ( ! is_array( $va_ptr[ $vs_tmp ] ?? null ) ) {

@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-
 require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php" );
 require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php" );
 
@@ -121,8 +115,6 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$va_result = json_decode( $vs_result, true );
 		if ( ! isset( $va_result['results']['bindings'] ) || ! is_array( $va_result['results']['bindings'] ) ) {
-			print var_dump( $va_result );
-
 			return null;
 		}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
-    
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -124,7 +118,6 @@ $g_information_service_settings_global_names= array(
 			"The National Checklist of Taiwan" => 153,
 			"Psocodea Species File" => 154,
 			"FishBase" => 155,
-			"3i - Typhlocybinae Database" => 156,
 			"Belgian Species List" => 157,
 			"EUNIS" => 158,
 			"CU*STAR" => 159,
@@ -147,7 +140,6 @@ $g_information_service_settings_global_names= array(
 			"Silva" => 178,
 			"Open Tree of Life Reference Taxonomy" => 179,
 			"iNaturalist" => 180,
-			"The Interim Register of Marine and Nonmarine Genera" => 181,
 			"Gymno" => 182,
 			"Index Animalium" => 183,
 			"ASM Mammal Diversity Database" => 184,

@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/Db/DbResult.php");
 require_once(__CA_LIB_DIR__."/Db/DbStatement.php");
@@ -312,10 +307,10 @@ class Db_mysqli extends DbDriverBase {
 		$t = Timer::start("db");
 		
 		$logger = null;
+		$prefix = "[{$db_seq}::".getmypid()."] ";
 		if(defined('__CA_LOG_DATABASE_QUERIES__') && __CA_LOG_DATABASE_QUERIES__) {
 			$logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'queries'], null);
 			
-			$prefix = "[{$db_seq}::".getmypid()."] ";
 			$db_seq++;
 			$logger->logInfo(caPrintStacktrace((defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
 			$logger->logInfo($prefix.json_encode(['query' => $vs_sql, 'params' => $pa_values]));
@@ -324,7 +319,7 @@ class Db_mysqli extends DbDriverBase {
 			//print "<pre>".caPrintStacktrace()."</pre>\n";
 			$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
 			if($logger) {
-				$logger->logError($prefix.json_encode(['errorNumber' => $error_number, 'errorMessage' => $error_message]));
+				$logger->logError($prefix.json_encode(['errorNumber' => $error_num, 'errorMessage' => $error_message]));
 			}
 			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
 		}
@@ -504,8 +499,8 @@ class Db_mysqli extends DbDriverBase {
 		if ($pn_offset < 0) { return false; }
 		if ($pn_offset > (mysqli_num_rows($pr_res) - 1)) { return false; }
 		if (!@mysqli_data_seek($pr_res, $pn_offset)) {
-    		$po_caller->postError(260, _t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)),"Db->mysqli->seek()");
-			throw new DatabaseException(_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)), 260, "Db->mysqli->seek()");
+    		$po_caller->postError(260, _t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($po_caller, $pr_res)),"Db->mysqli->seek()");
+			throw new DatabaseException(_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($po_caller, $pr_res)), 260, "Db->mysqli->seek()");
 			return false;
 		};
 
@@ -530,7 +525,8 @@ class Db_mysqli extends DbDriverBase {
 	 */
 	public function free($po_caller, $pr_res) {
 		if (is_resource($pr_res)) {
-			return @mysqli_free_result($pr_res);
+			@mysqli_free_result($pr_res);
+			return true;
 		}
 		return false;
 	}

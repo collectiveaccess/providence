@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2022 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace CA\Sync\LogEntry;
 
 require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
@@ -87,7 +86,7 @@ class Bundlable extends Base {
 
 	private function applyOutsideIntrinsics($pa_intrinsics) {
 		foreach($pa_intrinsics as $vs_fld => $vm_val) {
-			$this->getModelInstance()->set($vs_fld, $vm_val);
+			$this->getModelInstance()->set($vs_fld, $vm_val, ['allowSettingOfTypeID' => true]);
 		}
 	}
 }

@@ -5934,8 +5934,6 @@ div.caItemListSortControlTrigger {
 select.caItemListSortControlTrigger {
     font-size: 9px;
     font-weight: normal;
-    height: 17px;
-    vertical-align: top;
 }
 
 .caItemListSortControlContainer {
@@ -7364,6 +7362,26 @@ div.caLibraryTransactionListItemRemoveButton {
 
 div.caLibrarySubmitListContainer {
 	text-align: center;
+}
+
+div.caLibraryTransactionListTransactionOptionsContainer {
+	text-align: left;
+}
+
+div.caLibraryTransactionListTransactionNotesContainer {
+	margin: 3px 0 3px 40px;
+}
+
+div.caLibraryTransactionListTranactionNotesLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListTransactionDueDateContainer {
+	margin: 3px 0 3px 40px;
+}
+
+div.caLibraryTransactionListTransactionDueDateLabel {
+	font-size: 11px;
 }
 
 div.caLibraryTransactionResultsContainer {

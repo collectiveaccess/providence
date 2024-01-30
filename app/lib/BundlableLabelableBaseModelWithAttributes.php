@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
 require_once(__CA_LIB_DIR__."/DeduplicateBaseModel.php");
@@ -103,6 +98,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $do_highlighting = false;
+	
+	/**
+	 *
+	 */
+	private $disable_acl = false;
 	# ------------------------------------------------------
 	public function __construct($id=null, ?array $options=null) {
 		parent::__construct($id, $options);	# call superclass constructor
@@ -144,12 +144,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * against the ca_lists list for the table (as defined by getTypeListCode())
 	 */ 
 	public function insert($pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+			
 		$vb_we_set_transaction = false;
 		$we_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
+		$table = $this->tableName();
 		if (!is_a($this, "BaseRelationshipModel")) {
-			global $AUTH_CURRENT_USER_ID;
 
-			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
+			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $table, 'instance' => $this));
 
 
 			if (!$this->inTransaction()) {
@@ -167,36 +170,36 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
 					$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 					if (!isset($va_type_list[$vn_type_id])) {
-						$this->postError(2510, _t("A valid type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+						$this->postError(2510, _t("A valid type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()", $table.'.'.$this->getTypeFieldName());
 					} else {
 						if(is_null($vn_ret)) {
-							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $table.'.'.$this->getTypeFieldName());
 						} else {
-							$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+							$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $table.'.'.$this->getTypeFieldName());
 						}
 					}
 					$vb_error = true;
 				}
 		
-				if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy')) {
+				if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($table.'_enforce_strict_type_hierarchy')) {
 					// strict means if it has a parent is can only have types that are direct sub-types of the parent's type
 					// and if it is the root of the hierarchy it can only take a top-level type
 					if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
 						// is child
-						$t_parent = Datamodel::getInstanceByTableName($this->tableName());
+						$t_parent = Datamodel::getInstanceByTableName($table);
 						if ($t_parent->load($vn_parent_id)) {
 							$vn_parent_type_id = $t_parent->getTypeID();
-							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') === '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
+							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($table.'_enforce_strict_type_hierarchy') === '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
 
 							if (!isset($va_type_list[$this->getTypeID()])) {
 								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 
-								$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+								$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $table.'.'.$this->getTypeFieldName());
 								$vb_error = true;
 							}
 						} else {
 							// error - no parent?
-							$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+							$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()", $table.'.'.$this->getTypeFieldName());
 							$vb_error = true;
 						}
 					} else {
@@ -210,7 +213,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							})) > 0) {
 								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 						
-								$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
+								$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $table.'.'.$this->getTypeFieldName());
 								$vb_error = true;
 							}
 						}
@@ -241,7 +244,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$this->_generateSortableIdentifierValue();
 			
 			// Process "access_inherit_from_parent" flag where supported
-			if ((bool)$this->getAppConfig()->get($this->tableName().'_allow_access_inheritance') && $this->hasField('access_inherit_from_parent')) {
+			if ((bool)$this->getAppConfig()->get($table.'_allow_access_inheritance') && $this->hasField('access_inherit_from_parent')) {
 				// Child record with inheritance set
 				if ((bool)$this->get('access_inherit_from_parent') && (($vn_parent_id = $this->get('parent_id')) > 0)) {
 					$t_parent = Datamodel::getInstanceByTableNum($this->tableNum(), false);
@@ -273,15 +276,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$this->setGUID($pa_options);
 		
+		// Set ACL for newly created record
+		if ($this->getAppConfig()->get('perform_item_level_access_checking') && !$this->getAppConfig()->get("{$table}_dont_do_item_level_access_control")) {
+			if($AUTH_CURRENT_USER_ID) { $this->setACLUsers([$AUTH_CURRENT_USER_ID => __CA_ACL_EDIT_DELETE_ACCESS__]); }
+			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level'));
+		}
+		
 		if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 	
-		$this->opo_app_plugin_manager->hookAfterBundleInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
+		$this->opo_app_plugin_manager->hookAfterBundleInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $table, 'instance' => $this));
 		
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
 		
 		if ($vn_id = $this->getPrimaryKey()) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
+			if ($this->_rowAsSearchResult = $this->makeSearchResult($table, array($vn_id))) {
 				$this->_rowAsSearchResult->nextHit();
 				$this->_rowAsSearchResult->autoConvertLineBreaks($this->auto_convert_line_breaks);
 				$this->_rowAsSearchResult->doHighlighting($this->do_highlighting);
@@ -293,7 +302,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				[
 					'id' => $this->getPrimaryKey(), 
 					'table_num' => $this->tableNum(), 
-					'table_name' => $this->tableName(), 
+					'table_name' => $table, 
 					'instance' => $this, 
 					'is_insert' => true, 
 					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
@@ -636,7 +645,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// is this relationship part of a policy?
 					foreach($history_tracking_policies as $policy) {
 						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
-						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
+						if (!is_array($h = self::getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
 					
 						$current = array_shift(array_shift($h));
 						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
@@ -763,7 +772,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function get($ps_field, $pa_options=null) {
 		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
-		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->TABLE) && ($vs_field = $va_tmp[1]))) {
+		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->tableName()) && ($vs_field = $va_tmp[1]))) {
 			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
 		}
 		if($this->_rowAsSearchResult) {
@@ -3060,7 +3069,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$t_root = $table::findAsInstance($this->getHierarchyRootID());
 		}
 		if(!$t_root) {
-			return $o_view;
+			return null;
 		}
 		$child_ids = $t_root->getHierarchyChildren(null, ['idsOnly' => true]);
 		
@@ -3463,6 +3472,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Copy sort settings over bundle defaults in case we're using app.conf defaults, as we'll
 		// want the bunde to reflect the settings actually used
+		$pa_bundle_settings['userSetSort'] = $user_set_sort = caGetOption('userSetSort', $pa_options, false);
+		$pa_bundle_settings['allowDragSort'] = (!$sort || ($sort === '_natural'));
 		$pa_bundle_settings['sort'] = $sort;
 		$pa_bundle_settings['sortDirection'] = $sort_direction;
 		
@@ -3636,7 +3647,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_fields_by_type = [];
 		if (is_array($va_bundles)) {
 			foreach($va_bundles as $vn_i => $va_tmp) {
-				if (isset($va_tmp['settings']['readonly']) && (bool)$va_tmp['settings']['readonly']) { continue; }			// don't attempt to save "read-only" bundles
+				$b = caConvertBundleNameToCode($va_tmp['bundle_name']);
+				if (
+					(bool)($va_tmp['settings']['readonly'] ?? false)
+				 	&&
+				 	!(($b === 'idno') && !$this->getPrimaryKey())
+				) { continue; }			// don't attempt to save "read-only" bundles
 				
 				if (($po_request->user->getBundleAccessLevel($this->tableName(), $va_tmp['bundle_name'])) < __CA_BUNDLE_ACCESS_EDIT__) {	// don't save bundles use doesn't have edit access for
 					continue;
@@ -3646,7 +3662,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_fields_by_type[$va_info['type']]['P'.$va_tmp['placement_id']] = $va_tmp['bundle_name'];
 			}
 		}
-			
+		
 		// auto-add mandatory fields if this is a new object
 		if (!is_array($va_fields_by_type['intrinsic'] ?? null)) { $va_fields_by_type['intrinsic'] = []; }
 		if (!$this->getPrimaryKey()) {
@@ -4140,6 +4156,7 @@ if (!$vb_batch) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
 									$va_attr_update[$vn_element_id] = $va_val;
+									$isset = true;
 									continue;
 								}
 							} 
@@ -4835,7 +4852,8 @@ if (!$vb_batch) {
                                     } elseif(!$is_form_upload && !$dont_allow_access_to_import_directory && ($vs_key !== 'empty') && sizeof($import_directory_paths) && strlen($va_values['tmp_name'])) {
                                     	// Is user-selected file from media import directory
                                     	foreach($import_directory_paths as $p) {
-											if(file_exists($vs_path = caSanitizeRelativeFilepath($va_values['tmp_name'], $p))) {
+											if(file_exists($p.'/'.$va_values['tmp_name']) && caSanitizeRelativeFilepath($va_values['tmp_name'], $p)) {
+												$vs_path = $p.'/'.$va_values['tmp_name'];
 												$vs_original_name = pathinfo($va_values['name'], PATHINFO_BASENAME);
 												break;
 											}
@@ -6726,7 +6744,7 @@ if (!$vb_batch) {
 						foreach($t_rel_item->getFormFields() as $vs_field => $va_field_info) {
 							if (!isset($va_rels[$vs_sort_key][$vn_id][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
 							$va_rels[$vs_sort_key][$vn_id]['intrinsic'][$vs_field] = $va_rels[$vs_sort_key][$vn_id][$vs_field];
-							unset($va_rel[$vs_sort_key][$vn_id][$vs_field]);
+							unset($va_rels[$vs_sort_key][$vn_id][$vs_field]);
 						}
 						unset($va_rels[$vs_sort_key][$vn_id]['_key']);
 						unset($va_rels[$vs_sort_key][$vn_id]['row_id']);
@@ -7344,6 +7362,8 @@ if (!$vb_batch) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
 		
+		$vb_fl_display_form_field_tips = caGetOption('display_form_field_tips', $pa_options, false);
+		
 		$vs_errors = null;
 		
 		if (!$this->opo_idno_plugin_instance) {
@@ -7409,9 +7429,10 @@ if (!$vb_batch) {
 			
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
+			$errors = null;
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
 										$ps_field,  
-										$va_errors, 
+										$errors, 
 										array_merge(
 											$pa_options,
 											array(
@@ -7707,9 +7728,6 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function addACLUsers($pa_user_ids) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
-		
 		$vn_table_num = $this->tableNum();
 		
 		$t_acl = new ca_acl();
@@ -7752,9 +7770,6 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function removeACLUsers($pa_user_ids) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
-		
 		$vn_table_num = $this->tableNum();
 		
 		$va_current_users = $this->getACLUsers();
@@ -7887,8 +7902,6 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function addACLUserGroups($pa_group_ids, $pa_options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		$vn_table_num = $this->tableNum();
 		
@@ -8134,7 +8147,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function supportsACL() {
 		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
-		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
+		if(!$this->getAppConfig()->get('perform_item_level_access_checking') || $this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
 	# --------------------------------------------------------------------------------------------	

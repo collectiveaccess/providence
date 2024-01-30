@@ -29,15 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/** 
-  * Plugin for processing video media using ffmpeg
-  */
-
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
@@ -56,7 +47,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $oproperties = [];
 	var $media_metadata = [];
 	
-	var $path_to_ffmeg = null;
+	protected $path_to_ffmeg = null;
+	protected $ops_path_to_ffmeg = null;
+	protected $ops_path_to_mediainfo = null;
 
 	var $info = array(
 		"IMPORT" => array(
@@ -68,7 +61,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
 			"video/MP2T"						=> "mts",
-			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
@@ -79,13 +71,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/quicktime" 					=> "mov",
 			"video/avi" 						=> "avi",
 			"video/x-flv"						=> "flv",
-			"video/mpeg" 						=> "mp4",
+			"video/mp4" 						=> "mp4",
 			"video/MP2T"						=> "mts",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
-			"video/mp4" 						=> "m4v",
-			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
@@ -150,7 +140,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/MP2T"						=> "MTS",
-		"video/ogg"							=> "Ogg Theora",
 		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
 	);
@@ -216,13 +205,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		// then getID3
 		if($mimetype = caGetID3GuessFileFormat($filepath)) {
-			if($this->info["IMPORT"][$mimetype] ?? null) {
-				return $mimetype;
-			}
-		}
-
-		// lastly, OggParser
-		if($mimetype = caOggParserGuessFileFormat($filepath)) {
 			if($this->info["IMPORT"][$mimetype] ?? null) {
 				return $mimetype;
 			}
@@ -319,12 +301,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->media_metadata = caExtractMetadataWithGetID3($filepath);
 				$this->properties['timecode_offset'] = 0; // getID3 doesn't return offsets 
 				$this->properties['framerate'] = (float)$this->media_metadata['video']['frame_rate'];
-			} else {
-				// lastly, try ogg/ogv
-				$this->media_metadata = caExtractMediaMetadataWithOggParser($filepath);
-				$this->properties['timecode_offset'] = 0; // OggParser doesn't return offsets 
-				$this->properties['framerate'] = ((float)$this->media_metadata['duration'] > 0) ? (float)$this->media_metadata['framecount']/(float)$this->media_metadata['duration'] : 0;
-			}
+			} 
 		}
 
 		if(!$this->media_metadata['mime_type']) { return false; } // divineFileFormat() should prevent that, but you never know
@@ -339,11 +316,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			if (($this->media_metadata["mime_type"] == 'video/x-flv') && is_array($this->media_metadata['meta']) && is_array($this->media_metadata['meta']['onMetaData'])) {
 				$w = $this->media_metadata['meta']['onMetaData']['width'] ?? null;
 				$h = $this->media_metadata['meta']['onMetaData']['height'] ?? null;
-			} else {
-				if ($this->media_metadata['mime_type'] == 'video/ogg') {
-					$w = $this->media_metadata['theora']['width'] ?? null;
-					$h = $this->media_metadata['theora']['height'] ?? null;
-				}
 			}
 			if (!$w || !$h) {
 				$w = $this->media_metadata["video"]["resolution_x"] ?? null;
@@ -424,19 +396,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				case 'video/MP2T':
 					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
-
-					$this->properties["type_specific"] = [];
-
-					$this->properties["title"] = 		"";
-					$this->properties["author"] = 		"";
-					$this->properties["copyright"] = 	"";
-					$this->properties["description"] = 	"";
-
-					$this->properties["bandwidth"] = array("min" => $this->media_metadata["bitrate"] ?? null, "max" => $this->media_metadata["bitrate"] ?? null);
-					break;
-				case 'video/ogg':
-					$this->properties["has_video"] = (isset($this->media_metadata["theora"]) ? 1 : 0);
-					$this->properties["has_audio"] = (isset($this->media_metadata["vorbis"]) ? 1 : 0);
 
 					$this->properties["type_specific"] = [];
 
@@ -609,12 +568,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -frames:v 1 -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					$exists = file_exists("{$filepath}.{$ext}");
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
 						if($exists) { @unlink("{$filepath}.{$ext}"); }
 						// try again, without attempting to force aspect ratio, as this seems to cause ffmpeg to barf at specific frame sizes and input aspect ratios
-						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -frames:v 1 -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					}
 
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
@@ -633,12 +592,12 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != "application/x-shockwave-flash")) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -s {$preview_width}x{$preview_height} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -frames:v 1 -s {$preview_width}x{$preview_height} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					$exists = file_exists("{$filepath}.{$ext}");
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
 						if($exists) { @unlink("{$filepath}.{$ext}"); }
 						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
-						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04  -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+						caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($start_secs)." -t 0.04 -frames:v 1 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"   -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					}
 
 					if (($return < 0) || ($return > 1) || (!file_exists("{$filepath}.{$ext}") || !@filesize("{$filepath}.{$ext}"))) {
@@ -675,8 +634,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# ------------------------------------
 			// only support "command" option...
 			case 'video/mpeg':
-			case 'video/ogg':
 			case 'video/x-dv':
+			case 'video/mp4':
 				if (caMediaPluginFFmpegInstalled()) {
 					$ffmpeg_params = [];
 
@@ -1099,7 +1058,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return ob_get_clean();
 				break;
 			# ------------------------------------------------
-			case 'video/ogg':
 			case 'video/x-matroska':
 			case "video/x-ms-asf":
 			case "video/x-ms-wmv":

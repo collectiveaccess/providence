@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__."/Import/RefineryManager.php");
 
@@ -176,10 +175,6 @@ class ca_data_importer_items extends BaseModel {
 		parent::__construct($id, $options);
 		
 		$this->initSettings();
-	}
-	# ------------------------------------------------------
-	protected function initLabelDefinitions($pa_options=null) {
-		parent::initLabelDefinitions($pa_options);
 	}
 	# ------------------------------------------------------
 	public function initSettings($initial_settings=null) {
@@ -418,7 +413,7 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip mapping if data already present'),
 			'description' => _t('Skip mapping if data is already present in CollectiveAccess.')
 		);
-		$settings['skipIfRowDataPresent'] = array(
+		$settings['skipRowIfDataPresent'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 10,

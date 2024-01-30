@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,33 +29,23 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
 require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
-require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__."/Logging/Batchlog.php");
 require_once(__CA_LIB_DIR__."/SMS.php");
-require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 
 class BatchProcessor {
 	# ----------------------------------------
 	const REGEXP_FILENAME_NO_EXT = '/\\.[^.\\s]+$/';
+	
 	/**
 	 *
 	 */
-	 
-	public static $s_import_error_list = array();
-	# ----------------------------------------
-	public function __construct() {
-
-	}
+	public static $s_import_error_list = [];
 	# ----------------------------------------
 	/**
 	 * @param array $pa_options
@@ -209,7 +199,7 @@ class BatchProcessor {
 		}
 
 		if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
-			SMS::send($po_request->getUserID(), _t("[%1] Batch processing for set %2 with %3 %4 begun at %5 is complete", $po_request->config->get('app_display_name'), caTruncateStringWithEllipsis($vs_set_name, 20), $num_items, $t_subject->getProperty(($num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'), $vs_started_on));
+			SMS::send($po_request->getUserID(), _t("[%1] Batch processing for set %2 with %3 %4 begun at %5 is complete", $po_request->config->get('app_display_name'), caTruncateStringWithEllipsis($rs->name(), 20), $num_items, $t_subject->getProperty(($num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'), $vs_started_on));
 		}
 
 		return array('errors' => $errors, 'notices' => $notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
@@ -514,7 +504,6 @@ class BatchProcessor {
 		
 		$o_config = Configuration::load();
 
-		$o_eventlog = new Eventlog();
 		$t_set = new ca_sets();
 
 		$va_notices = $va_errors = array();
@@ -542,14 +531,9 @@ class BatchProcessor {
 			return is_dir($p);
 		});
 		if(sizeof($batch_media_import_root_directories) === 0) {
-			$o_eventlog->log([
-				"CODE"    => 'ERR',
-				"SOURCE"  => "mediaImport",
-				"MESSAGE" => $vs_msg
-					= _t( "Specified import directory '%1' is not valid",
-					$pa_options['importFromDirectory'])
-			]);
-			$o_log->logError( $vs_msg );
+			$vs_msg = _t( "Specified import directory '%1' is not valid",
+					$pa_options['importFromDirectory']);
+			$o_log->logError($vs_msg);
 			BatchProcessor::$s_import_error_list[] = $vs_msg;
 			return null;
 		}
@@ -739,7 +723,7 @@ class BatchProcessor {
 
 				$vn_c++;
 
-				$vs_relative_directory = preg_replace("!^{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory);
+				$vs_relative_directory = preg_replace("!^{$batch_media_import_root_directory}[/]*!", "", $vs_directory);
 
 				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 					$ps_callback($po_request,
@@ -993,22 +977,17 @@ class BatchProcessor {
 					}
 
 					if ($t_instance->numErrors()) {
-						$o_eventlog->log(array(
-							"CODE" => 'ERR',
-							"SOURCE" => "mediaImport",
-							"MESSAGE" => _t("Error importing {$f} from {$vs_directory}: %1", join('; ', $t_instance->getErrors()))
-						));
-
-
+						$vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()));
 						$va_errors[$vs_relative_directory.'/'.$f] = array(
 							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 							'label' => $t_instance->getLabelForDisplay(),
 							'errors' => $t_instance->errors(),
-							'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+							'message' => $vs_msg,
 							'file' => $f,
 							'status' => 'ERROR',
 						);
 						$o_log->logError($vs_msg);
+						
 						//$o_trans->rollback();
 						continue;
 					} else {
@@ -1049,17 +1028,13 @@ class BatchProcessor {
 						}
 
 						if ($t_instance->numErrors()) {
-							$o_eventlog->log(array(
-								"CODE" => 'ERR',
-								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error importing %1 from %2: ", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
-							));
-
+							$vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()));
+							
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'message' => $vs_msg,
 								'file' => $f,
 								'status' => 'ERROR',
 							);
@@ -1295,11 +1270,11 @@ class BatchProcessor {
 		$t_instance->insert();
 
 		if ($t_instance->numErrors()) {
-			$errors[$vs_relative_directory.'/'.$f] = array(
+			$errors[$d.'/'.$f] = array(
 				'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 				'label' => $t_instance->getLabelForDisplay(),
 				'errors' => $t_instance->errors(),
-				'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+				'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $d, join('; ', $t_instance->getErrors())),
 				'file' => $f,
 				'status' => 'ERROR',
 			);
@@ -1313,7 +1288,7 @@ class BatchProcessor {
 				break;
 			case 'blank':
 				// Use blank placeholder text
-				$vs_label_value = '['.caGetBlankLabelText($vs_import_target).']';
+				$vs_label_value = '['.caGetBlankLabelText($t_instance->tableName()).']';
 				break;
 			case 'filename_no_ext':
 				// use filename without extension as identifier
@@ -1349,11 +1324,11 @@ class BatchProcessor {
 		}
 
 		if ($t_instance->numErrors()) {
-			$errors[$vs_relative_directory.'/'.$f] = array(
+			$errors[$d.'/'.$f] = array(
 				'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 				'label' => $t_instance->getLabelForDisplay(),
 				'errors' => $t_instance->errors(),
-				'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+				'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $d, join('; ', $t_instance->getErrors())),
 				'file' => $f,
 				'status' => 'ERROR',
 			);
@@ -1403,11 +1378,11 @@ class BatchProcessor {
 			return false;
 		}
 		
-		$vs_log_dir = caGetOption('log', $pa_options, null); 
+		$vs_log_dir = caGetOption('log', $pa_options, $o_config->get('batch_metadata_import_log_directory')); 
 		$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 		$vb_import_all_datasets =  caGetOption('importAllDatasets', $pa_options, false); 
 		
-		if ($limit_log_to = caGetOption('limitLogTo', $pa_options, null) && !is_array($limit_log_to)) {
+		if (($limit_log_to = caGetOption('limitLogTo', $pa_options, null)) && !is_array($limit_log_to)) {
 			$limit_log_to = array_map(function($v) { return strtoupper($v); }, preg_split("![;,]+!", $limit_log_to));
 		}
 		
@@ -1433,7 +1408,6 @@ class BatchProcessor {
 				'originalFilename' => caGetOption('originalFilename', $pa_options, null), 
 				'fileNumber' => $vn_file_num, 
 				'numberOfFiles' => sizeof($va_sources), 
-				'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 
 				'request' => $po_request,
 				'format' => $ps_input_format, 
 				'showCLIProgressBar' => false, 

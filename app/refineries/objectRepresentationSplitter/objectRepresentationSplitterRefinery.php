@@ -180,6 +180,15 @@ BaseRefinery::$s_refinery_settings['objectRepresentationSplitter'] = array(
 		'label' => _t('Set first identified media as primary'),
 		'description' => ''
 	),
+	'objectRepresentationSplitter_dontCreate' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => false,
+		'label' => _t('Do not create new records'),
+		'description' => _t('If set splitter will only match on existing records and will not create new ones.')
+	),
 	'objectRepresentationSplitter_matchMode' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -494,9 +494,9 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		if(!is_array($va_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_settings, null)) && $va_types) {
 			$va_types = [$va_types];
 		}
-		if(!is_array($va_types)) { $va_types = []; }
-		if(sizeof($va_types = array_filter($va_types, 'strlen')) && Datamodel::tableExists($ps_bundle_name)) {
-			$va_types = array_merge($va_types, caMakeTypeIDList($ps_bundle_name, $va_types));
+		if(!is_array($va_types)) { $va_types = [$pt_subject->getTypeID()]; }
+		if(sizeof($va_types = array_filter($va_types, 'strlen')) && ($t_instance = Datamodel::getInstance($ps_bundle_name)) && method_exists($ps_bundle_name, 'getTypeCode') ) {
+			$va_types = array_merge($va_types, caMakeTypeIDList($ps_bundle_name, $va_types, ['dontIncludeSubtypesInTypeRestriction' => true]));
 		}
 		
 		if(!is_array($va_relationship_types = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $pa_settings, null)) && $va_relationship_types) {
@@ -510,16 +510,19 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {
 			$vn_entry_id = null;
 			
-			if (sizeof($va_types) || sizeof($va_relationship_types)) {
-				foreach(array_keys($va_entry_list) as $vn_id) {
-					$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
-					if (is_array($va_tables = ($va_entry['settings']['restrict_to'] ?? null)) && sizeof($va_tables)) {
-						if(in_array($pt_subject->tableName(), $va_tables)) { 
-							$vn_entry_id = $vn_id;
-						} else {
-							$vn_entry_id = null;
-						}
+			foreach(array_keys($va_entry_list) as $vn_id) {
+				$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
+				if (is_array($va_tables = ($va_entry['settings']['restrict_to'] ?? null)) && sizeof($va_tables)) {
+					if(in_array($pt_subject->tableName(), $va_tables)) { 
+						$vn_entry_id = $vn_id;
+					} else {
+						$vn_entry_id = null;
 					}
+				} else {
+					$vn_entry_id = $vn_id;
+				}
+				
+				if ($vn_entry_id && (sizeof($va_types) || sizeof($va_relationship_types))) {
 					if (sizeof($va_relationship_types)) {
 						if(
 							is_array($va_entry_types = ($va_entry['settings']['restrict_to_relationship_types'] ?? null))
@@ -542,11 +545,9 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 							}
 						}
 					}
-					
-					if ($vn_entry_id) { break; }
 				}
-			} else {
-			    $vn_entry_id = array_pop(array_keys($va_entry_list));
+				
+				if ($vn_entry_id) { break; }
 			}
 			
 			if (!$vn_entry_id)  { return null; }
@@ -578,7 +579,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 
 		$o_view->setVar('table_num', $vn_table_num);
 
-		$t_rule = new ca_metadata_dictionary_rules($vn_rule_id);
+		$t_rule = new ca_metadata_dictionary_rules();
 		
 		$o_view->setVar('rules', $this->getRules(['forEditingForm' => true]));
 		

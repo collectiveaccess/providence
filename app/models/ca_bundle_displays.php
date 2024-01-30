@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
@@ -3286,7 +3285,7 @@ if (!$pb_omit_editing_info) {
 		// 
 		$restrict_to_types = null;
 		if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
-			$restrict_to_types = caGetTypeRestrictionsForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+			$restrict_to_types = caGetTypeRestrictionsForUser($table, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
 		if (is_array($restrict_to_types) && !in_array($t_subject->get('type_id'), $restrict_to_types)) {
 			return [
@@ -3306,7 +3305,7 @@ if (!$pb_omit_editing_info) {
 		// 
 		$restrict_to_sources = null;
 		if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
-			if (is_array($restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
+			if (is_array($restrict_to_sources = caGetSourceRestrictionsForUser($table, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
 				if (
 					(!$t_subject->get('source_id'))
 					||
@@ -3351,14 +3350,7 @@ if (!$pb_omit_editing_info) {
 		if ($idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
 			if ($t_subject->getPrimaryKey() > 0) {
 				$context_id = $t_subject->get($idno_context_field);
-			} else {
-				if ($parent_id > 0) {
-					$t_parent = Datamodel::getInstanceByTableName($this->ops_tablename);
-					if ($t_parent->load($parent_id)) {
-						$context_id = $t_parent->get($idno_context_field);
-					}
-				}
-			}
+			} 
 			
 			if ($context_id) { $t_subject->set($idno_context_field, $context_id); }
 		}

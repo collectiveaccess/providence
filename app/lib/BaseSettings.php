@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2020 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-*/ 
 require_once(__CA_LIB_DIR__.'/View.php');
 
 class BaseSettings {
+	# ------------------------------------------------------
+	private $opa_settings_defs;
+	private $o_instance;
 	# ------------------------------------------------------
 	public function __construct($pa_settings_defs) {
 		$this->opa_settings_defs = $pa_settings_defs;
@@ -580,8 +579,7 @@ jQuery(document).ready(function() {
 				} else {
 					if (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
 						$va_select_opts = array_merge([
-							_t('User defined sort order') => '',
-							_t('Order created') => 'relation_id',
+							_t('User defined sort order') => ''
 						], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
 						
 						$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });
@@ -696,7 +694,6 @@ jQuery(document).ready(function() {
 		$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 		$va_available_settings = $this->getAvailableSettings();
 
-		$this->o_instance->setMode(ACCESS_WRITE);
 		$va_values = array();
 		foreach(array_keys($va_available_settings) as $vs_setting) {
 			$va_properties = $va_available_settings[$vs_setting];

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2021 Whirl-i-Gig
+ * Copyright 2004-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 include_once(__CA_LIB_DIR__."/Logging/BaseLogger.php");
 
 # ----------------------------------------------------------------------
@@ -88,6 +83,14 @@ class Eventlog extends BaseLogger {
 			return true;
 		}
 		return false;
+	}
+	# ----------------------------------------
+	/** 
+	 * Add log entry statically
+	 */
+	static public function add(array $entry) : bool {
+		$log = new Eventlog();
+		return $log->log($entry);
 	}
 	# ----------------------------------------
 	/** 

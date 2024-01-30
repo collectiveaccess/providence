@@ -381,10 +381,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
+	$criteria_summary = caGetOption('criteriaSummary', $options, '');
+	
 	if(method_exists($result, 'seek')) { $result->seek(0); }
 	$view->setVar('result', $result);
 	$view->setVar('t_set', caGetOption('set', $options, null));
-	$view->setVar('criteria_summary', caGetOption('criteriaSummary', $options, ''));
+	$view->setVar('criteria_summary', $criteria_summary);
 	
 	$table = $result->tableName();
 	
@@ -740,13 +742,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					}
 					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
 					$objDrawing->setName('Image');
-					$objDrawing->setPath($vs_logo_path);
 					$objDrawing->setHeight(36);
 					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
-					$criteria_summary = (strlen($vs_criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
-					$criteria_summary = wordwrap($vs_criteria_summary, 50, "\n", true);
-					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$vs_criteria_summary : ''));
+					$criteria_summary = (strlen($criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
+					$criteria_summary = wordwrap($criteria_summary, 50, "\n", true);
+					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$criteria_summary : ''));
 			
 				}
 				if(!$request || $config->get('excel_report_footer_enabled')){
@@ -998,7 +999,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 				$view->setVar("param_{$n}", $values[$n] = $request->getParameter($n, pString));
 			}
 		}
-		Session::setVar("print_labels_options_{$m[2]}", $values);
+		Session::setVar("print_labels_options_{$label_code}", $values);
 	}
 	
 	$border = ($show_borders) ? "border: 1px dotted #000000; " : "";

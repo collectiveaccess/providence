@@ -29,14 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_type_restrictions.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
  	'NAME_SINGULAR' 	=> _t('editor UI'),
@@ -726,8 +721,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * @return int Number of screens configured for the current UI
 	  */
 	public function getScreenCount($pn_type_id=null, $pa_options=null) {
+		global $g_request;
 		if (!$this->getPrimaryKey()) { return 0; }
-		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		if(!caGetOption('user_id', $pa_options, null) && $g_request) { $pa_options['user_id'] = $g_request->getUserID(); }
 		$pa_options['showAll'] = true;
 		
 		$vs_opts_md5 = md5(print_r(array('showAll' => true), true));
@@ -1570,7 +1566,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		foreach($va_bundles as $vs_bundle_name => $vs_placement_code) {
-			$t_screen->addPlacement($vs_bundle_name, "screen_{$vn_screen_id}_{$vs_bundle_name}", [], $pn_rank=null, $pa_options=null);
+			$t_screen->addPlacement($vs_bundle_name, "screen_{$vs_bundle_name}", [], $pn_rank=null, $pa_options=null);
 		}
 		
 		$va_bundles_for_return = array_map(function($v) {

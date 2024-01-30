@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 # ---------------------------------------
 /**
  * Generate URL tag for asset in current theme; if asset is not available the graphic in the default theme will be returned.
@@ -918,6 +917,7 @@ function caGetDetailForType($pm_table, $pm_type=null, $pa_options=null) {
 			$vs_access_wheres = " AND ca_objects.access IN (".join(",", $pa_access_values).") AND ca_object_representations.access IN (".join(",", $pa_access_values).")";
 		}
 		$vs_table = $t_instance->tableName();
+		$vs_pk = $t_instance->primaryKey();
 		
 		$va_params = array();
 		if ($vs_table === 'ca_objects') {

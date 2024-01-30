@@ -29,16 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/ITakesSettings.php');
 require_once(__CA_LIB_DIR__.'/LabelableBaseModelWithAttributes.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata element'),
@@ -240,6 +233,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @var array
 	 */
 	protected $opa_element_settings = array();
+	
+	/**
+	 * ApplicationVars instance
+	 */
+	protected $opo_app_vars;
 
 	# ------------------------------------------------------
 	# --- Constructor

@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
 trait CLIUtilsImportExport { 
 	# -------------------------------------------------------
 	/**
@@ -37,7 +36,6 @@ trait CLIUtilsImportExport {
 	 */
 	public static function import_media($po_opts=null) {
 		require_once(__CA_LIB_DIR__."/BatchProcessor.php");
-
 
 		if (!caCheckMediaDirectoryPermissions()) {
 			CLIUtils::addError(_t('The media directory is not writeable by the current user. Try again, running the import as the web server user.'));
@@ -456,7 +454,16 @@ trait CLIUtilsImportExport {
 			CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
 			return false;
 		}
-
+		if ($start = (int)$po_opts->getOption('start')) {
+			if($start < 0) { 
+				$start = 0;
+			}
+		}
+		if ($limit = (int)$po_opts->getOption('limit')) {
+			if($limit < 0) { 
+				$limit = 0;
+			}
+		}
 
 		$vb_direct = (bool)$po_opts->getOption('direct');
 		$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
@@ -485,7 +492,9 @@ trait CLIUtilsImportExport {
 				'logToTempDirectoryIfLogDirectoryIsNotWritable' => $vb_use_temp_directory_for_logs_as_fallback, 
 				'addToSet' => $vs_add_to_set, 'environment' => $env,
 				'detailedLogName' => $vs_detailed_log_name,
-				'importAllDatasets' => $vb_import_all_datasets
+				'importAllDatasets' => $vb_import_all_datasets,
+				'start' => $start,
+				'limit' => $limit
 			]
 		)) {
 			CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", $t_importer->getErrorList())));
@@ -515,7 +524,9 @@ trait CLIUtilsImportExport {
 			"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
 			"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.'),
 			"log-to-tmp-directory-as-fallback" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.'),
-			"detailed-log-name" => _t('Name to use for detailed field-level error log. By default these log files are named with the date and code for the import mapping.')
+			"detailed-log-name" => _t('Name to use for detailed field-level error log. By default these log files are named with the date and code for the import mapping.'),
+			"start|h-i" => _t('Row to start import on.'),
+			"limit|i-i" => _t('Maximum number of rows to import.'),
 		);
 	}
 	# -------------------------------------------------------
@@ -1061,20 +1072,20 @@ trait CLIUtilsImportExport {
 		$table = $po_opts->getOption('table');
 		if (!$table) {
 			CLIUtils::addError(_t('You must specify a table'));
-			return;
+			return false;
 		}
 		if (!Datamodel::tableExists($table)) {
 			CLIUtils::addError(_t('Invalid table %1', $table));
-			return;
+			return false;
 		}
 		$id = $po_opts->getOption('id');
 		if (!$id) {
 			CLIUtils::addError(_t('You must specify an id'));
-			return;
+			return false;
 		}
 
 		$e = new ExternalExportManager();
-		$e->process($table, $id, ['target' => $target, 'logLevel' => $log_level]);
+		return (bool)$e->process($table, $id, ['target' => $target, 'logLevel' => $log_level]);
 	}
 	# -------------------------------------------------------
 	public static function run_external_exportParamList() {
@@ -1123,7 +1134,7 @@ trait CLIUtilsImportExport {
 		$log_level = $po_opts->getOption('log-level');
 
 		$e = new ExternalExportManager(['logLevel' => $log_level]);
-		$e->processPending(['target' => $target, 'logLevel' => $log_level]);
+		return (bool)$e->processPending(['target' => $target, 'logLevel' => $log_level]);
 	}
 	# -------------------------------------------------------
 	public static function run_pending_external_exportsParamList() {
@@ -1164,28 +1175,28 @@ trait CLIUtilsImportExport {
 		$file = $po_opts->getOption('file');
 		if (!$file) {
 			CLIUtils::addError(_t('A file must be specified'));
-			return;
+			return false;
 		}
 
 		if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to file %1', $file));
-			return;
+			return false;
 		}
 
 		$mapping = $po_opts->getOption('mapping');
 		if (!$mapping) {
 			CLIUtils::addError(_t('An export mapping must be specified'));
-			return;
+			return false;
 		}
-
 
 		try {
 			ca_data_exporters::writeExporterToFile($mapping, $file);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not export %1: %2', $mapping, $e->getMessage()));
-			return;
+			return false;
 		}
 		CLIUtils::addMessage(_t('Exported %1', $mapping));
+		return true;
 	}
 	# -------------------------------------------------------
 	public static function write_exporter_to_fileParamList() {
@@ -1226,18 +1237,18 @@ trait CLIUtilsImportExport {
 		$file = $po_opts->getOption('file');
 		if (!$file) {
 			CLIUtils::addError(_t('A file must be specified'));
-			return;
+			return false;
 		}
 
 		if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to file %1', $file));
-			return;
+			return false;
 		}
 
 		$table = $po_opts->getOption('table');
 		if (!$table) {
 			CLIUtils::addError(_t('A table must be specified'));
-			return;
+			return false;
 		}
 
 		$format = strtoupper($po_opts->getOption('format'));
@@ -1246,7 +1257,7 @@ trait CLIUtilsImportExport {
 		$display = $po_opts->getOption('display');
 		if(!($t_display = ca_bundle_displays::find(['display_code' => $display], ['returnAs' => 'firstModelInstance']))) {
 			CLIUtils::addError(_t('A valid display must be specified'));
-			return;
+			return false;
 		}
 
 		$search = $po_opts->getOption('search');
@@ -1254,7 +1265,7 @@ trait CLIUtilsImportExport {
 
 		if(!($o_s = caGetSearchInstance($table))) {
 			CLIUtils::addError(_t('Could not create search for %1', $table));
-			return;
+			return false;
 		}
 		$result = $o_s->search($search);
 
@@ -1281,7 +1292,7 @@ trait CLIUtilsImportExport {
 				file_put_contents($file, $output);
 				return;
 			case 'DOCX':
-				$view->render('Results/docx_results.php');
+				$output = $view->render('Results/docx_results.php');
 				file_put_contents($file, $output);
 				return;						
 			case 'CSV':
@@ -1296,7 +1307,7 @@ trait CLIUtilsImportExport {
 				break;
 			default:
 				CLIUtils::addError(_t('Invalid format %1', $format));
-				return;
+				return false;
 		}
 
 		$rows = [];
@@ -1328,7 +1339,8 @@ trait CLIUtilsImportExport {
 		}
 		fclose($r);		
 
-		CLIUtils::addMessage(_t('Exported %1', $mapping));
+		CLIUtils::addMessage(_t('Exported using %1', $display));
+		return true;
 	}
 	# -------------------------------------------------------
 	public static function export_search_using_displayParamList() {
@@ -1371,18 +1383,18 @@ trait CLIUtilsImportExport {
 		$file = $po_opts->getOption('file');
 		if (!$file) {
 			CLIUtils::addError(_t('A file must be specified'));
-			return;
+			return false;
 		}
 
 		if ($file && ((file_exists($file) && !is_writeable($file)) || (!file_exists($file) && !is_writeable(pathinfo($file, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to file %1', $file));
-			return;
+			return false;
 		}
 
 		$mapping = $po_opts->getOption('mapping');
 		if (!$mapping) {
 			CLIUtils::addError(_t('An import mapping must be specified'));
-			return;
+			return false;
 		}
 
 
@@ -1390,9 +1402,10 @@ trait CLIUtilsImportExport {
 			ca_data_importers::writeImporterToFile($mapping, $file);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not import mapping %1: %2', $mapping, $e->getMessage()));
-			return;
+			return false;
 		}
 		CLIUtils::addMessage(_t('Exported %1', $mapping));
+		return true;
 	}
 	# -------------------------------------------------------
 	public static function write_importer_to_fileParamList() {

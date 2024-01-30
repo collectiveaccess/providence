@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2022 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,11 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	private $auth_config = null;
 	
+	/**
+	 *
+	 */
+	private $opo_shibAuth = null;
+	
 	# --------------------------------------------------------------------------------
 	/**
 	 *
@@ -70,9 +75,8 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			return false;
 		}
 		if (!($attrs = $this->opo_shibAuth->getAttributes())) { return false; }
-	    
-        $map = array_flip($this->auth_config->get('shibboleth_field_map'));
-	    $uid = array_shift($attrs[$map['uid']]);
+		$uid = $this->mapAttribute('uid', $attrs);
+	
 	    if (!$uid) { return false; }
 	    return true;
 	}
@@ -95,17 +99,22 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
             
             $attrs = $this->opo_shibAuth->getAttributes();
             
-            if(empty($attrs[$map['uid']][0])) { 
+			$uid = $this->mapAttribute('uid', $attrs);
+			$email = $this->mapAttribute('email', $attrs);
+			$fname = $this->mapAttribute('fname', $attrs);
+			$lname = $this->mapAttribute('lname', $attrs);
+            
+            if(empty($uid)) { 
             	throw new ShibbolethException(_t("User id not set."));
             }
-            if(empty($attrs[$map['email']][0])) { 
+            if(empty($email)) { 
             	throw new ShibbolethException(_t("User email address not set."));
             }
             return [
-                'user_name' => $username ? $username : $attrs[$map['uid']][0],
-				'email' => $attrs[$map['email']][0],
-				'fname' => $attrs[$map['fname']][0],
-				'lname' => $attrs[$map['lname']][0] ? $attrs[$map['lname']][0] : $attrs[$map['email']][0],
+                'user_name' => $username ? $username : $uid,
+				'email' => $email,
+				'fname' => $fname,
+				'lname' => $lname ? $lname : $email,
 				'active' => 1,
 				'roles' => $default_roles,
 				'groups' => $default_groups
@@ -187,6 +196,20 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         setcookie($this->auth_config->get('shibboleth_token_cookie'), '', time()-3600, __CA_URL_ROOT__);
         return true;
     }
+	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function mapAttribute(string $key, array $values) {
+		$map = $this->auth_config->get('shibboleth_field_map');
+		foreach($map as $k => $v) {
+			if($k === $key) {
+				$x = $values[$v] ?? null;
+				return is_array($x) ? array_shift($x) : $x;
+			}
+		}
+		return null;
+	}
 	# --------------------------------------------------------------------------------
 }
 

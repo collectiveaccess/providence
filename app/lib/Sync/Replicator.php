@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/Logging/Logger.php");
 require_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
@@ -765,7 +764,7 @@ class Replicator {
 					
 					$missing_log_entry_pk = Datamodel::primaryKey($missing_entry['logged_table_num']);
 					
-					$dependent_guids = array_values(array_filter($missing_entry['snapshot'], function($v, $k) use ($missing_entry, $missing_guid) { 
+					$dependent_guids = array_values(array_filter($missing_entry['snapshot'], function($v, $k) use ($missing_entry, $missing_guid, $missing_log_entry_pk) { 
 						if($v == $missing_guid) { return false; }
 						if($v == $missing_entry['guid']) { return false; }
 						
@@ -872,7 +871,7 @@ class Replicator {
 						}
 			
 						if(sizeof($new_dependent_guids) > 0) {
-							$this->logDebug(_t("[%1] %2 dependent guids remain after processing: %3", $this->source_key, sizeof($new_dependent_guids), print_r($this->_dumpDependencies($o_source, $new_dependent_guids), true)),Zend_Log::WARN);
+							$this->logDebug(_t("[%1] %2 dependent guids remain after processing: %3", $this->source_key, sizeof($new_dependent_guids), print_r($this->_dumpDependencies($this->source, $new_dependent_guids), true)),Zend_Log::WARN);
 						}
 					} 
 				}
@@ -888,7 +887,7 @@ class Replicator {
 			
 			// @TODO: bad idea?
 			if (sizeof($unresolved_dependent_guids) > 0) { 
-				$this->logDebug(_t("[%1] %2 unresolved dependent guids for %3: %4; skipping guid.", $this->source_key, sizeof($unresolved_dependent_guids), $missing_guid, print_r($this->_dumpDependencies($o_source, array_keys($unresolved_dependent_guids)), true)),Zend_Log::DEBUG);
+				$this->logDebug(_t("[%1] %2 unresolved dependent guids for %3: %4; skipping guid.", $this->source_key, sizeof($unresolved_dependent_guids), $missing_guid, print_r($this->_dumpDependencies($this->source, array_keys($unresolved_dependent_guids)), true)),Zend_Log::DEBUG);
 				unset($this->source_log_entries_for_missing_guids_seen_guids[$missing_guid]);
 				return null; 
 			}

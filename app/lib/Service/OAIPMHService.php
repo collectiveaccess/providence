@@ -33,20 +33,12 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/Export/OAIPMH/OaiIdentifier.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/accessHelpers.php");
-
-require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
-
 
 class OAIPMHService extends BaseService {
 	const OAI_PMH_NAMESPACE_URI    = 'http://www.openarchives.org/OAI/2.0/';
@@ -121,6 +113,26 @@ class OAIPMHService extends BaseService {
 	 * 'target' table name for the current request
 	 */
 	private $table;
+
+	/**
+	 * 
+	 */
+	private $ops_provider;
+
+	/**
+	 * 
+	 */
+	private $opa_provider_list;
+
+	/**
+	 * 
+	 */
+	private $opa_provider_info;
+	
+	/**
+	 * 
+	 */
+	private $_tokenExpirationTime;
 	
 	# -------------------------------------------------------
 	/** 
@@ -982,4 +994,3 @@ class OAIPMHService extends BaseService {
 	}	
 	# -------------------------------------------------------	
 }
-?>

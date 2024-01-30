@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 require_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
-require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 	
 class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
@@ -61,7 +55,7 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 		
 		$o_config = Configuration::load();
 		$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
-		$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_parameters["importFromDirectory"]); 
+		$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $parameters["importFromDirectory"]); 
 		
 		$display_parameters = [
 			'source' => [
@@ -106,7 +100,7 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 			}])
 		);
 		// Clean up data file
-		if(file_exists($options['sourceFile'])) { @unlink($options['sourceFile']); }
+		if(file_exists($parameters['sourceFile'])) { @unlink($parameters['sourceFile']); }
 		
 		return $report;
 	}

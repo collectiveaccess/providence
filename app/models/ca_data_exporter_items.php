@@ -281,6 +281,20 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
 		);
 		
+		$va_settings['filterNonPrimaryRepresentations'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Filter non-primary representations?'),
+			'description' => _t('Determines if only primary object representations or if all representations are returned. Default is to only return the primary representation.')
+		);
+		
 		$va_settings['deduplicate'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,

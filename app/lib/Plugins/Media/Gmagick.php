@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/**
- * Plugin for processing images using GraphicsMagick via the Gmagick PECL extension
-*/
-
 include_once(__CA_LIB_DIR__."/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
@@ -58,6 +49,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $opo_config;
 	var $tmpfiles_to_delete = [];
+	protected $imagemagick_path;
 	
 	var $info = array(
 		'IMPORT' => array(
@@ -254,7 +246,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$this->caMediaPluginGraphicsMagickInstalled = caMediaPluginGraphicsMagickInstalled('');
 		$this->ops_dcraw_path = caMediaPluginDcrawInstalled();
 		$this->imagemagick_path = caMediaPluginImageMagickInstalled();
 		
@@ -1176,9 +1167,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case Gmagick::COLORSPACE_SRGB:
 				$vs_colorspace = 'SRGB';
 				break;
-			/*case Gmagick::COLORSPACE_HSB:
-				$vs_colorspace = 'HSB';
-				break;*/
 			case Gmagick::COLORSPACE_HSL:
 				$vs_colorspace = 'HSL';
 				break;
@@ -1190,9 +1178,6 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				break;
 			case Gmagick::COLORSPACE_REC709LUMA:
 				$vs_colorspace = 'REC709LUMA';
-				break;
-			case Gmagick::COLORSPACE_LOG:
-				$vs_colorspace = 'LOG';
 				break;
 			default:
 				$vs_colorspace = 'UNKNOWN';

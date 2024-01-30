@@ -29,9 +29,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- require_once(__CA_LIB_DIR__."/Media.php");
- require_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
+require_once(__CA_LIB_DIR__."/Media.php");
+require_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
 
 class IIIFService {
 	# -------------------------------------------------------
@@ -491,7 +490,7 @@ class IIIFService {
 					]
 				]
 			],
-			"maxWidth" => (int)$vn_width
+			"maxWidth" => (int)$minfo['INPUT']['WIDTH']
 		];
 		return $va_resp;
 	}
@@ -607,7 +606,7 @@ class IIIFService {
 				break;
 		}
 		
-		return ['instance' => $t_instance, 'field' => $vs_fldname, 'type' => $ps_type, 'id' => $ps_id, 'page' => $pn_page];
+		return ['instance' => $t_instance, 'field' => $vs_fldname, 'type' => $ps_type, 'id' => $pn_id, 'page' => $pn_page];
 	}
 	# -------------------------------------------------------
 	/**

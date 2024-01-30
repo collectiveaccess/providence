@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
-require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Utils/Encoding.php');
 require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
@@ -54,7 +48,6 @@ if (!function_exists('array_key_first')) {
         return NULL;
     }
 }
-
 # ----------------------------------------------------------------------
 # String localization functions (getText)
 # ----------------------------------------------------------------------
@@ -2279,14 +2272,6 @@ function caFileIsIncludable($ps_file) {
 
 		return gmdate($ps_format, (int) $va_unix_timestamps['start']);
 	}
-	# ----------------------------------------
-	/**
-	 *
-	 */
-	function caLogEvent($ps_code, $ps_message, $ps_source=null) {
-		$t_log = new EventLog();
-		return $t_log->log(array('CODE' => $ps_code, 'MESSAGE' => $ps_message, 'SOURCE' => $ps_source));
-	}
 	# ---------------------------------------
 	/**
 	 * Truncates text to a maximum length, including an ellipsis ("...")
@@ -3176,7 +3161,7 @@ function caFileIsIncludable($ps_file) {
 	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_branch = 'master', $pb_update_on_conflict=true, $ps_commit_msg = null) {
 		// check mandatory params
 		if(!$ps_user || !$ps_token || !$ps_owner || !$ps_repo || !$ps_git_path || !$ps_local_filepath) {
-			caLogEvent('DEBG', "Invalid parameters for GitHub file upload. Check your configuration!", 'caUploadFileToGitHub');
+			caLogEvent('DEBUG', "Invalid parameters for GitHub file upload. Check your configuration!", 'caUploadFileToGitHub');
 			return false;
 		}
 
@@ -3195,7 +3180,7 @@ function caFileIsIncludable($ps_file) {
 		} catch (Github\Exception\RuntimeException $e) {
 			switch($e->getCode()) {
 				case 401:
-					caLogEvent('DEBG', "Could not authenticate with GitHub. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+					caLogEvent('DEBUG', "Could not authenticate with GitHub. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
 					break;
 				case 422:
 					if($pb_update_on_conflict) {
@@ -3206,23 +3191,23 @@ function caFileIsIncludable($ps_file) {
 							}
 							return true; // overwrite was successful if there was no exception in above statement
 						} catch (Github\Exception\RuntimeException $ex) {
-							caLogEvent('DEBG', "Could not update exiting file in GitHub. Error message was: ".$ex->getMessage()." - Code was: ".$ex->getCode(), 'caUploadFileToGitHub');
+							caLogEvent('DEBUG', "Could not update exiting file in GitHub. Error message was: ".$ex->getMessage()." - Code was: ".$ex->getCode(), 'caUploadFileToGitHub');
 							break;
 						}
 					} else {
-						caLogEvent('DEBG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
+						caLogEvent('DEBUG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
 					}
 					break;
 				default:
-					caLogEvent('DEBG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+					caLogEvent('DEBUG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
 					break;
 			}
 			return false;
 		} catch (Github\Exception\ValidationFailedException $e) {
-			caLogEvent('DEBG', "Could not upload file to GitHub. The parameter validation failed. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+			caLogEvent('DEBUG', "Could not upload file to GitHub. The parameter validation failed. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
 			return false;
 		} catch (Exception $e) {
-			caLogEvent('DEBG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+			caLogEvent('DEBUG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
 			return false;
 		}
 
@@ -3240,7 +3225,7 @@ function caFileIsIncludable($ps_file) {
 	function caExportDataToResourceSpace($ps_user, $ps_key, $ps_base_url, $ps_local_filepath) {
 		// check mandatory params
 		if(!$ps_user || !$ps_key || !$ps_base_url || !$ps_local_filepath) {
-		    caLogEvent('DEBG', "Invalid parameters for ResourceSpace export. Check your configuration!", 'caExportDataToResourceSpace');
+		    caLogEvent('DEBUG', "Invalid parameters for ResourceSpace export. Check your configuration!", 'caExportDataToResourceSpace');
 			return false;
 		}
 		if (!file_exists($ps_local_filepath)) { 
@@ -3315,7 +3300,7 @@ function caFileIsIncludable($ps_file) {
                                 }
                             }
                         } else {
-                            caLogEvent('DEBG', "Could not create Collection. Check your ResourceSpace configuration", 'caExportDataToResourceSpace');
+                            caLogEvent('DEBUG', "Could not create Collection. Check your ResourceSpace configuration", 'caExportDataToResourceSpace');
                         }
                     }
                     $vs_query = 'user='.$ps_user.'&function=add_resource_to_collection&param1='.$vn_rs_id.'&param2='.$vs_collection_id;
@@ -3942,6 +3927,7 @@ function caFileIsIncludable($ps_file) {
 			// Any elements means a value
 			return (is_array($pa_initial_values) && (sizeof($pa_initial_values) > 0));
 		}
+		return false;
 	}
 	# ----------------------------------------
 	/**
@@ -4096,7 +4082,7 @@ function caFileIsIncludable($ps_file) {
         if (is_null($pa_use_unicode_fraction_glyphs_for)) { $pb_use_unicode_fraction_glyphs = $o_config->get('use_unicode_fractions_for_measurements'); }
 		
 		$pn_inches_as_float = (float)preg_replace("![^\d\.]+!", "", $pn_inches_as_float);	// remove commas and such; also remove "-" as dimensions can't be negative
-		$num = ceil($pn_inches_as_float * $pn_denom);
+		$num = floor($pn_inches_as_float * $pn_denom);
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 

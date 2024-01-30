@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2020 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
  	'NAME_SINGULAR' 	=> _t('set item'),
@@ -83,6 +77,20 @@ BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Row_id', 'DESCRIPTION' => 'Primary key value of item in set. Table primary key is of is determined by the table_num field in ca_sets.'
+		),
+		'representation_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'LABEL' => 'Representation ID', 'DESCRIPTION' => 'Optional representation to restrict set membership to.'
+		),
+		'annotation_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'LABEL' => 'Annotation ID', 'DESCRIPTION' => 'Optional representation annotation to restrict set membership to.'
 		),
 		'type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -313,7 +321,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
  			INNER JOIN ca_set_items AS csi ON csi.row_id = coxor.object_id
  			WHERE
  				(csi.item_id = ?) AND (csi.table_num = 57)
- 				{$vs_is_primary_sql}
+ 				AND coxor.is_primary = 1
  				{$vs_access_sql}
  			ORDER BY
  				l.name ASC 

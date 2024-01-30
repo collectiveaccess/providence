@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__."/Controller/Request.php");
 
 # ----------------------------------------
@@ -70,6 +66,7 @@ class RequestHTTP extends Request {
 	
 	private $ops_script_name;
 	private $ops_base_path;
+	private $ops_full_path;
 	private $ops_path_info;
 	private $ops_request_method;
 	private $ops_raw_post_data = "";
@@ -272,7 +269,13 @@ class RequestHTTP extends Request {
 	}
 	# -------------------------------------------------------
 	public static function isAjax() {
-		return ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest"));
+		if((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest")) {
+			return true;
+		}
+		if((isset($_SERVER['HTTP_HX_REQUEST']) && (bool)$_SERVER['HTTP_HX_REQUEST'])) {
+			return true;
+		}
+		return false;
 	}
 	# -------------------------------------------------------
 	function isDownload($pb_set_download=null) {
@@ -858,8 +861,8 @@ class RequestHTTP extends Request {
 	public function doAuthentication($pa_options) {	
 		global $AUTH_CURRENT_USER_ID;
 
-		$o_event_log = new Eventlog();
 		$vs_app_name = $this->config->get("app_name");
+		$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
@@ -913,12 +916,12 @@ class RequestHTTP extends Request {
 			
 			if (!$vb_login_successful) {
 				$this->user = new ca_users();		// add user object
-
+				$vs_tmp1 = $vs_tmp2 = null;
                 if (!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) || $pa_options['allow_external_auth']) {
-                    $vs_tmp1 = $vs_tmp2 = null;
+                    
                     if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
                         if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                            caLogEvent('LOGF', "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'Auth');
                             $vb_login_successful = false;
                         } else {
                             $vb_login_successful = true;
@@ -928,7 +931,7 @@ class RequestHTTP extends Request {
 
                     if (!$vb_login_successful) {																	// throw user to login screen
                         if (!$pa_options["dont_redirect_to_login"]) {
-                            $o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                        	caLogEvent('LOGF', "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'AUTH');
                             $vs_redirect = $this->getRequestUrl(true);
 
                             if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
@@ -952,7 +955,7 @@ class RequestHTTP extends Request {
                 			$vb_login_successful = true;
                 		}
                 	} catch (Exception $e) {
-                		$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+                		caLogEvent('LOGF', "Failed login with exception '".$e->getMessage()." (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'Auth');
                 		$this->opo_response->addHeader("Location", $vs_auth_login_url);
                 		return false;
                 	}
@@ -985,16 +988,18 @@ class RequestHTTP extends Request {
 			$this->user = new ca_users();															// auth failed
 																								// throw user to login screen
 			if ($pa_options["user_name"]) {
-				$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+				caLogEvent('LOGF', "Failed login for '".$pa_options["user_name"]."' (".$_SERVER['REQUEST_URI']."); IP=".RequestHTTP::ip()."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'", 'Auth');
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
-				$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
 			}
 			return false;
 		} else {		
-			$o_event_log->log(array("CODE" => "LOGN", "SOURCE" => "Auth", "MESSAGE" => "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip()));
-		    
+			$msg = "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip();
+			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
+			
+			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+		    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log
 		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 			
 			Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
@@ -1087,7 +1092,13 @@ class RequestHTTP extends Request {
 	public function getHash() {
 		$params = $this->getParameters(['POST', 'GET', 'REQUEST', 'PATH']);
 		unset($params['noCache']);
-		unset($params['nocache']);
+		
+		if(is_array($omit_vars = $this->config->getList('content_cache_omit_parameters'))) {
+			foreach($omit_vars as $ov) {
+				unset($params[$ov]);
+			}
+		}
+		
 		ksort($params);
 	
 		$path_elements = [$this->getModulePath(), $this->getController(), $this->getAction(), $this->getActionExtra()];

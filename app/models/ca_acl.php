@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
- 
 if(!defined('__CA_ACL_NO_ACCESS__')) { define('__CA_ACL_NO_ACCESS__', 0); }
 if(!defined('__CA_ACL_READONLY_ACCESS__')) { define('__CA_ACL_READONLY_ACCESS__', 1); }
 if(!defined('__CA_ACL_EDIT_ACCESS__')) { define('__CA_ACL_EDIT_ACCESS__', 2); }
@@ -423,6 +417,71 @@ class ca_acl extends BaseModel {
 			}
 		}
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copyACL(BaseModel $t_subject, string $target, int $target_id) {
+		$o_db = new Db();
+		
+		if ($t_target = Datamodel::getInstanceByTableName($target, false)) {
+			$subject_table_num = $t_subject->tableNum();
+			$subject_id = $t_subject->getPrimaryKey();
+			$target_table_num = $t_target->tableNum();
+			
+			$qr = $o_db->query("
+				SELECT group_id, user_id, access, notes
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ?
+			", [$target_table_num, (int)$target_id]);
+			$existing_group_ids = $existing_user_ids = [];
+			while($qr->nextRow()) {
+				$row = $qr->getRow();
+				
+				if($row['group_id']) {
+					$existing_group_ids[$row['group_id']]++;
+				}
+				if($row['user_id']) {
+					$existing_user_ids[$row['user_id']]++;
+				}
+			}
+			
+			$qr = $o_db->query("
+				SELECT group_id, user_id, access, notes, inherited_from_table_num, inherited_from_row_id
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ?
+			", [$subject_table_num, (int)$subject_id]);
+			
+			$acl_data = [];
+			while($qr->nextRow()) {
+				$row = $qr->getRow();
+				if(isset($existing_group_ids[$row['group_id']])) { continue; }
+				if(isset($existing_user_ids[$row['user_id']])) { continue; }
+				
+				$group_id = ((int)$row['group_id'] ?: 'null');
+				$user_id = ((int)$row['user_id'] ?: 'null');
+				$access = ((int)$row['access'] ?: 0);
+				$inherited_from_table_num = ((int)$row['inherited_from_table_num'] ?: 'null');
+				$inherited_from_row_id = ((int)$row['inherited_from_row_id'] ?: 'null');
+				
+				$acl_data[] = "({$group_id}, {$user_id}, {$target_table_num}, {$target_id}, {$access}, '', {$inherited_from_table_num}, {$inherited_from_row_id})";
+			}
+			
+			if(sizeof($acl_data) > 0) {
+				return $o_db->query("
+					INSERT INTO ca_acl
+					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+					VALUES 
+					".join(", ", $acl_data)."
+				");
+			} else {
+				return true;
+			}
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 }

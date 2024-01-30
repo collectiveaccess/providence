@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
 include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
 include_once(__CA_LIB_DIR__.'/ResultDescTrait.php');
@@ -43,6 +42,10 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 	private $opa_hits = [];
 	private $opn_current_row;
 	private $opo_subject_instance;
+	
+	private $opn_subject_tablenum;
+	private $ops_subject_table_name;
+	private $ops_subject_primary_key;
 	
 	# -------------------------------------------------------
 	/**

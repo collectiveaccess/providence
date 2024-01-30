@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 # ------------------------------------------------------------------------------------
 # --- Field type constants
 # ------------------------------------------------------------------------------------
@@ -299,7 +294,10 @@ class BaseModel extends BaseObject {
 	 */
 	private $opb_log_changes = true;
 
-
+	/**
+	 *
+	 */
+	protected $opo_app_plugin_manager;
 	# --------------------------------------------------------------------------------
 	# --- Error handling properties
 	# --------------------------------------------------------------------------------
@@ -888,7 +886,7 @@ class BaseModel extends BaseObject {
 								if (is_array($va_children_ids) && sizeof($va_children_ids)) {
 									$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 									
-									if (($va_tmp[1] == $this->primaryKey()) && !$vs_sort) {
+									if (($va_tmp[1] == $this->primaryKey())) {
 										foreach($va_children_ids as $vn_child_id) {
 											$va_data[$vn_child_id] = $vn_child_id;
 										}
@@ -1306,7 +1304,7 @@ class BaseModel extends BaseObject {
 		$return_all = caGetOption('returnAll', $options, false);
 		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
-		$table_name = $table_name ? $table_name : get_called_class();
+		$table_name = get_called_class();
 		
 		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
 			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
@@ -2819,7 +2817,6 @@ class BaseModel extends BaseObject {
                 if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
-                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
                 }
                 
 				#
@@ -3762,13 +3759,12 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
-		
 		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($vi)) {
 			return "";
 		}
-		if ($ps_mirror) {
-			return $va_media_info["MIRROR_STATUS"][$ps_mirror];
+		if ($mirror) {
+			return $va_media_info["MIRROR_STATUS"][$mirror];
 		} else {
 			return $va_media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
 		}
@@ -4013,8 +4009,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		
 		if (!is_array($va_media_info[$ps_version] ?? null)) { return null; }
 
-        if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
+        if (($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) && method_exists($this, 'getWithTemplate')) { 
+		    $alt_text = self::getWithTemplate($alt_text_template, ['highlighting' => false]);
 		} elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
 		    $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 		} else {
@@ -4433,7 +4429,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 	 	$vn_max_execution_time = ini_get('max_execution_time');
 	 	set_time_limit(7200);
 	 	
-		$vb_is_fetched_file = $vb_is_archive = false;
+		$vb_is_fetched_file = false;
 	 	
 		$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
 		$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
@@ -4486,7 +4482,9 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					try {
 						$r = $media_url->fetch($vs_url);
 						if (is_array($r)) {
-							$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							if(!isset($this->_SET_FILES[$ps_field]['original_filename'])) { 
+								$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							}
 							$vs_tmp_file = $r['file'];
 						} else {
 							$this->postError(1600, _t('Could not download media'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);	
@@ -4543,7 +4541,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					}
 
 					// allow adding zip and (gzipped) tape archives
-					$vb_is_archive = false;
 					$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
 					$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
 					$va_matches = [];
@@ -4578,7 +4575,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 						set_time_limit($vn_max_execution_time);
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-						if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 						return false;
 					}
 
@@ -4587,7 +4583,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
 						set_time_limit($vn_max_execution_time);
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-						if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 						return false;
 					}
 
@@ -4768,14 +4763,13 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							#
 							# don't process this media, just copy the file
 							#
-							$ext = ($output_mimetype == 'application/octet-stream') ? pathinfo($this->_SET_FILES[$ps_field]['original_filename'], PATHINFO_EXTENSION) : $m->mimetype2extension($output_mimetype);
+							$ext = ($output_mimetype == 'application/octet-stream') ? pathinfo($this->_SET_FILES[$ps_field]['original_filename'], PATHINFO_EXTENSION) : Media::getExtensionForMimetype($output_mimetype);
 
 							if (!$ext) {
 								$this->postError(1600, _t("File could not be copied for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 
@@ -4783,7 +4777,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 
@@ -4834,7 +4827,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 									$m->cleanup();
 									set_time_limit($vn_max_execution_time);
 									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 									return false;
 								}
 								@touch($filepath, filemtime($this->_SET_FILES[$ps_field]['tmp_name']));
@@ -4935,12 +4927,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 
 							if (!$output_mimetype) { $output_mimetype = $input_mimetype; }
 
-							if (!($ext = $m->mimetype2extension($output_mimetype))) {
+							if (!($ext = Media::getExtensionForMimetype($output_mimetype))) {
 								$this->postError(1600, _t("File could not be processed for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 
@@ -4948,7 +4939,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 							$magic = rand(0,99999);
@@ -4959,7 +4949,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 								break;
 							} else {
@@ -5231,7 +5220,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		}
 		set_time_limit($vn_max_execution_time);
 		if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-		if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 		
 		return $vs_sql;
 	}
@@ -5998,9 +5986,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					return $k;
 				}
 			}
-		} else {
-			return;
-		}
+		} 
+		return null;
 	}
 	# --------------------------------------------------------------------------------
 	# --- Field input verification
@@ -13153,14 +13140,11 @@ $pa_options["display_form_field_tips"] = true;
 			$va_row = $qr_res->getRow();
 			$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
-			$vs_display_label = $va_row[$vs_label_display_field];
-
 			if (!isset($va_rels[$vs_v]) || !$va_rels[$vs_v]) {
 				$va_rels[$vs_v] = $va_row;
 			}
 
 			$va_rels[$vs_v]['_key'] = $vs_key;
-			$va_rels[$vs_v]['direction'] = $vs_direction;
 
 			$vn_c++;
 		}			

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
 
 define("__CA_DATA_IMPORT_ERROR__", 0);
@@ -652,7 +648,7 @@ class DataMigrationUtils {
 			$tmp = explode(',', $text);
 			
 			$name = array_merge($name, self::_procSurname($tmp[0], ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]));
-			unset($_procSurname['is_corporation']);
+			unset($name['is_corporation']);
 			if(sizeof($tmp) > 1) {
 				$tmp2 = array_filter(preg_split("![ ]+!", $tmp[1]), function($v) { return (bool)strlen(trim($v)); });
 				$name = array_merge($name, self::_procForename($tmp2, ['titles' => $titles]));
@@ -1325,7 +1321,7 @@ class DataMigrationUtils {
 			foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
 				if ($t_instance->hasField($vs_fld)) {
 					// Handle both straight key => value and key => key => value (attribute style); import helpers pass in attribute style
-					$vs_v = (isset($pa_values[$vs_fld]) && is_array($pa_values[$vs_fld])) ? caGetOption($vs_fld, $pa_values[$vs_fld], $vm_fld_default) : caGetOption($vs_fld, $pa_values, $vm_fld_default);
+					$vs_v = (isset($pa_values[$vs_fld]) && is_array($pa_values[$vs_fld])) ? array_shift($pa_values[$vs_fld]) : caGetOption($vs_fld, $pa_values, $vm_fld_default);
 					$t_instance->set($vs_fld, $vs_v);
 				}
 				unset($pa_values[$vs_fld]);

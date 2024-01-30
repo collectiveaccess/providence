@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2022 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
@@ -149,7 +145,7 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
 					}
                     break;
                 case 'file':
-                    $ret = self::_processFiles($t_instance, $content_spec, $options);
+                    $ret = self::_processFiles($t_instance, $content_spec, $target_info, $options);
                     $file_list = array_merge($file_list, $ret['fileList']);
                     $total_filesize += $ret['totalFileSize'];
                     $file_mimetypes = array_unique(array_merge($file_mimetypes, $ret['fileMimeTypes']));

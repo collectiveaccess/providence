@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
@@ -627,6 +623,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
 		
 		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location display value'), 'displayOnly' => true);
+		$this->BUNDLES['_checkout'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current object checkout data'), 'displayOnly' => true);
 		
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
@@ -1018,7 +1015,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *
 	 * @param array $pa_options Options include:
 	 *		returnAsText = return status as displayable text [Default=false]
-	 *		returnAsText = return detailed status information in an array [Default=false]
+	 *		returnAsArray = return detailed status information in an array [Default=false]
 	 * @return mixed Will return a numeric status code by default; status text for display if returnAsText option is set; or an array with details on the checkout if the returnAsArray option is set. Will return null if not object is loaded or if the object may not be checked out.
 	 */
 	public function getCheckoutStatus($pa_options=null) {
@@ -1137,7 +1134,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *
 	 */
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
-		switch($ps_bundle_name) {
+		$bundle_bits = explode('.', $ps_bundle_name);
+		switch($bundle_bits[0]) {
 			case 'home_location_value':
 				$q = caMakeSearchResult('ca_objects', [$pn_row_id]);
 				if ($q && $q->nextHit()) {
@@ -1148,6 +1146,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 						return $t_loc->getWithTemplate($t);
 					}
 				}
+				break;
+			case '_checkout':
+				$data = $this->getCheckoutStatus(['returnAsArray' => true]);
+				if(!($key = $bundle_bits[1] ?? null)) { $key = 'status'; }
+				return $data[$key] ?? null;
 				break;
 			default:
 				return self::renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,7 +100,8 @@ class Newspaper extends BaseIIIFManifest {
 					continue;
 				}
 				
-				$page_data = $t_rep->getFileList(null, null, null, ['versions' => [$pversion, $pt_version]]);
+				$page_data = $t_rep->getFileList(null, null, null, ['versions' => [$pversion, $ptversion]]);
+
 				$mwidth = $mheight = null;
 				
 				$pages = [];

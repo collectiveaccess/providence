@@ -29,9 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-require_once(__CA_LIB_DIR__."/Parsers/OggParser.php");
-
 # ------------------------------------------------------------------------------------------------
 /**
  * Divine file format with media info
@@ -84,45 +81,6 @@ function caGetID3GuessFileFormat($ps_path) {
 	}
 
 	return false;
-}
-# ------------------------------------------------------------------------------------------------
-/**
- * Divine file format with OggParser
- * @param $ps_path
- * @return bool|string
- */
-function caOggParserGuessFileFormat($ps_path) {
-	$va_ogg_info = caExtractMediaMetadataWithOggParser($ps_path);
-
-	if (is_array($va_ogg_info) && (sizeof($va_ogg_info) > 0)) {
-		if (isset($va_ogg_info['theora'])) {
-			return 'video/ogg';
-		}
-	}
-
-	return false;
-}
-# ------------------------------------------------------------------------------------------------
-/**
- * Extract media metadata with OggParser
- * @param string $ps_filepath
- * @return array|bool
- */
-function caExtractMediaMetadataWithOggParser($ps_filepath) {
-	if(MemoryCache::contains($ps_filepath, 'OggParserMediaMetadata')) {
-		return MemoryCache::fetch($ps_filepath, 'OggParserMediaMetadata');
-	}
-
-	$o_ogg = new OggParser($ps_filepath);
-	if ($o_ogg->LastError) { return false; }
-
-	$va_ogg_info = $o_ogg->Streams;
-	$va_ogg_info['mime_type'] = 'video/ogg';
-	$va_ogg_info['playtime_seconds'] = $va_ogg_info['duration'] ?? null;
-
-	MemoryCache::save($ps_filepath, $va_ogg_info, 'OggParserMediaMetadata');
-
-	return $va_ogg_info;
 }
 # ------------------------------------------------------------------------------------------------
 /**

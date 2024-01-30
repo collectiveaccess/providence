@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
 
@@ -441,14 +437,6 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 		}
 		
 		return $va_subtypes;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */ 
-	public function getPartialResult($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
-		return parent::getPartialResult($pa_options);
 	}
 	# -------------------------------------------------------
 	/**

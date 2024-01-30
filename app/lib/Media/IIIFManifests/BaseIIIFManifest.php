@@ -59,7 +59,11 @@ abstract class BaseIIIFManifest {
 		if(isset($_SERVER['REQUEST_URI'])) {
 			$this->manifest_url = $this->config->get('site_host').$_SERVER['REQUEST_URI'];
 		} else {
+<<<<<<< HEAD
 			$this->manifest_url = $base_url.join(":", $identifiers)."/manifest";
+=======
+			$this->manifest_url = $this->base_url."/manifest";
+>>>>>>> dev/php8
 		}
 	}
 	# -------------------------------------------------------
@@ -68,4 +72,8 @@ abstract class BaseIIIFManifest {
 	 */
 	abstract public function manifest(array $identifiers, ?array $options=null) : array;
 	# -------------------------------------------------------
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> dev/php8

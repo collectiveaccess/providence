@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
 require_once(__CA_LIB_DIR__.'/View.php');
 
 trait ModelSettings {
@@ -581,7 +577,7 @@ trait ModelSettings {
 								}
 							}
 						}
-						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, [], $va_opts);
 					}
 				} elseif (
 					($vs_rel_table = ($va_properties['useRelationshipTypeList'] ?? null)) || 
@@ -682,8 +678,7 @@ trait ModelSettings {
 							return isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort'];
 						});
 						$va_select_opts = [
-							_t('User defined sort order') => '',
-							_t('Order created') => 'relation_id',
+							_t('User defined sort order') => ''
 						];
 						foreach($elements as $e) {
 							$va_select_opts[$e['display_label']] = $e['element_code'];
@@ -693,8 +688,7 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
 					} elseif (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
 						$va_select_opts = array_merge([
-							_t('User defined sort order') => '',
-							_t('Order created') => 'relation_id',
+							_t('User defined sort order') => ''
 						], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
 						
 						$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });

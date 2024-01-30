@@ -39,6 +39,7 @@ var caUI = caUI || {};
 			errors: {},
 			itemID: '',
 			fieldNamePrefix: '',
+			formName: '',
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',

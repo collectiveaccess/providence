@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
-require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
-include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_LIB_DIR__ . '/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
  	'NAME_SINGULAR' 	=> _t('user'),
@@ -284,8 +278,6 @@ class ca_users extends BaseModel {
 	 * authentication configuration
 	 */
 	protected $opo_auth_config = null;
-
-	private $opo_log = null;
 	
 	
 	/**
@@ -341,7 +333,6 @@ class ca_users extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
-		$this->opo_log = new Eventlog();
 	}
 	# ------------------------------------------------------
 	/**
@@ -436,11 +427,7 @@ class ca_users extends BaseModel {
 			return false;
 		} catch(Exception $e) { // some other error in auth class, e.g. user couldn't be found in directory
 			$this->postError(925, $e->getMessage(), 'ca_users->insert()');
-
-			$this->opo_log->log(array(
-				'CODE' => 'SYS', 'SOURCE' => 'ca_users/insert',
-				'MESSAGE' => _t('Authentication adapter could not create user. Message was: %1', $e->getMessage())
-			));
+			caLogError('SYS', _t('Authentication adapter could not create user. Message was: %1', $e->getMessage(), 'ca_users->insert'));
 			return false;
 		}
 		
@@ -624,10 +611,7 @@ class ca_users extends BaseModel {
 			try {
 				AuthenticationManager::deleteUser($this->get('user_name'));
 			} catch (Exception $e) {
-				$this->opo_log->log(array(
-					'CODE' => 'SYS', 'SOURCE' => 'ca_users/delete',
-					'MESSAGE' => _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage())
-				));
+				caLogError('SYS', _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage(), 'ca_users->delete'));
 			}
 		}
 
@@ -636,6 +620,7 @@ class ca_users extends BaseModel {
 		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
 			$this->removeGUID($vn_primary_key);
 		}
+		return $vn_rc;
 	}
 	# ----------------------------------------
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
@@ -3072,11 +3057,8 @@ class ca_users extends BaseModel {
 		$this->set('active', 0);
 		$this->update();
 
-		$this->opo_log->log(array(
-			'CODE' => 'SYS', 'SOURCE' => 'ca_users/passwordResetDeactivateAccount',
-			'MESSAGE' => _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name'))
-		));
-
+		caLogError('SYS', _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name')), 'ca_users->passwordResetDeactivateAccount');
+			
 		global $g_request;
 		caSendMessageUsingView(
 			$g_request,
@@ -3213,10 +3195,7 @@ class ca_users extends BaseModel {
 				try{
 					$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
 				} catch (Exception $e) {
-					$this->opo_log->log(array(
-						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
-					));
+					caLogError('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
 					return false;
 				}
 
@@ -3239,11 +3218,9 @@ class ca_users extends BaseModel {
 				$this->insert();
 				
 				if (!$this->getPrimaryKey()) {
-					$this->opo_log->log(array(
-						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
-					));
-					throw new ApplicationException($err);
+					$msg = _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()));
+					caLogError('SYS', $msg, 'ca_users->authenticate()');
+					throw new ApplicationException($msg);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
@@ -3274,26 +3251,20 @@ class ca_users extends BaseModel {
                             ($this->getPrimaryKey() != $this->_CONFIG->get('administrator_user_id')) &&
                             !$this->canDoAction('is_administrator')
                         ) {
-                            $this->opo_log->log(array(
-                                'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-                                'MESSAGE' => _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username)
-                            ));
+                        	$msg = _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username);
+                            caLogError('SYS', $msg, 'ca_users->authenticate()');
                             return false;
                         }
                         return true;
                     } else {
-                        $this->opo_log->log(array(
-                            'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-                            'MESSAGE' => _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username)
-                        ));
+                    	$msg = _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username);
+                        caLogError('SYS', $msg, 'ca_users->authenticate()');
                         return false;
                     }
                 }
             }  catch (Exception $e) {
-                $this->opo_log->log(array(
-                    'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-                    'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
-                ));
+                $msg = _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage());
+                caLogError('SYS', $msg, 'ca_users->authenticate()');
                 return false;
             }
         }
@@ -3708,6 +3679,7 @@ class ca_users extends BaseModel {
 		$vs_cache_key = $ps_table_name.'/'.$pm_source_code_or_id."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_source_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_access_cache[$vs_cache_key]; }
 
+		$vn_source_id = null;
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // source-level access control only applies to these tables
 			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 			
