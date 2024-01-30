@@ -89,7 +89,7 @@ class Newspaper extends BaseIIIFManifest {
 			
 			$mwidth = $mheight = null;
 			
-			$pversion = 'page_preview';
+			$pversion = 'full';
 			$ptversion = 'preview';
 			$reps = $media['instance']->getRepresentations(['original', 'thumbnail', 'preview170', 'medium', 'h264_hi', 'mp3'], null, ['includeAnnotations' => true]);
 			
