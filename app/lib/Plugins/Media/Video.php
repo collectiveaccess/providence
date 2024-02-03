@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2023 Whirl-i-Gig
+ * Copyright 2004-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1019,6 +1019,10 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'video/MP2T':
 			case 'video/quicktime':
 				$poster_frame_url =	$options["poster_frame_url"];
+				
+				// Force mimetype to video/mp4 for mp4-ish file extensions; these are sometimes identified by getID3 and video/mpeg; 
+				// For these formats if video/mpeg is set as source type below Plyr and VideoJS will usually fail to play the file
+				if(in_array(strtolower(pathinfo($url, PATHINFO_EXTENSION)), ['mp4', 'm4v', 'mov'])) { $properties['mimetype'] = 'video/mp4'; }
 
 				$captions = 		caGetOption("captions", $options, [], array('castTo' => 'array'));	
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
