@@ -4010,7 +4010,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if (!is_array($va_media_info[$ps_version] ?? null)) { return null; }
 
         if (($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) && method_exists($this, 'getWithTemplate')) { 
-		    $alt_text = self::getWithTemplate($alt_text_template, ['highlighting' => false]);
+		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
 		} elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
 		    $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 		} else {
@@ -6400,19 +6400,22 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		}
 		$va_tmp = explode('.', $ps_field);
 		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(!is_array($attributes)) { $attributes = []; }
+		
 		if (in_array($va_tmp[0], array('created', 'modified'))) {
 			$value = (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : null);
 			if (is_null($value) && $use_current_row_value) {
 				$value = $this->get($ps_field);
 			}
-			return caHTMLTextInput($ps_field, array(
+			return caHTMLTextInput($ps_field, array_merge($attributes, [
 				'id' => str_replace(".", "_", $ps_field),
 				'class' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 				'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 				'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 				'value' => $value,
 				'placeholder' => $pa_options['placeholder'] ?? null
-			));
+			]));
 		}
 		
 		if ($va_tmp[0] != $this->tableName()) { return null; }
@@ -6442,7 +6445,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 					'no_tooltips' => true,
-					'placeholder' => $pa_options['placeholder'] ?? null
+					'placeholder' => $pa_options['placeholder'] ?? null,
+					'attributes' => $attributes
 			)));
 		}
 		
