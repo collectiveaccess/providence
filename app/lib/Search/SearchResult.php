@@ -46,7 +46,7 @@ class SearchResult extends BaseObject {
 	
 	private $opa_options;
 	
-	private $ops_subject_pk;
+	protected $ops_subject_pk;
 	protected $highlight = false;
 
 	/**
@@ -600,7 +600,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
-			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
+			$vs_access_sql = " AND (p.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 		
 		$vs_pk = $t_rel_instance->primaryKey();
@@ -2072,10 +2072,6 @@ class SearchResult extends BaseObject {
 		
 		if ($pa_options['unserialize'] && !$pa_options['returnAsArray']) { return array_shift($va_return_values); }	
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
-		
-		if ($vb_return_as_link) {
-			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), $va_ids);
-		}
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
