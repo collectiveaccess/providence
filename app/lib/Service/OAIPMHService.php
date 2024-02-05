@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -704,10 +704,14 @@ class OAIPMHService extends BaseService {
 							$recordElement = $verbElement->appendChild($oaiData->createElement('record'));
 							$this->createElementWithChildren($oaiData, $recordElement, 'header', $headerData);
 							$metadataElement = $oaiData->createElement('metadata');
-							$o_doc_src = DomDocument::loadXML($vs_item_xml);
+							
+							$doc = new DOMDocument();
+							$o_doc_src = $doc->loadXML($vs_item_xml);
 							$recordElement->appendChild($metadataElement);
 							if($o_doc_src) { // just in case the xml fails to load through DomDocument for some reason (e.g. a bad mapping or very weird characters)
-								$metadataElement->appendChild($oaiData->importNode($o_doc_src->documentElement, true));
+								if($o_doc_src->documentElement && ($n = $oaiData->importNode($o_doc_src->documentElement, true))) {
+									$metadataElement->appendChild($n);
+								}
 							}
 						}
 					}
