@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,7 @@ $url = caNavUrl($this->request, 'manage', 'sets/setEditor', 'ExportSetItems/'.$t
                         <td class="caSummaryDownloadOptionsPanelAlertControl">
 							<?= _t('Download')."<br/>{$display_select_html}"; ?>	
 <?php
-								if(caProcessingQueueIsEnabled()) {
+								if(caTaskQueueIsEnabled()) {
 									$background_opts = ['value' => 1, 'id' => 'caSummaryProcessInBackground', 'class' => 'dontTriggerUnsavedChangeWarning'];
 									if(Session::getVar('ca_sets_set_export_in_background')) {
 										$background_opts['checked'] = 1;

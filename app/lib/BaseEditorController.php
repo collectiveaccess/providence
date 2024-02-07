@@ -801,7 +801,7 @@ class BaseEditorController extends ActionController {
         }
 
 		$table = $t_subject->tableName();
-		if(($this->request->getParameter('background', pInteger) === 1) && caProcessingQueueIsEnabled()) {
+		if(($this->request->getParameter('background', pInteger) === 1) && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');

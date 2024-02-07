@@ -127,7 +127,7 @@ class Socket {
 		}
 		
 		// trigger async search indexing
-		if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$config->get('disable_out_of_process_search_indexing') && $config->get('run_indexing_queue') ) {
+		if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$config->get('disable_out_of_process_search_indexing') && $config->get('run_search_indexing_queue') ) {
 			if ((!\ca_search_indexing_queue::lockExists() && ($key !== 'processIndexingQueue')) || ($key !== 'processIndexingQueue')) {
 				$dont_verify_ssl_cert = (bool)$config->get(['out_of_process_search_indexing_dont_verify_ssl_cert', 'background_processing_trigger_dont_verify_socket_ssl_cert']);
 				$context = stream_context_create([

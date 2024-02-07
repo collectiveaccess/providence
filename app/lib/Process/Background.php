@@ -85,7 +85,6 @@ class Background {
 						$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-task-queue', true);
 						break;
 					case 'socket':
-    	print "got $queue :: $mode<br>\n";
 						$log->logDebug(_t('[Background] Running task queue in background using socket'));
 						$ret = $socket->run('taskqueue');
 						break;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/BaseEditorController.php");
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 require_once(__CA_APP_DIR__.'/helpers/exportHelpers.php');
@@ -316,7 +315,7 @@ class SetEditorController extends BaseEditorController {
 		// threshold declared in the chosen template.
 		if(
 			!$is_background &&
-			caProcessingQueueIsEnabled() &&
+			caTaskQueueIsEnabled() &&
 			is_array($tinfo = caGetPrintTemplateDetails('sets', $export_format)) && 
 			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
 			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
@@ -342,7 +341,7 @@ class SetEditorController extends BaseEditorController {
 		$subject_table = Datamodel::getTableName($t_set->get('table_num'));
 		$t_instance = Datamodel::getInstanceByTableName($subject_table);
 		
-		if($is_background && caProcessingQueueIsEnabled()) {
+		if($is_background && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 
 			$exp = 'ca_sets.set_code:'.$t_set->get('set_code');
