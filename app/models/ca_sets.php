@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1233,7 +1233,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param int $pn_rank position in the set of the newly added item
 	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
 	 */
-	public function addItem($pn_row_id, $pa_labels=null, $pn_user_id=null, $pn_rank=null) {
+	public function addItem($pn_row_id, $pa_labels=null, $pn_user_id=null, $pn_rank=null, ?array $options=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
 		if ($pn_user_id && (!$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__))) { return false; }
 		
@@ -1257,11 +1257,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		// Add it to the set
 		$t_item = new ca_set_items();
 		if ($o_trans) { $t_item->setTransaction($o_trans); }
-		$t_item->setMode(ACCESS_WRITE);
 		$t_item->set('set_id', $this->getPrimaryKey());
 		$t_item->set('table_num', $vn_table_num);
 		$t_item->set('row_id', $pn_row_id);
 		$t_item->set('type_id', $this->get('type_id'));
+		
+		$t_item->set('representation_id', caGetOption('representation_id', $options, null));
+		$t_item->set('annotation_id', caGetOption('annotation_id', $options, null));
 		
 		$t_item->insert();
 		if (!is_null($pn_rank)) {
@@ -1503,7 +1505,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) { return false; }
 		
 		$t_item = new ca_set_items();
-		$t_item->setMode(ACCESS_WRITE);
 		if ($t_item->load($pn_item_id)) {
 			$t_item->delete(true);
 			if ($t_item->numErrors()) {
@@ -1527,7 +1528,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$t_item = new ca_set_items();
-		$t_item->setMode(ACCESS_WRITE);
 		
 		$va_set_ids = $this->getSetIDsForItem($vn_table_num, $pn_row_id);
 		$vb_skipped = false;
@@ -1648,7 +1648,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$t_set_item = new ca_set_items();
 		$t_set_item->setTransaction($o_trans);
-		$t_set_item->setMode(ACCESS_WRITE);
 		$va_errors = array();
 		
 		
@@ -1961,7 +1960,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars,
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars, casi.representation_id, casi.annotation_id,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
 				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
@@ -3041,7 +3040,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_set_to_add_dupes_to->set('table_num', $this->get('table_num'));
 			$t_set_to_add_dupes_to->set('user_id', $this->get('user_id'));
 			$t_set_to_add_dupes_to->set('set_code', $this->get('set_code').'-'._t('dupes'));
-			$t_set_to_add_dupes_to->setMode(ACCESS_WRITE);
 			$t_set_to_add_dupes_to->insert();
 			if(!$t_set_to_add_dupes_to->getPrimaryKey()) {
 				$this->errors = $t_set_to_add_dupes_to->errors;

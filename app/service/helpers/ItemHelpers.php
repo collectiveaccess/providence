@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 	
 	$include_media = $t['includeMedia'] ?? false;
 	$media_versions = $t['mediaVersions'] ?? ["thumbnail", "small", "medium", "large", "original"];
+	$media_bundles = $t['mediaBundles'] ?? null;
 
 	$target_pk = \Datamodel::primaryKey($t['table']);
 	$rels = $rec->getRelatedItems($t['table'], ['checkAccess' => $check_access, 'primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]], 'restrictToTypes' => $t['restrictToTypes'], 'restrictToRelationshipTypes' => $t['restrictToRelationshipTypes']]);
@@ -96,6 +97,13 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 							];
 						}
 						
+						$media_data = null;
+						if(is_array($media_bundles) && sizeof($media_bundles)) {
+							if($t_rep = \ca_object_representations::findAsInstance(['representation_id' => $rep_id])) {
+								$media_data = \GraphQLServices\Helpers\fetchDataForBundles($t_rep, $media_bundles, ['primaryIDs' => ['ca_object_representations' => [$rep_id]]]);
+							}
+						}
+						
 						$media[] = [
 							'id' => $rep_id,
 							'idno' => $rep_info['idno'],
@@ -109,7 +117,8 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 							'height' => $rep_info['info']['original']['HEIGHT'],
 							'mimetype' => $rep_info['info']['original']['MIMETYPE'],
 							'filesize' => @filesize($rep_info['paths']['original']),
-							'duration' => $rep_info['info']['original']['PROPERTIES']['duration'] ?? null
+							'duration' => $rep_info['info']['original']['PROPERTIES']['duration'] ?? null,
+							'bundles' => $media_data
 						];
 					}
 				}

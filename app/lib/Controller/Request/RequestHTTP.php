@@ -269,7 +269,13 @@ class RequestHTTP extends Request {
 	}
 	# -------------------------------------------------------
 	public static function isAjax() {
-		return ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest"));
+		if((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest")) {
+			return true;
+		}
+		if((isset($_SERVER['HTTP_HX_REQUEST']) && (bool)$_SERVER['HTTP_HX_REQUEST'])) {
+			return true;
+		}
+		return false;
 	}
 	# -------------------------------------------------------
 	function isDownload($pb_set_download=null) {
@@ -1036,7 +1042,13 @@ class RequestHTTP extends Request {
 	public function getHash() {
 		$params = $this->getParameters(['POST', 'GET', 'REQUEST', 'PATH']);
 		unset($params['noCache']);
-		unset($params['nocache']);
+		
+		if(is_array($omit_vars = $this->config->getList('content_cache_omit_parameters'))) {
+			foreach($omit_vars as $ov) {
+				unset($params[$ov]);
+			}
+		}
+		
 		ksort($params);
 	
 		$path_elements = [$this->getModulePath(), $this->getController(), $this->getAction(), $this->getActionExtra()];

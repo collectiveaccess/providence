@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -746,7 +746,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			if ((substr($vs_k, 0, 14) == '_ca_attribute_')) { $va_field_values[$vs_k] = null; }
 		}
 		
-		$va_attributes = $this->getAttributes(array());
+		$va_attributes = $this->getAttributes(['noCache' => true]);
 		$va_field_content = array();
 		foreach($va_attributes as $o_attr) {
 			foreach($o_attr->getValues() as $o_attr_value) {

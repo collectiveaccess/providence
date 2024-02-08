@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
  	'NAME_SINGULAR' 	=> _t('relationship type'),
@@ -385,7 +379,6 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$va_relationships = [];
 		while ($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
-			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
 			$va_relationships[$qr_res->get('type_id')][$locale_id = $qr_res->get('locale_id')] = $va_row;
 			if ($include_type_codes_as_keys) {
 			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;

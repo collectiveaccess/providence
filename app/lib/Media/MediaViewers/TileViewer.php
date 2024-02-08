@@ -98,6 +98,7 @@ class TileViewer extends BaseMediaViewer implements IMediaViewer {
 				$va_viewer_opts = [
 					'id' => 'caMediaOverlayTileViewer',
 					'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
+					'read_only' => true,
 					'viewer_base_url' => $po_request->getBaseUrlPath(),
 					'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('value_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
 					'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array()),
