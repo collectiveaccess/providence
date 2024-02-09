@@ -30,6 +30,7 @@
 	
 	$t_display 				= $this->getVar('t_display');
 	$placements 			= $this->getVar("placements");
+	$ajax_display           = $this->getVar('ajax_display');
 ?>
 <div id="summary" style="clear: both;">
 	<?= caEditorPrintSummaryControls($this); ?>
@@ -39,6 +40,16 @@
 	<table border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td valign="top" align="left" style="padding-right:10px;">
+				<?php if ($ajax_display): ?>
+					<div id="summary-html-data-page">
+						<div class="_error"></div>
+						<div class="_indicator">
+							<img src='<?php print $this->request->getUrlPathForThemeFile('/graphics/icons/indicator.gif'); ?>'/>
+							Loading...
+						</div>
+						<div class="content_wrapper"></div>
+					</div>
+				<?php else: ?>
 <?php
 		foreach($placements as $placement_id => $info) {
 			$class = "";
@@ -75,6 +86,7 @@
 			}
 		}		
 ?>
+<?php endif; ?>
 			</td>
 		</tr>
 	</table>
@@ -82,3 +94,13 @@
 <?php
 TooltipManager::add('#printButton', _t("Download Summary as PDF"));
 TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
+?>
+
+<?php if ($ajax_display): ?>
+	<?php AssetLoadManager::register("ajaxSummaryDisplay"); ?>
+	<script type="text/javascript">
+		var caAjaxSummaryDisplay = caUI.initAjaxSummaryDisplay({
+			controllerUrl: '<?php print $this->request->getControllerUrl();?>',
+		});
+	</script>
+<?php endif; ?>
