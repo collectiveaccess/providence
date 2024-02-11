@@ -105,6 +105,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"copyright" 		=> 'R',
 			"description" 		=> 'R',
 			"duration" 			=> 'R',
+			'start'				=> 'W',
+			'length'			=> 'W',
 			"filesize" 			=> 'R',
 			"has_video"		 	=> 'R',
 			"has_audio" 		=> 'R',
@@ -560,6 +562,26 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
         
         // If start is past end of video force to beginning
         if($start_secs > (float)$this->get('duration')) { $start_secs = 0; }
+        
+        if((float)$this->properties['start'] > 0) {
+			if(
+				($this->properties["duration"] > 0) && ((float)$this->properties['length'] > 0)
+				&&
+				(((float)$this->properties['start'] + (float)$this->properties['length']) > $this->properties['duration'])
+			) {
+				$this->properties['start'] = $this->properties['duration'] - (float)$this->properties['length'];
+				if($this->properties['start'] < 0) { 
+					$this->properties['start'] = 0;
+					$this->properties['length'] = $this->properties['duration'];
+				}
+			}
+			$interval_settings = "-ss ".(float)$this->properties['start'];
+		}
+		if((float)$this->properties['length'] > 0) {
+			$interval_settings .= " -t ".(float)$this->properties['length'];
+		}
+		
+        
 		# is mimetype valid?
 		switch($mimetype) {
 			# ------------------------------------
@@ -621,7 +643,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					if (($audio_sample_freq != 44100) && ($audio_sample_freq != 22050) && ($audio_sample_freq != 11025)) {
 						$audio_sample_freq = 44100;
 					}
-					caExec($cmd = caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f flv -b ".intval($video_bitrate)." -ab ".intval($audio_bitrate)." -ar ".intval($audio_sample_freq)." -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					caExec($cmd = caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f flv -b ".intval($video_bitrate)." -ab ".intval($audio_bitrate)." -ar ".intval($audio_sample_freq)." {$interval_settings} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					if (($return < 0) || ($return > 1) || (filesize("{$filepath}.{$ext}") == 0)) {
 						@unlink("{$filepath}.{$ext}");
 						$this->postError(1610, _t("Couldn't convert file to FLV format"), "WLPlugVideo->write()");
@@ -734,7 +756,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					
 					$cmd = '';
 					if ($ffmpeg_command) {
-						caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." {$ffmpeg_command} ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+						caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." {$ffmpeg_command} {$interval_settings} ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					} else {
 						if ($vpreset) {
 							$other_params = "";
@@ -747,13 +769,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 							if($res && $res!=''){
 								$other_params.="-s ".$res;
 							}
-							caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 {$other_params} -vpre {$vpreset} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+							caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 {$other_params} -vpre {$vpreset} {$interval_settings} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 						} else {
 							if(!$vb_twopass) {
-								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg("{$filepath}.{$ext}"). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 ".join(" ",$ffmpeg_params)." {$interval_settings} -y ".caEscapeShellArg("{$filepath}.{$ext}"). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $output, $return);
 							} else {
-								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
-								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 ".join(" ",$ffmpeg_params)." -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 ".join(" ",$ffmpeg_params)." {$interval_settings} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+								caExec($cmd .= caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 ".join(" ",$ffmpeg_params)." {$interval_settings} -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 								// probably cleanup logfiles here
 							}
 						}
