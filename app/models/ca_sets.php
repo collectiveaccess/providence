@@ -396,13 +396,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 			// quickly delete attribute values
 			$this->getDb()->query('
-				DELETE FROM ca_attribute_values WHERE attribute_id IN
-				(SELECT attribute_id FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id = ?))
+				DELETE av.* FROM ca_attribute_values av JOIN ca_attributes a ON av.attribute_id = a.attribute_id
+				JOIN ca_set_items s on a.row_id = s.item_id  WHERE a.table_num=? and s.set_id = ?
 			', array($this->tableNum(), $this->getPrimaryKey()));
 
 			// quickly delete attributes
 			$this->getDb()->query('
-				DELETE FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id = ?)
+				DELETE a.* FROM ca_attributes a JOIN ca_set_items s on a.row_id = s.item_id WHERE a.table_num=? AND s.set_id = ?
 			', array($this->tableNum(), $this->getPrimaryKey()));
 
 			// get list of set item ids
