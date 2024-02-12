@@ -579,6 +579,9 @@ class OAIPMHService extends BaseService {
 			$vs_range = null;
 		}
 		
+		if(($this->opa_provider_info['dontFilterByACL']) && !defined('__CA_DISABLE_ACL__')) {
+			define('__CA_DISABLE_ACL__', true);
+		}
 		$vs_query = $this->opa_provider_info['query'];
 		if (($set && $this->opa_provider_info['setFacet']) || $vs_range) {
 			if($vs_query === '*') {
@@ -709,7 +712,7 @@ class OAIPMHService extends BaseService {
 							$o_doc_src = $doc->loadXML($vs_item_xml);
 							$recordElement->appendChild($metadataElement);
 							if($o_doc_src) { // just in case the xml fails to load through DomDocument for some reason (e.g. a bad mapping or very weird characters)
-								if($o_doc_src->documentElement && ($n = $oaiData->importNode($o_doc_src->documentElement, true))) {
+								if($doc->documentElement && ($n = $oaiData->importNode($doc->documentElement, true))) {
 									$metadataElement->appendChild($n);
 								}
 							}
