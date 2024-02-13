@@ -7704,6 +7704,8 @@ $pa_options["display_form_field_tips"] = true;
 		$qr_res->seek(0);
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		while($qr_res->nextRow()) {
 			$va_row = [];
 			foreach(array('user_id', 'fname', 'lname', 'email', 'access') as $vs_f) {
@@ -7731,6 +7733,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_table_num = $this->tableNum();
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		foreach($pa_user_ids as $vn_user_id => $vn_access) {
 			$t_acl->clear();
 			$t_acl->load(array('user_id' => $vn_user_id, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
@@ -7775,6 +7779,8 @@ $pa_options["display_form_field_tips"] = true;
 		$va_current_users = $this->getACLUsers();
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		foreach($pa_user_ids as $vn_user_id) {
 			if (!isset($va_current_users[$vn_user_id]) && $va_current_users[$vn_user_id]) { continue; }
 			
@@ -7871,6 +7877,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
 		
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
@@ -7910,6 +7917,8 @@ $pa_options["display_form_field_tips"] = true;
 		$va_current_groups = $this->getACLUserGroups();
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		foreach($pa_group_ids as $vn_group_id => $vn_access) {
 			if ($vn_user_id) {	// verify that group we're linking to is owned by the current user
 				$t_group = new ca_user_groups($vn_group_id);
@@ -7964,6 +7973,8 @@ $pa_options["display_form_field_tips"] = true;
 		$va_current_groups = $this->getUserGroups();
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		foreach($pa_group_ids as $vn_group_id) {
 			if (!isset($va_current_groups[$vn_group_id]) && $va_current_groups[$vn_group_id]) { continue; }
 			
@@ -8030,6 +8041,8 @@ $pa_options["display_form_field_tips"] = true;
 		", $this->tableNum(), $vn_id);
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		$va_row = [];
 		if($qr_res->nextRow()) {
 			foreach(array('access') as $vs_f) {
@@ -8051,8 +8064,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
 		
 		$vn_access = 0;
 		if ($t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $this->tableNum(), 'row_id' => $this->getPrimaryKey()))) {		// try to load existing record
@@ -8083,8 +8096,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$vn_table_num = $this->tableNum();
 		
-		
 		$t_acl = new ca_acl();	
+		$t_acl->setTransaction($this->getTransaction());
+		
 		$t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
 		
 		$t_acl->set('table_num', $vn_table_num);
@@ -8146,6 +8160,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
+		if(defined('__CA_DISABLE_ACL__')) { return false; }
 		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
 		if(!$this->getAppConfig()->get('perform_item_level_access_checking') || $this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
