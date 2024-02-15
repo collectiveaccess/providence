@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2023 Whirl-i-Gig
+ * Copyright 2006-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,28 +89,30 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		),
 
 		"PROPERTIES" => array(
-			"width"				=> 'W',
-			"height"			=> 'W',
-			"version_width" 	=> 'R', // width version icon should be output at (set by transform())
-			"version_height" 	=> 'R',	// height version icon should be output at (set by transform())
-			"intro_filepath"	=> 'R',
-			"outro_filepath"	=> 'R',
-			"mimetype" 			=> 'R',
-			"typename"			=> 'R',
-			"bandwidth"			=> 'R',
-			"title" 			=> 'R',
-			"author" 			=> 'R',
-			"copyright" 		=> 'R',
-			"description" 		=> 'R',
-			"duration" 			=> 'R',
-			"filesize" 			=> 'R',
-			"getID3_tags"		=> 'W',
+			'width'				=> 'W',
+			'height'			=> 'W',
+			'version_width' 	=> 'R', // width version icon should be output at (set by transform())
+			'version_height' 	=> 'R',	// height version icon should be output at (set by transform())
+			'intro_filepath'	=> 'R',
+			'outro_filepath'	=> 'R',
+			'mimetype' 			=> 'R',
+			'typename'			=> 'R',
+			'bandwidth'			=> 'R',
+			'title' 			=> 'R',
+			'author' 			=> 'R',
+			'copyright' 		=> 'R',
+			'description' 		=> 'R',
+			'duration' 			=> 'R',
+			'filesize' 			=> 'R',
+			'getID3_tags'		=> 'W',
 			'colorspace'		=> 'W',
-			"quality"			=> "W",		// required for JPEG compatibility
-			"bitrate"			=> 'W', 	// in kbps (ex. 64)
-			"channels"			=> 'W',		// 1 or 2, typically
-			"sample_frequency"	=> 'W',		// in khz (ex. 44100)
-			"version"			=> 'W'		// required of all plug-ins
+			'start'				=> 'W',
+			'length'			=> 'W',
+			'quality'			=> 'W',		// required for JPEG compatibility
+			'bitrate'			=> 'W', 	// in kbps (ex. 64)
+			'channels'			=> 'W',		// 1 or 2, typically
+			'sample_frequency'	=> 'W',		// in khz (ex. 44100)
+			'version'			=> 'W'		// required of all plug-ins
 		),
 
 		"NAME" => "Audio",
@@ -517,7 +519,26 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				#
 				# Do conversion
 				#
-				caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -map a -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $output, $vn_return);
+				$interval_settings = '';
+				if((float)$this->properties['start'] > 0) {
+					if(
+						($this->properties["duration"] > 0) && ((float)$this->properties['length'] > 0)
+						&&
+						(((float)$this->properties['start'] + (float)$this->properties['length']) > $this->properties['duration'])
+					) {
+						$this->properties['start'] = $this->properties['duration'] - (float)$this->properties['length'];
+						if($this->properties['start'] < 0) { 
+							$this->properties['start'] = 0;
+							$this->properties['length'] = $this->properties['duration'];
+						}
+					}
+					$interval_settings = "-ss ".(float)$this->properties['start'];
+				}
+				if((float)$this->properties['length'] > 0) {
+					$interval_settings .= " -t ".(float)$this->properties['length'];
+				}
+				
+				caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab {$vn_output_bitrate} -ar {$vn_sample_frequency} -ac {$vn_channels} {$interval_settings} -map a -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $output, $vn_return);
 				if ($vn_return != 0) {
 					@unlink($filepath.".".$ext);
 					$this->postError(1610, _t("Error converting file to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $output)), "WLPlugAudio->write()");
@@ -529,16 +550,16 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						// add intro
 						$vs_tmp_filename = tempnam(caGetTempDirPath(), "audio");
 						if ($vs_intro_filepath) {
-							caExec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_intro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2>&1" : ""), $output, $vn_return);
+							caExec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_intro_filepath)." -f mp3 -ab {$vn_output_bitrate} -ar {$vn_sample_frequency} -ac {$vn_channels} -y ".caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2>&1" : ""), $output, $vn_return);
 							if ($vn_return != 0) {
-								@unlink($filepath.".".$ext);
+								@unlink("{$filepath}.{$ext}");
 								$this->postError(1610, _t("Error converting intro to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $output)), "WLPlugAudio->write()");
 								return false;
 							}
 						}
 
 						$r_fp = fopen($vs_tmp_filename, "a");
-						$r_mp3fp = fopen($filepath.".".$ext, "r");
+						$r_mp3fp = fopen("{$filepath}.{$ext}", "r");
 						while (!feof($r_mp3fp)) {
 							fwrite($r_fp, fread($r_mp3fp, 8192));
 						}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -274,6 +274,28 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 		}
 	
 		return $vb_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Overrides get() to support primary representation filtering
+	 *
+	 * Options:
+	 *		All supported by BaseModelWithAttributes::get() plus:
+	 *		filterPrimaryRepresentations = Set filtering of primary representations in those models that support representations [Default is true]
+	 *		filterNonPrimaryRepresentations = Set filtering of non-primary representations in those models that support representations [Default is true]
+	 */
+	public function get($ps_field, $pa_options=null) {
+		
+		if($this->_rowAsSearchResult) {
+			if (method_exists($this->_rowAsSearchResult, "filterPrimaryRepresentations")) {
+				$this->_rowAsSearchResult->filterPrimaryRepresentations(caGetOption('filterPrimaryRepresentations', $pa_options, false));
+			}
+			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {
+				$this->_rowAsSearchResult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $pa_options, false));
+			}
+			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
+		}
+		return parent::get($ps_field, $pa_options);
 	}
 	# ------------------------------------------------------
 }
