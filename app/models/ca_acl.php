@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -273,9 +273,9 @@ class ca_acl extends BaseModel {
 				table_num = ? AND row_id = ? AND group_id IS NULL AND user_id IS NULL
 				
 		", (int)$pn_table_num, (int)$pn_row_id);
-		if ($qr_res->nextRow()) {
-			if (strlen($vs_access = $qr_res->get('a')) && ((int)$vs_access >= $vn_access)) {
-				return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = (int)$vs_access;
+		while($qr_res->nextRow()) {
+			if (strlen($vs_access = $qr_res->get('a')) && (is_null($vn_access) || ((int)$vs_access >= $vn_access))) {
+				$vn_access = (int)$vs_access;
 			}
 		}
 		if (!is_null($vn_access)) { 
@@ -312,7 +312,7 @@ class ca_acl extends BaseModel {
 					SELECT group_id, user_id, {$vn_subject_table_num}, {$vn_id}, access, notes, {$vn_subject_table_num}, {$vn_subject_id}
 					FROM ca_acl
 					WHERE
-						table_num = ? AND row_id = ? AND (group_id IS NOT NULL OR user_id IS NOT NULL)
+						table_num = ? AND row_id = ?
 				", (int)$vn_subject_table_num, (int)$vn_subject_id);
 		}
 		
@@ -363,7 +363,7 @@ class ca_acl extends BaseModel {
 						SELECT group_id, user_id, {$vn_target_table_num}, {$vn_target_id}, access, notes, {$vn_subject_table_num}, {$vn_subject_id}
 						FROM ca_acl
 						WHERE
-							table_num = ? AND row_id = ? AND (group_id IS NOT NULL OR user_id IS NOT NULL)
+							table_num = ? AND row_id = ? 
 					", (int)$vn_subject_table_num, (int)$vn_subject_id);
 				}
 			}
@@ -410,7 +410,7 @@ class ca_acl extends BaseModel {
 						SELECT group_id, user_id, {$vn_target_table_num}, {$pn_target_id}, access, notes, {$vn_subject_table_num}, {$pn_subject_id}
 						FROM ca_acl
 						WHERE
-							table_num = ? AND row_id = ? AND (group_id IS NOT NULL OR user_id IS NOT NULL)
+							table_num = ? AND row_id = ? 
 					", (int)$vn_subject_table_num, (int)$pn_subject_id);
 				}
 		
