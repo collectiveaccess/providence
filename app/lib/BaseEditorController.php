@@ -996,7 +996,7 @@ class BaseEditorController extends ActionController {
 	public function Access($pa_options=null) {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
+		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
@@ -1019,7 +1019,7 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
+		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
