@@ -172,6 +172,7 @@ class CLI {
             return false;
         }
 
+		$this->log->logInfo("Openrf {$command} via proc_open");
         // Use non-blocking mode 
         stream_set_blocking($pipes[1], false);
         stream_set_blocking($pipes[2], false);
@@ -203,6 +204,8 @@ class CLI {
             $this->log->logError(sprintf('Command "%s" failed with status code %s.', $command, $exit_code)); 
             return false;
         }
+        
+		$this->log->logInfo("Complete {$command} via proc_open");
         return trim($output);
     }
     # -------------------------------------------------------
