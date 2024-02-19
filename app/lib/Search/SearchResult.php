@@ -47,7 +47,6 @@ class SearchResult extends BaseObject {
 	private $opa_options;
 	
 	private $ops_subject_pk;
-	protected $highlight = false;
 
 	/**
 	 * @var IWLPlugSearchEngineResult
