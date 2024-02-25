@@ -68,7 +68,6 @@
 		var updateProgressBarInterval = null;
 		jQuery.post('<?= caNavUrl($this->request, 'manage', 'Tools', 'RunJob', array('tool' => $vs_tool_identifier, 'command' => $vs_command)); ?>', <?= json_encode(array('job_id' => $vs_job_id, 'settings' => $va_setting_values)); ?>,
 			function(data, textStatus, jqXHR) {
-				console.log("Job returned:", data);
 				// stop progress refresh
 				clearInterval(updateProgressBarInterval);
 				jQuery('#batchProcessingMore').fadeIn(500);

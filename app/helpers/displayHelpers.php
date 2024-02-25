@@ -2106,17 +2106,21 @@ function caParseTableTypesFromSpecification(string $table, string $spec, ?array 
 /**
  * Generates access control list (ACL) editor for item
  *
- * @param View $po_view Inspector view object
- * @param BaseModel $pt_instance Model instance representing the item for which ACL is being managed
- * @param array $pa_options None implemented yet
+ * @param View $view Inspector view object
+ * @param BaseModel $t_instance Model instance representing the item for which ACL is being managed
+ * @param array $options None implemented yet
  *
  * @return string HTML implementing the inspector
  */
-function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
-	$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_view->request->getViewsDirectoryPath();
-	$o_view = new View($po_view->request, "{$vs_view_path}/bundles/");
+function caEditorACLEditor(View $view, BaseModel $t_instance, ?array $options=null) : ?string {
+	$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $view->request->getViewsDirectoryPath();
+	$o_view = new View($view->request, "{$view_path}/bundles/");
 
-	$o_view->setVar('t_instance', $pt_instance);
+	$o_view->setVar('t_instance', $t_instance);
+	
+	// Get inheritance usage stats
+	$o_view->setVar('statistics', ca_acl::getStatisticsForRow($t_instance, $t_instance->getPrimaryKey()));
+	
 	return $o_view->render('ca_acl_access.php');
 }
 # ------------------------------------------------------------------------------------------------
@@ -2129,7 +2133,7 @@ function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
  *
  * @return string HTML implementing the inspector
  */
-function caBatchEditorInspector($po_view, $pa_options=null) {
+function caBatchEditorInspector(View $po_view, ?array $pa_options=null) : ?string {
 	$rs 					= $po_view->getVar('record_selection');
 	$t_item 				= $po_view->getVar('t_item');
 	$vs_table_name = $t_item->tableName();
@@ -2139,8 +2143,7 @@ function caBatchEditorInspector($po_view, $pa_options=null) {
 
 	$o_result_context		= $po_view->getVar('result_context');
 	$t_ui 					= $po_view->getVar('t_ui');
-
-
+	
 	$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.$rs->getResultsLink($po_view->request)."</span></h3>\n";
 
 	$vs_color = $vs_type_name = null;
