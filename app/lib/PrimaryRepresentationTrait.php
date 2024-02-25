@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2023 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,21 +29,33 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-  * Methods for relationship models that include an is_primary flag
-  */
-  
- 
+/**
+ * Methods for relationship models that include an is_primary flag
+ */
 trait PrimaryRepresentationTrait {
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function insert($options=null) {
+		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, false);
+		
+		if($rc = parent::insert($options)) {
+			if(!$dont_check_primary_value && ($this->setPrimary() === false)) {
+				$this->postError(2700, _t('Could not set primary representation: %1', join('; ', $this->getErrors())), 'PrimaryRepresentationTrait::insert');
+			}
+		}
+		return $rc;
+	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function update($options=null) {
 		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, false);
+		
 		if($rc = parent::update($options)) {
-			if(!$dont_check_primary_value && ($this->_setPrimary() === false)) {
+			if(!$dont_check_primary_value && ($this->setPrimary() === false)) {
 				$this->postError(2700, _t('Could not set primary representation: %1', join('; ', $this->getErrors())), 'PrimaryRepresentationTrait::update');
 			}
 		}
@@ -63,7 +75,7 @@ trait PrimaryRepresentationTrait {
 	public function delete($delete_related=false, $options=null, $fields=null, $table_list=null) {
 		$dont_check_primary_value = caGetOption('dontCheckPrimaryValue', $options, false);
 		if($rc = parent::delete($delete_related, $options, $fields, $table_list)) {
-			if(!$dont_check_primary_value && ($this->_setPrimary() === false)) {
+			if(!$dont_check_primary_value && ($this->setPrimary() === false)) {
 				$this->postError(2700, _t('Could not set primary representation: %1', join('; ', $this->getErrors())), 'PrimaryRepresentationTrait::delete');
 			}
 		}
@@ -73,36 +85,61 @@ trait PrimaryRepresentationTrait {
 	/**
 	 *
 	 */
-	private function _setPrimary() {
+	public function setPrimary() {
+		if(!$this->didChange('is_primary')) { return true; }
 		$table = $this->tableName();
 		$rel_table = ($this->RELATIONSHIP_LEFT_TABLENAME !== 'ca_object_representations') ? $this->RELATIONSHIP_LEFT_TABLENAME : $this->RELATIONSHIP_RIGHT_TABLENAME;
 		$rel_key = ($this->RELATIONSHIP_LEFT_TABLENAME !== 'ca_object_representations') ? $this->RELATIONSHIP_LEFT_FIELDNAME : $this->RELATIONSHIP_RIGHT_FIELDNAME;
 		if(!($related_id = $this->get($rel_key))) {
 			return null;
 		}
-
 		$o_db = $this->getDb();
-			
+		
 		$qr = $o_db->query("
 			SELECT r.relation_id, r.is_primary FROM {$table} r 
 			INNER JOIN {$rel_table} AS rel ON r.{$rel_key} = rel.{$rel_key}
 			INNER JOIN ca_object_representations AS rep ON r.representation_id = rep.representation_id
-			WHERE r.{$rel_key} = ? AND rel.deleted = 0 AND rep.deleted = 0 ORDER BY r.is_primary DESC LIMIT 2", [$related_id]);
+			WHERE r.{$rel_key} = ? AND rel.deleted = 0 AND rep.deleted = 0 ORDER BY r.is_primary DESC", [$related_id]);
+			
+		$seen_primary = false;
+		$subject_is_primary = ((int)$this->get('is_primary') === 1);
+		$relation_id = $this->getPrimaryKey();
+		
 		while($qr->nextRow()) {
-			if ((int)$qr->get('is_primary') === 0) {
+			if($subject_is_primary && ($relation_id == $qr->get('relation_id'))) { 
+				$seen_primary = true;
+				continue;
+			}
+			if (!$subject_is_primary && !$seen_primary && ((int)$qr->get('is_primary') === 1)) {
+				$seen_primary = true;
+				continue;
+			}
+			if (!$seen_primary && ((int)$qr->get('is_primary') === 0)) {
 				$t_rel = $table::findAsInstance($qr->get('relation_id'));
 				$t_rel->setTransaction($this->getTransaction());
 				$t_rel->set('is_primary', 1);
-				$rc = $t_rel->update();
+				
+				$rc = $t_rel->update(['dontCheckPrimaryValue' => true]);
+				
+				if($t_rel->numErrors() > 0) {
+					$this->errors = array_merge($this->errors, $t_rel->errors);
+				} else {
+					$seen_primary = true;
+				}
+				continue;
+			}
+			if ($seen_primary && ((int)$qr->get('is_primary') === 1)) {
+				$t_rel = $table::findAsInstance($qr->get('relation_id'));
+				$t_rel->setTransaction($this->getTransaction());
+				$t_rel->set('is_primary', 0);
+				$rc = $t_rel->update(['dontCheckPrimaryValue' => true]);
 				
 				if($t_rel->numErrors() > 0) {
 					$this->errors = array_merge($this->errors, $t_rel->errors);
 				}
-				return $rc;
 			}
-			break;
 		}
-		return null;
+		return $seen_primary;
 	}
 	# -------------------------------------
 }
