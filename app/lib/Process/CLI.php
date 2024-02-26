@@ -58,13 +58,14 @@ class CLI {
     }
 	# -------------------------------------------------------
     /**
-     * Execute a command, returning its output
+     * Execute a command, returning its output.
      *
      * @param string $command An executable command
      * @param array $args Array of arguments for command
      * @param bool $async Run command in background independent of current process.  Command will run to completion, even if PHP request 
      *                    process ends. Note: it is not possible to obtain output of the process when run as async. True will be returned
      *                    if command successfully launches, false if there was an error.
+     *					  NOTE: Async option is not available on Windows and is ignored.
      * @param array $options Options include:
      *		output = Determines whether standard output, error or both standard and error are returned. Valid values are 'standard', 'error', 'all'
      *               If 'all' is set an array will be returned with values for 'standard' and 'error'. Ignored is $async is set. [Default is standard]. 
@@ -76,6 +77,8 @@ class CLI {
 		ini_set('output_buffering', 0);
 		
 		$output = $error = '';
+		
+		if($async && (caGetOSFamily() == OS_WIN32)) { $async = false; }
 		
 		if($async) {
 			try {
