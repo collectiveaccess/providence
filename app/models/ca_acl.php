@@ -785,11 +785,6 @@ class ca_acl extends BaseModel {
 		$subject_table_num = $t_subject->tableNum();
 		$subject_pk = $t_subject->primaryKey();
 		
-		// $db->query("INSERT IGNORE INTO ca_acl 
-// 			(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
-// 			SELECT NULL, NULL, {$subject_table_num}, {$subject_pk}, {$default_item_access_level}, '', NULL NULL
-// 			FROM {$subject_table_name}");
-		
 		$new_entries = [];
 		if($qr = $db->query("
 			SELECT t.{$subject_pk}, a.*

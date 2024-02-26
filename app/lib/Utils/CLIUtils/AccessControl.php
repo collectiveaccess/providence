@@ -312,6 +312,7 @@ trait CLIUtilsAccessControl {
 	
 			while($qr->nextHit()) {
 				if(!($t_instance = $qr->getInstance())) { continue; }
+				if(!$t_instance->supportsACL()) { break; }
 				ca_acl::applyACLInheritanceToChildrenFromRow($t_instance);
 				
 				if($table === 'ca_collections') { 
