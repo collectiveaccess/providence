@@ -292,25 +292,45 @@ trait CLIUtilsAccessControl {
 	public static function add_accountHelp() {
 		return _t('Add a new user account.');
 	}
-		# -------------------------------------------------------
+	# -------------------------------------------------------
 	/**
-	 * Reset user password
+	 * 
 	 */
 	public static function apply_acl_inheritance($po_opts=null) {
+		if(!defined('__CA_DISABLE_ACL__')) { define('__CA_DISABLE_ACL__', true); }
+		
+		$db = new Db();
 		
 		$table = (string)$po_opts->getOption('table');
 		
-		$qr = ca_collections::findAsSearchResult('*');
-		print CLIProgressBar::start($qr->numHits(), _t('Applying inheritance using %1', $qr->tableName()));
-
-		while($qr->nextHit()) {
-			$t_instance = $qr->getInstance();
-			ca_acl::applyACLInheritanceToChildrenFromRow($t_instance);
-			ca_acl::applyACLInheritanceToRelatedFromRow($t_instance, 'ca_objects');
+		$tables = caGetPrimaryTables();
+		if($table && isset($tables[$table])) { $tables = [$table => $tables[$table]]; }
+		
+		foreach($tables as $table) {
+			$qr = $table::findAsSearchResult('*');
+			print CLIProgressBar::start($qr->numHits(), _t('Applying inheritance using %1', $qr->tableName()));
+	
+			while($qr->nextHit()) {
+				if(!($t_instance = $qr->getInstance())) { continue; }
+				ca_acl::applyACLInheritanceToChildrenFromRow($t_instance);
+				
+				if($table === 'ca_collections') { 
+					ca_acl::applyACLInheritanceToRelatedFromRow($t_instance, 'ca_objects');
+				}
+				print CLIProgressBar::next(1, _t("Applying inheritance for %1", $t_instance->get('idno')));
+			}
+			print CLIProgressBar::finish();
 			
-			print CLIProgressBar::next(1, _t("Applying inheritance for %1", $t_instance->get('idno')));
+			print CLIProgressBar::start(1, _t('Recreating missing ACL global entries'));
+			ca_acl::setGlobalEntries($table, $db);
+			print CLIProgressBar::finish();
+			
 		}
-		print CLIProgressBar::finish();
+		
+		print CLIProgressBar::start(1, _t('Removing redundant ACL entries'));
+		ca_acl::removeRedundantACLEntries($db);
+		print CLIProgressBar::finish();	
+		
 		return true;
 	}
 	# -------------------------------------------------------

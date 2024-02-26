@@ -427,7 +427,7 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function getACLValuesForRow(mixed $subject, int $row_id) : ?array {
+	public static function getACLValuesForRow($subject, int $row_id) : ?array {
 		$db = new Db();
 		
 		if(!($subject_table_num = Datamodel::getTableNum($subject))) { return null; }
@@ -459,7 +459,7 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function getStatisticsForRow(mixed $subject, int $row_id) : ?array {
+	public static function getStatisticsForRow($subject, int $row_id) : ?array {
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		if(!($subject_table_num = is_object($subject) ? $subject->tableNum() : Datamodel::getTableNum($subject))) { return null; }
 		
@@ -508,7 +508,7 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function setInheritanceForAllChildRows(mixed $subject, int $row_id, bool $set_all) : ?bool {
+	public static function setInheritanceForAllChildRows($subject, int $row_id, bool $set_all) : ?bool {
 		if(!($t_subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
 		$subject_table = $t_subject->tableName();
 		$subject_pk = $t_subject->primaryKey();
@@ -554,7 +554,7 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function setInheritanceForRelatedObjects(mixed $subject, int $row_id, bool $set_all) : ?bool {
+	public static function setInheritanceForRelatedObjects($subject, int $row_id, bool $set_all) : ?bool {
 		if(!($t_subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
 		if(($subject_table = $t_subject->tableName()) !== 'ca_collections') { return null; }
 		
@@ -608,7 +608,7 @@ class ca_acl extends BaseModel {
 	 *
 	 * @return ?bool True on success, false on error, null if table does not exist 
 	 */
-	public static function removeACLValuesForRow(mixed $subject, int $row_id) : ?bool {
+	public static function removeACLValuesForRow($subject, int $row_id) : ?bool {
 		$db = new Db();
 		
 		if(!($subject_table_num = Datamodel::getTableNum($subject))) { return null; }
@@ -764,6 +764,53 @@ class ca_acl extends BaseModel {
 		");
 		ca_acl::_dropTempTable($db, $temp_table);
 		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove duplicate ACL entries, leaving the entry granting the most access. The inheritance process
+	 * can create duplicate entries when combined with user-specific entries. 
+	 *
+	 * @param Db $db 
+	 *
+	 * @return bool
+	 */
+	public static function setGlobalEntries(string $subject, Db $db) : bool {
+		if(!($t_subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true))) { return null; }
+		
+		$o_config = Configuration::load();
+		$default_item_access_level = (int)$o_config->get('default_item_access_level');
+		
+		$subject_table_name = $t_subject->tableName();
+		$subject_table_num = $t_subject->tableNum();
+		$subject_pk = $t_subject->primaryKey();
+		
+		// $db->query("INSERT IGNORE INTO ca_acl 
+// 			(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+// 			SELECT NULL, NULL, {$subject_table_num}, {$subject_pk}, {$default_item_access_level}, '', NULL NULL
+// 			FROM {$subject_table_name}");
+		
+		$new_entries = [];
+		if($qr = $db->query("
+			SELECT t.{$subject_pk}, a.*
+			FROM {$subject_table_name} t
+			LEFT JOIN ca_acl AS a ON t.{$subject_pk} = a.row_id AND (a.table_num = {$subject_table_num} OR a.table_num IS NULL) and a.user_id IS NULL and a.group_id IS NULL
+		")) {
+			while($qr->nextRow()) {
+				$row = $qr->getRow();
+				
+				if(!($row['acl_id'] ?? null)) {
+					$new_entries[] = "(NULL, NULL, {$subject_table_num}, {$row[$subject_pk]}, {$default_item_access_level}, '', NULL, NULL)";
+				}
+			}
+			if(sizeof($new_entries)) {
+				$db->query("INSERT IGNORE INTO ca_acl 
+					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+					VALUES
+					".join(",", $new_entries)."
+				");
+			}
+		}
 		return true;
 	}
 	# ------------------------------------------------------
