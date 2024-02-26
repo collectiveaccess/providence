@@ -63,11 +63,10 @@ class Background {
         	case 'searchindexingqueue':
         		if (!\ca_search_indexing_queue::lockExists()) {
         			switch($mode) {
-        				case 'proc_open':
-        				case 'exec':
+        				case 'process':
         				default:
 							$log->logDebug(_t('[Background] Running search indexing queue in background using CLI::%1', $mode));
-							$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-indexing-queue', true);
+							$ret = $cli->run('php', [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-indexing-queue'], true);
 							break;
 						case 'socket':
 							$log->logDebug(_t('[Background] Running search indexing queue in background using socket'));
@@ -78,11 +77,10 @@ class Background {
         		break;
         	case 'taskqueue':
         		switch($mode) {
-					case 'proc_open':
-					case 'exec':
+					case 'process':
 					default:
 						$log->logDebug(_t('[Background] Running task queue in background using CLI::%1', $mode));
-						$ret = $cli->run('php', __CA_BASE_DIR__.'/support/bin/caUtils process-task-queue', true);
+						$ret = $cli->run('php', [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-task-queue'], true);
 						break;
 					case 'socket':
 						$log->logDebug(_t('[Background] Running task queue in background using socket'));
