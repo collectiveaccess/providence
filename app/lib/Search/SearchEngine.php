@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -375,9 +375,7 @@ class SearchEngine extends SearchBase {
 			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $result_desc, $this->opn_tablenum);
 			
 			// cache for later use
-			if(!$vb_no_cache) {
-				$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, $result_desc, ['created_on' => time()], null, $options);
-			}
+			$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, $result_desc, ['created_on' => time()], null, $options);
 
 			// log search
 			if(!$this->opo_app_config->get('dont_use_search_log')) {
