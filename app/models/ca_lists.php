@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -486,6 +486,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
 		if(!is_array($pa_check_access) && $pa_check_access) { $pa_check_access = [$pa_check_access]; }
+		$pa_check_access = array_map('intval', $pa_check_access);
 	
 		$vb_labels_only = false;
 		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
@@ -642,7 +643,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
-				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array($va_item['access'], $pa_check_access)) { continue; }
+				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array((int)$va_item['access'], $pa_check_access, true)) { continue; }
 				
 				$vn_item_id = $va_item['NODE']['item_id'];
 				$vn_parent_id = $va_item['NODE']['parent_id'];
