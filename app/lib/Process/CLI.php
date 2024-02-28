@@ -72,7 +72,7 @@ class CLI {
      *
      * @return string|false The command's output, false on error or true for successful async commands (output cannot be return for aync).
      */
-    public function execute(string $command, array $args, ?bool $async=true, ?array $options=null) : mixed {
+    public function execute(string $command, array $args, ?bool $async=true, ?array $options=null) {
 		$ob_setting = ini_get('output_buffering');
 		ini_set('output_buffering', 0);
 		
