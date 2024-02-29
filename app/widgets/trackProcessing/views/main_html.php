@@ -279,7 +279,7 @@ if(!$is_ajax) {
 			}
 		});
 		jQuery('#widget_<?= $widget_id; ?>').find('a.widgetTaskRetry').on('click', function(e) {
-			let task_id = jQuery(e.target).data('job_id');
+			let task_id = jQuery(this).data('job_id');
 			jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'runWidgetFunction'); ?>', { widget_id: <?= json_encode($widget_id); ?>, method: 'RetryJob', options: JSON.stringify({task_id: task_id})}, function(e) {
 				jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>');
 			});
