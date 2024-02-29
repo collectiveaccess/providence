@@ -886,7 +886,7 @@ class SearchResult extends BaseObject {
 	/**
 	 * 
 	 */
-	public function prefetchModifidOnChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
+	public function prefetchModifiedOnChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
 		if (self::$s_timestamp_cache['fetchedModifiedOn'][$vs_key] ?? null) { return true; }
