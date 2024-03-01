@@ -2788,31 +2788,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getSetChangeLog($va_set_ids){
 		if(is_array($va_set_ids) && sizeof($va_set_ids)){
 			$o_db = $this->getDB();
-
-
-// 			$q_change_log_sets = $o_db->query("
-// 						SELECT DISTINCT
-// 							wcl.log_id, wcl.log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
-// 							wclsnap.snapshot, wcl.unit_id, wu.email, wu.fname, wu.lname
-// 						FROM ca_change_log wcl
-// 						INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
-// 						LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
-// 						LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
-// 						WHERE
-// 							(
-// 								(wcl.logged_table_num = ".((int)Datamodel::getTableNum("ca_set_items")).") AND (wcl.logged_row_id IN (".implode(", ", $va_set_ids)."))
-// 							)
-// 						ORDER BY wcl.log_datetime desc
-// 					");
-// 				$va_set_change_log = array();
-// 				if($q_change_log_sets->numRows()){
-// 					while($q_change_log_sets->nextRow()){
-// 						$va_tmp = array();
-// 						$va_tmp = $q_change_log_sets->getRow();
-// 						$va_tmp['snapshot'] = caUnserializeForDatabase($q_change_log_sets->get('snapshot'));
-// 						$va_set_change_log[$q_change_log_sets->get('log_datetime')] = $va_tmp;
-// 					}
-// 				}
 			
 			global $g_ui_locale_id;
 			$q_change_log = $o_db->query("
