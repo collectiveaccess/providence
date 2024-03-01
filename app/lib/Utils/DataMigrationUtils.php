@@ -443,6 +443,7 @@ class DataMigrationUtils {
 	 * @see DataMigrationUtils::_getID()
 	 */
 	static function getObjectLotID($ps_idno_stub, $ps_lot_name, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
+		if($ps_idno_stub) { $pa_values['idno_stub'] = $ps_idno_stub; }
 		return DataMigrationUtils::_getID('ca_object_lots', array('name' => $ps_lot_name), null, $pn_type_id, $locale_id, $pa_values, $options);
 	}
 	# -------------------------------------------------------
