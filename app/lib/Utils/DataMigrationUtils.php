@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -701,8 +701,7 @@ class DataMigrationUtils {
 						break;
 					case 3:
 						$name['forename'] = $tmp[0];
-						$name['middlename'] = $tmp[1];
-						$name['surname'] = $tmp[2];
+						$name['surname'] = join(' ', array_slice($tmp, 1));
 						break;
 					case 4:
 					default:
@@ -710,9 +709,8 @@ class DataMigrationUtils {
 							$name['surname'] = array_pop($tmp);
 							$name['forename'] = join(' ', $tmp);
 						} else {
-							$name['surname'] = array_pop($tmp);
 							$name['forename'] = array_shift($tmp);
-							$name['middlename'] = join(' ', $tmp);
+							$name['surname'] = join(' ', $tmp);
 						}
 						break;
 				}
