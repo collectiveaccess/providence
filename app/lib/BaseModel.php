@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2023 Whirl-i-Gig
+ * Copyright 2000-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -7022,8 +7022,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					(wcls.subject_table_num = ?)
 					AND
 					(wcls.subject_row_id = ?)
-					AND
-					(wcl.changetype IN ('I', 'U'))
 				ORDER BY wcl.log_datetime DESC LIMIT 1",
 		$this->tableNum(), $vn_row_id);
 		
@@ -7051,8 +7049,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					(wcl.logged_table_num = ?)
 					AND
 					(wcl.logged_row_id = ?)
-					AND
-					(wcl.changetype IN ('I', 'U'))
 				ORDER BY wcl.log_datetime DESC LIMIT 1",
 		$this->tableNum(), $vn_row_id);
 		
