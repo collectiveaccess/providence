@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
-
 class LocalesController extends ActionController {
 	# -------------------------------------------------------
 	private $pt_locale;
 	# -------------------------------------------------------
 	#
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+		
+		if(!$po_request || !$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_configure_locales')) {
+			throw new AccessException(_t('Access denied'));
+		}
+	}
 	# -------------------------------------------------------
 	public function Edit() {
 		$t_locale = $this->getLocaleObject();
