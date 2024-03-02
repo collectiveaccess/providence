@@ -1659,7 +1659,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 			if(!is_array($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = array(); }
 			
-			if($qr_types_in_use->numRows() > 0) {
+			if($qr_types_in_use && ($qr_types_in_use->numRows() > 0)) {
 				$pa_options['limitToItemsWithID'] += $qr_types_in_use->getAllFieldValues('type_id');
 			}
 		}

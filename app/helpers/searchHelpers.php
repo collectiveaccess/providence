@@ -738,6 +738,23 @@ function caGetInfoForAdvancedSearchType($ps_search_type) {
 }
 # ---------------------------------------
 /**
+ * 
+ *
+ * @return array 
+ */
+function caGetInfoForSearchBuilderType($ps_search_type) {
+	$o_search_config = caGetSearchConfig();
+	
+	$va_search_types = $o_search_config->getAssoc('searchBuilderTypes');
+	$ps_search_type = strtolower($ps_search_type);
+	
+	if (isset($va_search_types[$ps_search_type])) {
+		return $va_search_types[$ps_search_type];
+	}
+	return null;
+}
+# ---------------------------------------
+/**
  *
  */
 function caGetQueryStringForHTMLFormInput($po_result_context, $pa_options=null) {
@@ -1978,10 +1995,18 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query
 		},
 		caFlattenContainers($t_search_form, $vs_table, ['useDisambiguationLabels' => true])
 	));
+	$va_include= $po_query_builder_config->get('query_builder_include_' . $vs_table);
 	$va_exclude = $po_query_builder_config->get('query_builder_exclude_' . $vs_table);
-	$filters = array_filter($filters, function ($vo_filter) use ($va_exclude) {
-		return array_search($vo_filter['id'], $va_exclude) === false;
-	});
+	if(is_array($va_exclude) && sizeof($va_exclude)) {
+		$filters = array_filter($filters, function ($vo_filter) use ($va_exclude) {
+			return array_search($vo_filter['id'], $va_exclude) === false;
+		});
+	}
+	if(is_array($va_include) && sizeof($va_include)) {
+		$filters = array_filter($filters, function ($vo_filter) use ($va_include) {
+			return array_search($vo_filter['id'], $va_include) !== false;
+		});
+	}
 	$va_priority = $po_query_builder_config->get('query_builder_priority_' . $vs_table);
 
 	usort($filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {

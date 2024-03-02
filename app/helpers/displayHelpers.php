@@ -4216,6 +4216,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 	$default_annotation_id		 		= caGetOption('defaultAnnotationID', $pa_options, null);
 	$start_timecode		 				= caGetOption('startTimecode', $pa_options, null);
 	$ps_display_type		 			= caGetOption('display', $pa_options, false);
+	$always_use_clover_viewer		 	= caGetOption('alwaysUseCloverViewer', $pa_options, false);
 
 	$vs_slides = '';
 	$slide_list = [];
@@ -4376,6 +4377,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=null){
 	$ps_display_type 		= caGetOption('display', $pa_options, 'detail');
 	$ps_context 			= caGetOption('context', $pa_options, null);
+	$o_media_display_config = caGetMediaDisplayConfig();
 
 	$ps_table = is_object($pt_subject) ? $pt_subject->tablename() : "ca_objects";
 	$pn_subject_id = is_object($pt_subject) ? $pt_subject->getPrimaryKey() : (int)$pt_subject;
@@ -4391,14 +4393,16 @@ function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=
 	$va_detail_type_config = caGetDetailTypeConfig($ps_context);
 
 	if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-		$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."' title='"._t("Open Media View")."'><span class='glyphicon glyphicon-zoom-in' role='graphics-document' aria-label='Open Media View'></span></a>\n";
+		$overlay_icon = $o_media_display_config->get('overlay_icon');
+		$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."' title='"._t("Open Media View")."'>{$overlay_icon}</a>\n";
 	}
 
 	if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
 		$vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 	}
 	if ($vb_show_compare) {
-	   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='graphics-document' aria-label='Compare' title='Compare'></i></a>";
+	   $compare_icon = $o_media_display_config->get('compare_icon'); 
+	   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'>{$compare_icon}</a>";
 	}
 
 	if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
@@ -4409,7 +4413,8 @@ function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=
 		$vs_download_version = caGetAvailableDownloadVersions($po_request, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'), ['returnVersionForUser' => true]);
 		
 		if($vs_download_version){
-			$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='graphics-document' aria-label='Download' title='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
+			$download_icon = $o_media_display_config->get('download_icon');
+			$vs_tool_bar .= caNavLink($po_request, $download_icon, 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 		}
 	}
 	$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
