@@ -201,7 +201,6 @@ if(
 }
 ?>
 	</form>	
-	</div>
 	<div class="editorBottomPadding"><!-- empty --></div>
 </div>
 
