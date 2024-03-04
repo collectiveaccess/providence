@@ -54,7 +54,7 @@ function caGetUserAccessValues($po_request=null, $pa_options=null) {
 	$config = Configuration::load();
 	
 	$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $config->get('dont_enforce_access_settings');
-	$va_privileged_access_settings = isset($pa_options['privileged_access_settings']) && is_array($pa_options['privileged_access_settings']) ? (bool)$pa_options['privileged_access_settings'] : (array)$config->getList('privileged_access_settings');
+	$va_privileged_access_settings = isset($pa_options['privileged_access_settings']) && is_array($pa_options['privileged_access_settings']) ? $pa_options['privileged_access_settings'] : (array)$config->getList('privileged_access_settings');
 	$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$config->getList('public_access_settings');
 
 	$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
