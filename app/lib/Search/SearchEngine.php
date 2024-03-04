@@ -324,7 +324,7 @@ class SearchEngine extends SearchBase {
 					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
 				}
 				
-				$vb_do_acl = $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL();
+				$vb_do_acl = caACLIsEnabled($t_table);
 
 				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 				

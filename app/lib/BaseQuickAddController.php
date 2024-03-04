@@ -405,7 +405,7 @@ class BaseQuickAddController extends ActionController {
 				Session::setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
 				
 				// Set ACL for newly created record
-				if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+				if (caACLIsEnabled($t_subject)) {
 					$t_subject->setACLUsers(array($this->request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
 					$t_subject->setACLWorldAccess($t_subject->getAppConfig()->get('default_item_access_level'));
 				}

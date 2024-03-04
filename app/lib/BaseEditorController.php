@@ -365,7 +365,7 @@ class BaseEditorController extends ActionController {
 				}
 
 				// Set ACL for newly created record
-				if ($t_subject->getAppConfig()->get('perform_item_level_access_checking') && !$t_subject->getAppConfig()->get("{$this->ops_table_name}_dont_do_item_level_access_control")) {
+				if (caACLIsEnabled($t_subject)) {
 					$t_subject->setACLUsers(array($this->request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
 					$t_subject->setACLWorldAccess($t_subject->getAppConfig()->get('default_item_access_level'));
 				}
@@ -524,7 +524,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+		if (caACLIsEnabled($t_subject)) {
 			if ($t_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return;
@@ -1958,7 +1958,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $pt_subject->getPrimaryKey()) {
+		if (caACLIsEnabled($pt_subject) && $pt_subject->getPrimaryKey()) {
 			if (method_exists($pt_subject, 'checkACLAccessForUser') && $pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return false;

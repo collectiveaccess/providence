@@ -870,16 +870,17 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
 /**
  * Determine if ACL is enabled system wide, or for a specific row
  *
- * @param BaseModel $t_item A model instance to test. If null system-wide ACL status is returned. [Default is null]
+ * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
  * @param array $options Array of options from caller. If 'dontFilterByACL' key is set to true then ACL will be returned as disabled.
  * 
  * @return bool
  */
-function caACLIsEnabled(?BaseModel $t_item=null, ?array $options=null) : bool {
+function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	if(defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
 	if($options['dontFilterByACL'] ?? false) { return false; }
 	$config = Configuration::load();
 	if(!$config->get('perform_item_level_access_checking')) { return false; } 
+	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
 	if($t_item && method_exists($t_item, "supportsACL")) {
 		return (bool)$t_item->supportsACL();
 	}
