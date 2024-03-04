@@ -2988,7 +2988,7 @@ class BaseEditorController extends ActionController {
 			if($t_subject->removeRelationship('ca_object_representations', $selected_rep['relation_id'])) {
 				$resp = ['ok' => true, 'errors' => [], 'message' => _t('Removed media')];
 			} else {
-				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlink media')];
+				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlink media: %1', join('; ', $t_subject->getErrors()))];
 			}
 		} elseif($t_subject->addRelationship('ca_object_representations', $selected_rep_id, null)) {
 			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
