@@ -841,7 +841,7 @@ class BaseEditorController extends ActionController {
 				$this->Summary();
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar("{$table}_summary_export_in_background", false);

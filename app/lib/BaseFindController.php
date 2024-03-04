@@ -494,7 +494,7 @@ class BaseFindController extends ActionController {
 				$this->Index();
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue label export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue label export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
@@ -580,7 +580,7 @@ class BaseFindController extends ActionController {
 				
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
