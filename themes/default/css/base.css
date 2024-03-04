@@ -6229,11 +6229,17 @@ div.editLink {
     padding-top:25px;
     float:right;
 }
-.accessName {
+
+div.accessName {
+    margin-bottom: 5px;
+}
+
+span.accessName {
     font-weight: bold;
     font-size: 12px;
     color: #134959;
     line-height:1.75em;
+    margin-bottom: 5px;
 }
 
 .inheritFromParent {
@@ -6245,6 +6251,10 @@ div.editLink {
     float: right;
 }
 
+div.inheritName {
+    font-size: 9px; 
+    font-style: italic;
+}
 /* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */
 /* -------------------------------------------------*/

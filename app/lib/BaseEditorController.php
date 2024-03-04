@@ -220,7 +220,7 @@ class BaseEditorController extends ActionController {
 		// save where we are in session, for "Save and return" button
 		if($vn_subject_id) { // don't save "empty" / new record editor location. pk has to be set
 			$va_save_and_return = Session::getVar('save_and_return_locations');
-			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+			if(!is_array($va_save_and_return)) { $va_save_and_return = []; }
 
 			$va_save = array(
 				'table' => $t_subject->tableName(),
@@ -256,7 +256,7 @@ class BaseEditorController extends ActionController {
 	    
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($pa_options)) { $pa_options = []; }
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
@@ -482,7 +482,7 @@ class BaseEditorController extends ActionController {
 		// save where we are in session for "Save and return" button
 		if($vn_subject_id) {
 			$va_save_and_return = Session::getVar('save_and_return_locations');
-			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+			if(!is_array($va_save_and_return)) { $va_save_and_return = []; }
 
 			$va_save = array(
 				'table' => $t_subject->tableName(),
@@ -716,7 +716,7 @@ class BaseEditorController extends ActionController {
 
 		// save where we are in session, for "Save and return" button
 		$va_save_and_return = Session::getVar('save_and_return_locations');
-		if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+		if(!is_array($va_save_and_return)) { $va_save_and_return = []; }
 
 		$va_save = array(
 			'table' => $t_subject->tableName(),
@@ -735,7 +735,7 @@ class BaseEditorController extends ActionController {
 
 			$va_placements = $t_display->getPlacements(array('returnAllAvailableIfEmpty' => true, 'table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true));
        
-			$va_display_list = array();
+			$va_display_list = [];
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
 
@@ -897,13 +897,13 @@ class BaseEditorController extends ActionController {
 
 		// Extract values into array for easier view processing
 
-		$va_extracted_values = array();
+		$va_extracted_values = [];
 		foreach($va_values as $o_value) {
 			$va_extracted_values[] = $o_value->getDisplayValues(null, ['output' => 'text']);
 		}
 		$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
 
-		$va_barcode_files_to_delete = array();
+		$va_barcode_files_to_delete = [];
 
 		try {
 			$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
@@ -993,10 +993,10 @@ class BaseEditorController extends ActionController {
 	 *
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
-	public function Access($pa_options=null) {
+	public function Access(?array $options=null) {
 		AssetLoadManager::register('tableList');
-		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
+		list($subject_id, $t_subject) = $this->_initView($options);
+		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
@@ -1013,13 +1013,13 @@ class BaseEditorController extends ActionController {
 	 *
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
-	public function SetAccess($pa_options=null) {
+	public function SetAccess(?array $options=null) {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 	    	throw new ApplicationException(_t('CSRF check failed'));
 	    	return;
 	    }
-		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
+		list($subject_id, $t_subject) = $this->_initView($options);
+		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
 
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
@@ -1027,54 +1027,66 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
-		$vs_form_prefix = $this->request->getParameter('_formName', pString);
+		
+		$subject_table = $t_subject->tableName();
+		$subject_pk = $t_subject->primaryKey();
+		
+		$form_prefix = $this->request->getParameter('_formName', pString);
 
 		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
-			'id' => $vn_subject_id,
+			'id' => $subject_id,
 			'table_num' => $t_subject->tableNum(),
-			'table_name' => $t_subject->tableName(), 
+			'table_name' => $subject_table, 
 			'instance' => &$t_subject,
 			'is_insert' => false)
 		);
+		
+		// Force all?
+		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
+			if(!ca_acl::setInheritanceForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
+		if(
+			($subject_table === 'ca_collections')
+			&&
+			($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
+		) {
+			if(!ca_acl::setInheritanceForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
 
 		// Save user ACL's
-		$va_users_to_set = array();
-		foreach($_REQUEST as $vs_key => $vs_val) {
-			if (preg_match("!^{$vs_form_prefix}_user_id(.*)$!", $vs_key, $va_matches)) {
-				$vn_user_id = (int)$this->request->getParameter($vs_form_prefix.'_user_id'.$va_matches[1], pInteger);
-				$vn_access = $this->request->getParameter($vs_form_prefix.'_user_access_'.$va_matches[1], pInteger);
-				if ($vn_access >= 0) {
-					$va_users_to_set[$vn_user_id] = $vn_access;
+		$users_to_set = [];
+		foreach($_REQUEST as $key => $val) {
+			if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
+				$user_id = (int)$this->request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
+				$access = $this->request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
+				if ($access >= 0) {
+					$users_to_set[$user_id] = $access;
 				}
 			}
 		}
-		$t_subject->setACLUsers($va_users_to_set);
+		$t_subject->setACLUsers($users_to_set, ['preserveInherited' => true]);
 
 		// Save group ACL's
-		$va_groups_to_set = array();
-		foreach($_REQUEST as $vs_key => $vs_val) {
-			if (preg_match("!^{$vs_form_prefix}_group_id(.*)$!", $vs_key, $va_matches)) {
-				$vn_group_id = (int)$this->request->getParameter($vs_form_prefix.'_group_id'.$va_matches[1], pInteger);
-				$vn_access = $this->request->getParameter($vs_form_prefix.'_group_access_'.$va_matches[1], pInteger);
-				if ($vn_access >= 0) {
-					$va_groups_to_set[$vn_group_id] = $vn_access;
+		$groups_to_set = [];
+		foreach($_REQUEST as $key => $val) {
+			if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
+				$group_id = (int)$this->request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
+				$access = $this->request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
+				if ($access >= 0) {
+					$groups_to_set[$group_id] = $access;
 				}
 			}
 		}
-		$t_subject->setACLUserGroups($va_groups_to_set);
+		$t_subject->setACLUserGroups($groups_to_set, ['preserveInherited' => true]);
 
 		// Save "world" ACL
-		$t_subject->setACLWorldAccess($this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
-
-		// Propagate ACL settings to records that inherit from this one
-		if ((bool)$t_subject->getProperty('SUPPORTS_ACL_INHERITANCE')) {
-			ca_acl::applyACLInheritanceToChildrenFromRow($t_subject);
-			if (is_array($va_inheritors = $t_subject->getProperty('ACL_INHERITANCE_LIST'))) {
-				foreach($va_inheritors as $vs_inheritor_table) {
-					ca_acl::applyACLInheritanceToRelatedFromRow($t_subject, $vs_inheritor_table);
-				}
-			}
-		}
+		$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
 
 		// Set ACL-related intrinsic fields
 		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
@@ -1090,12 +1102,14 @@ class BaseEditorController extends ActionController {
 				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
 			}
 		}
+		
+		ca_acl::updateACLInheritanceForRow($t_subject);
 
 		$this->opo_app_plugin_manager->hookSaveItem(
 			[
-				'id' => $vn_subject_id,
+				'id' => $subject_id,
 				'table_num' => $t_subject->tableNum(),
-				'table_name' => $t_subject->tableName(),
+				'table_name' => $subject_table,
 				'instance' => &$t_subject,
 				'is_insert' => false,
 				'request' => $this->request
@@ -1277,7 +1291,7 @@ class BaseEditorController extends ActionController {
 	 */
 	public function _genDynamicNav($pa_params, $pa_options=null) {
 		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
-		if (!$this->request->isLoggedIn()) { return array(); }
+		if (!$this->request->isLoggedIn()) { return []; }
 
 		if (!($vn_type_id = $t_subject->getTypeID()) && !($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
 		    $vn_type_id = $t_subject->getDefaultTypeID();
@@ -1322,10 +1336,10 @@ class BaseEditorController extends ActionController {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
 
-		$va_types = array();
+		$va_types = [];
 		if (is_array($va_hier)) {
 
-			$va_types_by_parent_id = array();
+			$va_types_by_parent_id = [];
 			$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
 
 			foreach($va_hier as $vn_item_id => $va_item) {
@@ -1413,7 +1427,7 @@ class BaseEditorController extends ActionController {
 			ksort($va_types);
 		}
 			
-		$va_types_proc = array();
+		$va_types_proc = [];
 		foreach($va_types as $vs_sort_key => $va_items) {
 			foreach($va_items as $vn_i => $va_item) {
 				$va_types_proc[] = $va_item;
@@ -1436,7 +1450,7 @@ class BaseEditorController extends ActionController {
 	 * @return array List of subtypes ready for inclusion in a menu spec
 	 */
 	private function _getSubTypes($pa_subtypes, $pa_types_by_parent_id, $pn_sort_type, $pa_restrict_to_types=null, $options=null) {
-		$va_subtypes = array();
+		$va_subtypes = [];
 		$first_enabled = caGetOption('firstEnabled', $options, false);
 		$level = caGetOption('level', $options, 0);
 		
@@ -1495,7 +1509,7 @@ class BaseEditorController extends ActionController {
 		}
 
 		ksort($va_subtypes);
-		$va_subtypes_proc = array();
+		$va_subtypes_proc = [];
 		        
 		$limit_to_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_limit_types_to');
 		$exclude_types = $this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_exclude_types');
@@ -1557,7 +1571,7 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
-		$va_errors = array();
+		$va_errors = [];
 		$t_watch_list = new ca_watch_list();
 		$vn_user_id =  $this->request->user->get("user_id");
 
@@ -1601,7 +1615,7 @@ class BaseEditorController extends ActionController {
 		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
 
 
-		$vs_hierarchy_display = $t_subject->getHierarchyNavigationHTMLFormBundle($this->request, 'caHierarchyOverviewPanelBrowser', array(), array('open_hierarchy' => true, 'no_close_button' => true, 'hierarchy_browse_tab_class' => 'foo'));
+		$vs_hierarchy_display = $t_subject->getHierarchyNavigationHTMLFormBundle($this->request, 'caHierarchyOverviewPanelBrowser', [], array('open_hierarchy' => true, 'no_close_button' => true, 'hierarchy_browse_tab_class' => 'foo'));
 		$this->view->setVar('hierarchy_display', $vs_hierarchy_display);
 
 		$this->render("../generic/ajax_hierarchy_overview_html.php");
@@ -1787,12 +1801,12 @@ class BaseEditorController extends ActionController {
 							'additionalTableToJoin' => $vs_label_table,
 							'additionalTableJoinType' => 'LEFT',
 							'additionalTableSelectFields' => array($vs_display_field, 'locale_id'),
-							'additionalTableWheres' => ($t_label->hasField('is_preferred')) ? array("({$vs_label_table}.is_preferred = 1 OR {$vs_label_table}.is_preferred IS NULL)") : array(),
+							'additionalTableWheres' => ($t_label->hasField('is_preferred')) ? array("({$vs_label_table}.is_preferred = 1 OR {$vs_label_table}.is_preferred IS NULL)") : [],
 							'includeSelf' => false
 						)
 					), $vs_pk, $vs_display_field, 'idno'));
 
-				$this->view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
+				$this->view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
 					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
@@ -1807,7 +1821,7 @@ class BaseEditorController extends ActionController {
 							'additionalTableToJoin' => $vs_label_table,
 							'additionalTableJoinType' => 'LEFT',
 							'additionalTableSelectFields' => array($vs_display_field, 'locale_id'),
-							'additionalTableWheres' => ($t_label->hasField('is_preferred')) ? array("({$vs_label_table}.is_preferred = 1 OR {$vs_label_table}.is_preferred IS NULL)") : array(),
+							'additionalTableWheres' => ($t_label->hasField('is_preferred')) ? array("({$vs_label_table}.is_preferred = 1 OR {$vs_label_table}.is_preferred IS NULL)") : [],
 							'includeSelf' => false
 						)
 					), $vs_pk, $vs_display_field, 'idno');
@@ -2276,7 +2290,7 @@ class BaseEditorController extends ActionController {
 		$t_rep = new ca_object_representations($pn_representation_id);
 
 		$va_annotations_raw = $t_rep->getAnnotations();
-		$va_annotations = array();
+		$va_annotations = [];
 
 		if(is_array($va_annotations_raw)) {
 			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
@@ -2290,12 +2304,12 @@ class BaseEditorController extends ActionController {
 					'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
 					'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
 					'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
-					'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
+					'points' => 		caGetOption('points', $va_annotation, [], array('castTo' => 'array')),
 					'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
 					'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
 					'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
 					'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
-					'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
+					'options' => 		caGetOption('options', $va_annotation, [], array('castTo' => 'array')),
 					'key' =>			caGetOption('key', $va_annotation, null)
 				);
 			}
@@ -2485,8 +2499,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$vn_c = 1;
-		$va_file_names = array();
-		$va_file_paths = array();
+		$va_file_names = [];
+		$va_file_paths = [];
 		$va_child_ids = array_unique($va_child_ids);
 		
 		$t_download_log = new Downloadlog();
