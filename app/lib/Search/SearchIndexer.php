@@ -76,7 +76,6 @@ class SearchIndexer extends SearchBase {
 	public function __destruct() {
 		$o_db = new Db();
 		if(($c = sizeof(self::$s_search_indexing_queue_inserts)) > 0) {
-			SearchIndexer::$queued_entry_count += $c;
 			$va_insert_segments = array();
 			foreach (self::$s_search_indexing_queue_inserts as $va_insert_data) {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
@@ -88,7 +87,6 @@ class SearchIndexer extends SearchBase {
 		}
 
 		if(($c = sizeof(self::$s_search_unindexing_queue_inserts)) > 0) {
-			SearchIndexer::$queued_entry_count += $c;
 			$va_insert_segments = array();
 			foreach (self::$s_search_unindexing_queue_inserts as $va_insert_data) {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
@@ -514,6 +512,7 @@ class SearchIndexer extends SearchBase {
 			'changed_fields' => $pa_row_values['changed_fields'],
 			'options' => $pa_row_values['options'],
 		);
+		SearchIndexer::$queued_entry_count++;
 
 		return true;
 	}
@@ -539,6 +538,7 @@ class SearchIndexer extends SearchBase {
 			'is_unindex' => 1,
 			'dependencies' => $pa_row_values['dependencies'],
 		);
+		SearchIndexer::$queued_entry_count++;
 
 		return true;
 	}

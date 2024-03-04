@@ -23,8 +23,6 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * ADAPTED FROM CODE INCLUDED IN Omeka-S (https://omeka.org/s/)
- *
  * @package CollectiveAccess
  * @subpackage Core
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
@@ -65,8 +63,10 @@ class Background {
         			switch($mode) {
         				case 'process':
         				default:
+        					$params = [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-indexing-queue'];
+        					if($o_config->get('background_include_hostname_for_cautils') && defined('__CA_SITE_HOSTNAME__')) { $params[] = '--hostname='.__CA_SITE_HOSTNAME__; }
 							$log->logDebug(_t('[Background] Running search indexing queue in background using CLI::%1', $mode));
-							$ret = $cli->run('php', [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-indexing-queue'], true);
+							$ret = $cli->run('php', $params, true);
 							break;
 						case 'socket':
 							$log->logDebug(_t('[Background] Running search indexing queue in background using socket'));
@@ -80,7 +80,11 @@ class Background {
 					case 'process':
 					default:
 						$log->logDebug(_t('[Background] Running task queue in background using CLI::%1', $mode));
-						$ret = $cli->run('php', [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-task-queue'], true);
+						
+						$params = [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-task-queue'];
+						if($o_config->get('background_include_hostname_for_cautils') && defined('__CA_SITE_HOSTNAME__')) { $params[] = '--hostname='.__CA_SITE_HOSTNAME__; }
+							
+						$ret = $cli->run('php', $params, true);
 						break;
 					case 'socket':
 						$log->logDebug(_t('[Background] Running task queue in background using socket'));
@@ -90,7 +94,7 @@ class Background {
         		break;
         }
         
-        return $ret;
+        return $ret ? 1 : 0;
     }
     # -------------------------------------------------------
 }
