@@ -39,61 +39,61 @@ require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Generi
 
 class Length extends GenericElement {
 
-	public function __construct( $ps_table_name, $ps_element_code ) {
-		parent::__construct( $ps_table_name, $ps_element_code );
+	public function __construct( $table_name, $element_code ) {
+		parent::__construct( $table_name, $element_code );
 	}
 
-	public function getIndexingFragment( $pm_content, $pa_options ) {
-		if ( is_array( $pm_content ) ) {
-			$pm_content = serialize( $pm_content );
+	public function getIndexingFragment( $content, $options ) {
+		if ( is_array( $content ) ) {
+			$content = serialize( $content );
 		}
-		if ( $pm_content == '' ) {
-			return parent::getIndexingFragment( $pm_content, $pa_options );
+		if ( $content == '' ) {
+			return parent::getIndexingFragment( $content, $options );
 		}
 
 		// we index lengths as float in meters --that way we can do range searches etc.
 		try {
-			$o_parsed_length = caParseLengthDimension( $pm_content );
+			$parsed_length = caParseLengthDimension( $content );
 
-			return parent::getIndexingFragment( (float) $o_parsed_length->convertTo( 'METER', 6, 'en_US' ),
-				$pa_options );
+			return parent::getIndexingFragment( (float) $parsed_length->convertTo( 'METER', 6, 'en_US' ),
+				$options );
 		} catch ( Exception $e ) {
 			return array();
 		}
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $po_term
+	 * @param Zend_Search_Lucene_Index_Term $term
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm( $po_term ) {
-		$va_tmp = explode( '\\/', $po_term->field );
-		if ( sizeof( $va_tmp ) == 3 ) {
-			unset( $va_tmp[1] );
-			$po_term = new Zend_Search_Lucene_Index_Term(
-				$po_term->text, join( '\\/', $va_tmp )
+	public function getRewrittenTerm( $term ) {
+		$tmp = explode( '\\/', $term->field );
+		if ( sizeof( $tmp ) == 3 ) {
+			unset( $tmp[1] );
+			$term = new Zend_Search_Lucene_Index_Term(
+				$term->text, join( '\\/', $tmp )
 			);
 		}
 
-		if ( strtolower( $po_term->text ) === '[blank]' ) {
+		if ( strtolower( $term->text ) === '[blank]' ) {
 			return new Zend_Search_Lucene_Index_Term(
-				$po_term->field, '_missing_'
+				$term->field, '_missing_'
 			);
-		} elseif ( strtolower( $po_term->text ) === '[set]' ) {
+		} elseif ( strtolower( $term->text ) === '[set]' ) {
 			return new Zend_Search_Lucene_Index_Term(
-				$po_term->field, '_exists_'
+				$term->field, '_exists_'
 			);
 		}
 
 		// convert incoming text to meters so that we can query our standardized indexing (see above)
 		try {
 			return new Zend_Search_Lucene_Index_Term(
-				(float) caParseLengthDimension( $po_term->text )->convertTo( 'METER', 6, 'en_US' ),
-				$po_term->field
+				(float) caParseLengthDimension( $term->text )->convertTo( 'METER', 6, 'en_US' ),
+				$term->field
 			);
 		} catch ( Exception $e ) {
-			return $po_term;
+			return $term;
 		}
 	}
 }

@@ -39,78 +39,78 @@ require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Generi
 
 class Currency extends GenericElement {
 
-	public function __construct( $ps_table_name, $ps_element_code ) {
-		parent::__construct( $ps_table_name, $ps_element_code );
+	public function __construct( $table_name, $element_code ) {
+		parent::__construct( $table_name, $element_code );
 	}
 
-	public function getIndexingFragment( $pm_content, $pa_options ) {
-		if ( is_array( $pm_content ) ) {
-			$pm_content = serialize( $pm_content );
+	public function getIndexingFragment( $content, $options ) {
+		if ( is_array( $content ) ) {
+			$content = serialize( $content );
 		}
-		if ( $pm_content == '' ) {
-			return parent::getIndexingFragment( $pm_content, $pa_options );
+		if ( $content == '' ) {
+			return parent::getIndexingFragment( $content, $options );
 		}
 
 		// we index currencys as float number and the 3-char currency code in a separate text field
-		$o_curr = new CurrencyAttributeValue();
-		$va_parsed_currency = $o_curr->parseValue( $pm_content, array() );
+		$curr = new CurrencyAttributeValue();
+		$parsed_currency = $curr->parseValue( $content, array() );
 
-		if ( is_array( $va_parsed_currency ) && isset( $va_parsed_currency['value_decimal1'] ) ) {
+		if ( is_array( $parsed_currency ) && isset( $parsed_currency['value_decimal1'] ) ) {
 			return array(
-				$this->getTableName() . '/' . $this->getElementCode() => $va_parsed_currency['value_decimal1'],
+				$this->getTableName() . '/' . $this->getElementCode() => $parsed_currency['value_decimal1'],
 				$this->getTableName() . '/' . $this->getElementCode()
-				. '_currency' => $va_parsed_currency['value_longtext1'],
+				. '_currency' => $parsed_currency['value_longtext1'],
 			);
 		} else {
-			return parent::getIndexingFragment( $pm_content, $pa_options );
+			return parent::getIndexingFragment( $content, $options );
 		}
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $po_term
+	 * @param Zend_Search_Lucene_Index_Term $term
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm( $po_term ) {
-		$va_tmp = explode( '\\/', $po_term->field );
-		if ( sizeof( $va_tmp ) == 3 ) {
-			unset( $va_tmp[1] );
-			$po_term = new Zend_Search_Lucene_Index_Term(
-				$po_term->text, join( '\\/', $va_tmp )
+	public function getRewrittenTerm( $term ) {
+		$tmp = explode( '\\/', $term->field );
+		if ( sizeof( $tmp ) == 3 ) {
+			unset( $tmp[1] );
+			$term = new Zend_Search_Lucene_Index_Term(
+				$term->text, join( '\\/', $tmp )
 			);
 		}
 
-		if ( strtolower( $po_term->text ) === '[blank]' ) {
+		if ( strtolower( $term->text ) === '[blank]' ) {
 			return new Zend_Search_Lucene_Index_Term(
-				$po_term->field, '_missing_'
+				$term->field, '_missing_'
 			);
-		} elseif ( strtolower( $po_term->text ) === '[set]' ) {
+		} elseif ( strtolower( $term->text ) === '[set]' ) {
 			return new Zend_Search_Lucene_Index_Term(
-				$po_term->field, '_exists_'
+				$term->field, '_exists_'
 			);
 		}
 
-		$o_curr = new CurrencyAttributeValue();
-		$va_parsed_currency = $o_curr->parseValue( $po_term->text, array() );
+		$curr = new CurrencyAttributeValue();
+		$parsed_currency = $curr->parseValue( $term->text, array() );
 
-		if ( is_array( $va_parsed_currency ) && isset( $va_parsed_currency['value_decimal1'] ) ) {
+		if ( is_array( $parsed_currency ) && isset( $parsed_currency['value_decimal1'] ) ) {
 			return new Zend_Search_Lucene_Index_Term(
-				$va_parsed_currency['value_decimal1'],
-				$po_term->field
+				$parsed_currency['value_decimal1'],
+				$term->field
 			);
 		} else {
-			return $po_term;
+			return $term;
 		}
 	}
 
-	public function getAdditionalTerms( $po_term ) {
-		$o_curr = new CurrencyAttributeValue();
-		$va_parsed_currency = $o_curr->parseValue( $po_term->text, array() );
+	public function getAdditionalTerms( $term ) {
+		$curr = new CurrencyAttributeValue();
+		$parsed_currency = $curr->parseValue( $term->text, array() );
 
-		if ( is_array( $va_parsed_currency ) && isset( $va_parsed_currency['value_longtext1'] ) ) {
+		if ( is_array( $parsed_currency ) && isset( $parsed_currency['value_longtext1'] ) ) {
 			return array(
 				new Zend_Search_Lucene_Index_Term(
-					$va_parsed_currency['value_longtext1'],
+					$parsed_currency['value_longtext1'],
 					$this->getTableName() . '\\/' . $this->getElementCode() . '_currency'
 				)
 			);

@@ -44,117 +44,117 @@ class Timestamp extends FieldType {
 	 *
 	 * @var string
 	 */
-	protected $ops_field_name;
+	protected $field_name;
 
 	/**
 	 * Timestamp constructor.
 	 *
-	 * @param string $ops_field_name
+	 * @param string $field_name
 	 */
-	public function __construct( $ops_field_name ) {
-		$this->ops_field_name = $ops_field_name;
+	public function __construct( $field_name ) {
+		$this->field_name = $field_name;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getFieldName() {
-		return $this->ops_field_name;
+		return $this->field_name;
 	}
 
 	/**
-	 * @param string $ops_field_name
+	 * @param string $field_name
 	 */
-	public function setFieldName( $ops_field_name ) {
-		$this->ops_field_name = $ops_field_name;
+	public function setFieldName( $field_name ) {
+		$this->field_name = $field_name;
 	}
 
 	/**
-	 * @param mixed $pm_content
-	 * @param array $pa_options
+	 * @param mixed $content
+	 * @param array $options
 	 *
 	 * @return array
 	 */
-	public function getIndexingFragment( $pm_content, $pa_options ) {
-		if ( is_array( $pm_content ) ) {
-			$pm_content = serialize( $pm_content );
+	public function getIndexingFragment( $content, $options ) {
+		if ( is_array( $content ) ) {
+			$content = serialize( $content );
 		}
 
 		return array(
-			str_replace( '.', '/', $this->getFieldName() ) => $pm_content
+			str_replace( '.', '/', $this->getFieldName() ) => $content
 		);
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $po_term
+	 * @param Zend_Search_Lucene_Index_Term $term
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm( $po_term ) {
-		return $po_term;
+	public function getRewrittenTerm( $term ) {
+		return $term;
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Search_Query_Phrase $po_query
+	 * @param Zend_Search_Lucene_Search_Query_Phrase $query
 	 *
 	 * @return array
 	 */
-	public function getFiltersForPhraseQuery( $po_query ) {
-		$va_terms = $va_return = array();
-		$vs_fld = null;
-		foreach ( $po_query->getQueryTerms() as $o_term ) {
-			$o_term = caRewriteElasticSearchTermFieldSpec( $o_term );
-			$vs_fld = str_replace( '\\', '', $o_term->field );
-			$va_terms[] = $o_term->text;
+	public function getFiltersForPhraseQuery( $query ) {
+		$terms = $return = array();
+		$fld = null;
+		foreach ( $query->getQueryTerms() as $term ) {
+			$term = caRewriteElasticSearchTermFieldSpec( $term );
+			$fld = str_replace( '\\', '', $term->field );
+			$terms[] = $term->text;
 		}
 
-		$va_parsed_values = caGetISODates( join( ' ', $va_terms ) );
+		$parsed_values = caGetISODates( join( ' ', $terms ) );
 
-		$va_return[] = array(
+		$return[] = array(
 			'range' => array(
-				$vs_fld => array(
-					'lte' => $va_parsed_values['end'],
+				$fld => array(
+					'lte' => $parsed_values['end'],
 				)
 			)
 		);
 
-		$va_return[] = array(
+		$return[] = array(
 			'range' => array(
-				$vs_fld => array(
-					'gte' => $va_parsed_values['start'],
+				$fld => array(
+					'gte' => $parsed_values['start'],
 				)
 			)
 		);
 
-		return $va_return;
+		return $return;
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $po_term
+	 * @param Zend_Search_Lucene_Index_Term $term
 	 *
 	 * @return array
 	 */
-	function getFiltersForTerm( $po_term ) {
-		$va_return = array();
-		$va_parsed_values = caGetISODates( $po_term->text );
-		$vs_fld = str_replace( '\\', '', $po_term->field );
+	function getFiltersForTerm( $term ) {
+		$return = array();
+		$parsed_values = caGetISODates( $term->text );
+		$fld = str_replace( '\\', '', $term->field );
 
-		$va_return[] = array(
+		$return[] = array(
 			'range' => array(
-				$vs_fld => array(
-					'lte' => $va_parsed_values['end'],
+				$fld => array(
+					'lte' => $parsed_values['end'],
 				)
 			)
 		);
 
-		$va_return[] = array(
+		$return[] = array(
 			'range' => array(
-				$vs_fld => array(
-					'gte' => $va_parsed_values['start'],
+				$fld => array(
+					'gte' => $parsed_values['start'],
 				)
 			)
 		);
 
-		return $va_return;
+		return $return;
 	}
 }

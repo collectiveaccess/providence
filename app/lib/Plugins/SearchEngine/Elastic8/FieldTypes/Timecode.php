@@ -36,16 +36,16 @@ require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Generi
 
 class Timecode extends GenericElement {
 
-	public function __construct( $ps_table_name, $ps_element_code ) {
-		parent::__construct( $ps_table_name, $ps_element_code );
+	public function __construct( $table_name, $element_code ) {
+		parent::__construct( $table_name, $element_code );
 	}
 
-	public function getIndexingFragment( $pm_content, $pa_options ) {
-		if ( is_array( $pm_content ) ) {
-			$pm_content = serialize( $pm_content );
+	public function getIndexingFragment( $content, $options ) {
+		if ( is_array( $content ) ) {
+			$content = serialize( $content );
 		}
 
-		return parent::getIndexingFragment( (float) $pm_content, $pa_options );
+		return parent::getIndexingFragment( (float) $content, $options );
 	}
 
 }
