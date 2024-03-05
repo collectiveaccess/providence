@@ -232,4 +232,75 @@
 			return _t('Process search indexing queue.');
 		}
 		# -------------------------------------------------------
-    }
+		/**
+		 * @throws Exception
+		 */
+		public static function generate_elasticsearch_config($po_opts=null) {
+			$engine = self::getEngineElastic8();
+			if ($engine) {
+				$engine->refreshMapping(true);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		public static function generate_elasticsearch_configUtilityClass() {
+			return _t('Search');
+		}
+
+		public static function generate_elasticsearch_configShortHelp() {
+			return _t('Apply ElasticSearch configuration to the ElasticSearch search index.');
+		}
+
+		public static function generate_elasticsearch_configHelp() {
+			return _t('Applies ElasticSearch configuration to the ElasticSearch search indexes defined in configuration. This creates index templates that can then be relied on for correct data typing. If this fails then try caUtils recreate-elasticsearch-index.');
+		}
+
+
+		public static function generate_elasticsearch_configParamList() {
+			return []; // no params :-)
+		}
+
+		public static function recreate_elasticsearch_index($po_opts=null) {
+			if (($po_opts->getOption('force'))) {
+				$engine = self::getEngineElastic8();
+				if ($engine) {
+					$engine->truncateIndex();
+					return true;
+				}
+			} else {
+				CLIUtils::addError(_t('Recreating an index is a destructive operation. Ensure you add the --force parameter to apply this.'));
+			}
+			return false;
+		}
+		public static function recreate_elasticsearch_indexParamList(): array {
+			return [
+				"force|f" => _t('Process queue even if a lock exists from another indexing process.'),
+			];
+		}
+		public static function recreate_elasticsearch_indexUtilityClass() {
+			return _t('Search');
+		}
+
+		public static function recreate_elasticsearch_indexShortHelp() {
+			return _t('Truncate and recreate ElasticSearch index.');
+		}
+
+		public static function recreate_elasticsearch_indexHelp() {
+			return _t('Truncate and recreate ElasticSearch index. WARNING Deletes any data that is in the index.');
+		}
+
+		/**
+		 * @return WLPlugSearchEngineElastic8|null
+		 */
+		private static function getEngineElastic8(): ?WLPlugSearchEngineElastic8 {
+			$engine = SearchEngine::newSearchEngine();
+			if ($engine instanceof \WLPlugSearchEngineElastic8) {
+				return $engine;
+			} else {
+				CLIUtils::addError(_t('This command is only compatible with the Elastic8 search engine.'));
+			}
+			return null;
+		}
+
+	}
