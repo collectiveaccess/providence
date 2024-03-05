@@ -30,6 +30,7 @@ namespace Installer;
 
 require_once(__CA_LIB_DIR__.'/Media/MediaVolumes.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/Elastic8.php');
 require_once(__CA_APP_DIR__.'/helpers/configurationHelpers.php');
 
 class Installer {
@@ -426,6 +427,15 @@ class Installer {
 			try {
 				$o_es->truncateIndex();
 			} catch(DatabaseException $e) {
+				// noop. this can happen when we operate on an empty database where ca_application_vars doesn't exist yet
+			}
+		}
+
+		if (($this->config->get('search_engine_plugin') == 'Elastic8') && (!$this->isAlreadyInstalled() || (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && $this->overwrite))) {
+			$o_es = new \WLPlugSearchEngineElastic8();
+			try {
+				$o_es->truncateIndex();
+			} catch(\DatabaseException $e) {
 				// noop. this can happen when we operate on an empty database where ca_application_vars doesn't exist yet
 			}
 		}
