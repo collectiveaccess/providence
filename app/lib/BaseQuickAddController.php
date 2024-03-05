@@ -130,41 +130,6 @@
 					if ($t_subject->hasField($vs_field)) { $t_subject->set($vs_field, caUcFirstUTF8Safe($this->view->getVar('q'))); }
 				}
 			}
-			
-			if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
-				global $g_ui_locale_id;
-				$v = caUcFirstUTF8Safe($this->view->getVar('q'));
-				$va_force_new_label = [
-					'locale_id' => $g_ui_locale_id, 									// use default locale
-					$t_subject->getLabelDisplayField() => $v					// query text is used for display field
-				];
-				foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
-					if ($vs_fld === $t_subject->getLabelDisplayField()) { continue; }
-					$va_force_new_label[$vs_fld] = '';
-				}
-				
-				switch($t_subject->tableName()) {
-					case 'ca_list_items':
-						// Populate secondary display fields for lists items (name_plural)
-						if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
-							foreach($sec as $s) {
-								$va_force_new_label[$s] = $v;
-							}
-						}	
-						break;
-					case 'ca_entities':
-						if(caGetListItemSettingValue('entity_types', caGetListItemIdno($vn_type_id), 'entity_class') === 'ORG') {
-							// Force surname to text to ensure organization name is visible
-							$va_force_new_label['surname'] = $v;
-						} elseif($this->request->config->get('ca_entities_split_name_on_quickadd_load')) {
-							// Prepopulate with split name
-							$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($v));
-						}
-						break;
-				}			
-				$this->view->setVar('forceLabel', $va_force_new_label);
-			}
-			
  			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
@@ -204,6 +169,40 @@
  				}
  			}
  			
+			if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
+				global $g_ui_locale_id;
+				$v = caUcFirstUTF8Safe($this->view->getVar('q'));
+				$va_force_new_label = [
+					'locale_id' => $g_ui_locale_id, 									// use default locale
+					$t_subject->getLabelDisplayField() => $v					// query text is used for display field
+				];
+				foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
+					if ($vs_fld === $t_subject->getLabelDisplayField()) { continue; }
+					$va_force_new_label[$vs_fld] = '';
+				}
+				
+				switch($t_subject->tableName()) {
+					case 'ca_list_items':
+						// Populate secondary display fields for lists items (name_plural)
+						if(is_array($sec = $t_subject->getSecondaryLabelDisplayFields())) {
+							foreach($sec as $s) {
+								$va_force_new_label[$s] = $v;
+							}
+						}	
+						break;
+					case 'ca_entities':
+						if(caGetListItemSettingValue('entity_types', caGetListItemIdno($vn_type_id), 'entity_class') === 'ORG') {
+							// Force surname to text to ensure organization name is visible
+							$va_force_new_label['surname'] = $v;
+						} elseif($this->request->config->get('ca_entities_split_name_on_quickadd_load')) {
+							// Prepopulate with split name
+							$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($v));
+						}
+						break;
+				}			
+				$this->view->setVar('forceLabel', $va_force_new_label);
+			}
+			
  			$this->view->setVar('restrict_to_lists',$this->request->getParameter('lists', pString));
  			
  			$this->request->setParameter('type_id', $vn_type_id);
