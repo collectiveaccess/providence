@@ -107,21 +107,21 @@ abstract class FieldType {
       $ps_content_fieldname = array_pop($va_tmp);
       if ($vn_datatype = ca_metadata_elements::getElementDatatype($ps_content_fieldname)) {
         switch ($vn_datatype) {
-          case 2:
+          case __CA_ATTRIBUTE_VALUE_DATERANGE__:
             return new DateRange($ps_table, $ps_content_fieldname);
-          case 4:
+          case __CA_ATTRIBUTE_VALUE_GEOCODE__:
             return new Geocode($ps_table, $ps_content_fieldname);
-          case 6:
+          case __CA_ATTRIBUTE_VALUE_CURRENCY__:
             return new Currency($ps_table, $ps_content_fieldname);
-          case 8:
+          case __CA_ATTRIBUTE_VALUE_LENGTH__:
             return new Length($ps_table, $ps_content_fieldname);
-          case 9:
+          case __CA_ATTRIBUTE_VALUE_WEIGHT__:
             return new Weight($ps_table, $ps_content_fieldname);
-          case 10:
+          case __CA_ATTRIBUTE_VALUE_TIMECODE__:
             return new Timecode($ps_table, $ps_content_fieldname);
-          case 11:
+          case __CA_ATTRIBUTE_VALUE_INTEGER__:
             return new Integer($ps_table, $ps_content_fieldname);
-          case 12:
+          case __CA_ATTRIBUTE_VALUE_NUMERIC__:
             return new Numeric($ps_table, $ps_content_fieldname);
           default:
             return new GenericElement($ps_table, $ps_content_fieldname);
