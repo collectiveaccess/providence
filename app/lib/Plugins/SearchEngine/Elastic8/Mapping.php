@@ -305,7 +305,6 @@ class Mapping {
       case __CA_ATTRIBUTE_VALUE_GEONAMES__:
       case __CA_ATTRIBUTE_VALUE_FILE__:
       case __CA_ATTRIBUTE_VALUE_MEDIA__:
-      case 19: // taxonomy
       case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
       case __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__:
       case __CA_ATTRIBUTE_VALUE_ENTITIES__:
