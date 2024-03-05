@@ -74,7 +74,13 @@ class Mapping {
    */
   protected $version = 8;
 
-  /**
+	/**
+	 * Load the dynamic templates configuration file
+	 * @var array
+	 */
+	private array $dynamicTemplates;
+
+	/**
    * Mapping constructor.
    */
   public function __construct() {
@@ -90,6 +96,7 @@ class Mapping {
     $this->opo_app_vars = new ApplicationVars($this->opo_db);
 
     $this->prefetchElementInfo();
+	$this->dynamicTemplates = json_decode(file_get_contents( __DIR__ . '/dynamicTemplates.json' ), JSON_OBJECT_AS_ARRAY);
   }
 
   /**
@@ -100,13 +107,6 @@ class Mapping {
     return (time() > $this->opo_app_vars->getVar('ElasticSearchMappingRefresh'));
   }
 
-  /**
-   * Ping the ElasticSearch mapping, effectively resetting the refresh time
-   */
-  public function ping() {
-    $this->opo_app_vars->setVar('ElasticSearchMappingRefresh', time() + 24 * 60 * 60);
-    $this->opo_app_vars->save();
-  }
 
   /**
    * @return Configuration
