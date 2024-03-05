@@ -263,7 +263,7 @@ class Mapping {
 
     // @todo break this out into separate classes in the Elastic8\FieldTypes namespace!?
     switch ($pa_element_info['datatype']) {
-      case 2:  // daterange
+      case __CA_ATTRIBUTE_VALUE_DATERANGE__:
         $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'date';
         $va_element_config[$ps_table . '/' . $vs_element_code]['format'] = 'date_time_no_millis';
         $va_element_config[$ps_table . '/' . $vs_element_code]['ignore_malformed'] = true;
@@ -273,7 +273,7 @@ class Mapping {
         $va_element_config[$ps_table . '/' . $vs_element_code . '_end']['type'] = 'date';
         $va_element_config[$ps_table . '/' . $vs_element_code . '_end']['ignore_malformed'] = true;
         break;
-      case 4:  // geocode
+      case __CA_ATTRIBUTE_VALUE_GEOCODE__:
         //@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
         $va_element_config[$ps_table . '/' . $vs_element_code] = array(
           'type' => 'geo_shape',
@@ -281,42 +281,42 @@ class Mapping {
         // index text content as is -- sometimes useful for full text place search
         $va_element_config[$ps_table . '/' . $vs_element_code . '_text'] = array('type' => 'text');
         break;
-      case 6: // currency
+      case __CA_ATTRIBUTE_VALUE_CURRENCY__:
         // we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
         $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'double';
         $va_element_config[$ps_table . '/' . $vs_element_code . '_currency'] = array('type' => 'text');
         break;
-      case 8: // length
-      case 9: // weight
+      case __CA_ATTRIBUTE_VALUE_LENGTH__:
+      case __CA_ATTRIBUTE_VALUE_WEIGHT__:
         // we don't index units here -- we always index in meters / kg, so it's just a float
         $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'double';
         break;
-      case 10:  // timecode
-      case 12:  // numeric/float
+      case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+      case __CA_ATTRIBUTE_VALUE_NUMERIC__:
         $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'double';
         break;
-      case 11:  // integer
+      case __CA_ATTRIBUTE_VALUE_INTEGER__:
         $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'long';
         break;
-      case 1: // text
-      case 3:  // list
-      case 5:  // url
-      case 13: // LCSH
-      case 14: // geonames
-      case 15: // file
-      case 16: // media
+      case __CA_ATTRIBUTE_VALUE_TEXT__:
+      case __CA_ATTRIBUTE_VALUE_LIST__:
+      case __CA_ATTRIBUTE_VALUE_URL__:
+      case __CA_ATTRIBUTE_VALUE_LCSH__:
+      case __CA_ATTRIBUTE_VALUE_GEONAMES__:
+      case __CA_ATTRIBUTE_VALUE_FILE__:
+      case __CA_ATTRIBUTE_VALUE_MEDIA__:
       case 19: // taxonomy
-      case 20: // information service
-      case 21: // object representations
-      case 22: // entities
-      case 23: // places
-      case 24: // occurrences
-      case 25: // collections
-      case 26: // storage locations
-      case 27: // loans
-      case 28: // movements
-      case 29: // objects
-      case 30: // object lots
+      case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+      case __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__:
+      case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+      case __CA_ATTRIBUTE_VALUE_PLACES__:
+      case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+      case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+      case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+      case __CA_ATTRIBUTE_VALUE_LOANS__:
+      case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+      case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+      case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
       default:
         $va_element_config[$ps_table . '/' . $vs_element_code]['type'] = 'text';
         break;
