@@ -546,11 +546,11 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param int $subject_row_id
 	 * @param int|null $field_tablenum
 	 * @param int|null|array $field_nums
-	 * @param int|null $content_row_id
+	 * @param int|null $field_row_id
 	 */
 	public function removeRowIndexing(
 		int $subject_tablenum, int $subject_row_id, ?int $field_tablenum = null, $field_nums = null,
-		?int $content_row_id = null, ?int $rel_type_id = null
+		?int $field_row_id = null, ?int $rel_type_id = null
 	) {
 		$table = Datamodel::getTableName( $subject_tablenum );
 		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
@@ -578,7 +578,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 							$values = $record[ $key ];
 							$indexes = $record[ $key . '_content_ids' ];
 							if ( is_array( $indexes ) ) {
-								$index = array_search( $content_row_id, $indexes );
+								$index = array_search( $field_row_id, $indexes );
 								// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
 								unset( $values[ $index ] );
 								unset( $indexes[ $index ] );
@@ -769,8 +769,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	}
 
 	# -------------------------------------------------------
-	public function optimizeIndex( int $table_num ) {
-		$this->getClient()->indices()->forceMerge( [ 'index' => $this->getIndexName( $table_num ) ] );
+	public function optimizeIndex( int $tablenum ) {
+		$this->getClient()->indices()->forceMerge( [ 'index' => $this->getIndexName( $tablenum ) ] );
 	}
 
 	# -------------------------------------------------------
@@ -786,22 +786,22 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * quickly. quickSearch() is intended for autocompleting search suggestion UI's and the like, where performance is
 	 * critical and the ability to control search parameters is not required.
 	 *
-	 * @param $table_num - The table index to search on
-	 * @param $search - The text to search on
-	 * @param $options - an optional associative array specifying search options. Supported options are: 'limit'
+	 * @param $pn_table_num - The table index to search on
+	 * @param $ps_search - The text to search on
+	 * @param $pa_options - an optional associative array specifying search options. Supported options are: 'limit'
 	 *     (the maximum number of results to return)
 	 *
 	 * @return array - an array of results is returned keyed by primary key id. The array values boolean true. This is
 	 *     done to ensure no duplicate row_ids
 	 *
 	 */
-	public function quickSearch( $table_num, $search, $options = [] ) {
-		if ( ! is_array( $options ) ) {
-			$options = [];
+	public function quickSearch( $pn_table_num, $ps_search, $pa_options = [] ) {
+		if ( ! is_array( $pa_options ) ) {
+			$pa_options = [];
 		}
-		$limit = caGetOption( 'limit', $options, 0 );
+		$limit = caGetOption( 'limit', $pa_options, 0 );
 
-		$result = $this->search( $table_num, $search );
+		$result = $this->search( $pn_table_num, $ps_search );
 		$pks = $result->getPrimaryKeyValues();
 		if ( $limit ) {
 			$pks = array_slice( $pks, 0, $limit );
