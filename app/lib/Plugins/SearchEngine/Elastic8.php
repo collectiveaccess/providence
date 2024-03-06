@@ -33,6 +33,7 @@
 use Elastic\Elasticsearch\Client;
 use Elastic\ElasticSearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use Monolog\Handler\ErrorLogHandler;
 
 require_once( __CA_LIB_DIR__ . '/Configuration.php' );
 require_once( __CA_LIB_DIR__ . '/Datamodel.php' );
@@ -87,6 +88,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		} else {
 			$this->elasticsearch_index_name = $this->search_config->get( 'search_elasticsearch_index_name' );
 		}
+
+		$this->getClient();
 	}
 	# -------------------------------------------------------
 
@@ -261,8 +264,15 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 */
 	protected function getClient() {
 		if ( ! self::$client ) {
+			$logger = new \Monolog\Logger( 'elasticsearch' );
+			$log_level = Monolog\Logger::ERROR;
+			if ( defined( '__CA_ELASTICSEARCH_LOG_LEVEL__' ) ) {
+				$log_level = __CA_ELASTICSEARCH_LOG_LEVEL__;
+			}
+			$logger->pushHandler( new ErrorLogHandler( null, $log_level ) );
 			self::$client = Elastic\Elasticsearch\ClientBuilder::create()
 				->setHosts( [ $this->elasticsearch_base_url ] )
+				->setLogger( $logger )
 				->setRetries( 3 )
 				->build();
 		}
