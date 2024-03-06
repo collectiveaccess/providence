@@ -34,100 +34,103 @@ namespace Elastic8\FieldTypes;
 
 use Zend_Search_Lucene_Index_Term;
 
-require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php');
+require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php' );
 
 class GenericElement extends FieldType {
 
-  /**
-   * Metadata element code
-   * @var string
-   */
-  protected $ops_element_code;
+	/**
+	 * Metadata element code
+	 *
+	 * @var string
+	 */
+	protected $element_code;
 
-  /**
-   * Table name
-   * @var string
-   */
-  protected $ops_table_name;
+	/**
+	 * Table name
+	 *
+	 * @var string
+	 */
+	protected $table_name;
 
-  /**
-   * Generic constructor.
-   * @param string $ps_table_name
-   * @param string $ps_element_code
-   */
-  public function __construct($ps_table_name, $ps_element_code) {
-    $this->ops_table_name = $ps_table_name;
-    $this->ops_element_code = $ps_element_code;
-  }
+	/**
+	 * Generic constructor.
+	 *
+	 * @param string $table_name
+	 * @param string $element_code
+	 */
+	public function __construct( $table_name, $element_code ) {
+		$this->table_name = $table_name;
+		$this->element_code = $element_code;
+	}
 
-  /**
-   * @return string
-   */
-  public function getElementCode() {
-    return $this->ops_element_code;
-  }
+	/**
+	 * @return string
+	 */
+	public function getElementCode() {
+		return $this->element_code;
+	}
 
-  /**
-   * @param string $ps_element_code
-   */
-  public function setElementCode($ps_element_code) {
-    $this->ops_element_code = $ps_element_code;
-  }
+	/**
+	 * @param string $element_code
+	 */
+	public function setElementCode( $element_code ) {
+		$this->element_code = $element_code;
+	}
 
-  /**
-   * @return string
-   */
-  public function getTableName() {
-    return $this->ops_table_name;
-  }
+	/**
+	 * @return string
+	 */
+	public function getTableName() {
+		return $this->table_name;
+	}
 
-  /**
-   * @param mixed $pm_content
-   * @param array $pa_options
-   * @return array
-   */
-  public function getIndexingFragment($pm_content, $pa_options) {
-    if (is_array($pm_content)) {
-      $pm_content = serialize($pm_content);
-    }
-    // make sure empty strings are indexed as null, so ElasticSearch's
-    // _missing_ and _exists_ filters work as expected. If a field type
-    // needs to have them indexed differently, it can do so in its own
-    // FieldType implementation
-    if ($pm_content === '') {
-      $pm_content = null;
-    }
+	/**
+	 * @param mixed $content
+	 * @param array $options
+	 *
+	 * @return array
+	 */
+	public function getIndexingFragment( $content, $options ) {
+		if ( is_array( $content ) ) {
+			$content = serialize( $content );
+		}
+		// make sure empty strings are indexed as null, so ElasticSearch's
+		// _missing_ and _exists_ filters work as expected. If a field type
+		// needs to have them indexed differently, it can do so in its own
+		// FieldType implementation
+		if ( $content === '' ) {
+			$content = null;
+		}
 
-    return array(
-      $this->getTableName() . '/' . $this->getElementCode() => $pm_content
-    );
-  }
+		return [
+			$this->getTableName() . '/' . $this->getElementCode() => $content
+		];
+	}
 
-  /**
-   * @param Zend_Search_Lucene_Index_Term $po_term
-   * @return Zend_Search_Lucene_Index_Term
-   */
-  public function getRewrittenTerm($po_term) {
-    $va_tmp = explode('\\/', $po_term->field);
-    if (sizeof($va_tmp) == 3) {
-      unset($va_tmp[1]);
-      $po_term = new Zend_Search_Lucene_Index_Term(
-        $po_term->text, join('\\/', $va_tmp)
-      );
-    }
+	/**
+	 * @param Zend_Search_Lucene_Index_Term $term
+	 *
+	 * @return Zend_Search_Lucene_Index_Term
+	 */
+	public function getRewrittenTerm( $term ) {
+		$tmp = explode( '\\/', $term->field );
+		if ( sizeof( $tmp ) == 3 ) {
+			unset( $tmp[1] );
+			$term = new Zend_Search_Lucene_Index_Term(
+				$term->text, join( '\\/', $tmp )
+			);
+		}
 
-    if (strtolower($po_term->text) === '[blank]') {
-      return new Zend_Search_Lucene_Index_Term(
-        $po_term->field, '_missing_'
-      );
-    }
-    elseif (strtolower($po_term->text) === '[set]') {
-      return new Zend_Search_Lucene_Index_Term(
-        $po_term->field, '_exists_'
-      );
-    }
-    else {
-      return $po_term;
-    }
-  }
+		if ( strtolower( $term->text ) === '[blank]' ) {
+			return new Zend_Search_Lucene_Index_Term(
+				$term->field, '_missing_'
+			);
+		} elseif ( strtolower( $term->text ) === '[set]' ) {
+			return new Zend_Search_Lucene_Index_Term(
+				$term->field, '_exists_'
+			);
+		} else {
+			return $term;
+		}
+	}
 }

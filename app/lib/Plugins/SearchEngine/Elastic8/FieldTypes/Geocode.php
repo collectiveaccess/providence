@@ -36,128 +36,130 @@ use GeocodeAttributeValue;
 use Zend_Search_Lucene_Index_Term;
 use Zend_Search_Lucene_Search_Query_Phrase;
 
-require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php');
-require_once(__CA_LIB_DIR__ . '/Attributes/Values/GeocodeAttributeValue.php');
+require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php' );
+require_once( __CA_LIB_DIR__ . '/Attributes/Values/GeocodeAttributeValue.php' );
 
 class Geocode extends GenericElement {
-  public function __construct($ps_table_name, $ps_element_code) {
-    parent::__construct($ps_table_name, $ps_element_code);
-  }
+	public function __construct( $table_name, $element_code ) {
+		parent::__construct( $table_name, $element_code );
+	}
 
-  public function getIndexingFragment($pm_content, $pa_options) {
-    if (is_array($pm_content)) {
-      $pm_content = serialize($pm_content);
-    }
-    if ($pm_content == '') {
-      return parent::getIndexingFragment($pm_content, $pa_options);
-    }
-    $va_return = array();
+	public function getIndexingFragment( $content, $options ) {
+		if ( is_array( $content ) ) {
+			$content = serialize( $content );
+		}
+		if ( $content == '' ) {
+			return parent::getIndexingFragment( $content, $options );
+		}
+		$return = [];
 
-    $o_geocode_parser = new GeocodeAttributeValue();
+		$geocode_parser = new GeocodeAttributeValue();
 
-    $va_return[$this->getTableName() . '/' . $this->getElementCode() . '_text'] = $pm_content;
+		$return[ $this->getTableName() . '/' . $this->getElementCode() . '_text' ] = $content;
 
-    //@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
-    if ($va_coords = $o_geocode_parser->parseValue($pm_content, array())) {
-      // Features and points within features are delimited by : and ; respectively. We have to break those apart first.
-      if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
-        $va_points = preg_split("[\:\;]", $va_coords['value_longtext2']);
-        // fun fact: ElasticSearch expects GeoJSON -- which has pairs of longitude, latitude.
-        // google maps and others usually return latitude, longitude, which is also what we store
-        if (sizeof($va_points) == 1) {
-          $va_tmp = explode(',', $va_points[0]);
-          $va_return[$this->getTableName() . '/' . $this->getElementCode()] = array(
-            'type' => 'point',
-            'coordinates' => array((float)$va_tmp[1], (float)$va_tmp[0])
-          );
-        }
-        elseif (sizeof($va_points) > 1) {
-          // @todo might want to index as multipolygon to break apart features?
-          $va_coordinates_for_es = array();
-          foreach ($va_points as $vs_point) {
-            $va_tmp = explode(',', $vs_point);
-            $va_coordinates_for_es[] = array((float)$va_tmp[1], (float)$va_tmp[0]);
-          }
+		//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
+		if ( $coords = $geocode_parser->parseValue( $content, [] ) ) {
+			// Features and points within features are delimited by : and ; respectively. We have to break those apart first.
+			if ( isset( $coords['value_longtext2'] ) && $coords['value_longtext2'] ) {
+				$points = preg_split( "[\:\;]", $coords['value_longtext2'] );
+				// fun fact: ElasticSearch expects GeoJSON -- which has pairs of longitude, latitude.
+				// google maps and others usually return latitude, longitude, which is also what we store
+				if ( sizeof( $points ) == 1 ) {
+					$tmp = explode( ',', $points[0] );
+					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = [
+						'type' => 'point',
+						'coordinates' => [ (float) $tmp[1], (float) $tmp[0] ]
+					];
+				} elseif ( sizeof( $points ) > 1 ) {
+					// @todo might want to index as multipolygon to break apart features?
+					$coordinates_for_es = [];
+					foreach ( $points as $point ) {
+						$tmp = explode( ',', $point );
+						$coordinates_for_es[] = [ (float) $tmp[1], (float) $tmp[0] ];
+					}
 
-          $va_return[$this->getTableName() . '/' . $this->getElementCode()] = array(
-            'type' => 'polygon',
-            'coordinates' => $va_coordinates_for_es
-          );
-        }
-      }
-    }
+					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = [
+						'type' => 'polygon',
+						'coordinates' => $coordinates_for_es
+					];
+				}
+			}
+		}
 
-    return $va_return;
-  }
+		return $return;
+	}
 
-  /**
-   * @param Zend_Search_Lucene_Index_Term $po_term
-   * @return Zend_Search_Lucene_Index_Term
-   */
-  public function getRewrittenTerm($po_term) {
-    $va_tmp = explode('\\/', $po_term->field);
-    if (sizeof($va_tmp) == 3) {
-      unset($va_tmp[1]);
-      $po_term = new Zend_Search_Lucene_Index_Term(
-        $po_term->text, join('\\/', $va_tmp)
-      );
-    }
+	/**
+	 * @param Zend_Search_Lucene_Index_Term $term
+	 *
+	 * @return Zend_Search_Lucene_Index_Term
+	 */
+	public function getRewrittenTerm( $term ) {
+		$tmp = explode( '\\/', $term->field );
+		if ( sizeof( $tmp ) == 3 ) {
+			unset( $tmp[1] );
+			$term = new Zend_Search_Lucene_Index_Term(
+				$term->text, join( '\\/', $tmp )
+			);
+		}
 
-    if (strtolower($po_term->text) === '[blank]') {
-      return new Zend_Search_Lucene_Index_Term(
-        $po_term->field, '_missing_'
-      );
-    }
-    elseif (strtolower($po_term->text) === '[set]') {
-      return new Zend_Search_Lucene_Index_Term(
-        $po_term->field, '_exists_'
-      );
-    }
+		if ( strtolower( $term->text ) === '[blank]' ) {
+			return new Zend_Search_Lucene_Index_Term(
+				$term->field, '_missing_'
+			);
+		} elseif ( strtolower( $term->text ) === '[set]' ) {
+			return new Zend_Search_Lucene_Index_Term(
+				$term->field, '_exists_'
+			);
+		}
 
-    // so yeah, it's impossible to query geo_shape fields in a query string in ElasticSearch. You *have to* use filters
-    return null;
-  }
+		// so yeah, it's impossible to query geo_shape fields in a query string in ElasticSearch. You *have to* use filters
+		return null;
+	}
 
-  public function getFilterForRangeQuery($o_lower_term, $o_upper_term) {
-    $va_return = array();
+	public function getFilterForRangeQuery( $lower_term, $upper_term ) {
+		$return = [];
 
-    $va_lower_coords = explode(',', $o_lower_term->text);
-    $va_upper_coords = explode(',', $o_upper_term->text);
+		$lower_coords = explode( ',', $lower_term->text );
+		$upper_coords = explode( ',', $upper_term->text );
 
-    $va_return[str_replace('\\', '', $o_lower_term->field)] = array(
-      'shape' => array(
-        'type' => 'envelope',
-        'coordinates' => array(
-          array((float)$va_lower_coords[1], (float)$va_lower_coords[0]),
-          array((float)$va_upper_coords[1], (float)$va_upper_coords[0]),
-        )
-      )
-    );
-    return $va_return;
-  }
+		$return[ str_replace( '\\', '', $lower_term->field ) ] = [
+			'shape' => [
+				'type' => 'envelope',
+				'coordinates' => [
+					[ (float) $lower_coords[1], (float) $lower_coords[0] ],
+					[ (float) $upper_coords[1], (float) $upper_coords[0] ],
+				]
+			]
+		];
 
-  /**
-   * @param Zend_Search_Lucene_Search_Query_Phrase $o_subquery
-   * @return mixed
-   */
-  public function getFilterForPhraseQuery($o_subquery) {
-    $va_terms = array();
-    foreach ($o_subquery->getQueryTerms() as $o_term) {
-      $o_term = caRewriteElasticSearchTermFieldSpec($o_term);
-      $va_terms[] = $o_term->text;
-    }
+		return $return;
+	}
 
-    $va_parsed_search = caParseGISSearch(join(' ', $va_terms));
+	/**
+	 * @param Zend_Search_Lucene_Search_Query_Phrase $subquery
+	 *
+	 * @return mixed
+	 */
+	public function getFilterForPhraseQuery( $subquery ) {
+		$terms = [];
+		foreach ( $subquery->getQueryTerms() as $term ) {
+			$term = caRewriteElasticSearchTermFieldSpec( $term );
+			$terms[] = $term->text;
+		}
 
-    $va_return[str_replace('\\', '', $o_term->field)] = array(
-      'shape' => array(
-        'type' => 'envelope',
-        'coordinates' => array(
-          array((float)$va_parsed_search['min_longitude'], (float)$va_parsed_search['min_latitude']),
-          array((float)$va_parsed_search['max_longitude'], (float)$va_parsed_search['max_latitude']),
-        )
-      )
-    );
-    return $va_return;
-  }
+		$parsed_search = caParseGISSearch( join( ' ', $terms ) );
+
+		$return[ str_replace( '\\', '', $term->field ) ] = [
+			'shape' => [
+				'type' => 'envelope',
+				'coordinates' => [
+					[ (float) $parsed_search['min_longitude'], (float) $parsed_search['min_latitude'] ],
+					[ (float) $parsed_search['max_longitude'], (float) $parsed_search['max_latitude'] ],
+				]
+			]
+		];
+
+		return $return;
+	}
 }
