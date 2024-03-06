@@ -102,9 +102,9 @@ class GenericElement extends FieldType {
 			$content = null;
 		}
 
-		return array(
+		return [
 			$this->getTableName() . '/' . $this->getElementCode() => $content
-		);
+		];
 	}
 
 	/**

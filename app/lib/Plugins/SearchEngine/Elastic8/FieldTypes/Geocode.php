@@ -51,14 +51,14 @@ class Geocode extends GenericElement {
 		if ( $content == '' ) {
 			return parent::getIndexingFragment( $content, $options );
 		}
-		$return = array();
+		$return = [];
 
 		$geocode_parser = new GeocodeAttributeValue();
 
 		$return[ $this->getTableName() . '/' . $this->getElementCode() . '_text' ] = $content;
 
 		//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
-		if ( $coords = $geocode_parser->parseValue( $content, array() ) ) {
+		if ( $coords = $geocode_parser->parseValue( $content, [] ) ) {
 			// Features and points within features are delimited by : and ; respectively. We have to break those apart first.
 			if ( isset( $coords['value_longtext2'] ) && $coords['value_longtext2'] ) {
 				$points = preg_split( "[\:\;]", $coords['value_longtext2'] );
@@ -66,22 +66,22 @@ class Geocode extends GenericElement {
 				// google maps and others usually return latitude, longitude, which is also what we store
 				if ( sizeof( $points ) == 1 ) {
 					$tmp = explode( ',', $points[0] );
-					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = array(
+					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = [
 						'type' => 'point',
-						'coordinates' => array( (float) $tmp[1], (float) $tmp[0] )
-					);
+						'coordinates' => [ (float) $tmp[1], (float) $tmp[0] ]
+					];
 				} elseif ( sizeof( $points ) > 1 ) {
 					// @todo might want to index as multipolygon to break apart features?
-					$coordinates_for_es = array();
+					$coordinates_for_es = [];
 					foreach ( $points as $point ) {
 						$tmp = explode( ',', $point );
-						$coordinates_for_es[] = array( (float) $tmp[1], (float) $tmp[0] );
+						$coordinates_for_es[] = [ (float) $tmp[1], (float) $tmp[0] ];
 					}
 
-					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = array(
+					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = [
 						'type' => 'polygon',
 						'coordinates' => $coordinates_for_es
-					);
+					];
 				}
 			}
 		}
@@ -118,20 +118,20 @@ class Geocode extends GenericElement {
 	}
 
 	public function getFilterForRangeQuery( $lower_term, $upper_term ) {
-		$return = array();
+		$return = [];
 
 		$lower_coords = explode( ',', $lower_term->text );
 		$upper_coords = explode( ',', $upper_term->text );
 
-		$return[ str_replace( '\\', '', $lower_term->field ) ] = array(
-			'shape' => array(
+		$return[ str_replace( '\\', '', $lower_term->field ) ] = [
+			'shape' => [
 				'type' => 'envelope',
-				'coordinates' => array(
-					array( (float) $lower_coords[1], (float) $lower_coords[0] ),
-					array( (float) $upper_coords[1], (float) $upper_coords[0] ),
-				)
-			)
-		);
+				'coordinates' => [
+					[ (float) $lower_coords[1], (float) $lower_coords[0] ],
+					[ (float) $upper_coords[1], (float) $upper_coords[0] ],
+				]
+			]
+		];
 
 		return $return;
 	}
@@ -142,7 +142,7 @@ class Geocode extends GenericElement {
 	 * @return mixed
 	 */
 	public function getFilterForPhraseQuery( $subquery ) {
-		$terms = array();
+		$terms = [];
 		foreach ( $subquery->getQueryTerms() as $term ) {
 			$term = caRewriteElasticSearchTermFieldSpec( $term );
 			$terms[] = $term->text;
@@ -150,15 +150,15 @@ class Geocode extends GenericElement {
 
 		$parsed_search = caParseGISSearch( join( ' ', $terms ) );
 
-		$return[ str_replace( '\\', '', $term->field ) ] = array(
-			'shape' => array(
+		$return[ str_replace( '\\', '', $term->field ) ] = [
+			'shape' => [
 				'type' => 'envelope',
-				'coordinates' => array(
-					array( (float) $parsed_search['min_longitude'], (float) $parsed_search['min_latitude'] ),
-					array( (float) $parsed_search['max_longitude'], (float) $parsed_search['max_latitude'] ),
-				)
-			)
-		);
+				'coordinates' => [
+					[ (float) $parsed_search['min_longitude'], (float) $parsed_search['min_latitude'] ],
+					[ (float) $parsed_search['max_longitude'], (float) $parsed_search['max_latitude'] ],
+				]
+			]
+		];
 
 		return $return;
 	}

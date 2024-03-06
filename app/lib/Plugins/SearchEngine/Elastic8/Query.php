@@ -104,7 +104,7 @@ class Query {
 		$this->search_expression = $search_expression;
 		$this->rewritten_query = $rewritten_query;
 		$this->filters = $filters;
-		$this->additional_filters = array();
+		$this->additional_filters = [];
 
 		$this->rewrite();
 	}
@@ -167,7 +167,7 @@ class Query {
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $subquery Zend_Search_Lucene_Search_Query_Boolean. */
-					$new_subqueries = array();
+					$new_subqueries = [];
 					foreach ( $subquery->getSubqueries() as $subsubquery ) {
 						$new_subqueries[] = $this->rewriteSubquery( $subsubquery );
 					}
@@ -277,7 +277,7 @@ class Query {
 				/** @var $subquery Zend_Search_Lucene_Search_Query_Phrase */
 				$new_subquery = new Zend_Search_Lucene_Search_Query_Phrase();
 
-				$fields_in_subquery = array();
+				$fields_in_subquery = [];
 				$terms = $subquery->getTerms();
 				foreach ( $terms as $term ) {
 					$fields_in_subquery[] = $term->field;
@@ -352,7 +352,7 @@ class Query {
 				/** @var @o_subquery \Zend_Search_Lucene_Search_Query_MultiTerm */
 				$terms = $subquery->getTerms();
 
-				$new_terms = array();
+				$new_terms = [];
 				foreach ( $terms as $term ) {
 					$term = caRewriteElasticSearchTermFieldSpec( $term );
 					$fld = $this->getFieldTypeForTerm( $term );
@@ -365,7 +365,7 @@ class Query {
 				return $this->getSubqueryWithAdditionalTerms( $new_subquery, $fld, $term );
 			case 'Zend_Search_Lucene_Search_Query_Boolean':
 				/** @var $subquery Zend_Search_Lucene_Search_Query_Boolean */
-				$new_subqueries = array();
+				$new_subqueries = [];
 				foreach ( $subquery->getSubqueries() as $subsubquery ) {
 					$new_subqueries[] = $this->rewriteSubquery( $subsubquery );
 				}
@@ -391,7 +391,7 @@ class Query {
 		if ( ( $additional_terms = $fld->getAdditionalTerms( $term ) ) && is_array( $additional_terms ) ) {
 
 			// we cant use the index terms as is; have to construct term queries
-			$additional_term_queries = array();
+			$additional_term_queries = [];
 			if ( $original_subquery ) {
 				$additional_term_queries[] = $original_subquery;
 			}
@@ -419,7 +419,7 @@ class Query {
 	}
 
 	protected function getFilterQuery() {
-		$terms = array();
+		$terms = [];
 		foreach ( $this->getFilters() as $filter ) {
 			$filter['field'] = str_replace( '.', '\/', $filter['field'] );
 			switch ( $filter['operator'] ) {
@@ -447,7 +447,7 @@ class Query {
 					break;
 				case 'in':
 					$tmp = explode( ',', $filter['value'] );
-					$list = array();
+					$list = [];
 					foreach ( $tmp as $item ) {
 						// this case specifically happens when filtering list item search results by type id
 						// (if type based access control is enabled, that is). The filter is something like

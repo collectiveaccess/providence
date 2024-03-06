@@ -87,7 +87,7 @@ class Mapping {
 		$this->db = new Db();
 		$this->search_base = new SearchBase( $this->db, null, false );
 
-		$this->element_info = array();
+		$this->element_info = [];
 
 		$this->app_vars = new ApplicationVars( $this->db );
 
@@ -150,15 +150,15 @@ class Mapping {
 	 */
 	public function getFieldsToIndex( $table ) {
 		if ( ! Datamodel::tableExists( $table ) ) {
-			return array();
+			return [];
 		}
 		$table_fields = $this->getSearchBase()
-			->getFieldsToIndex( $table, null, array( 'clearCache' => true, 'includeNonRootElements' => true ) );
+			->getFieldsToIndex( $table, null, [ 'clearCache' => true, 'includeNonRootElements' => true ] );
 		if ( ! is_array( $table_fields ) ) {
-			return array();
+			return [];
 		}
 
-		$rewritten_fields = array();
+		$rewritten_fields = [];
 		foreach ( $table_fields as $field_name => $field_options ) {
 			if ( preg_match( '!^_ca_attribute_([\d]*)$!', $field_name, $matches ) ) {
 				$rewritten_fields[ $table . '.A' . $matches[1] ] = $field_options;
@@ -175,7 +175,7 @@ class Mapping {
 		$related_tables = $this->getSearchBase()->getRelatedIndexingTables( $table );
 		foreach ( $related_tables as $related_table ) {
 			$related_table_fields = $this->getSearchBase()->getFieldsToIndex( $table, $related_table,
-				array( 'clearCache' => true, 'includeNonRootElements' => true ) );
+				[ 'clearCache' => true, 'includeNonRootElements' => true ] );
 			foreach ( $related_table_fields as $related_table_field => $related_table_field_options ) {
 				if ( preg_match( '!^_ca_attribute_([\d]*)$!', $related_table_field, $matches ) ) {
 					$rewritten_fields[ $related_table . '.A' . $matches[1] ] = $related_table_field_options;
@@ -204,15 +204,15 @@ class Mapping {
 
 		$elements = $this->getDb()->query( 'SELECT * FROM ca_metadata_elements' );
 
-		$this->element_info = array();
+		$this->element_info = [];
 		while ( $elements->nextRow() ) {
 			$element_id = $elements->get( 'element_id' );
 
-			$this->element_info[ $element_id ] = array(
+			$this->element_info[ $element_id ] = [
 				'element_id' => $element_id,
 				'element_code' => $elements->get( 'element_code' ),
 				'datatype' => $elements->get( 'datatype' )
-			);
+			];
 		}
 	}
 
@@ -249,18 +249,18 @@ class Mapping {
 	 */
 	public function getConfigForElement( $table, $element_id, $pa_element_info, $indexing_config ) {
 		if ( ! is_numeric( $element_id ) && ( intval( $element_id ) > 0 ) ) {
-			return array();
+			return [];
 		}
 		$element_info = $this->getElementInfo( $element_id );
 		$element_code = $element_info['element_code'];
 		if ( ! $element_code ) {
-			return array();
+			return [];
 		}
 
 		// init: we never store -- all SearchResult::get() operations are now done on our database tables
-		$element_config = array(
-			$table . '/' . $element_code => array()
-		);
+		$element_config = [
+			$table . '/' . $element_code => []
+		];
 
 		if ( in_array( 'INDEX_AS_IDNO', $indexing_config ) ) {
 			$element_config[ $table . '/' . $element_code ]['analyzer'] = 'keyword_lowercase';
@@ -284,16 +284,16 @@ class Mapping {
 				break;
 			case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
-				$element_config[ $table . '/' . $element_code ] = array(
+				$element_config[ $table . '/' . $element_code ] = [
 					'type' => 'geo_shape',
-				);
+				];
 				// index text content as is -- sometimes useful for full text place search
-				$element_config[ $table . '/' . $element_code . '_text' ] = array( 'type' => 'text' );
+				$element_config[ $table . '/' . $element_code . '_text' ] = [ 'type' => 'text' ];
 				break;
 			case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 				// we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
 				$element_config[ $table . '/' . $element_code ]['type'] = 'double';
-				$element_config[ $table . '/' . $element_code . '_currency' ] = array( 'type' => 'text' );
+				$element_config[ $table . '/' . $element_code . '_currency' ] = [ 'type' => 'text' ];
 				break;
 			case __CA_ATTRIBUTE_VALUE_LENGTH__:
 			case __CA_ATTRIBUTE_VALUE_WEIGHT__:
@@ -345,13 +345,13 @@ class Mapping {
 	public function getConfigForIntrinsic( $table, $field_num, $indexing_config ) {
 		$field_name = Datamodel::getFieldName( $table, $field_num );
 		if ( ! $field_name ) {
-			return array();
+			return [];
 		}
 		$instance = Datamodel::getInstance( $table );
 
-		$field_options = array(
-			$table . '/' . $field_name => array()
-		);
+		$field_options = [
+			$table . '/' . $field_name => []
+		];
 
 		if ( in_array( 'DONT_TOKENIZE', $indexing_config ) ) {
 			$field_options[ $table . '/' . $field_name ]['index'] = 'not_analyzed';
@@ -421,11 +421,11 @@ class Mapping {
 	 * @return array
 	 */
 	public function get() {
-		$mapping_config = array();
+		$mapping_config = [];
 
 		foreach ( $this->getTables() as $table ) {
 			$mapping_config[ $table ]['_source']['enabled'] = true;
-			$mapping_config[ $table ]['properties'] = array();
+			$mapping_config[ $table ]['properties'] = [];
 
 			foreach ( $this->getFieldsToIndex( $table ) as $field => $indexing_info ) {
 				if ( preg_match( "/^(ca[\_a-z]+)\.A([0-9]+)$/", $field, $matches ) ) { // attribute
@@ -453,16 +453,16 @@ class Mapping {
 			}
 
 			// add config for modified and created, which are always indexed
-			$mapping_config[ $table ]['properties']["modified"] = array(
+			$mapping_config[ $table ]['properties']["modified"] = [
 				'type' => 'date',
 				'format' => 'date_optional_time',
 				'ignore_malformed' => true
-			);
-			$mapping_config[ $table ]['properties']["created"] = array(
+			];
+			$mapping_config[ $table ]['properties']["created"] = [
 				'type' => 'date',
 				'format' => 'date_optional_time',
 				'ignore_malformed' => true
-			);
+			];
 
 			$mapping_config[ $table ]['dynamic_templates'] = [
 				[

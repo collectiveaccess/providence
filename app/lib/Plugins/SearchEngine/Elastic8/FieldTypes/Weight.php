@@ -58,7 +58,7 @@ class Weight extends GenericElement {
 			return parent::getIndexingFragment( (float) $parsed_length->convertTo( 'KILOGRAM', 6, 'en_US' ),
 				$options );
 		} catch ( Exception $e ) {
-			return array();
+			return [];
 		}
 	}
 

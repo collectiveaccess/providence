@@ -127,9 +127,9 @@ class Intrinsic extends FieldType {
 				break;
 		}
 
-		$return = array(
+		$return = [
 			$this->getTableName() . '/' . $this->getFieldName() => $content
-		);
+		];
 
 		if ( $instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) == $this->getFieldName()
 			|| ( is_array( $options )
@@ -144,9 +144,9 @@ class Intrinsic extends FieldType {
 				$values = explode( ' ', $content );
 			}
 
-			$return = array(
+			$return = [
 				$this->getTableName() . '/' . $this->getFieldName() => $values
-			);
+			];
 		}
 
 		if ( $rel_type_id = caGetOption( 'relationship_type_id', $options ) ) {

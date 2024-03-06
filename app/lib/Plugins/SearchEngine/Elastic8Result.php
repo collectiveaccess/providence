@@ -108,10 +108,10 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 			$limit = null;
 		}
 		if ( ! is_array( $this->hits ) ) {
-			return array();
+			return [];
 		}
 		// primary key
-		$ids = array();
+		$ids = [];
 
 		$c = 0;
 		foreach ( $this->hits as $i => $row ) {

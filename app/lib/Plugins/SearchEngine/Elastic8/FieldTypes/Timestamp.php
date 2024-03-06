@@ -80,9 +80,9 @@ class Timestamp extends FieldType {
 			$content = serialize( $content );
 		}
 
-		return array(
+		return [
 			str_replace( '.', '/', $this->getFieldName() ) => $content
-		);
+		];
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Timestamp extends FieldType {
 	 * @return array
 	 */
 	public function getFiltersForPhraseQuery( $query ) {
-		$terms = $return = array();
+		$terms = $return = [];
 		$fld = null;
 		foreach ( $query->getQueryTerms() as $term ) {
 			$term = caRewriteElasticSearchTermFieldSpec( $term );
@@ -110,21 +110,21 @@ class Timestamp extends FieldType {
 
 		$parsed_values = caGetISODates( join( ' ', $terms ) );
 
-		$return[] = array(
-			'range' => array(
-				$fld => array(
+		$return[] = [
+			'range' => [
+				$fld => [
 					'lte' => $parsed_values['end'],
-				)
-			)
-		);
+				]
+			]
+		];
 
-		$return[] = array(
-			'range' => array(
-				$fld => array(
+		$return[] = [
+			'range' => [
+				$fld => [
 					'gte' => $parsed_values['start'],
-				)
-			)
-		);
+				]
+			]
+		];
 
 		return $return;
 	}
@@ -135,25 +135,25 @@ class Timestamp extends FieldType {
 	 * @return array
 	 */
 	function getFiltersForTerm( $term ) {
-		$return = array();
+		$return = [];
 		$parsed_values = caGetISODates( $term->text );
 		$fld = str_replace( '\\', '', $term->field );
 
-		$return[] = array(
-			'range' => array(
-				$fld => array(
+		$return[] = [
+			'range' => [
+				$fld => [
 					'lte' => $parsed_values['end'],
-				)
-			)
-		);
+				]
+			]
+		];
 
-		$return[] = array(
-			'range' => array(
-				$fld => array(
+		$return[] = [
+			'range' => [
+				$fld => [
 					'gte' => $parsed_values['start'],
-				)
-			)
-		);
+				]
+			]
+		];
 
 		return $return;
 	}

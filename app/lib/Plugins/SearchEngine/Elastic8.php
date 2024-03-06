@@ -278,17 +278,17 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$max_indexing_buffer_size = 250;
 		}
 
-		$this->options = array(
+		$this->options = [
 			'start' => 0,
 			'limit' => 100000,
 			// maximum number of hits to return [default=100000],
 			'maxIndexingBufferSize' => $max_indexing_buffer_size
 			// maximum number of indexed content items to accumulate before writing to the index
-		);
+		];
 
-		$this->capabilities = array(
+		$this->capabilities = [
 			'incremental_reindexing' => true
-		);
+		];
 	}
 	# -------------------------------------------------------
 
@@ -321,15 +321,15 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
 			$table = Datamodel::getTableName( $table_num );
-			$search_params = array(
+			$search_params = [
 				'scroll' => '1m',          // how long between scroll requests. should be small!
 				'index' => $this->getIndexName( $table ),
-				'body' => array(
-					'query' => array(
+				'body' => [
+					'query' => [
 						'match_all' => new stdClass()
-					)
-				)
-			);
+					]
+				]
+			];
 
 			$tmp = $this->getClient()->search( $search_params );   // Execute the search
 			$scroll_id = $tmp['_scroll_id'];   // The response will contain no results, just a _scroll_id
@@ -346,12 +346,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 				if ( sizeof( $response['hits']['hits'] ) > 0 ) {
 					foreach ( $response['hits']['hits'] as $result ) {
-						$delete_params['body'][] = array(
-							'delete' => array(
+						$delete_params['body'][] = [
+							'delete' => [
 								'_index' => $this->getIndexName( $table_num ),
 								'_id' => $result['_id']
-							)
-						);
+							]
+						];
 					}
 
 					// Must always refresh your _scroll_id!  It can change sometimes
@@ -404,28 +404,28 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 		Debug::msg( "[ElasticSearch] actual search query sent to ES: {$query_string}" );
 
-		$search_params = array(
+		$search_params = [
 			'index' => $this->getIndexName( $subject_tablenum ),
-			'body' => array(
+			'body' => [
 				// we do paging in our code
 				'from' => 0,
 				'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
 				'_source' => false,
-				'query' => array(
-					'bool' => array(
-						'must' => array(
-							array(
-								'query_string' => array(
+				'query' => [
+					'bool' => [
+						'must' => [
+							[
+								'query_string' => [
 									'analyze_wildcard' => true,
 									'query' => $query_string,
 									'default_operator' => 'AND'
-								),
-							)
-						)
-					)
-				)
-			)
-		);
+								],
+							]
+						]
+					]
+				]
+			]
+		];
 
 		// apply additional filters that may have been set by the query
 		if ( ( $additional_filters = $query->getAdditionalFilters() ) && is_array( $additional_filters )
@@ -633,12 +633,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		// delete docs
 		foreach ( self::$delete_buffer as $table => $rows ) {
 			foreach ( array_unique( $rows ) as $row_id ) {
-				$bulk_params['body'][] = array(
-					'delete' => array(
+				$bulk_params['body'][] = [
+					'delete' => [
 						'_index' => $this->getIndexName( $table ),
 						'_id' => $row_id
-					)
-				);
+					]
+				];
 
 				// also make sure we don't do unessecary indexing for this record below
 				unset( self::$update_content_buffer[ $table ][ $row_id ] );
@@ -651,12 +651,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$table = $tmp[0];
 			$primary_key = intval( $tmp[1] );
 
-			$f = array(
-				'index' => array(
+			$f = [
+				'index' => [
 					'_index' => $this->getIndexName( $table ),
 					'_id' => $primary_key
-				)
-			);
+				]
+			];
 			$bulk_params['body'][] = $f;
 
 			// add changelog to index
@@ -676,12 +676,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		foreach ( self::$update_content_buffer as $table => $rows ) {
 			foreach ( $rows as $row_id => $fragment ) {
 
-				$f = array(
-					'update' => array(
+				$f = [
+					'update' => [
 						'_index' => $this->getIndexName( $table ),
 						'_id' => (int) $row_id
-					)
-				);
+					]
+				];
 				$bulk_params['body'][] = $f;
 
 				// add changelog to fragment
@@ -694,7 +694,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 					)
 				);
 
-				$bulk_params['body'][] = array( 'doc' => $fragment );
+				$bulk_params['body'][] = [ 'doc' => $fragment ];
 			}
 		}
 

@@ -53,14 +53,14 @@ class Currency extends GenericElement {
 
 		// we index currencys as float number and the 3-char currency code in a separate text field
 		$curr = new CurrencyAttributeValue();
-		$parsed_currency = $curr->parseValue( $content, array() );
+		$parsed_currency = $curr->parseValue( $content, [] );
 
 		if ( is_array( $parsed_currency ) && isset( $parsed_currency['value_decimal1'] ) ) {
-			return array(
+			return [
 				$this->getTableName() . '/' . $this->getElementCode() => $parsed_currency['value_decimal1'],
 				$this->getTableName() . '/' . $this->getElementCode()
 				. '_currency' => $parsed_currency['value_longtext1'],
-			);
+			];
 		} else {
 			return parent::getIndexingFragment( $content, $options );
 		}
@@ -91,7 +91,7 @@ class Currency extends GenericElement {
 		}
 
 		$curr = new CurrencyAttributeValue();
-		$parsed_currency = $curr->parseValue( $term->text, array() );
+		$parsed_currency = $curr->parseValue( $term->text, [] );
 
 		if ( is_array( $parsed_currency ) && isset( $parsed_currency['value_decimal1'] ) ) {
 			return new Zend_Search_Lucene_Index_Term(
@@ -105,15 +105,15 @@ class Currency extends GenericElement {
 
 	public function getAdditionalTerms( $term ) {
 		$curr = new CurrencyAttributeValue();
-		$parsed_currency = $curr->parseValue( $term->text, array() );
+		$parsed_currency = $curr->parseValue( $term->text, [] );
 
 		if ( is_array( $parsed_currency ) && isset( $parsed_currency['value_longtext1'] ) ) {
-			return array(
+			return [
 				new Zend_Search_Lucene_Index_Term(
 					$parsed_currency['value_longtext1'],
 					$this->getTableName() . '\\/' . $this->getElementCode() . '_currency'
 				)
-			);
+			];
 		} else {
 			return false;
 		}

@@ -46,10 +46,10 @@ class DateRange extends GenericElement {
 		if ( is_array( $content ) ) {
 			$content = serialize( $content );
 		}
-		$return = array();
+		$return = [];
 
 		if ( ! is_array( $parsed_content = caGetISODates( $content, [ 'returnUnbounded' => true ] ) ) ) {
-			return array();
+			return [];
 		}
 
 		$key = $this->getTableName() . '/' . $this->getElementCode();
@@ -59,7 +59,7 @@ class DateRange extends GenericElement {
 		$rewritten_end = caRewriteDateForElasticSearch( $parsed_content["end"], false );
 
 		$return[ $key . '_text' ] = $content;
-		$return[ $key ] = array( $rewritten_start, $rewritten_end );
+		$return[ $key ] = [ $rewritten_start, $rewritten_end ];
 		$return[ $key . '_start' ] = $rewritten_start;
 		$return[ $key . '_end' ] = $rewritten_end;
 
@@ -72,7 +72,7 @@ class DateRange extends GenericElement {
 	 * @return array
 	 */
 	public function getFiltersForPhraseQuery( $query ) {
-		$terms = $return = array();
+		$terms = $return = [];
 		$fld = null;
 		foreach ( $query->getQueryTerms() as $term ) {
 			$term = caRewriteElasticSearchTermFieldSpec( $term );
@@ -131,40 +131,40 @@ class DateRange extends GenericElement {
 
 		switch ( $qualifier ) {
 			case '<':
-				$return[] = array(
-					'range' => array(
-						$fld => array(
+				$return[] = [
+					'range' => [
+						$fld => [
 							'lt' => $parsed_values['start'],
-						)
-					)
-				);
+						]
+					]
+				];
 				break;
 			case '<=':
-				$return[] = array(
-					'range' => array(
-						$fld => array(
+				$return[] = [
+					'range' => [
+						$fld => [
 							'lte' => $parsed_values['end'],
-						)
-					)
-				);
+						]
+					]
+				];
 				break;
 			case '>':
-				$return[] = array(
-					'range' => array(
-						$fld => array(
+				$return[] = [
+					'range' => [
+						$fld => [
 							'gt' => $parsed_values['end'],
-						)
-					)
-				);
+						]
+					]
+				];
 				break;
 			case '>=':
-				$return[] = array(
-					'range' => array(
-						$fld => array(
+				$return[] = [
+					'range' => [
+						$fld => [
 							'gte' => $parsed_values['start'],
-						)
-					)
-				);
+						]
+					]
+				];
 				break;
 			case '#':
 			default:

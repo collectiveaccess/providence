@@ -108,7 +108,7 @@ class Field {
 	 *
 	 * @return array
 	 */
-	public function getIndexingFragment( $content, $options = array() ) {
+	public function getIndexingFragment( $content, $options = [] ) {
 		return $this->field_type->getIndexingFragment( $content, $options );
 	}
 }

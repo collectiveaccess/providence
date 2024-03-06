@@ -62,9 +62,9 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 		$this->app_config = Configuration::load();
 		$this->search_config = Configuration::load( $this->app_config->get( "search_config" ) );
 		$this->search_indexing_config = Configuration::load( __CA_CONF_DIR__ . '/search_indexing.conf' );
-		$this->setting_descriptions = array();
-		$this->setting_names = array();
-		$this->setting_hints = array();
+		$this->setting_descriptions = [];
+		$this->setting_names = [];
+		$this->setting_hints = [];
 		$this->_initMessages();
 
 		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)

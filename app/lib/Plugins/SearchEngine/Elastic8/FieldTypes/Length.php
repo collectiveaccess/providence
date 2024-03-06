@@ -58,7 +58,7 @@ class Length extends GenericElement {
 			return parent::getIndexingFragment( (float) $parsed_length->convertTo( 'METER', 6, 'en_US' ),
 				$options );
 		} catch ( Exception $e ) {
-			return array();
+			return [];
 		}
 	}
 
