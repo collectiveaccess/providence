@@ -391,7 +391,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param array $filters
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $rewritten_query
 	 *
-	 * @return WLPlugSearchEngineElasticSearchResult
+	 * @return WLPlugSearchEngineElastic8Result
 	 */
 	public function search(
 		int $subject_tablenum, string $search_expression, array $filters = [], $rewritten_query
@@ -443,7 +443,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$results = [ 'hits' => [ 'hits' => [] ] ];
 		}
 
-		return new WLPlugSearchEngineElasticSearchResult( $results['hits']['hits'], $subject_tablenum );
+		return new WLPlugSearchEngineElastic8Result( $results['hits']['hits'], $subject_tablenum );
 	}
 	# -------------------------------------------------------
 
