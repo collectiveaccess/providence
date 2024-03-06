@@ -99,14 +99,6 @@ class Mapping {
 	$this->dynamicTemplates = json_decode(file_get_contents( __DIR__ . '/dynamicTemplates.json' ), JSON_OBJECT_AS_ARRAY);
   }
 
-  /**
-   * Check if the ElasticSearch mapping needs refreshing
-   * @return bool
-   */
-  public function needsRefresh() {
-    return (time() > $this->opo_app_vars->getVar('ElasticSearchMappingRefresh'));
-  }
-
 
   /**
    * @return Configuration
@@ -403,67 +395,8 @@ class Mapping {
     return $va_field_options;
   }
 
-  /**
-   * Get the mapping in the array format the Elasticsearch PHP API expects
-   * @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_index_management_operations.html#_put_mappings_api
-   * @return array
-   */
-  public function get() {
-    $va_mapping_config = array();
 
-    foreach ($this->getTables() as $vs_table) {
-      $va_mapping_config[$vs_table]['_source']['enabled'] = true;
-      $va_mapping_config[$vs_table]['properties'] = array();
-
-      foreach ($this->getFieldsToIndex($vs_table) as $vs_field => $va_indexing_info) {
-        if (preg_match("/^(ca[\_a-z]+)\.A([0-9]+)$/", $vs_field, $va_matches)) { // attribute
-          $va_mapping_config[$vs_table]['properties'] =
-            array_merge(
-              $va_mapping_config[$vs_table]['properties'],
-              $this->getConfigForElement(
-                $va_matches[1],
-                (int)$va_matches[2],
-                $this->getElementInfo((int)$va_matches[2]),
-                $va_indexing_info
-              )
-            );
-        }
-        elseif (preg_match("/^(ca[\_a-z]+)\.I([0-9]+)$/", $vs_field, $va_matches)) { // intrinsic
-          $va_mapping_config[$vs_table]['properties'] =
-            array_merge(
-              $va_mapping_config[$vs_table]['properties'],
-              $this->getConfigForIntrinsic(
-                $va_matches[1],
-                (int)$va_matches[2],
-                $va_indexing_info
-              )
-            );
-        }
-      }
-
-      // add config for modified and created, which are always indexed
-      $va_mapping_config[$vs_table]['properties']["modified"] = array(
-        'type' => 'date',
-        'format' => 'date_optional_time',
-        'ignore_malformed' => true
-      );
-      $va_mapping_config[$vs_table]['properties']["created"] = array(
-        'type' => 'date',
-        'format' => 'date_optional_time',
-        'ignore_malformed' => true
-      );
-
-      $va_mapping_config[$vs_table]['dynamic_templates'] = [
-        [
-          'content_ids' => [
-            'match' => '*_content_ids',
-            'mapping' => [
-              'type' => 'integer',
-            ]
-          ]
-        ]
-      ];
-    }
-    return $va_mapping_config;
-  }
+	public function getDynamicTemplates() {
+	  return $this->dynamicTemplates;
+	}
 }

@@ -33,6 +33,7 @@
 use Elastic\Elasticsearch\Client;
 use Elastic\ElasticSearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use Elastic8\Mapping;
 
 require_once( __CA_LIB_DIR__ . '/Configuration.php' );
 require_once( __CA_LIB_DIR__ . '/Datamodel.php' );
@@ -123,42 +124,58 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 */
 	public function refreshMapping( $pb_force = false ) {
 
+		/** @var Mapping $o_mapping */
 		static $o_mapping;
 		if ( ! $o_mapping ) {
-			$o_mapping = new Elastic8\Mapping();
+			$o_mapping = new Mapping();
 		}
 
-		if ( $o_mapping->needsRefresh() || $pb_force ) {
-			foreach ( $o_mapping->get() as $table => $va_config ) {
-				$index_name = $this->getIndexName( $table );
-				try {
-					if ( ! $this->getClient()->indices()->exists( [ 'index' => $index_name ] )->asBool() ) {
-						$this->getClient()->indices()->create( [ 'index' => $index_name ] );
-					}
-					// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
-					// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
-					// -- seems to be fixed in 2.x
-					//$this->getClient()->indices()->refresh(array('index' => $this->getIndexName($table)));
-				} catch ( Elastic\ElasticSearch\Exception\ClientResponseException $e ) {
-					// noop -- the exception happens when the index already exists, which is good
+		if ( $pb_force ) {
+			$indexPrefix = $this->getIndexNamePrefix();
+			// TODO: Move away from plain index template in favour of composable templates when the ES PHP API supports them.
+			$indexSettings = [
+				'settings' => [
+					'max_result_window' => 2147483647,
+					'analysis' => [
+						'analyzer' => [
+							'keyword_lowercase' => [
+								'tokenizer' => 'keyword',
+								'filter' => 'lowercase'
+							],
+							'whitespace' => [
+								'tokenizer' => 'whitespace',
+								'filter' => 'lowercase'
+							],
+						]
+					],
+					'index.mapping.total_fields.limit' => 20000,
+				],
+				'mappings' => [
+					'_source' => [
+						'enabled' => true,
+					],
+					'dynamic' => "true",
+					'dynamic_templates' => $o_mapping->getDynamicTemplates(),
+				]
+			];
+			$client = $this->getClient();
+			$indices = $client->indices();
+			$indices->putTemplate( [
+				'name' => $indexPrefix,
+				'body' => [ 'index_patterns' => [ $indexPrefix . "_*" ] ] + $indexSettings
+			] );
+			foreach ( $o_mapping->getTables() as $table ) {
+				$indexName = $this->getIndexName( $table );
+				if ( ! $indices->exists( [ 'index' => $indexName, 'ignore_missing' => true ] )->asBool() ) {
+					$indices->create( [ 'index' => $indexName ] );
 				}
-
-				try {
-					$this->setIndexSettings( $table );
-
-					$params = [
-						'index' => $index_name,
-						'body' => $va_config,
-					];
-					$this->getClient()->indices()->putMapping( $params );
-				} catch ( ClientResponseException $e ) {
-					throw new Exception( _t( "Updating the ElasticSearch mapping failed. This is probably because of a type conflict. Try recreating the entire search index. The original error was %1",
-						$e->getMessage() ) );
-				}
+				$indices->putSettings( [
+					'index' => $indexName,
+					'reopen' => true,
+					'body' => $indexSettings['settings']
+				] );
+				$indices->putMapping( [ 'index' => $indexName, 'body' => $indexSettings['mappings'] ] );
 			}
-
-			// resets the mapping cache key so that needsRefresh() returns false for 24h
-			$o_mapping->ping();
 		}
 	}
 	# -------------------------------------------------------
@@ -301,72 +318,14 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @return bool
 	 */
 	public function truncateIndex( $pn_table_num = null, $pb_dont_refresh = false ) {
-		if ( ! $pn_table_num ) {
-			// nuke the entire index
-			try {
-				$o_mapping = new Elastic8\Mapping();
-
-				foreach ( $o_mapping->get() as $table => $config ) {
-					$this->getClient()->indices()->delete( [ 'index' => $this->getIndexName( $table ) ] );
-				}
-			} catch ( ClientResponseException $e ) {
-				// noop
-			} //finally {
-			if ( ! $pb_dont_refresh ) {
-				$this->refreshMapping( true );
-			}
-			//}
+		$o_mapping = new Elastic8\Mapping();
+		if ( $pn_table_num ) {
+			$tables = [ Datamodel::getTableName( $pn_table_num ) ];
 		} else {
-			// use scroll API to find all documents in a particular mapping/table and delete them using the bulk API
-			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
-			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
-			$table = Datamodel::getTableName( $pn_table_num );
-			$va_search_params = array(
-				'scroll' => '1m',          // how long between scroll requests. should be small!
-				'index' => $this->getIndexName( $table ),
-				'body' => array(
-					'query' => array(
-						'match_all' => new stdClass()
-					)
-				)
-			);
-
-			$va_tmp = $this->getClient()->search( $va_search_params );   // Execute the search
-			$vs_scroll_id = $va_tmp['_scroll_id'];   // The response will contain no results, just a _scroll_id
-
-			// Now we loop until the scroll "cursors" are exhausted
-			$va_delete_params = [];
-			while ( true ) {
-
-				$va_response = $this->getClient()->scroll( [
-						'scroll_id' => $vs_scroll_id,  //...using our previously obtained _scroll_id
-						'scroll' => '1m'           // and the same timeout window
-					]
-				);
-
-				if ( sizeof( $va_response['hits']['hits'] ) > 0 ) {
-					foreach ( $va_response['hits']['hits'] as $va_result ) {
-						$va_delete_params['body'][] = array(
-							'delete' => array(
-								'_index' => $this->getIndexName( $pn_table_num ),
-								'_id' => $va_result['_id']
-							)
-						);
-					}
-
-					// Must always refresh your _scroll_id!  It can change sometimes
-					$vs_scroll_id = $va_response['_scroll_id'];
-				} else {
-					// No results, scroll cursor is empty
-					break;
-				}
-			}
-
-			if ( sizeof( $va_delete_params ) > 0 ) {
-				$this->getClient()->bulk( $va_delete_params );
-			}
+			$tables = $o_mapping->getTables();
 		}
-
+		$this->getClient()->indices()->delete( [ 'index' =>  array_map($this->getIndexName, $tables), 'ignore_unavailable' => true ] );
+		$this->refreshMapping( true );
 		return true;
 	}
 
@@ -623,7 +582,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @throws ClientResponseException
 	 */
 	public function flushContentBuffer() {
-		$this->refreshMapping();
 
 		$va_bulk_params = [];
 
@@ -717,7 +675,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			) {
 				$o_mapping = new Elastic8\Mapping();
 
-				foreach ( $o_mapping->get() as $table => $config ) {
+				foreach ( $o_mapping->getTables() as $table ) {
 					$this->getClient()->indices()->refresh( [ 'index' => $this->getIndexName( $table ) ] );
 				}
 			}
@@ -734,39 +692,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	/**
 	 * Set additional index-level settings like analyzers or token filters
 	 */
-	protected function setIndexSettings( $table ) {
-		$index_name = $this->getIndexName( $table );
-
-		$this->getClient()->indices()->refresh( [ 'index' => $index_name ] );
-		$this->getClient()->indices()->close( [ 'index' => $index_name ] );
-
-		try {
-			$params = [
-				'index' => $index_name,
-				'body' => [
-					'max_result_window' => 2147483647,
-					'analysis' => [
-						'analyzer' => [
-							'keyword_lowercase' => [
-								'tokenizer' => 'keyword',
-								'filter' => 'lowercase'
-							],
-							'whitespace' => [
-								'tokenizer' => 'whitespace',
-								'filter' => 'lowercase'
-							],
-						]
-					],
-					'index.mapping.total_fields.limit' => 20000,
-				],
-			];
-			$this->getClient()->indices()->putSettings( $params );
-		} catch ( Exception $e ) {
-			// noop
-		}
-
-		$this->getClient()->indices()->open( [ 'index' => $this->getIndexName( $table ) ] );
-	}
 
 	# -------------------------------------------------------
 	public function optimizeIndex( int $table_num ) {
