@@ -456,19 +456,14 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	/**
 	 * Index field
 	 *
-	 * @param int $content_tablenum
-	 * @param string $content_fieldname
-	 * @param int $content_row_id
 	 * @param mixed $content
-	 * @param ?array $options
 	 *
-	 * @return null
 	 * @throws Exception
 	 */
 	public function indexField(
 		int $content_tablenum, string $content_fieldname, int $content_row_id, $content,
 		?array $options = null
-	) {
+	): void {
 		$field = new Elastic8\Field($content_tablenum, $content_fieldname);
 		if (!is_array($content)) {
 			$content = [$content];
