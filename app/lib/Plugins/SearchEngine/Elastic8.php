@@ -209,7 +209,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		foreach ($subject_row_ids as $subject_row_id) {
 			// fetch the record
 			try {
-				$record = $this->record_cache[$table][$subject_row_id] ?? null;
+				$record = self::$record_cache[$table][$subject_row_id] ?? null;
 				if (is_null($record)) {
 					$f = [
 						'index' => $this->getIndexName($table),
@@ -220,7 +220,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			} catch (ClientResponseException $e) {
 				$record = []; // record doesn't exist yet --> the update API will create it
 			}
-			$this->record_cache[$table][$subject_row_id] = $record;
+			self::$record_cache[$table][$subject_row_id] = $record;
 
 			$this->addFragmentToUpdateContentBuffer($fragment, $record, $table, $subject_row_id,
 				$content_row_id);
