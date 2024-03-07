@@ -31,8 +31,11 @@
  */
 
 use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Elastic\ElasticSearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use Elastic\Elasticsearch\Exception\MissingParameterException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Monolog\Handler\ErrorLogHandler;
 use Elastic8\Mapping;
 
@@ -49,28 +52,29 @@ require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Query.php');
 
 class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
-	protected $index_content_buffer = [];
+	protected array $index_content_buffer = [];
 
-	protected $indexing_subject_tablenum = null;
-	protected $indexing_subject_row_id = null;
-	protected $indexing_subject_tablename = null;
+	protected ?string $indexing_subject_tablenum = null;
+	protected ?int $indexing_subject_row_id = null;
+	protected ?string $indexing_subject_tablename = null;
 
-	/**
-	 * @var Client
-	 */
-	static protected $client;
+	static protected Client $client;
 
-	static private $doc_content_buffer = [];
-	static private $update_content_buffer = [];
-	static private $delete_buffer = [];
-	static private $record_cache = [];
+	static private array $doc_content_buffer = [];
+	static private array $update_content_buffer = [];
+	static private array $delete_buffer = [];
+	static private array $record_cache = [];
 
 	protected $elasticsearch_index_name = '';
-	protected $elasticsearch_base_url = '';
+	protected string $elasticsearch_base_url = '';
 
-	protected $version = 8;
+	protected int $version = 8;
 
 	# -------------------------------------------------------
+
+	/**
+	 * @throws AuthenticationException
+	 */
 	public function __construct($db = null) {
 		parent::__construct($db);
 
@@ -96,20 +100,16 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 	/**
 	 * Get ElasticSearch index name prefix
-	 *
-	 * @return string
 	 */
-	protected function getIndexNamePrefix() {
+	protected function getIndexNamePrefix(): string {
 		return $this->elasticsearch_index_name;
 	}
 	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch index name
-	 *
-	 * @return string
 	 */
-	protected function getIndexName($table) {
+	protected function getIndexName($table): string {
 		if (is_numeric($table)) {
 			$table = Datamodel::getTableName($table);
 		}
@@ -125,7 +125,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 *
 	 * @throws Exception
 	 */
-	public function refreshMapping($force = false) {
+	public function refreshMapping(bool $force = false) {
 
 		/** @var Mapping $mapping */
 		static $mapping;
@@ -184,22 +184,26 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	# -------------------------------------------------------
 
 	/**
-	 *
-	 *
 	 * @param int $subject_tablenum
 	 * @param array $subject_row_ids
 	 * @param int $content_tablenum
 	 * @param string $content_fieldnum
+	 * @param int $content_container_id
 	 * @param int $content_row_id
 	 * @param string $content
-	 * @param array $options
+	 * @param null $options
 	 *    literalContent = array of text content to be applied without tokenization
 	 *    BOOST = Indexing boost to apply
 	 *    PRIVATE = Set indexing to private
+	 *
+	 * @throws ClientResponseException
+	 * @throws MissingParameterException
+	 * @throws ServerResponseException
+	 * @throws Exception
 	 */
 	public function updateIndexingInPlace(
-		$subject_tablenum, $subject_row_ids, $content_tablenum, $content_fieldnum, $content_container_id,
-		$content_row_id, $content, $options = null
+		int $subject_tablenum, array $subject_row_ids, int $content_tablenum, string $content_fieldnum,
+		int $content_container_id, int $content_row_id, string $content, $options = null
 	) {
 		$table = Datamodel::getTableName($subject_tablenum);
 
@@ -278,8 +282,9 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * Get ElasticSearch client
 	 *
 	 * @return Client
+	 * @throws AuthenticationException
 	 */
-	protected function getClient() {
+	protected function getClient(): Client {
 		if (!self::$client) {
 			$logger = new \Monolog\Logger('elasticsearch');
 			$log_level = Monolog\Logger::ERROR;
@@ -322,11 +327,16 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
 	 *
-	 * @param null|int $table_num
+	 * @param int|null $table_num
 	 *
 	 * @return bool
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws MissingParameterException
+	 * @throws ServerResponseException
+	 * @throws Exception
 	 */
-	public function truncateIndex($table_num = null) {
+	public function truncateIndex(int $table_num = null): bool {
 		$mapping = new Elastic8\Mapping();
 		if ($table_num) {
 			$tables = [Datamodel::getTableName($table_num)];
@@ -348,6 +358,13 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	}
 
 	# -------------------------------------------------------
+
+	/**
+	 * @throws ApplicationException
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws ServerResponseException
+	 */
 	public function __destruct() {
 		if (!defined('__CollectiveAccess_Installer__') || !__CollectiveAccess_Installer__) {
 			$this->flushContentBuffer();
@@ -364,10 +381,13 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $rewritten_query
 	 *
 	 * @return WLPlugSearchEngineElastic8Result
+	 * @throws AuthenticationException
+	 * @throws ServerResponseException
+	 * @throws Zend_Search_Lucene_Exception
 	 */
 	public function search(
 		int $subject_tablenum, string $search_expression, array $filters = [], $rewritten_query
-	) {
+	): WLPlugSearchEngineElastic8Result {
 		Debug::msg("[ElasticSearch] incoming search query is: {$search_expression}");
 		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($filters, true));
 
@@ -440,9 +460,10 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param string $content_fieldname
 	 * @param int $content_row_id
 	 * @param mixed $content
-	 * @param array $options
+	 * @param ?array $options
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function indexField(
 		int $content_tablenum, string $content_fieldname, int $content_row_id, $content,
@@ -488,6 +509,11 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * Commit indexing for row
 	 * That doesn't necessarily mean it's actually written to the index.
 	 * We still keep the data local until the document buffer is full.
+	 *
+	 * @throws ApplicationException
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws ServerResponseException
 	 */
 	public function commitRowIndexing() {
 		if (sizeof($this->index_content_buffer) > 0) {
@@ -519,6 +545,14 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param int|null $field_tablenum
 	 * @param int|null|array $field_nums
 	 * @param int|null $field_row_id
+	 * @param int|null $rel_type_id
+	 *
+	 * @throws ApplicationException
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws MissingParameterException
+	 * @throws ServerResponseException
+	 * @throws Exception
 	 */
 	public function removeRowIndexing(
 		int $subject_tablenum, int $subject_row_id, ?int $field_tablenum = null, $field_nums = null,
@@ -593,6 +627,9 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * Flush content buffer and write to index
 	 *
 	 * @throws ClientResponseException
+	 * @throws AuthenticationException
+	 * @throws ServerResponseException
+	 * @throws ApplicationException
 	 */
 	public function flushContentBuffer() {
 
@@ -704,6 +741,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 	/**
 	 * Set additional index-level settings like analyzers or token filters
+	 *
+	 * @param int $tablenum
+	 *
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws ServerResponseException
 	 */
 
 	# -------------------------------------------------------
@@ -712,7 +755,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	}
 
 	# -------------------------------------------------------
-	public function engineName() {
+	public function engineName(): string {
 		return 'Elastic8';
 	}
 	# -------------------------------------------------------
@@ -726,14 +769,16 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 *
 	 * @param $pn_table_num - The table index to search on
 	 * @param $ps_search - The text to search on
-	 * @param $pa_options - an optional associative array specifying search options. Supported options are: 'limit'
+	 * @param array $pa_options - an optional associative array specifying search options. Supported options are: 'limit'
 	 *     (the maximum number of results to return)
 	 *
 	 * @return array - an array of results is returned keyed by primary key id. The array values boolean true. This is
 	 *     done to ensure no duplicate row_ids
-	 *
+	 * @throws AuthenticationException
+	 * @throws ServerResponseException
+	 * @throws Zend_Search_Lucene_Exception
 	 */
-	public function quickSearch($pn_table_num, $ps_search, $pa_options = []) {
+	public function quickSearch($pn_table_num, $ps_search, $pa_options = []): array {
 		if (!is_array($pa_options)) {
 			$pa_options = [];
 		}
@@ -749,7 +794,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	}
 
 	# -------------------------------------------------------
-	public function isReindexing() {
+	public function isReindexing(): bool {
 		return (defined('__CollectiveAccess_IS_REINDEXING__') && __CollectiveAccess_IS_REINDEXING__);
 	}
 	# -------------------------------------------------------

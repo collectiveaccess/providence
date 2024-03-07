@@ -39,47 +39,26 @@ use Db;
 use SearchBase;
 
 class Mapping {
-	/**
-	 * @var Configuration
-	 */
-	protected $search_conf;
-	/**
-	 * @var Configuration
-	 */
-	protected $indexing_conf;
-	/**
-	 * @var SearchBase
-	 */
-	protected $search_base;
+	protected Configuration $search_conf;
+	protected Configuration $indexing_conf;
+	protected SearchBase $search_base;
 
-	/**
-	 * @var Db
-	 */
-	protected $db;
+	protected Db $db;
 
 	/**
 	 * Element info array
-	 *
-	 * @var array
 	 */
-	protected $element_info;
+	protected array $element_info;
 
-	/**
-	 * @var ApplicationVars
-	 */
-	protected $app_vars;
+	protected ApplicationVars $app_vars;
 
 	/**
 	 * Elastic major version number in use
-	 *
-	 * @var int
 	 */
-	protected $version = 8;
+	protected int $version = 8;
 
 	/**
 	 * Load the dynamic templates configuration file
-	 *
-	 * @var array
 	 */
 	private array $dynamicTemplates;
 
@@ -104,45 +83,29 @@ class Mapping {
 			JSON_OBJECT_AS_ARRAY);
 	}
 
-
-	/**
-	 * @return Configuration
-	 */
-	protected function getIndexingConf() {
+	protected function getIndexingConf(): Configuration {
 		return $this->indexing_conf;
 	}
 
-	/**
-	 * @return SearchBase
-	 */
-	protected function getSearchBase() {
+	protected function getSearchBase(): SearchBase {
 		return $this->search_base;
 	}
 
-	/**
-	 * @return Db
-	 */
-	public function getDb() {
+	public function getDb(): Db {
 		return $this->db;
 	}
 
 	/**
 	 * Returns all tables that are supposed to be indexed
-	 *
-	 * @return array
 	 */
-	public function getTables() {
+	public function getTables(): array {
 		return $this->getIndexingConf()->getAssocKeys();
 	}
 
 	/**
 	 * Get indexing fields and options for a given table (and its related tables)
-	 *
-	 * @param $table
-	 *
-	 * @return array
 	 */
-	public function getFieldsToIndex($table) {
+	public function getFieldsToIndex($table): array {
 		if (!Datamodel::tableExists($table)) {
 			return [];
 		}
@@ -216,11 +179,9 @@ class Mapping {
 	 *    element_code
 	 *    datatype
 	 *
-	 * @param int $element_id
-	 *
 	 * @return array|bool
 	 */
-	public function getElementInfo($element_id) {
+	public function getElementInfo(int $element_id) {
 		if (isset($this->element_info[$element_id])) {
 			return $this->element_info[$element_id];
 		}

@@ -43,7 +43,7 @@ class Weight extends GenericElement {
 		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment($content, $options) {
+	public function getIndexingFragment($content, array $options): array {
 		if (is_array($content)) {
 			$content = serialize($content);
 		}
@@ -67,7 +67,7 @@ class Weight extends GenericElement {
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm($term) {
+	public function getRewrittenTerm(Zend_Search_Lucene_Index_Term $term): Zend_Search_Lucene_Index_Term {
 		$tmp = explode('\\/', $term->field);
 		if (sizeof($tmp) == 3) {
 			unset($tmp[1]);

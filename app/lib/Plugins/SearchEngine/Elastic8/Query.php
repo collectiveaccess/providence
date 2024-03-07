@@ -34,6 +34,7 @@ namespace Elastic8;
 
 use Elastic8\FieldTypes\FieldType;
 use Exception;
+use MemoryCacheInvalidParameterException;
 use Zend_Search_Lucene_Exception;
 use Zend_Search_Lucene_Index_Term;
 use Zend_Search_Lucene_Search_Query;
@@ -58,46 +59,33 @@ class Query {
 
 	/**
 	 * Subject table
-	 *
-	 * @var int
 	 */
-	protected $subject_table_num;
+	protected int $subject_table_num;
 	/**
 	 * Search expression
-	 *
-	 * @var string
 	 */
-	protected $search_expression;
+	protected string $search_expression;
 	/**
 	 * Rewritten query
-	 *
-	 * @var Zend_Search_Lucene_Search_Query_Boolean
 	 */
-	protected $rewritten_query;
+	protected Zend_Search_Lucene_Search_Query_Boolean $rewritten_query;
 	/**
 	 * Filters set by search engine
-	 *
-	 * @var array
 	 */
-	protected $filters;
+	protected array $filters;
 
 	/**
 	 * Filters ready for ElasticSearch
-	 *
-	 * @var array
 	 */
-	protected $additional_filters;
+	protected array $additional_filters;
 
 	/**
 	 * Query constructor.
 	 *
-	 * @param int $subject_table_num
-	 * @param string $search_expression
-	 * @param Zend_Search_Lucene_Search_Query_Boolean $rewritten_query
-	 * @param array $filters
+	 * @throws Zend_Search_Lucene_Exception
 	 */
 	public function __construct(
-		$subject_table_num, $search_expression, Zend_Search_Lucene_Search_Query_Boolean $rewritten_query,
+		int $subject_table_num, string $search_expression, Zend_Search_Lucene_Search_Query_Boolean $rewritten_query,
 		array $filters
 	) {
 		$this->subject_table_num = $subject_table_num;
@@ -109,38 +97,19 @@ class Query {
 		$this->rewrite();
 	}
 
-	/**
-	 * @return int
-	 */
-	protected function getSubjectTableNum() {
-		return $this->subject_table_num;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getSearchExpression() {
+	public function getSearchExpression(): string {
 		return $this->search_expression;
 	}
 
-	/**
-	 * @return Zend_Search_Lucene_Search_Query_Boolean
-	 */
-	protected function getRewrittenQuery() {
+	protected function getRewrittenQuery(): Zend_Search_Lucene_Search_Query_Boolean {
 		return $this->rewritten_query;
 	}
 
-	/**
-	 * @return array
-	 */
-	protected function getFilters() {
+	protected function getFilters(): array {
 		return $this->filters;
 	}
 
-	/**
-	 * @return array
-	 */
-	public function getAdditionalFilters() {
+	public function getAdditionalFilters(): array {
 		return $this->additional_filters;
 	}
 
@@ -219,8 +188,6 @@ class Query {
 	}
 
 	/**
-	 * @param $subquery
-	 *
 	 * @return string|Zend_Search_Lucene_Search_Query
 	 * @throws Exception
 	 * @throws Zend_Search_Lucene_Exception
@@ -381,13 +348,9 @@ class Query {
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Search_Query $original_subquery
-	 * @param FieldTypes\FieldType $fld
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return Zend_Search_Lucene_Search_Query
+	 * @return string|Zend_Search_Lucene_Search_Query
 	 */
-	protected function getSubqueryWithAdditionalTerms($original_subquery, $fld, $term) {
+	protected function getSubqueryWithAdditionalTerms(Zend_Search_Lucene_Search_Query $original_subquery, FieldType $fld, Zend_Search_Lucene_Index_Term $term) {
 		if (($additional_terms = $fld->getAdditionalTerms($term)) && is_array($additional_terms)) {
 
 			// we cant use the index terms as is; have to construct term queries
@@ -406,11 +369,9 @@ class Query {
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return FieldType
+	 * @throws MemoryCacheInvalidParameterException
 	 */
-	protected function getFieldTypeForTerm($term) {
+	protected function getFieldTypeForTerm(Zend_Search_Lucene_Index_Term $term): FieldType {
 		$parts = preg_split("!(\\\)?/!", $term->field);
 		$table = $parts[0];
 		$fld = array_pop($parts);
@@ -418,7 +379,7 @@ class Query {
 		return FieldTypes\FieldType::getInstance($table, $fld);
 	}
 
-	protected function getFilterQuery() {
+	protected function getFilterQuery(): string {
 		$terms = [];
 		foreach ($this->getFilters() as $filter) {
 			$filter['field'] = str_replace('.', '\/', $filter['field']);
@@ -479,25 +440,17 @@ class Query {
 	 * we can rewrite it as actual ranged search
 	 *
 	 * Note: this is only for Length, Weight, Currency ...
-	 *
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return bool
 	 */
-	protected function isDisguisedRangeQuery($term) {
+	protected function isDisguisedRangeQuery(Zend_Search_Lucene_Index_Term $term): bool {
 		return (bool) preg_match("/[0-9]+.*to[\s]*[0-9]+/u", $term->text);
 	}
 
 	/**
 	 * Rewrite index term as range query
 	 *
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 * @param FieldType $fld
-	 *
-	 * @return Zend_Search_Lucene_Search_Query_Range
 	 * @throws Exception
 	 */
-	protected function rewriteIndexTermAsRangeQuery($term, $fld) {
+	protected function rewriteIndexTermAsRangeQuery(Zend_Search_Lucene_Index_Term $term, FieldType $fld): Zend_Search_Lucene_Search_Query_Range {
 		$lower_term = $upper_term = null;
 
 		if (preg_match("/^(.+)to/u", $term->text, $matches)) {

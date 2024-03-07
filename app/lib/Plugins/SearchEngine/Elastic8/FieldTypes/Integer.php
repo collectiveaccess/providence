@@ -40,7 +40,7 @@ class Integer extends GenericElement {
 		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment($content, $options) {
+	public function getIndexingFragment($content, array $options): array {
 		if (is_array($content)) {
 			$content = serialize($content);
 		}

@@ -36,12 +36,12 @@ include_once(__CA_LIB_DIR__ . '/Plugins/IWLPlugSearchEngineResult.php');
 
 class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
-	private $hits;
-	private $current_row;
-	private $subject_tablenum;
-	private $subject_primary_key;
-	private $subject_instance;
-	private $subject_table_name;
+	private ?array $hits;
+	private int $current_row;
+	private string $subject_tablenum;
+	private string $subject_primary_key;
+	private BaseModel $subject_instance;
+	private string $subject_table_name;
 
 	# -------------------------------------------------------
 	public function __construct($pa_hits, $pn_table_num) {
@@ -64,17 +64,17 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function getHits() {
+	public function getHits(): array {
 		return $this->hits;
 	}
 
 	# -------------------------------------------------------
-	public function numHits() {
+	public function numHits(): ?int {
 		return is_array($this->hits) ? sizeof($this->hits) : 0;
 	}
 
 	# -------------------------------------------------------
-	public function nextHit() {
+	public function nextHit(): bool {
 		if ($this->current_row < sizeof($this->hits) - 1) {
 			$this->current_row++;
 
@@ -85,7 +85,7 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function currentRow() {
+	public function currentRow(): int {
 		return $this->current_row;
 	}
 
@@ -103,7 +103,7 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function getPrimaryKeyValues($limit = null) {
+	public function getPrimaryKeyValues($limit = null): array {
 		if (!$limit) {
 			$limit = null;
 		}
@@ -126,7 +126,7 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function seek($pn_index) {
+	public function seek($pn_index): bool {
 		if (($pn_index >= 0) && ($pn_index < sizeof($this->hits))) {
 			$this->current_row = $pn_index - 1;
 

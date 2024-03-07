@@ -43,63 +43,41 @@ class Intrinsic extends FieldType {
 
 	/**
 	 * Table name
-	 *
-	 * @var string
 	 */
-	protected $table_name;
+	protected string $table_name;
 	/**
 	 * Field name
-	 *
-	 * @var string
 	 */
-	protected $field_name;
+	protected string $field_name;
 
 	/**
 	 * Intrinsic constructor.
-	 *
-	 * @param string $table_name
-	 * @param string $field_name
 	 */
-	public function __construct($table_name, $field_name) {
+	public function __construct(string $table_name, string $field_name) {
 		$this->table_name = $table_name;
 		$this->field_name = $field_name;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getTableName() {
+	public function getTableName(): string {
 		return $this->table_name;
 	}
 
-	/**
-	 * @param string $table_name
-	 */
-	public function setTableName($table_name) {
+	public function setTableName(string $table_name) {
 		$this->table_name = $table_name;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getFieldName() {
+	public function getFieldName(): string {
 		return $this->field_name;
 	}
 
-	/**
-	 * @param string $field_name
-	 */
-	public function setFieldName($field_name) {
+	public function setFieldName(string $field_name) {
 		$this->field_name = $field_name;
 	}
 
 	/**
 	 * @param mixed $content
-	 * @param array $options
-	 *
-	 * @return array
 	 */
-	public function getIndexingFragment($content, $options) {
+	public function getIndexingFragment($content, array $options): array {
 		if (is_array($content)) {
 			$content = serialize($content);
 		}
@@ -159,12 +137,7 @@ class Intrinsic extends FieldType {
 		return $return;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm($term) {
+	public function getRewrittenTerm(Zend_Search_Lucene_Index_Term $term): Zend_Search_Lucene_Index_Term {
 		$instance = Datamodel::getInstance($this->getTableName(), true);
 
 		$raw_term = $term->text;

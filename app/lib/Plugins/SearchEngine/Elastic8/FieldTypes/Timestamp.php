@@ -41,41 +41,28 @@ class Timestamp extends FieldType {
 
 	/**
 	 * Field name
-	 *
-	 * @var string
 	 */
-	protected $field_name;
+	protected string $field_name;
 
 	/**
 	 * Timestamp constructor.
-	 *
-	 * @param string $field_name
 	 */
-	public function __construct($field_name) {
+	public function __construct(string $field_name) {
 		$this->field_name = $field_name;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getFieldName() {
+	public function getFieldName(): string {
 		return $this->field_name;
 	}
 
-	/**
-	 * @param string $field_name
-	 */
-	public function setFieldName($field_name) {
+	public function setFieldName(string $field_name) {
 		$this->field_name = $field_name;
 	}
 
 	/**
 	 * @param mixed $content
-	 * @param array $options
-	 *
-	 * @return array
 	 */
-	public function getIndexingFragment($content, $options) {
+	public function getIndexingFragment($content, array $options): array {
 		if (is_array($content)) {
 			$content = serialize($content);
 		}
@@ -85,21 +72,11 @@ class Timestamp extends FieldType {
 		];
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm($term) {
+	public function getRewrittenTerm(Zend_Search_Lucene_Index_Term $term): Zend_Search_Lucene_Index_Term {
 		return $term;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Search_Query_Phrase $query
-	 *
-	 * @return array
-	 */
-	public function getFiltersForPhraseQuery($query) {
+	public function getFiltersForPhraseQuery(Zend_Search_Lucene_Search_Query_Phrase $query): array {
 		$terms = $return = [];
 		$fld = null;
 		foreach ($query->getQueryTerms() as $term) {
@@ -129,12 +106,7 @@ class Timestamp extends FieldType {
 		return $return;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return array
-	 */
-	function getFiltersForTerm($term) {
+	function getFiltersForTerm(Zend_Search_Lucene_Index_Term $term): array {
 		$return = [];
 		$parsed_values = caGetISODates($term->text);
 		$fld = str_replace('\\', '', $term->field);

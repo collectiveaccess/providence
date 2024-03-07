@@ -42,36 +42,24 @@ class Field {
 
 	/**
 	 * Content table num
-	 *
-	 * @var int
 	 */
-	protected $content_tablenum;
+	protected int $content_tablenum;
 	/**
 	 * Content table name
-	 *
-	 * @var string
 	 */
 	protected $content_tablename;
 	/**
 	 * Field name from search indexer (e.g. I3 or A5)
-	 *
-	 * @var string
 	 */
-	protected $indexing_fieldname;
-	/**
-	 * @var FieldTypes\FieldType
-	 */
-	protected $field_type;
+	protected string $indexing_fieldname;
+	protected ?FieldType $field_type;
 
 	/**
 	 * Field constructor.
 	 *
-	 * @param int $content_tablenum
-	 * @param string $indexing_fieldname
-	 *
 	 * @throws Exception
 	 */
-	public function __construct($content_tablenum, $indexing_fieldname) {
+	public function __construct(int $content_tablenum, string $indexing_fieldname) {
 		$this->content_tablenum = $content_tablenum;
 		$this->content_tablename = Datamodel::getTableName($this->getContentTableNum());
 
@@ -88,27 +76,18 @@ class Field {
 		}
 	}
 
-	/**
-	 * @return int
-	 */
-	private function getContentTableNum() {
+	private function getContentTableNum(): int {
 		return $this->content_tablenum;
 	}
 
-	/**
-	 * @return int
-	 */
-	private function getContentTableName() {
+	private function getContentTableName(): string {
 		return $this->content_tablename;
 	}
 
 	/**
 	 * @param mixed $content
-	 * @param array $options
-	 *
-	 * @return array
 	 */
-	public function getIndexingFragment($content, $options = []) {
+	public function getIndexingFragment($content, ?array $options = []): array {
 		return $this->field_type->getIndexingFragment($content, $options);
 	}
 }

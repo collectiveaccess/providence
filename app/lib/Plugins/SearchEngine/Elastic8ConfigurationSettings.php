@@ -45,13 +45,13 @@ require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8.php');
 # ------------------------------------------------
 class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------
-	private $app_config;
-	private $search_config;
-	private $search_indexing_config;
+	private Configuration $app_config;
+	private Configuration $search_config;
+	private Configuration $search_indexing_config;
 	# ------------------------------------------------
-	private $setting_names;
-	private $setting_descriptions;
-	private $setting_hints;
+	private array $setting_names;
+	private array $setting_descriptions;
+	private array $setting_hints;
 	# ------------------------------------------------
 	private $elasticsearch_base_url;
 	private $elasticsearch_index_name;
@@ -85,7 +85,7 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 	}
 
 	# ------------------------------------------------
-	public function getEngineName() {
+	public function getEngineName(): string {
 		return "Elastic8";
 	}
 
@@ -116,6 +116,10 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 	}
 
 	# ------------------------------------------------
+
+	/**
+	 * @throws Zend_Http_Client_Exception
+	 */
 	public function checkSetting($pn_setting_num) {
 		switch ($pn_setting_num) {
 			case __CA_ELASTICSEARCH_SETTING_RUNNING__:
@@ -143,7 +147,11 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 	}
 
 	# ------------------------------------------------
-	private function _checkElasticSearchRunning() {
+
+	/**
+	 * @throws Zend_Http_Client_Exception
+	 */
+	private function _checkElasticSearchRunning(): int {
 		/* check if elasticsearch alive */
 		$http_client = new Zend_Http_Client();
 		$http_client->setUri(
@@ -164,7 +172,11 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 	}
 
 	# ------------------------------------------------
-	private function _checkElasticSearchIndexExists() {
+
+	/**
+	 * @throws Zend_Http_Client_Exception
+	 */
+	private function _checkElasticSearchIndexExists(): int {
 		/* check if elasticsearch alive */
 		$http_client = new Zend_Http_Client();
 

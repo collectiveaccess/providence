@@ -42,7 +42,7 @@ class DateRange extends GenericElement {
 		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment($content, $options) {
+	public function getIndexingFragment($content, array $options): array {
 		if (is_array($content)) {
 			$content = serialize($content);
 		}
@@ -66,12 +66,7 @@ class DateRange extends GenericElement {
 		return $return;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Search_Query_Phrase $query
-	 *
-	 * @return array
-	 */
-	public function getFiltersForPhraseQuery($query) {
+	public function getFiltersForPhraseQuery(Zend_Search_Lucene_Search_Query_Phrase $query): array {
 		$terms = $return = [];
 		$fld = null;
 		foreach ($query->getQueryTerms() as $term) {
@@ -84,11 +79,9 @@ class DateRange extends GenericElement {
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return array
+	 * @param string|Zend_Search_Lucene_Index_Term $term
 	 */
-	function getFiltersForTerm($term, $field = null) {
+	function getFiltersForTerm($term, ?string $field = null): array {
 		if (!is_object($term)) {
 			$term = new Zend_Search_Lucene_Index_Term($term, $field);
 		}

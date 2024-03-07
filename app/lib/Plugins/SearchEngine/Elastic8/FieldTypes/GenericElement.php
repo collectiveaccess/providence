@@ -40,57 +40,35 @@ class GenericElement extends FieldType {
 
 	/**
 	 * Metadata element code
-	 *
-	 * @var string
 	 */
-	protected $element_code;
+	protected string $element_code;
 
 	/**
 	 * Table name
-	 *
-	 * @var string
 	 */
-	protected $table_name;
+	protected string $table_name;
 
 	/**
 	 * Generic constructor.
-	 *
-	 * @param string $table_name
-	 * @param string $element_code
 	 */
-	public function __construct($table_name, $element_code) {
+	public function __construct(string $table_name, string $element_code) {
 		$this->table_name = $table_name;
 		$this->element_code = $element_code;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getElementCode() {
+	public function getElementCode(): string {
 		return $this->element_code;
 	}
 
-	/**
-	 * @param string $element_code
-	 */
-	public function setElementCode($element_code) {
+	public function setElementCode(string $element_code) {
 		$this->element_code = $element_code;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getTableName() {
+	public function getTableName(): string {
 		return $this->table_name;
 	}
 
-	/**
-	 * @param mixed $content
-	 * @param array $options
-	 *
-	 * @return array
-	 */
-	public function getIndexingFragment($content, $options) {
+	public function getIndexingFragment($content, array $options): array {
 		if (is_array($content)) {
 			$content = serialize($content);
 		}
@@ -107,12 +85,7 @@ class GenericElement extends FieldType {
 		];
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm($term) {
+	public function getRewrittenTerm(Zend_Search_Lucene_Index_Term $term): ?Zend_Search_Lucene_Index_Term {
 		$tmp = explode('\\/', $term->field);
 		if (sizeof($tmp) == 3) {
 			unset($tmp[1]);
