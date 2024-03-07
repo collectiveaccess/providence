@@ -58,7 +58,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected ?int $indexing_subject_row_id = null;
 	protected ?string $indexing_subject_tablename = null;
 
-	static protected Client $client;
+	static protected ?Client $client = null;
 
 	static private array $doc_content_buffer = [];
 	static private array $update_content_buffer = [];
@@ -344,7 +344,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$tables = $mapping->getTables();
 		}
 		$this->getClient()->indices()->delete([
-			'index' => array_map($this->getIndexName, $tables),
+			'index' => array_map([$this, 'getIndexName'], $tables),
 			'ignore_unavailable' => true
 		]);
 		$this->refreshMapping(true);
