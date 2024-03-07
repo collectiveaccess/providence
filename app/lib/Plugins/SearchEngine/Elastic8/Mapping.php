@@ -77,6 +77,12 @@ class Mapping {
 	protected $version = 8;
 
 	/**
+	 * Load the dynamic templates configuration file
+	 * @var array
+	 */
+	private array $dynamicTemplates;
+
+	/**
 	 * Mapping constructor.
 	 */
 	public function __construct() {
@@ -92,24 +98,10 @@ class Mapping {
 		$this->app_vars = new ApplicationVars( $this->db );
 
 		$this->prefetchElementInfo();
+
+		$this->dynamicTemplates = json_decode(file_get_contents( __DIR__ . '/dynamicTemplates.json' ), JSON_OBJECT_AS_ARRAY);
 	}
 
-	/**
-	 * Check if the ElasticSearch mapping needs refreshing
-	 *
-	 * @return bool
-	 */
-	public function needsRefresh() {
-		return ( time() > $this->app_vars->getVar( 'ElasticSearchMappingRefresh' ) );
-	}
-
-	/**
-	 * Ping the ElasticSearch mapping, effectively resetting the refresh time
-	 */
-	public function ping() {
-		$this->app_vars->setVar( 'ElasticSearchMappingRefresh', time() + 24 * 60 * 60 );
-		$this->app_vars->save();
-	}
 
 	/**
 	 * @return Configuration
@@ -414,68 +406,8 @@ class Mapping {
 		return $field_options;
 	}
 
-	/**
-	 * Get the mapping in the array format the Elasticsearch PHP API expects
-	 *
-	 * @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_index_management_operations.html#_put_mappings_api
-	 * @return array
-	 */
-	public function get() {
-		$mapping_config = [];
 
-		foreach ( $this->getTables() as $table ) {
-			$mapping_config[ $table ]['_source']['enabled'] = true;
-			$mapping_config[ $table ]['properties'] = [];
-
-			foreach ( $this->getFieldsToIndex( $table ) as $field => $indexing_info ) {
-				if ( preg_match( "/^(ca[\_a-z]+)\.A([0-9]+)$/", $field, $matches ) ) { // attribute
-					$mapping_config[ $table ]['properties']
-						= array_merge(
-						$mapping_config[ $table ]['properties'],
-						$this->getConfigForElement(
-							$matches[1],
-							(int) $matches[2],
-							$this->getElementInfo( (int) $matches[2] ),
-							$indexing_info
-						)
-					);
-				} elseif ( preg_match( "/^(ca[\_a-z]+)\.I([0-9]+)$/", $field, $matches ) ) { // intrinsic
-					$mapping_config[ $table ]['properties']
-						= array_merge(
-						$mapping_config[ $table ]['properties'],
-						$this->getConfigForIntrinsic(
-							$matches[1],
-							(int) $matches[2],
-							$indexing_info
-						)
-					);
-				}
-			}
-
-			// add config for modified and created, which are always indexed
-			$mapping_config[ $table ]['properties']["modified"] = [
-				'type' => 'date',
-				'format' => 'date_optional_time',
-				'ignore_malformed' => true
-			];
-			$mapping_config[ $table ]['properties']["created"] = [
-				'type' => 'date',
-				'format' => 'date_optional_time',
-				'ignore_malformed' => true
-			];
-
-			$mapping_config[ $table ]['dynamic_templates'] = [
-				[
-					'content_ids' => [
-						'match' => '*_content_ids',
-						'mapping' => [
-							'type' => 'integer',
-						]
-					]
-				]
-			];
-		}
-
-		return $mapping_config;
+	public function getDynamicTemplates() {
+	  return $this->dynamicTemplates;
 	}
 }

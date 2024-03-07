@@ -1,0 +1,274 @@
+[
+  {
+    "strings" : {
+      "match_mapping_type" : "*",
+      "match" : "*-s",
+      "mapping" : {
+        "type" : "text",
+        "fields" : {
+          "keyword" : {
+            "type" : "keyword",
+            "ignore_above" : 256
+          }
+        }
+      }
+    }
+  },
+  {
+    "idnos" : {
+      "match_mapping_type" : "*",
+      "match" : "*-idno",
+      "mapping" : {
+        "type" : "text",
+        "analyzer" : "keyword_lowercase",
+        "fields" : {
+          "keyword" : {
+            "type" : "keyword",
+            "ignore_above" : 256
+          }
+        }
+      }
+    }
+  },
+  {
+    "tokenize_ws" : {
+      "match_mapping_type" : "*",
+      "match" : "*-tokenize-ws",
+      "mapping" : {
+        "type" : "text",
+        "analyzer" : "whitespace",
+        "fields" : {
+          "keyword" : {
+            "type" : "keyword",
+            "ignore_above" : 256
+          }
+        }
+      }
+    }
+  },
+  {
+    "keys" : {
+      "match_mapping_type" : "*",
+      "match" : "*-kw",
+      "mapping" : {
+        "type" : "keyword"
+      }
+    }
+  },
+  {
+    "ints" : {
+      "match_mapping_type" : "*",
+      "match" : "*-i",
+      "mapping" : {
+        "type" : "integer"
+      }
+    }
+  },
+  {
+    "floats" : {
+      "match_mapping_type" : "*",
+      "match" : "*-f",
+      "mapping" : {
+        "type" : "float"
+      }
+    }
+  },
+  {
+    "doubles" : {
+      "match_mapping_type" : "*",
+      "match" : "*-d",
+      "mapping" : {
+        "type" : "double"
+      }
+    }
+  },
+  {
+    "booleans" : {
+      "match_mapping_type" : "*",
+      "match" : "*-b",
+      "mapping" : {
+        "type" : "boolean"
+      }
+    }
+  },
+  {
+    "longs" : {
+      "match_mapping_type" : "*",
+      "match" : "*-l",
+      "mapping" : {
+        "type" : "long"
+      }
+    }
+  },
+  {
+    "long_ranges" : {
+      "match_mapping_type" : "*",
+      "match" : "*-lr",
+      "mapping" : {
+        "type" : "long_range"
+      }
+    }
+  },
+  {
+    "int_ranges" : {
+      "match_mapping_type" : "*",
+      "match" : "*-ir",
+      "mapping" : {
+        "type" : "long_range"
+      }
+    }
+  },
+  {
+    "double_ranges" : {
+      "match_mapping_type" : "*",
+      "match" : "*-dr",
+      "mapping" : {
+        "type" : "double_range"
+      }
+    }
+  },
+  {
+    "floats" : {
+      "match_mapping_type" : "*",
+      "match" : "*-f",
+      "mapping" : {
+        "type" : "float",
+        "fields" : {
+          "k" : {
+            "type" : "keyword"
+          }
+        }
+      }
+    }
+  },
+  {
+    "wildcards" : {
+      "match_mapping_type" : "*",
+      "match" : "*-w",
+      "mapping" : {
+        "type" : "wildcard"
+      }
+    }
+  },
+  {
+    "geo_shapes" : {
+      "match_mapping_type" : "*",
+      "match" : "*-gs",
+      "mapping" : {
+        "type" : "geo_shape"
+      }
+    }
+  },
+  {
+    "geo_points" : {
+      "match_mapping_type" : "*",
+      "match" : "*-gp",
+      "mapping" : {
+        "type" : "geo_point"
+      }
+    }
+  },
+  {
+    "objects" : {
+      "match_mapping_type" : "*",
+      "match" : "*-o",
+      "mapping" : {
+        "type" : "object"
+      }
+    }
+  },
+  {
+    "dates" : {
+      "match_mapping_type" : "*",
+      "match" : "*-dt",
+      "mapping" : {
+        "type" : "date",
+        "format" : "date_optional_time||year||year_month||year_month_day",
+        "fields" : {
+          "raw" : {
+            "type" : "keyword"
+          }
+        }
+      }
+    }
+  },
+  {
+    "date_ranges" : {
+      "match_mapping_type" : "*",
+      "match" : "*-dtr",
+      "mapping" : {
+        "type" : "date_range",
+        "format" : "date_optional_time||year||year_month||year_month_day"
+      }
+    }
+  },
+  {
+    "times" : {
+      "match_mapping_type" : "*",
+      "match" : "*-t",
+      "mapping" : {
+        "type" : "date",
+        "format" : "time||time_no_millis||HH:mm:ss.SSS||HH:mm:ss||HH:mm||HH"
+      }
+    }
+  },
+  {
+    "time_ranges" : {
+      "match_mapping_type" : "*",
+      "match" : "*-tr",
+      "mapping" : {
+        "type" : "date_range",
+        "format" : "time||time_no_millis||HH:mm:ss.SSS||HH:mm:ss||HH:mm||HH"
+      }
+    }
+  },
+  {
+    "currencies" : {
+      "match_mapping_type" : "*",
+      "match" : "*-currency",
+      "mapping" : {
+        "type" : "scaled_float",
+        "scaling_factor" : 100
+      }
+    }
+  },
+  {
+    "timestamps" : {
+      "match_mapping_type" : "*",
+      "match" : "*-ts",
+      "mapping" : {
+        "type" : "date",
+        "format" : "epoch_millis"
+      }
+    }
+  },
+  {
+    "content_ids" : {
+      "match_mapping_type" : "*",
+      "match" : "*_content_ids",
+      "mapping" : {
+        "type" : "integer"
+      }
+    }
+  },
+  {
+    "created" : {
+      "match_mapping_type" : "*",
+      "match" : "created",
+      "mapping" : {
+        "type" : "date",
+        "format" : "date_optional_time"
+      }
+    }
+  },
+  {
+    "modified" : {
+      "match_mapping_type" : "*",
+      "match" : "modified",
+      "mapping" : {
+        "type" : "date",
+        "format" : "date_optional_time"
+      }
+    }
+  }
+]
