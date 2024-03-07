@@ -611,7 +611,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			}
 
 		} else {
-			// queue record for removal -- also make sure we don't try do any unecessary indexing
+			// queue record for removal -- also make sure we don't try do any unnecessary indexing
 			unset(self::$update_content_buffer[$table][$subject_row_id]);
 			self::$delete_buffer[$table][] = $subject_row_id;
 		}
@@ -643,7 +643,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 					]
 				];
 
-				// also make sure we don't do unessecary indexing for this record below
+				// also make sure we don't do unnecessary indexing for this record below
 				unset(self::$update_content_buffer[$table][$row_id]);
 			}
 		}
@@ -756,10 +756,10 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	# -------------------------------------------------------
 
 	/**
-	 * Performs the quickest possible search on the index for the specfied table_num in $table_num
+	 * Performs the quickest possible search on the index for the specified table_num in $table_num
 	 * using the text in $ps_search. Unlike the search() method, quickSearch doesn't support
 	 * any sort of search syntax. You give it some text and you get a collection of (hopefully) relevant results back
-	 * quickly. quickSearch() is intended for autocompleting search suggestion UI's and the like, where performance is
+	 * quickly. quickSearch() is intended for autocompleting search suggestion UIs and the like, where performance is
 	 * critical and the ability to control search parameters is not required.
 	 *
 	 * @param $pn_table_num - The table index to search on

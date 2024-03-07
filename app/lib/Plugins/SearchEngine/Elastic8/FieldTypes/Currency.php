@@ -51,7 +51,7 @@ class Currency extends GenericElement {
 			return parent::getIndexingFragment($content, $options);
 		}
 
-		// we index currencys as float number and the 3-char currency code in a separate text field
+		// we index currencies as float number and the 3-char currency code in a separate text field
 		$curr = new CurrencyAttributeValue();
 		$parsed_currency = $curr->parseValue($content, []);
 
