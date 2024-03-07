@@ -78,6 +78,7 @@ class Mapping {
 
 	/**
 	 * Load the dynamic templates configuration file
+	 *
 	 * @var array
 	 */
 	private array $dynamicTemplates;
@@ -87,19 +88,20 @@ class Mapping {
 	 */
 	public function __construct() {
 		// set up basic properties
-		$this->search_conf = Configuration::load( Configuration::load()->get( 'search_config' ) );
-		$this->indexing_conf = Configuration::load( __CA_CONF_DIR__ . '/search_indexing.conf' );
+		$this->search_conf = Configuration::load(Configuration::load()->get('search_config'));
+		$this->indexing_conf = Configuration::load(__CA_CONF_DIR__ . '/search_indexing.conf');
 
 		$this->db = new Db();
-		$this->search_base = new SearchBase( $this->db, null, false );
+		$this->search_base = new SearchBase($this->db, null, false);
 
 		$this->element_info = [];
 
-		$this->app_vars = new ApplicationVars( $this->db );
+		$this->app_vars = new ApplicationVars($this->db);
 
 		$this->prefetchElementInfo();
 
-		$this->dynamicTemplates = json_decode(file_get_contents( __DIR__ . '/dynamicTemplates.json' ), JSON_OBJECT_AS_ARRAY);
+		$this->dynamicTemplates = json_decode(file_get_contents(__DIR__ . '/dynamicTemplates.json'),
+			JSON_OBJECT_AS_ARRAY);
 	}
 
 
@@ -140,44 +142,44 @@ class Mapping {
 	 *
 	 * @return array
 	 */
-	public function getFieldsToIndex( $table ) {
-		if ( ! Datamodel::tableExists( $table ) ) {
+	public function getFieldsToIndex($table) {
+		if (!Datamodel::tableExists($table)) {
 			return [];
 		}
 		$table_fields = $this->getSearchBase()
-			->getFieldsToIndex( $table, null, [ 'clearCache' => true, 'includeNonRootElements' => true ] );
-		if ( ! is_array( $table_fields ) ) {
+			->getFieldsToIndex($table, null, ['clearCache' => true, 'includeNonRootElements' => true]);
+		if (!is_array($table_fields)) {
 			return [];
 		}
 
 		$rewritten_fields = [];
-		foreach ( $table_fields as $field_name => $field_options ) {
-			if ( preg_match( '!^_ca_attribute_([\d]*)$!', $field_name, $matches ) ) {
-				$rewritten_fields[ $table . '.A' . $matches[1] ] = $field_options;
+		foreach ($table_fields as $field_name => $field_options) {
+			if (preg_match('!^_ca_attribute_([\d]*)$!', $field_name, $matches)) {
+				$rewritten_fields[$table . '.A' . $matches[1]] = $field_options;
 			} else {
-				$i = Datamodel::getFieldNum( $table, $field_name );
-				if ( ! $i ) {
+				$i = Datamodel::getFieldNum($table, $field_name);
+				if (!$i) {
 					continue;
 				}
 
-				$rewritten_fields[ $table . '.I' . $i ] = $field_options;
+				$rewritten_fields[$table . '.I' . $i] = $field_options;
 			}
 		}
 
-		$related_tables = $this->getSearchBase()->getRelatedIndexingTables( $table );
-		foreach ( $related_tables as $related_table ) {
-			$related_table_fields = $this->getSearchBase()->getFieldsToIndex( $table, $related_table,
-				[ 'clearCache' => true, 'includeNonRootElements' => true ] );
-			foreach ( $related_table_fields as $related_table_field => $related_table_field_options ) {
-				if ( preg_match( '!^_ca_attribute_([\d]*)$!', $related_table_field, $matches ) ) {
-					$rewritten_fields[ $related_table . '.A' . $matches[1] ] = $related_table_field_options;
+		$related_tables = $this->getSearchBase()->getRelatedIndexingTables($table);
+		foreach ($related_tables as $related_table) {
+			$related_table_fields = $this->getSearchBase()->getFieldsToIndex($table, $related_table,
+				['clearCache' => true, 'includeNonRootElements' => true]);
+			foreach ($related_table_fields as $related_table_field => $related_table_field_options) {
+				if (preg_match('!^_ca_attribute_([\d]*)$!', $related_table_field, $matches)) {
+					$rewritten_fields[$related_table . '.A' . $matches[1]] = $related_table_field_options;
 				} else {
-					$i = Datamodel::getFieldNum( $related_table, $related_table_field );
-					if ( ! $i ) {
+					$i = Datamodel::getFieldNum($related_table, $related_table_field);
+					if (!$i) {
 						continue;
 					}
 
-					$rewritten_fields[ $related_table . '.I' . $i ] = $related_table_field_options;
+					$rewritten_fields[$related_table . '.I' . $i] = $related_table_field_options;
 				}
 			}
 		}
@@ -190,20 +192,20 @@ class Mapping {
 	 * time @see Mapping::getElementInfo() is called. Also @see $opa_element_info.
 	 */
 	protected function prefetchElementInfo() {
-		if ( is_array( $this->element_info ) && ( sizeof( $this->element_info ) > 0 ) ) {
+		if (is_array($this->element_info) && (sizeof($this->element_info) > 0)) {
 			return;
 		}
 
-		$elements = $this->getDb()->query( 'SELECT * FROM ca_metadata_elements' );
+		$elements = $this->getDb()->query('SELECT * FROM ca_metadata_elements');
 
 		$this->element_info = [];
-		while ( $elements->nextRow() ) {
-			$element_id = $elements->get( 'element_id' );
+		while ($elements->nextRow()) {
+			$element_id = $elements->get('element_id');
 
-			$this->element_info[ $element_id ] = [
+			$this->element_info[$element_id] = [
 				'element_id' => $element_id,
-				'element_code' => $elements->get( 'element_code' ),
-				'datatype' => $elements->get( 'datatype' )
+				'element_code' => $elements->get('element_code'),
+				'datatype' => $elements->get('datatype')
 			];
 		}
 	}
@@ -218,15 +220,15 @@ class Mapping {
 	 *
 	 * @return array|bool
 	 */
-	public function getElementInfo( $element_id ) {
-		if ( isset( $this->element_info[ $element_id ] ) ) {
-			return $this->element_info[ $element_id ];
+	public function getElementInfo($element_id) {
+		if (isset($this->element_info[$element_id])) {
+			return $this->element_info[$element_id];
 		}
 
 		return false;
 	}
 
 	public function getDynamicTemplates() {
-	  return $this->dynamicTemplates;
+		return $this->dynamicTemplates;
 	}
 }

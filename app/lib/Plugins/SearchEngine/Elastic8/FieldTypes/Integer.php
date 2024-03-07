@@ -32,19 +32,19 @@
 
 namespace Elastic8\FieldTypes;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php');
 
 class Integer extends GenericElement {
 
-	public function __construct( $table_name, $element_code ) {
-		parent::__construct( $table_name, $element_code );
+	public function __construct($table_name, $element_code) {
+		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, $options) {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
 
-		return parent::getIndexingFragment( (int) $content, $options );
+		return parent::getIndexingFragment((int) $content, $options);
 	}
 }

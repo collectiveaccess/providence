@@ -38,9 +38,9 @@ use Zend_Search_Lucene_Index_Term;
 
 abstract class FieldType {
 
-	abstract public function getIndexingFragment( $content, $options );
+	abstract public function getIndexingFragment($content, $options);
 
-	abstract public function getRewrittenTerm( $term );
+	abstract public function getRewrittenTerm($term);
 
 	/**
 	 * Allows implementations to add additional terms to the query
@@ -49,7 +49,7 @@ abstract class FieldType {
 	 *
 	 * @return bool
 	 */
-	public function getAdditionalTerms( $term ) {
+	public function getAdditionalTerms($term) {
 		return false;
 	}
 
@@ -60,7 +60,7 @@ abstract class FieldType {
 	 *
 	 * @return bool
 	 */
-	public function getQueryFilters( $term ) {
+	public function getQueryFilters($term) {
 		return false;
 	}
 
@@ -70,71 +70,71 @@ abstract class FieldType {
 	 *
 	 * @return FieldType
 	 */
-	public static function getInstance( $table, $content_fieldname ) {
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/DateRange.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Geocode.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Currency.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Length.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Weight.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Timecode.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Integer.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Numeric.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Intrinsic.php' );
-		require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Timestamp.php' );
+	public static function getInstance($table, $content_fieldname) {
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/DateRange.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Geocode.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Currency.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Length.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Weight.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Timecode.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Integer.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Numeric.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Intrinsic.php');
+		require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/Timestamp.php');
 
-		if ( $table == 'created' || $table == 'modified' ) {
-			return new Timestamp( $table );
+		if ($table == 'created' || $table == 'modified') {
+			return new Timestamp($table);
 		}
 
 		// if this is an indexing field name, rewrite it
 		$could_be_attribute = true;
-		if ( preg_match( "/^(I|A)[0-9]+$/", $content_fieldname ) ) {
+		if (preg_match("/^(I|A)[0-9]+$/", $content_fieldname)) {
 
-			if ( $content_fieldname[0] === 'A' ) { // Metadata attribute
-				$field_num_proc = (int) substr( $content_fieldname, 1 );
-				$content_fieldname = ca_metadata_elements::getElementCodeForId( $field_num_proc );
-				if ( ! $content_fieldname ) {
+			if ($content_fieldname[0] === 'A') { // Metadata attribute
+				$field_num_proc = (int) substr($content_fieldname, 1);
+				$content_fieldname = ca_metadata_elements::getElementCodeForId($field_num_proc);
+				if (!$content_fieldname) {
 					return null;
 				}
 			} else {
 				// Plain intrinsic
 				$could_be_attribute = false;
-				$field_num_proc = (int) substr( $content_fieldname, 1 );
-				$content_fieldname = Datamodel::getFieldName( $table, $field_num_proc );
+				$field_num_proc = (int) substr($content_fieldname, 1);
+				$content_fieldname = Datamodel::getFieldName($table, $field_num_proc);
 			}
 
 		}
 
-		if ( $content_fieldname && $could_be_attribute ) {
-			$tmp = explode( '/', $content_fieldname );
-			$content_fieldname = array_pop( $tmp );
-			if ( $datatype = ca_metadata_elements::getElementDatatype( $content_fieldname ) ) {
-				switch ( $datatype ) {
+		if ($content_fieldname && $could_be_attribute) {
+			$tmp = explode('/', $content_fieldname);
+			$content_fieldname = array_pop($tmp);
+			if ($datatype = ca_metadata_elements::getElementDatatype($content_fieldname)) {
+				switch ($datatype) {
 					case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-						return new DateRange( $table, $content_fieldname );
+						return new DateRange($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_GEOCODE__:
-						return new Geocode( $table, $content_fieldname );
+						return new Geocode($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-						return new Currency( $table, $content_fieldname );
+						return new Currency($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
-						return new Length( $table, $content_fieldname );
+						return new Length($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-						return new Weight( $table, $content_fieldname );
+						return new Weight($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
-						return new Timecode( $table, $content_fieldname );
+						return new Timecode($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_INTEGER__:
-						return new Integer( $table, $content_fieldname );
+						return new Integer($table, $content_fieldname);
 					case __CA_ATTRIBUTE_VALUE_NUMERIC__:
-						return new Numeric( $table, $content_fieldname );
+						return new Numeric($table, $content_fieldname);
 					default:
-						return new GenericElement( $table, $content_fieldname );
+						return new GenericElement($table, $content_fieldname);
 				}
 			} else {
-				return new Intrinsic( $table, $content_fieldname );
+				return new Intrinsic($table, $content_fieldname);
 			}
 		} else {
-			return new Intrinsic( $table, $content_fieldname );
+			return new Intrinsic($table, $content_fieldname);
 		}
 	}
 

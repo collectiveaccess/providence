@@ -30,9 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
-include_once( __CA_LIB_DIR__ . '/Datamodel.php' );
-include_once( __CA_LIB_DIR__ . '/Plugins/WLPlug.php' );
-include_once( __CA_LIB_DIR__ . '/Plugins/IWLPlugSearchEngineResult.php' );
+include_once(__CA_LIB_DIR__ . '/Datamodel.php');
+include_once(__CA_LIB_DIR__ . '/Plugins/WLPlug.php');
+include_once(__CA_LIB_DIR__ . '/Plugins/IWLPlugSearchEngineResult.php');
 
 class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
@@ -44,20 +44,20 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	private $subject_table_name;
 
 	# -------------------------------------------------------
-	public function __construct( $pa_hits, $pn_table_num ) {
+	public function __construct($pa_hits, $pn_table_num) {
 		parent::__construct();
 
 		$this->subject_tablenum = $pn_table_num;
-		$this->setHits( $pa_hits );
+		$this->setHits($pa_hits);
 	}
 
 	# -------------------------------------------------------
-	public function setHits( $hits ) {
+	public function setHits($hits) {
 		$this->hits = $hits;
-		$this->current_row = - 1;
+		$this->current_row = -1;
 
-		if ( sizeof( $this->hits ) ) {
-			$this->subject_instance = Datamodel::getInstanceByTableNum( $this->subject_tablenum, true );
+		if (sizeof($this->hits)) {
+			$this->subject_instance = Datamodel::getInstanceByTableNum($this->subject_tablenum, true);
 			$this->subject_primary_key = $this->subject_instance->primaryKey();
 			$this->subject_table_name = $this->subject_instance->tableName();
 		}
@@ -70,13 +70,13 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 
 	# -------------------------------------------------------
 	public function numHits() {
-		return is_array( $this->hits ) ? sizeof( $this->hits ) : 0;
+		return is_array($this->hits) ? sizeof($this->hits) : 0;
 	}
 
 	# -------------------------------------------------------
 	public function nextHit() {
-		if ( $this->current_row < sizeof( $this->hits ) - 1 ) {
-			$this->current_row ++;
+		if ($this->current_row < sizeof($this->hits) - 1) {
+			$this->current_row++;
 
 			return true;
 		}
@@ -90,34 +90,34 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function get( $ps_field, $pa_options = null ) {
+	public function get($ps_field, $pa_options = null) {
 		// the only thing get() pulls directly from the index is the primary key ...
 		// everything else is handled in SearchResult::get() using prefetched database queries.
-		if ( $ps_field == $this->subject_primary_key
+		if ($ps_field == $this->subject_primary_key
 			|| $ps_field == $this->subject_table_name . '.' . $this->subject_primary_key
 		) {
-			return $this->hits[ $this->current_row ]['_id'];
+			return $this->hits[$this->current_row]['_id'];
 		}
 
 		return false;
 	}
 
 	# -------------------------------------------------------
-	public function getPrimaryKeyValues( $limit = null ) {
-		if ( ! $limit ) {
+	public function getPrimaryKeyValues($limit = null) {
+		if (!$limit) {
 			$limit = null;
 		}
-		if ( ! is_array( $this->hits ) ) {
+		if (!is_array($this->hits)) {
 			return [];
 		}
 		// primary key
 		$ids = [];
 
 		$c = 0;
-		foreach ( $this->hits as $i => $row ) {
+		foreach ($this->hits as $i => $row) {
 			$ids[] = $row['_id'];
-			$c ++;
-			if ( ! is_null( $limit ) && ( $c >= $limit ) ) {
+			$c++;
+			if (!is_null($limit) && ($c >= $limit)) {
 				break;
 			}
 		}
@@ -126,8 +126,8 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function seek( $pn_index ) {
-		if ( ( $pn_index >= 0 ) && ( $pn_index < sizeof( $this->hits ) ) ) {
+	public function seek($pn_index) {
+		if (($pn_index >= 0) && ($pn_index < sizeof($this->hits))) {
 			$this->current_row = $pn_index - 1;
 
 			return true;

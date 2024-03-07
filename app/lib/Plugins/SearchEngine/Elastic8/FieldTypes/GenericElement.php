@@ -34,7 +34,7 @@ namespace Elastic8\FieldTypes;
 
 use Zend_Search_Lucene_Index_Term;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php');
 
 class GenericElement extends FieldType {
 
@@ -58,7 +58,7 @@ class GenericElement extends FieldType {
 	 * @param string $table_name
 	 * @param string $element_code
 	 */
-	public function __construct( $table_name, $element_code ) {
+	public function __construct($table_name, $element_code) {
 		$this->table_name = $table_name;
 		$this->element_code = $element_code;
 	}
@@ -73,7 +73,7 @@ class GenericElement extends FieldType {
 	/**
 	 * @param string $element_code
 	 */
-	public function setElementCode( $element_code ) {
+	public function setElementCode($element_code) {
 		$this->element_code = $element_code;
 	}
 
@@ -90,15 +90,15 @@ class GenericElement extends FieldType {
 	 *
 	 * @return array
 	 */
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, $options) {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
 		// make sure empty strings are indexed as null, so ElasticSearch's
 		// _missing_ and _exists_ filters work as expected. If a field type
 		// needs to have them indexed differently, it can do so in its own
 		// FieldType implementation
-		if ( $content === '' ) {
+		if ($content === '') {
 			$content = null;
 		}
 
@@ -112,20 +112,20 @@ class GenericElement extends FieldType {
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm( $term ) {
-		$tmp = explode( '\\/', $term->field );
-		if ( sizeof( $tmp ) == 3 ) {
-			unset( $tmp[1] );
+	public function getRewrittenTerm($term) {
+		$tmp = explode('\\/', $term->field);
+		if (sizeof($tmp) == 3) {
+			unset($tmp[1]);
 			$term = new Zend_Search_Lucene_Index_Term(
-				$term->text, join( '\\/', $tmp )
+				$term->text, join('\\/', $tmp)
 			);
 		}
 
-		if ( strtolower( $term->text ) === '[blank]' ) {
+		if (strtolower($term->text) === '[blank]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_missing_'
 			);
-		} elseif ( strtolower( $term->text ) === '[set]' ) {
+		} elseif (strtolower($term->text) === '[set]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_exists_'
 			);

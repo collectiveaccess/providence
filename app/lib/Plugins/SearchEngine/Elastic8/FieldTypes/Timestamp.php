@@ -35,7 +35,7 @@ namespace Elastic8\FieldTypes;
 use Zend_Search_Lucene_Index_Term;
 use Zend_Search_Lucene_Search_Query_Phrase;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php');
 
 class Timestamp extends FieldType {
 
@@ -51,7 +51,7 @@ class Timestamp extends FieldType {
 	 *
 	 * @param string $field_name
 	 */
-	public function __construct( $field_name ) {
+	public function __construct($field_name) {
 		$this->field_name = $field_name;
 	}
 
@@ -65,7 +65,7 @@ class Timestamp extends FieldType {
 	/**
 	 * @param string $field_name
 	 */
-	public function setFieldName( $field_name ) {
+	public function setFieldName($field_name) {
 		$this->field_name = $field_name;
 	}
 
@@ -75,13 +75,13 @@ class Timestamp extends FieldType {
 	 *
 	 * @return array
 	 */
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, $options) {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
 
 		return [
-			str_replace( '.', '/', $this->getFieldName() ) => $content
+			str_replace('.', '/', $this->getFieldName()) => $content
 		];
 	}
 
@@ -90,7 +90,7 @@ class Timestamp extends FieldType {
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm( $term ) {
+	public function getRewrittenTerm($term) {
 		return $term;
 	}
 
@@ -99,16 +99,16 @@ class Timestamp extends FieldType {
 	 *
 	 * @return array
 	 */
-	public function getFiltersForPhraseQuery( $query ) {
+	public function getFiltersForPhraseQuery($query) {
 		$terms = $return = [];
 		$fld = null;
-		foreach ( $query->getQueryTerms() as $term ) {
-			$term = caRewriteElasticSearchTermFieldSpec( $term );
-			$fld = str_replace( '\\', '', $term->field );
+		foreach ($query->getQueryTerms() as $term) {
+			$term = caRewriteElasticSearchTermFieldSpec($term);
+			$fld = str_replace('\\', '', $term->field);
 			$terms[] = $term->text;
 		}
 
-		$parsed_values = caGetISODates( join( ' ', $terms ) );
+		$parsed_values = caGetISODates(join(' ', $terms));
 
 		$return[] = [
 			'range' => [
@@ -134,10 +134,10 @@ class Timestamp extends FieldType {
 	 *
 	 * @return array
 	 */
-	function getFiltersForTerm( $term ) {
+	function getFiltersForTerm($term) {
 		$return = [];
-		$parsed_values = caGetISODates( $term->text );
-		$fld = str_replace( '\\', '', $term->field );
+		$parsed_values = caGetISODates($term->text);
+		$fld = str_replace('\\', '', $term->field);
 
 		$return[] = [
 			'range' => [

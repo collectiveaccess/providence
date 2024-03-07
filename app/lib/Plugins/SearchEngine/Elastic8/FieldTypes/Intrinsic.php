@@ -37,7 +37,7 @@ use BaseModel;
 use Datamodel;
 use Zend_Search_Lucene_Index_Term;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/FieldType.php');
 
 class Intrinsic extends FieldType {
 
@@ -60,7 +60,7 @@ class Intrinsic extends FieldType {
 	 * @param string $table_name
 	 * @param string $field_name
 	 */
-	public function __construct( $table_name, $field_name ) {
+	public function __construct($table_name, $field_name) {
 		$this->table_name = $table_name;
 		$this->field_name = $field_name;
 	}
@@ -75,7 +75,7 @@ class Intrinsic extends FieldType {
 	/**
 	 * @param string $table_name
 	 */
-	public function setTableName( $table_name ) {
+	public function setTableName($table_name) {
 		$this->table_name = $table_name;
 	}
 
@@ -89,7 +89,7 @@ class Intrinsic extends FieldType {
 	/**
 	 * @param string $field_name
 	 */
-	public function setFieldName( $field_name ) {
+	public function setFieldName($field_name) {
 		$this->field_name = $field_name;
 	}
 
@@ -99,26 +99,26 @@ class Intrinsic extends FieldType {
 	 *
 	 * @return array
 	 */
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, $options) {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
-		if ( $content == '' ) {
+		if ($content == '') {
 			$content = null;
 		}
 
-		$instance = Datamodel::getInstance( $this->getTableName(), true );
-		$field_info = Datamodel::getFieldInfo( $this->getTableName(), $this->getFieldName() );
+		$instance = Datamodel::getInstance($this->getTableName(), true);
+		$field_info = Datamodel::getFieldInfo($this->getTableName(), $this->getFieldName());
 
-		switch ( $field_info['FIELD_TYPE'] ) {
-			case ( FT_BIT ):
+		switch ($field_info['FIELD_TYPE']) {
+			case (FT_BIT):
 				$content = (bool) $content ? 1 : 0;
 				break;
-			case ( FT_NUMBER ):
-			case ( FT_TIME ):
-			case ( FT_TIMERANGE ):
-			case ( FT_TIMECODE ):
-				if ( ! isset( $field_info['LIST_CODE'] ) ) {
+			case (FT_NUMBER):
+			case (FT_TIME):
+			case (FT_TIMERANGE):
+			case (FT_TIMECODE):
+				if (!isset($field_info['LIST_CODE'])) {
 					$content = (float) $content;
 				}
 				break;
@@ -131,17 +131,17 @@ class Intrinsic extends FieldType {
 			$this->getTableName() . '/' . $this->getFieldName() => $content
 		];
 
-		if ( $instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) == $this->getFieldName()
-			|| ( is_array( $options )
-				&& in_array( 'INDEX_AS_IDNO', $options, true ) )
+		if ($instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName()
+			|| (is_array($options)
+				&& in_array('INDEX_AS_IDNO', $options, true))
 		) {
-			if ( method_exists( $instance, "getIDNoPlugInInstance" )
-				&& ( $idno
-					= $instance->getIDNoPlugInInstance() )
+			if (method_exists($instance, "getIDNoPlugInInstance")
+				&& ($idno
+					= $instance->getIDNoPlugInInstance())
 			) {
-				$values = array_values( $idno->getIndexValues( $content ) );
+				$values = array_values($idno->getIndexValues($content));
 			} else {
-				$values = explode( ' ', $content );
+				$values = explode(' ', $content);
 			}
 
 			$return = [
@@ -149,10 +149,10 @@ class Intrinsic extends FieldType {
 			];
 		}
 
-		if ( $rel_type_id = caGetOption( 'relationship_type_id', $options ) ) {
+		if ($rel_type_id = caGetOption('relationship_type_id', $options)) {
 			// we use slashes as table_name/field_name delimiter, so let's use something else for the relationship type code
-			$return[ $this->getTableName() . '/' . $this->getFieldName() . '|'
-			. caGetRelationshipTypeCode( $rel_type_id ) ]
+			$return[$this->getTableName() . '/' . $this->getFieldName() . '|'
+			. caGetRelationshipTypeCode($rel_type_id)]
 				= $content;
 		}
 
@@ -164,18 +164,18 @@ class Intrinsic extends FieldType {
 	 *
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
-	public function getRewrittenTerm( $term ) {
-		$instance = Datamodel::getInstance( $this->getTableName(), true );
+	public function getRewrittenTerm($term) {
+		$instance = Datamodel::getInstance($this->getTableName(), true);
 
 		$raw_term = $term->text;
-		if ( mb_substr( $raw_term, - 1 ) == '|' ) {
-			$raw_term = mb_substr( $raw_term, 0, mb_strlen( $raw_term ) - 1 );
+		if (mb_substr($raw_term, -1) == '|') {
+			$raw_term = mb_substr($raw_term, 0, mb_strlen($raw_term) - 1);
 		}
 
-		$field_components = explode( '/', $term->field );
+		$field_components = explode('/', $term->field);
 
-		if ( ( strtolower( $raw_term ) === '[blank]' ) ) {
-			if ( $instance instanceof BaseLabel ) { // labels usually have actual [BLANK] values
+		if ((strtolower($raw_term) === '[blank]')) {
+			if ($instance instanceof BaseLabel) { // labels usually have actual [BLANK] values
 				return new Zend_Search_Lucene_Index_Term(
 					'"' . $raw_term . '"', $term->field
 				);
@@ -184,15 +184,15 @@ class Intrinsic extends FieldType {
 					$term->field, '_missing_'
 				);
 			}
-		} elseif ( strtolower( $raw_term ) === '[set]' ) {
+		} elseif (strtolower($raw_term) === '[set]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_exists_'
 			);
 		} elseif (
-			( $instance instanceof BaseModel ) && isset( $field_components[1] )
-			&& ( $instance->getProperty( 'ID_NUMBERING_ID_FIELD' ) == $field_components[1] )
+			($instance instanceof BaseModel) && isset($field_components[1])
+			&& ($instance->getProperty('ID_NUMBERING_ID_FIELD') == $field_components[1])
 		) {
-			if ( stripos( $raw_term, '*' ) !== false ) {
+			if (stripos($raw_term, '*') !== false) {
 				return new Zend_Search_Lucene_Index_Term(
 					$raw_term, $term->field
 				);
@@ -203,7 +203,7 @@ class Intrinsic extends FieldType {
 			}
 		} else {
 			return new Zend_Search_Lucene_Index_Term(
-				str_replace( '/', '\\/', $raw_term ),
+				str_replace('/', '\\/', $raw_term),
 				$term->field
 			);
 		}
