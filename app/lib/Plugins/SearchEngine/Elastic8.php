@@ -697,8 +697,10 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 					// If there are errors, throw ApplicationException
 					if (!empty($errors)) {
-						$message = "Bulk operation failed. Errors: " . implode(', ', $errors);
+						$message = _t("%1 out of %2 bulk operation(s) failed. Errors: %3.", count($errors), count($responses), implode('; ', $errors));
 						$this->getClient()->getLogger()->error($message);
+						error_log($message);
+						// TODO: Do we just log this or actually throw the exception? Exception when > certain percentage of errors?
 						throw new ApplicationException($message);
 					}
 				}
