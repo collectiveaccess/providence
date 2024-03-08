@@ -2792,7 +2792,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					$info = $qr->getMediaInfo('media');
 					$version = caGetOption('version', $options, 'original');
 					if(!isset($info[$version])) {
-						$version = array_keys($info); 
+						$version = array_keys(is_array($info) ? $info : []); 
 						$version = array_pop($version);
 					}
 					switch($bundle_name) {
