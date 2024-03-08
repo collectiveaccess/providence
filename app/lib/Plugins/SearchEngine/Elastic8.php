@@ -64,7 +64,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	static private array $delete_buffer = [];
 	static private array $record_cache = [];
 
-	protected $elasticsearch_index_name = '';
+	protected string $elasticsearch_index_name = '';
 	protected string $elasticsearch_base_url = '';
 
 	protected int $version = 8;
