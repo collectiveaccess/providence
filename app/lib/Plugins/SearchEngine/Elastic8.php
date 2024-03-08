@@ -184,7 +184,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param int $content_container_id
 	 * @param int $content_row_id
 	 * @param string $content
-	 * @param null $options
+	 * @param null|array $options
 	 *    literalContent = array of text content to be applied without tokenization
 	 *    BOOST = Indexing boost to apply
 	 *    PRIVATE = Set indexing to private
