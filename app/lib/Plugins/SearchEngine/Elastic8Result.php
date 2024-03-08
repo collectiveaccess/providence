@@ -69,7 +69,7 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	}
 
 	# -------------------------------------------------------
-	public function numHits(): ?int {
+	public function numHits(): int {
 		return is_array($this->hits) ? sizeof($this->hits) : 0;
 	}
 
