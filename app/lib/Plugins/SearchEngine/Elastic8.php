@@ -67,8 +67,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected string $elasticsearch_index_name = '';
 	protected string $elasticsearch_base_url = '';
 
-	protected int $version = 8;
-
 	/**
 	 * @throws AuthenticationException
 	 */
