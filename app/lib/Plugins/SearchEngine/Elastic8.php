@@ -51,7 +51,6 @@ require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Mapping.php');
 require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Query.php');
 
 class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSearchEngine {
-	# -------------------------------------------------------
 	protected array $index_content_buffer = [];
 
 	protected ?string $indexing_subject_tablenum = null;
@@ -69,8 +68,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected string $elasticsearch_base_url = '';
 
 	protected int $version = 8;
-
-	# -------------------------------------------------------
 
 	/**
 	 * @throws AuthenticationException
@@ -96,7 +93,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 		$this->getClient();
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch index name prefix
@@ -104,7 +100,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected function getIndexNamePrefix(): string {
 		return $this->elasticsearch_index_name;
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch index name
@@ -116,7 +111,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 		return $this->getIndexNamePrefix() . "_{$table}";
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Refresh ElasticSearch mapping if necessary
@@ -181,7 +175,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			}
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * @param int $subject_tablenum
@@ -239,7 +232,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$this->flushContentBuffer();
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Utility function that adds a given indexing fragment to the update content buffer
@@ -276,7 +268,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			}
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch client
@@ -302,7 +293,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		return self::$client;
 	}
 
-	# -------------------------------------------------------
 	public function init() {
 		if (($max_indexing_buffer_size = (int) $this->search_config->get('elasticsearch_indexing_buffer_size'))
 			< 1
@@ -322,7 +312,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			'incremental_reindexing' => true
 		];
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
@@ -352,12 +341,10 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		return true;
 	}
 
-	# -------------------------------------------------------
 	public function setTableNum($table_num) {
 		$this->indexing_subject_tablenum = $table_num;
 	}
 
-	# -------------------------------------------------------
 
 	/**
 	 * @throws ApplicationException
@@ -370,7 +357,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$this->flushContentBuffer();
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Do search
@@ -437,7 +423,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 		return new WLPlugSearchEngineElastic8Result($results['hits']['hits'], $subject_tablenum);
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Start row indexing
@@ -451,7 +436,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		$this->indexing_subject_row_id = $subject_row_id;
 		$this->indexing_subject_tablename = Datamodel::getTableName($subject_tablenum);
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Index field
@@ -498,7 +482,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			}
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Commit indexing for row
@@ -530,7 +513,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$this->flushContentBuffer();
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Delete indexing for row
@@ -616,7 +598,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			self::$delete_buffer[$table][] = $subject_row_id;
 		}
 	}
-	# ------------------------------------------------
 
 	/**
 	 * Flush content buffer and write to index
@@ -732,7 +713,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		self::$delete_buffer = [];
 		self::$record_cache = [];
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Set additional index-level settings like analyzers or token filters
@@ -744,16 +724,13 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @throws ServerResponseException
 	 */
 
-	# -------------------------------------------------------
 	public function optimizeIndex(int $tablenum) {
 		$this->getClient()->indices()->forceMerge(['index' => $this->getIndexName($tablenum)]);
 	}
 
-	# -------------------------------------------------------
 	public function engineName(): string {
 		return 'Elastic8';
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Performs the quickest possible search on the index for the specified table_num in $table_num
@@ -788,9 +765,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		return array_flip($pks);
 	}
 
-	# -------------------------------------------------------
 	public function isReindexing(): bool {
 		return (defined('__CollectiveAccess_IS_REINDEXING__') && __CollectiveAccess_IS_REINDEXING__);
 	}
-	# -------------------------------------------------------
 }
