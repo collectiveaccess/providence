@@ -941,7 +941,6 @@ class AppNavigation extends BaseObject {
 					}
 					break;
 				case 'constant':
-					return true;
 					if ($vb_not = (substr($va_tmp[1], 0, 1) == '!') ? true : false) {
 						$va_tmp[1] = substr($va_tmp[1], 1);
 					}
