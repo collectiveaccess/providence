@@ -247,7 +247,7 @@
       "match_mapping_type" : "*",
       "match" : "*_content_ids",
       "mapping" : {
-        "type" : "integer"
+        "type" : "keyword"
       }
     }
   },
