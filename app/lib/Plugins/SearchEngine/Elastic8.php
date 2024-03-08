@@ -66,8 +66,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected string $elasticsearch_index_name = '';
 	protected string $elasticsearch_base_url = '';
 
-	protected int $version = 8;
-
 	/**
 	 * @throws AuthenticationException
 	 */
@@ -515,6 +513,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	/**
 	 * Delete indexing for row
 	 *
+	 * @param array|null $field_nums
+	 *
 	 * @throws ApplicationException
 	 * @throws AuthenticationException
 	 * @throws ClientResponseException
@@ -523,7 +523,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @throws Exception
 	 */
 	public function removeRowIndexing(
-		int $subject_tablenum, int $subject_row_id, ?int $field_tablenum = null, ?array $field_nums = null,
+		int $subject_tablenum, int $subject_row_id, ?int $field_tablenum = null, $field_nums = null,
 		?int $field_row_id = null, ?int $rel_type_id = null
 	) {
 		$table = Datamodel::getTableName($subject_tablenum);

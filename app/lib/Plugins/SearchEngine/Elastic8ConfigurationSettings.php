@@ -87,12 +87,11 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 		$this->setting_names[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__]
 			= _t("ElasticSearch index exists");
 		$this->setting_descriptions[__CA_ELASTICSEARCH_SETTING_RUNNING__]
-			= _t("The ElasticSearch service must be running.", $this->webserver_user);
+			= _t("The ElasticSearch service must be running.");
 		$this->setting_descriptions[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__]
 			= _t("CollectiveAccess uses only a single index in an ElasticSearch setup. The name of that index can be set in the CollectiveAccess configuration.");
 		$this->setting_hints[__CA_ELASTICSEARCH_SETTING_RUNNING__]
-			= _t("Install and start the ElasticSearch service. If it is already running, check your CollectiveAccess configuration (the ElasticSearch URL and index name in particular).",
-			$this->webserver_user);
+			= _t("Install and start the ElasticSearch service. If it is already running, check your CollectiveAccess configuration (the ElasticSearch URL and index name in particular).");
 		$this->setting_hints[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__]
 			= _t("If the service is running and can be accessed by CollectiveAccess but the index is missing, let CollectiveAccess generate a fresh index and create the related indexing mappings. There is a tool in support/utils.");
 	}
