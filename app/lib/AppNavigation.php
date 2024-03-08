@@ -944,8 +944,9 @@ class AppNavigation extends BaseObject {
 					if ($vb_not = (substr($va_tmp[1], 0, 1) == '!') ? true : false) {
 						$va_tmp[1] = substr($va_tmp[1], 1);
 					}
-					if(!defined($va_tmp[1])) { return $vb_not ? true : false; }
-					if (isset($va_tmp[2])) {
+					if(!defined($va_tmp[1])) { 
+						$vs_value = false; 
+					} elseif (isset($va_tmp[2])) {
 						$vs_value = (constant($va_tmp[1]) == $va_tmp[2]) ? true : false;
 					} else {
 						$vs_value = constant($va_tmp[1]) ? true : false;
