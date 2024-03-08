@@ -3810,6 +3810,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_match_on = caGetOption('_matchOn', $va_element_data, null);
 								$vb_dont_create = caGetOption('_dontCreate', $va_element_data, false);
 								$vb_ignore_parent = caGetOption('_ignoreParent', $va_element_data, false);
+								$vb_ignore_type = caGetOption('_ignoreType', $va_element_data, false);
 								//$vb_treat_numeric_value_as_id = caGetOption('_treatNumericValueAsID', $va_element_data, false);
 								
 								$va_data_for_rel_table = $va_element_data;
@@ -3843,7 +3844,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 								switch($vs_table_name) {
 									case 'ca_objects':
-										if ($vn_rel_id = DataMigrationUtils::getObjectID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getObjectID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 
 											// kill it if no relationship type is set ... unless its objects_x_representations
 											// (from the representation side), where the rel type is optional
@@ -3879,7 +3880,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										} else {
 											$vs_idno_stub = isset($va_element_data['idno_stub']) ? $va_element_data['idno_stub'] : '';
 										}
-										if ($vn_rel_id = DataMigrationUtils::getObjectLotID($vs_idno_stub, $vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getObjectLotID($vs_idno_stub, $vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno_stub']) && ($vs_rel_type = $va_element_data['idno_stub']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -3897,7 +3898,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_entities':
-										if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('displaynameFormat' => $va_element_data['_displaynameFormat'] ?? null, 'logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels, 'ignoreLabelFields' => $va_element_data['_ignoreLabelFields'] ?? null))) {
+										if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('displaynameFormat' => $va_element_data['_displaynameFormat'] ?? null, 'logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels, 'ignoreLabelFields' => $va_element_data['_ignoreLabelFields'] ?? null))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -3915,7 +3916,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_places':
-										if ($vn_rel_id = DataMigrationUtils::getPlaceID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, null, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getPlaceID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, null, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -3933,7 +3934,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_collections':
-										if ($vn_rel_id = DataMigrationUtils::getCollectionID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getCollectionID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -3951,7 +3952,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_occurrences':
-										if ($vn_rel_id = DataMigrationUtils::getOccurrenceID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getOccurrenceID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -3969,7 +3970,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_storage_locations':
-										if ($vn_rel_id = DataMigrationUtils::getStorageLocationID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getStorageLocationID($vs_name, $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -3990,7 +3991,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$va_data_for_rel_table['is_enabled'] = 1;
 										$va_data_for_rel_table['preferred_labels'] = $va_element_data['preferred_labels'];
 										
-										if ($vn_rel_id = DataMigrationUtils::getListItemID($va_element_data['_list'], $va_element_data['idno'] ? $va_element_data['idno'] : null, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getListItemID($va_element_data['_list'], $va_element_data['idno'] ? $va_element_data['idno'] : null, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -4023,7 +4024,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_loans':
-										if ($vn_rel_id = DataMigrationUtils::getLoanID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getLoanID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
@@ -4041,7 +4042,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_movements':
-										if ($vn_rel_id = DataMigrationUtils::getMovementID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getMovementID($vs_name, $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('logReference' => $vs_idno, 'forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'ignoreType' => $vb_ignore_type, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno']) && ($vs_rel_type = $va_element_data['idno']['_relationship_type']))) { break; }
 											$orientation = $va_element_data['_relationship_orientation'] ?? 'LTOR';
 											
