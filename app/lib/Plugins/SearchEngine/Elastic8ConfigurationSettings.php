@@ -30,33 +30,26 @@
  * ----------------------------------------------------------------------
  */
 
-# ------------------------------------------------
 /* is ElasticSearch running?  */
 define('__CA_ELASTICSEARCH_SETTING_RUNNING__', 5001);
 /* does the index exist? */
 define('__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__', 5002);
-# ------------------------------------------------
 require_once(__CA_LIB_DIR__ . '/Datamodel.php');
 require_once(__CA_LIB_DIR__ . '/Configuration.php');
 require_once(__CA_LIB_DIR__ . '/Search/SearchBase.php');
 require_once(__CA_LIB_DIR__ . '/Search/ASearchConfigurationSettings.php');
 require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8.php');
 
-# ------------------------------------------------
 class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
-	# ------------------------------------------------
 	private Configuration $app_config;
 	private Configuration $search_config;
 	private Configuration $search_indexing_config;
-	# ------------------------------------------------
 	private array $setting_names;
 	private array $setting_descriptions;
 	private array $setting_hints;
-	# ------------------------------------------------
 	private $elasticsearch_base_url;
 	private $elasticsearch_index_name;
 
-	# ------------------------------------------------
 	public function __construct() {
 		$this->search_base = new SearchBase();
 		$this->app_config = Configuration::load();
@@ -84,38 +77,29 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 		parent::__construct();
 	}
 
-	# ------------------------------------------------
 	public function getEngineName(): string {
 		return "Elastic8";
 	}
 
-	# ------------------------------------------------
 	private function _initMessages() {
-		# ------------------------------------------------
 		$this->setting_names[__CA_ELASTICSEARCH_SETTING_RUNNING__]
 			= _t("ElasticSearch up and running");
 		$this->setting_names[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__]
 			= _t("ElasticSearch index exists");
-		# ------------------------------------------------
 		$this->setting_descriptions[__CA_ELASTICSEARCH_SETTING_RUNNING__]
 			= _t("The ElasticSearch service must be running.", $this->webserver_user);
 		$this->setting_descriptions[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__]
 			= _t("CollectiveAccess uses only a single index in an ElasticSearch setup. The name of that index can be set in the CollectiveAccess configuration.");
-		# ------------------------------------------------
 		$this->setting_hints[__CA_ELASTICSEARCH_SETTING_RUNNING__]
 			= _t("Install and start the ElasticSearch service. If it is already running, check your CollectiveAccess configuration (the ElasticSearch URL and index name in particular).",
 			$this->webserver_user);
 		$this->setting_hints[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__]
 			= _t("If the service is running and can be accessed by CollectiveAccess but the index is missing, let CollectiveAccess generate a fresh index and create the related indexing mappings. There is a tool in support/utils.");
-		# ------------------------------------------------
 	}
 
-	# ------------------------------------------------
 	public function setSettings() {
 		$this->opa_possible_errors = array_keys($this->setting_names);
 	}
-
-	# ------------------------------------------------
 
 	/**
 	 * @throws Zend_Http_Client_Exception
@@ -131,22 +115,17 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 		}
 	}
 
-	# ------------------------------------------------
 	public function getSettingName($pn_setting_num) {
 		return $this->setting_names[$pn_setting_num];
 	}
 
-	# ------------------------------------------------
 	public function getSettingDescription($pn_setting_num) {
 		return $this->setting_descriptions[$pn_setting_num];
 	}
 
-	# ------------------------------------------------
 	public function getSettingHint($pn_setting_num) {
 		return $this->setting_hints[$pn_setting_num];
 	}
-
-	# ------------------------------------------------
 
 	/**
 	 * @throws Zend_Http_Client_Exception
@@ -170,8 +149,6 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 
 		return __CA_SEARCH_CONFIG_OK__;
 	}
-
-	# ------------------------------------------------
 
 	/**
 	 * @throws Zend_Http_Client_Exception
@@ -201,5 +178,4 @@ class Elastic8ConfigurationSettings extends ASearchConfigurationSettings {
 
 		return __CA_SEARCH_CONFIG_OK__;
 	}
-	# ------------------------------------------------
 }

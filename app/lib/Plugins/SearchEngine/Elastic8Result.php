@@ -35,7 +35,6 @@ include_once(__CA_LIB_DIR__ . '/Plugins/WLPlug.php');
 include_once(__CA_LIB_DIR__ . '/Plugins/IWLPlugSearchEngineResult.php');
 
 class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEngineResult {
-	# -------------------------------------------------------
 	private ?array $hits;
 	private int $current_row;
 	private string $subject_tablenum;
@@ -43,7 +42,6 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 	private BaseModel $subject_instance;
 	private string $subject_table_name;
 
-	# -------------------------------------------------------
 	public function __construct($pa_hits, $pn_table_num) {
 		parent::__construct();
 
@@ -51,7 +49,6 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 		$this->setHits($pa_hits);
 	}
 
-	# -------------------------------------------------------
 	public function setHits($hits) {
 		$this->hits = $hits;
 		$this->current_row = -1;
@@ -63,17 +60,14 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 		}
 	}
 
-	# -------------------------------------------------------
 	public function getHits(): array {
 		return $this->hits;
 	}
 
-	# -------------------------------------------------------
 	public function numHits(): int {
 		return is_array($this->hits) ? sizeof($this->hits) : 0;
 	}
 
-	# -------------------------------------------------------
 	public function nextHit(): bool {
 		if ($this->current_row < sizeof($this->hits) - 1) {
 			$this->current_row++;
@@ -84,12 +78,10 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 		return false;
 	}
 
-	# -------------------------------------------------------
 	public function currentRow(): int {
 		return $this->current_row;
 	}
 
-	# -------------------------------------------------------
 	public function get($ps_field, $pa_options = null) {
 		// the only thing get() pulls directly from the index is the primary key ...
 		// everything else is handled in SearchResult::get() using prefetched database queries.
@@ -102,7 +94,6 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 		return false;
 	}
 
-	# -------------------------------------------------------
 	public function getPrimaryKeyValues($limit = null): array {
 		if (!$limit) {
 			$limit = null;
@@ -125,7 +116,6 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 		return $ids;
 	}
 
-	# -------------------------------------------------------
 	public function seek($pn_index): bool {
 		if (($pn_index >= 0) && ($pn_index < sizeof($this->hits))) {
 			$this->current_row = $pn_index - 1;
@@ -135,5 +125,4 @@ class WLPlugSearchEngineElastic8Result extends WLPlug implements IWLPlugSearchEn
 
 		return false;
 	}
-	# -------------------------------------------------------
 }
