@@ -196,7 +196,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 */
 	public function updateIndexingInPlace(
 		int $subject_tablenum, array $subject_row_ids, int $content_tablenum, string $content_fieldnum,
-		int $content_container_id, int $content_row_id, string $content, $options = null
+		int $content_container_id, int $content_row_id, string $content, ?array $options = null
 	) {
 		$table = Datamodel::getTableName($subject_tablenum);
 
