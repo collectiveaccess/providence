@@ -35,52 +35,47 @@ namespace Elastic8\FieldTypes;
 use Exception;
 use Zend_Search_Lucene_Index_Term;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php');
 
 class Length extends GenericElement {
 
-	public function __construct( $table_name, $element_code ) {
-		parent::__construct( $table_name, $element_code );
+	public function __construct($table_name, $element_code) {
+		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, array $options): array {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
-		if ( $content == '' ) {
-			return parent::getIndexingFragment( $content, $options );
+		if ($content == '') {
+			return parent::getIndexingFragment($content, $options);
 		}
 
 		// we index lengths as float in meters --that way we can do range searches etc.
 		try {
-			$parsed_length = caParseLengthDimension( $content );
+			$parsed_length = caParseLengthDimension($content);
 
-			return parent::getIndexingFragment( (float) $parsed_length->convertTo( 'METER', 6, 'en_US' ),
-				$options );
-		} catch ( Exception $e ) {
+			return parent::getIndexingFragment((float) $parsed_length->convertTo('METER', 6, 'en_US'),
+				$options);
+		} catch (Exception $e) {
 			return [];
 		}
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm( $term ) {
-		$tmp = explode( '\\/', $term->field );
-		if ( sizeof( $tmp ) == 3 ) {
-			unset( $tmp[1] );
+	public function getRewrittenTerm(Zend_Search_Lucene_Index_Term $term): Zend_Search_Lucene_Index_Term {
+		$tmp = explode('\\/', $term->field);
+		if (sizeof($tmp) == 3) {
+			unset($tmp[1]);
 			$term = new Zend_Search_Lucene_Index_Term(
-				$term->text, join( '\\/', $tmp )
+				$term->text, join('\\/', $tmp)
 			);
 		}
 
-		if ( strtolower( $term->text ) === '[blank]' ) {
+		if (strtolower($term->text) === '[blank]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_missing_'
 			);
-		} elseif ( strtolower( $term->text ) === '[set]' ) {
+		} elseif (strtolower($term->text) === '[set]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_exists_'
 			);
@@ -89,10 +84,10 @@ class Length extends GenericElement {
 		// convert incoming text to meters so that we can query our standardized indexing (see above)
 		try {
 			return new Zend_Search_Lucene_Index_Term(
-				(float) caParseLengthDimension( $term->text )->convertTo( 'METER', 6, 'en_US' ),
+				(float) caParseLengthDimension($term->text)->convertTo('METER', 6, 'en_US'),
 				$term->field
 			);
-		} catch ( Exception $e ) {
+		} catch (Exception $e) {
 			return $term;
 		}
 	}

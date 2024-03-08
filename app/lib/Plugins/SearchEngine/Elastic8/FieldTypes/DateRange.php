@@ -35,74 +35,67 @@ namespace Elastic8\FieldTypes;
 use Zend_Search_Lucene_Index_Term;
 use Zend_Search_Lucene_Search_Query_Phrase;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php');
 
 class DateRange extends GenericElement {
-	public function __construct( $table_name, $element_code ) {
-		parent::__construct( $table_name, $element_code );
+	public function __construct($table_name, $element_code) {
+		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, array $options): array {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
 		$return = [];
 
-		if ( ! is_array( $parsed_content = caGetISODates( $content, [ 'returnUnbounded' => true ] ) ) ) {
+		if (!is_array($parsed_content = caGetISODates($content, ['returnUnbounded' => true]))) {
 			return [];
 		}
 
 		$key = $this->getTableName() . '/' . $this->getElementCode();
-		$return[ $key . '_text' ] = $content;
+		$return[$key . '_text'] = $content;
 
-		$rewritten_start = caRewriteDateForElasticSearch( $parsed_content["start"], true );
-		$rewritten_end = caRewriteDateForElasticSearch( $parsed_content["end"], false );
+		$rewritten_start = caRewriteDateForElasticSearch($parsed_content["start"], true);
+		$rewritten_end = caRewriteDateForElasticSearch($parsed_content["end"], false);
 
-		$return[ $key . '_text' ] = $content;
-		$return[ $key ] = [ $rewritten_start, $rewritten_end ];
-		$return[ $key . '_start' ] = $rewritten_start;
-		$return[ $key . '_end' ] = $rewritten_end;
+		$return[$key . '_text'] = $content;
+		$return[$key] = [$rewritten_start, $rewritten_end];
+		$return[$key . '_start'] = $rewritten_start;
+		$return[$key . '_end'] = $rewritten_end;
 
 		return $return;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Search_Query_Phrase $query
-	 *
-	 * @return array
-	 */
-	public function getFiltersForPhraseQuery( $query ) {
+	public function getFiltersForPhraseQuery(Zend_Search_Lucene_Search_Query_Phrase $query): array {
 		$terms = $return = [];
 		$fld = null;
-		foreach ( $query->getQueryTerms() as $term ) {
-			$term = caRewriteElasticSearchTermFieldSpec( $term );
-			$fld = str_replace( '\\', '', $term->field );
+		foreach ($query->getQueryTerms() as $term) {
+			$term = caRewriteElasticSearchTermFieldSpec($term);
+			$fld = str_replace('\\', '', $term->field);
 			$terms[] = $term->text;
 		}
 
-		return $this->getFiltersForTerm( join( ' ', $terms ), $fld );
+		return $this->getFiltersForTerm(join(' ', $terms), $fld);
 	}
 
 	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return array
+	 * @param string|Zend_Search_Lucene_Index_Term $term
 	 */
-	function getFiltersForTerm( $term, $field = null ) {
-		if ( ! is_object( $term ) ) {
-			$term = new Zend_Search_Lucene_Index_Term( $term, $field );
+	function getFiltersForTerm($term, ?string $field = null): array {
+		if (!is_object($term)) {
+			$term = new Zend_Search_Lucene_Index_Term($term, $field);
 		}
-		$tmp = explode( '\\/', $term->field );
-		if ( sizeof( $tmp ) == 3 ) {
-			unset( $tmp[1] );
+		$tmp = explode('\\/', $term->field);
+		if (sizeof($tmp) == 3) {
+			unset($tmp[1]);
 			$term = new Zend_Search_Lucene_Index_Term(
-				$term->text, join( '\\/', $tmp )
+				$term->text, join('\\/', $tmp)
 			);
 		}
 
 		// try to get qualifiers
 		$qualifier = null;
-		if ( preg_match( "/^([\<\>\#][\=]?)(.+)/", $term->text, $matches ) ) {
+		if (preg_match("/^([\<\>\#][\=]?)(.+)/", $term->text, $matches)) {
 			$parse_date = $matches[2];
 			$qualifier = $matches[1];
 		} else {
@@ -111,25 +104,25 @@ class DateRange extends GenericElement {
 
 		$return = [];
 
-		$parsed_values = caGetISODates( $parse_date );
-		if ( ! $parsed_values['start'] ) {
+		$parsed_values = caGetISODates($parse_date);
+		if (!$parsed_values['start']) {
 			$parsed_values['start'] = '-9999-01-01T00:00:00Z';
 		}
-		if ( ! $parsed_values['end'] ) {
+		if (!$parsed_values['end']) {
 			$parsed_values['end'] = '9999-12-31T23:59:59Z';
 		}
 
 		// send "empty" date range when query parsing fails (end < start)
-		if ( ! is_array( $parsed_values ) || ! isset( $parsed_values['start'] ) ) {
+		if (!is_array($parsed_values) || !isset($parsed_values['start'])) {
 			$parsed_values = [
 				'start' => '1985-01-28T10:00:01Z',
 				'end' => '1985-01-28T10:00:00Z',
 			];
 		}
 
-		$fld = str_replace( '\\', '', $term->field );
+		$fld = str_replace('\\', '', $term->field);
 
-		switch ( $qualifier ) {
+		switch ($qualifier) {
 			case '<':
 				$return[] = [
 					'range' => [

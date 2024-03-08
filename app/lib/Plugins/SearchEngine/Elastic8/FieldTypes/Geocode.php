@@ -36,49 +36,49 @@ use GeocodeAttributeValue;
 use Zend_Search_Lucene_Index_Term;
 use Zend_Search_Lucene_Search_Query_Phrase;
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php' );
-require_once( __CA_LIB_DIR__ . '/Attributes/Values/GeocodeAttributeValue.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/FieldTypes/GenericElement.php');
+require_once(__CA_LIB_DIR__ . '/Attributes/Values/GeocodeAttributeValue.php');
 
 class Geocode extends GenericElement {
-	public function __construct( $table_name, $element_code ) {
-		parent::__construct( $table_name, $element_code );
+	public function __construct($table_name, $element_code) {
+		parent::__construct($table_name, $element_code);
 	}
 
-	public function getIndexingFragment( $content, $options ) {
-		if ( is_array( $content ) ) {
-			$content = serialize( $content );
+	public function getIndexingFragment($content, array $options): array {
+		if (is_array($content)) {
+			$content = serialize($content);
 		}
-		if ( $content == '' ) {
-			return parent::getIndexingFragment( $content, $options );
+		if ($content == '') {
+			return parent::getIndexingFragment($content, $options);
 		}
 		$return = [];
 
 		$geocode_parser = new GeocodeAttributeValue();
 
-		$return[ $this->getTableName() . '/' . $this->getElementCode() . '_text' ] = $content;
+		$return[$this->getTableName() . '/' . $this->getElementCode() . '_text'] = $content;
 
 		//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
-		if ( $coords = $geocode_parser->parseValue( $content, [] ) ) {
+		if ($coords = $geocode_parser->parseValue($content, [])) {
 			// Features and points within features are delimited by : and ; respectively. We have to break those apart first.
-			if ( isset( $coords['value_longtext2'] ) && $coords['value_longtext2'] ) {
-				$points = preg_split( "[\:\;]", $coords['value_longtext2'] );
+			if (isset($coords['value_longtext2']) && $coords['value_longtext2']) {
+				$points = preg_split("[\:\;]", $coords['value_longtext2']);
 				// fun fact: ElasticSearch expects GeoJSON -- which has pairs of longitude, latitude.
 				// google maps and others usually return latitude, longitude, which is also what we store
-				if ( sizeof( $points ) == 1 ) {
-					$tmp = explode( ',', $points[0] );
-					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = [
+				if (sizeof($points) == 1) {
+					$tmp = explode(',', $points[0]);
+					$return[$this->getTableName() . '/' . $this->getElementCode()] = [
 						'type' => 'point',
-						'coordinates' => [ (float) $tmp[1], (float) $tmp[0] ]
+						'coordinates' => [(float) $tmp[1], (float) $tmp[0]]
 					];
-				} elseif ( sizeof( $points ) > 1 ) {
+				} elseif (sizeof($points) > 1) {
 					// @todo might want to index as multipolygon to break apart features?
 					$coordinates_for_es = [];
-					foreach ( $points as $point ) {
-						$tmp = explode( ',', $point );
-						$coordinates_for_es[] = [ (float) $tmp[1], (float) $tmp[0] ];
+					foreach ($points as $point) {
+						$tmp = explode(',', $point);
+						$coordinates_for_es[] = [(float) $tmp[1], (float) $tmp[0]];
 					}
 
-					$return[ $this->getTableName() . '/' . $this->getElementCode() ] = [
+					$return[$this->getTableName() . '/' . $this->getElementCode()] = [
 						'type' => 'polygon',
 						'coordinates' => $coordinates_for_es
 					];
@@ -89,25 +89,20 @@ class Geocode extends GenericElement {
 		return $return;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Index_Term $term
-	 *
-	 * @return Zend_Search_Lucene_Index_Term
-	 */
-	public function getRewrittenTerm( $term ) {
-		$tmp = explode( '\\/', $term->field );
-		if ( sizeof( $tmp ) == 3 ) {
-			unset( $tmp[1] );
+	public function getRewrittenTerm(Zend_Search_Lucene_Index_Term $term): ?Zend_Search_Lucene_Index_Term {
+		$tmp = explode('\\/', $term->field);
+		if (sizeof($tmp) == 3) {
+			unset($tmp[1]);
 			$term = new Zend_Search_Lucene_Index_Term(
-				$term->text, join( '\\/', $tmp )
+				$term->text, join('\\/', $tmp)
 			);
 		}
 
-		if ( strtolower( $term->text ) === '[blank]' ) {
+		if (strtolower($term->text) === '[blank]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_missing_'
 			);
-		} elseif ( strtolower( $term->text ) === '[set]' ) {
+		} elseif (strtolower($term->text) === '[set]') {
 			return new Zend_Search_Lucene_Index_Term(
 				$term->field, '_exists_'
 			);
@@ -117,18 +112,18 @@ class Geocode extends GenericElement {
 		return null;
 	}
 
-	public function getFilterForRangeQuery( $lower_term, $upper_term ) {
+	public function getFilterForRangeQuery($lower_term, $upper_term): array {
 		$return = [];
 
-		$lower_coords = explode( ',', $lower_term->text );
-		$upper_coords = explode( ',', $upper_term->text );
+		$lower_coords = explode(',', $lower_term->text);
+		$upper_coords = explode(',', $upper_term->text);
 
-		$return[ str_replace( '\\', '', $lower_term->field ) ] = [
+		$return[str_replace('\\', '', $lower_term->field)] = [
 			'shape' => [
 				'type' => 'envelope',
 				'coordinates' => [
-					[ (float) $lower_coords[1], (float) $lower_coords[0] ],
-					[ (float) $upper_coords[1], (float) $upper_coords[0] ],
+					[(float) $lower_coords[1], (float) $lower_coords[0]],
+					[(float) $upper_coords[1], (float) $upper_coords[0]],
 				]
 			]
 		];
@@ -136,26 +131,21 @@ class Geocode extends GenericElement {
 		return $return;
 	}
 
-	/**
-	 * @param Zend_Search_Lucene_Search_Query_Phrase $subquery
-	 *
-	 * @return mixed
-	 */
-	public function getFilterForPhraseQuery( $subquery ) {
+	public function getFilterForPhraseQuery(Zend_Search_Lucene_Search_Query_Phrase $subquery): array {
 		$terms = [];
-		foreach ( $subquery->getQueryTerms() as $term ) {
-			$term = caRewriteElasticSearchTermFieldSpec( $term );
+		foreach ($subquery->getQueryTerms() as $term) {
+			$term = caRewriteElasticSearchTermFieldSpec($term);
 			$terms[] = $term->text;
 		}
 
-		$parsed_search = caParseGISSearch( join( ' ', $terms ) );
+		$parsed_search = caParseGISSearch(join(' ', $terms));
 
-		$return[ str_replace( '\\', '', $term->field ) ] = [
+		$return[str_replace('\\', '', $term->field)] = [
 			'shape' => [
 				'type' => 'envelope',
 				'coordinates' => [
-					[ (float) $parsed_search['min_longitude'], (float) $parsed_search['min_latitude'] ],
-					[ (float) $parsed_search['max_longitude'], (float) $parsed_search['max_latitude'] ],
+					[(float) $parsed_search['min_longitude'], (float) $parsed_search['min_latitude']],
+					[(float) $parsed_search['max_longitude'], (float) $parsed_search['max_latitude']],
 				]
 			]
 		];

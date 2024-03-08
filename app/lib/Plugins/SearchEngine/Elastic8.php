@@ -31,92 +31,86 @@
  */
 
 use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Elastic\ElasticSearch\Exception\ClientResponseException;
 use Elastic\Elasticsearch\Exception\ElasticsearchException;
+use Elastic\Elasticsearch\Exception\MissingParameterException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Monolog\Handler\ErrorLogHandler;
 use Elastic8\Mapping;
 
-require_once( __CA_LIB_DIR__ . '/Configuration.php' );
-require_once( __CA_LIB_DIR__ . '/Datamodel.php' );
-require_once( __CA_LIB_DIR__ . '/Plugins/WLPlug.php' );
-require_once( __CA_LIB_DIR__ . '/Plugins/IWLPlugSearchEngine.php' );
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/BaseSearchPlugin.php' );
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8Result.php' );
+require_once(__CA_LIB_DIR__ . '/Configuration.php');
+require_once(__CA_LIB_DIR__ . '/Datamodel.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/WLPlug.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/IWLPlugSearchEngine.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/BaseSearchPlugin.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8Result.php');
 
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Field.php' );
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Mapping.php' );
-require_once( __CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Query.php' );
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Field.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Mapping.php');
+require_once(__CA_LIB_DIR__ . '/Plugins/SearchEngine/Elastic8/Query.php');
 
 class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSearchEngine {
-	# -------------------------------------------------------
-	protected $index_content_buffer = [];
+	protected array $index_content_buffer = [];
 
-	protected $indexing_subject_tablenum = null;
-	protected $indexing_subject_row_id = null;
-	protected $indexing_subject_tablename = null;
+	protected ?string $indexing_subject_tablenum = null;
+	protected ?int $indexing_subject_row_id = null;
+	protected ?string $indexing_subject_tablename = null;
+
+	static protected ?Client $client = null;
+
+	static private array $doc_content_buffer = [];
+	static private array $update_content_buffer = [];
+	static private array $delete_buffer = [];
+	static private array $record_cache = [];
+
+	protected string $elasticsearch_index_name = '';
+	protected string $elasticsearch_base_url = '';
+
+	protected int $version = 8;
 
 	/**
-	 * @var Client
+	 * @throws AuthenticationException
 	 */
-	static protected $client;
-
-	static private $doc_content_buffer = [];
-	static private $update_content_buffer = [];
-	static private $delete_buffer = [];
-	static private $record_cache = [];
-
-	protected $elasticsearch_index_name = '';
-	protected $elasticsearch_base_url = '';
-
-	protected $version = 8;
-
-	# -------------------------------------------------------
-	public function __construct( $db = null ) {
-		parent::__construct( $db );
+	public function __construct($db = null) {
+		parent::__construct($db);
 
 		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
 		// this is useful for multi-instance setups which have the same set of config files for multiple instances
-		if ( defined( '__CA_ELASTICSEARCH_BASE_URL__' ) && ( strlen( __CA_ELASTICSEARCH_BASE_URL__ ) > 0 ) ) {
+		if (defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__) > 0)) {
 			$this->elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
 		} else {
-			$this->elasticsearch_base_url = $this->search_config->get( 'search_elasticsearch_base_url' );
+			$this->elasticsearch_base_url = $this->search_config->get('search_elasticsearch_base_url');
 		}
-		$this->elasticsearch_base_url = trim( $this->elasticsearch_base_url,
-			"/" );   // strip trailing slashes as they cause errors with ElasticSearch 5.x
+		$this->elasticsearch_base_url = trim($this->elasticsearch_base_url,
+			"/");   // strip trailing slashes as they cause errors with ElasticSearch 5.x
 
-		if ( defined( '__CA_ELASTICSEARCH_INDEX_NAME__' ) && ( strlen( __CA_ELASTICSEARCH_INDEX_NAME__ ) > 0 ) ) {
+		if (defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__) > 0)) {
 			$this->elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
 		} else {
-			$this->elasticsearch_index_name = $this->search_config->get( 'search_elasticsearch_index_name' );
+			$this->elasticsearch_index_name = $this->search_config->get('search_elasticsearch_index_name');
 		}
 
 		$this->getClient();
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch index name prefix
-	 *
-	 * @return string
 	 */
-	protected function getIndexNamePrefix() {
+	protected function getIndexNamePrefix(): string {
 		return $this->elasticsearch_index_name;
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch index name
-	 *
-	 * @return string
 	 */
-	protected function getIndexName( $table ) {
-		if ( is_numeric( $table ) ) {
-			$table = Datamodel::getTableName( $table );
+	protected function getIndexName($table): string {
+		if (is_numeric($table)) {
+			$table = Datamodel::getTableName($table);
 		}
 
 		return $this->getIndexNamePrefix() . "_{$table}";
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Refresh ElasticSearch mapping if necessary
@@ -125,15 +119,15 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 *
 	 * @throws Exception
 	 */
-	public function refreshMapping( $force = false ) {
+	public function refreshMapping(bool $force = false) {
 
 		/** @var Mapping $mapping */
 		static $mapping;
-		if ( ! $mapping ) {
+		if (!$mapping) {
 			$mapping = new Mapping();
 		}
 
-		if ( $force ) {
+		if ($force) {
 			$indexPrefix = $this->getIndexNamePrefix();
 			// TODO: Move away from plain index template in favour of composable templates when the ES PHP API supports them.
 			$indexSettings = [
@@ -163,79 +157,81 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			];
 			$client = $this->getClient();
 			$indices = $client->indices();
-			$indices->putTemplate( [
+			$indices->putTemplate([
 				'name' => $indexPrefix,
-				'body' => [ 'index_patterns' => [ $indexPrefix . "_*" ] ] + $indexSettings
-			] );
-			foreach ( $mapping->getTables() as $table ) {
-				$indexName = $this->getIndexName( $table );
-				if ( ! $indices->exists( [ 'index' => $indexName, 'ignore_missing' => true ] )->asBool() ) {
-					$indices->create( [ 'index' => $indexName ] );
+				'body' => ['index_patterns' => [$indexPrefix . "_*"]] + $indexSettings
+			]);
+			foreach ($mapping->getTables() as $table) {
+				$indexName = $this->getIndexName($table);
+				if (!$indices->exists(['index' => $indexName, 'ignore_missing' => true])->asBool()) {
+					$indices->create(['index' => $indexName]);
 				}
-				$indices->putSettings( [
+				$indices->putSettings([
 					'index' => $indexName,
 					'reopen' => true,
 					'body' => $indexSettings['settings']
-				] );
-				$indices->putMapping( [ 'index' => $indexName, 'body' => $indexSettings['mappings'] ] );
+				]);
+				$indices->putMapping(['index' => $indexName, 'body' => $indexSettings['mappings']]);
 			}
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
-	 *
-	 *
 	 * @param int $subject_tablenum
 	 * @param array $subject_row_ids
 	 * @param int $content_tablenum
 	 * @param string $content_fieldnum
+	 * @param int $content_container_id
 	 * @param int $content_row_id
 	 * @param string $content
-	 * @param array $options
+	 * @param null|array $options
 	 *    literalContent = array of text content to be applied without tokenization
 	 *    BOOST = Indexing boost to apply
 	 *    PRIVATE = Set indexing to private
+	 *
+	 * @throws ClientResponseException
+	 * @throws MissingParameterException
+	 * @throws ServerResponseException
+	 * @throws Exception
 	 */
 	public function updateIndexingInPlace(
-		$subject_tablenum, $subject_row_ids, $content_tablenum, $content_fieldnum, $content_container_id,
-		$content_row_id, $content, $options = null
+		int $subject_tablenum, array $subject_row_ids, int $content_tablenum, string $content_fieldnum,
+		int $content_container_id, int $content_row_id, string $content, ?array $options = null
 	) {
-		$table = Datamodel::getTableName( $subject_tablenum );
+		$table = Datamodel::getTableName($subject_tablenum);
 
-		$field = new Elastic8\Field( $content_tablenum, $content_fieldnum );
-		$fragment = $field->getIndexingFragment( $content, $options );
+		$field = new Elastic8\Field($content_tablenum, $content_fieldnum);
+		$fragment = $field->getIndexingFragment($content, $options);
 
-		foreach ( $subject_row_ids as $subject_row_id ) {
+		foreach ($subject_row_ids as $subject_row_id) {
 			// fetch the record
 			try {
-				$record = $this->record_cache[ $table ][ $subject_row_id ] ?? null;
-				if ( is_null( $record ) ) {
+				$record = self::$record_cache[$table][$subject_row_id] ?? null;
+				if (is_null($record)) {
 					$f = [
-						'index' => $this->getIndexName( $table ),
+						'index' => $this->getIndexName($table),
 						'id' => $subject_row_id
 					];
-					$record = $this->getClient()->get( $f )['_source'];
+					$record = $this->getClient()->get($f)['_source'];
 				}
-			} catch ( ClientResponseException $e ) {
+			} catch (ClientResponseException $e) {
 				$record = []; // record doesn't exist yet --> the update API will create it
 			}
-			$this->record_cache[ $table ][ $subject_row_id ] = $record;
+			self::$record_cache[$table][$subject_row_id] = $record;
 
-			$this->addFragmentToUpdateContentBuffer( $fragment, $record, $table, $subject_row_id,
-				$content_row_id );
+			$this->addFragmentToUpdateContentBuffer($fragment, $record, $table, $subject_row_id,
+				$content_row_id);
 		}
 
-		if ( (
-				sizeof( self::$doc_content_buffer ) +
-				sizeof( self::$update_content_buffer ) +
-				sizeof( self::$delete_buffer )
-			) > $this->getOption( 'maxIndexingBufferSize' )
+		if ((
+				sizeof(self::$doc_content_buffer) +
+				sizeof(self::$update_content_buffer) +
+				sizeof(self::$delete_buffer)
+			) > $this->getOption('maxIndexingBufferSize')
 		) {
 			$this->flushContentBuffer();
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Utility function that adds a given indexing fragment to the update content buffer
@@ -249,57 +245,56 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	private function addFragmentToUpdateContentBuffer(
 		array $fragment, array $record, $table_name, $subject_row_id, $content_row_id
 	) {
-		foreach ( $fragment as $key => $val ) {
-			if ( isset( $record[ $key ] ) ) {
+		foreach ($fragment as $key => $val) {
+			if (isset($record[$key])) {
 				// find the index for this content row id in our _content_ids index list
-				$values = $record[ $key ];
-				$indexes = $record[ $key . '_content_ids' ];
-				$index = array_search( $content_row_id, $indexes );
-				if ( $index !== false ) {
+				$values = $record[$key];
+				$indexes = $record[$key . '_content_ids'];
+				$index = array_search($content_row_id, $indexes);
+				if ($index !== false) {
 					// replace that very index in the value array for this field -- all the other values stay intact
-					$values[ $index ] = $val;
+					$values[$index] = $val;
 				} else { // this particular content row id hasn't been indexed yet --> just add it
 					$values[] = $val;
 					$indexes[] = $content_row_id;
 				}
-				self::$update_content_buffer[ $table_name ][ $subject_row_id ][ $key . '_content_ids' ]
+				self::$update_content_buffer[$table_name][$subject_row_id][$key . '_content_ids']
 					= $indexes;
-				self::$update_content_buffer[ $table_name ][ $subject_row_id ][ $key ] = $values;
+				self::$update_content_buffer[$table_name][$subject_row_id][$key] = $values;
 			} else { // this field wasn't indexed yet -- just add it
-				self::$update_content_buffer[ $table_name ][ $subject_row_id ][ $key ][] = $val;
-				self::$update_content_buffer[ $table_name ][ $subject_row_id ][ $key . '_content_ids' ][]
+				self::$update_content_buffer[$table_name][$subject_row_id][$key][] = $val;
+				self::$update_content_buffer[$table_name][$subject_row_id][$key . '_content_ids'][]
 					= $content_row_id;
 			}
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Get ElasticSearch client
 	 *
 	 * @return Client
+	 * @throws AuthenticationException
 	 */
-	protected function getClient() {
-		if ( ! self::$client ) {
-			$logger = new \Monolog\Logger( 'elasticsearch' );
+	protected function getClient(): Client {
+		if (!self::$client) {
+			$logger = new \Monolog\Logger('elasticsearch');
 			$log_level = Monolog\Logger::ERROR;
-			if ( defined( '__CA_ELASTICSEARCH_LOG_LEVEL__' ) ) {
+			if (defined('__CA_ELASTICSEARCH_LOG_LEVEL__')) {
 				$log_level = __CA_ELASTICSEARCH_LOG_LEVEL__;
 			}
-			$logger->pushHandler( new ErrorLogHandler( null, $log_level ) );
+			$logger->pushHandler(new ErrorLogHandler(null, $log_level));
 			self::$client = Elastic\Elasticsearch\ClientBuilder::create()
-				->setHosts( [ $this->elasticsearch_base_url ] )
-				->setLogger( $logger )
-				->setRetries( 3 )
+				->setHosts([$this->elasticsearch_base_url])
+				->setLogger($logger)
+				->setRetries(3)
 				->build();
 		}
 
 		return self::$client;
 	}
 
-	# -------------------------------------------------------
 	public function init() {
-		if ( ( $max_indexing_buffer_size = (int) $this->search_config->get( 'elasticsearch_indexing_buffer_size' ) )
+		if (($max_indexing_buffer_size = (int) $this->search_config->get('elasticsearch_indexing_buffer_size'))
 			< 1
 		) {
 			$max_indexing_buffer_size = 250;
@@ -317,39 +312,51 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			'incremental_reindexing' => true
 		];
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
 	 *
-	 * @param null|int $table_num
+	 * @param int|null $table_num
 	 *
 	 * @return bool
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws MissingParameterException
+	 * @throws ServerResponseException
+	 * @throws Exception
 	 */
-	public function truncateIndex( $table_num = null) {
+	public function truncateIndex(?int $table_num = null): bool {
 		$mapping = new Elastic8\Mapping();
-		if ( $table_num ) {
-			$tables = [ Datamodel::getTableName( $table_num ) ];
+		if ($table_num) {
+			$tables = [Datamodel::getTableName($table_num)];
 		} else {
 			$tables = $mapping->getTables();
 		}
-		$this->getClient()->indices()->delete( [ 'index' =>  array_map($this->getIndexName, $tables), 'ignore_unavailable' => true ] );
-		$this->refreshMapping( true );
+		$this->getClient()->indices()->delete([
+			'index' => array_map([$this, 'getIndexName'], $tables),
+			'ignore_unavailable' => true
+		]);
+		$this->refreshMapping(true);
+
 		return true;
 	}
 
-	# -------------------------------------------------------
-	public function setTableNum( $table_num ) {
+	public function setTableNum($table_num) {
 		$this->indexing_subject_tablenum = $table_num;
 	}
 
-	# -------------------------------------------------------
+
+	/**
+	 * @throws ApplicationException
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws ServerResponseException
+	 */
 	public function __destruct() {
-		if ( ! defined( '__CollectiveAccess_Installer__' ) || ! __CollectiveAccess_Installer__ ) {
+		if (!defined('__CollectiveAccess_Installer__') || !__CollectiveAccess_Installer__) {
 			$this->flushContentBuffer();
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Do search
@@ -360,20 +367,23 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $rewritten_query
 	 *
 	 * @return WLPlugSearchEngineElastic8Result
+	 * @throws AuthenticationException
+	 * @throws ServerResponseException
+	 * @throws Zend_Search_Lucene_Exception
 	 */
 	public function search(
 		int $subject_tablenum, string $search_expression, array $filters = [], $rewritten_query
-	) {
-		Debug::msg( "[ElasticSearch] incoming search query is: {$search_expression}" );
-		Debug::msg( "[ElasticSearch] incoming query filters are: " . print_r( $filters, true ) );
+	): WLPlugSearchEngineElastic8Result {
+		Debug::msg("[ElasticSearch] incoming search query is: {$search_expression}");
+		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($filters, true));
 
-		$query = new Elastic8\Query( $subject_tablenum, $search_expression, $rewritten_query, $filters );
+		$query = new Elastic8\Query($subject_tablenum, $search_expression, $rewritten_query, $filters);
 		$query_string = $query->getSearchExpression();
 
-		Debug::msg( "[ElasticSearch] actual search query sent to ES: {$query_string}" );
+		Debug::msg("[ElasticSearch] actual search query sent to ES: {$query_string}");
 
 		$search_params = [
-			'index' => $this->getIndexName( $subject_tablenum ),
+			'index' => $this->getIndexName($subject_tablenum),
 			'body' => [
 				// we do paging in our code
 				'from' => 0,
@@ -396,24 +406,23 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		];
 
 		// apply additional filters that may have been set by the query
-		if ( ( $additional_filters = $query->getAdditionalFilters() ) && is_array( $additional_filters )
-			&& ( sizeof( $additional_filters ) > 0 )
+		if (($additional_filters = $query->getAdditionalFilters()) && is_array($additional_filters)
+			&& (sizeof($additional_filters) > 0)
 		) {
-			foreach ( $additional_filters as $filter ) {
+			foreach ($additional_filters as $filter) {
 				$search_params['body']['query']['bool']['must'][] = $filter;
 			}
 		}
 
-		Debug::msg( "[ElasticSearch] actual query filters are: " . print_r( $additional_filters, true ) );
+		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($additional_filters, true));
 		try {
-			$results = $this->getClient()->search( $search_params );
-		} catch ( ClientResponseException $e ) {
-			$results = [ 'hits' => [ 'hits' => [] ] ];
+			$results = $this->getClient()->search($search_params);
+		} catch (ClientResponseException $e) {
+			$results = ['hits' => ['hits' => []]];
 		}
 
-		return new WLPlugSearchEngineElastic8Result( $results['hits']['hits'], $subject_tablenum );
+		return new WLPlugSearchEngineElastic8Result($results['hits']['hits'], $subject_tablenum);
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Start row indexing
@@ -421,137 +430,136 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @param int $subject_tablenum
 	 * @param int $subject_row_id
 	 */
-	public function startRowIndexing( int $subject_tablenum, int $subject_row_id ): void {
+	public function startRowIndexing(int $subject_tablenum, int $subject_row_id): void {
 		$this->index_content_buffer = [];
 		$this->indexing_subject_tablenum = $subject_tablenum;
 		$this->indexing_subject_row_id = $subject_row_id;
-		$this->indexing_subject_tablename = Datamodel::getTableName( $subject_tablenum );
+		$this->indexing_subject_tablename = Datamodel::getTableName($subject_tablenum);
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Index field
 	 *
-	 * @param int $content_tablenum
-	 * @param string $content_fieldname
-	 * @param int $content_row_id
 	 * @param mixed $content
-	 * @param array $options
 	 *
-	 * @return null
+	 * @throws Exception
 	 */
 	public function indexField(
 		int $content_tablenum, string $content_fieldname, int $content_row_id, $content,
 		?array $options = null
-	) {
-		$field = new Elastic8\Field( $content_tablenum, $content_fieldname );
-		if ( ! is_array( $content ) ) {
-			$content = [ $content ];
+	): void {
+		$field = new Elastic8\Field($content_tablenum, $content_fieldname);
+		if (!is_array($content)) {
+			$content = [$content];
 		}
 
-		foreach ( $content as $ps_content ) {
-			$fragment = $field->getIndexingFragment( $ps_content, $options );
+		foreach ($content as $ps_content) {
+			$fragment = $field->getIndexingFragment($ps_content, $options);
 			$record = null;
 
-			if ( ! $this->isReindexing() ) {
+			if (!$this->isReindexing()) {
 				try {
-					$record = $this->getClient()->get( [
-						'index' => $this->getIndexName( $this->indexing_subject_tablename ),
+					$record = $this->getClient()->get([
+						'index' => $this->getIndexName($this->indexing_subject_tablename),
 						'id' => $this->indexing_subject_row_id
-					] )['_source'];
-				} catch ( ClientResponseException $e ) {
+					])['_source'];
+				} catch (ClientResponseException $e) {
 					$record = null;
 				}
 			}
 
 			// if the record already exists, do incremental indexing
-			if ( is_array( $record ) && ( sizeof( $record ) > 0 ) ) {
-				$this->addFragmentToUpdateContentBuffer( $fragment, $record, $this->indexing_subject_tablename,
-					$this->indexing_subject_row_id, $content_row_id );
+			if (is_array($record) && (sizeof($record) > 0)) {
+				$this->addFragmentToUpdateContentBuffer($fragment, $record, $this->indexing_subject_tablename,
+					$this->indexing_subject_row_id, $content_row_id);
 			} else { // otherwise create record in index
-				foreach ( $fragment as $key => $val ) {
-					$this->index_content_buffer[ $key ][] = $val;
+				foreach ($fragment as $key => $val) {
+					$this->index_content_buffer[$key][] = $val;
 					// this list basically indexes the values above by content row id. we need that to have a chance
 					// to update indexing for specific values [content row ids] in place
-					$this->index_content_buffer[ $key . '_content_ids' ][] = $content_row_id;
+					$this->index_content_buffer[$key . '_content_ids'][] = $content_row_id;
 				}
 			}
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Commit indexing for row
 	 * That doesn't necessarily mean it's actually written to the index.
 	 * We still keep the data local until the document buffer is full.
+	 *
+	 * @throws ApplicationException
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws ServerResponseException
 	 */
 	public function commitRowIndexing() {
-		if ( sizeof( $this->index_content_buffer ) > 0 ) {
-			self::$doc_content_buffer[ $this->indexing_subject_tablename . '/' .
-			$this->indexing_subject_row_id ]
+		if (sizeof($this->index_content_buffer) > 0) {
+			self::$doc_content_buffer[$this->indexing_subject_tablename . '/' .
+			$this->indexing_subject_row_id]
 				= $this->index_content_buffer;
 		}
 
-		unset( $this->indexing_subject_tablenum );
-		unset( $this->indexing_subject_row_id );
-		unset( $this->indexing_subject_tablename );
+		unset($this->indexing_subject_tablenum);
+		unset($this->indexing_subject_row_id);
+		unset($this->indexing_subject_tablename);
 
-		if ( (
-				sizeof( self::$doc_content_buffer ) +
-				sizeof( self::$update_content_buffer ) +
-				sizeof( self::$delete_buffer )
-			) > $this->getOption( 'maxIndexingBufferSize' )
+		if ((
+				sizeof(self::$doc_content_buffer) +
+				sizeof(self::$update_content_buffer) +
+				sizeof(self::$delete_buffer)
+			) > $this->getOption('maxIndexingBufferSize')
 		) {
 			$this->flushContentBuffer();
 		}
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Delete indexing for row
 	 *
-	 * @param int $subject_tablenum
-	 * @param int $subject_row_id
-	 * @param int|null $field_tablenum
-	 * @param int|null|array $field_nums
-	 * @param int|null $field_row_id
+	 * @throws ApplicationException
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws MissingParameterException
+	 * @throws ServerResponseException
+	 * @throws Exception
 	 */
 	public function removeRowIndexing(
-		int $subject_tablenum, int $subject_row_id, ?int $field_tablenum = null, $field_nums = null,
+		int $subject_tablenum, int $subject_row_id, ?int $field_tablenum = null, ?array $field_nums = null,
 		?int $field_row_id = null, ?int $rel_type_id = null
 	) {
-		$table = Datamodel::getTableName( $subject_tablenum );
+		$table = Datamodel::getTableName($subject_tablenum);
 		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
-		if ( $field_tablenum ) {
-			if ( is_array( $field_nums ) ) {
-				foreach ( $field_nums as $content_fieldnum ) {
-					$field = new Elastic8\Field( $field_tablenum, $content_fieldnum );
-					$fragment = $field->getIndexingFragment( '' );
+		if ($field_tablenum) {
+			if (is_array($field_nums)) {
+				foreach ($field_nums as $content_fieldnum) {
+					$field = new Elastic8\Field($field_tablenum, $content_fieldnum);
+					$fragment = $field->getIndexingFragment('');
 
 					// fetch the record
 					try {
-						$record = $this->getClient()->get( [
-							'index' => $this->getIndexName( $table ),
+						$record = $this->getClient()->get([
+							'index' => $this->getIndexName($table),
 							'id' => $subject_row_id
-						] )['_source'];
-					} catch ( ClientResponseException $e ) {
+						])['_source'];
+					} catch (ClientResponseException $e) {
 						// record is gone?
-						unset( self::$update_content_buffer[ $table ][ $subject_row_id ] );
+						unset(self::$update_content_buffer[$table][$subject_row_id]);
 						continue;
 					}
 
-					foreach ( $fragment as $key => $val ) {
-						if ( isset( $record[ $key ] ) ) {
+					foreach ($fragment as $key => $val) {
+						if (isset($record[$key])) {
 							// find the index for this content row id in our _content_ids index list
-							$values = $record[ $key ];
-							$indexes = $record[ $key . '_content_ids' ];
-							if ( is_array( $indexes ) ) {
-								$index = array_search( $field_row_id, $indexes );
+							$values = $record[$key];
+							$indexes = $record[$key . '_content_ids'];
+							if (is_array($indexes)) {
+								$index = array_search($field_row_id, $indexes);
 								// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
-								unset( $values[ $index ] );
-								unset( $indexes[ $index ] );
+								unset($values[$index]);
+								unset($indexes[$index]);
 							} else {
-								if ( sizeof( $values ) == 1 ) {
+								if (sizeof($values) == 1) {
 									$values = [];
 									$indexes = [];
 								}
@@ -559,36 +567,38 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 							// we reindex both value and index arrays here, starting at 0
 							// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
-							self::$update_content_buffer[ $table ][ $subject_row_id ][ $key ]
-								= array_values( $values );
-							self::$update_content_buffer[ $table ][ $subject_row_id ][ $key . '_content_ids' ]
-								= array_values( $indexes );
+							self::$update_content_buffer[$table][$subject_row_id][$key]
+								= array_values($values);
+							self::$update_content_buffer[$table][$subject_row_id][$key . '_content_ids']
+								= array_values($indexes);
 						}
 					}
 				}
 			}
 
-			if ( (
-					sizeof( self::$doc_content_buffer ) +
-					sizeof( self::$update_content_buffer ) +
-					sizeof( self::$delete_buffer )
-				) > $this->getOption( 'maxIndexingBufferSize' )
+			if ((
+					sizeof(self::$doc_content_buffer) +
+					sizeof(self::$update_content_buffer) +
+					sizeof(self::$delete_buffer)
+				) > $this->getOption('maxIndexingBufferSize')
 			) {
 				$this->flushContentBuffer();
 			}
 
 		} else {
-			// queue record for removal -- also make sure we don't try do any unecessary indexing
-			unset( self::$update_content_buffer[ $table ][ $subject_row_id ] );
-			self::$delete_buffer[ $table ][] = $subject_row_id;
+			// queue record for removal -- also make sure we don't try do any unnecessary indexing
+			unset(self::$update_content_buffer[$table][$subject_row_id]);
+			self::$delete_buffer[$table][] = $subject_row_id;
 		}
 	}
-	# ------------------------------------------------
 
 	/**
 	 * Flush content buffer and write to index
 	 *
 	 * @throws ClientResponseException
+	 * @throws AuthenticationException
+	 * @throws ServerResponseException
+	 * @throws ApplicationException
 	 */
 	public function flushContentBuffer() {
 
@@ -598,29 +608,29 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
 
 		// delete docs
-		foreach ( self::$delete_buffer as $table => $rows ) {
-			foreach ( array_unique( $rows ) as $row_id ) {
+		foreach (self::$delete_buffer as $table => $rows) {
+			foreach (array_unique($rows) as $row_id) {
 				$bulk_params['body'][] = [
 					'delete' => [
-						'_index' => $this->getIndexName( $table ),
+						'_index' => $this->getIndexName($table),
 						'_id' => $row_id
 					]
 				];
 
-				// also make sure we don't do unessecary indexing for this record below
-				unset( self::$update_content_buffer[ $table ][ $row_id ] );
+				// also make sure we don't do unnecessary indexing for this record below
+				unset(self::$update_content_buffer[$table][$row_id]);
 			}
 		}
 
 		// newly indexed docs
-		foreach ( self::$doc_content_buffer as $key => $doc_content_buffer ) {
-			$tmp = explode( '/', $key );
+		foreach (self::$doc_content_buffer as $key => $doc_content_buffer) {
+			$tmp = explode('/', $key);
 			$table = $tmp[0];
-			$primary_key = intval( $tmp[1] );
+			$primary_key = intval($tmp[1]);
 
 			$f = [
 				'index' => [
-					'_index' => $this->getIndexName( $table ),
+					'_index' => $this->getIndexName($table),
 					'_id' => $primary_key
 				]
 			];
@@ -631,7 +641,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 				$doc_content_buffer,
 				caGetChangeLogForElasticSearch(
 					$this->db,
-					Datamodel::getTableNum( $table ),
+					Datamodel::getTableNum($table),
 					$primary_key
 				)
 			);
@@ -640,12 +650,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		}
 
 		// update existing docs
-		foreach ( self::$update_content_buffer as $table => $rows ) {
-			foreach ( $rows as $row_id => $fragment ) {
+		foreach (self::$update_content_buffer as $table => $rows) {
+			foreach ($rows as $row_id => $fragment) {
 
 				$f = [
 					'update' => [
-						'_index' => $this->getIndexName( $table ),
+						'_index' => $this->getIndexName($table),
 						'_id' => (int) $row_id
 					]
 				];
@@ -656,36 +666,36 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 					$fragment,
 					caGetChangeLogForElasticSearch(
 						$this->db,
-						Datamodel::getTableNum( $table ),
+						Datamodel::getTableNum($table),
 						$row_id
 					)
 				);
 
-				$bulk_params['body'][] = [ 'doc' => $fragment ];
+				$bulk_params['body'][] = ['doc' => $fragment];
 			}
 		}
 
-		if ( ! empty( $bulk_params['body'] ) ) {
+		if (!empty($bulk_params['body'])) {
 			// Improperly encoded UTF8 characters in the body will make
 			// Elastic throw errors and result in records being omitted from the index.
 			// We force the document to UTF8 here to avoid that fate.
-			$bulk_params['body'] = caEncodeUTF8Deep( $bulk_params['body'] );
+			$bulk_params['body'] = caEncodeUTF8Deep($bulk_params['body']);
 
 			try {
-				$resp = $this->getClient()->bulk( $bulk_params );
-			} catch ( ElasticsearchException $e ) {
-				throw new ApplicationException( _t( 'Indexing error %2', $e->getMessage() ) );
+				$resp = $this->getClient()->bulk($bulk_params);
+			} catch (ElasticsearchException $e) {
+				throw new ApplicationException(_t('Indexing error %2', $e->getMessage()));
 			}
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
-			if ( caIsRunFromCLI() && $this->getIndexNamePrefix()
-				&& ( ! defined( '__CollectiveAccess_IS_REINDEXING__' )
-					|| ! __CollectiveAccess_IS_REINDEXING__ )
+			if (caIsRunFromCLI() && $this->getIndexNamePrefix()
+				&& (!defined('__CollectiveAccess_IS_REINDEXING__')
+					|| !__CollectiveAccess_IS_REINDEXING__)
 			) {
 				$mapping = new Elastic8\Mapping();
 
-				foreach ( $mapping->getTables() as $table ) {
-					$this->getClient()->indices()->refresh( [ 'index' => $this->getIndexName( $table ) ] );
+				foreach ($mapping->getTables() as $table) {
+					$this->getClient()->indices()->refresh(['index' => $this->getIndexName($table)]);
 				}
 			}
 		}
@@ -696,57 +706,59 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		self::$delete_buffer = [];
 		self::$record_cache = [];
 	}
-	# -------------------------------------------------------
 
 	/**
 	 * Set additional index-level settings like analyzers or token filters
+	 *
+	 * @param int $tablenum
+	 *
+	 * @throws AuthenticationException
+	 * @throws ClientResponseException
+	 * @throws ServerResponseException
 	 */
 
-	# -------------------------------------------------------
-	public function optimizeIndex( int $tablenum ) {
-		$this->getClient()->indices()->forceMerge( [ 'index' => $this->getIndexName( $tablenum ) ] );
+	public function optimizeIndex(int $tablenum) {
+		$this->getClient()->indices()->forceMerge(['index' => $this->getIndexName($tablenum)]);
 	}
 
-	# -------------------------------------------------------
-	public function engineName() {
+	public function engineName(): string {
 		return 'Elastic8';
 	}
-	# -------------------------------------------------------
 
 	/**
-	 * Performs the quickest possible search on the index for the specfied table_num in $table_num
+	 * Performs the quickest possible search on the index for the specified table_num in $table_num
 	 * using the text in $ps_search. Unlike the search() method, quickSearch doesn't support
 	 * any sort of search syntax. You give it some text and you get a collection of (hopefully) relevant results back
-	 * quickly. quickSearch() is intended for autocompleting search suggestion UI's and the like, where performance is
+	 * quickly. quickSearch() is intended for autocompleting search suggestion UIs and the like, where performance is
 	 * critical and the ability to control search parameters is not required.
 	 *
 	 * @param $pn_table_num - The table index to search on
 	 * @param $ps_search - The text to search on
-	 * @param $pa_options - an optional associative array specifying search options. Supported options are: 'limit'
+	 * @param array $pa_options - an optional associative array specifying search options. Supported options are: 'limit'
 	 *     (the maximum number of results to return)
 	 *
 	 * @return array - an array of results is returned keyed by primary key id. The array values boolean true. This is
 	 *     done to ensure no duplicate row_ids
-	 *
+	 * @throws AuthenticationException
+	 * @throws ServerResponseException
+	 * @throws Zend_Search_Lucene_Exception
 	 */
-	public function quickSearch( $pn_table_num, $ps_search, $pa_options = [] ) {
-		if ( ! is_array( $pa_options ) ) {
+	public function quickSearch($pn_table_num, $ps_search, $pa_options = []): array {
+		if (!is_array($pa_options)) {
 			$pa_options = [];
 		}
-		$limit = caGetOption( 'limit', $pa_options, 0 );
+		$limit = caGetOption('limit', $pa_options, 0);
 
-		$result = $this->search( $pn_table_num, $ps_search );
+		$result = $this->search($pn_table_num, $ps_search);
 		$pks = $result->getPrimaryKeyValues();
-		if ( $limit ) {
-			$pks = array_slice( $pks, 0, $limit );
+		if ($limit) {
+			$pks = array_slice($pks, 0, $limit);
 		}
 
-		return array_flip( $pks );
+		return array_flip($pks);
 	}
 
-	# -------------------------------------------------------
-	public function isReindexing() {
-		return ( defined( '__CollectiveAccess_IS_REINDEXING__' ) && __CollectiveAccess_IS_REINDEXING__ );
+	public function isReindexing(): bool {
+		return (defined('__CollectiveAccess_IS_REINDEXING__') && __CollectiveAccess_IS_REINDEXING__);
 	}
-	# -------------------------------------------------------
 }
