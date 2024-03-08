@@ -65,6 +65,15 @@
     }
   },
   {
+    "TODO remove this" : {
+      "match_mapping_type" : "*",
+      "match" : "*type_id",
+      "mapping" : {
+        "type" : "keyword"
+      }
+    }
+  },
+  {
     "floats" : {
       "match_mapping_type" : "*",
       "match" : "*-f",
