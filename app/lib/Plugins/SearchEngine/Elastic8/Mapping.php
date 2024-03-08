@@ -53,11 +53,6 @@ class Mapping {
 	protected ApplicationVars $app_vars;
 
 	/**
-	 * Elastic major version number in use
-	 */
-	protected int $version = 8;
-
-	/**
 	 * Load the dynamic templates configuration file
 	 */
 	private array $dynamicTemplates;
