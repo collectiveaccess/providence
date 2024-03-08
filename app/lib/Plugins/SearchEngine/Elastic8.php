@@ -325,7 +325,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 * @throws ServerResponseException
 	 * @throws Exception
 	 */
-	public function truncateIndex(int $table_num = null): bool {
+	public function truncateIndex(?int $table_num = null): bool {
 		$mapping = new Elastic8\Mapping();
 		if ($table_num) {
 			$tables = [Datamodel::getTableName($table_num)];
