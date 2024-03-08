@@ -59,7 +59,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 	static protected ?Client $client = null;
 
-	static private array $content_buffer = [];
+	static private array $doc_content_buffer = [];
+	static private array $update_content_buffer = [];
 	static private array $delete_buffer = [];
 	static private array $record_cache = [];
 
@@ -193,7 +194,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 */
 	public function updateIndexingInPlace(
 		int $subject_tablenum, array $subject_row_ids, int $content_tablenum, string $content_fieldnum,
-		int $content_container_id, int $content_row_id, string $content, ?array $options = null
+		?int $content_container_id, int $content_row_id, ?string $content, ?array $options = null
 	) {
 		$table = Datamodel::getTableName($subject_tablenum);
 
@@ -221,7 +222,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		}
 
 		if ((
-				sizeof(self::$content_buffer) +
+				sizeof(self::$doc_content_buffer) +
+				sizeof(self::$update_content_buffer) +
 				sizeof(self::$delete_buffer)
 			) > $this->getOption('maxIndexingBufferSize')
 		) {
@@ -274,7 +276,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected function getClient(): Client {
 		if (!self::$client) {
 			$logger = new \Monolog\Logger('elasticsearch');
-			$log_level = Monolog\Logger::ERROR;
+			$log_level = Monolog\Logger::WARNING;
 			if (defined('__CA_ELASTICSEARCH_LOG_LEVEL__')) {
 				$log_level = __CA_ELASTICSEARCH_LOG_LEVEL__;
 			}
@@ -601,7 +603,6 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	public function flushContentBuffer() {
 
 		$bulk_params = [];
-		dump(self::$content_buffer);
 
 		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/updating_documents.html#_upserts
 
@@ -617,18 +618,18 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 				];
 
 				// also make sure we don't do unnecessary indexing for this record below
-				unset(self::$content_buffer[$table][$row_id]);
+				unset(self::$update_content_buffer[$table][$row_id]);
 			}
 		}
 
 		// newly indexed docs
-		foreach (self::$content_buffer as $key => $content_buffer) {
+		foreach (self::$doc_content_buffer as $key => $doc_content_buffer) {
 			$tmp = explode('/', $key);
 			$table = $tmp[0];
 			$primary_key = intval($tmp[1]);
 
 			$f = [
-				'index' => [
+				'update' => [
 					'_index' => $this->getIndexName($table),
 					'_id' => $primary_key
 				]
@@ -636,8 +637,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$bulk_params['body'][] = $f;
 
 			// add changelog to index
-			$content_buffer = array_merge(
-				$content_buffer,
+			$doc_content_buffer = array_merge(
+				$doc_content_buffer,
 				caGetChangeLogForElasticSearch(
 					$this->db,
 					Datamodel::getTableNum($table),
@@ -645,11 +646,11 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 				)
 			);
 
-			$bulk_params['body'][] = $content_buffer;
+			$bulk_params['body'][] = ['doc' => $doc_content_buffer, 'doc_as_upsert' => true];
 		}
 
 		// update existing docs
-		foreach (self::$content_buffer as $table => $rows) {
+		foreach (self::$update_content_buffer as $table => $rows) {
 			foreach ($rows as $row_id => $fragment) {
 
 				$f = [
@@ -670,7 +671,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 					)
 				);
 
-				$bulk_params['body'][] = ['doc' => $fragment];
+				$bulk_params['body'][] = ['doc' => $fragment, 'doc_as_upsert' => true];
 			}
 		}
 
@@ -681,9 +682,28 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$bulk_params['body'] = caEncodeUTF8Deep($bulk_params['body']);
 
 			try {
-				$resp = $this->getClient()->bulk($bulk_params);
+				$responses = $this->getClient()->bulk($bulk_params);
+				if ($responses['errors']){
+					// Log errors for each operation
+					foreach ($responses['items'] as $item) {
+						if (isset($item['index']['error'])) {
+							// Log index error
+							$errors[] = "Indexing error: " . json_encode($item['index']['error']);
+						} elseif (isset($item['update']['error'])) {
+							// Log update error
+							$errors[] = "Update error: " . json_encode($item['update']['error']);
+						}
+					}
+
+					// If there are errors, throw ApplicationException
+					if (!empty($errors)) {
+						$message = "Bulk operation failed. Errors: " . implode(', ', $errors);
+						$this->getClient()->getLogger()->error($message);
+						throw new ApplicationException($message);
+					}
+				}
 			} catch (ElasticsearchException $e) {
-				throw new ApplicationException(_t('Indexing error %2', $e->getMessage()));
+				throw new ApplicationException(_t('Indexing error %1', $e->getMessage()));
 			}
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
@@ -700,7 +720,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		}
 
 		$this->index_content_buffer = [];
-		self::$content_buffer = [];
+		self::$doc_content_buffer = [];
+		self::$update_content_buffer = [];
 		self::$delete_buffer = [];
 		self::$record_cache = [];
 	}
