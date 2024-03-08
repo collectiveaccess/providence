@@ -59,8 +59,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 	static protected ?Client $client = null;
 
-	static private array $doc_content_buffer = [];
-	static private array $update_content_buffer = [];
+	static private array $content_buffer = [];
 	static private array $delete_buffer = [];
 	static private array $record_cache = [];
 
@@ -224,8 +223,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		}
 
 		if ((
-				sizeof(self::$doc_content_buffer) +
-				sizeof(self::$update_content_buffer) +
+				sizeof(self::$content_buffer) +
 				sizeof(self::$delete_buffer)
 			) > $this->getOption('maxIndexingBufferSize')
 		) {
@@ -603,9 +601,10 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	public function flushContentBuffer() {
 
 		$bulk_params = [];
+		dump(self::$content_buffer);
 
-		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
-		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
+		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/updating_documents.html#_upserts
+
 
 		// delete docs
 		foreach (self::$delete_buffer as $table => $rows) {
@@ -618,12 +617,12 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 				];
 
 				// also make sure we don't do unnecessary indexing for this record below
-				unset(self::$update_content_buffer[$table][$row_id]);
+				unset(self::$content_buffer[$table][$row_id]);
 			}
 		}
 
 		// newly indexed docs
-		foreach (self::$doc_content_buffer as $key => $doc_content_buffer) {
+		foreach (self::$content_buffer as $key => $content_buffer) {
 			$tmp = explode('/', $key);
 			$table = $tmp[0];
 			$primary_key = intval($tmp[1]);
@@ -637,8 +636,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$bulk_params['body'][] = $f;
 
 			// add changelog to index
-			$doc_content_buffer = array_merge(
-				$doc_content_buffer,
+			$content_buffer = array_merge(
+				$content_buffer,
 				caGetChangeLogForElasticSearch(
 					$this->db,
 					Datamodel::getTableNum($table),
@@ -646,11 +645,11 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 				)
 			);
 
-			$bulk_params['body'][] = $doc_content_buffer;
+			$bulk_params['body'][] = $content_buffer;
 		}
 
 		// update existing docs
-		foreach (self::$update_content_buffer as $table => $rows) {
+		foreach (self::$content_buffer as $table => $rows) {
 			foreach ($rows as $row_id => $fragment) {
 
 				$f = [
@@ -701,8 +700,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 		}
 
 		$this->index_content_buffer = [];
-		self::$doc_content_buffer = [];
-		self::$update_content_buffer = [];
+		self::$content_buffer = [];
 		self::$delete_buffer = [];
 		self::$record_cache = [];
 	}
