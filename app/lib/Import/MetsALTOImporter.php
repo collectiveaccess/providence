@@ -29,14 +29,20 @@
  *
  * ----------------------------------------------------------------------
  */ 
+require_once(__CA_LIB_DIR__.'/MetsALTO/MetsALTOSearch.php');
 
 class MetsALTOImporter {
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
+	protected $search;
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct() {
-	
+		$this->search = new MetsALTOSearch();
 	}
 	# -------------------------------------------------------
 	/*/
@@ -53,19 +59,23 @@ class MetsALTOImporter {
 	/*/
 	 *
 	 */
-	public function importFile(BaseModel $instance, string $file) : ?bool {
+	public function importFile(BaseModel $object, BaseModel $rep, string $file) : ?bool {
 		if(!($xml = simplexml_load_file($file))) { return null; }
 		
 		$output_dir = __CA_BASE_DIR__.'/newspaper_data';
-		$identifier = $instance->getPrimaryKey();
+		
+		$object_id = $object->getPrimaryKey();
+		$object_identifier = $object->get('ca_objects.idno');
+		$rep_identifier = $rep->getPrimaryKey();
 		
 		foreach($xml->Layout->Page as $page) {
 			$pnum = (int)$page['PHYSICAL_IMG_NR'];
 			$pwidth = (float)$page['WIDTH'];
 			$pheight = (float)$page['HEIGHT'];
-			print "PAGE {$pnum} ({$pwidth}/{$pheight})\n";
 			
+			print "PAGE {$pnum} ({$pwidth}/{$pheight})\n";
 			$acc = [];
+			$page_content = [];
 			foreach($page->PrintSpace->TextBlock as $block) {
 				foreach($block->TextLine as $line) {
 					foreach($line->String as $str) {
@@ -80,20 +90,23 @@ class MetsALTOImporter {
 									'y' => sprintf("%0.3f", (float)$str['VPOS']/$pheight)
 								];
 							}
+							$page_content[] = $w;
 						}
 					}
 				}
 			}
 			
+			$this->search->addPage($object, $rep, $pnum, join(' ', $page_content)) ;
+			
 			$page_data = [
-				'table' => $instance->tableName(),
-				'id' => $instance->getPrimaryKey(),
-				'idno' => $instance->get('idno'),
+				'object_id' => $object_id,
+				'representation_id' => $rep_identifier,
+				'idno' => $object_identifier,
 				'locations' => $acc
 			];
 			
-			if(!file_exists("{$output_dir}/{$identifier}")) { mkdir("{$output_dir}/{$identifier}"); }
-			file_put_contents("{$output_dir}/{$identifier}/".sprintf("%06d", $pnum).".json", json_encode($page_data));
+			if(!file_exists("{$output_dir}/{$rep_identifier}")) { mkdir("{$output_dir}/{$rep_identifier}"); }
+			file_put_contents("{$output_dir}/{$rep_identifier}/".sprintf("%06d", $pnum).".json", json_encode($page_data));	
 		}
 		
 		return true;

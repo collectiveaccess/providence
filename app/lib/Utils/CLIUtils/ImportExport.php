@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1434,6 +1434,50 @@ trait CLIUtilsImportExport {
 	 */
 	public static function write_importer_to_fileHelp() {
 		return _t('Write import mapping to Excel-format file.');
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param Zend_Console_Getopt|null $po_opts
+	 * @return bool
+	 */
+	public static function import_mets_alto_data($po_opts=null) {
+		$directory = $po_opts->getOption('directory');
+		if (!$directory) {
+			CLIUtils::addError(_t('A directory must be specified'));
+			return false;
+		}
+
+		
+		
+		CLIUtils::addMessage(_t('Imported data'));
+		return true;
+	}
+	# -------------------------------------------------------
+	public static function import_mets_alto_dataParamList() {
+		return [
+			"directory|d=s" => _t('Required. Directory to read METS/ALTO data from.')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_mets_alto_dataUtilityClass() {
+		return _t('Import/Export');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_mets_alto_dataShortHelp() {
+		return _t('Import METS/ALTO format data for media representations.');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_mets_alto_dataHelp() {
+		return _t('Import METS/ALTO format data for media representations.');
 	}
 	# -------------------------------------------------------
 }
