@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,7 +138,7 @@ $table = $t_subject->tableName();
 	</div><!-- end bg -->
 
 <?php
-	if(caProcessingQueueIsEnabled()) {
+	if(caTaskQueueIsEnabled()) {
 ?>	
 	<div style="position: absolute; bottom: 15px; left: 15px;">
 		<?= caHTMLCheckBoxInput('background', ['id' => 'caProcessInBackground']); ?>
@@ -159,7 +159,7 @@ $table = $t_subject->tableName();
 		caUpdateLabelsOptionsForm();
 
 <?php
-	if(caProcessingQueueIsEnabled()) {
+	if(caTaskQueueIsEnabled()) {
 ?>			
 		jQuery('#caProcessInBackground').on('click', function(e) {
 			jQuery('#caExportWithMappingInBackground, #caPrintLabelsFormInBackground, #caExportInBackground').val(jQuery(this).is(':checked') ? 1 : 0);

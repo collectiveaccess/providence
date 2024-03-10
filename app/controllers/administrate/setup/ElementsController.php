@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
-require_once(__CA_LIB_DIR__.'/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
 require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
@@ -39,6 +35,10 @@ class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
+		
+		if(!$po_request || !$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_configure_metadata_elements')) {
+			throw new AccessException(_t('Access denied'));
+		}
 	}
 	# -------------------------------------------------------
 	public function Index() {

@@ -60,7 +60,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 	 * @return string Name - actually more of a short description - of this task queue plugin
 	 */
 	public function getHandlerName() {
-		return _t("Background media file processor");
+		return _t("Media file processor");
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -76,27 +76,23 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 		$va_params = array();
 		
 		$va_params['input_format'] = array(
-			'label' => _t('Input format'),
-			'value' => $va_parameters["INPUT_MIMETYPE"]
+			'label' => _t('Format'),
+			'value' => Media::getTypenameForMimetype($va_parameters["INPUT_MIMETYPE"])
 		);
 		if (file_exists($va_parameters["FILENAME"]) && ($size = filesize($va_parameters["FILENAME"]))) {
 			$va_params['input_file_size'] = array(
-				'label' => _t('Input file size'),
+				'label' => _t('Filesize'),
 				'value' => sprintf("%s", caFormatFileSize($size))
 			);
 		}
 		$va_params['table'] = array(
-			'label' => _t('Data source'),
+			'label' => _t('Source'),
 			'value' => $va_parameters["TABLE"].':'.$va_parameters["FIELD"].':'.$va_parameters["PK_VAL"]
-		);
-		$va_params['temporary_filename'] = array(
-			'label' => _t('Temporary filename'),
-			'value' => $va_parameters["FILENAME"]
 		);
 		
 		if (is_array($va_parameters["VERSIONS"])) {
 			$va_params['version'] = array(
-				'label' => _t('Versions output'),
+				'label' => _t('Versions'),
 				'value' => join(", ", array_keys($va_parameters["VERSIONS"]))
 			);
 		}
@@ -235,7 +231,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				#
 				# don't process this media, just copy the file
 				#
-				$vs_ext = $o_media->mimetype2extension($vs_output_mimetype);
+				$vs_ext = Media::getExtensionForMimetype($vs_output_mimetype);
 			
 				if (!$vs_ext) {
 					$msg = _t("File could not be copied for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
@@ -355,7 +351,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				
 				if (!$vs_output_mimetype) { $vs_output_mimetype = $vs_input_mimetype; }
 				
-				if (!($vs_ext = $o_media->mimetype2extension($vs_output_mimetype))) {
+				if (!($vs_ext = Media::getExtensionForMimetype($vs_output_mimetype))) {
 					$msg = _t("File could not be processed for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(1600, $msg, "mediaproc->process()");

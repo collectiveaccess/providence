@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -470,6 +470,24 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	        }
 	        return false;
 	    }));
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Get all field values of the current element. This overrides the default implementation
+	 * in BaseModel to ensure that all element settings - including type-specific settings - are
+	 * present in the returned array.
+	 *
+	 * @see BaseModel::getChangedFieldValuesArray()
+	 * @return array associative array: field name => field value
+	 */
+	public function getFieldValuesArray($include_unset_fields=false) {
+		$field_values = parent::getFieldValuesArray($include_unset_fields);
+		
+		$settings = $this->getSettings();
+		if(is_array($settings)) {
+			$field_values['settings'] = $settings;
+		}
+		return $field_values;
 	}
 	# ------------------------------------------------------
 	# Settings

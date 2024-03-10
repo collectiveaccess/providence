@@ -60,6 +60,9 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
+					<?= _t('Rank'); ?>
+				</th>
+				<th class="list-header-unsorted">
 					<?= _t('Title'); ?>
 				</th>
 				<th class="list-header-unsorted">
@@ -86,6 +89,9 @@
 		foreach($va_page_list as $va_page) {
 ?>
 			<tr>
+				<td>
+					<div><?= $va_page['rank']; ?></div>
+				</td>
 				<td>
 					<div class="caPageListName"><?= $va_page['title']; ?></div>
 				</td>

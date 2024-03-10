@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -388,6 +388,11 @@ class ca_media_upload_sessions extends BaseModel {
 			$table = $config['table'];
 			$type = $config['type'];
 			$idno = $config['idno'];
+			
+			// TODO: more placeholders?
+			$idno = preg_replace("!<year>!i", date("Y"), $idno);
+			
+			
 			$status = $config['status'];
 			$access = $config['access'];
 			

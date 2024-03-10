@@ -5009,11 +5009,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Check if background processing queue is enabled
+	 * Check if background processing using the task queue is enabled
 	 *
 	 * @return bool
 	 */
-	function caProcessingQueueIsEnabled() : bool {
-		return defined('__CA_QUEUE_ENABLED__') && __CA_QUEUE_ENABLED__;
+	function caTaskQueueIsEnabled() : bool {
+		if(defined('__CA_QUEUE_ENABLED__')) {
+			return  __CA_QUEUE_ENABLED__;
+		}
+		$config = Configuration::load();
+		return (bool)$config->get('run_task_queue');
 	}
 	# ----------------------------------------

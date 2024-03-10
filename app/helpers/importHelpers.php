@@ -718,6 +718,9 @@ function caProcessRefineryRelated($po_refinery_instance, $ps_related_table, $pa_
 			} 
 		
 			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label')), $pa_options);
+			if(isset($pa_related_options['matchOn'])) {
+				$pa_options['matchOn'] = $pa_related_options['matchOn'];
+			}
 
 			switch($ps_related_table) {
 				case 'ca_objects':
@@ -1392,6 +1395,7 @@ function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, 
 				$va_val['_matchOn'] = $va_match_on;
 				if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 				if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
+				if (isset($pa_options['ignoreType']) && $pa_options['ignoreType']) { $va_val['_ignoreType'] = 1; }
 				$va_vals[] = $va_val;
 			}
 		}

@@ -34,6 +34,7 @@ require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 class ExportCTDA extends BaseExportFormat {
 	# ------------------------------------------------------
 	private static $row_index = 0;
+	private static $headers_output = false;
 	
 	# ------------------------------------------------------
 	public function __construct(){
@@ -201,7 +202,10 @@ class ExportCTDA extends BaseExportFormat {
 		
 		$r = fopen('php://temp/maxmemory:10485760', 'w');
 		
-		fputcsv($r, $headers);
+		if(!self::$headers_output) {
+			fputcsv($r, $headers);
+			self::$headers_output = true;
+		}
 		foreach($acc as $i => $row) {
 			foreach($row as $j => $rval) {
 				$acc[$i][$j] = strip_tags($rval, ['b', 'i', 'u', 'strong', 'em', 'p', 'br']);
