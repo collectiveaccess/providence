@@ -55,7 +55,7 @@
     "google/cloud-translate": "^1.12",
     "phpmailer/phpmailer": "^6.8",
     "smalot/pdfparser": "^2.7",
-    "solarium/solarium": "6.3.1"
+    "solarium/solarium": "^6.3"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0"
