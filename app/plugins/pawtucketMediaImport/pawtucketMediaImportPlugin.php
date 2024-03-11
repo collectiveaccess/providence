@@ -56,7 +56,11 @@
 		 */
 		public function hookPeriodicTask() {
 			$ret = ca_media_upload_sessions::processSessions(['limit' => 20]);
-			$this->opo_log->logInfo(__CLASS__ . ": Processed $ret sessions");
+
+			// Suppress empty process logs
+			if ($ret && $ret > 0) {
+				$this->opo_log->logInfo(__CLASS__ . ": Processed $ret sessions");
+			}
 			// Allow plugins after pawtuckeMediaImport to also process
 			return true;
 		}
