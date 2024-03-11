@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 require_once(__CA_LIB_DIR__."/BaseQuickAddController.php");
 
 class ListItemQuickAddController extends BaseQuickAddController {

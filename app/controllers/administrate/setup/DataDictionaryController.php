@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,6 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/Controller/ActionController.php");
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
 require_once(__CA_LIB_DIR__."/ResultContext.php");
 
 class DataDictionaryController extends ActionController {
@@ -35,7 +33,9 @@ class DataDictionaryController extends ActionController {
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
- 		if (!$this->request->user->canDoAction("can_configure_data_dictionary")) { throw new ApplicationException(_t('Data dictionary is not available')); }
+ 		if (!$this->request->user->canDoAction("can_configure_data_dictionary")) { 
+ 			throw new AccessException(_t('Data dictionary is not available')); 
+ 		}
 	}
 	# -------------------------------------------------------
 	public function ListEntries() {

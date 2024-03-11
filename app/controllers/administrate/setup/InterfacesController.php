@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,20 +24,22 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
-	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_labels.php');
-	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
-	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_labels.php');
-	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
-	require_once(__CA_LIB_DIR__.'/Datamodel.php');
-	require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ResultContext.php');
+ */ 
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
+require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class InterfacesController extends BaseEditorController {
 	# -------------------------------------------------------
 	protected $ops_table_name = 'ca_editor_uis';		// name of "subject" table (what we're editing)
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+		
+		if(!$po_request || !$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_configure_user_interfaces')) {
+			throw new AccessException(_t('Access denied'));
+		}
+	}
 	# -------------------------------------------------------
 	/**
 	 *
@@ -79,7 +81,6 @@ class InterfacesController extends BaseEditorController {
 		
 		$t_ui = new ca_editor_uis();
 		if (!$t_ui->load(array('editor_type' => 101))) {
-			$t_ui->setMode(ACCESS_WRITE);
 			$t_ui->set('user_id', null);
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_type', 101);
@@ -101,7 +102,6 @@ class InterfacesController extends BaseEditorController {
 			$vn_ui_id = $t_ui->getPrimaryKey();
 			
 			$t_screen = new ca_editor_ui_screens();
-			$t_screen->setMode(ACCESS_WRITE);
 			$t_screen->set('ui_id', $vn_ui_id);
 			$t_screen->set('idno', 'basic_'.$vn_ui_id);
 			$t_screen->set('rank', 1);
@@ -128,7 +128,6 @@ class InterfacesController extends BaseEditorController {
 		}
 		
 		if (!$t_ui->load(array('editor_type' => 100))) {
-			$t_ui->setMode(ACCESS_WRITE);
 			$t_ui->set('user_id', null);
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_type', 100);
@@ -150,7 +149,6 @@ class InterfacesController extends BaseEditorController {
 			$vn_ui_id = $t_ui->getPrimaryKey();
 			
 			$t_screen = new ca_editor_ui_screens();
-			$t_screen->setMode(ACCESS_WRITE);
 			$t_screen->set('ui_id', $vn_ui_id);
 			$t_screen->set('idno', 'basic_'.$vn_ui_id);
 			$t_screen->set('rank', 1);

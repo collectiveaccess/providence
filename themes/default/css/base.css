@@ -23,6 +23,10 @@ body {
     overflow: auto !important;
 }
 
+a, p, div {
+    overflow-wrap: break-word;
+}
+
 form{
     display:inline;
 }
@@ -5367,7 +5371,7 @@ table.uiScreenItem .fa{
 #dashboardControls {text-align: right; padding:0px 0px 0px 10px;}
 a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none; font-size:11px; color: #777;}
 
-.portlet { margin:.5em 1em 1.5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
+.portlet { margin:.5em 1em .5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
 .portlet-header {
 	font-family: "DIN-Regular", Arial, Helvetica, sans-serif;
 	font-size: 13px;
@@ -5386,9 +5390,14 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
 .portlet-content {
     background-color: #fbfbfb;
     border: 1px solid #eee;
-    padding:15px 0px 15px 15px;
+    padding: 3px 10px 3px 10px;
     line-height:1.5em;
 }
+
+.ui-tabs-panel {
+	padding: 0px !important;
+}
+
 .ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
 .ui-sortable-placeholder * { visibility: hidden; }
 
@@ -5431,6 +5440,7 @@ a.dashboardRemoveWidget {
 }
 .dashboardWidgetContentContainer {
     position: relative;
+    padding: 5px;
 }
 .dashboardWidgetContentContainer ul{
     list-style-type: none;
@@ -5451,6 +5461,7 @@ a.dashboardRemoveWidget {
 
 .dashboardWidgetScrollMedium {
     height: 300px;
+    width: 100%;
     overflow-x: auto;
     overflow-y: auto;
 }
@@ -5469,6 +5480,11 @@ a.dashboardRemoveWidget {
     background-color:#DEDEDE;
     font-weight:bold;
 }
+
+.dashboardWidgetTable tr {
+	border-bottom: 1px dotted #999;
+}
+
 .dashboardWidgetTable td{
     padding:5px;
     background-color:#f2f2f2;
@@ -6213,11 +6229,17 @@ div.editLink {
     padding-top:25px;
     float:right;
 }
-.accessName {
+
+div.accessName {
+    margin-bottom: 5px;
+}
+
+span.accessName {
     font-weight: bold;
     font-size: 12px;
     color: #134959;
     line-height:1.75em;
+    margin-bottom: 5px;
 }
 
 .inheritFromParent {
@@ -6229,6 +6251,10 @@ div.editLink {
     float: right;
 }
 
+div.inheritName {
+    font-size: 9px; 
+    font-style: italic;
+}
 /* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */
 /* -------------------------------------------------*/

@@ -30,8 +30,11 @@ require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
 require_once(__CA_LIB_DIR__.'/Db.php');
+require_once(__CA_LIB_DIR__.'/Utils/LockingTrait.php');
 
 class libraryServicesPlugin extends BaseApplicationPlugin {
+	# -------------------------------------------------------
+	use LockingTrait;
 	# -------------------------------------------------------
 	private $opo_config;
 	private $opo_library_services_config;
@@ -60,9 +63,14 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 	 * Perform library services-related periodic tasks
 	 */
 	public function hookPeriodicTask(&$pa_params) {
-		$o_db = new Db();
-		
 		if (!((bool)$this->opo_config->get('enable_library_services'))) { return true; }
+		if(self::lockExists()) { 
+			return false;
+		}
+		if(!self::lockAcquire()) {
+			return false;
+		}
+		$o_db = new Db();
 		
 		if ((bool)$this->opo_config->get('enable_object_checkout')) {
 			$t_user = new ca_users();
@@ -193,7 +201,7 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 				}
 			}
 		}
-				
+		self::lockRelease();
 		return true;
 	}
 	# -------------------------------------------------------

@@ -146,8 +146,6 @@
 					
 					if (!$vb_is_theme_specific && isset($va_exclude_packages[$ps_package][$ps_library])) { return true; }
 					
-					$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
-					
 					// inherit from parent themes?
 					if ($o_config->get('allowThemeInheritance')) {
                         $i=0;
@@ -162,7 +160,9 @@
                             if ($i > 10) {break;} // max 10 levels
                         }
                     }
-					
+                    
+					$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
+								
 					return true;
 				}
 				

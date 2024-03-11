@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -980,7 +980,6 @@ class DisplayTemplateParser {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						$relative_to = (string)$o_node->relativeTo;
-						
 						if ($t_instance->isRelationship() && ($relative_to || (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true]))) && sizeof($va_tmp))) {
 							$vs_linking_context = $relative_to ? $relative_to : array_shift(explode('.', array_shift($va_tmp)));
 							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
@@ -988,10 +987,12 @@ class DisplayTemplateParser {
 							}
 						}
 						
+						$link_attributes = $o_node->attributes ?? [];
+						unset($link_attributes['relativeTo']);
 						$va_proc_templates = caCreateLinksFromText(
 							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
-							array_merge(['addRelParameter' => true, 'requireLinkTags' => false, 'bundle' => $o_node->bundle], $pa_options)
+							array_merge(['addRelParameter' => true, 'requireLinkTags' => false, 'bundle' => $o_node->bundle, 'attributes' => $link_attributes], $pa_options)
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
 					} elseif(strlen($vs_tag) && ($vs_tag[0] !=='~')) { 

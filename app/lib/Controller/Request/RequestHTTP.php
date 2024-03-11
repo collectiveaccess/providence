@@ -732,66 +732,16 @@ class RequestHTTP extends Request {
 			$this->user->close();
 		}
 
-		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
-			$host_without_port = __CA_SITE_HOSTNAME__;
-			$host_port = null;
-		    if(preg_match("/:([\d]+)$/", $host_without_port, $m)) {
-		    	$host_without_port = preg_replace("/:[\d]+$/", '', $host_without_port);
-		    	$host_port = (int)$m[1];
-		    } 
-		    
-			if (
-			    !($port = (int)$this->getAppConfig()->get('out_of_process_search_indexing_port'))
-			    && 
-			    !($port = (int)getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PORT'))
-			) {
-                if(__CA_SITE_PROTOCOL__ == 'https') { 
-                    $port = $host_port ?? 443;	
-                } elseif(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
-                    $port = $_SERVER['SERVER_PORT'];
-                } else {
-                    $port = $host_port ?? 80;
-                }
-            }
-			
-			if (
-			    !($proto = trim($this->getAppConfig()->get('out_of_process_search_indexing_protocol')))
-			    && 
-			    !($proto = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_PROTOCOL'))
-			) {
-			    $proto = (($port == 443) || (__CA_SITE_PROTOCOL__ == 'https')) ? 'ssl' : 'tcp';
+		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {			
+			$disable_background_processing = $this->getAppConfig()->get(['disable_background_processing']);
+			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && !$disable_background_processing && $this->getAppConfig()->get('run_search_indexing_queue') ) {
+				if(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0)) {
+					\CA\Process\Background::run('searchIndexingQueue');
+				}
 			}
 			
-			if (
-			    !($indexing_hostname = trim($this->getAppConfig()->get('out_of_process_search_indexing_hostname')))
-			    && 
-			    !($indexing_hostname = getenv('CA_OUT_OF_PROCESS_SEARCH_INDEXING_HOSTNAME'))
-			) {
-			    $indexing_hostname = $host_without_port;
-			}
-			
-			// trigger async search indexing
-			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && $this->getAppConfig()->get('run_indexing_queue') ) {
-                require_once(__CA_MODELS_DIR__."/ca_search_indexing_queue.php");
-                if (!ca_search_indexing_queue::lockExists()) {
-                	$dont_verify_ssl_cert = (bool)$this->getAppConfig()->get('out_of_process_search_indexing_dont_verify_ssl_cert');
-                    $context = stream_context_create([
-						'ssl' => [
-							'verify_peer' => !$dont_verify_ssl_cert,
-							'verify_peer_name' => !$dont_verify_ssl_cert
-						]
-					]);
-
-					$r_socket = stream_socket_client($proto . '://'. $indexing_hostname.':'.$port, $errno, $errstr, ini_get("default_socket_timeout"), STREAM_CLIENT_CONNECT, $context);
-
-                    if ($r_socket) {
-                        $http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
-                        $http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
-                        $http .= "Connection: Close\r\n\r\n";
-                        fwrite($r_socket, $http);
-                        fclose($r_socket);
-                    }
-                }
+			if(isset(TaskQueue::$tasks_added) && (TaskQueue::$tasks_added > 0) && !$disable_background_processing) {
+				\CA\Process\Background::run('taskQueue');
 			}
 		}
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,20 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 require_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 require_once(__CA_LIB_DIR__.'/Db.php');
 require_once(__CA_LIB_DIR__.'/BatchProcessor.php');
-require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
-require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
-require_once(__CA_MODELS_DIR__.'/ca_users.php');
 	
 class WLPlugTaskQueueHandlermediaImport Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
@@ -70,14 +61,14 @@ class WLPlugTaskQueueHandlermediaImport Extends WLPlug Implements IWLPlugTaskQue
 			$relative_directories[] = preg_replace("!{$d}[/]*!", "", '/'.$va_parameters["importFromDirectory"]);;
 		}
 		$va_params_for_display['importFromDirectory'] = array(
-			'label' => _t("Importing media from"),
+			'label' => _t("Import media from"),
 			'values' => $relative_directories
 		);
 		
 		if (file_exists($va_parameters["importFromDirectory"])) {
 			$va_counts = caGetDirectoryContentsCount($va_parameters["importFromDirectory"], $va_parameters["includeSubDirectories"], false);
 			$va_params_for_display['number_of_files'] = array(
-				'label' => _t("Files to import"),
+				'label' => _t("File count"),
 				'value' => (int)$va_counts['files']
 			);
 		}

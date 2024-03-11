@@ -82,6 +82,13 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DISPLAY_FIELD' => array('ca_locales.name', 'ca_locales.language', 'ca_locales.country'),
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of page'),
 		),
+		'rank' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
+				'DEFAULT' => '',
+				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 4,
@@ -179,7 +186,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = null;
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------
@@ -252,7 +259,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 				break;
 		}
 		
-		$pages = ca_site_pages::find($criteria, ['returnAs' => 'arrays', 'allowWildcards' => true]);
+		$pages = ca_site_pages::find($criteria, ['returnAs' => 'arrays', 'sort' => 'rank', 'allowWildcards' => true]);
 		
 		$templates_by_id = [];
 		foreach(ca_site_templates::find('*', ['returnAs' => 'arrays']) as $template) {

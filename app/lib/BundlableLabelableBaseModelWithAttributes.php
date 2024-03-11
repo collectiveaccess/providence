@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -125,7 +125,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+		if (caACLIsEnabled($this)) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) == __CA_ACL_NO_ACCESS__) {
 				$this->clear();
 				return false;
@@ -277,7 +277,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->setGUID($pa_options);
 		
 		// Set ACL for newly created record
-		if ($this->getAppConfig()->get('perform_item_level_access_checking') && !$this->getAppConfig()->get("{$table}_dont_do_item_level_access_control")) {
+		if (caACLIsEnabled($this)) {
 			if($AUTH_CURRENT_USER_ID) { $this->setACLUsers([$AUTH_CURRENT_USER_ID => __CA_ACL_EDIT_DELETE_ACCESS__]); }
 			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level'));
 		}
@@ -317,7 +317,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */ 
 	public function update($pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
-		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+		if (caACLIsEnabled($this)) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_ACCESS__) {
 				$this->postError(2580, _t("You do not have edit access for this item: %1/%2", $this->tableName(), $this->getPrimaryKey()), "BundlableLabelableBaseModelWithAttributes->update()");
 				return false;
@@ -424,7 +424,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		global $AUTH_CURRENT_USER_ID;
-		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+		if (caACLIsEnabled($this)) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				$this->postError(2580, _t("You do not have delete access for this item"), "BundlableLabelableBaseModelWithAttributes->delete()");
 				return false;
@@ -645,7 +645,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// is this relationship part of a policy?
 					foreach($history_tracking_policies as $policy) {
 						if (!$table::historyTrackingPolicyUses($policy, $vs_rel_table)) { continue; }
-						if (!is_array($h = self::getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
+						if (!is_array($h = $this->getHistory(['currentOnly' => true, 'limit' => 1, 'policy' => $policy])) || !sizeof($h)) { continue; }
 					
 						$current = array_shift(array_shift($h));
 						if ($current['current_table_num'] === Datamodel::getTableNum($vs_rel_table)) {
@@ -885,7 +885,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$ret = parent::isChild();
 		
 		if(($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && method_exists($this, 'getIDNoPlugInInstance') && ($o_idno = $this->getIDNoPlugInInstance())) {
-			$o_idno->isChild($ret, $ret ? self::getIdnoForID($this->get($parent_id_fld)) : null);
+			$o_idno->isChild($ret, $ret ? parent::getIdnoForID($this->get($parent_id_fld)) : null);
 		}
 		
 		return $ret;
@@ -1212,7 +1212,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+		if (caACLIsEnabled($this)) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
 				return false;
@@ -1264,7 +1264,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
 				return false;
@@ -1327,7 +1327,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if ((bool)$config->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;
@@ -1379,7 +1379,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
 			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
 				return; 
@@ -1536,7 +1536,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
 			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
 				return; 
@@ -4098,13 +4098,6 @@ if (!$vb_batch) {
 					$this->removeAttribute($vn_attribute_id, $vs_f, array('pending_adds' => $va_attributes_to_insert));
 				}
 }				
-				// do inserts
-				foreach($va_attributes_to_insert as $va_attribute_to_insert) {
-					$this->clearErrors();
-					if(!$this->addAttribute($va_attribute_to_insert, $vn_element_id, null, ['batch' => $vb_batch])) {
-						$po_request->addActionErrors($this->errors);
-					}
-				}
 				
 if (!$vb_batch) {					
 				// check for attributes to update
@@ -4146,21 +4139,21 @@ if (!$vb_batch) {
 						$isset = false;
 						foreach($va_sub_elements as $vn_i => $va_element_info) {
 							if ($va_element_info['datatype'] == 0) { continue; }
-							$vn_element_id = $va_element_info['element_id'];
+							$sub_element_id = $va_element_info['element_id'];
 							
-							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$vn_element_id.'_'.$vn_attribute_id;
+							$vs_k = $vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_'.$sub_element_id.'_'.$vn_attribute_id;
 							if(is_null($po_request->parameterExists($vs_k)) && !isset($_FILES[$vs_k])) { continue; }
 							$vm_v = $po_request->getParameter($vs_k, pArray);
 							$vs_attr_val = is_array($vm_v) ? array_pop($vm_v) : null;
 							if (isset($_FILES[$vs_k]) && ($va_val = $_FILES[$vs_k])) {
 								if ($va_val['size'] > 0) {	// is there actually a file?
 									$va_val['_uploaded_file'] = true;
-									$va_attr_update[$vn_element_id] = $va_val;
+									$va_attr_update[$sub_element_id] = $va_val;
 									$isset = true;
 									continue;
 								}
 							} 
-							$va_attr_update[$vn_element_id] = $vs_attr_val;
+							$va_attr_update[$sub_element_id] = $vs_attr_val;
 							$isset = true;
 						}
 						if (!$isset) { continue; }
@@ -4171,6 +4164,14 @@ if (!$vb_batch) {
 						}
 						 $ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
 					}
+				}
+			}
+			
+			// do inserts
+			foreach($va_attributes_to_insert as $va_attribute_to_insert) {
+				$this->clearErrors();
+				if(!$this->addAttribute($va_attribute_to_insert, $vn_element_id, null, ['batch' => $vb_batch])) {
+					$po_request->addActionErrors($this->errors);
 				}
 			}
 		}
@@ -6520,7 +6521,7 @@ if (!$vb_batch) {
 			}
 		}
 
-		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+		if (caACLIsEnabled($this)) {
 			$t_user = new ca_users($vn_user_id);
 			if(!$t_user->canDoAction('is_administrator')) {
 				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
@@ -7678,11 +7679,11 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @return array List of user-base ACL entries associated with the currently loaded row
 	 */ 
-	public function getACLUsers($pa_options=null) {
+	public function getACLUsers(?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
-		if (!is_array($pa_options)) { $pa_options = []; }
-		$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
+		if (!is_array($options)) { $options = []; }
+		$vb_return_for_bundle =  (isset($options['returnAsInitialValuesForBundle']) && $options['returnAsInitialValuesForBundle']) ? true : false;
 
 		$o_db = $this->getDb();
 		
@@ -7694,6 +7695,20 @@ $pa_options["display_form_field_tips"] = true;
 				acl.table_num = ? AND acl.row_id = ? AND acl.user_id IS NOT NULL
 		", $this->tableNum(), $vn_id);
 		
+		$inherited_from = $qr_res->getAllFieldValues(["inherited_from_table_num", "inherited_from_row_id"]);
+		$inherited_from_by_table = [];
+		foreach($inherited_from['inherited_from_table_num'] as $i => $table_num) {
+			if(!$inherited_from['inherited_from_row_id'][$i]) { continue; }
+			$inherited_from_by_table[$table_num][] = $inherited_from['inherited_from_row_id'][$i];
+		}
+		
+		$inheritance_names = [];
+		foreach($inherited_from_by_table as $table_num => $row_ids) {
+			if(!is_array($row_ids) || !sizeof($row_ids)) { continue; }
+			$t_inherit = Datamodel::getInstance($table_num, true);
+			$inheritance_names[$table_num] = $t_inherit->getPreferredDisplayLabelsForIDs($row_ids);
+		}
+		
 		$va_users = [];
 		$va_user_ids = $qr_res->getAllFieldValues("user_id");
 		if ($qr_users = $this->makeSearchResult('ca_users', $va_user_ids)) {
@@ -7704,11 +7719,17 @@ $pa_options["display_form_field_tips"] = true;
 		$qr_res->seek(0);
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		while($qr_res->nextRow()) {
 			$va_row = [];
 			foreach(array('user_id', 'fname', 'lname', 'email', 'access') as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
+			
+			$va_row['inherited_from_table_num'] = $qr_res->get('inherited_from_table_num');
+			$va_row['inherited_from_row_id'] = $qr_res->get('inherited_from_row_id');
+			$va_row['inherited_from'] = $inheritance_names[$va_row['inherited_from_table_num']][$va_row['inherited_from_row_id']] ?? null;
 			
 			if ($vb_return_for_bundle) {
 				$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'];
@@ -7726,22 +7747,27 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * 
 	 */ 
-	public function addACLUsers($pa_user_ids) {
-		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
-		
-		$vn_table_num = $this->tableNum();
+	public function addACLUsers(array $user_ids, ?array $options=null) : ?bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		$table_num = $this->tableNum();
 		
 		$t_acl = new ca_acl();
-		foreach($pa_user_ids as $vn_user_id => $vn_access) {
+		$t_acl->setTransaction($this->getTransaction());
+		
+		foreach($user_ids as $user_id => $access) {
 			$t_acl->clear();
-			$t_acl->load(array('user_id' => $vn_user_id, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
+			$t_acl->load(['user_id' => $user_id, 'table_num' => $table_num, 'row_id' => $id]);		// try to load existing record
 			
-			$t_acl->set('table_num', $vn_table_num);
-			$t_acl->set('row_id', $vn_id);
-			$t_acl->set('user_id', $vn_user_id);
-			$t_acl->set('access', $vn_access);
+			$t_acl->set('table_num', $table_num);
+			$t_acl->set('row_id', $id);
+			$t_acl->set('user_id', $user_id);
+		
+			if($access != $t_acl->get('access')) {
+				$t_acl->set('inherited_from_table_num', null);
+				$t_acl->set('inherited_from_row_id', null);
+			}
+			
+			$t_acl->set('access', $access);
 			
 			if ($t_acl->getPrimaryKey()) {
 				$t_acl->update();
@@ -7761,35 +7787,44 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * 
 	 */ 
-	public function setACLUsers($pa_user_ids) {
-		$this->removeAllACLUsers();
-		if (!$this->addACLUsers($pa_user_ids)) { return false; }
+	public function setACLUsers(array $user_ids, ?array $options=null) : ?bool {
+		$this->removeAllACLUsers($options);
+		if (!$this->addACLUsers($user_ids)) { return false; }
 		
 		return true;
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * 
+	 * @param array $options Options include:
+	 *		preserveInherited = Don't remove inherited ACL entries. [Default is false]
 	 */ 
-	public function removeACLUsers($pa_user_ids) {
-		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+	public function removeACLUsers(array $user_ids, ?array $options=null) : ?bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		$table_num = $this->tableNum();
 		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
 		
-		$vn_table_num = $this->tableNum();
-		
-		$va_current_users = $this->getACLUsers();
+		$current_users = $this->getACLUsers();
 		
 		$t_acl = new ca_acl();
-		foreach($pa_user_ids as $vn_user_id) {
-			if (!isset($va_current_users[$vn_user_id]) && $va_current_users[$vn_user_id]) { continue; }
-			
-			if ($t_acl->load(array('table_num' => $vn_table_num, 'row_id' => $vn_id, 'user_id' => $vn_user_id))) {
-				$t_acl->delete(true);
-				
-				if ($t_acl->numErrors()) {
-					$this->errors = $t_acl->errors;
-					return false;
+		$t_acl->setTransaction($this->getTransaction());
+		
+		foreach($user_ids as $user_id) {
+			if (!isset($current_users[$user_id]) && $current_users[$user_id]) { continue; }
+			$params = ['table_num' => $table_num, 'row_id' => $id, 'user_id' => $user_id];
+			if($preserve_inherited_acl) { 
+				$params['inherited_from_table_num'] = null;
+			}
+			$entries = ca_acl::find($params, ['returnAs' => 'modelInstances']);
+			if (is_array($entries)) {
+				foreach($entries as $t_acl) {
+					$t_acl->delete(true);
+					
+					if ($t_acl->numErrors()) {
+						$this->errors = $t_acl->errors;
+						return false;
+					}
 				}
 			}
 		}
@@ -7800,18 +7835,27 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Removes all user-based ACL entries from currently loaded row
 	 *
+	 * @param array $options Options include:
+	 *		preserveInherited = Don't remove inherited ACL entries. [Default is false]
+	 *
 	 * @return bool True on success, false on failure
 	 */ 
-	public function removeAllACLUsers() {
+	public function removeAllACLUsers(?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
 		$o_db = $this->getDb();
 		
-		$qr_res = $o_db->query("
+		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
+		
+		$preserve_inherited_acl_sql = $preserve_inherited_acl ? "
+			AND inherited_from_table_num IS NULL
+		" : '';
+		
+		$qr_res = $o_db->query($sql ="
 			DELETE FROM ca_acl
 			WHERE
-				table_num = ? AND row_id = ? AND user_id IS NOT NULL
-		", $this->tableNum(), $vn_id);
+				table_num = ? AND row_id = ? AND user_id IS NOT NULL {$preserve_inherited_acl_sql}
+		", [$this->tableNum(), $vn_id]);
 		if ($o_db->numErrors()) {
 			$this->errors = $o_db->errors;
 			return false;
@@ -7851,11 +7895,11 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @return array List of user group ACL-entries associated with the currently loaded row
 	 */ 
-	public function getACLUserGroups($pa_options=null) {
+	public function getACLUserGroups(?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
-		if (!is_array($pa_options)) { $pa_options = []; }
-		$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
+		if (!is_array($options)) { $options = []; }
+		$vb_return_for_bundle =  (isset($options['returnAsInitialValuesForBundle']) && $options['returnAsInitialValuesForBundle']) ? true : false;
 		
 		$o_db = $this->getDb();
 		
@@ -7877,6 +7921,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
 		
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
@@ -7884,6 +7929,9 @@ $pa_options["display_form_field_tips"] = true;
 			foreach(array('group_id', 'name', 'code', 'description', 'access') as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
+			
+			$va_row['inherited_from_table_num'] = $qr_res->get('inherited_from_table_num');
+			$va_row['inherited_from_row_id'] = $qr_res->get('inherited_from_row_id');
 			
 			if ($vb_return_for_bundle) {
 				$va_row['label'] = $va_initial_values[$va_row['group_id']]['label'];
@@ -7904,32 +7952,38 @@ $pa_options["display_form_field_tips"] = true;
 	*
 	 * @param array $pa_group_ids
 	 * @param array $pa_options Supported options are:
-	 *		user_id - if set, only user groups owned by the specified user_id will be added
+	 *		user_id = if set, only user groups owned by the specified user_id will be added
 	 */ 
-	public function addACLUserGroups($pa_group_ids, $pa_options=null) {
-		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+	public function addACLUserGroups(array $group_ids, ?array $options=null) {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
 		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		$table_num = $this->tableNum();
 		
-		$vn_table_num = $this->tableNum();
+		$user_id = (isset($options['user_id']) && $options['user_id']) ? $options['user_id'] : null;
 		
-		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : null;
-		
-		$va_current_groups = $this->getACLUserGroups();
+		$current_groups = $this->getACLUserGroups();
 		
 		$t_acl = new ca_acl();
-		foreach($pa_group_ids as $vn_group_id => $vn_access) {
-			if ($vn_user_id) {	// verify that group we're linking to is owned by the current user
-				$t_group = new ca_user_groups($vn_group_id);
-				if (($t_group->get('user_id') != $vn_user_id) && $t_group->get('user_id')) { continue; }
+		$t_acl->setTransaction($this->getTransaction());
+		
+		foreach($group_ids as $group_id => $access) {
+			if ($user_id) {	// verify that group we're linking to is owned by the current user
+				$t_group = new ca_user_groups($group_id);
+				if (($t_group->get('user_id') != $user_id) && $t_group->get('user_id')) { continue; }
 			}
 			$t_acl->clear();
-			$t_acl->load(array('group_id' => $vn_group_id, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
+			$t_acl->load(array('group_id' => $group_id, 'table_num' => $table_num, 'row_id' => $id));		// try to load existing record
 			
-			$t_acl->set('table_num', $vn_table_num);
-			$t_acl->set('row_id', $vn_id);
-			$t_acl->set('group_id', $vn_group_id);
-			$t_acl->set('access', $vn_access);
+			$t_acl->set('table_num', $table_num);
+			$t_acl->set('row_id', $id);
+			$t_acl->set('group_id', $group_id);
+			
+			if($access != $t_acl->get('access')) {
+				$t_acl->set('inherited_from_table_num', null);
+				$t_acl->set('inherited_from_row_id', null);
+			}
+			
+			$t_acl->set('access', $access);
 			
 			if ($t_acl->getPrimaryKey()) {
 				$t_acl->update();
@@ -7949,10 +8003,10 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * 
 	 */ 
-	public function setACLUserGroups($pa_group_ids, $pa_options=null) {
-		if (is_array($va_groups = $this->getACLUserGroups())) {
-			$this->removeAllACLUserGroups();
-			if (!$this->addACLUserGroups($pa_group_ids, $pa_options)) { return false; }
+	public function setACLUserGroups(array $group_ids, ?array $options=null) {
+		if (is_array($groups = $this->getACLUserGroups($options))) {
+			$this->removeAllACLUserGroups($options);
+			if (!$this->addACLUserGroups($group_ids, $options)) { return false; }
 			
 			return true;
 		}
@@ -7961,26 +8015,37 @@ $pa_options["display_form_field_tips"] = true;
 	# ------------------------------------------------------------------
 	/**
 	 * 
+	 *
+	 * @param array $options Options include:
+	 *		preserveInherited = Don't remove inherited ACL entries. [Default is false]
 	 */ 
-	public function removeACLUserGroups($pa_group_ids) {
-		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+	public function removeACLUserGroups($group_ids, ?array $options=null) {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
 		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		$table_num = $this->tableNum();
 		
-		$vn_table_num = $this->tableNum();
-		
-		$va_current_groups = $this->getUserGroups();
+		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
+		$current_groups = $this->getUserGroups();
 		
 		$t_acl = new ca_acl();
-		foreach($pa_group_ids as $vn_group_id) {
-			if (!isset($va_current_groups[$vn_group_id]) && $va_current_groups[$vn_group_id]) { continue; }
+		$t_acl->setTransaction($this->getTransaction());
+		
+		foreach($group_ids as $group_id) {
+			if (!isset($current_groups[$group_id]) && $current_groups[$group_id]) { continue; }
 			
-			if ($t_acl->load(array('table_num' => $vn_table_num, 'row_id' => $vn_id, 'group_id' => $vn_group_id))) {
-				$t_acl->delete(true);
+			$params = ['table_num' => $table_num, 'row_id' => $id, 'group_id' => $group_id];
+			if($preserve_inherited_acl) { 
+				$params['inherited_from_table_num'] = null;
+			}
+			$entries = ca_acl::find($params, ['returnAs' => 'modelInstances']);
+			if (is_array($entries)) {
+				foreach($entries as $t_acl) {
+					$t_acl->delete(true);
 				
-				if ($t_acl->numErrors()) {
-					$this->errors = $t_acl->errors;
-					return false;
+					if ($t_acl->numErrors()) {
+						$this->errors = $t_acl->errors;
+						return false;
+					}
 				}
 			}
 		}
@@ -7991,19 +8056,27 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Removes all user group-based ACL entries from currently loaded row
 	 *
+	 * @param array $options Options include:
+	 *		preserveInherited = Don't remove inherited ACL entries. [Default is false]
+	 *
 	 * @return bool True on success, false on failure
 	 */ 
-	public function removeAllACLUserGroups() {
+	public function removeAllACLUserGroups(?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		
+
 		$o_db = $this->getDb();
+				
+		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
+		
+		$preserve_inherited_acl_sql = $preserve_inherited_acl ? "
+			AND inherited_from_table_num IS NULL
+		" : '';
 		
 		$qr_res = $o_db->query("
 			DELETE FROM ca_acl
 			WHERE
-				table_num = ? AND row_id = ? AND group_id IS NOT NULL
-		", $this->tableNum(), (int)$vn_id);
+				table_num = ? AND row_id = ? AND group_id IS NOT NULL {$preserve_inherited_acl_sql}
+		", [$this->tableNum(), (int)$vn_id]);
 		
 		if ($o_db->numErrors()) {
 			$this->errors = $o_db->errors;
@@ -8018,15 +8091,15 @@ $pa_options["display_form_field_tips"] = true;
 	 *			access				[access level as integer value]
 	 *			access_display		[access level as display text]
 	 *
-	 * @param array $pa_options Supported options:
+	 * @param array $options Supported options:
 	 *		No options currently supported
 	 *
 	 * @return array Information about current ACL world setting
 	 */ 
-	public function getACLWorldAccess($pa_options=null) {
+	public function getACLWorldAccess($options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
-		if (!is_array($pa_options)) { $pa_options = []; }
+		if (!is_array($options)) { $options = []; }
 		
 		$o_db = $this->getDb();
 		
@@ -8038,6 +8111,8 @@ $pa_options["display_form_field_tips"] = true;
 		", $this->tableNum(), $vn_id);
 		
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
+		
 		$va_row = [];
 		if($qr_res->nextRow()) {
 			foreach(array('access') as $vs_f) {
@@ -8059,8 +8134,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		$t_acl = new ca_acl();
+		$t_acl->setTransaction($this->getTransaction());
 		
 		$vn_access = 0;
 		if ($t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $this->tableNum(), 'row_id' => $this->getPrimaryKey()))) {		// try to load existing record
@@ -8084,15 +8159,14 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * 
 	 */
-	public function setACLWorldAccess($pn_world_access) {
+	public function setACLWorldAccess($pn_world_access, ?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		$vn_table_num = $this->tableNum();
 		
-		
 		$t_acl = new ca_acl();	
+		$t_acl->setTransaction($this->getTransaction());
+		
 		$t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
 		
 		$t_acl->set('table_num', $vn_table_num);
@@ -8134,7 +8208,6 @@ $pa_options["display_form_field_tips"] = true;
 			if (!$pn_id) { return null; }
 		}
 		if ($t_user->canDoAction('is_administrator')) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		return ca_acl::accessForRow($t_user, $this->tableNum(), $pn_id);
 	}
@@ -8154,6 +8227,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
+		if(defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
 		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
 		if(!$this->getAppConfig()->get('perform_item_level_access_checking') || $this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');

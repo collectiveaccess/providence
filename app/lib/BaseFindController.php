@@ -435,7 +435,7 @@ class BaseFindController extends ActionController {
 		// threshold declared in the chosen template.
 		if(
 			!$is_background &&
-			caProcessingQueueIsEnabled() &&
+			caTaskQueueIsEnabled() &&
 			is_array($tinfo = caGetPrintTemplateDetails('labels', $_REQUEST['label_form'] ?? '')) && 
 			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
 			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
@@ -444,7 +444,7 @@ class BaseFindController extends ActionController {
 			$is_background = true;	
 		}
 		
-		if($is_background && caProcessingQueueIsEnabled()) {
+		if($is_background && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -494,7 +494,7 @@ class BaseFindController extends ActionController {
 				$this->Index();
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue label export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue label export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
@@ -518,7 +518,7 @@ class BaseFindController extends ActionController {
 		// threshold declared in the chosen template.
 		if(
 			!$is_background &&
-			caProcessingQueueIsEnabled() &&
+			caTaskQueueIsEnabled() &&
 			is_array($tinfo = caGetPrintTemplateDetails('results', $_REQUEST['export_format'] ?? '')) && 
 			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
 			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
@@ -527,7 +527,7 @@ class BaseFindController extends ActionController {
 			$is_background = true;	
 		}
 		
-		if($is_background && caProcessingQueueIsEnabled()) {
+		if($is_background && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -580,7 +580,7 @@ class BaseFindController extends ActionController {
 				
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);

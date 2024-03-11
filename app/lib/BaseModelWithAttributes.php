@@ -148,12 +148,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$takes_locale = !caGetOption('doesNotTakeLocale', $element_info, false);
 		$single_value_per_locale = caGetOption('singleValuePerLocale', $element_info, false);
 		
+		$removed_attr_ids  = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
 		if($takes_locale && $single_value_per_locale) {
-			$attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
 			$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
 			if(is_array($attrs_for_element)) { 
-				$va_attrs = array_filter($attrs_for_element, function($v) use ($attrs_to_remove) {
-				return !in_array((int)$v->getAttributeID(), $attrs_to_remove, true);
+				$va_attrs = array_filter($attrs_for_element, function($v) use ($removed_attr_ids) {
+					return !in_array((int)$v->getAttributeID(), $removed_attr_ids, true);
 				});
 				$extant_locales = array_unique(
 					array_merge(
@@ -197,7 +197,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			if(is_array($va_attrs = $this->getAttributesByElement($pm_element_code_or_id))) {
 				$vb_already_exists = false;
 				$vals = [];
+				
+				$edited_attr_ids = array_map(function($v) {
+					return (int)$v['attribute_id'];
+				}, $this->opa_attributes_to_edit);
 				foreach($va_attrs as $o_attr) {
+					if(in_array((int)$o_attr->getAttributeID(), $removed_attr_ids)) { continue; }
 					foreach($o_attr->getValues() as $o_value) {
 						$vn_sub_element_id = $o_value->getElementID();
 						$vs_element_code = ca_metadata_elements::getElementCodeForId($vn_sub_element_id);
@@ -206,8 +211,16 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 							$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_sub_element_id] = true;
 						}
 						
-						$pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
-						$vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
+						if(in_array($edited_attr_id = (int)$o_attr->getAttributeID(), $edited_attr_ids)) {
+							$edited_values = array_shift(array_filter($this->opa_attributes_to_edit, function($v) use ($edited_attr_id) {
+								return ($v['attribute_id'] == $edited_attr_id);
+							}));
+							$pv = $edited_values['values'][$vn_sub_element_id] ?? null;
+							$vals[] = $pv;
+						} else {
+							$pv = $o_value->getDisplayValue(['dateFormat' => 'original']); // need to compare dates as-entered
+							$vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
+						}
 						if (
 							is_array($pa_values[$vn_sub_element_id] ?? null) ||
 							((strlen($pa_values[$vn_sub_element_id] ?? '') && ($pa_values[$vn_sub_element_id] != $pv))
@@ -228,7 +241,6 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				}
 			}
 		}
-		
 		$this->opa_attributes_to_add[] = array(
 			'values' => $pa_values,
 			'element' => $pm_element_code_or_id,
@@ -247,7 +259,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		
 		$t_attr = new ca_attributes();
 		$t_attr->purify($this->purify());
-		if ($po_trans) { $t_attr->setTransaction($po_trans); }
+		if ($po_trans) { $t_attr->setTransaction($po_trans); } else { $t_attr->setTransaction($this->getTransaction()); }
 		$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 		if ($t_attr->numErrors()) {
 			foreach($t_attr->errors as $o_error) {
@@ -265,12 +277,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function editAttribute($pn_attribute_id, $pm_element_code_or_id, $pa_values, $ps_error_source=null, $pa_options=null) {
 		$t_attr = new ca_attributes($pn_attribute_id);
+		$t_attr->setTransaction($this->getTransaction());
 		$t_attr->purify($this->purify());
 		if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 		if (!$t_attr->getPrimaryKey()) { return false; }
 		$vn_attr_element_id = $t_attr->get('element_id');
 		$vn_element_id = $t_element->getPrimaryKey();
-		
 		$element_info = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 		
 		if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.$t_element->get('element_code'); }
@@ -287,8 +299,8 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$takes_locale = !caGetOption('doesNotTakeLocale', $element_info, false);
 		$single_value_per_locale = caGetOption('singleValuePerLocale', $element_info, false);
 		
+		$removed_attr_ids = $attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
 		if($takes_locale && $single_value_per_locale) {
-			$attrs_to_remove = array_map(function($v) { return (int)$v['attribute_id']; }, $this->opa_attributes_to_remove);
 			$attrs_to_remove[] = (int)$pn_attribute_id;
 			
 			$attrs_for_element = $this->getAttributesByElement($pm_element_code_or_id);
@@ -322,6 +334,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		
 		if (caGetOption('skipExistingValues', $pa_options, false) || !caGetOption('allowDuplicateValues', $element_info, false)) {
 			// filter out any values that already exist on this row or match a value already queued for change
+			$edited_attr_ids = array_map(function($v) {
+				return (int)$v['attribute_id'];
+			}, $this->opa_attributes_to_edit);
 			
 			// queued values 
 			foreach(($this->opa_attributes_to_add + $this->opa_attributes_to_edit) as $a) {
@@ -342,6 +357,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				$vb_already_exists = false;
 				$vals = [];
 				foreach($va_attrs as $o_attr) {
+					if(in_array((int)$o_attr->getAttributeID(), $removed_attr_ids)) { continue; }
+					if(in_array((int)$o_attr->getAttributeID(), $edited_attr_ids)) { continue; }
+					
 					if(isset($pa_values['locale_id']) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { $is_changed = true; }
 					if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
 					foreach($o_attr->getValues() as $o_value) {
@@ -479,7 +497,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	public function _editAttribute($pn_attribute_id, $pa_values, $po_trans=null, $pa_info=null) {
 		$t_attr = new ca_attributes($pn_attribute_id);
 		$t_attr->purify($this->purify());
-		if ($po_trans) { $t_attr->setTransaction($po_trans); }
+		if ($po_trans) { $t_attr->setTransaction($po_trans); } else { $t_attr->setTransaction($this->getTransaction()); }
 		if ((!$t_attr->getPrimaryKey()) || ($t_attr->get('table_num') != $this->tableNum()) || ($this->getPrimaryKey() != $t_attr->get('row_id'))) {
 			$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_info['error_source']);
 			return false;
@@ -524,6 +542,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function removeAttribute($pn_attribute_id, $ps_error_source=null, $pa_extra_info=null, $pa_options=null) {
 		$t_attr = new ca_attributes($pn_attribute_id);
+		$t_attr->setTransaction($this->getTransaction());
 		$t_attr->purify($this->purify());
 		if (!$t_attr->getPrimaryKey()) { return false; }
 		$vn_element_id = (int)$t_attr->get('element_id');
@@ -589,6 +608,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function purgeAttribute($pn_attribute_id, $ps_error_source=null, $pa_extra_info=null, $pa_options=null) {
 		$t_attr = new ca_attributes($pn_attribute_id);
+		$t_attr->setTransaction($this->getTransaction());
 		$t_attr->purify($this->purify());
 		if (!$t_attr->getPrimaryKey()) { return false; }
 		$vn_element_id = (int)$t_attr->get('element_id');
@@ -615,7 +635,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	public function _removeAttribute($pn_attribute_id, $po_trans=null, $pa_options=null) {
 		$t_attr = new ca_attributes($pn_attribute_id);
 		$t_attr->purify($this->purify());
-		if ($po_trans) { $t_attr->setTransaction($po_trans); }
+		if ($po_trans) { $t_attr->setTransaction($po_trans); } else { $t_attr->setTransaction($this->getTransaction()); }
 		if ((!$t_attr->getPrimaryKey()) || ($t_attr->get('table_num') != $this->tableNum()) || ($this->getPrimaryKey() != $t_attr->get('row_id'))) {
 			$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_options['error_source']);
 			return false;
@@ -1659,7 +1679,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 			if(!is_array($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = array(); }
 			
-			if($qr_types_in_use->numRows() > 0) {
+			if($qr_types_in_use && ($qr_types_in_use->numRows() > 0)) {
 				$pa_options['limitToItemsWithID'] += $qr_types_in_use->getAllFieldValues('type_id');
 			}
 		}
@@ -1945,6 +1965,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 		
 		$t_attr = new ca_attributes();
+		$t_attr->setTransaction($this->getTransaction());
 		$t_attr->purify($this->purify());
 		
 		$va_element_codes = array();
@@ -2197,6 +2218,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		$t_attr = new ca_attributes();
+		$t_attr->setTransaction($this->getTransaction());
 		$t_attr->purify($this->purify());
 		
 		$va_element_codes = $va_elements_by_container = [];
@@ -2515,6 +2537,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if (!$vn_row_id) { return null; }
 		
 		$t_attr = new ca_attributes($pn_attribute_id);
+		$t_attr->setTransaction($this->getTransaction());
 		if (!$t_attr->getPrimaryKey()) { return false; }
 		if ((int)$t_attr->get('row_id') !== (int)$vn_row_id) { return false; }
 		
@@ -2917,6 +2940,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			return false;
 		}
 		$t_restriction = new ca_metadata_type_restrictions();
+		$t_restriction->setTransaction($this->getTransaction());
 		$t_restriction->set('table_num', $this->tableNum());
 		$t_restriction->set('element_id', $t_element->getPrimaryKey());
 		$t_restriction->set('type_id', $pn_type_id);	// TODO: validate $pn_type_id
@@ -2938,6 +2962,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			return false;
 		}
 		$t_restriction = new ca_metadata_type_restrictions();
+		$t_restriction->setTransaction($this->getTransaction());
 		if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $pn_type_id, 'table_num' => $this->tableNum()))) {
 			$t_restriction->delete();
 			if ($t_restriction->numErrors()) {
@@ -3590,6 +3615,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function getTypeRestrictionInstance($pn_element_id) {
 		$t_restriction = new ca_metadata_type_restrictions();
+		$t_restriction->setTransaction($this->getTransaction());
 		if (is_subclass_of($this, 'BaseRelationshipModel') && ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get('type_id'))))) {
 			return $t_restriction;
 		} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {

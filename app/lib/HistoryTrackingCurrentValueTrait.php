@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -479,6 +479,7 @@ trait HistoryTrackingCurrentValueTrait {
 		$subject_table = $this->tableName();
 		
 		$is_future = caGetOption('isFuture', $options, null);
+		if($is_future > pow(2, 32)) { $is_future = pow(2, 32); }
 		if (is_null($values) && !$is_future) {			
 			// Remove current value
 			if ($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $subject_table_num, 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()])) {
