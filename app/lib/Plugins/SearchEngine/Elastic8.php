@@ -194,7 +194,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	 */
 	public function updateIndexingInPlace(
 		int $subject_tablenum, array $subject_row_ids, int $content_tablenum, string $content_fieldnum,
-		int $content_container_id, int $content_row_id, string $content, ?array $options = null
+		?int $content_container_id, int $content_row_id, ?string $content, ?array $options = null
 	) {
 		$table = Datamodel::getTableName($subject_tablenum);
 
@@ -276,7 +276,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 	protected function getClient(): Client {
 		if (!self::$client) {
 			$logger = new \Monolog\Logger('elasticsearch');
-			$log_level = Monolog\Logger::ERROR;
+			$log_level = Monolog\Logger::WARNING;
 			if (defined('__CA_ELASTICSEARCH_LOG_LEVEL__')) {
 				$log_level = __CA_ELASTICSEARCH_LOG_LEVEL__;
 			}
@@ -604,8 +604,8 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 
 		$bulk_params = [];
 
-		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
-		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
+		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/updating_documents.html#_upserts
+
 
 		// delete docs
 		foreach (self::$delete_buffer as $table => $rows) {
@@ -629,7 +629,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$primary_key = intval($tmp[1]);
 
 			$f = [
-				'index' => [
+				'update' => [
 					'_index' => $this->getIndexName($table),
 					'_id' => $primary_key
 				]
@@ -646,7 +646,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 				)
 			);
 
-			$bulk_params['body'][] = $doc_content_buffer;
+			$bulk_params['body'][] = ['doc' => $doc_content_buffer, 'doc_as_upsert' => true];
 		}
 
 		// update existing docs
@@ -671,7 +671,7 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 					)
 				);
 
-				$bulk_params['body'][] = ['doc' => $fragment];
+				$bulk_params['body'][] = ['doc' => $fragment, 'doc_as_upsert' => true];
 			}
 		}
 
@@ -682,9 +682,30 @@ class WLPlugSearchEngineElastic8 extends BaseSearchPlugin implements IWLPlugSear
 			$bulk_params['body'] = caEncodeUTF8Deep($bulk_params['body']);
 
 			try {
-				$resp = $this->getClient()->bulk($bulk_params);
+				$responses = $this->getClient()->bulk($bulk_params);
+				if ($responses['errors']){
+					// Log errors for each operation
+					foreach ($responses['items'] as $item) {
+						if (isset($item['index']['error'])) {
+							// Log index error
+							$errors[] = "Indexing error: " . json_encode($item['index']['error']);
+						} elseif (isset($item['update']['error'])) {
+							// Log update error
+							$errors[] = "Update error: " . json_encode($item['update']['error']);
+						}
+					}
+
+					// If there are errors, throw ApplicationException
+					if (!empty($errors)) {
+						$message = _t("%1 out of %2 bulk operation(s) failed. Errors: %3.", count($errors), count($responses), implode('; ', $errors));
+						$this->getClient()->getLogger()->error($message);
+						error_log($message);
+						// TODO: Do we just log this or actually throw the exception? Exception when > certain percentage of errors?
+						throw new ApplicationException($message);
+					}
+				}
 			} catch (ElasticsearchException $e) {
-				throw new ApplicationException(_t('Indexing error %2', $e->getMessage()));
+				throw new ApplicationException(_t('Indexing error %1', $e->getMessage()));
 			}
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
