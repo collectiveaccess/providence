@@ -1268,10 +1268,28 @@ class DataMigrationUtils {
 				default:
 					// is it an attribute?
 					$va_tmp = explode('.', $vs_match_on);
-					$vs_element = array_pop($va_tmp);
+					if(Datamodel::tableExists($va_tmp[0])) { array_shift($va_tmp); }
+					
+					if((is_array($pa_values[$vs_match_on]) || !isset($pa_values[$vs_match_on])) && (sizeof($va_tmp) > 1)) {
+						$v = $pa_values[$va_tmp[0]][$va_tmp[1]] ?? null;
+					} 
+					if(!strlen($v)) {
+						$v = $pa_values[$vs_match_on] ?? $pa_label[$vs_match_on] ?? $pa_label[$vs_label_display_fld];
+					}
+					if(is_array($v)) { $v = array_shift($v); }
+					$vs_element = $va_params = null;
+					switch(sizeof($va_tmp)) {
+						case 2:
+							$vs_element = $va_tmp[0];
+							$va_params = [$vs_element => [$va_tmp[1] => $v]];
+							break;
+						case 1:
+						default:
+							$vs_element = $va_tmp[0];
+							$va_params = [$vs_element => $v];
+							break;
+					}
 					if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
-						$va_params = [$vs_element => $pa_values[$vs_element] ?? $pa_label[$vs_element] ?? $pa_label[$vs_label_display_fld]];
-						
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						if ($vn_id) { break(2); }

@@ -718,6 +718,9 @@ function caProcessRefineryRelated($po_refinery_instance, $ps_related_table, $pa_
 			} 
 		
 			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label')), $pa_options);
+			if(isset($pa_related_options['matchOn'])) {
+				$pa_options['matchOn'] = $pa_related_options['matchOn'];
+			}
 
 			switch($ps_related_table) {
 				case 'ca_objects':
