@@ -109,7 +109,21 @@ class RelatedListController extends BaseSearchController {
 			if (!($t_instance->load($vn_primary_id))) { 
 				throw new ApplicationException(_('Invalid id'));
 			}
-			$va_relation_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+			if(Datamodel::getInstance($placement->get('bundle_name'), true)) {
+				$va_relation_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+			} else {
+				switch($placement->get('bundle_name')) {
+					case 'history_tracking_current_contents':
+						$settings = $placement->getSettings();
+						if($qr = $t_instance->getContents($settings['policy'] ?? null)) {
+							$va_relation_ids = $qr->getAllFieldValues($qr->primaryKey());
+						}
+						break;
+					default:
+						$va_relation_ids = [];
+						break;
+				}
+			}
 		} else {
 			// ... otherwise use old-style giant list of related ID's passed in form
 			$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);

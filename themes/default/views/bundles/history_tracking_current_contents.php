@@ -35,6 +35,9 @@ $vn_placement_id	= (int)$va_settings['placement_id'];
 $vs_color 			= ((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
 
 $qr_result			= $this->getVar('qr_result');
+$rel_table 			= $qr_result->tableName();
+$path 				= array_keys(Datamodel::getPath($t_subject->tableName(), $rel_table) ?? []);
+$linking_table 		= $path[1] ?? null;
 $va_errors 			= [];
 	
 if (!$this->request->isAjax()) {
@@ -52,7 +55,8 @@ if (!$this->request->isAjax()) {
 ?>
 		<div class="bundleSubLabel">
 			<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $qr_result->tableName(), $va_settings); ?>
-		
+			<?= if($linking_table) { caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_subject, new $rel_table, new $linking_table, $vn_placement_id); } ?>
+	
 			<?= caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_subject, $this->getVar('policy'), $qr_result); ?>
 		</div>
 <?php
