@@ -1910,6 +1910,13 @@ if (!$for_current_value_reindex) {
 		return true;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeDependentIndexing($table_num, $row_id, $options = null) {
+		return $this->opo_engine->removeRowIndexing(null, null, $table_num, null, $row_id);
+	}
+	# ------------------------------------------------
 	public function commitRowUnIndexing($pn_subject_table_num, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 
@@ -1935,7 +1942,6 @@ if (!$for_current_value_reindex) {
 
 		// delete index from subject
 		$this->opo_engine->removeRowIndexing($pn_subject_table_num, $pn_subject_row_id);
-
 		if (is_array($this->opa_dependencies_to_update)) {
 			$t_subject = Datamodel::getInstanceByTableNum($pn_subject_table_num, true);
 			
