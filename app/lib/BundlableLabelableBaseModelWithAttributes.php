@@ -6521,7 +6521,7 @@ if (!$vb_batch) {
 			}
 		}
 
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled(Datamodel::getInstance($vs_related_table, true))) {
 			$t_user = new ca_users($vn_user_id);
 			if(!$t_user->canDoAction('is_administrator')) {
 				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
