@@ -1973,14 +1973,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$pref_label_lookup_values = [];
 					foreach($va_pref_label_values as $i => $pl_values) {
-						$pref_label_lookup_values[$i] = $label_table::normalizeLabel($pl_values, ['type' => $vs_type]);	// complex labels need to be standardized (eg. ca_entity_labels)
-					
+						$pref_label_lookup_values = array_merge($pref_label_lookup_values, $pl_values);
+						
 						if(is_array($pref_label_lookup_fields_to_omit)) {
 							foreach($pref_label_lookup_fields_to_omit as $f2o) {
 								unset($pref_label_lookup_values[$i][trim($f2o)]);
 							}
 						}
 					}
+					$pref_label_lookup_values = $label_table::normalizeLabel($pref_label_lookup_values, ['type' => $vs_type]);	// complex labels need to be standardized (eg. ca_entity_labels)
 					
 					$erp_idno = ($vn_erp_alt_idno_mapping_item_id) ? $erp_alt_idno : $vs_idno;
 					$erp_idno_fld = ($vn_erp_alt_idno_mapping_item_id) ? $erp_idno_fld : $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
@@ -2065,16 +2066,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							break;
 						case 'skip_on_preferred_labels':
-							foreach($pref_label_lookup_values as $pl_values) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array('preferred_labels' => $pl_values)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
-									$this->num_records_skipped++;
-									continue(3);	// skip because label matched
-								}
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+							));
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
+								$this->num_records_skipped++;
+								continue(3);	// skip because label matched
 							}
 							break;
 						case 'merge_on_idno_and_preferred_labels':
@@ -2104,19 +2103,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace', 'merge_on_idno_with_skip'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
 						case 'merge_on_preferred_labels':
 						case 'merge_on_preferred_labels_with_replace':
-							foreach($pref_label_lookup_values as $pl_values) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array('preferred_labels' => $pl_values)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									$t_subject->load($va_ids[0]);
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
-									$vb_was_preferred_label_match = true;
-									break;
-								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
-								}
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge($va_base_criteria, array('preferred_labels' => $pl_values)),
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+							));
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$t_subject->load($va_ids[0]);
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
+								$vb_was_preferred_label_match = true;
+								break;
+							} else {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
 							}
 							break;	
 						case 'overwrite_on_idno_and_preferred_labels':
@@ -2143,26 +2140,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
 						case 'overwrite_on_preferred_labels':
-							foreach($pref_label_lookup_values as $pl_values) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array('preferred_labels' => $pl_values)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									$t_subject->load($va_ids[0]);
-									$t_subject->delete(true, array('hard' => true));
-							
-									if ($t_subject->numErrors()) {
-										$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
-										// Don't stop?
-									} else {
-										if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
-										break(2);
-									}
-									$t_subject->clear();
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+							));
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$t_subject->load($va_ids[0]);
+								$t_subject->delete(true, array('hard' => true));
+						
+								if ($t_subject->numErrors()) {
+									$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
+									// Don't stop?
 								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
+									break(2);
 								}
+								$t_subject->clear();
+							} else {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
 							}
 							break;
 					}
