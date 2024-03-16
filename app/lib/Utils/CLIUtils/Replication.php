@@ -209,24 +209,25 @@ trait CLIUtilsReplication {
 		// TODO: rewrite to use services rather than cross-database queries
 		
 		$hostname = $po_opts->getOption('hostname');
-		if (!($source = $po_opts->getOption('source'))) {
-			CLIUtils::addError(_t("You must specify a source"));
+		if (!($target = $po_opts->getOption('target'))) {
+			CLIUtils::addError(_t("You must specify a target"));
 			return false;
 		}
-		
-		if(!is_array($g_systems) || !isset($g_systems[$source])) {
-			print "Invalid system {$source}\n";
+ 		
+		if(!is_array($g_systems) || !isset($g_systems[$target])) {
+			print "Invalid target system {$target}\n";
 			exit;
 		}
 		
 		$reference_info = $g_systems[$hostname];
-		$target_info = $g_systems[$source];
+		$target_info = $g_systems[$target];
 		
 		$db = new Db();
 		// Align base tables
-		$tables = ['ca_lists', 'ca_list_items', 'ca_relationship_types'];     // 'ca_entities', 
+		$tables = ['ca_lists', 'ca_list_items', 'ca_relationship_types']; 
 		  
 		$reference_sys = $reference_info['app_name'];
+		$reference_db = $reference_info['db_database'];
 		$target_sys = $target_info['app_name'];
 		$target_db = $target_info['db_database'];
 		
@@ -252,7 +253,7 @@ trait CLIUtilsReplication {
 			$label_table_num = Datamodel::getTableNum($label_table);
 			$label_display_field = $t->getLabelDisplayField();
 			
-			print "got ".$ids->numHits()."\n";
+			print "Found ".$ids->numHits()." records\n";
 			
 			while($ids->nextHit()) {
 				$id = $ids->get("{$table}.{$pk}");
@@ -346,16 +347,16 @@ trait CLIUtilsReplication {
 		}
 		
         // Rewrite locales
-        $qr = $db->query("SELECT * FROM {$target_db}.ca_locales");
+        $qr = $db->query("SELECT * FROM {$reference_db}.ca_locales");
         while($qr->nextRow()) {
             $row = $qr->getRow();
-            print_r($row);
-            
-            $qx = $db->query("SELECT * FROM ca_locales WHERE language = ? AND country = ?", [$row['language'], $row['country']]);
+            $qx = $db->query("SELECT * FROM {$reference_db}.ca_locales WHERE language = ? AND country = ?", [$row['language'], $row['country']]);
             if($qx->nextRow()) {
                 $locale_id = $qx->get('locale_id');
-                $qg = $db->query("SELECT * FROM ca_guids WHERE table_num = 37 and row_id = ?", [$locale_id]);
+                $qg = $db->query($z="SELECT * FROM {$reference_db}.ca_guids WHERE table_num = 37 and row_id = ?", [$locale_id]);
+              
                 if($qg->nextRow()) {
+                	print "SET GUID TO ".$qg->get('guid')." FOR {$row['language']}_{$row['country']}\n";
                     $db->query("UPDATE {$target_db}.ca_guids SET guid = ? WHERE table_num = 37 AND row_id = ?", [$qg->get('guid'), $row['locale_id']]);
                 }
             }
@@ -368,8 +369,7 @@ trait CLIUtilsReplication {
 	 */
 	public static function align_guids_for_consortium_sourceParamList() {
 		return [
-			"source|s=s" => _t('Source system'),
-			"target|t=s" => _t('Target system')
+			"target|t=s" => _t('System for which guids will be aligned with host')
 		];
 	}
 	# -------------------------------------------------------
@@ -487,11 +487,11 @@ trait CLIUtilsReplication {
 		if (!($table = $po_opts->getOption('table'))) {
 			$table = 'ca_objects';
 		}
-		
+		$guid = $po_opts->getOption('guid');
 		$o_replicator = new Replicator();
 		
 		print "Replicating {$source}\n";
-		$o_replicator->syncPublic($source, ['table' => $table]);
+		$o_replicator->syncPublic($source, ['table' => $table, 'guid' => $guid]);
 	}
 	# -------------------------------------------------------
 	/**
@@ -587,5 +587,58 @@ trait CLIUtilsReplication {
 		return _t("To come.");
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copy_data_for_public_for_source($po_opts=null) {
+		require_once(__CA_LIB_DIR__.'/Sync/Replicator.php');
+
+		if (!($source = $po_opts->getOption('source'))) {
+			// CLIUtils::addError(_t("You must specify a source"));
+// 			return false;
+		}
+		if (!($table = $po_opts->getOption('table'))) {
+			$table = 'ca_objects';
+		}
+		
+		$o_replicator = new Replicator();
+		
+		print "Copying culture for {$source}\n";
+		$o_replicator->copyDataForPublic($source, ['table' => $table, 'element' => 'culture']);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copy_data_for_public_for_sourceParamList() {
+		return [
+			"source|s=s" => _t('Source system'),
+			"log_id|t=s" => _t('Log_id'),
+			"guid|g=s" => _t('GUID of record to replicate'),
+			"table|b=s" => _t('Table of records to replicate'),
+			"search|f=s" => _t('Search for records to replicate')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copy_data_for_public_for_sourceUtilityClass() {
+		return _t('Replication');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copy_data_for_public_for_sourceShortHelp() {
+		return _t("Force replication of last change to specific record");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copy_data_for_public_for_sourceHelp() {
+		return _t("To come.");
+	}
 	# -------------------------------------------------------
 }

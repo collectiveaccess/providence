@@ -585,17 +585,24 @@ class Replicator {
 						}
 					}
 					
-					$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
-						->addGetParameter('system_guid', $source_system_guid)
-						->addGetParameter('setIntrinsics', $this->set_intrinsics_json)
-						->setRequestBody($this->source_log_entries)
-						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
-						->request();
-						
-                    $this->logDebug(_t("[%1] Pushed %2 primary entries: %3", $this->source_key, sizeof($this->source_log_entries), print_r($this->source_log_entries, true)), Zend_Log::DEBUG);
-					$response_data = $o_resp->getRawData();
+					if(sizeof($this->source_log_entries) > 0) {
+						$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+							->addGetParameter('system_guid', $source_system_guid)
+							->addGetParameter('setIntrinsics', $this->set_intrinsics_json)
+							->setRequestBody($this->source_log_entries)
+							->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+							->request();
+							
+						$this->logDebug(_t("[%1] Pushed %2 primary entries: %3", $this->source_key, sizeof($this->source_log_entries), print_r($this->source_log_entries, true)), Zend_Log::DEBUG);
+						$response_data = $o_resp->getRawData();
+					} else {
+						$o_resp = null;
+						$response_data = ['replicated_log_id' => $this->last_log_id];
+						$this->logDebug(_t("[%1] Nothing to send (all filtered) so incrementing to last log_id (%2)",
+								$source_key, $this->last_log_id), Zend_Log::DEBUG);
+					}
 					
-					if (!$o_resp->isOk() || !isset($response_data['replicated_log_id'])) {
+					if (($o_resp && !$o_resp->isOk()) || !isset($response_data['replicated_log_id'])) {
 						$this->log(_t("[%1] There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
 						break;
 					} else {
@@ -1136,10 +1143,29 @@ class Replicator {
 	 */
 	public function forceSyncOfLatest(string $source, string $guid, ?array $options=null) {
 		if(!is_array($targets = caGetOption('targets'. $options, null))) { 
-			return null;
+			//return null;
 		}
 		
-		// TODO
+		$o_source = array_shift($this->getSourcesAsServiceClients(['source' => $source]));
+		
+		$log = $o_source->setEndpoint('getlog')
+			->clearGetParameters()
+			->addGetParameter('forGUID', $guid)
+			->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+			->request()->getRawData();
+		
+		$acc = [];
+		
+		
+		foreach($log as $log_id => $log_entry) {
+			if($log_entry['changetype'] !== 'U') { continue; }
+			
+			if(!isset($acc[$log_entry['guid']])) { $acc[$log_entry['guid']] = []; }
+			$acc[$log_entry['guid']] = array_merge($acc[$log_entry['guid']], $log_entry);
+		}
+		
+		print_R($acc);
+		
 	}	
 	# --------------------------------------------------------------------------------------------------------------
 	/**
@@ -1179,6 +1205,10 @@ class Replicator {
 				->request();
 			
 			$guids = $resp->getRawData();
+			if($guid = caGetOption('guid', $options, null)) {
+				$guid_filter_list = array_map('trim', preg_split('![;,]+!', $guid));
+				$guids = array_intersect($guids, $guid_filter_list);
+			}
 			$this->log(_t("[%1] There are %2 public records for source.", $source, sizeof($guids)), Zend_Log::INFO);
 			
 			$targets = $this->getTargetsAsServiceClients();
@@ -1210,6 +1240,102 @@ class Replicator {
 			}
 			$this->log(_t("[%1] Found %2 unsynced public records.", $source, sizeof($guids_to_sync)), Zend_Log::INFO);
 			self::syncGUIDs($source, $guids_to_sync);
+			return true;
+		}
+		throw new ApplicationException(_t('Invalid source'));
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function copyDataForPublic(?string $source,  ?array $options=null) {
+		if(!is_null($source)) {
+			$sources = $this->getSourcesAsServiceClients(['source' => $source]);
+		} else {
+			$sources = $this->getSourcesAsServiceClients();
+		}
+		if($sources) {
+			foreach($sources as $source_name => $source) {
+				print "Sync $source_name\n";
+				$resp = $source->setRequestMethod('GET')->setEndpoint('getPublicGUIDs')
+					->addGetParameter('table', caGetOption('table', $options, 'ca_objects'))
+					->addGetParameter('access', '1')
+					->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+					->request();
+				
+				$guids = $resp->getRawData();
+				$this->log(_t("[%1] There are %2 public records for source.", $source_name, sizeof($guids)), Zend_Log::INFO);
+				
+				$targets = $this->getTargetsAsServiceClients();
+				
+				foreach($targets as $o_target) {
+					$i = 0;
+					$guids_to_sync = [];
+					
+					do {
+						$chk_guids = array_slice($guids, $i, 500);
+					
+						if(!is_array($chk_guids) || !sizeof($chk_guids)) { break; }
+					
+						$o_values = $source->setRequestMethod('POST')->setEndpoint('getcurrentvalue')
+							->setRequestBody($chk_guids)
+							->addGetParameter('bundle', 'ca_objects.culture')
+							->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+							->request();
+						$values = $o_values->getRawData();
+						
+						$values = array_filter($values, 'strlen');
+						
+						$acc = [];
+						foreach($values as $guid => $v) {
+							$vlist =  explode(";", $v);
+							
+							foreach($vlist as $vx) {
+								$vx = strtolower($vx);
+								$vx = preg_replace('![^A-Za-z]+!', '', $vx);
+								
+								$c = null;
+								switch($vx) {
+									case 'acadian':
+										$c = 'acadian';
+										break;
+									case 'gaelic':
+										$c = 'gaelic';
+										break;
+									case 'african':
+									case 'africannovascotia':
+									case 'africannovascotian':
+										$c = 'african_nova_scotian';
+										break;
+									case 'mikmaq':
+										$c = 'mi_kmaq';
+										break;
+									default:
+										if(preg_match('!africa!', $vx)) {
+											$c = 'african_nova_scotian';
+										} elseif(preg_match('!maq!', $vx)) {
+											$c = 'mi_kmaq';
+										}
+										break;
+								}
+							}
+							if($c) {
+								$acc[$guid][] = $c;
+							}
+						}
+						if(sizeof($acc) > 0) {
+							$o_apply = $o_target->setRequestMethod('POST')->setEndpoint('setcurrentvalue')
+								->setRequestBody($acc)
+								->addGetParameter('bundle', 'ca_objects.culture')
+								->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+								->request();
+							$resp = $o_apply->getRawData();
+						}
+						
+						$i += 500;
+					} while($i < sizeof($guids));	
+				}
+			}
 			return true;
 		}
 		throw new ApplicationException(_t('Invalid source'));
