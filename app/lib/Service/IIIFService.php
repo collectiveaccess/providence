@@ -45,6 +45,8 @@ class IIIFService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_identifier, $po_request, $po_response) {
+		$po_response->addHeader('Cache-Control', 'max-age=3600, private', true); // Cache all responses for 1 hour.
+
 		$va_path = array_slice(explode("/", $po_request->getPathInfo()), 3);
 		$vs_key = $ps_identifier."/".join("/", $va_path);
 		
