@@ -55,7 +55,7 @@ if (!$this->request->isAjax()) {
 ?>
 		<div class="bundleSubLabel">
 			<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $qr_result->tableName(), $va_settings); ?>
-			<?= if($linking_table) { caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_subject, new $rel_table, new $linking_table, $vn_placement_id); } ?>
+			<?php if($linking_table) { caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_subject, new $rel_table, new $linking_table, $vn_placement_id); } ?>
 	
 			<?= caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_subject, $this->getVar('policy'), $qr_result); ?>
 		</div>
