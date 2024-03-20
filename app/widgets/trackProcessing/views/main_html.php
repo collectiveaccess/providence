@@ -153,7 +153,7 @@ if(!$is_ajax) {
 					<td>
 <?php
 	if ((int)$job["error_code"] > 0) {
-		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._('Retry')."</a></div>";
+		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._t('Retry')."</a></div>";
 	}
 ?>
 						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
@@ -208,7 +208,7 @@ if(!$is_ajax) {
 					<td>
 <?php
 	if ((int)$job["completed_on"] ===  0) {
-		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._('Retry')."</a></div>";
+		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._t('Retry')."</a></div>";
 	}
 ?>
 						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
