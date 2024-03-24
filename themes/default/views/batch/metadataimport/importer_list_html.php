@@ -48,7 +48,10 @@ if (!$this->request->isAjax()) {
 	</div>
 	
 	<div id="importerUploadArea">
-		<?= _t("Drag importer worksheets here to add or update"); ?>
+		<form enctype="multipart/form-data" method='post' action="#" style="display: none;">
+			<input type="file" name="mapping[]" id="mappingUploadInput" multiple/>
+		</form>
+		<div class="importerUploadText"><?= caNavIcon(__CA_NAV_ICON_ADD__, '20px'); ?> <?= _t("Click or drag importer worksheets here to add or update"); ?></div>
 	</div>
 	<div style="margin: 10px 0 0 0;">
 <?php 
@@ -165,6 +168,7 @@ if (!$this->request->isAjax()) {
 			url: '<?= caNavUrl($this->request, 'batch', 'MetadataImport', 'UploadImporters'); ?>',
 			dropZone: jQuery('#importerUploadArea'),
 			singleFileUploads: false,
+			fileInput: jQuery("#mappingUploadInput"),
 			done: function (e, data) {
 				if (data.result.error) {
 					jQuery("#batchProcessingTableProgressGroup").show(250);
@@ -201,6 +205,11 @@ if (!$this->request->isAjax()) {
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
 				
 			}
+		});
+		
+		jQuery('div.importerUploadText').on('click', function(e) {
+			jQuery("#mappingUploadInput").click(); 
+			e.preventDefault();
 		});
 		
 		caOpenImporterUploadArea(batchCookieJar.get('importerUploadAreaIsOpen'), false);

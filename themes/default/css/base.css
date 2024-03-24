@@ -6887,6 +6887,10 @@ div.caRepresentationMediaReplicationControls {
     color: #333;
 }
 
+div.exporterUploadText, div.importerUploadText {
+    cursor: pointer;
+}
+
 #caAddImportersButton, #caCloseImportersButton, #caAddExportersButton, #caCloseExportersButton {
     display: none;
 }

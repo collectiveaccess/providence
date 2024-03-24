@@ -47,14 +47,17 @@ if (!$this->request->isAjax()) {
 		);
 	?>
 	
-	
+
 	<div id="batchProcessingTableProgressGroup" style="display: none;">
 		<div class="batchProcessingStatus"><span id="batchProcessingTableStatus" > </span></div>
 		<div id="progressbar"></div>
 	</div>
 	
-	<div id="exporterUploadArea" >
-		<span class="exporterUploadText"><?= _t("Drag exporter worksheets here to add or update"); ?></span>
+	<div id="exporterUploadArea">
+		<form enctype="multipart/form-data" method='post' action="#" style="display: none;">
+			<input type="file" name="mapping[]" id="mappingUploadInput" multiple/>
+		</form>
+		<div class="exporterUploadText"><?= caNavIcon(__CA_NAV_ICON_ADD__, '20px'); ?> <?= _t("Click or drag exporter worksheets here to add or update"); ?></div>
 	</div>
 <?php
 }
@@ -135,6 +138,7 @@ if (!$this->request->isAjax()) {
 			url: '<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
 			dropZone: jQuery('#exporterUploadArea'),
 			singleFileUploads: false,
+			fileInput: jQuery("#mappingUploadInput"),
 			done: function (e, data) {
 				jQuery("#exporterUploadArea").hide(150);
 				if (data.result.error) {
@@ -172,6 +176,11 @@ if (!$this->request->isAjax()) {
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
 				
 			}
+		});
+		
+		jQuery('div.exporterUploadText').on('click', function(e) {
+			jQuery("#mappingUploadInput").click(); 
+			e.preventDefault();
 		});
 		
 		caOpenExporterUploadArea(batchCookieJar.get('exporterUploadAreaIsOpen'), false);
