@@ -94,7 +94,7 @@ class BaseInterstitialController extends BaseEditorController {
 				$va_options['restrictToTypes'][$vn_type_id] = $t_subject->getRelationshipTypeCode();
 			}
 
-			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $t_subject->getTypeID(), $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				[],
 				[],
 				false,
