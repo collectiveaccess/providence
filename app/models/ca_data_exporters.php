@@ -1528,7 +1528,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		foreach([
-			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'startAsISO8601' 'end_as_iso8601', 'endAsISO8601', 'timeOmit', 'stripTags',
+			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'startAsISO8601', 'end_as_iso8601', 'endAsISO8601', 'timeOmit', 'stripTags',
 			'dontReturnValueIfOnSameDayAsStart', 'returnAllLocales'
 		] as $opt) {
 			$get_options[$opt] = (bool)($settings[$opt] ?? null);
