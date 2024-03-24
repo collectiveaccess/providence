@@ -37,6 +37,10 @@
             "description": "If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.",
             "type": ["boolean", "integer"]
         },
+        "repeatElementForMultipleValues": {
+            "description": "If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.",
+            "type": ["boolean", "integer"]
+        },
         "filterNonPrimaryRepresentations": {
             "description": "Determines if only primary object representations or if all representations are returned. Default is to only return the primary representation.",
             "type": ["boolean", "integer"]
@@ -77,7 +81,15 @@
             "description": "Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).",
             "type": "string"
         },
+        "originalValues": {
+            "description": "Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).",
+            "type": "string"
+        },
         "replacement_values": {
+            "description": "Return-separated list of replacement values that correspond to the mapped values from the original data source.",
+            "type": "string"
+        },
+        "replacementValues": {
             "description": "Return-separated list of replacement values that correspond to the mapped values from the original data source.",
             "type": "string"
         },
@@ -155,7 +167,15 @@
             "description": "If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
             "type": ["boolean", "integer"]
         },
+        "startAsISO8601": {
+            "description": "If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
+            "type": ["boolean", "integer"]
+        },
         "end_as_iso8601": {
+            "description": "If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
+            "type": ["boolean", "integer"]
+        },
+        "endAsISO8601": {
             "description": "If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
             "type": ["boolean", "integer"]
         },

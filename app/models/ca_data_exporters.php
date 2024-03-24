@@ -1470,7 +1470,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_source = $t_exporter_item->get('source');
 		$vs_element = $t_exporter_item->get('element');
-		$vb_repeat = $settings['repeat_element_for_multiple_values'];
+		$vb_repeat = caGetOption(['repeat_element_for_multiple_values', 'repeatElementForMultipleValues'], $settings, null);
 		$deduplicate = $settings['deduplicate'];
 
 		if($vs_skip_if_empty = $settings['skipIfEmpty']) {
@@ -1528,7 +1528,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		foreach([
-			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'end_as_iso8601', 'timeOmit', 'stripTags',
+			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'startAsISO8601' 'end_as_iso8601', 'endAsISO8601', 'timeOmit', 'stripTags',
 			'dontReturnValueIfOnSameDayAsStart', 'returnAllLocales'
 		] as $opt) {
 			$get_options[$opt] = (bool)($settings[$opt] ?? null);
@@ -1827,8 +1827,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_regexp = $settings['filterByRegExp'];	
 		$vn_max_length = $settings['maxLength'];
 
-		$vs_original_values = $settings['original_values'];
-		$vs_replacement_values = $settings['replacement_values'];
+		$vs_original_values = caGetOption(['original_values', 'originalValues'], $settings, null);
+		$vs_replacement_values = caGetOption(['replacement_values', 'replacementValues'], $settings, null);
 		
 		$apply_regular_expressions = $settings['applyRegularExpressions'];
 		
