@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -200,6 +200,9 @@ class ca_data_exporter_items extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($id=null, ?array $options=null) {		
 		global $_ca_data_exporter_items_settings;
 		parent::__construct($id, $options);
@@ -209,6 +212,9 @@ class ca_data_exporter_items extends BaseModel {
 		
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	protected function initSettings($pa_settings=null){
 		$va_settings = is_array($pa_settings) ? $pa_settings : array();
 		
@@ -679,6 +685,9 @@ class ca_data_exporter_items extends BaseModel {
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function getReplacementArray($ps_searches,$ps_replacements) {
 		if(!$ps_searches) return false;
 
@@ -694,6 +703,9 @@ class ca_data_exporter_items extends BaseModel {
 		return $va_return;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */	
 	static public function replaceText($ps_text,$pa_replacements){
 		$vs_original_text = $ps_text;
 

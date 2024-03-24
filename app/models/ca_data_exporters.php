@@ -33,6 +33,7 @@ require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 require_once(__CA_LIB_DIR__.'/ApplicationPluginManager.php');
 require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
+require_once(__CA_APP_DIR__.'/helpers/configurationHelpers.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 	'NAME_SINGULAR' 	=> _t('data exporter'),
@@ -323,7 +324,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return bool
 	 */
-	public function set($fields, ?string $value="", ?array $options=null) {
+	public function set($fields, $value="", $options=null) {
 		if ($this->getPrimaryKey()) {
 			if(!is_array($fields))  { $fields = [$fields => $value]; }
 			$fields_proc = [];
@@ -483,7 +484,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Remove all items from this exporter
 	 * @return boolean success state
 	 */
-	public function removeAllItems() : bool {
+	public function removeAllItems() : ?bool {
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$va_items = $this->getItems(array('orderForDeleteCascade' => true));
@@ -1493,7 +1494,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		// always return URL for export, not an HTML tag
-		$get_options = array('returnURL' => true);
+		$get_options = ['returnURL' => true];
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")) {
 			$get_options['delimiter'] = $vs_delimiter;
@@ -1502,7 +1503,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($vs_template = $settings['template']) {
 			$get_options['template'] = $vs_template;
 		}
-		if($filter_non_primary_representations = $settings['filterNonPrimaryRepresentations']) {
+		if($filter_non_primary_representations = ($settings['filterNonPrimaryRepresentations'] ?? 1)) {
 			$get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_representations;
 		}
 
@@ -1516,12 +1517,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			
 			$get_options['locale'] = $vs_locale;
 		}
-		if($settings['returnAllLocales'] ?? null) {
-			$get_options['returnAllLocales'] = true;
-		}
-		
-		
-		$get_options['filterNonPrimaryRepresentations'] = $settings['filterNonPrimaryRepresentations'] ?? 1;
 		
 		// AttributeValue settings that are simply passed through by the exporter
 	
@@ -1532,32 +1527,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$get_options['convertCodesToIdno'] = true;				// if display text is not requested try to return list item idno's... since underlying integer ca_list_items.item_id values are unlikely to be useful in an export context
 		}
 
-		if($settings['convertCodesToIdno'] ?? null) {
-			$get_options['convertCodesToIdno'] = true;
-		}
-
-		if($settings['returnIdno'] ?? null) {
-			$get_options['returnIdno'] = true;
-		}
-
-		if($settings['start_as_iso8601'] ?? null) {
-			$get_options['start_as_iso8601'] = true;
-		}
-
-		if($settings['end_as_iso8601'] ?? null) {
-			$get_options['end_as_iso8601'] = true;
-		}
-
-		if($settings['timeOmit'] ?? null) {
-			$get_options['timeOmit'] = true;
-		}
-		
-		if($settings['stripTags'] ?? null) {
-			$get_options['stripTags'] = true;
-		}
-		
-		if($settings['dontReturnValueIfOnSameDayAsStart'] ?? null) {
-			$get_options['dontReturnValueIfOnSameDayAsStart'] = true;
+		foreach([
+			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'end_as_iso8601', 'timeOmit', 'stripTags',
+			'dontReturnValueIfOnSameDayAsStart', 'returnAllLocales'
+		] as $opt) {
+			$get_options[$opt] = (bool)($settings[$opt] ?? null);
 		}
 
 		if($vs_date_format = $settings['dateFormat']) {
@@ -2034,183 +2008,178 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options options
 	 * @return ca_data_exporters BaseModel representation of the new exporter. false/null if there was an error.
 	 */
-	public static function loadExporterFromFile($ps_source, &$pa_errors, $pa_options=null) {
+	public static function loadExporterFromFile($source_file, &$errors, $options=null) {
 		global $g_ui_locale_id;
-		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
+		$locale_id = (isset($options['locale_id']) && (int)$options['locale_id']) ? (int)$options['locale_id'] : $g_ui_locale_id;
 
-        $vs_log_dir = caGetOption('logDirectory', $pa_options, __CA_APP_DIR__."/log");
-		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
-			$vs_log_dir = caGetTempDirPath();
+        $log_dir = caGetOption('logDirectory', $options, __CA_APP_DIR__."/log");
+		if(!file_exists($log_dir) || !is_writable($log_dir)) {
+			$log_dir = caGetTempDirPath();
 		}
 
-		if(!($vn_log_level = caGetOption('logLevel',$pa_options))) {
-			$vn_log_level = KLogger::INFO;
+		if(!($log_level = caGetOption('logLevel',$options))) {
+			$log_level = KLogger::INFO;
 		}
 
-		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+		$o_log = new KLogger($log_dir, $log_level);
 
 
-		$pa_errors = [];
+		$o_sheet = DelimitedDataParser::load($source_file, ['worksheet' => 0]);
 
-		$o_excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
-		$o_sheet = $o_excel->getSheet(0);
+		$row_num = 0;
+		$settings = $ids = $errors = [];
 
-		$vn_row = 0;
-
-		$va_settings = [];
-		$va_ids = [];
-
-		foreach ($o_sheet->getRowIterator() as $o_row) {
-			if ($vn_row++ == 0) {	// skip first row (headers)
+		while ($o_sheet->nextRow()) {
+			if ($row_num++ == 0) {	// skip first row (headers)
 				continue;
 			}
+			
+			$row = $o_sheet->getRow();
+			$mode = strtolower((string)$row[0]);
 
-			$vn_row_num = $o_row->getRowIndex();
-			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
-			$vs_mode = strtolower((string)$o_cell->getValue());
-
-			switch($vs_mode) {
+			switch($mode) {
 				case 'mapping':
 				case 'constant':
 				case 'variable':
 				case 'repeatmappings':
 				case 'template':
-					$o_id = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_parent = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
-					$o_element = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
-					$o_source = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
-					$o_orig_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
-					$o_replacement_values = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
+					$id = $row[1]; 
+					$parent = $row[2];
+					$element = $row[3];
+					$source = $row[4];
+					$options_json = $row[5];
+					$orig_values = $row[7];
+					$replacement_values = $row[8];
 
-					if($vs_id = trim((string)$o_id->getValue())) {
-						$va_ids[] = $vs_id;
+					if($id) {
+						$ids[] = $id;
 					}
 
-					$vs_parent_id = trim((string)$o_parent->getValue());
-					if(($vs_mode !== 'template') && $vs_parent_id) {
-						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)) {
-							$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
+					if(($mode !== 'template') && $parent) {
+						if(!in_array($parent, $ids) && ($parent != $id)) {
+							$errors[] = $m = _t("Warning: skipped mapping at row %1 because parent id was invalid", $row_num);
 							$o_log->logWarn($m);
 							continue(2);
 						}
 					}
 
-					if (!($vs_element = trim((string)$o_element->getValue()))) {
-						$pa_errors[] = $m = _t("Warning: skipped mapping at row %1 because element was not defined",$vn_row);
+					if (!$element) {
+						$errors[] = $m = _t("Warning: skipped mapping at row %1 because element was not defined", $row_num);
 						$o_log->logWarn($m);
 						continue(2);
 					}
 
-					$vs_source = trim((string)$o_source->getValue());
-					
-                    $va_original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue()));
-                    array_walk($va_original_values, function(&$v) { $v = trim($v); });
-                    $va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
-                    array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
+                    $original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$orig_values));
+                    array_walk($original_values, function(&$v) { $v = trim($v); });
+                    $replacement_values = preg_split("![\n\r]{1}!", (string)$replacement_values);
+                    array_walk($replacement_values, function(&$v) { $v = trim($v); });
 
-					if ($vs_mode === 'constant') {
-						if(strlen($vs_source)<1) { // ignore constant rows without value
+					if ($mode === 'constant') {
+						if(strlen($source)<1) { // ignore constant rows without value
 							continue(2);
 						}
-						$vs_source = "_CONSTANT_:{$vs_source}";
+						$source = "_CONSTANT_:{$source}";
 					}
 
-					if ($vs_mode === 'variable') {
-						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)) {
-							$vs_element = "_VARIABLE_:{$vs_element}";
+					if ($mode === 'variable') {
+						if(preg_match("/^[A-Za-z0-9\_\-]+$/", $element)) {
+							$element = "_VARIABLE_:{$element}";
 						} else {
-							$pa_errors[] = $m = _t("Variable name %1 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created.",$vs_element);
+							$errors[] = $m = _t("Variable name %1 at row %2 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created.", $element, $row_num);
 							$o_log->logError($m);
 							continue(2);
 						}
 
 					}
 
-					$va_options = null;
-					if ($vs_options_json = (string)$o_options->getValue()) {
-						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							$pa_errors[] = $m = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
+					$mapping_options = null;
+					if ($options_json) {
+						$errors = [];
+						$mapping_options = @json_decode($options_json, true);
+						if (is_null($mapping_options)) {
+							$errors[] = $m = _t("Warning: options for element %1 at row %2 are not in proper JSON", $element, $row_num);
 							$o_log->logWarn($m);
+						} elseif(!caValidateJSON($mapping_options,  __CA_LIB_DIR__.'/Export/Schema/ExporterItemOptions.json', $errors)) {
+							$o_log->logWarn(_t("JSON for element %1 at row %2 does not conform to schema: %3", $element, $row_num, join('; ', $errors)));
 						}
 					}
 					
-					if(isset($va_options['original_values']) && ((is_array($va_options['original_values']) && sizeof($va_options['original_values'])) || strlen($va_options['original_values']))) {
-						$va_original_values = is_array($va_options['original_values']) ? $va_options['original_values'] : [$va_options['original_values']];
+					if(isset($mapping_options['original_values']) && ((is_array($mapping_options['original_values']) && sizeof($mapping_options['original_values'])) || strlen($mapping_options['original_values']))) {
+						$original_values = is_array($mapping_options['original_values']) ? $mapping_options['original_values'] : [$mapping_options['original_values']];
 					}
-					if(isset($va_options['replacement_values']) && ((is_array($va_options['replacement_values']) && sizeof($va_options['replacement_values'])) || strlen($va_options['replacement_values']))) {
-						$va_replacement_values = is_array($va_options['replacement_values']) ? $va_options['replacement_values'] : [$va_options['replacement_values']];
+					if(isset($mapping_options['replacement_values']) && ((is_array($mapping_options['replacement_values']) && sizeof($mapping_options['replacement_values'])) || strlen($mapping_options['replacement_values']))) {
+						$replacement_values = is_array($mapping_options['replacement_values']) ? $mapping_options['replacement_values'] : [$mapping_options['replacement_values']];
 					}
 
-					$va_options['_id'] = (string)$o_id->getValue();	// stash ID for future reference
+					$mapping_options['_id'] = $id;	// stash ID for future reference
 
-					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
+					$key = ((strlen($id) > 0) ? $id : md5($row_num));
 
-					$va_mapping[$vs_key] = array(
-						'parent_id' => $vs_parent_id,
-						'element' => $vs_element,
-						'source' => ($vs_mode == "repeatmappings" ? null : $vs_source),
-						'options' => $va_options,
-						'original_values' => $va_original_values,
-						'replacement_values' => $va_replacement_values,
-						'skip' => ($vs_mode === 'template')
+					$mapping[$key] = array(
+						'parent_id' => $parent,
+						'element' => $element,
+						'source' => ($mode == "repeatmappings" ? null : $source),
+						'options' => $mapping_options,
+						'original_values' => $original_values,
+						'replacement_values' => $replacement_values,
+						'skip' => ($mode === 'template')
 					);
 
 					// allow mapping repetition
-					if($vs_mode == 'repeatmappings') {
-						if(strlen($vs_source) < 1) { // ignore repitition rows without value
+					if($mode == 'repeatmappings') {
+						if(strlen($source) < 1) { // ignore repitition rows without value
 							continue(2);
 						}
 
-						$va_new_items = [];
+						$new_items = [];
 
-						$va_mapping_items_to_repeat = preg_split('/[,;]/', $vs_source);
+						$mapping_items_to_repeat = preg_split('/[,;]/', $source);
 
-						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
-							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
-							if(!is_array($va_mapping[$vs_mapping_item_to_repeat])) {
-								$pa_errors[] = $m = _t("Couldn't repeat mapping item %1",$vs_mapping_item_to_repeat);
+						foreach($mapping_items_to_repeat as $mapping_item_to_repeat) {
+							$mapping_item_to_repeat = trim($mapping_item_to_repeat);
+							if(!is_array($mapping[$mapping_item_to_repeat])) {
+								$errors[] = $m = _t("Couldn't repeat mapping item %1",$mapping_item_to_repeat);
 							    $o_log->logError($m);
 								continue;
 							}
 
 							// add item to repeat under current item
-							$va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat] = $va_mapping[$vs_mapping_item_to_repeat];
-							$va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat]['parent_id'] = $vs_key;
+							$new_items[$key."_:_".$mapping_item_to_repeat] = $mapping[$mapping_item_to_repeat];
+							$new_items[$key."_:_".$mapping_item_to_repeat]['parent_id'] = $key;
 							
-							unset($va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat]['skip']);
+							unset($new_items[$key."_:_".$mapping_item_to_repeat]['skip']);
 
 							// Find children of item to repeat (and their children) and add them as well, preserving the hierarchy
 							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
 							// in the mapping document.
 
-							$va_keys_to_lookup = [$vs_mapping_item_to_repeat];
+							$keys_to_lookup = [$mapping_item_to_repeat];
 
-							foreach($va_mapping as $vs_item_key => $va_item) {
-								if(in_array($va_item['parent_id'], $va_keys_to_lookup, true)) {
-									$va_keys_to_lookup[] = $vs_item_key;
-									$va_new_items[$vs_key."_:_".$vs_item_key] = $va_item;
-									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
+							foreach($mapping as $item_key => $item) {
+								if(in_array($item['parent_id'], $keys_to_lookup, true)) {
+									$keys_to_lookup[] = $item_key;
+									$new_items[$key."_:_".$item_key] = $item;
+									$new_items[$key."_:_".$item_key]['parent_id'] = $key . ($item['parent_id'] ? "_:_".$item['parent_id'] : "");
 									
-									unset($va_new_items[$vs_key."_:_".$vs_item_key]['skip']);
+									unset($new_items[$key."_:_".$item_key]['skip']);
 								}
 							}
 						}
 
-						$va_mapping = $va_mapping + $va_new_items;
+						$mapping = $mapping + $new_items;
 					}
 
 					break;
 				case 'setting':
-					$o_setting_name = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_setting_value = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$setting_name = $row[1]; 
+					$setting_value = $row[2];
 
-					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
+					switch($setting_name) {
 						case 'typeRestrictions':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
-							$va_settings[$vs_setting_name] = preg_split("/[;,]/u", (string)$o_setting_value->getValue());
+							$settings[$setting_name] = preg_split("/[;,]/u", $setting_value);
 							break;
 						default:
-							$va_settings[$vs_setting_name] = (string)$o_setting_value->getValue();
+							$settings[$setting_name] = $setting_value;
 							break;
 					}
 
@@ -2221,165 +2190,164 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 
-		// try to extract replacements from 2nd sheet in file
-		// \PhpOffice\PhpSpreadsheet\Spreadsheet will throw an exception if there's no such sheet
+		// Try to extract replacements from second sheet in file
+		// An exception will be thrown if there's no second sheet
 		try {
-			$o_sheet = $o_excel->getSheet(1);
-			$vn_row = 0;
-			foreach ($o_sheet->getRowIterator() as $o_row) {
-				if ($vn_row == 0) {	// skip first row (headers)
-					$vn_row++;
+			$o_sheet = DelimitedDataParser::load($source_file, ['worksheet' => 1]);
+			$row_num = 0;
+			while($o_sheet->nextRow()) {
+				if ($row_num == 0) {	// skip first row (headers)
+					$row_num++;
+					continue;
+				}
+				
+				$row = $o_sheet->getRow();
+				$mapping_num = trim((string)$row[0]);
+
+				if(strlen($mapping_num)<1) {
 					continue;
 				}
 
-				$vn_row_num = $o_row->getRowIndex();
-				$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
-				$vs_mapping_num = trim((string)$o_cell->getValue());
+				$search = $row[1];
+				$replace = $row[2];
 
-				if(strlen($vs_mapping_num)<1) {
-					continue;
-				}
-
-				$o_search = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-				$o_replace = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
-
-				if(!isset($va_mapping[$vs_mapping_num])) {
-					$pa_errors[] = $m = _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num);
+				if(!isset($mapping[$mapping_num])) {
+					$errors[] = $m = _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$mapping_num);
 					$o_log->logWarn($m);
 					continue;
 				}
 
-				$vs_search = (string)$o_search->getValue();
-				$vs_replace = (string)$o_replace->getValue();
 
-				if(!$vs_search) {
-					$pa_errors[] = $m = _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num);
+				if(!$search) {
+					$errors[] = $m = _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$mapping_num);
 				    $o_log->logWarn($m);
 					continue;
 				}
 
-				// look for replacements
-				foreach($va_mapping as $vs_k => &$va_v) {
-					if(preg_match("!\_\:\_".$vs_mapping_num."$!",$vs_k)) {
-						$va_v['options']['original_values'][] = $vs_search;
-						$va_v['options']['replacement_values'][] = $vs_replace;
+				// Look for replacements
+				foreach($mapping as $k => &$v) {
+					if(preg_match("!\_\:\_".$mapping_num."$!",$k)) {
+						$v['options']['original_values'][] = $search;
+						$v['options']['replacement_values'][] = $replace;
 					}
 				}
 
-				$va_mapping[$vs_mapping_num]['options']['original_values'][] = $vs_search;
-				$va_mapping[$vs_mapping_num]['options']['replacement_values'][] = $vs_replace;
+				$mapping[$mapping_num]['options']['original_values'][] = $search;
+				$mapping[$mapping_num]['options']['replacement_values'][] = $replace;
 
-				$vn_row++;
+				$row_num++;
 			}
 		} catch(\PhpOffice\PhpSpreadsheet\Exception $e) {
-			// noop, because we don't care: mappings without replacements are still valid
+			// Noop, because we don't care: mappings without replacements are still valid
+		} catch(Exception $e) {
+			// Noop, because we don't care: mappings without replacements are still valid
 		}
 
 		// Do checks on mapping
-		if (!$va_settings['code']) {
-			$pa_errors[] = $m = _t("Error: You must set a code for your mapping!");
+		if (!$settings['code']) {
+			$errors[] = $m = _t("Error: You must set a code for your mapping!");
 		    $o_log->logError($m);
 			return;
 		}
 
-		if (!($t_instance = Datamodel::getInstanceByTableName($va_settings['table']))) {
-			$pa_errors[] = $m = _t("Error: Mapping target table %1 is invalid!", $va_settings['table']);
+		if (!($t_instance = Datamodel::getInstanceByTableName($settings['table']))) {
+			$errors[] = $m = _t("Error: Mapping target table %1 is invalid!", $settings['table']);
 			$o_log->logError($m);
 			return;
 		}
 
-		if (!$va_settings['name']) { $va_settings['name'] = $va_settings['code']; }
+		if (!$settings['name']) { $settings['name'] = $settings['code']; }
 
 		$t_exporter = new ca_data_exporters();
 
 		// Remove any existing mapping with this code
-		if ($t_exporter->load(array('exporter_code' => $va_settings['code']))) {
-			$t_exporter->delete(true, array('hard' => true));
+		if ($t_exporter->load(['exporter_code' => $settings['code']])) {
+			$t_exporter->delete(true, ['hard' => true]);
 			if ($t_exporter->numErrors()) {
-				$pa_errors[] = $m = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_exporter->getErrors()));
+				$errors[] = $m = _t("Could not delete existing mapping for %1: %2", $settings['code'], join("; ", $t_exporter->getErrors()));
 				$o_log->logError($m);
 				return;
 			}
 		}
-
+		
 		// Create new mapping
-		$t_exporter->set('exporter_code', $va_settings['code']);
+		$t_exporter->set('exporter_code', $settings['code']);
 		$t_exporter->set('table_num', $t_instance->tableNum());
 
-		$vs_name = $va_settings['name'];
+		$name = $settings['name'];
 
-		unset($va_settings['code']);
-		unset($va_settings['table']);
-		unset($va_settings['name']);
+		unset($settings['code']);
+		unset($settings['table']);
+		unset($settings['name']);
 
-		foreach($va_settings as $vs_k => $vs_v) {
-			$t_exporter->setSetting($vs_k, $vs_v);
+		foreach($settings as $k => $v) {
+			$t_exporter->setSetting($k, $v);
 		}
 		$t_exporter->insert();
 
 		if ($t_exporter->numErrors()) {
-			$pa_errors[] = $m = _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()));
+			$errors[] = $m = _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()));
 			$o_log->logError($m);
 			return;
 		}
 
-		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
+		$t_exporter->addLabel(array('name' => $name), $locale_id, null, true);
 
 		if ($t_exporter->numErrors()) {
-			$pa_errors[] = $m = _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()));
+			$errors[] = $m = _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()));
 			$o_log->logError($m);
 			return;
 		}
 
-		$va_id_map = [];
-		foreach($va_mapping as $vs_mapping_id => $va_info) {
-			$va_item_settings = [];
+		$id_map = [];
+		foreach($mapping as $mapping_id => $info) {
+			$item_settings = [];
 
-			if (is_array($va_info['options'])) {
-				foreach($va_info['options'] as $vs_k => $vs_v) {
-					switch($vs_k) {
+			if (is_array($info['options'])) {
+				foreach($info['options'] as $k => $v) {
+					switch($k) {
 						case 'replacement_values':
 						case 'original_values':
-							if(is_array($vs_v) && (sizeof($vs_v)>0)) {
-								$va_item_settings[$vs_k] = join("\n",$vs_v);
+							if(is_array($v) && (sizeof($v)>0)) {
+								$item_settings[$k] = join("\n",$v);
 							}
 							break;
 						default:
-							$va_item_settings[$vs_k] = $vs_v;
+							$item_settings[$k] = $v;
 							break;
 					}
 
 				}
 			}
 			
-			if (is_array($va_info['original_values']) && sizeof($va_info['original_values'])) {
-			    $va_item_settings['original_values'] .= "\n".join("\n", $va_info['original_values']);
-			    if (is_array($va_info['replacement_values']) && sizeof($va_info['replacement_values'])) {
-			        $va_item_settings['replacement_values'] .= "\n".join("\n", $va_info['replacement_values']);  
+			if (is_array($info['original_values']) && sizeof($info['original_values'])) {
+			    $item_settings['original_values'] .= "\n".join("\n", $info['original_values']);
+			    if (is_array($info['replacement_values']) && sizeof($info['replacement_values'])) {
+			        $item_settings['replacement_values'] .= "\n".join("\n", $info['replacement_values']);  
 			    }  
 			}
 
-			$vn_parent_id = null;
-			if($va_info['parent_id']) { $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
+			$parent_id = null;
+			if($info['parent_id']) { $parent_id = $id_map[$info['parent_id']]; }
 
-			if(!$va_info['skip']) {
-				$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
+			if(!$info['skip']) {
+				$t_item = $t_exporter->addItem($parent_id,$info['element'],$info['source'],$item_settings);
 
 				if ($t_exporter->numErrors()) {
-					$pa_errors[] = $m = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
+					$errors[] = $m = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
 					$o_log->logError($m);
 					return;
 				}
 
-				$va_id_map[$vs_mapping_id] = $t_item->getPrimaryKey();
+				$id_map[$mapping_id] = $t_item->getPrimaryKey();
 			}
 		}
 
-		$va_mapping_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
+		$mapping_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
 
-		if(is_array($va_mapping_errors) && sizeof($va_mapping_errors)>0) {
-			$pa_errors = array_merge($pa_errors,$va_mapping_errors);
-			foreach($pa_errors as $e) {
+		if(is_array($mapping_errors) && sizeof($mapping_errors)>0) {
+			$errors = array_merge($errors,$mapping_errors);
+			foreach($errors as $e) {
 				$o_log->logError($e);
 			}
 			return false;
