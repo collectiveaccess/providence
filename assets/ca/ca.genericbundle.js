@@ -60,7 +60,7 @@ var caUI = caUI || {};
 			onInitializeItem: null,
 			onItemCreate: null,	/* callback function when a bundle item is created */
 			onAddItem: null,
-			incrementLocalesForNewBundles: true,
+			incrementLocalesForNewBundles: false,
 			singleValuePerLocale: false,
 			defaultValues: {},
 			bundlePreview: '',
