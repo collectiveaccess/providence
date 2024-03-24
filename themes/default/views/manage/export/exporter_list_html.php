@@ -155,6 +155,7 @@ if (!$this->request->isAjax()) {
 					jQuery("#batchProcessingTableStatus").html(msg.join('; '));
 					setTimeout(function() {
 							jQuery("#batchProcessingTableProgressGroup").hide(250);
+							jQuery("#exporterUploadArea").show(150);
 						}, 3000);
 				}
 				jQuery("#caExporterListContainer").load("<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'Index'); ?>");
