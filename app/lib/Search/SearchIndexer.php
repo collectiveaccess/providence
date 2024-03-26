@@ -145,6 +145,24 @@ class SearchIndexer extends SearchBase {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Check if table is indexed for search.
+	 *
+	 * @param string|int $table_name_or_num Name or number of table
+	 *
+	 * @return bool
+	 */
+	public static function isIndexed($table_name_or_num) : bool {
+		$table_num = is_numeric($table_name_or_num) ? (int)$table_name_or_num : Datamodel::getTableNum($table_name_or_num);
+		if(!$table_num) {
+			return false;
+		}
+		$o_indexer = new SearchIndexer();
+		$tables = $o_indexer->getIndexedTables();
+		
+		return isset($tables[$table_num]);
+	}
+	# -------------------------------------------------------
+	/**
 	 *
 	 */
 	public function truncateIndex() {
