@@ -2374,14 +2374,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	static public function loadExporterByCode($ps_exporter_code) {
-		if(isset(ca_data_exporters::$s_exporter_cache[$ps_exporter_code])) {
+		// TypeError caused by ca_data_exporters::$s_exporter_cache[$ps_exporter_code]
+		/*if(isset(ca_data_exporters::$s_exporter_cache[$ps_exporter_code])) {
 			return ca_data_exporters::$s_exporter_cache[$ps_exporter_code];
 		} else {
 			$t_exporter = new ca_data_exporters();
 			if($t_exporter->load(array('exporter_code' => $ps_exporter_code))) {
 				return ca_data_exporters::$s_exporter_cache[$ps_exporter_code] = $t_exporter;
 			}
-		}
+		}*/
 		return false;
 	}
 	# ------------------------------------------------------
