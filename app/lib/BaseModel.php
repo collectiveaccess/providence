@@ -3616,7 +3616,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 
 					if ($qr_record_check->numRows() > 0) {
 						if ($pb_delete_related) {
-							if(SearchIndexer::isIndexed($vs_many_table) || $t_related->getProperty('LOG_CHANGES_TO_SELF')) {
+							if((SearchIndexer::isIndexed($vs_many_table) || $t_related->getProperty('LOG_CHANGES_TO_SELF')) || !in_array($vs_many_table, ['ca_acl']) ) {
 								while($qr_record_check->nextRow()) {
 									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
 										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
