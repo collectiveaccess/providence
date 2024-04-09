@@ -698,7 +698,7 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it a labels? Rewrite the field for that.
+		// Is it a label? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', ($va_tmp[0] ?? null));
 		if (isset($va_tmp2[1]) && (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels')))) {
