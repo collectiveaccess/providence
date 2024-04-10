@@ -133,7 +133,10 @@ var caUI = caUI || {};
                 }
             } else {
                 const isDefaultLocale = (element) => element.value == options.defaultLocaleID;
-                defaultLocaleSelectedIndex = localeList.findIndex(isDefaultLocale);
+                defaultLocaleSelectedIndex = localeList.findIndex(templateValues.locale_id));
+                if(!defaultLocaleSelectedIndex) {
+                     defaultLocaleSelectedIndex = localeList.findIndex(isDefaultLocale);
+                }
             }
 
 			// set default values for <select> elements
