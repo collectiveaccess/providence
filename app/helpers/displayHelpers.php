@@ -5232,8 +5232,9 @@ jQuery(document).ready(function() {
 				}
 				break;
 		} 
-
-		return preg_replace("![^A-Za-z0-9_\-\.]+!", "_", $filename);
+		
+		$filename = html_entity_decode($filename);
+		return preg_replace("![^A-Za-z0-9_\-\.&()]+!", "_", $filename);
 	}
 	# ------------------------------------------------------------------
 	/**
