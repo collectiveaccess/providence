@@ -133,7 +133,7 @@ var caUI = caUI || {};
                 }
             } else {
                 const isDefaultLocale = (element) => element.value == options.defaultLocaleID;
-                defaultLocaleSelectedIndex = localeList.findIndex(templateValues.locale_id));
+                defaultLocaleSelectedIndex = localeList.findIndex((element) => element.value == templateValues.locale_id);
                 if(!defaultLocaleSelectedIndex) {
                      defaultLocaleSelectedIndex = localeList.findIndex(isDefaultLocale);
                 }
