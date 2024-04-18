@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -693,11 +693,17 @@ var caUI = caUI || {};
         	let code_str = tag.attr('code');
 			let codes = code_str ? code_str.split(/[;,\|\&]+/g) : [];
 			let bools = code_str.match(/[;,\|\&]+/g);
-          	
 			let ret = null;
 			for(let x in codes) {
 				let code = codes[x];
-				let fieldVal = jQuery(values[code]).val();
+				let fieldVal;
+				if(!values[code]) { continue; }
+				
+				if(values[code].match(/^#/)) {
+					fieldVal = jQuery(values[code]).val();
+				} else {
+					fieldVal = that.processTemplate(values[code], values);
+				}
 				let tagVal = tag.html();
 				let bool = (x > 0) ? that.convertBoolean(bools[x-1]) : null;
 				let bv = fieldVal && (fieldVal.length > 0);

@@ -2400,8 +2400,6 @@ class ca_users extends BaseModel {
 			$locale_id = $qr_uis->get('locale_id');
 			$name = $qr_uis->get('name');
 			
-			
-			
 			$type_ids = [];
 			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
 				$type_ids[] = '__all__'; 

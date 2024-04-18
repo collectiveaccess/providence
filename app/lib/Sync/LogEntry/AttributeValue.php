@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2018 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace CA\Sync\LogEntry;
 
 require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
@@ -63,8 +62,13 @@ class AttributeValue extends Base {
 		// check if attribute guid is present and valid
 		if (isset($va_snapshot['attribute_guid']) && ($vs_attribute_guid = $va_snapshot['attribute_guid'])) {
 			$t_attr = new \ca_attributes();
-			if($this->isUpdate() && !$t_attr->loadByGUID($vs_attribute_guid)) {
-				throw new InvalidLogEntryException(_t("Could not find attribute with guid %1", $vs_attribute_guid));
+			if(!$t_attr->loadByGUID($vs_attribute_guid)) {
+				if($this->isUpdate()) {
+					throw new InvalidLogEntryException(_t("Could not find attribute with guid %1", $vs_attribute_guid));
+				} else {
+					// Attribute applies to an attribute that was skipped
+					throw new IrrelevantLogEntry();	
+				}
 			}
 		} else {
 			throw new InvalidLogEntryException(_t("No attribute_guid found for attribute value log entry"));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,134 +25,151 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $widget_id = $this->getVar('widget_id');
-$jobs_done = $this->getVar('jobs_done');
-$jobs_done_data = $this->getVar('jobs_done_data');
-$jobs_done_additional = $this->getVar('jobs_done_additional');
-$jobs_queued_processing = $this->getVar('jobs_queued_processing');
-$jobs_queued_data = $this->getVar('qd_job_data');
-$jobs_queued_additional = $this->getVar('qd_job_additional');
-$jobs_processing = $this->getVar('pr_job_data');
+$jobs_done_count = $this->getVar('count_jobs_done');
+$jobs_queued_count = $this->getVar('count_jobs_queued');
+$jobs_processing_count = $this->getVar('count_jobs_processing');
+$jobs_stuck_count = $this->getVar('count_jobs_stuck');
+
+$jobs_done_data = $this->getVar('data_jobs_done');
+$jobs_queued_data = $this->getVar('data_jobs_queued');
+$jobs_processing_data = $this->getVar('data_jobs_processing');
+$jobs_stuck_data = $this->getVar('data_jobs_stuck');
+
+$jobs_done_additional =   $this->getVar('additional_jobs_done');
+$jobs_queued_additional = $this->getVar('additional_jobs_queued');
+$jobs_processing_additional = $this->getVar('additional_jobs_processing');
+$jobs_stuck_additional = $this->getVar('additional_jobs_stuck');
+
+$is_ajax = $this->request->isAjax();
+
+if(!$is_ajax) {
 ?>
 <div class="dashboardWidgetContentContainer" id="widget_<?= $widget_id; ?>">
-	<div class="control-box-right-content" id="widget_last_update_display_<?= $widget_id; ?>">
-		<?= _t('Updated at %1', date('H:i')); ?>
-	</div>
-	<div class="clear"></div>
-
 <?php
-	if((sizeof($jobs_processing) > 0) || (sizeof($jobs_queued_data) > 0) || (sizeof($jobs_done_data) > 0)){
+}
+
+	if((sizeof($jobs_processing_data) > 0) || (sizeof($jobs_queued_data) > 0) || (sizeof($jobs_done_data) > 0)){
 ?>
 	<div id="tabContainer_<?= $widget_id; ?>" class="tabContainer">
 		<ul>
 <?php
-		if(sizeof($jobs_processing) > 0){
+		if($jobs_processing_count > 0){
 ?>
-			<li><a href="#running_<?= $widget_id; ?>"><span><?= _t("%1 running", sizeof($jobs_processing)); ?></span></a></li>
+			<li><a href="#running_<?= $widget_id; ?>"><span><?= _t("%1 running", $jobs_processing_count); ?></span></a></li>
 <?php
 		}
-		if(sizeof($jobs_queued_data) > 0){
+		if($jobs_queued_count > 0){
 ?>
-			<li><a href="#queued_<?= $widget_id; ?>"><span><?= _t("%1 queued", sizeof($jobs_queued_data)); ?></span></a></li>
+			<li><a href="#queued_<?= $widget_id; ?>"><span><?= _t("%1 queued", $jobs_queued_count); ?></span></a></li>
 <?php
 		}
-		if(sizeof($jobs_done_data) > 0){
+		if($jobs_done_count > 0){
 ?>
-			<li><a href="#completed_<?= $widget_id; ?>"><span><?= _t("%1 completed", $jobs_done); ?></span></a></li>
+			<li><a href="#completed_<?= $widget_id; ?>"><span><?= _t("%1 completed", $jobs_done_count); ?></span></a></li>
+<?php
+		}
+		if($jobs_stuck_count > 0){
+?>
+			<li><a href="#stuck_<?= $widget_id; ?>"><span><?= _t("%1 stuck", $jobs_stuck_count); ?></span></a></li>
 <?php
 		}
 ?>
 		</ul>
 <?php
-		if(sizeof($jobs_processing)>0):
+		if(sizeof($jobs_processing_data)>0) {
 ?>
 			<div id="running_<?= $widget_id; ?>"><div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
 				<tr>
 					<th><strong><?= _t("Jobs currently being processed").":"; ?></strong></th>
 				</tr>
 <?php
-			foreach($jobs_processing as $job):
+			foreach($jobs_processing_data as $job) {
 ?>
 				<tr>
 					<td>
-						<?= "<h2>"._t('By <em>%1</em>', mb_strtolower($job['handler_name']))."</h2>"; ?>
+						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
 						
-						<?= "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['created'])) . "<br />"; ?>
-						<?= "<strong>"._t("Created by")."</strong>: ".$job['by']."<br />"; ?>
+						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
 						<?= trackProcessingWidget::getStatusForDisplay( $job['status'], $this ); ?>
 					</td>
 				</tr>
 <?php
-			endforeach;
+			}
 ?>
 			</table></div><!-- end dashboardWidgetScrollMedium --></div><!-- end running -->
 <?php
-		endif;
-
-		if(sizeof($jobs_queued_data)>0):
+		};
+		if(sizeof($jobs_queued_data)>0) {
+			$message = _t("Jobs queued for later processing");
+			if($jobs_queued_additional > 0) {
+				$message = _t("Jobs queued for later processing (showing %1 of %2)", sizeof($jobs_queued_data), $jobs_queued_count );
+			}
 ?>
-			<div id="queued_<?= $widget_id; ?>"><div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
-				<tr>
-					<th><strong><?= _t("Jobs queued for later processing").":"; ?></strong></th>
-				</tr>
+			<div id="queued_<?= $widget_id; ?>">
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div class="dashboardWidgetScrollMedium">
+					<table class='dashboardWidgetTable'>
 <?php
-			foreach($jobs_queued_data as $job):
+			foreach($jobs_queued_data as $job) {
 ?>
 				<tr>
 					<td>
-						<?= "<h2>"._t('For <em>%1</em>', mb_strtolower($job['handler_name']))."</h2>"; ?>
-						
-						<?= "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['created'])) . "<br />"; ?>
-						<?= "<strong>"._t("Created by")."</strong>: ".$job['by']."<br />"; ?>
+						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>		
+						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
 						<?= trackProcessingWidget::getStatusForDisplay($job['status'], $this);
 ?>
 					</td>
 				</tr>
 <?php
-			endforeach;
+			}
+			if ($jobs_queued_additional) {
 ?>
-			</table></div><!-- end dashboardWidgetScrollMedium --></div><!-- end queued -->
+				<tr>
+					<td><strong><?= ($jobs_queued_additional == 1) ? _t('+ %1 more queued job', $jobs_queued_additional) : _t('+ %1 more queued jobs', $jobs_queued_additional); ?></strong></td>
+				</tr>
 <?php
-		endif;
-		if ($jobs_queued_additional): ?>
-			<div id="queued_additional<?= $widget_id; ?>">
-				<div class="dashboardWidgetScrollMedium">
-					<table class='dashboardWidgetTable'>
-						<tr>
-							<td><?=_t('And %1 more queued job(s) ', $jobs_queued_additional)?></td>
-						</tr>
+			}
+?>
 					</table>
 				</div><!-- end dashboardWidgetScrollMedium -->
 			</div><!-- end queued -->
-		<?php
-		endif;
-
-		if(sizeof($jobs_done_data)>0){
-?>
-			<div id="completed_<?= $widget_id; ?>"><div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
-				<tr>
-					<th><strong><?= _t("Jobs completed in the last %1 hours", $this->getVar('hours')).":"; ?></strong></th>
-				</tr>
 <?php
-			foreach($jobs_done_data as $job) {
+		}
+
+		if(sizeof($jobs_done_data)>0) {
+			$message = _t("Jobs completed in the last %1 hours",  $this->getVar('hours'));
+			if($jobs_done_additional > 0) {
+				$message = _t("Jobs completed in the last %1 hours (showing %2 of %3)", $this->getVar('hours'), sizeof($jobs_done_data), $jobs_done_count );
+			}
+?>
+			<div id="completed_<?= $widget_id; ?>">
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
+<?php
+			foreach($jobs_done_data as $task_id => $job) {
 ?>
 				<tr>
 					<td>
-						<?= "<h2>"._t('By <em>%1</em>', mb_strtolower($job['handler_name']))."</h2>"; ?>
+<?php
+	if ((int)$job["error_code"] > 0) {
+		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._t('Retry')."</a></div>";
+	}
+?>
+						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
 						
-						<?= "<strong>"._t("Created on")."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['created'])) . "<br />"; ?>
-						<?= "<strong>"._t("Created by")."</strong>: ".$job['by']."<br />"; ?>
+						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
 <?php 
 						if ((int)$job["completed_on"] > 0) {
 							print "<strong>"._t('Completed on')."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['completed_on'])) . "<br/>\n";
 							
 							if ((int)$job["error_code"] > 0) {
-								print "<span style='color: #cc0000;'><strong>" . _t( 'Error' ) . "</strong>: "
+								print "<strong>" . _t('Error') . "</strong>: <span style='color: #cc0000;'>"
 								      . $job["error_message"] . " [" . $job["error_code"] . "] <em>"
-								      . _t( 'TASK DID NOT COMPLETE' ) . "</em>"
-								      ." Review " . caNavLink( $this->request,
-										'Event Log', '', '', 'logs/Events', 'Index' ) . "</span><br/>\n";
+								      . _t('TASK DID NOT COMPLETE') . "</em>"
+								      . "</span>";
+								      
+								print "<br/>\n";
 							}
 						}
 
@@ -166,7 +183,62 @@ $jobs_processing = $this->getVar('pr_job_data');
 			if ($jobs_done_additional) {
 ?>
 				<tr>
-					<td><strong><?=_t('%1 more job(s) not displayed due to limit.', $jobs_done_additional)?></strong></td>
+					<td><strong><?= ($jobs_done_additional == 1) ? _t('+ %1 more completed job', $jobs_done_additional) : _t('+ %1 more completed jobs', $jobs_done_additional); ?></strong></td>
+				</tr>
+<?php
+			}
+?>
+			</table></div><!-- end dashboardWidgetScrollMedium --></div><!-- end completed -->
+<?php
+		}
+		
+		if(sizeof($jobs_stuck_data)>0) {
+			$message = _t("Jobs stuck in the last %1 hours",  $this->getVar('hours'));
+			if($jobs_stuck_additional > 0) {
+				$message = _t("Jobs stuck in the last %1 hours (showing %2 of %3)", $this->getVar('hours'), sizeof($jobs_stuck_data), $jobs_stuck_count );
+			}
+?>
+			<div id="stuck_<?= $widget_id; ?>">
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
+<?php
+			foreach($jobs_stuck_data as $task_id => $job) {
+?>
+				<tr>
+					<td>
+<?php
+	if ((int)$job["completed_on"] ===  0) {
+		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._t('Retry')."</a></div>";
+	}
+?>
+						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
+						
+						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
+<?php 
+						if ((int)$job["completed_on"] > 0) {
+							print "<strong>"._t('Completed on')."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['completed_on'])) . "<br/>\n";
+							
+							if ((int)$job["error_code"] > 0) {
+								print "<strong>" . _t('Error') . "</strong>: <span style='color: #cc0000;'>"
+								      . $job["error_message"] . " [" . $job["error_code"] . "] <em>"
+								      . _t('TASK DID NOT COMPLETE') . "</em>"
+								      . "</span>";
+								      
+								print "<br/>\n";
+							}
+						}
+
+						print trackProcessingWidget::getStatusForDisplay( $job['status'], $this );
+?>
+						<?= isset($job['processing_time']) ? "<strong>"._t("Total processing time")."</strong>: ".$job['processing_time']."s<br />" : ""; ?>
+					</td>
+				</tr>
+<?php
+			}
+			if ($jobs_stuck_additional) {
+?>
+				<tr>
+					<td><strong><?= ($jobs_stuck_additional == 1) ? _t('+ %1 more completed job', $jobs_stuck_additional) : _t('+ %1 more completed jobs', $jobs_stuck_additional); ?></strong></td>
 				</tr>
 <?php
 			}
@@ -185,19 +257,40 @@ $jobs_processing = $this->getVar('pr_job_data');
 <?php
 	}
 ?>
-</div>
 
+	<div class="control-box-right-content" id="widget_last_update_display_<?= $widget_id; ?>" style="clear: after;">
+		<?= _t('Updated at %1', date('H:i')); ?>
+	</div>
+	<div class="clear" style="line-height: 5px;"></div>
+<?php
+	if(!$is_ajax) {
+?>
+</div>
+<?php
+	}
+?>
 <script type="text/javascript">
-	jQuery(document).ready(
-		function() {
-			jQuery('#tabContainer_<?= $widget_id; ?>').tabs();
-		}
-	);
+	let trackProcessing<?= $widget_id; ?> = jQuery.cookieJar('trackProcessing<?= $widget_id; ?>');
+	jQuery(document).ready(function() {
+		jQuery('#tabContainer_<?= $widget_id; ?>').tabs({ 
+			active: trackProcessing<?= $widget_id; ?>.get('default_tab'),
+			select: function(event, ui) {
+				trackProcessing<?= $widget_id; ?>.set('default_tab', ui.index);
+			}
+		});
+		jQuery('#widget_<?= $widget_id; ?>').find('a.widgetTaskRetry').on('click', function(e) {
+			let task_id = jQuery(this).data('job_id');
+			jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'runWidgetFunction'); ?>', { widget_id: <?= json_encode($widget_id); ?>, method: 'RetryJob', options: JSON.stringify({task_id: task_id})}, function(e) {
+				jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>');
+			});
+			return false;
+		});
+	});
 <?php
 	if (!$this->request->isAjax()) {
 ?>
 		setInterval(function() {
-			jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', array('widget_id' => $widget_id));?>');
+			jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>');
 		}, <?= ($this->getVar('update_frequency') * 1000); ?>);
 <?php
 	}

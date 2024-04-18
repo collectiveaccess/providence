@@ -7653,6 +7653,7 @@ create table ca_site_pages (
   deleted               tinyint unsigned    not null default 0,
   view_count            int unsigned        not null default 0,
   locale_id             smallint unsigned   null, 
+  `rank`                int unsigned        not null default 0,
 
   primary key (page_id),
   key (template_id),
@@ -7891,4 +7892,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (194, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (195, unix_timestamp());

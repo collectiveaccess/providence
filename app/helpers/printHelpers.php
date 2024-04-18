@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -642,6 +642,9 @@ function caEditorPrintSummaryControls($view) {
 	
 	$item_id = $t_item->getPrimaryKey();
 	
+	$config = Configuration::load();
+	$table = $t_item->tableName();
+	
 	$available_displays = caExtractValuesByUserLocale($t_display->getBundleDisplays([
 		'table' => $t_item->tableNum(), 
 		'value' => $t_display->getPrimaryKey(), 
@@ -650,8 +653,8 @@ function caEditorPrintSummaryControls($view) {
 		'context' => 'editor_summary'
 	]));
 	
-	// Opts for on-screen display list (only displays; no PDF print templates)
 	$display_opts = [];
+	// Opts for on-screen display list (only displays; no PDF print templates)
 	foreach($available_displays as $d) {
 		$display_opts[$d['name']] = $d['display_id'];
 	}
@@ -665,6 +668,13 @@ function caEditorPrintSummaryControls($view) {
 		['value' => $t_display->getPrimaryKey()]
 	);
 	
+	if(
+		$config->get("{$table}_dont_use_displays_for_pdf_summary_output")
+		||
+		($view->request->user->getPreference('use_displays_for_pdf_summary_output') === 'no')
+	) {
+		$display_opts = [];
+	}
 	// Opts for print templates (displays + PDF templates)
 	$print_templates = caGetAvailablePrintTemplates('summary', ['table' => $t_item->tableName(), 'restrictToTypes' => $t_item->getTypeID()]);
 

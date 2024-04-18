@@ -2106,17 +2106,21 @@ function caParseTableTypesFromSpecification(string $table, string $spec, ?array 
 /**
  * Generates access control list (ACL) editor for item
  *
- * @param View $po_view Inspector view object
- * @param BaseModel $pt_instance Model instance representing the item for which ACL is being managed
- * @param array $pa_options None implemented yet
+ * @param View $view Inspector view object
+ * @param BaseModel $t_instance Model instance representing the item for which ACL is being managed
+ * @param array $options None implemented yet
  *
  * @return string HTML implementing the inspector
  */
-function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
-	$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_view->request->getViewsDirectoryPath();
-	$o_view = new View($po_view->request, "{$vs_view_path}/bundles/");
+function caEditorACLEditor(View $view, BaseModel $t_instance, ?array $options=null) : ?string {
+	$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $view->request->getViewsDirectoryPath();
+	$o_view = new View($view->request, "{$view_path}/bundles/");
 
-	$o_view->setVar('t_instance', $pt_instance);
+	$o_view->setVar('t_instance', $t_instance);
+	
+	// Get inheritance usage stats
+	$o_view->setVar('statistics', ca_acl::getStatisticsForRow($t_instance, $t_instance->getPrimaryKey()));
+	
 	return $o_view->render('ca_acl_access.php');
 }
 # ------------------------------------------------------------------------------------------------
@@ -2129,7 +2133,7 @@ function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
  *
  * @return string HTML implementing the inspector
  */
-function caBatchEditorInspector($po_view, $pa_options=null) {
+function caBatchEditorInspector(View $po_view, ?array $pa_options=null) : ?string {
 	$rs 					= $po_view->getVar('record_selection');
 	$t_item 				= $po_view->getVar('t_item');
 	$vs_table_name = $t_item->tableName();
@@ -2139,8 +2143,7 @@ function caBatchEditorInspector($po_view, $pa_options=null) {
 
 	$o_result_context		= $po_view->getVar('result_context');
 	$t_ui 					= $po_view->getVar('t_ui');
-
-
+	
 	$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.$rs->getResultsLink($po_view->request)."</span></h3>\n";
 
 	$vs_color = $vs_type_name = null;
@@ -4216,6 +4219,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 	$default_annotation_id		 		= caGetOption('defaultAnnotationID', $pa_options, null);
 	$start_timecode		 				= caGetOption('startTimecode', $pa_options, null);
 	$ps_display_type		 			= caGetOption('display', $pa_options, false);
+	$always_use_clover_viewer		 	= caGetOption('alwaysUseCloverViewer', $pa_options, false);
 
 	$vs_slides = '';
 	$slide_list = [];
@@ -4376,6 +4380,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=null){
 	$ps_display_type 		= caGetOption('display', $pa_options, 'detail');
 	$ps_context 			= caGetOption('context', $pa_options, null);
+	$o_media_display_config = caGetMediaDisplayConfig();
 
 	$ps_table = is_object($pt_subject) ? $pt_subject->tablename() : "ca_objects";
 	$pn_subject_id = is_object($pt_subject) ? $pt_subject->getPrimaryKey() : (int)$pt_subject;
@@ -4391,14 +4396,16 @@ function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=
 	$va_detail_type_config = caGetDetailTypeConfig($ps_context);
 
 	if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-		$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."' title='"._t("Open Media View")."'><span class='glyphicon glyphicon-zoom-in' role='graphics-document' aria-label='Open Media View'></span></a>\n";
+		$overlay_icon = $o_media_display_config->get('overlay_icon');
+		$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', array('context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1))."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."' title='"._t("Open Media View")."'>{$overlay_icon}</a>\n";
 	}
 
 	if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
 		$vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
 	}
 	if ($vb_show_compare) {
-	   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'><i class='fa fa-clone' aria-hidden='true' role='graphics-document' aria-label='Compare' title='Compare'></i></a>";
+	   $compare_icon = $o_media_display_config->get('compare_icon'); 
+	   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'>{$compare_icon}</a>";
 	}
 
 	if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
@@ -4409,7 +4416,8 @@ function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=
 		$vs_download_version = caGetAvailableDownloadVersions($po_request, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'), ['returnVersionForUser' => true]);
 		
 		if($vs_download_version){
-			$vs_tool_bar .= caNavLink($po_request, " <span class='glyphicon glyphicon-download-alt' role='graphics-document' aria-label='Download' title='Download'></span>", 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
+			$download_icon = $o_media_display_config->get('download_icon');
+			$vs_tool_bar .= caNavLink($po_request, $download_icon, 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
 		}
 	}
 	$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
@@ -5393,7 +5401,7 @@ function caGetRepresentationDownloadFileName(string $table, array $data, ?array 
 	} 
 
 	$filename = html_entity_decode($filename);
-	return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
+	return preg_replace("![^A-Za-z0-9_\-\.&()]+!", "_", $filename);
 }
 # ------------------------------------------------------------------
 /**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,20 @@ class DashboardManager {
 	 */
 	public function renderWidget($ps_widget_name,  $ps_widget_id, $pa_settings) {
 		return $this->opo_widget_manager->renderWidget($ps_widget_name, $ps_widget_id, $pa_settings);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render widget-specific function
+	 *
+	 * @param string $widget_name Name of widget
+	 * @param string $widget_id Unique identifer for placement of widget in dashboard used internally (is 32 character MD5 hash in case you care)
+	 * @param string $method Name of widget-specific function to run
+	 * @param array $options Array of options to pass to widget-specific function
+	 *
+	 * @return string Widget output on success, null on failure
+	 */
+	public function runWidgetFunction(string $widget_name, string $widget_id, string $method, ?array $options) {
+		return $this->opo_widget_manager->runWidgetFunction($widget_name, $widget_id, $method, $options);
 	}
 	# -------------------------------------------------------
 	/**

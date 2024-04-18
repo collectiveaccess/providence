@@ -46,7 +46,7 @@ class SearchResult extends BaseObject {
 	
 	private $opa_options;
 	
-	private $ops_subject_pk;
+	protected $ops_subject_pk;
 
 	/**
 	 * @var IWLPlugSearchEngineResult
@@ -869,19 +869,34 @@ class SearchResult extends BaseObject {
 	/**
 	 * 
 	 */
-	public function prefetchChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
+	public function prefetchCreatedOnChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
-		if (self::$s_timestamp_cache['fetched'][$vs_key] ?? null) { return true; }
+		if (self::$s_timestamp_cache['fetchedCreatedOn'][$vs_key] ?? null) { return true; }
 		
 		$o_log = new ApplicationChangeLog();
 	
 		if (!is_array(self::$s_timestamp_cache['created_on'][$ps_tablename] ?? null)) { self::$s_timestamp_cache['created_on'][$ps_tablename] = array(); }
 		self::$s_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
+		
+		self::$s_timestamp_cache['fetchedCreatedOn'][$vs_key] = true;
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function prefetchModifiedOnChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
+		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
+		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
+		if (self::$s_timestamp_cache['fetchedModifiedOn'][$vs_key] ?? null) { return true; }
+		
+		$o_log = new ApplicationChangeLog();
+	
 		if (!is_array(self::$s_timestamp_cache['last_changed'][$ps_tablename] ?? null)) { self::$s_timestamp_cache['last_changed'][$ps_tablename] = array(); }
 		self::$s_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
 
-		self::$s_timestamp_cache['fetched'][$vs_key] = true;
+		self::$s_timestamp_cache['fetchedModifiedOn'][$vs_key] = true;
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -1613,7 +1628,7 @@ class SearchResult extends BaseObject {
 //
 				if ($va_path_components['field_name'] == 'created') {
 					if (!isset(self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id])) {
-						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
+						$this->prefetchCreatedOnChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
@@ -1657,7 +1672,7 @@ class SearchResult extends BaseObject {
 //		
 				if ($va_path_components['field_name'] == 'lastModified') {
 					if (!isset(self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id])) {
-						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
+						$this->prefetchModifiedOnChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
@@ -2071,10 +2086,6 @@ class SearchResult extends BaseObject {
 		
 		if ($pa_options['unserialize'] && !$pa_options['returnAsArray']) { return array_shift($va_return_values); }	
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
-		
-		if ($vb_return_as_link) {
-			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), $va_ids);
-		}
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}

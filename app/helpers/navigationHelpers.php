@@ -138,9 +138,10 @@
 
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
+			$vs_url = preg_replace("!service\.php!i", "index.php", $vs_url);
 		} else {
-			$s = $po_request->getScriptName();
-			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
+			$s = preg_replace("!service\.php!i", "index.php", $po_request->getScriptName());
+			$vs_url = $po_request->getBaseUrlPath().'/'.$s;
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }

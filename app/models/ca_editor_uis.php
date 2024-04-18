@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -320,7 +320,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['editorPref'])) { $pa_options['editorPref'] = 'cataloguing'; }
 		
 		if ($po_request->user) {
-			switch($pa_options['editorPref']) {
+			switch($pa_options['editorPref'] ?? null) {
 				case 'quickadd':
 					$va_uis_by_type = $po_request->user->getPreference("quickadd_{$vs_table_name}_editor_ui");
 					break;
@@ -893,8 +893,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$va_nav = [];
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
+			$is_relationship = Datamodel::isRelationship($this->get('editor_type'));
 			$va_screen_restrictions = $va_screen['typeRestrictions'] ?? null;
-		    if(is_array($va_screen_restrictions)) { $va_screen_restrictions = caMakeTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); }
+		    if(is_array($va_screen_restrictions)) { 
+		    	if($is_relationship) {
+		    		$va_screen_restrictions = caMakeRelationshipTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); 
+		    	} else {
+		    		$va_screen_restrictions = caMakeTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); 
+		    	}
+		    }
 			
 			if(is_array($restrict_to_types) && is_array($va_screen_restrictions) && (sizeof($va_screen_restrictions) > 0)) {
 				$vb_skip = true;

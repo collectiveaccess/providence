@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1395,6 +1395,7 @@ function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, 
 				$va_val['_matchOn'] = $va_match_on;
 				if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 				if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
+				if (isset($pa_options['ignoreType']) && $pa_options['ignoreType']) { $va_val['_ignoreType'] = 1; }
 				$va_vals[] = $va_val;
 			}
 		}
@@ -1465,7 +1466,7 @@ if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_
 				}
 				if($is_empty) { continue; }
 			}
-			if (is_array($va_rels = caProcessRefineryRelated($po_refinery_instance, $vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, ['dontCreate' => caGetOption('dontCreate', $va_relationship_settings, false), 'list_id' => caGetOption('list', $va_relationship_settings, null)])))) {
+			if (is_array($va_rels = caProcessRefineryRelated($po_refinery_instance, $vs_table_name, [$va_relationship_settings], $pa_source_data, $pa_item, null, array_merge($pa_options, ['dontCreate' => caGetOption('dontCreate', $va_relationship_settings, false), 'list_id' => caGetOption('list', $va_relationship_settings, null)])))) {
 				$va_rel_rels = $va_rels['_related_related'];
 				unset($va_rels['_related_related']);
 				

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -317,10 +317,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access control settings from parent') => 0,
-				_t('Inherit item-level access control settings from parent') => 1
+				_t('Do not inherit item-level access control settings from parents') => 0,
+				_t('Inherit item-level access control settings from parents') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
+			'LABEL' => _t('Inherit item-level access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set from parent objects are applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 

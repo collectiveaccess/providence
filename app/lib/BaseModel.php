@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2023 Whirl-i-Gig
+ * Copyright 2000-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3612,22 +3612,29 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						WHERE
 							(".$va_relationship["many_table_field"]." = ".$this->getPrimaryKey(1).")
 					");
-					
 					$pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]] = true;
 
 					if ($qr_record_check->numRows() > 0) {
 						if ($pb_delete_related) {
-							while($qr_record_check->nextRow()) {
-								if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
-									$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
-									
-									if ($t_related->numErrors()) {
-										$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
-										if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-										if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
-										return false;
+							if((SearchIndexer::isIndexed($vs_many_table) || $t_related->getProperty('LOG_CHANGES_TO_SELF')) || !in_array($vs_many_table, ['ca_acl']) ) {
+								while($qr_record_check->nextRow()) {
+									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
+										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
+										
+										if ($t_related->numErrors()) {
+											$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
+											if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+											if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+											return false;
+										}
 									}
 								}
+							} else {
+								$o_db->query("
+									DELETE FROM {$vs_many_table}
+									WHERE
+										({$va_relationship['many_table_field']} = ".$this->getPrimaryKey(1).")
+								");
 							}
 						} else {
 							$this->postError(780, _t("Can't delete item because it is in use (%1)", $vs_many_table),"BaseModel->delete()");
@@ -7022,8 +7029,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					(wcls.subject_table_num = ?)
 					AND
 					(wcls.subject_row_id = ?)
-					AND
-					(wcl.changetype IN ('I', 'U'))
 				ORDER BY wcl.log_datetime DESC LIMIT 1",
 		$this->tableNum(), $vn_row_id);
 		
@@ -7051,8 +7056,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					(wcl.logged_table_num = ?)
 					AND
 					(wcl.logged_row_id = ?)
-					AND
-					(wcl.changetype IN ('I', 'U'))
 				ORDER BY wcl.log_datetime DESC LIMIT 1",
 		$this->tableNum(), $vn_row_id);
 		

@@ -50,6 +50,8 @@ class SearchIndexer extends SearchBase {
 	static $s_search_indexing_queue_inserts = [];
 	static $s_search_unindexing_queue_inserts = [];
 	
+	static $queued_entry_count = 0;
+	
 	/**
 	 *
 	 */
@@ -73,7 +75,7 @@ class SearchIndexer extends SearchBase {
 	# -------------------------------------------------------
 	public function __destruct() {
 		$o_db = new Db();
-		if(sizeof(self::$s_search_indexing_queue_inserts) > 0) {
+		if(($c = sizeof(self::$s_search_indexing_queue_inserts)) > 0) {
 			$va_insert_segments = array();
 			foreach (self::$s_search_indexing_queue_inserts as $va_insert_data) {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
@@ -84,7 +86,7 @@ class SearchIndexer extends SearchBase {
             }
 		}
 
-		if(sizeof(self::$s_search_unindexing_queue_inserts) > 0) {
+		if(($c = sizeof(self::$s_search_unindexing_queue_inserts)) > 0) {
 			$va_insert_segments = array();
 			foreach (self::$s_search_unindexing_queue_inserts as $va_insert_data) {
 				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
@@ -140,6 +142,24 @@ class SearchIndexer extends SearchBase {
 
 		ExternalCache::save('getIndexedTables', $va_sorted_tables, 'SearchIndexer', 3600);
 		return $va_sorted_tables;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check if table is indexed for search.
+	 *
+	 * @param string|int $table_name_or_num Name or number of table
+	 *
+	 * @return bool
+	 */
+	public static function isIndexed($table_name_or_num) : bool {
+		$table_num = is_numeric($table_name_or_num) ? (int)$table_name_or_num : Datamodel::getTableNum($table_name_or_num);
+		if(!$table_num) {
+			return false;
+		}
+		$o_indexer = new SearchIndexer();
+		$tables = $o_indexer->getIndexedTables();
+		
+		return isset($tables[$table_num]);
 	}
 	# -------------------------------------------------------
 	/**
@@ -510,6 +530,7 @@ class SearchIndexer extends SearchBase {
 			'changed_fields' => $pa_row_values['changed_fields'],
 			'options' => $pa_row_values['options'],
 		);
+		SearchIndexer::$queued_entry_count++;
 
 		return true;
 	}
@@ -535,6 +556,7 @@ class SearchIndexer extends SearchBase {
 			'is_unindex' => 1,
 			'dependencies' => $pa_row_values['dependencies'],
 		);
+		SearchIndexer::$queued_entry_count++;
 
 		return true;
 	}
@@ -1906,6 +1928,13 @@ if (!$for_current_value_reindex) {
 		return true;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeDependentIndexing($table_num, $row_id, $options = null) {
+		return $this->opo_engine->removeRowIndexing(null, null, $table_num, null, $row_id);
+	}
+	# ------------------------------------------------
 	public function commitRowUnIndexing($pn_subject_table_num, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 
@@ -1931,7 +1960,6 @@ if (!$for_current_value_reindex) {
 
 		// delete index from subject
 		$this->opo_engine->removeRowIndexing($pn_subject_table_num, $pn_subject_row_id);
-
 		if (is_array($this->opa_dependencies_to_update)) {
 			$t_subject = Datamodel::getInstanceByTableNum($pn_subject_table_num, true);
 			

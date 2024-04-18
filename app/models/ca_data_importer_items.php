@@ -449,6 +449,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Delimiter'),
 			'description' => _t('Delimiter to split repeating values on.')
 		);
+		$settings['useConstant'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Use constant'),
+			'description' => _t('Set value to constant, rather than source value')
+		);
 		$settings['restrictToTypes'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,9 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */ 
- /**
-  *
-  */
 require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
@@ -47,6 +44,8 @@ class MediaImportController extends ActionController {
 	protected $opo_result_context;
 
 	protected $opa_importable_tables = array();
+	
+	protected $user_can_delete_media_on_import = false;
 	# -------------------------------------------------------
 	#
 	# -------------------------------------------------------
@@ -58,6 +57,9 @@ class MediaImportController extends ActionController {
 			$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3410?r='.urlencode($po_request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->user_can_delete_media_on_import = (bool)$po_request->user->canDoAction('allow_delete_media_after_import');
+
 		
 		AssetLoadManager::register('bundleableEditor');
 		AssetLoadManager::register('panel');
@@ -154,6 +156,8 @@ class MediaImportController extends ActionController {
 			_t('contains') => 'CONTAINS'
 		], [], ['value' => $va_last_settings['matchType'] ?? null]));
 		
+		$this->view->setVar('user_can_delete_media_on_import', $this->user_can_delete_media_on_import);
+		
 		$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', ['id' => 'primary_type_id'], array('value' => $va_last_settings[$vs_import_target.'_type_id'] ?? null)));
 		$this->view->setVar($vs_import_target.'_parent_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_parent_type_id', ['id' => 'parent_type_id'], array('value' => $va_last_settings[$vs_import_target.'_parent_type_id'] ?? $t_instance->getTypeIDForCode($o_config->get('media_importer_hierarchy_parent_type')))));
 		$this->view->setVar($vs_import_target.'_child_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_child_type_id', ['id' => 'child_type_id'], array('value' => $va_last_settings[$vs_import_target.'_child_type_id'] ?? $t_instance->getTypeIDForCode($o_config->get('media_importer_hierarchy_child_type')))));
@@ -226,7 +230,7 @@ class MediaImportController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
-
+		
 		$va_options = array(
 			'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 
 			'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
@@ -234,7 +238,7 @@ class MediaImportController extends ActionController {
 			
 			'importFromDirectory' => $directory,
 			'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
-			'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
+			'deleteMediaOnImport' => $this->user_can_delete_media_on_import && (bool)$this->request->getParameter('delete_media_on_import', pInteger),
 			'importMode' => $this->request->getParameter('import_mode', pString),
 			'matchMode' => $this->request->getParameter('match_mode', pString),
 			'matchType' => $this->request->getParameter('match_type', pString),

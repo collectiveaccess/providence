@@ -470,7 +470,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 						switch($vs_mode) {
 							case 'overwrite': // always replace first value we find
 								
-								if(!$force_values) {
+								if($force_values) {
 									$forced_values[$va_parts[1]][] = $attr;
 								} else {
 									$t_instance->replaceAttribute($attr, $va_parts[1]);
@@ -478,7 +478,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								break;
 							case 'overwriteifset':
 								if(strlen($vs_value) > 0) {
-									if(!$force_values) {
+									if($force_values) {
 										$forced_values[$va_parts[1]][] = $attr;
 									} else {
 										$t_instance->replaceAttribute($attr, $va_parts[1]);

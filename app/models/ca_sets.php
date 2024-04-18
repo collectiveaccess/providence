@@ -418,9 +418,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$this->getDb()->query('DELETE FROM ca_set_items WHERE set_id = ?', array($this->getPrimaryKey()));
 
 			// remove search indexing for deleted set items
+			$set_item_table_num = Datamodel::getTableNum('ca_set_items');
 			foreach($va_item_ids as $vn_item_id) {
-				$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $vn_item_id, array('queueIndexing' => true));
+				$this->getSearchIndexer()->commitRowUnIndexing($set_item_table_num, $vn_item_id, ['queueIndexing' => true]);
+				$this->getSearchIndexer()->removeDependentIndexing($set_item_table_num, $vn_item_id);
 			}
+			$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $this->getPrimaryKey(), ['queueIndexing' => true]);
+			$this->getSearchIndexer()->removeDependentIndexing($this->tableNum(), $this->getPrimaryKey());
 		}
 
 		if($vn_rc = parent::delete($pb_delete_related, array_merge(array('queueIndexing' => true), $pa_options), $pa_fields, $pa_table_list)) {
@@ -2788,31 +2792,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getSetChangeLog($va_set_ids){
 		if(is_array($va_set_ids) && sizeof($va_set_ids)){
 			$o_db = $this->getDB();
-
-
-// 			$q_change_log_sets = $o_db->query("
-// 						SELECT DISTINCT
-// 							wcl.log_id, wcl.log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
-// 							wclsnap.snapshot, wcl.unit_id, wu.email, wu.fname, wu.lname
-// 						FROM ca_change_log wcl
-// 						INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
-// 						LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
-// 						LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
-// 						WHERE
-// 							(
-// 								(wcl.logged_table_num = ".((int)Datamodel::getTableNum("ca_set_items")).") AND (wcl.logged_row_id IN (".implode(", ", $va_set_ids)."))
-// 							)
-// 						ORDER BY wcl.log_datetime desc
-// 					");
-// 				$va_set_change_log = array();
-// 				if($q_change_log_sets->numRows()){
-// 					while($q_change_log_sets->nextRow()){
-// 						$va_tmp = array();
-// 						$va_tmp = $q_change_log_sets->getRow();
-// 						$va_tmp['snapshot'] = caUnserializeForDatabase($q_change_log_sets->get('snapshot'));
-// 						$va_set_change_log[$q_change_log_sets->get('log_datetime')] = $va_tmp;
-// 					}
-// 				}
 			
 			global $g_ui_locale_id;
 			$q_change_log = $o_db->query("
@@ -2996,7 +2975,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
 				return false;

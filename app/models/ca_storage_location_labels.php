@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_storage_location_labels'] = array(
  	'NAME_SINGULAR' 	=> _t('storage location name'),
@@ -76,7 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_location_labels'] = array(
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of storage location'),
+				'LABEL' => _t('Location name'), 'DESCRIPTION' => _t('Name of storage location'),
 				'BOUNDS_LENGTH' => array(1,255)
 		),
 		'name_sort' => array(

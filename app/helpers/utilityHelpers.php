@@ -2916,27 +2916,26 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		if(!$locale) { $locale = $g_ui_locale; }
 		if(!$locale && defined('__CA_DEFAULT_LOCALE__')) { $locale = __CA_DEFAULT_LOCALE__; }
-		
+	
 		$currency_specifier = $decimal_value = null;
 		// it's either "<something><decimal>" ($1000) or "<decimal><something>" (1000 EUR) or just "<decimal>" with an implicit <something>
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[2], ',') !== false) ? Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]) : (float)$matches[2];
+				$decimal_value = Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]);
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]) : (float)$matches[1];
+				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = (strpos($matches[1], ',') !== false) ? Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]) : (float)$matches[1];
+				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
 				$currency_specifier = null;
 			}
 		} catch (Zend_Locale_Exception $e){
 			return null;
 		}
-
 		if ($currency_specifier || ($decimal_value > 0)) {
 			return ['currency' => $currency_specifier, 'value' => round($decimal_value, 2)];
 		}
@@ -5009,11 +5008,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Check if background processing queue is enabled
+	 * Check if background processing using the task queue is enabled
 	 *
 	 * @return bool
 	 */
-	function caProcessingQueueIsEnabled() : bool {
-		return defined('__CA_QUEUE_ENABLED__') && __CA_QUEUE_ENABLED__;
+	function caTaskQueueIsEnabled() : bool {
+		if(defined('__CA_QUEUE_ENABLED__')) {
+			return  __CA_QUEUE_ENABLED__;
+		}
+		$config = Configuration::load();
+		return (bool)$config->get('run_task_queue');
 	}
 	# ----------------------------------------

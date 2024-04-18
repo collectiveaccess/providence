@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
-    
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -98,19 +92,25 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 		$maxcount = caGetOption('count', $pa_options, 30);
 		$count = 0;
 		$va_items = [];
-		while($count <= $maxcount) {
-			$vs_data = caQueryExternalWebservice("http://eol.org/api/search/1.0.json?q={$ps_search}&page={$p}".($vs_eol_keycode ? "&key={$vs_eol_keycode}" : ""));
-
-			if ($va_data = json_decode($vs_data, true)){
-				if (is_array($va_data['results']) && (sizeof($va_data['results']) > 0)) {
-					foreach($va_data['results'] as $va_entry) {
-						$va_items[(string)$va_entry['title']] = array('label' => (string)$va_entry['title'], 'idno' => (string)$va_entry['id'], 'url' => $va_entry['link']);
-						$count++;
+		
+		try {
+			while($count <= $maxcount) {
+				$vs_data = caQueryExternalWebservice("http://eol.org/api/search/1.0.json?q={$ps_search}&page={$p}".($vs_eol_keycode ? "&key={$vs_eol_keycode}" : ""));
+	
+				if ($va_data = json_decode($vs_data, true)){
+					if (is_array($va_data['results']) && (sizeof($va_data['results']) > 0)) {
+						foreach($va_data['results'] as $va_entry) {
+							$va_items[(string)$va_entry['title']] = array('label' => (string)$va_entry['title'], 'idno' => (string)$va_entry['id'], 'url' => $va_entry['link']);
+							$count++;
+						}
+						$p++;
 					}
-					$p++;
 				}
+				break;
 			}
-			break;
+		} catch(Exception $e) {
+			// noop
+			$va_items['ERROR'] = ['label' => _t('EOL Error: %1', $e->getMessage()), 'idno' => '', 'url' => ''];
 		}
 		ksort($va_items);
 		
@@ -134,30 +134,35 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 			throw new ApplicationException(_t('Invalid EOL URL'));
 		}
 		$n = (int)$matches[1];
-		$vs_result = caQueryExternalWebservice("http://eol.org/api/pages/1.0.json?id={$n}&batch=false".($vs_eol_keycode ? "&key={$vs_eol_keycode}" : ""));
-		if(!$vs_result) { return array(); }
-
-		$va_data = json_decode($vs_result, true);
-
-		$va_info_fields = [];
 		
-		$vs_display = "<b>"._t('Link')."</b>: <a href='{$ps_url}' target='_blank'>{$ps_url}</a><br/>\n";
-		
-		if(isset($va_data['identifier'])) { $va_info_fields[_t('EOL Identifier')] = $va_data['identifier']; }
-		
-		$tconcepts = [];
-		if (is_array($va_data['taxonConcepts'])) {
-			foreach($va_data['taxonConcepts'] as $tconcept) {
-				$tconcepts[] = _t("%1 [%3] (source: %2)", htmlentities($tconcept['scientificName']), htmlentities($tconcept['nameAccordingTo']), htmlentities($tconcept['taxonRank']));
+		$vs_display = '';
+		try {
+			$vs_result = caQueryExternalWebservice("http://eol.org/api/pages/1.0.json?id={$n}&batch=false".($vs_eol_keycode ? "&key={$vs_eol_keycode}" : ""));
+			if(!$vs_result) { return array(); }
+	
+			$va_data = json_decode($vs_result, true);
+	
+			$va_info_fields = [];
+			
+			$vs_display = "<b>"._t('Link')."</b>: <a href='{$ps_url}' target='_blank'>{$ps_url}</a><br/>\n";
+			
+			if(isset($va_data['identifier'])) { $va_info_fields[_t('EOL Identifier')] = $va_data['identifier']; }
+			
+			$tconcepts = [];
+			if (is_array($va_data['taxonConcepts'])) {
+				foreach($va_data['taxonConcepts'] as $tconcept) {
+					$tconcepts[] = _t("%1 [%3] (source: %2)", htmlentities($tconcept['scientificName']), htmlentities($tconcept['nameAccordingTo']), htmlentities($tconcept['taxonRank']));
+				}
 			}
-		}
-		
-		foreach($va_info_fields as $vs_fld => $vs_val) {
-			$vs_display .= "<b>{$vs_fld}</b>: ".htmlentities($vs_val). "<br/>\n";
-		}
-		
+			
+			foreach($va_info_fields as $vs_fld => $vs_val) {
+				$vs_display .= "<b>{$vs_fld}</b>: ".htmlentities($vs_val). "<br/>\n";
+			}
+			
 			$vs_display .= "<b>"._t('Taxonomy')."</b>: <ol>".join("\n", array_map(function($v) { return "<li>{$v}</li>"; }, $tconcepts))."</ol><br/>\n";
-
+		} catch (Exception $e) {
+			$vs_display = _t('EOL Error: %1', $e->getMessage());
+		}
 		return array('display' => $vs_display);
 	}
 	# ------------------------------------------------

@@ -113,7 +113,8 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
 		try {
-			$this->opo_xml = DOMDocument::load($ps_source);
+			$this->opo_xml = new DOMDocument();
+			$this->opo_xml->load($ps_source);
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
 		} catch (Exception $e) {
 			return null;

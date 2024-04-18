@@ -272,6 +272,10 @@ class BaseSettings {
 		} else {
 			$vs_input_id = "setting_{$ps_setting}";
 		}
+		$input_class = null;
+		if(isset($pa_options['class'])) {
+			$input_class = $pa_options['class'];
+		}
 		if(isset($pa_options['value'])) {
 			$vs_value = $pa_options['value'];
 		} else {
@@ -338,7 +342,7 @@ class BaseSettings {
 					} else {
 						$vs_text_value = $vs_value;
 					}
-					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
+					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'class' => $input_class, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
 					
 					if($va_properties['usewysiwygeditor']) {
 						AssetLoadManager::register("ckeditor");
@@ -375,7 +379,7 @@ class BaseSettings {
 				break;
 			# --------------------------------------------
 			case DT_CHECKBOXES:
-				$va_attributes = array('value' => '1', 'id' => $vs_input_id);
+				$va_attributes = array('value' => '1', 'id' => $vs_input_id, 'class' => $input_class);
 				if ((int)$vs_value === 1) {
 					$va_attributes['checked'] = '1';
 				}
@@ -411,7 +415,7 @@ jQuery(document).ready(function() {
 			
 			# --------------------------------------------
 			case DT_COLORPICKER:
-				$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id);
+				$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id, 'class' => $input_class);
 				$vs_return .= caHTMLHiddenInput($vs_input_name, $va_attributes, array());
 				$vs_return .= "<div id='{$vs_input_id}_colorchip' class='colorpicker_chip' style='background-color: #{$vs_value}'><!-- empty --></div>";
 				$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery('#{$vs_input_name}_colorchip').ColorPicker({
@@ -475,7 +479,7 @@ jQuery(document).ready(function() {
 						$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
 					}
 					
-					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'class' => $input_class);
 					if ($vn_height > 1) {
 						if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
 						$va_opts['values'] = $vs_value;
@@ -552,7 +556,7 @@ jQuery(document).ready(function() {
 						$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
 					}
 					
-					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'class' => $input_class);
 					if ($vn_height > 1) {
 						if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
 						$va_opts['values'] = $vs_value;
@@ -593,7 +597,7 @@ jQuery(document).ready(function() {
 								$vs_input_name .= '[]'; 
 								$va_select_attr = ['multiple' => 1];
 							}
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$va_opts = array('id' => $vs_input_id, 'class' => $input_class, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 						}
 					} elseif ($va_properties['showMetadataElementsWithDataType']) {
@@ -637,7 +641,7 @@ jQuery(document).ready(function() {
 								$vs_input_name .= '[]'; 
 								$va_select_attr = ['multiple' => 1];
 							}
-							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$va_opts = array('id' => $vs_input_id, 'class' => $input_class, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 						}
 					} else {
@@ -647,6 +651,7 @@ jQuery(document).ready(function() {
 						$va_opts = array('width' => $vn_width, 'height' => $vn_height, 'values' => is_array($vs_value) ? $vs_value : [$vs_value]);
 						if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 						$va_attr['id'] = $vs_input_id;
+						$va_attr['class'] = $input_class;
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 					}
 				}
@@ -658,7 +663,7 @@ jQuery(document).ready(function() {
 			case DT_INTERVAL:
 				$va_val_tmp = explode('|', $vs_value);
 				if(isset($va_properties['prefix'])) { $vs_return .= $va_properties['prefix']; }
-				$vs_return .= caHTMLHiddenInput($vs_input_name, ['value' => $vs_value, 'id' => $vs_input_id]);
+				$vs_return .= caHTMLHiddenInput($vs_input_name, ['value' => $vs_value, 'id' => $vs_input_id, 'class' => $input_class]);
 				$vs_return .= caHTMLTextInput("{$vs_input_name}Quantity", ['size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $va_val_tmp[0], 'id' => "{$vs_input_id}Quantity"]).' ';	
 				$vs_return .= caHTMLSelect("{$vs_input_name}Units", [_t('hours') => 'HOURS', _t('days') => 'DAYS', _t('weeks') => 'WEEKS'], ['id' => "{$vs_input_id}Units"], ['value' => $va_val_tmp[1]]).' ';
 				$vs_return .= caHTMLSelect("{$vs_input_name}Direction", [_t('before') => 'BEFORE', _t('after') => 'AFTER'],['id' => "{$vs_input_id}Direction"], ['value' => $va_val_tmp[2]]);
