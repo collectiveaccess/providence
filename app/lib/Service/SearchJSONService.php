@@ -175,7 +175,12 @@ class SearchJSONService extends BaseJSONService {
 						}
 					}
 
-					$vm_return = $vo_result->get($vs_bundle, $va_options);
+					// Allow to handle "formatWithTemplate" to use regular CA templates for formatting
+					if(isset($va_options["formatWithTemplate"]) && $va_options["formatWithTemplate"]) {
+						$vm_return = $vo_result->getWithTemplate($va_options["formatWithTemplate"]);
+					} else {
+						$vm_return = $vo_result->get($vs_bundle, $va_options);
+					}
 
 					// render 'empty' arrays as JSON objects, not as lists (which is the default behavior of json_encode)
 					if(is_array($vm_return) && sizeof($vm_return)==0) {
