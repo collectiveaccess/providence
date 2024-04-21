@@ -2804,10 +2804,8 @@ if (!$for_current_value_reindex) {
 				$va_table_list_list = array('key' => array($vs_related_table));
 				$va_table_key_list = array();
 			} else {
-				//if ($pb_reindex_mode || (!$vb_can_do_incremental_indexing) || $for_current_value_reindex) {
 				$va_table_list_list = isset($va_table_info['tables']) ? $va_table_info['tables'] : null;
 				$va_table_key_list = isset($va_table_info['keys']) ? $va_table_info['keys'] : null;
-				//}
 			}
 			
 			if (!is_array($va_table_list_list) || !sizeof($va_table_list_list)) {  return null; }
@@ -2865,6 +2863,10 @@ if (!$for_current_value_reindex) {
 								} else {
 									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								}
+								
+								if(Datamodel::getFieldNum($vs_right_table, 'deleted')) {
+									$vs_join .= " AND {$vs_prev_alias}.deleted = 0";
+								}
 							}
 							$vs_join .= ")";
 						} else {
@@ -2875,6 +2877,10 @@ if (!$for_current_value_reindex) {
 									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".Datamodel::getTableNum($vs_right_table);
 								} else {
 									$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".Datamodel::getTableNum($vs_left_table);
+								}
+								
+								if(Datamodel::getFieldNum($vs_right_table, 'deleted')) {
+									$vs_join .= " AND {$vs_alias}.deleted = 0";
 								}
 							}
 							$vs_join .= ")";
@@ -2902,9 +2908,9 @@ if (!$for_current_value_reindex) {
 								$t_self_rel = Datamodel::getInstanceByTableName($va_rel['many_table'], true);
 							
 								$va_joins[] = [
-												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias),
-												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias)
-											];
+									"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias),
+									"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql.self::_genQueryFilters($vs_right_table, $va_table_info, $va_linking_tables_config[$vs_right_table], $vs_alias)
+								];
 										
 								if ($t_self_rel->hasField('type_id')) {
 									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
