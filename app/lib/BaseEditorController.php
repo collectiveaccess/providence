@@ -2968,7 +2968,7 @@ class BaseEditorController extends ActionController {
 		}
 		$table = $this->request->getParameter('t', pString);
 		$path = Datamodel::getPath($t_subject->tableName(), $table);
-	
+		
 		if(!is_array($path) || (sizeof($path) < 2)) {
 			throw new ApplicationException(_t('Invalid target'));
 		}
@@ -2988,6 +2988,21 @@ class BaseEditorController extends ActionController {
 			$rel_id = $t_rel->get($t_target->primaryKey());
 			$t_target->load($rel_id);
 		}
+		
+		$rel_type = null;
+		
+		if($t_subject->tableName() !== 'ca_objects') {
+			$placement_id = $this->request->getParameter('placement_id', pInteger);	
+			$t_placement = new ca_editor_ui_bundle_placements($placement_id);
+			$rel_type = $t_placement->getSetting('useRepresentationRelationshipType');
+			if(is_array($rel_type)) { $rel_type = array_shift($rel_type); }
+			
+			if(!$rel_type) {
+				if(is_array($rel_type_ids = $t_rel->getRelationshipTypes(null, null, ['idsOnly' => true]))) {
+					$rel_type = array_shift($rel_type_ids);
+				}
+			}
+		}
 
 		$selected_rep_id = $t_target->getPrimaryRepresentationID();
 		if(!$selected_rep_id) {
@@ -3004,7 +3019,7 @@ class BaseEditorController extends ActionController {
 			} else {
 				$resp = ['ok' => false, 'errors' => $t_subject->getErrors(), 'message' => _t('Could not unlink media: %1', join('; ', $t_subject->getErrors()))];
 			}
-		} elseif($t_subject->addRelationship('ca_object_representations', $selected_rep_id, null)) {
+		} elseif($t_subject->addRelationship('ca_object_representations', $selected_rep_id, $rel_type)) {
 			$resp = ['ok' => true, 'errors' => [], 'message' => _t('Updated media')];
 		} else {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
