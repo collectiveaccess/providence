@@ -84,7 +84,7 @@
 ?>
 					<div class='profileNotes'>
 <?php
-						_p('More information about standard installation profiles is available on the CollectiveAccess <a href="http://docs.collectiveaccess.org/wiki/Installation_profile" target="_blank">project wiki</a>.');
+						_p('More information about standard installation profiles is available on the CollectiveAccess <a href="https://manual.collectiveaccess.org/providence/user/dataModelling/profiles/MetadataStandards.html" target="_blank">project wiki</a>.');
 ?>
 						<br/><br/>
 <?php
