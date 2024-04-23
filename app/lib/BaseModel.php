@@ -12212,6 +12212,9 @@ $pa_options["display_form_field_tips"] = true;
 		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans 				= caGetOption('transaction', $pa_options, null);
 		$pa_check_access 		= caGetOption('checkAccess', $pa_options, null);
+		$ps_sort 				= caGetOption('sort', $pa_options, null);
+		$ps_sort_direction 		= caGetOption('sortDirection', $pa_options, 'ASC', ['validValues' => ['ASC', 'DESC']]);
+		
 		
 		$created_ts = $modified_ts = null;
 		if($created = caGetOption('created', $pa_options, null)) {
@@ -12485,20 +12488,19 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_sql = "SELECT {$select_flds} FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';
-		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
-			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
-			$va_tmp = explode(".", $vs_sort);
+		if ($ps_sort) {
+			$va_tmp = explode(".", $ps_sort);
 			if (sizeof($va_tmp) > 0) {
 				switch($va_tmp[0]) {
 					case $vs_table:
 						if ($t_instance->hasField($va_tmp[1])) {
-							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$vs_sort_direction}";
+							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$ps_sort_direction}";
 						}
 						break;
 					default:
 						if (sizeof($va_tmp) == 1) {
 							if ($t_instance->hasField($va_tmp[0])) {
-								$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY `{$ps_sort}` {$ps_sort_direction}";
 							}
 						}
 						break;
@@ -12603,7 +12605,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
-					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
+					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids), ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
 				} else {
 					return array_unique(array_values($va_ids));
 				}
