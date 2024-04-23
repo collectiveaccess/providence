@@ -47,7 +47,16 @@ class MetsALTOSearch {
 			throw new ApplicationException(_t('No core set for mets_alto_solr_core in search.conf'));
 		}
 		
-		$this->client = MetsALTOSearch::getSolrClient($core);
+		try {
+			$this->client = MetsALTOSearch::getSolrClient($core, [
+				'host' => $o_search->get('mets_alto_solr_host'), 
+				'port' => $o_search->get('mets_alto_solr_port'),
+				'username' => defined('__CA_METSALTO_SOLR_USER__') ? __CA_METSALTO_SOLR_USER__ : $o_search->get('mets_alto_solr_user'),
+				'password' => defined('__CA_METSALTO_SOLR_PASSWORD__') ? __CA_METSALTO_SOLR_PASSWORD__ : $o_search->get('mets_alto_solr_password'),
+			]);
+		} catch(Exception $e) {
+			throw new ApplicationException(_t('Could not connect to SOLR: %1', $e->getMessage()));
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -77,10 +86,6 @@ class MetsALTOSearch {
 		
 		// this executes the query and returns the result
 		$result = $this->client->update($update);
-		
-		echo '<b>Update query executed</b><br/>';
-		echo 'Query status: ' . $result->getStatus(). '<br/>';
-		echo 'Query time: ' . $result->getQueryTime();
 		
 		return true;
 	}
@@ -114,19 +119,20 @@ class MetsALTOSearch {
 	/**
 	 *
 	 */
-	public static function getSolrClient(string $core) : ?Solarium\Client {
+	public static function getSolrClient(string $core, ?array $options=null) : ?Solarium\Client {
 		$adapter = new Solarium\Core\Client\Adapter\Curl();
 		$adapter->setTimeout(7200);
 		$eventDispatcher = new Symfony\Component\EventDispatcher\EventDispatcher();
 		$config = [ 'endpoint' => [
-			'localhost' => [
-				'host' => '127.0.0.1',
-				'port' => 8983,
+			'solr' => [
+				'host' => caGetOption('host', $options, '127.0.0.1'),
+				'port' => caGetOption('port', $options, 8983),
 				'core' => $core,
-				'path' => ''
+				'path' => caGetOption('path', $options, ''),
+				'username' => caGetOption('username', $options, null),
+				'password' => caGetOption('password', $options, null)
 			]
 		]];
-		
 		$client = new Solarium\Client($adapter, $eventDispatcher, $config);
 		
 		return $client;
