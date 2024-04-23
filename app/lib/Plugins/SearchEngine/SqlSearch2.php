@@ -35,6 +35,7 @@ require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php');
 require_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
 require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/BaseSearchPlugin.php');
+require_once(__CA_LIB_DIR__.'/MetsALTO/MetsALTOSearch.php');
 
 class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
@@ -404,6 +405,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $term);
 	 	}
+	 	
+	 	if($field_elements[1] === '_metsalto') {
+	 		$ma = new MetsALTOSearch();
+	 		$ids = $ma->search("content:".$term->text);
+	 		
+	 		return $ids;
+	 	}
+	 	
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	$words = [$term->text];
 	 	if($field && !is_array($ap)) {
@@ -574,6 +583,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$field_elements = explode('.', $field_lc);
 	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $query);
+	 	}
+	 	
+	 	if($field_elements[1] === '_metsalto') {
+	 		$term_list = array_map(function($v) {
+	 			return $v->text;
+	 		}, $terms);
+	 		$ma = new MetsALTOSearch();
+	 		$ids = $ma->search("content:".join(' ', $term_list));
+	 		return $ids;
 	 	}
 	 	
 	 	$field_sql = null;
