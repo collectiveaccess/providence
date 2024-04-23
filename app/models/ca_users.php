@@ -926,13 +926,18 @@ class ca_users extends BaseModel {
 				}
 					
 				$o_db = $this->getDb();
-				$o_db->query("
-					INSERT INTO ca_users_x_roles 
-					(user_id, role_id)
-					VALUES
-					(?, ?)
-				", (int)$pn_user_id, (int)$t_role->getPrimaryKey());
 				
+				try {
+					$o_db->query("
+						INSERT INTO ca_users_x_roles 
+						(user_id, role_id)
+						VALUES
+						(?, ?)
+					", (int)$pn_user_id, (int)$t_role->getPrimaryKey());
+				} catch (Exception $e) {
+					continue;
+				}
+					
 				if ($o_db->numErrors() == 0) {
 					$vn_roles_added++;
 				} else {
@@ -1231,12 +1236,17 @@ class ca_users extends BaseModel {
 				}
 				
 				$o_db = $this->getDb();
+				
+				try {
 				$o_db->query("
-					INSERT INTO ca_users_x_groups 
-					(user_id, group_id)
-					VALUES
-					(?, ?)
-				", (int)$pn_user_id, (int)$t_group->getPrimaryKey());
+						INSERT INTO ca_users_x_groups 
+						(user_id, group_id)
+						VALUES
+						(?, ?)
+					", (int)$pn_user_id, (int)$t_group->getPrimaryKey());
+				} catch (Exception $e) {
+					continue;
+				}
 				
 				if ($o_db->numErrors() == 0) {
 					$vn_groups_added++;
@@ -2399,8 +2409,6 @@ class ca_users extends BaseModel {
 			$ui_id = $qr_uis->get('ui_id');
 			$locale_id = $qr_uis->get('locale_id');
 			$name = $qr_uis->get('name');
-			
-			
 			
 			$type_ids = [];
 			if (!($vn_type_id = $qr_uis->get('type_id'))) { 

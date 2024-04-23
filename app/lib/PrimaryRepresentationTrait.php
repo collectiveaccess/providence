@@ -119,18 +119,19 @@ trait PrimaryRepresentationTrait {
 				continue;
 			}
 			if (!$seen_primary && ((int)$qr->get('is_primary') === 0)) {
-				$t_rel = $table::findAsInstance($qr->get('relation_id'));
-				$t_rel->setTransaction($this->getTransaction());
-				$t_rel->set('is_primary', 1);
-				
-				$rc = $t_rel->update(['dontCheckPrimaryValue' => true]);
-				
-				if($t_rel->numErrors() > 0) {
-					$this->errors = array_merge($this->errors, $t_rel->errors);
-				} else {
-					$seen_primary = true;
+				if ($t_rel = $table::findAsInstance($qr->get('relation_id'), ['transaction' => $this->getTransaction()])) {
+					$t_rel->setTransaction($this->getTransaction());
+					$t_rel->set('is_primary', 1);
+					
+					$rc = $t_rel->update(['dontCheckPrimaryValue' => true]);
+					
+					if($t_rel->numErrors() > 0) {
+						$this->errors = array_merge($this->errors, $t_rel->errors);
+					} else {
+						$seen_primary = true;
+					}
+					continue;
 				}
-				continue;
 			}
 			if ($seen_primary && ((int)$qr->get('is_primary') === 1)) {
 				$t_rel = $table::findAsInstance($qr->get('relation_id'));

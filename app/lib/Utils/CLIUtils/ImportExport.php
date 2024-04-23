@@ -840,9 +840,6 @@ trait CLIUtilsImportExport {
 	 * Load metadata dictionary
 	 */
 	public static function load_chenhall_nomenclature($po_opts=null) {
-		require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-		require_once(__CA_MODELS_DIR__.'/ca_locales.php');
-
 		$t_list = new ca_lists();
 		$o_db = $t_list->getDb();
 
@@ -989,6 +986,10 @@ trait CLIUtilsImportExport {
 			}
 			$non_preferred_terms = array_filter($non_preferred_terms, function($v) { return strlen($v); });
 
+			if(preg_match("!blank sub-class!i", $data[$level])) { 
+				if ($level > 0) { $parent_ids[$level] = $parent_ids[$level-1]; }
+				continue; 
+			}
 			if (!$t_item) {
 				if (!($t_item = $t_list->addItem($data[$level], true, false, $parent_id, null, $id, '', 0, 1))) {
 					CLIUtils::addError(_t("Could not add term %1: %2", $data[$level], join("; ", $t_list->getErrors())));

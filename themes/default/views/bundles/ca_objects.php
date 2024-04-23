@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -385,7 +385,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			buttons: [{
 				'className': 'caSetRepresentationButton',
 				'callback': function(n) {
-					jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'setRepresentation', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]); ?>/t/<?= $t_item->tableName(); ?>', {id: n}, function(d) {
+					jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'setRepresentation', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]); ?>/t/<?= $t_item->tableName(); ?>', {id: n, placement_id: <?= (int)$placement_id; ?>}, function(d) {
 						if(d && d['ok'] && caBundleUpdateManager) { 
 							caBundleUpdateManager.reloadInspector(); 
 						} 

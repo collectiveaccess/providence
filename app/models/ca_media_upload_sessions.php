@@ -749,7 +749,7 @@ class ca_media_upload_sessions extends BaseModel {
 					if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
 					foreach($data[$info['bundle']] as $i => $d) {
 						$reltype = $info['relationshipType'];
-						$t_instance->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['idnoOnly' => true]);
+						$t_instance->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['primaryKeyOnly' => true]);
 					}
 				}
 			}

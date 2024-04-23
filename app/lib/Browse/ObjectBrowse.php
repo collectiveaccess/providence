@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,29 +29,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
- 	require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
- 	require_once(__CA_LIB_DIR__.'/Browse/ObjectBrowseResult.php');
- 
-	class ObjectBrowse extends BaseBrowse {
-		# ------------------------------------------------------
-		/**
-		 * Which table does this class represent?
-		 */
-		protected $ops_tablename = "ca_objects";
-		protected $ops_primary_key = "object_id";
-		# ----------------------------------------------------------------------
-		public function __construct($pn_browse_id=null, $ps_context='') {
-			parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
-		}
-		# ------------------------------------------------------
-		public function getResults($pa_options=null) {
-			return parent::doGetResults(new ObjectBrowseResult(), $pa_options);
-		}
-		# ----------------------------------------------------------------------
+require_once(__CA_LIB_DIR__.'/Browse/BaseBrowse.php');
+require_once(__CA_LIB_DIR__.'/Browse/ObjectBrowseResult.php');
+
+class ObjectBrowse extends BaseBrowse {
+	# ------------------------------------------------------
+	/**
+	 * Which table does this class represent?
+	 */
+	protected $ops_tablename = "ca_objects";
+	protected $ops_primary_key = "object_id";
+	# ----------------------------------------------------------------------
+	public function __construct($pn_browse_id=null, $ps_context='') {
+		parent::__construct($this->ops_tablename, $pn_browse_id, $ps_context);
 	}
-?>
+	# ------------------------------------------------------
+	public function getResults($pa_options=null) {
+		return parent::doGetResults(new ObjectBrowseResult(), $pa_options);
+	}
+	# ----------------------------------------------------------------------
+}

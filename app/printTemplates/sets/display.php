@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -107,7 +107,8 @@ while($result->nextHit()) {
 <?php				
 			
 						foreach($display_list as $placement_id => $display_item) {	
-							if (!($display_value = trim($t_display->getDisplayValue($result, $placement_id, array('forReport' => true, 'purify' => true))))) { continue; }
+							$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+							if (!($display_value = trim($t_display->getDisplayValue($result, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true])))) { continue; }
 ?>
 							<tr>
 								<td width="30%" style='padding: 4px;'><?php print $display_item['display']; ?></td>

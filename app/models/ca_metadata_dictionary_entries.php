@@ -496,7 +496,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		}
 		if(!is_array($va_types)) { $va_types = [$pt_subject->getTypeID()]; }
 		if(sizeof($va_types = array_filter($va_types, 'strlen')) && ($t_instance = Datamodel::getInstance($ps_bundle_name)) && method_exists($ps_bundle_name, 'getTypeCode') ) {
-			$va_types = array_merge($va_types, caMakeTypeIDList($ps_bundle_name, $va_types, ['dontIncludeSubtypesInTypeRestriction' => true]));
+			$va_types = array_merge($va_types, caMakeTypeIDList($ps_bundle_name, $va_types, ['dontIncludeSubtypesInTypeRestriction' => true]) ?? []);
 		}
 		
 		if(!is_array($va_relationship_types = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $pa_settings, null)) && $va_relationship_types) {
@@ -504,7 +504,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		}
 		if(!is_array($va_relationship_types)) { $va_relationship_types = []; }
 		if (sizeof($va_relationship_types = array_filter($va_relationship_types, 'strlen'))) {
-			$va_relationship_types = array_merge($va_relationship_types, ca_relationship_types::relationshipTypeIDsToTypeCodes($va_relationship_types));
+			$va_relationship_types = array_merge($va_relationship_types, ca_relationship_types::relationshipTypeIDsToTypeCodes($va_relationship_types) ?? []);
 		}
 		
 		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {

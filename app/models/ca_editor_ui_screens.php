@@ -916,6 +916,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						if (!($t_rel = Datamodel::getInstanceByTableName($bundle, true))) { continue(2); }
 						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $bundle));
+						
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -1184,9 +1185,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show set representation button?'),
+								'showOnSelect' => ['useRepresentationRelationshipType'],
 								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
-							)
+							),
+							'useRepresentationRelationshipType' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'useRelationshipTypeList' => $va_path[1],
+								'width' => "475px", 'height' => "75px",
+								'takesLocale' => false,
+								'default' => '',
+								'multiple' => false,
+								'label' => _t('Use relationship type'),
+								'description' => _t('Relationship type to link selected representations with.')
+							),
 						);
+						
+						if($va_path[1] === 'ca_objects_x_object_representations') {
+							unset($va_additional_settings['useRepresentationRelationshipType']);
+							unset($va_additional_settings['showSetRepresentationButton']['showOnSelect']);
+						}
 				
 						if(
 							!($policies = array_merge(

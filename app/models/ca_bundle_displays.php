@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2414,6 +2414,10 @@ if (!$pb_omit_editing_info) {
 			// policy passed for history tracking current value
 			// returnTagWithPath passed to force absolute file path to be used when running reports – some systems cannot handle urls in PDFs due to DNS configuration
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), array_merge(['doRefSubstitution' => true], $options, ['policy' => $va_settings['policy'] ?? null, 'returnTagWithPath' => $options['forReport']]));	
+		}
+		
+		if($options['forReport']) {
+			$vs_val = strip_tags($vs_val, $this->getAppConfig()->get('report_allowed_text_tags') ?? []);
 		}
 		
 		if (isset($options['purify']) && $options['purify']) {

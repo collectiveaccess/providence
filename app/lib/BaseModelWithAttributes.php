@@ -366,6 +366,13 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						$vn_element_id = $o_value->getElementID();
 						$vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id);
 						
+						$datatype = ca_metadata_elements::getDataTypeForElementCode($vn_element_id);
+						
+						// Media and files never match existing
+						if(in_array($datatype, [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__], true)) {
+							continue(2);
+						}
+						
 						$pv = $o_value->getDisplayValue(['dateFormat' => 'original']);
 						$vals[] = $o_value->getDisplayValue(['output' => 'text', 'dateFormat' => 'original']);
 						if (

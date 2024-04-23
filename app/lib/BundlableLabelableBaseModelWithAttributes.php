@@ -3387,7 +3387,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			if ($vb_is_many_many) {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
-				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids, ['sort' => $sort, 'sortDirection' => $sort_direction]);
+				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids, ['sort' => $sort, 'sortDirection' => $sort_direction, 'primaryTable' => $ps_related_table]);
 			} else {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $t_rel->primaryKey());
 				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids, ['sort' => $sort, 'sortDirection' => $sort_direction]);
@@ -6521,7 +6521,7 @@ if (!$vb_batch) {
 			}
 		}
 
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled(Datamodel::getInstance($vs_related_table, true))) {
 			$t_user = new ca_users($vn_user_id);
 			if(!$t_user->canDoAction('is_administrator')) {
 				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
@@ -7577,6 +7577,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
 	 *		instance = An instance of the model for $pm_rel_table_name_or_num; if passed makeSearchResult can use it to directly extract model information potentially saving time [Default is null]
 	 *		returnIndex = Return array with result instance (key "result") and list of sorted primary key values (key "index"). [Default is false]
+	 *		primaryTable = When search result is for a relationship, the related table to consider as context. Paths to related tables will be generated as if they were relative to the primary. Mostly useful when sorting on related records from a relationship, to ensure that the path to the sort record is. [Default is null]
 	 *
 	 * @return SearchResult A search result of for the specified table
 	 */

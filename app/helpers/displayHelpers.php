@@ -5401,7 +5401,7 @@ function caGetRepresentationDownloadFileName(string $table, array $data, ?array 
 	} 
 
 	$filename = html_entity_decode($filename);
-	return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
+	return preg_replace("![^A-Za-z0-9_\-\.&()]+!", "_", $filename);
 }
 # ------------------------------------------------------------------
 /**

@@ -108,6 +108,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'colorspace'		=> 'W',
 			'start'				=> 'W',
 			'length'			=> 'W',
+			'fadein'			=> 'W',
+			'fadeout'			=> 'W',
 			'quality'			=> 'W',		// required for JPEG compatibility
 			'bitrate'			=> 'W', 	// in kbps (ex. 64)
 			'channels'			=> 'W',		// 1 or 2, typically
@@ -538,7 +540,25 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$interval_settings .= " -t ".(float)$this->properties['length'];
 				}
 				
-				caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab {$vn_output_bitrate} -ar {$vn_sample_frequency} -ac {$vn_channels} {$interval_settings} -map a -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $output, $vn_return);
+				$fade_settings = '';
+				$fade_settings_list = [];
+				if((int)$this->properties['fadein'] > 0) {
+					$fade_settings_list[] = "afade=t=in:st=".(int)$this->properties['start'].":d=".(int)$this->properties['fadein'];
+				}
+				if((int)$this->properties['fadeout'] > 0) {
+					$d = ((float)$this->properties['length'] > 0) ? (float)$this->properties['start'] + (float)$this->properties['length'] : (float)$this->properties["duration"] ;
+					$s = $d - (int)$this->properties['fadeout'];
+					if($s > 0) {
+						$fade_settings_list[] = "afade=t=out:st={$s}:d=".(int)$this->properties['fadeout'];
+					}
+				}
+				
+				if(sizeof($fade_settings_list) > 0) {
+					$fade_settings = '-af "'.join(',', $fade_settings_list).'"';
+				}
+				
+				caExec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab {$vn_output_bitrate} -ar {$vn_sample_frequency} -ac {$vn_channels} {$interval_settings} {$fade_settings} -map a -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $output, $vn_return);
+
 				if ($vn_return != 0) {
 					@unlink($filepath.".".$ext);
 					$this->postError(1610, _t("Error converting file to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $output)), "WLPlugAudio->write()");

@@ -59,6 +59,21 @@ class ExportCTDA extends BaseExportFormat {
 		return self::$row_index;
 	}
 	# ------------------------------------------------------
+	private function _rightsValueToCTDARightsDescriptor(?string $value) {
+		$map = [
+			'copyright_undetermined' => 'COPYRIGHT UNDETERMINED',
+			'in_copyright' => 'IN COPYRIGHT',
+			'unknown_rightsholder' => 'IN COPYRIGHT - RIGHTS-HOLDER(S) UNLOCATABLE OR UNIDENTIFIABLE',
+			'no_copyright_us' => 'NO COPYRIGHT - UNITED STATES',
+			'no_known_copyright' => 'NO KNOWN COPYRIGHT',
+			'public_domain' => 'NO KNOWN COPYRIGHT'
+		];
+		if(isset($map[$value])) {
+			return $map[$value];
+		}
+		return 'COPYRIGHT UNDETERMINED';
+	}
+	# ------------------------------------------------------
 	private function _mediaClassToCTDAResourceType(?string $class) {
 		$map = [
 			'image' => 'Still image',
@@ -80,7 +95,7 @@ class ExportCTDA extends BaseExportFormat {
 			'image' => 'Image',
 			'video' => 'Video',
 			'audio' => 'Audio',
-			'document' => 'Publication issue',
+			'document' => 'Digital document≤',
 			'3d' => 'Digital document',
 			'vr' => 'Digital document',
 			'binary' => 'Binary'
@@ -132,7 +147,14 @@ class ExportCTDA extends BaseExportFormat {
 		$row[0] = self::$row_index;
 		ksort($row);
 		$media = $row[8] ?? [];
+		if(!is_array($media) || !sizeof($media)) { 
+			self::$row_index--;
+			return null; 
+		}
+		
 		$media_prefix = $ext_config->get('ctda_media_prefix');
+		$held_by_name = $ext_config->get('ctda_held_by_name');
+		
 		$row[1] = $row[8] = null;
 		foreach($row as $c => $data) {
 			switch($c) {
@@ -151,12 +173,23 @@ class ExportCTDA extends BaseExportFormat {
 						$row[$c] = '';
 					}
 					break;
+				case 5:
+					if($held_by_name) {
+						$row[$c] = $held_by_name;
+					}
+					break;
+				case 7:
+					$row[$c] = $this->_rightsValueToCTDARightsDescriptor(is_array($row[7]) ? join('', $row[7]) : $row[7]);
+					break;
 				case 8:
 					if(sizeof($media ?? []) === 1) {
 						$row[$c] = $media_prefix.pathinfo($media[0], PATHINFO_BASENAME);
 					} else {
 						$row[$c] = '';
 					}
+					break;
+				case 10:
+					$row[$c] = strtolower(join('', $row[$c]));
 					break;
 				case 11:
 					if($media[0]) {
@@ -165,15 +198,39 @@ class ExportCTDA extends BaseExportFormat {
 						$row[$c] = '';
 					}	
 					break;
+				case 12:
+					$row[$c] = strip_tags(html_entity_decode(join('', $row[$c])));
+					break;
+				case 14:
+				case 15:
+					$row[$c] = array_filter($row[$c], 'strlen');
+					$row[$c] = array_map(function($v) use ($c) {
+						$tmp = preg_split('/[\|\∣]+/', $v);
+						$tmp[1] = ucfirst($tmp[1]);
+						if($c == 15) { $tmp[0] = preg_replace('!,!', '', $tmp[0]); }
+						return join('|', $tmp);
+					}, $row[$c]);
+					$row[$c] = is_array($row[$c]) ? join('^^', $row[$c]) : $row[$c];
+					break;
 				case 16:
-					$row[$c] = join('^^', array_map(function($v) {
-						return "{$v}";
-					}, $row[$c])).'|subject';
+					$row[$c] = array_filter($row[$c], 'strlen');
+					if(sizeof($row[$c])) {
+						$row[$c] = join('^^', array_map(function($v) {
+							return "{$v}";
+						}, $row[$c]));
+					} else {
+						$row[$c] = '';
+					}
 					break;
 				case 19:
-					$row[$c] = join('', array_map(function($v) {
-						return "||{$v}";
-					}, $row[$c]));
+					$row[$c] = array_filter($row[$c], 'strlen');
+					if(sizeof($row[$c])) {
+						$row[$c] = join('', array_map(function($v) {
+							return "||{$v}";
+						}, $row[$c]));
+					} else {
+						$row[$c] = '';
+					}
 					break;
 				case 20:
 					if($row[$c][0] ?? null) {
@@ -193,6 +250,7 @@ class ExportCTDA extends BaseExportFormat {
 				self::$row_index++;
 				$row[0] = self::$row_index;
 				$row[1] = $group;
+				$row[2] = '';
 				$row[4] = $this->_mediaClassToCTDAModel(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));
 				$row[8] = $media_prefix.pathinfo($m, PATHINFO_BASENAME);
 				$row[11] = $this->_mediaClassToCTDAResourceType(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));
