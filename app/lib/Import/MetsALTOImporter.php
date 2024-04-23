@@ -69,6 +69,7 @@ class MetsALTOImporter {
 		$rep_identifier = $rep->getPrimaryKey();
 		
 		foreach($xml->Layout->Page as $page) {
+			$i = 1;
 			$pnum = (int)$page['PHYSICAL_IMG_NR'];
 			$pwidth = (float)$page['WIDTH'];
 			$pheight = (float)$page['HEIGHT'];
@@ -87,8 +88,10 @@ class MetsALTOImporter {
 									'w' => sprintf("%0.3f", (float)$str['WIDTH']/$pwidth), 
 									'h' => sprintf("%0.3f", (float)$str['HEIGHT']/$pheight), 
 									'x' => sprintf("%0.3f", (float)$str['HPOS']/$pwidth), 
-									'y' => sprintf("%0.3f", (float)$str['VPOS']/$pheight)
+									'y' => sprintf("%0.3f", (float)$str['VPOS']/$pheight),
+									'i' => $i
 								];
+								$i++;
 							}
 							$page_content[] = $w;
 						}
