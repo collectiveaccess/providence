@@ -2462,7 +2462,7 @@ class BaseModel extends BaseObject {
 		foreach($this->FIELDS as $vs_field => $va_attr) {
 
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
-			$vs_field_value = $this->get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
+			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
 			if (isset($va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) && (bool)$va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) { continue; }
 			
