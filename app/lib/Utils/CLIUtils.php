@@ -60,7 +60,6 @@ class CLIUtils extends CLIBaseUtils {
 	use CLIUtilsDeveloper;
 	use CLIUtilsTest;
 	use CLIUtilsBanHammer;
-	use CLIUtilsTaskQueue;
 	use CLIUtilsLocalization;
 	use CLIUtilsAccessControl;
 }
