@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,7 @@ var caUI = caUI || {};
 			enableOnNewIDList: [],
 			disableOnExistingIDList: [],
 			counter: 0,
+			n: 0,
 			minRepeats: 0,
 			maxRepeats: 65535,
 			showEmptyFormsOnLoad: 1,
@@ -98,6 +99,10 @@ var caUI = caUI || {};
 			
 			buttons: []
 		}, options);
+		
+		if (that.singleValuePerLocale) {
+		    that.incrementLocalesForNewBundles = true;  // single value per locale implies incrementing locales on each bundle add
+		}
 		
 		if (!that.newItemListClassName) { that.newItemListClassName = that.itemListClassName; }
 
@@ -212,7 +217,7 @@ var caUI = caUI || {};
 						this.errors[id] = initialValues['_errors'];
 					}
 				}
-				templateValues.n = 'new_' + this.getCount();
+				templateValues.n = 'new_' + this.getNIndex();
 				templateValues.error = '';
 				isNew = true;
 			}
@@ -226,7 +231,6 @@ var caUI = caUI || {};
 					if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
 						continue;
 					}
-
 					defaultLocaleSelectedIndex = i;
 					break;
 				}
@@ -238,7 +242,7 @@ var caUI = caUI || {};
 				jQuery.each(this.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
 				});
-				id = 'new_' + this.getCount();	// set id to ensure sub-fields get painted with unsaved warning handler
+				id = 'new_' + this.getNIndex();	// set id to ensure sub-fields get painted with unsaved warning handler
 			}
 		
 			// print out any errors
@@ -411,6 +415,7 @@ var caUI = caUI || {};
 				if (defaultLocaleSelectedIndex !== false) {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
 						// There's a locale drop-down to mess with
+						console.log("set ", templateValues.n, defaultLocaleSelectedIndex);
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
@@ -457,13 +462,20 @@ var caUI = caUI || {};
 		that.refreshLocaleAvailability = function() {
             var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
             for(i=0; i < localeList.length; i++) {
-                if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
-                    jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', true);
-                }
+                jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0));
             }
 		};
-
+		
+        that.localeCount = function() {
+            return jQuery(this.container + " select." + this.localeClassName + ":first option").length;
+        };
+        
 		that.updateBundleFormState = function() {
+		    if (that.singleValuePerLocale) { // only allow repeats up to number of locales present
+		        let numLocales = that.localeCount();
+                if(numLocales > 0) { that.maxRepeats = numLocales; }
+            }
+            
 			// enforce min repeats option (hide "delete" buttons if there are only x # repeats)
 			if (this.getCount() <= this.minRepeats) {
 				jQuery(this.container + " ." + this.deleteButtonClassName).hide();
@@ -524,9 +536,14 @@ var caUI = caUI || {};
 		that.getCount = function() {
 			return this.counter;
 		};
+		
+		that.getNIndex = function() {
+			return this.n;
+		};
 
 		that.incrementCount = function() {
 			this.counter++;
+			this.n++;
 		};
 
 		that.decrementCount = function() {

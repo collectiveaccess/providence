@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionVisitor.php');
 
 class ExpressionParser {
@@ -118,7 +117,11 @@ class ExpressionParser {
 	 */
     static public function evaluate($ps_expression, $pa_variables=null) {
         $e = new ExpressionParser();
-        return $e->evaluateExpression($ps_expression, $pa_variables);
+    	try {
+    		return $e->evaluateExpression($ps_expression, $pa_variables);
+    	} catch (Exception $e) {
+    		return null;
+    	}
     }
 	# -------------------------------------------------------------------
 	/**

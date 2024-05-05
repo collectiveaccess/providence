@@ -691,6 +691,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_after = $o_config->get('wrap_after');
 		$va_nodes = $o_config->get('nodes');
 
+		@unlink($ps_filename);
 		if($vs_wrap_before) {
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
 		}
@@ -897,6 +898,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $num_items));
 
+		@unlink($filename);
 		if(!$individual_files && $wrap_before) {
 			file_put_contents($filename, $wrap_before."\n", FILE_APPEND);
 		}

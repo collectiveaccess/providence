@@ -2629,6 +2629,7 @@ trait HistoryTrackingCurrentValueTrait {
 	 *
 	 */
 	public function renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		$for_report = caGetOption('forReport', $pa_options, false);
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
 			case 'ca_objects_location_date':
@@ -2657,7 +2658,11 @@ trait HistoryTrackingCurrentValueTrait {
 								return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
 							}
 						} 
-						return (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
+						$ret =  (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
+						if($for_report) {
+							$ret = strip_tags($ret, $this->getAppConfig()->get('report_allowed_text_tags') ?? []);
+						}
+						return $ret;
 					}
 				} 
 				return '';

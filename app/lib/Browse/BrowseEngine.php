@@ -170,7 +170,7 @@ class BrowseEngine extends BaseFindEngine {
 
 		$this->opo_ca_browse_cache = new BrowseCache();
 		if ($pn_browse_id) {
-			$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
+			//$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 			$this->opo_ca_browse_cache->load($pn_browse_id);
 		} else {
 			$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);

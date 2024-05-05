@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,40 +24,39 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_subject 			= $this->getVar('t_subject');				// ca_storage_locations
-$va_settings 		= $this->getVar('settings');
-$vs_placement_code 	= $this->getVar('placement_code');
-$vn_placement_id	= (int)$va_settings['placement_id'];
+ */ 
+if(!$qr_result = $this->getVar('qr_result')) { return; }
 
-$vs_color 			= ((isset($va_settings['colorItem']) && $va_settings['colorItem'])) ? $va_settings['colorItem'] : '';
+$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_subject 		= $this->getVar('t_subject');				// ca_storage_locations
+$settings 		= $this->getVar('settings');
+$placement_code = $this->getVar('placement_code');
+$placement_id	= $settings['placement_id'] ?? null;
+$color 			= $settings['colorItem'] ?? '';
 
-$qr_result			= $this->getVar('qr_result');
 $rel_table 			= $qr_result->tableName();
 $path 				= array_keys(Datamodel::getPath($t_subject->tableName(), $rel_table) ?? []);
 $linking_table 		= $path[1] ?? null;
-$va_errors 			= [];
+$errors 			= [];
 	
 if (!$this->request->isAjax()) {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_subject->tableNum().'_rel', $va_settings);
+	print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix.$t_subject->tableNum().'_rel', $this->getVar('initialValues')));
+	print caEditorBundleMetadataDictionary($this->request, $id_prefix.$t_subject->tableNum().'_rel', $settings);
 }	
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
+	foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_error) {
+		$errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $id_prefix; ?>">
 	<div class="bundleContainer">
 <?php
 	if ($qr_result && ($qr_result->tableName() == 'ca_objects') && $qr_result->numHits() > 0) {
 ?>
 		<div class="bundleSubLabel">
-			<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $qr_result->tableName(), $va_settings); ?>
-			<?php if($linking_table) { caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_subject, new $rel_table, new $linking_table, $vn_placement_id); } ?>
+			<?= caEditorBundleBatchEditorControls($this->request, $placement_id, $t_subject, $qr_result->tableName(), $settings); ?>
+			<?php if($linking_table) { caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_subject, new $rel_table, new $linking_table, $placement_id); } ?>
 	
-			<?= caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_subject, $this->getVar('policy'), $qr_result); ?>
+			<?= caReturnToHomeLocationControlForRelatedBundle($this->request, $id_prefix, $t_subject, $this->getVar('policy'), $qr_result); ?>
 		</div>
 <?php
 	}
@@ -70,15 +69,15 @@ if (!$this->request->isAjax()) {
 	//
 	// Template to generate display for existing items
 	//
-    if (!$va_settings['displayTemplate']) { $va_settings['displayTemplate'] = "<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)"; }
-	switch($va_settings['list_format']) {
+    if (!$settings['displayTemplate']) { $settings['displayTemplate'] = "<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)"; }
+	switch($settings['list_format']) {
 		case 'list':
 
 			while($qr_result->nextHit()) {
 ?>
-		<div class="labelInfo listRel caRelatedItem" <?= $vs_color ? "style=\"background-color: #{$vs_color};\"" : ""; ?>>
+		<div class="labelInfo listRel caRelatedItem" <?= $color ? "style=\"background-color: #{$color};\"" : ""; ?>>
 <?php	
-				print $qr_result->getWithTemplate($va_settings['displayTemplate']);		
+				print $qr_result->getWithTemplate($settings['displayTemplate']);		
 ?>
 		</div>
 <?php
@@ -88,9 +87,9 @@ if (!$this->request->isAjax()) {
 		default:
 			while($qr_result->nextHit()) {
 ?>
-		<div class="labelInfo roundedRel caRelatedItem" <?= $vs_color ? "style=\"background-color: #{$vs_color};\"" : ""; ?>>
+		<div class="labelInfo roundedRel caRelatedItem" <?= $color ? "style=\"background-color: #{$color};\"" : ""; ?>>
 <?php	
-				print $qr_result->getWithTemplate($va_settings['displayTemplate']);		
+				print $qr_result->getWithTemplate($settings['displayTemplate']);		
 ?>
 		</div>
 <?php

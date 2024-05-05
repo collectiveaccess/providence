@@ -716,11 +716,15 @@ class TaskQueue extends BaseObject {
 
 		if(caGetOption('restart', $options, false))  { $tq->resetUnfinishedTasks(); }
 
-		if (!$quiet) { CLIUtils::addMessage(_t("Processing queued tasks...")); }
-		$tq->processQueue();	
+		if(!caGetOption('recurring-tasks-only', $options, null)) {
+			if (!$quiet) { CLIUtils::addMessage(_t("Processing queued tasks...")); }
+			$tq->processQueue();	
+		}
 
-		if (!$quiet) { CLIUtils::addMessage(_t("Processing recurring tasks...")); }
-		$tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
+		if(!caGetOption('skip-recurring-tasks', $options, null)) {
+			if (!$quiet) { CLIUtils::addMessage(_t("Processing recurring tasks...")); }
+			$tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
+		}
 		if (!$quiet) {  CLIUtils::addMessage(_t("Processing complete.")); }
 		
 		return true;

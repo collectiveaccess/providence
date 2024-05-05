@@ -95,7 +95,7 @@ class ExportCTDA extends BaseExportFormat {
 			'image' => 'Image',
 			'video' => 'Video',
 			'audio' => 'Audio',
-			'document' => 'Publication issue',
+			'document' => 'Digital document≤',
 			'3d' => 'Digital document',
 			'vr' => 'Digital document',
 			'binary' => 'Binary'
@@ -147,7 +147,10 @@ class ExportCTDA extends BaseExportFormat {
 		$row[0] = self::$row_index;
 		ksort($row);
 		$media = $row[8] ?? [];
-		if(!is_array($media) || !sizeof($media)) { return null; }
+		if(!is_array($media) || !sizeof($media)) { 
+			self::$row_index--;
+			return null; 
+		}
 		
 		$media_prefix = $ext_config->get('ctda_media_prefix');
 		$held_by_name = $ext_config->get('ctda_held_by_name');
@@ -196,14 +199,15 @@ class ExportCTDA extends BaseExportFormat {
 					}	
 					break;
 				case 12:
-					$row[$c] = strip_tags(join('', $row[$c]));
+					$row[$c] = strip_tags(html_entity_decode(join('', $row[$c])));
 					break;
 				case 14:
 				case 15:
 					$row[$c] = array_filter($row[$c], 'strlen');
-					$row[$c] = array_map(function($v) {
+					$row[$c] = array_map(function($v) use ($c) {
 						$tmp = preg_split('/[\|\∣]+/', $v);
 						$tmp[1] = ucfirst($tmp[1]);
+						if($c == 15) { $tmp[0] = preg_replace('!,!', '', $tmp[0]); }
 						return join('|', $tmp);
 					}, $row[$c]);
 					$row[$c] = is_array($row[$c]) ? join('^^', $row[$c]) : $row[$c];
@@ -213,7 +217,7 @@ class ExportCTDA extends BaseExportFormat {
 					if(sizeof($row[$c])) {
 						$row[$c] = join('^^', array_map(function($v) {
 							return "{$v}";
-						}, $row[$c])).'|subject';
+						}, $row[$c]));
 					} else {
 						$row[$c] = '';
 					}
@@ -246,6 +250,7 @@ class ExportCTDA extends BaseExportFormat {
 				self::$row_index++;
 				$row[0] = self::$row_index;
 				$row[1] = $group;
+				$row[2] = '';
 				$row[4] = $this->_mediaClassToCTDAModel(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));
 				$row[8] = $media_prefix.pathinfo($m, PATHINFO_BASENAME);
 				$row[11] = $this->_mediaClassToCTDAResourceType(caGetMediaClass(Media::getMimetypeForExtension(pathinfo($m, PATHINFO_EXTENSION))));

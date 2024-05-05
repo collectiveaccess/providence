@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,7 @@ $display_list 			= $this->getVar("display_list");
 		$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
 		if(!$locale && preg_match("!^".$t_item->tableName().".preferred_labels!", $display_item['bundle_name'] ?? null)) { continue; }
 	
-		if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, ['purify' => true]))) {
+		if (!strlen($display_value = $t_display->getDisplayValue($t_item, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true]))) {
 			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 			$display_value = "&lt;"._t('not defined')."&gt;";
 		} 
