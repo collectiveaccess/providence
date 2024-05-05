@@ -42,13 +42,15 @@ $batch			= $this->getVar('batch');
 
 $force_values 	= $this->getVar('forceValues');
 
-$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-$first_color 	= ((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-$last_color 	= ((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+$color 			= caGetOption('colorItem', $settings, '');
+$first_color 	= caGetOption('colorFirstItem', $settings, '');
+$last_color 	= caGetOption('colorLastItem', $settings, '');
 	
-$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_storage_locations') == __CA_BUNDLE_ACCESS_READONLY__));
-$dont_show_del	= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+$sort			= caGetOption('sort', $settings, '');
+$allow_drag_sort = caGetOption('allowDragSort', $settings, false);
+
+$read_only		= (caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_storage_locations') == __CA_BUNDLE_ACCESS_READONLY__));
+$dont_show_del	= caGetOption('dontShowDeleteButton', $settings, false);
 
 $disabled_items_mode = $t_instance->getAppConfig()->get($t_instance->tableName() . '_hierarchy_browser_disabled_items_mode');
 $disabled_items_mode = $disabled_items_mode ? $disabled_items_mode : 'hide';
@@ -66,7 +68,7 @@ $hier_browser_height 	= $settings['hierarchicalBrowserHeight'] ?? '200px';
 
 // params to pass during occurrence lookup
 $lookup_params = array(
-	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'types' => caGetOption(['restrict_to_types', 'restrict_to_type'], $settings, ''),
 	'noSubtypes' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0),
 	'noInline' => (!$quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
@@ -343,6 +345,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 		
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= $id_prefix; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
+			formName: '<?= $this->getVar('id_prefix'); ?>',
 			templateValues: ['label', 'type_id', 'id'],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
@@ -362,7 +365,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,
+			isSortable: <?= ($allow_drag_sort ? "true" : "false"); ?>,
 			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',			
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaViewerManager.php');
 
@@ -153,7 +149,7 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 				'sort_direction' => $vs_sort_direction, 
 				'appendToSearch' => $vs_append_to_search,
 				'checkAccess' => $va_access_values,
-				'no_cache' => $vb_is_new_search,
+				'no_cache' => $vb_is_new_search || !$this->opo_result_context->cacheIsValid(),
 				'dontCheckFacetAvailability' => true,
 				'filterNonPrimaryRepresentations' => true,
 				'rootRecordsOnly' => $this->view->getVar('hide_children'),
@@ -199,6 +195,13 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 				}
 				
 				$vo_result = $po_search->getResults($va_search_opts);
+				
+				if((!$vo_result || !$vo_result->numHits()) && $po_search->numCriteria() > 1) {
+					$po_search->removeAllCriteria();
+					$po_search->addCriteria('_search', $vs_search);
+					$po_search->execute($va_search_opts);
+					$vo_result = $po_search->getResults($va_search_opts);
+				}
 				
 				if (!is_array($va_facets_with_info = $po_search->getInfoForAvailableFacets()) || !sizeof($va_facets_with_info)) {
 					$this->view->setVar('open_refine_controls', false);
@@ -441,14 +444,6 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 		}
 		
 		return $va_subtypes;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */ 
-	public function getPartialResult($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
-		return parent::getPartialResult($pa_options);
 	}
 	# -------------------------------------------------------
 	/**

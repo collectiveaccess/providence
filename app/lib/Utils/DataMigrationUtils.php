@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
 
 define("__CA_DATA_IMPORT_ERROR__", 0);
@@ -447,6 +443,7 @@ class DataMigrationUtils {
 	 * @see DataMigrationUtils::_getID()
 	 */
 	static function getObjectLotID($ps_idno_stub, $ps_lot_name, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
+		if($ps_idno_stub) { $pa_values['idno_stub'] = $ps_idno_stub; }
 		return DataMigrationUtils::_getID('ca_object_lots', array('name' => $ps_lot_name), null, $pn_type_id, $locale_id, $pa_values, $options);
 	}
 	# -------------------------------------------------------
@@ -652,7 +649,7 @@ class DataMigrationUtils {
 			$tmp = explode(',', $text);
 			
 			$name = array_merge($name, self::_procSurname($tmp[0], ['ind_suffixes' => $ind_suffixes, 'corp_suffixes' => $corp_suffixes]));
-			unset($_procSurname['is_corporation']);
+			unset($name['is_corporation']);
 			if(sizeof($tmp) > 1) {
 				$tmp2 = array_filter(preg_split("![ ]+!", $tmp[1]), function($v) { return (bool)strlen(trim($v)); });
 				$name = array_merge($name, self::_procForename($tmp2, ['titles' => $titles]));
@@ -705,8 +702,7 @@ class DataMigrationUtils {
 						break;
 					case 3:
 						$name['forename'] = $tmp[0];
-						$name['middlename'] = $tmp[1];
-						$name['surname'] = $tmp[2];
+						$name['surname'] = join(' ', array_slice($tmp, 1));
 						break;
 					case 4:
 					default:
@@ -714,9 +710,8 @@ class DataMigrationUtils {
 							$name['surname'] = array_pop($tmp);
 							$name['forename'] = join(' ', $tmp);
 						} else {
-							$name['surname'] = array_pop($tmp);
 							$name['forename'] = array_shift($tmp);
-							$name['middlename'] = join(' ', $tmp);
+							$name['surname'] = join(' ', $tmp);
 						}
 						break;
 				}
@@ -1272,10 +1267,28 @@ class DataMigrationUtils {
 				default:
 					// is it an attribute?
 					$va_tmp = explode('.', $vs_match_on);
-					$vs_element = array_pop($va_tmp);
+					if(Datamodel::tableExists($va_tmp[0])) { array_shift($va_tmp); }
+					
+					if((is_array($pa_values[$vs_match_on]) || !isset($pa_values[$vs_match_on])) && (sizeof($va_tmp) > 1)) {
+						$v = $pa_values[$va_tmp[0]][$va_tmp[1]] ?? null;
+					} 
+					if(!strlen($v)) {
+						$v = $pa_values[$vs_match_on] ?? $pa_label[$vs_match_on] ?? $pa_label[$vs_label_display_fld];
+					}
+					if(is_array($v)) { $v = array_shift($v); }
+					$vs_element = $va_params = null;
+					switch(sizeof($va_tmp)) {
+						case 2:
+							$vs_element = $va_tmp[0];
+							$va_params = [$vs_element => [$va_tmp[1] => $v]];
+							break;
+						case 1:
+						default:
+							$vs_element = $va_tmp[0];
+							$va_params = [$vs_element => $v];
+							break;
+					}
 					if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
-						$va_params = [$vs_element => $pa_values[$vs_element] ?? $pa_label[$vs_element] ?? $pa_label[$vs_label_display_fld]];
-						
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true));
 						if ($vn_id) { break(2); }
@@ -1325,7 +1338,7 @@ class DataMigrationUtils {
 			foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
 				if ($t_instance->hasField($vs_fld)) {
 					// Handle both straight key => value and key => key => value (attribute style); import helpers pass in attribute style
-					$vs_v = (isset($pa_values[$vs_fld]) && is_array($pa_values[$vs_fld])) ? caGetOption($vs_fld, $pa_values[$vs_fld], $vm_fld_default) : caGetOption($vs_fld, $pa_values, $vm_fld_default);
+					$vs_v = (isset($pa_values[$vs_fld]) && is_array($pa_values[$vs_fld])) ? array_shift($pa_values[$vs_fld]) : caGetOption($vs_fld, $pa_values, $vm_fld_default);
 					$t_instance->set($vs_fld, $vs_v);
 				}
 				unset($pa_values[$vs_fld]);

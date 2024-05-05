@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
  	'NAME_SINGULAR' 	=> _t('relationship type'),
@@ -347,7 +341,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return information, including typenames filterd by user locale, for relationship types for the 
+	 * Return information, including typenames filtered by user locale, for relationship types for the 
 	 * specified relationship table (eg. ca_objects_x_entities, ca_entities_x_occurrences).
 	 *
 	 * @params mixed $pm_table_name_or_num
@@ -385,7 +379,6 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$va_relationships = [];
 		while ($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
-			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
 			$va_relationships[$qr_res->get('type_id')][$locale_id = $qr_res->get('locale_id')] = $va_row;
 			if ($include_type_codes_as_keys) {
 			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;

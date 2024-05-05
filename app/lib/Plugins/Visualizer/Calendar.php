@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- * Calendar visualizer plugin created by idéesculture
- */
-
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugVisualizer.php");
 include_once(__CA_LIB_DIR__."/Plugins/Visualizer/BaseVisualizerPlugin.php");
 
-class WLPlugVisualizerCalendar Extends BaseVisualizerPlugIn Implements IWLPlugVisualizer {
+class WLPlugVisualizerCalendar Extends BaseVisualizerPlugin Implements IWLPlugVisualizer {
 	# ------------------------------------------------
 	/**
 	 *

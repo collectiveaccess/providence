@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-# ----------------------------------------------------------------------
-# --- Import classes
-# ----------------------------------------------------------------------
 require_once(__CA_LIB_DIR__."/Search/SearchBase.php");
 require_once(__CA_LIB_DIR__."/Plugins/SearchEngine/CachedResult.php");
 require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
@@ -42,7 +38,7 @@ require_once(__CA_LIB_DIR__."/Search/Common/Parsers/LuceneSyntaxParser.php");
 # ----------------------------------------------------------------------
 class SearchEngine extends SearchBase {
 
-	private $opn_tablenum;
+	protected $opn_tablenum;
 	protected $ops_tablename;
 	private $opa_tables;
 	// ----
@@ -328,7 +324,7 @@ class SearchEngine extends SearchBase {
 					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
 				}
 				
-				$vb_do_acl = $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL();
+				$vb_do_acl = caACLIsEnabled($t_table);
 
 				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 				
@@ -379,9 +375,7 @@ class SearchEngine extends SearchBase {
 			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $result_desc, $this->opn_tablenum);
 			
 			// cache for later use
-			if(!$vb_no_cache) {
-				$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, $result_desc, ['created_on' => time()], null, $options);
-			}
+			$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, $result_desc, ['created_on' => time()], null, $options);
 
 			// log search
 			if(!$this->opo_app_config->get('dont_use_search_log')) {
@@ -704,7 +698,7 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it a labels? Rewrite the field for that.
+		// Is it a label? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', ($va_tmp[0] ?? null));
 		if (isset($va_tmp2[1]) && (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels')))) {

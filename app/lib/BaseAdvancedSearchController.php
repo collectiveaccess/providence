@@ -160,15 +160,23 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 			}
 
 			if ($this->opn_type_restriction_id > 0) {
-				$po_search->setTypeRestrictions(array($this->opn_type_restriction_id));
+				$po_search->setTypeRestrictions([$this->opn_type_restriction_id]);
 			}
 
 			$vb_criteria_have_changed = false;
 			if (is_subclass_of($po_search, "BrowseEngine")) {
 				$vb_criteria_have_changed = $po_search->criteriaHaveChanged();
 				$po_search->execute($va_search_opts);
-				$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
 				$vo_result = $po_search->getResults($va_search_opts);
+				
+				if((!$vo_result || !$vo_result->numHits()) && $po_search->numCriteria() > 1) {
+					$po_search->removeAllCriteria();
+					$po_search->addCriteria('_search', $vs_search);
+					$po_search->execute($va_search_opts);
+					$vo_result = $po_search->getResults($va_search_opts);
+				}
+				
+				$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
 			} else {
 				$vo_result = $po_search->search($vs_search, $va_search_opts);
 			}

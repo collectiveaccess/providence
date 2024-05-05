@@ -66,8 +66,8 @@ class measurementsSplitterRefinery extends BaseRefinery {
 		if (is_array($pm_value)) {
 			$va_measurements = $pm_value;	// for input formats that support repeating values
 		} else {
-			$pm_value = preg_replace("!\([^\)]*\)!", "", $pm_value);        // remove parentheticals
-			$pm_value = preg_replace("![^\d\.A-Za-z\"\'\"’” \/]+!", " ", $pm_value);
+			$pm_value = preg_replace("!\([^\)]*\)!", "", $pm_value);        				// remove parentheticals
+			$pm_value = preg_replace("![^\d\.,;A-Za-z\"\'\"’” \/]+!", " ", $pm_value);		// remove extranenous characters
 			$va_measurements = [$pm_value];
 		}
 		

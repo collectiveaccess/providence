@@ -63,7 +63,8 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 					'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
 					'user_interface' => caGetOption('user_interface', $pa_data['display'], null),
 					'captions' => $t_instance->getCaptionFileList(),
-					'controls' => caGetOption('controls', $pa_data['display'], null)
+					'controls' => caGetOption('controls', $pa_data['display'], null),
+					'dont_init_plyr' => caGetOption('dontInitPlyr', $pa_options, caGetOption('dontInitPlyr', $pa_data['display'], null)),
 				];
 				
 				if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {

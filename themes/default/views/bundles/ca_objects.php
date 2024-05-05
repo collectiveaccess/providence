@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,28 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
-$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
-$t_item 			= $this->getVar('t_item');			// object
-$t_item_rel 		= $this->getVar('t_item_rel');
-$t_subject 			= $this->getVar('t_subject');
-$settings 			= $this->getVar('settings');
-$vs_add_label 		= $this->getVar('add_label');
-$va_rel_types		= $this->getVar('relationship_types');
-$vs_placement_code 	= $this->getVar('placement_code');
-$vn_placement_id	= (int)$settings['placement_id'];
-$vb_batch			= $this->getVar('batch');
+$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 	= $this->getVar('t_instance');
+$t_item 		= $this->getVar('t_item');			// object
+$t_item_rel 	= $this->getVar('t_item_rel');
+$t_subject 		= $this->getVar('t_subject');
+$settings 		= $this->getVar('settings');
+$add_label 		= $this->getVar('add_label');
+$rel_types		= $this->getVar('relationship_types');
+$placement_code = $this->getVar('placement_code');
+$placement_id	= (int)$settings['placement_id'];
+$batch			= $this->getVar('batch');
 
-$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
+$sort			=	caGetOption('sort', $settings, '');
+$allow_drag_sort = 	caGetOption('allowDragSort', $settings, false);
 
-$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
-$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+$read_only		=	(caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
+$dont_show_del	=	caGetOption('dontShowDeleteButton', $settings, false);
 
-$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+$color 			= 	caGetOption('colorItem', $settings, '');
+$first_color 	= 	caGetOption('colorFirstItem', $settings, '');
+$last_color 	= 	caGetOption('colorLastItem', $settings, '');
 
-$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+$quick_add_enabled = $this->getVar('quickadd_enabled');
 
 $dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
 
@@ -60,16 +61,16 @@ $loaded_sort_direction 	= $this->getVar('sortDirection');
 
 
 // params to pass during object lookup
-$va_lookup_params = array(
-	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
-	'noInline' => (!$vb_quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+$lookup_params = array(
+	'types' => caGetOption(['restrict_to_types', 'restrict_to_type'], $settings, ''),
+	'noSubtypes' => caGetOption('dont_include_subtypes_in_type_restriction', $settings, false, ['castTo' => 'bool']),
+	'noInline' => (!$quick_add_enabled ||(bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 );
 
-$va_errors = [];
-foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-	$va_errors[] = $o_error->getErrorDescription();
+$errors = [];
+foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_error) {
+	$errors[] = $o_error->getErrorDescription();
 }
 
 $count = $this->getVar('relationship_count');
@@ -78,30 +79,30 @@ $num_per_page = caGetOption('numPerPage', $settings, 10);
 if (!RequestHTTP::isAjax()) {
 	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
 
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	if ($batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
 	} else {		
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
 	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+	print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 }	
 
 $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 
 ?>
-<div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	print "<div class='bundleSubLabel'>";
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
-		print caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $settings);
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
+		print caEditorBundleBatchEditorControls($this->request, $placement_id, $t_subject, $t_instance->tableName(), $settings);
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $placement_id);
 		
 		if(caGetOption('showReturnToHomeLocations', $settings, false) && caHomeLocationsEnabled('ca_objects', null, ['enableIfAnyTypeSet' => true])) {
-			print caReturnToHomeLocationControlForRelatedBundle($this->request, $vs_id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
+			print caReturnToHomeLocationControlForRelatedBundle($this->request, $id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
 		}
 	
-		if(!$vb_read_only) {
-			print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+		if(!$read_only) {
+			print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
@@ -120,38 +121,38 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 	switch($settings['list_format']) {
 		case 'list':
 ?>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
-	if (!$vb_read_only && !$vb_dont_show_del) {
+	if (!$read_only && !$dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>
-			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"></a>
-			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?= $id_prefix; ?>_edit_related_{n}"></a>
+			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="{type_id}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 		</div>
 <?php
 			break;
 		case 'bubbles':
 		default:
 ?>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
-			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="{type_id}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 <?php
-	if (!$vb_read_only && !$vb_dont_show_del) {
+	if (!$read_only && !$dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
@@ -172,13 +173,13 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 	switch($settings['list_format']) {
 		case 'list':
 ?>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
-	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
+	if (!$read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
 ?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
 	
-	if (!$vb_read_only && !$vb_dont_show_del) {
+	if (!$read_only && !$dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
@@ -191,30 +192,30 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 	}
 ?>
 
-			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 		</div>
 <?php
 			break;
 		case 'bubbles':
 		default:
 ?>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
-			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $vs_id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 <?php
-	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
+	if (!$read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
 ?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
-	if (!$vb_read_only && !$vb_dont_show_del) {
+	if (!$read_only && !$dont_show_del) {
 ?><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>			
@@ -235,26 +236,26 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?= $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
 <?php
 	if (is_array($this->getVar('relationship_types_by_sub_type')) && sizeof($this->getVar('relationship_types_by_sub_type'))) {
 ?>
-						<select name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
+						<select name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" style="display: none;"></select>
 <?php
 	}
 ?>
-						<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
+						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
 						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						
-						<a href="<?= urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"><?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
+						<a href="<?= urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?= $id_prefix; ?>_edit_related_{n}"><?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -264,38 +265,38 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 	<div class="bundleContainer">
 		<div class="caItemList">
 <?php
-	if (is_array($va_errors) && sizeof($va_errors)) {
+	if (is_array($errors) && sizeof($errors)) {
 ?>
-		<span class="formLabelError"><?= join("; ", $va_errors); ?><br class="clear"/></span>
+		<span class="formLabelError"><?= join("; ", $errors); ?><br class="clear"/></span>
 <?php
 	}
 ?>
 		
 		</div>
 		<div class="caNewItemList"></div>
-		<input type="hidden" name="<?= $vs_id_prefix; ?>BundleList" id="<?= $vs_id_prefix; ?>BundleList" value=""/>
+		<input type="hidden" name="<?= $id_prefix; ?>BundleList" id="<?= $id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add relationship"); ?></a></div>
 <?php
 	}
 ?>
 	</div>
 </div>
 
-<?php if($vb_quick_add_enabled) { ?>	
-<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+<?php if($quick_add_enabled) { ?>	
+<div id="caRelationQuickAddPanel<?= $id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?= $id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
 </div>
 <?php } ?>
 
-<div id="caRelationEditorPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationEditorPanel<?= $vs_id_prefix; ?>ContentArea">
+<div id="caRelationEditorPanel<?= $id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationEditorPanel<?= $id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?= _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
@@ -306,15 +307,15 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 </div>			
 	
 <script type="text/javascript">
-	var caRelationBundle<?= $vs_id_prefix; ?>;
+	var caRelationBundle<?= $id_prefix; ?>;
 	jQuery(document).ready(function() {
-		jQuery('#<?= $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
-		jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?= $vs_id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
+		jQuery('#<?= $id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?= $id_prefix; ?>caItemListSortControls').slideToggle(200); return false; });
+		jQuery('#<?= $id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?= $id_prefix; ?>caItemListSortControls').slideUp(200); return false; });
 		
 		if (caUI.initPanel) {
-			caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationQuickAddPanel<?= $id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?= $id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?= $id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -327,9 +328,9 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 					jQuery("#topNavContainer").show(250);
 				}
 			});
-			caRelationEditorPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caRelationEditorPanel<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caRelationEditorPanel<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caRelationEditorPanel<?= $id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationEditorPanel<?= $id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationEditorPanel<?= $id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -344,12 +345,13 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			});
 		}
 		
-		caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
-			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= $id_prefix; ?>', {
+			fieldNamePrefix: '<?= $id_prefix; ?>_',
+			formName: '<?= $this->getVar('id_prefix'); ?>',
 			initialValues: <?= json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?= json_encode(array_keys($this->getVar('initialValues'))); ?>,
-			itemID: '<?= $vs_id_prefix; ?>Item_',
-			placementID: '<?= $vn_placement_id; ?>',
+			itemID: '<?= $id_prefix; ?>Item_',
+			placementID: '<?= $placement_id; ?>',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
@@ -357,25 +359,25 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_related_'],
+			hideOnNewIDList: ['<?= $id_prefix; ?>_edit_related_'],
 			showEmptyFormsOnLoad: 1,
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_objects_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
-			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Object', 'Get', $lookup_params); ?>',
 			types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
 			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
 			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
-			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?= ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
-			listSortOrderID: '<?= $vs_id_prefix; ?>BundleList',
+			readonly: <?= $read_only ? "true" : "false"; ?>,
+			isSortable: <?= ($allow_drag_sort ? "true" : "false"); ?>,
+			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel,div.listRel',
 			
-			itemColor: '<?= $vs_color; ?>',
-			firstItemColor: '<?= $vs_first_color; ?>',
-			lastItemColor: '<?= $vs_last_color; ?>',
+			itemColor: '<?= $color; ?>',
+			firstItemColor: '<?= $first_color; ?>',
+			lastItemColor: '<?= $last_color; ?>',
 			
 			totalValueCount: <?= (int)$count; ?>,
-			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_objects')); ?>',
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $placement_id, 'bundle' => 'ca_objects')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
 
@@ -383,11 +385,11 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			buttons: [{
 				'className': 'caSetRepresentationButton',
 				'callback': function(n) {
-					jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'setRepresentation', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]); ?>/t/<?= $t_item->tableName(); ?>', {id: n}, function(d) {
+					jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'setRepresentation', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()]); ?>/t/<?= $t_item->tableName(); ?>', {id: n, placement_id: <?= (int)$placement_id; ?>}, function(d) {
 						if(d && d['ok'] && caBundleUpdateManager) { 
 							caBundleUpdateManager.reloadInspector(); 
 						} 
-						let e = jQuery('#<?= $vs_id_prefix; ?>').find('.bundleMessage').html(d.message).slideDown(250);
+						let e = jQuery('#<?= $id_prefix; ?>').find('.bundleMessage').html(d.message).slideDown(250);
 				
 						setTimeout(function() { 
 							jQuery(e).slideUp(250);
@@ -397,8 +399,8 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			}],
 <?php } ?>
 			
-<?php if($vb_quick_add_enabled) { ?>			
-			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
+<?php if($quick_add_enabled) { ?>			
+			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
 			quickaddUrl: '<?= caNavUrl($this->request, 'editor/objects', 'ObjectQuickAdd', 'Form', array('object_id' => 0, 'source' => $t_instance->tableName(), 'source_id' => $t_instance->getPrimaryKey(), 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
@@ -407,7 +409,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			loadedSortDirection: <?= json_encode($loaded_sort_direction); ?>,
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
-			interstitialPanel: caRelationEditorPanel<?= $vs_id_prefix; ?>,
+			interstitialPanel: caRelationEditorPanel<?= $id_prefix; ?>,
 			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', ['t' => $t_item_rel->tableName()]); ?>',
 			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
 			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,

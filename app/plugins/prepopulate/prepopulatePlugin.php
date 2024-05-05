@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -26,7 +26,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_APP_DIR__."/plugins/prepopulate/lib/applyPrepopulateRulesTool.php");
 
 class prepopulatePlugin extends BaseApplicationPlugin {
@@ -471,7 +470,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 						switch($vs_mode) {
 							case 'overwrite': // always replace first value we find
 								
-								if(!$force_values) {
+								if($force_values) {
 									$forced_values[$va_parts[1]][] = $attr;
 								} else {
 									$t_instance->replaceAttribute($attr, $va_parts[1]);
@@ -479,7 +478,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								break;
 							case 'overwriteifset':
 								if(strlen($vs_value) > 0) {
-									if(!$force_values) {
+									if($force_values) {
 										$forced_values[$va_parts[1]][] = $attr;
 									} else {
 										$t_instance->replaceAttribute($attr, $va_parts[1]);
@@ -501,7 +500,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			} elseif(sizeof($va_parts)==3) {
 // actual container
 				if($t_instance->hasElement($va_parts[1])) {
-					$va_attr = $t_instance->getAttributesByElement($va_parts[1]);
+					$va_attr = $t_instance->getAttributesByElement($va_parts[1]) ?? [];
 					switch (sizeof($va_attr)) {
 						case 1:
 							switch ($vs_mode) {

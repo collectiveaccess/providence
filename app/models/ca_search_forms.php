@@ -1045,7 +1045,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_base_bundle, ['useDisambiguationLabels' => $use_disambiguation_labels, 'includeSourceSuffix' => false]);
 							
 							if ($policy) { 
-							    $vs_label = _t('Current value for <em>%1</em> using <em>%2</em>', mb_strtolower($vs_label), mb_strtolower(ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name')));
+							    $vs_label = _t('<em>%1</em> using <em>%2</em>', caUcFirstUTF8Safe(mb_strtolower(ca_objects::getHistoryTrackingCurrentValuePolicy($policy, 'name'))), mb_strtolower($vs_label));
 							}
 							
 							if  (method_exists($t_table, "getSubjectTableName") && ($vs_primary_table == $vs_subject_table)) {

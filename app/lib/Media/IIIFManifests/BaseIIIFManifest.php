@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Utils/CLIUtils/TaskQueue.php : 
+ * app/lib/Media/Manifests/IIIFManifests/BaseIIIFManifest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,59 +15,57 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
+ *
  * @package CollectiveAccess
- * @subpackage BaseModel
+ * @subpackage WebServices
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
- 
-trait CLIUtilsTaskQueue { 
+namespace CA\Media\IIIFManifests;
+
+abstract class BaseIIIFManifest {
 	# -------------------------------------------------------
 	/**
-	 * Rebuild search indices
+	 *
 	 */
-	public static function reset_incomplete_tasks($opts=null) {
+	protected $config;
+	
+	/**
+	 *
+	 */
+	protected $base_url;
+	
+	/**
+	 *
+	 */
+	protected $manifest_url;
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct() {
+		$this->config = \Configuration::load();
+		$this->base_url = $this->config->get('site_host').$this->config->get('ca_url_root'); //.$request->getBaseUrlPath();
 		
-		return true;
+		$manifest_url = '';
+		if(isset($_SERVER['REQUEST_URI'])) {
+			$this->manifest_url = $this->config->get('site_host').$_SERVER['REQUEST_URI'];
+		} else {
+			$this->manifest_url = $this->base_url."/manifest";
+		}
 	}
 	# -------------------------------------------------------
 	/**
-	 *
+	 * Return JSON IIIF manifest
 	 */
-	public static function reset_incomplete_tasksParamList() {
-		return [
-			//"to|t-s" => _t('Email address to send test message to.')
-		];
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function reset_incomplete_tasksUtilityClass() {
-		return _t('Task Queue');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function reset_incomplete_tasksHelp() {
-		return _t("Tasks that fail to complete due to a system error will present as \"stuck\" in the queue. This utility will reset incomplete tasks so they may be processed again.");
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function reset_incomplete_tasksShortHelp() {
-		return _t("Reset incomplete tasks for processing.");
-	}
+	abstract public function manifest(array $identifiers, ?array $options=null) : array;
 	# -------------------------------------------------------
 }

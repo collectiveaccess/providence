@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 class ResultContext {
 	# ------------------------------------------------------------------
 	private $opo_request;
@@ -221,7 +216,6 @@ class ResultContext {
 	 */
 	public function isNewSearch($pb_is_new_search=null) {
 		if (!is_null($pb_is_new_search)) { $this->opb_is_new_search = $pb_is_new_search; }
-		if (!$this->cacheIsValid()) { return true; }
 		return $this->opb_is_new_search;
 	}
 	# ------------------------------------------------------------------
@@ -1365,8 +1359,9 @@ class ResultContextStorage {
 	 *
 	 */
 	static public function setVar($key, $value, $options=null) {
+		$prefix = defined('__CA_APP_TYPE__') ? __CA_APP_TYPE__ : '';
 		if (is_object(self::$storage)) {
-			return self::$storage->setVar($key, $value, $options);
+			return self::$storage->setVar($prefix.$key, $value, $options);
 		} else {
 			$s = self::$storage;
 			if (!($s = self::$storage)) { $s = 'Session'; }
@@ -1378,8 +1373,9 @@ class ResultContextStorage {
 	 *
 	 */
 	static public function getVar($key, $options=null) {
+		$prefix = defined('__CA_APP_TYPE__') ? __CA_APP_TYPE__ : '';
 		if (is_object(self::$storage)) {
-			return self::$storage->getVar($key);
+			return self::$storage->getVar($prefix.$key);
 		} else {
 			if (!($s = self::$storage)) { $s = 'Session'; }
 			return$s::getVar($key, $options);

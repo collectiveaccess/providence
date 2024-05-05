@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,23 +29,15 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_APP_DIR__.'/models/ca_list_items.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
-require_once(__CA_MODELS_DIR__.'/ca_locales.php');
-require_once(__CA_MODELS_DIR__.'/ca_list_item_labels.php');
 
 define('__CA_LISTS_SORT_BY_LABEL__', 0);
 define('__CA_LISTS_SORT_BY_RANK__', 1);
 define('__CA_LISTS_SORT_BY_VALUE__', 2);
 define('__CA_LISTS_SORT_BY_IDENTIFIER__', 3);
-
 
 BaseModel::$s_ca_models_definitions['ca_lists'] = array(
  	'NAME_SINGULAR' 	=> _t('list'),
@@ -494,6 +486,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
 		if(!is_array($pa_check_access) && $pa_check_access) { $pa_check_access = [$pa_check_access]; }
+		if(is_array($pa_check_access)) { $pa_check_access = array_map('intval', $pa_check_access); }
 	
 		$vb_labels_only = false;
 		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
@@ -650,7 +643,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
-				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array($va_item['access'], $pa_check_access)) { continue; }
+				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array((int)$va_item['access'], $pa_check_access, true)) { continue; }
 				
 				$vn_item_id = $va_item['NODE']['item_id'];
 				$vn_parent_id = $va_item['NODE']['parent_id'];
@@ -758,6 +751,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 			$this->load($vn_list_id);
 		}
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		
 		if (!($vn_list_id = $this->getPrimaryKey())) { return null; }
 		
@@ -1033,6 +1027,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (isset(ca_lists::$s_list_item_get_cache[$vs_cache_key])) {
 			return ca_lists::$s_list_item_get_cache[$vs_cache_key];
 		}
+		
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 	
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		$vs_alt_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$vn_list_id}/{$ps_label_name}");
@@ -1586,7 +1582,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
-		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
+		if(!is_array($pa_check_access) && $pa_check_access) { $pa_check_access = array($pa_check_access); }
 		
 		$va_in_use_list = null;
 		if (($pa_options['inUse'] ?? false) && (int)($pa_options['element_id'] ?? 0) && ($pa_options['table'] ?? null)) {
@@ -2318,7 +2314,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 static public function IDNOsToItemIDs($pa_item_ids, $pa_options=null) {
 	 	if (!is_array($pa_item_ids) || !sizeof($pa_item_ids)) { return null; }
 	 	
-	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_ids, 'opts' => $pa_options]);
+	 	$vs_cache_key = caMakeCacheKeyFromOptions(['ids' => $pa_item_ids, 'opts' => $pa_options]);
 	 	if (isset(ca_lists::$s_code_to_item_id_cache[$vs_cache_key])) {
 	 		return ca_lists::$s_code_to_item_id_cache[$vs_cache_key];
 	 	}

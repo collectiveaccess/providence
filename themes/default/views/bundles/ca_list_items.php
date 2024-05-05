@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 AssetLoadManager::register('hierBrowser');
 
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
@@ -42,13 +41,14 @@ $batch			= $this->getVar('batch');
 
 $force_values = $this->getVar('forceValues');
 
-$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_list_items') == __CA_BUNDLE_ACCESS_READONLY__));
-$dont_show_del	= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+$sort			= caGetOption('sort', $settings, '');
+$allow_drag_sort = caGetOption('allowDragSort', $settings, false);
+$read_only		= (caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_list_items') == __CA_BUNDLE_ACCESS_READONLY__));
+$dont_show_del	= caGetOption('dontShowDeleteButton', $settings, false);
 
-$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-$first_color 	= ((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-$last_color 	= ((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+$color 			= caGetOption('colorItem', $settings, '');
+$first_color 	= caGetOption('colorFirstItem', $settings, '');
+$last_color 	= caGetOption('colorLastItem', $settings, '');
 
 $quick_add_enabled = $this->getVar('quickadd_enabled');
 
@@ -66,8 +66,8 @@ $hier_browser_height 	= $settings['hierarchicalBrowserHeight'] ?? '200px';
 
 // params to pass during occurrence lookup
 $lookup_params = array(
-	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'types' => caGetOption(['restrict_to_types', 'restrict_to_type'], $settings, ''),
+	'noSubtypes' => caGetOption('dont_include_subtypes_in_type_restriction', $settings, false, ['castTo' => 'bool']),
 	'noInline' =>  (!$quick_add_enabled || (bool)preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0),
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 );
@@ -397,6 +397,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 	}
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= $id_prefix; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
+			formName: '<?= $this->getVar('id_prefix'); ?>',
 			templateValues: ['label', 'type_id', 'id'],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
@@ -423,7 +424,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,
+			isSortable: <?= ($allow_drag_sort ? "true" : "false"); ?>,
 			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel,div.listRel',
 			

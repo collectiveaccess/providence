@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,29 +29,58 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-/** 
- * Base media processing plugin
- */
-
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-class BaseMediaPlugin extends WLPlug  {
+abstract class BaseMediaPlugin extends WLPlug  {
 	# ------------------------------------------------
 	/**
 	 * @var Configuration
 	 */
+	protected $opo_config;
+	
+	/**
+	 * @var Configuration
+	 */
 	protected $opo_app_config;
+	
 	/**
 	 * @var Configuration
 	 */
 	protected $opo_external_app_config;
+	
+	/**
+	 * 
+	 */
+	protected $info;
+	
+	/**
+	 * 
+	 */
+	protected $handle;
+	
+	/**
+	 * 
+	 */
+	protected $properties;
+	
+	/**
+	 * 
+	 */
+	protected $alternative_extensions;
+	
+	/**
+	 * 
+	 */
+	protected $typenames;
+	
+	/**
+	 * 
+	 */
+	protected $metadata;
+	
+	
 	# ------------------------------------------------
 	public function __construct() {
 		parent::__construct();
@@ -71,6 +100,8 @@ class BaseMediaPlugin extends WLPlug  {
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
 	}
+	# ----------------------------------------------------------
+	abstract public function init();
 	# ----------------------------------------------------------
 	public function get($property) {
 		if ($this->handle) {
@@ -254,4 +285,3 @@ class BaseMediaPlugin extends WLPlug  {
 	}
 	# ------------------------------------------------
 }
-?>

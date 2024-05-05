@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
+require_once(__CA_LIB_DIR__.'/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
+require_once(__CA_LIB_DIR__.'/Search/ASearchConfigurationSettings.php');
+require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
 
 # ------------------------------------------------
 /* is ElasticSearch running?  */
@@ -36,11 +41,6 @@ define('__CA_ELASTICSEARCH_SETTING_RUNNING__',5001);
 /* does the index exist? */
 define('__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__',5002);
 # ------------------------------------------------
-require_once(__CA_LIB_DIR__.'/Datamodel.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
-require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
-require_once(__CA_LIB_DIR__.'/Search/ASearchConfigurationSettings.php');
-require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch.php');
 
 # ------------------------------------------------
 class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
@@ -55,6 +55,8 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------
 	private $ops_elasticsearch_base_url;
 	private $ops_elasticsearch_index_name;
+	
+	private $opo_search_base;
 	# ------------------------------------------------
 	public function __construct(){
 		$this->opo_search_base = new SearchBase();
@@ -95,12 +97,12 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 			_t("ElasticSearch index exists");
 		# ------------------------------------------------
 		$this->opa_setting_descriptions[__CA_ELASTICSEARCH_SETTING_RUNNING__] =
-			_t("The ElasticSearch service must be running.",$this->ops_webserver_user);
+			_t("The ElasticSearch service must be running.");
 		$this->opa_setting_descriptions[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__] =
 			_t("CollectiveAccess uses only a single index in an ElasticSearch setup. The name of that index can be set in the CollectiveAccess configuration.");
 		# ------------------------------------------------
 		$this->opa_setting_hints[__CA_ELASTICSEARCH_SETTING_RUNNING__] =
-			_t("Install and start the ElasticSearch service. If it is already running, check your CollectiveAccess configuration (the ElasticSearch URL and index name in particular).",$this->ops_webserver_user);
+			_t("Install and start the ElasticSearch service. If it is already running, check your CollectiveAccess configuration (the ElasticSearch URL and index name in particular).");
 		$this->opa_setting_hints[__CA_ELASTICSEARCH_SETTING_INDEX_EXISTS__] =
 			_t("If the service is running and can be accessed by CollectiveAccess but the index is missing, let CollectiveAccess generate a fresh index and create the related indexing mappings. There is a tool in support/utils.");
 		# ------------------------------------------------

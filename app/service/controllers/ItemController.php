@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2023 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,6 +247,11 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => 'If including representations, which versions to return'
 						],
 						[
+							'name' => 'mediaBundles',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media bundles to return.')
+						],
+						[
 							'name' => 'restrictMediaToTypes',
 							'type' => Type::listOf(Type::string()),
 							'description' => 'If including representations, which restrict to specified types'
@@ -284,6 +289,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'limit' => $args['limit'] ?? null,
 								'includeMedia' => $args['includeMedia'] ?? null,
 								'mediaVersions' => $args['mediaVersions'] ?? null,
+								'mediaBundles' => $args['mediaBundles'] ?? null,
 								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
 							];
 						} else {
@@ -386,6 +392,11 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => 'If including representations, which versions to return'
 						],
 						[
+							'name' => 'mediaBundles',
+							'type' => Type::listOf(Type::string()),
+							'description' => _t('Media bundles to return.')
+						],
+						[
 							'name' => 'restrictMediaToTypes',
 							'type' => Type::listOf(Type::string()),
 							'description' => 'If including representations, which restrict to specified types'
@@ -423,6 +434,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'limit' => $args['limit'] ?? null,
 								'includeMedia' => $args['includeMedia'] ?? null,
 								'mediaVersions' => $args['mediaVersions'] ?? null,
+								'mediaBundles' => $args['mediaBundles'] ?? null,
 								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
 							];
 						} else {

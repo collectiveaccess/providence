@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Utils/Timer.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
@@ -1436,12 +1431,12 @@ class TilepicParser {
 				}
 				
 				if (!$slice->setimageformat($magick)) {
-					$this->error = "Tile conversion failed: $reason; $description";
+					$this->error = "Tile conversion failed";
 					return false;
 				}
 				
 				if (!$slice->setcompressionquality($pa_options["quality"])) {
-					$this->error = "Tile quality set failed: $reason; $description";
+					$this->error = "Tile quality set failed";
 					return false;
 				}
 				
@@ -1920,7 +1915,7 @@ class TilepicParser {
 				$cx = ($x*$tile_width);
 				$tile = $this->getTile($tile_number);
 				if ($tile) { 
-					$vs_tile_file = tempnam($vs_tilepic_tmpdir, "tpcl_");
+					$vs_tile_file = tempnam(caGetTempDirPath(), "tpcl_");
 					file_put_contents($vs_tile_file, $tile);
 					$va_tile_files[] = $vs_tile_file;
 				}
@@ -1929,7 +1924,7 @@ class TilepicParser {
 		}
 		
 		if ($vs_ext = $this->mimetype2ext[$output_mimetype]) { $vs_ext = '.'.$vs_ext; }
-		$vs_tmp_base_path = tempnam($vs_tilepic_tmpdir, 'tcpt_');
+		$vs_tmp_base_path = tempnam(caGetTempDirPath(), 'tcpt_');
 		$vs_tmp_path = $vs_tmp_base_path.$vs_ext;
 		if (!$this->_imageMagickImageFromTiles($vs_tmp_path, $va_tile_files, $tile_width, $tile_height)) {
 			$this->error = "Compositing of tiles failed";
@@ -1988,7 +1983,7 @@ class TilepicParser {
 			}
 		}
 		if (!$h->setImageFormat($magick)) {
-			$this->error = "Couldn't convert image to $output_mimetype ($magick)";
+			$this->error = "Couldn't convert image to {$magick}";
 			return false;
 		}
 		return $h;

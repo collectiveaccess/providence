@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */ 
 require_once(__CA_LIB_DIR__.'/Utils/LockingTrait.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
  	'NAME_SINGULAR' 	=> _t('media submission'),
@@ -389,6 +388,11 @@ class ca_media_upload_sessions extends BaseModel {
 			$table = $config['table'];
 			$type = $config['type'];
 			$idno = $config['idno'];
+			
+			// TODO: more placeholders?
+			$idno = preg_replace("!<year>!i", date("Y"), $idno);
+			
+			
 			$status = $config['status'];
 			$access = $config['access'];
 			
@@ -692,8 +696,11 @@ class ca_media_upload_sessions extends BaseModel {
 	 *
 	 */
 	static private function _processContent(BaseModel $t_instance, array $config, array $data) : array {
+		global $g_request;
 		$table = $t_instance->tableName();
 		$tags_added = 0;
+		
+		$user_id = ($g_request && $g_request->isLoggedIn()) ? $g_request->getUserID() : null;
 		
 		$errors = [];
 		foreach($config['content'] as $k => $info) {
@@ -742,7 +749,7 @@ class ca_media_upload_sessions extends BaseModel {
 					if(!is_array($data[$info['bundle']])) { $data[$info['bundle']] = [$data[$info['bundle']]]; }
 					foreach($data[$info['bundle']] as $i => $d) {
 						$reltype = $info['relationshipType'];
-						$t_instance->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['idnoOnly' => true]);
+						$t_instance->addRelationship($bundle_bits[0], $d, $reltype, null, null, null, null, ['primaryKeyOnly' => true]);
 					}
 				}
 			}

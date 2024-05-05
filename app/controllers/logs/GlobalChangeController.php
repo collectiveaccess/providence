@@ -86,7 +86,7 @@ class GlobalChangeController extends ActionController {
 		
 		$start = (int)($page * self::$log_entries_per_page);
 
-		$log_entries = $params_set ? ApplicationChangeLog::getChangeLog(['limitByUnit' => true, 'groupBySubject' => true, 'tables' => $filter_table ? $filter_table : array_values($table_list), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id, 'changetype' => $filter_change_type]) : [];
+		$log_entries = $params_set ? ApplicationChangeLog::getChangeLog(['limitByUnit' => true, 'groupBySubject' => true, 'tables' => $filter_table ? $filter_table : array_values(caGetPrimaryTables(true)), 'start' => $start, 'limit' => self::$log_entries_per_page, 'daterange' => ($filter_daterange !== _t('any time')) ? $filter_daterange : null, 'user_id' => $filter_user_id, 'changetype' => (empty($filter_change_type) ? null : $filter_change_type)]) : [];
 		$this->view->setVar('change_log_list', $log_entries);
 
 		$this->render('global_change_log_html.php');

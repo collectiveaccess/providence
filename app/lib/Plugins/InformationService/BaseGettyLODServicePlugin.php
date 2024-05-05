@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-
 require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php" );
 require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php" );
 
@@ -121,8 +115,6 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$va_result = json_decode( $vs_result, true );
 		if ( ! isset( $va_result['results']['bindings'] ) || ! is_array( $va_result['results']['bindings'] ) ) {
-			print var_dump( $va_result );
-
 			return null;
 		}
 
@@ -497,5 +489,41 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		return $vs_search;
 	}
-
+	# ------------------------------------------------
+	/** 
+	 * Add id field
+	 *
+	 * @param array $pa_settings element settings
+	 * @return array
+	 */
+	public function getAdditionalFields(array $pa_element_info) : array {
+		$id = '{fieldNamePrefix}'.$pa_element_info['element_id'].'_id_{n}';
+		$flds = [['name' => 'id', 'id' => $id, 'html' => caHTMLHiddenInput(
+				$id, 
+				['value' => '{{id}}'],
+				['width' => '150px']
+        )]];
+        $id = '{fieldNamePrefix}'.$pa_element_info['element_id'].'_uri_{n}';
+		$flds[] = ['name' => 'uri', 'id' => $id, 'html' => caHTMLHiddenInput(
+				$id, 
+				['value' => '{{uri}}'],
+				['width' => '150px']
+        )];
+        return $flds;
+	}
+	# ------------------------------------------------
+	/** 
+	 * Return ids
+	 *
+	 * @param array $pa_settings element settings
+	 * @return array
+	 */
+	public function getAdditionalFieldValues($attribute_value) : array {
+		$uri =  $attribute_value->getUri();
+		if(preg_match('!([\d]+)$!', $uri, $m)) {
+			return ['id' => $m[1], 'uri' => $uri];
+		}
+		return ['id' => '', 'uri' => ''];
+	}
+	# ------------------------------------------------
 }

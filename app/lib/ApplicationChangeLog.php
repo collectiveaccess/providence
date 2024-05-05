@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  
-require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_LIB_DIR__."/Db.php");
- 
- class ApplicationChangeLog {
+class ApplicationChangeLog {
  	# ----------------------------------------------------------------------
  	private $ops_change_log_database = '';
 	private $opb_dont_show_timestamp_in_change_log = false;
@@ -277,6 +269,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		$vs_blank_placeholder = caGetBlankLabelText($pn_table_num);
 		$o_tep = new TimeExpressionParser();
 		
+		$o_config = Configuration::load();
+		$omit_fields = $o_config->getList('omit_from_changelog_display') ?? [];
+		
 		if (!$options) { $options = []; }
 		$t_user = ($pn_user_id = caGetOption('user_id', $options, null)) ? new ca_users($pn_user_id) : null;
 		
@@ -381,6 +376,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// is this an intrinsic field?
 						if (($pn_table_num == $va_log_entry['logged_table_num'])) {
 							foreach($va_log_entry['snapshot'] as $vs_field => $vs_value) {
+								if(is_array($omit_fields) && sizeof($omit_fields) && in_array($t_item->tableName().'.'.$vs_field, $omit_fields)) { 
+									continue; 
+								}
 								$va_field_info = $t_obj->getFieldInfo($vs_field);
 								if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
 								if (isset($va_field_info['DISPLAY_TYPE']) && $va_field_info['DISPLAY_TYPE'] == DT_OMIT) { continue; }
@@ -475,7 +473,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// ---------------------------------------------------------------
 						// is this a label row?
 						if ($va_log_entry['logged_table_num'] == $vn_label_table_num) {
-							
+							if(is_array($omit_fields) && sizeof($omit_fields) && (in_array($t_item->tableName().'.preferred_labels', $omit_fields))) { 
+								continue; 
+							}
 							foreach($va_log_entry['snapshot'] as $vs_field => $vs_value) {
 								$va_changes[] = array(
 									'label' => $t_item_label->getFieldInfo($vs_field, 'LABEL'),
@@ -488,7 +488,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 						// is this an attribute?
 						if ($va_log_entry['logged_table_num'] == 3) {	// attribute_values
 							if ($t_element = ca_attributes::getElementInstance($va_log_entry['snapshot']['element_id'])) {
-								
+								if(is_array($omit_fields) && sizeof($omit_fields) && in_array($t_item->tableName().'.'.$t_element->get('element_code'), $omit_fields)) { 
+									continue; 
+								}
 								if ($t_element->get('parent_id') && ($t_container = ca_attributes::getElementInstance($t_element->get('hier_element_id')))) {
 									$vs_element_code = $t_container->get('element_code');
 								} else {
@@ -509,7 +511,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 								// Convert list-based attributes to text
 								if ($vn_list_id = $t_element->get('list_id')) {
 									$t_list = new ca_lists();
-									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $vs_attr_val, []);
+									$vs_attr_val = $t_list->getItemFromListForDisplayByItemID($vn_list_id, $o_attr_val ? $o_attr_val->getDisplayValue() : $vs_attr_val, []);
 								}
 								
 								if (!$vs_attr_val) { 
@@ -623,9 +625,9 @@ require_once(__CA_LIB_DIR__."/Db.php");
 					(wcl.logged_table_num = ?) AND (wcl.logged_row_id IN (?)) AND(wcl.changetype = 'I')",
 		$pn_table_num, $pa_row_ids);
 		
-		$va_timestamps = [];
+		$timestamps = [];
 		while ($qr_res->nextRow()) {
-			$va_timestamps[$qr_res->get('logged_row_id')] = array(
+			$timestamps[$qr_res->get('logged_row_id')] = array(
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
@@ -637,7 +639,7 @@ require_once(__CA_LIB_DIR__."/Db.php");
 			);
 		}
  		
- 		return $va_timestamps;
+ 		return $timestamps;
   	}
   	# ----------------------------------------------------------------------
  	/**
@@ -653,80 +655,78 @@ require_once(__CA_LIB_DIR__."/Db.php");
  		}
  		
 		$o_db = new Db();
-		$va_timestamps = [];
+		$timestamps = [];
 		
 		$qr_res = $o_db->query("
-				SELECT wcl.log_datetime, wcls.subject_row_id, wu.user_id, wu.fname, wu.lname, wu.email
+				SELECT max(wcl.log_datetime) log_datetime, wcl.log_id, wcl.logged_table_num, wcl.logged_row_id
 				FROM ca_change_log wcl
-				INNER JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
-				INNER JOIN
-					(
-						SELECT MAX(ch.log_datetime) log_datetime, sub.subject_row_id
-						FROM ca_change_log ch
-						INNER JOIN ca_change_log_subjects AS sub ON ch.log_id = sub.log_id
-						WHERE
-							(sub.subject_table_num = ?)
-							AND
-							(sub.subject_row_id IN (?))
-							AND
-							(ch.changetype IN ('I', 'U', 'D'))
-						GROUP BY sub.subject_row_id
-					) AS s ON s.subject_row_id = wcls.subject_row_id AND s.log_datetime = wcl.log_datetime
-				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
-					
+				WHERE 
+					((wcl.logged_table_num = ?) AND (wcl.logged_row_id IN (?)))
+				GROUP BY wcl.logged_table_num, wcl.logged_row_id, wcl.log_id
 				",
-		$pn_table_num, $pa_row_ids);
+			[$pn_table_num, $pa_row_ids]);
 		
 		while ($qr_res->nextRow()) {
-			$va_timestamps[(int)$qr_res->get('subject_row_id')] = array(
-				'user_id' => $qr_res->get('user_id'),
-				'fname' => $qr_res->get('fname'),
-				'lname' => $qr_res->get('lname'),
-				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
-				'email' => $qr_res->get('email'),
-				'timestamp' => $qr_res->get('log_datetime'),
-				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
-				'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
+			$row = $qr_res->getRow();
+			$timestamps[(int)$row['logged_row_id']] = array(
+				'log_id' => $row['log_id'],
+				'timestamp' => $row['log_datetime'],
+				'date' => caGetLocalizedDate($row['log_datetime'], ['timeOmit' => true]),
+				'datetime' => caGetLocalizedDate($row['log_datetime'])
 			);
 		}
 		
 		$qr_res = $o_db->query("
-				SELECT wcl.log_datetime log_datetime, wcl.logged_row_id, wu.user_id, wu.fname, wu.lname, wu.email
-				FROM ca_change_log wcl 
-				INNER JOIN 
-					(
-						SELECT MAX(ch.log_datetime) log_datetime, ch.logged_row_id 
-						FROM ca_change_log ch
-						WHERE
-							(ch.logged_table_num = ?)
-							AND
-							(ch.logged_row_id IN (?))
-							AND
-							(ch.changetype IN ('I', 'U', 'D'))
-						GROUP BY ch.logged_row_id
-					) AS s ON s.logged_row_id = wcl.logged_row_id AND s.log_datetime = wcl.log_datetime
-				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id",
-		$pn_table_num, $pa_row_ids);
+				SELECT max(wcl.log_datetime) log_datetime, wcl.log_id, wcls.subject_table_num, wcls.subject_row_id
+				FROM ca_change_log wcl
+				INNER JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+				WHERE 
+					((wcls.subject_row_id = ?) AND (wcls.subject_row_id IN (?)))
+				GROUP BY wcls.subject_table_num, wcls.subject_row_id, wcl.log_id
+				",
+			[$pn_table_num, $pa_row_ids]);
 		
 		while ($qr_res->nextRow()) {
-			$vn_timestamp = (int)$qr_res->get('log_datetime');
-			$vn_row_id = (int)$qr_res->get('logged_row_id');
-			if ($vn_timestamp > $va_timestamps[$vn_row_id]) {
-				 $va_timestamps[$vn_row_id] = array(
-					'user_id' => $qr_res->get('user_id'),
-					'fname' => $qr_res->get('fname'),
-					'lname' => $qr_res->get('lname'),
-					'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
-					'email' => $qr_res->get('email'),
-					'timestamp' => $qr_res->get('log_datetime'),
-					'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
-					'datetime' => caGetLocalizedDate($qr_res->get('log_datetime'))
+			$row = $qr_res->getRow();
+			
+			if(isset($timestamps[(int)$row['subject_row_id']]) && ($timestamps[(int)$row['subject_row_id']] < $row['log_datetime'])) {
+				$timestamps[(int)$row['subject_row_id']] = array(
+					'log_id' => $row['log_id'],
+					'timestamp' => $row['log_datetime'],
+					'date' => caGetLocalizedDate($row['log_datetime'], ['timeOmit' => true]),
+					'datetime' => caGetLocalizedDate($row['log_datetime'])
 				);
 			}
 		}
 		
- 		
- 		return $va_timestamps;
+		// Add user info
+		$log_ids = array_map(function($v) { 
+			return $v['log_id'] ?? null;
+		}, $timestamps);
+		
+		$qr_res = $o_db->query("
+				SELECT wcl.log_id, wu.user_id, wu.fname, wu.lname, wu.email
+				FROM ca_change_log wcl
+				LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
+				WHERE 
+					wcl.log_id IN (?)
+				",
+			[$log_ids]);
+		
+		$map = array_flip($log_ids);
+		while($qr_res->nextRow()) {
+			$row = $qr_res->getRow();
+			if(($row_id = ($map[$row['log_id']] ?? null)) && isset($timestamps[$row_id])) {
+				$timestamps[$row_id] = array_merge($timestamps[$row_id], [
+					'fname' => $row['fname'],
+					'lname' => $row['lname'],
+					'user' => $row['fname'].' '.$row['lname'],
+					'email' => $row['email']
+				]);
+			}
+		}
+		
+ 		return $timestamps;
   	}
   	# ----------------------------------------------------------------------
  	/**
@@ -1472,4 +1472,4 @@ require_once(__CA_LIB_DIR__."/Db.php");
 		return $va_log_output;
 	}
  	# ----------------------------------------------------------------------
- }
+}

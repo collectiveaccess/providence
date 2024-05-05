@@ -189,7 +189,7 @@ class BrowseCache {
 	 */
 	public function setParameter($ps_param, $pm_value) {
 		$this->opa_browse['params'][$ps_param] = $pm_value;
-		$this->ops_cache_key = $this->getCurrentCacheKey();
+		return $this->ops_cache_key = $this->getCurrentCacheKey();
 	}
 	# ------------------------------------------------------
 	/**
@@ -271,11 +271,13 @@ class BrowseCache {
 		unset($va_params['criteria_display_strings']);
 		unset($va_params['facet_html']);
 		unset($va_params['filterDeaccessionedRecords']);
-		foreach(['criteria', 'table_num'] as $k) {
+		foreach(['criteria'] as $k) {
 			if(!is_array($va_params[$k] ?? null)) { $va_params[$k] = []; }
 		}
-
-		return BrowseCache::makeCacheKey($va_params, $va_type_restrictions,$va_source_restrictions);	
+		foreach(['table_num'] as $k) {
+			if(!isset($va_params[$k])) { $va_params[$k] = null; }
+		}
+		return BrowseCache::makeCacheKey($va_params, $va_type_restrictions, $va_source_restrictions);	
 	}
 	# ------------------------------------------------------
 	public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {

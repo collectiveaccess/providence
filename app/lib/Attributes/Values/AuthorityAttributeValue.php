@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/BaseObject.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
@@ -50,6 +45,21 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 *
 	 */
 	protected $opn_id;
+
+	/**
+	 *
+	 */
+	protected $ops_table_name;
+
+	/**
+	 *
+	 */
+	protected $ops_name_singular;
+
+	/**
+	 *
+	 */
+	protected $ops_name_plural;
 
 	# ------------------------------------------------------------------
 	/**

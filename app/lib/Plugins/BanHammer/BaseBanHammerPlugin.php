@@ -68,4 +68,11 @@ class BaseBanHammerPlugin {
 		return null;	// default is to ban ip forever
 	}
 	# ------------------------------------------------------
+	/**
+	 * Ban is partial or global?
+	 */
+	static public function isPartial() {
+		return false;	// default is to ban globally
+	}
+	# ------------------------------------------------------
 }

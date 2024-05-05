@@ -138,7 +138,7 @@ class ResponseHTTP extends Response {
 	}
 	# -------------------------------------------------------
 	public function clearContent() {
-		$this->opa_content = array();
+		$this->opa_content = [];
 	}
 	# -------------------------------------------------------
 	public function getContentSegments(?string $segment=null) {
@@ -150,7 +150,7 @@ class ResponseHTTP extends Response {
 	}
 	# -------------------------------------------------------
 	public function getContent() {
-		return join('',$this->opa_content);
+		return join('', $this->opa_content);
 	}
 	# -------------------------------------------------------
 	# Send it

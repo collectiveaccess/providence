@@ -219,19 +219,19 @@ class CLIBaseUtils {
 	/**
 	 * Return text in ANSI color
 	 *
-	 * @param string $ps_string The string to output
-	 * @param string $ps_color The background color to output $ps_string with. Colors are defined in CLIBaseUtils::ansiBackgroundColors
-	 * @return string The string with ANSI color codes. If $ps_color is invalid the original string will be returned without ANSI codes.
+	 * @param string $text The string to output
+	 * @param string $color The background color to output $ps_string with. Colors are defined in CLIBaseUtils::ansiBackgroundColors
+	 * @return string The string with ANSI color codes. If $color is invalid the original string will be returned without ANSI codes.
 	 */
-	public static function textWithBackgroundColor($ps_string, $ps_color) {
-		if (!isset(self::$background[$color])) {
-			return $ps_string;
+	public static function textWithBackgroundColor(string $text, string $color) {
+		if (!isset(self::$ansiBackgroundColors[$color])) {
+			return $text;
 		}
 		// Disabling color printing under Windows
 		if (caGetOSFamily() == OS_WIN32) {
-			return $ps_string;
+			return $text;
 		}
-		return "\033[".self::$ansiBackgroundColors[$ps_color].'m'.$ps_string."\033[0m";
+		return "\033[".self::$ansiBackgroundColors[$color].'m'.$text."\033[0m";
 	}
 	# -------------------------------------------------------
 }

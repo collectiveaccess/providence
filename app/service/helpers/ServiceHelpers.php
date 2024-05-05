@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2023 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -545,11 +545,11 @@ function itemSchemaDefinitions() {
 					'description' => 'Media height (in pixels)'
 				],
 				'duration' => [
-					'type' => Type::int(),
+					'type' => Type::float(),
 					'description' => 'Media duration (in seconds)'
 				],
 				'filesize' => [
-					'type' => Type::int(),
+					'type' => Type::string(),
 					'description' => 'Media filesize (in bytes)'
 				],
 				'md5' => [
@@ -607,11 +607,11 @@ function itemSchemaDefinitions() {
 					'description' => 'Media height (in pixels)'
 				],
 				'duration' => [
-					'type' => Type::int(),
+					'type' => Type::float(),
 					'description' => 'Media duration (in seconds)'
 				],
 				'filesize' => [
-					'type' => Type::int(),
+					'type' => Type::string(),
 					'description' => 'Media filesize (in bytes)'
 				],
 				'isPrimary' => [
@@ -840,6 +840,10 @@ function _targetListInputType(int $level=0) : InputObjectType {
 		'mediaVersions' => [
 			'type' => Type::listOf(Type::string()),
 			'description' => 'If including representations, which versions to return'
+		],
+		'mediaBundles' => [
+			'type' => Type::listOf(Type::string()),
+			'description' => _t('Media bundles to return.')
 		],
 		'restrictMediaToTypes' => [
 			'type' => Type::listOf(Type::string()),

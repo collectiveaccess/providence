@@ -128,8 +128,8 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	use CommandConfiguration;
 	
-	private $handle;
-	private $ohandle;
+	protected $handle;
+	protected $ohandle;
 	var $opo_config;
 	var $errors = [];
 	var $filepath = null;

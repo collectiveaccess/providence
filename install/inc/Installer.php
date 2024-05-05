@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace Installer;
 
 require_once(__CA_LIB_DIR__.'/Media/MediaVolumes.php');
@@ -1073,7 +1072,9 @@ class Installer {
 			}
 
 			// create ui screens
+			$rank = 0;
 			foreach($ui['screens'] as $screen) {
+				$rank++; 
 				$screen_idno = $screen["idno"];
 				$is_default = $screen["default"];
 
@@ -1101,6 +1102,7 @@ class Installer {
 				$t_ui_screens->set('idno',$screen_idno);
 				$t_ui_screens->set('ui_id', $ui_id);
 				$t_ui_screens->set('is_default', $is_default);
+				$t_ui_screens->set('rank', $rank);
 				if ($color = $screen["color"]) { $t_ui_screens->set('color', $color); }
 
 				if($t_ui_screens->getPrimaryKey()) {
@@ -1231,17 +1233,19 @@ class Installer {
 						}
 					}
 					
-					$settings = $this->_processSettings(null, $placement['settings'], [
-						'table' => $table, 
-						'leftTable' => $table, 
-						'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
-						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
-						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
-					]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
-					if (!$t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings']])) {
+					if (!($t_placement = $t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings'], 'returnInstance' => true]))) {
 						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
+					} else {
+						$settings = $this->_processSettings($t_placement, $placement['settings'], [
+							'table' => $table, 
+							'leftTable' => $table, 
+							'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
+							'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
+							'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
+						]);
+						$t_placement->update();
 					}
 				}
 
@@ -1475,16 +1479,14 @@ class Installer {
 
 			// As of February 2017 "typeRestrictionLeft" is preferred over "subTypeLeft"
 			if(
-				($left_subtype_code = $type["typeRestrictionLeft"])
+				($left_subtype_code = ($type["typeRestrictionLeft"] ?? null))
 			) {
 				$t_obj = \Datamodel::getInstance($left_table);
 				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $left_subtype_code, $type_code));
-
 				if (isset($list_item_ids[$list_code][$left_subtype_code])) {
-					$t_rel_type->set('sub_type_left_id', $list_item_ids[trim(mb_strtolower($list_code))][trim(mb_strtolower($left_subtype_code))]);
-					
+					$t_rel_type->set('sub_type_left_id', $list_item_ids[$list_code][$left_subtype_code]);
 					if(
 						($include_subtypes = $type["includeSubtypesLeft"])
 					) {
@@ -1495,15 +1497,14 @@ class Installer {
 			}
 			
 			if(
-				($right_subtype_code = $type["typeRestrictionRight"])
+				($right_subtype_code = ($type["typeRestrictionRight"] ?? null))
 			) {
 				$t_obj = \Datamodel::getInstance($right_table);
 				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
 				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $right_subtype_code, $type_code));
-
 				if (isset($list_item_ids[$list_code][$right_subtype_code])) {
-					$t_rel_type->set('sub_type_right_id', $list_item_ids[trim(mb_strtolower($list_code))][trim(mb_strtolower($right_subtype_code))]);
+					$t_rel_type->set('sub_type_right_id', $list_item_ids[$list_code][$right_subtype_code]);
 					
 					if(
 						($include_subtypes = $type["includeSubtypesRight"])
@@ -2468,7 +2469,7 @@ class Installer {
 							}
 						
 							$datatype = (int)$t_instance ? $t_instance->get('datatype') : null;
-							if ($setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype)){
+							if (($setting_name === 'restrictToTypes') && ($t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype))){
 								if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($setting_value)){
 									$type_id = $t_authority_instance->getTypeIDForCode($setting_value);
 									if ($type_id){
@@ -2489,9 +2490,9 @@ class Installer {
 							} else {
 								// some settings allow multiple values under the same key, for instance restrict_to_types.
 								// in those cases $settings[$setting_name] becomes an array of values
-								if (isset($settings_list[$setting_name]) && (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple']))) {
+								if (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple'] ?? false)) {
 									if (!is_array($settings_list[$setting_name])) {
-										$settings_list[$setting_name] = array($settings_list[$setting_name]);
+										$settings_list[$setting_name] = [];
 									}
 									$settings_list[$setting_name][] = $setting_value;
 								} else {

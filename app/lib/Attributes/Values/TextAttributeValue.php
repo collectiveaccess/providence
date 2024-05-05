@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_TEXT__", 1);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -413,7 +409,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				'height' => $vs_height, 
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
 				'maxlength' => $va_settings['maxChars'],
-				'class' => $vs_class,
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".(($va_settings['usewysiwygeditor'] ?? null) ? " ckeditor-element" : '')
 			);
 		if (caGetOption('readonly', $pa_options, false)) { 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,10 +31,7 @@
  */
 namespace CA\MediaUrl\Plugins;
  
- /**
-  *
-  */
-  require_once(__CA_LIB_DIR__.'/Plugins/MediaUrl/BaseMediaUrlPlugin.php');
+require_once(__CA_LIB_DIR__.'/Plugins/MediaUrl/BaseMediaUrlPlugin.php');
  
 class InternetArchive Extends BaseMediaUrlPlugin {	
 	# ------------------------------------------------
@@ -90,7 +87,7 @@ class InternetArchive Extends BaseMediaUrlPlugin {
  		if (preg_match('!^/details/[A-Za-z0-9_\-\.]+!', $parsed_url['path'], $m)) {
  			$content = file_get_contents($url);
  			if(preg_match('!<meta property="og:video" content="([^"]+)">!', $content, $m)) {
- 				return ['url' => $m[1], 'originalUrl' => $url, 'plugin' => 'InternetArchive', 'originalFilename' => pathInfo($m[1], PATHINFO_BASENAME)];
+ 				return ['url' => $m[1], 'originalUrl' => $url, 'plugin' => 'InternetArchive', 'format' => pathInfo($m[1], PATHINFO_EXTENSION), 'originalFilename' => pathInfo($m[1], PATHINFO_BASENAME)];
  			}
  		}
  		
@@ -114,6 +111,8 @@ class InternetArchive Extends BaseMediaUrlPlugin {
 			if($dest = caGetOption('filename', $options, null)) {
 				$dest .= '.'.caGetOption('extension', $options, '.bin');
 			}
+			
+			$format = $p['format'] ?? 'bin';
 			
 			$tmp_file = caFetchFileFromUrl($p['url'], $dest);
 			

@@ -66,7 +66,7 @@ class ObjectRepresentationEditorController extends BaseEditorController {
 		$this->view->setVar('timecode_offset', $vn_timecode_offset);
 		
 		$result_context = new ResultContext($this->request, 'ca_objects', ResultContext::getLastFind($this->request, 'ca_objects'));
-		$result_desc = $result_context->getResultDescription() ?? [];
+		$result_desc = $result_context->getResultDesc() ?? [];
 		$object_ids = $t_rep->get('ca_objects.object_id', ['returnAsArray' => true]);
 		
 		$default_annotation_id = null;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 
 class ExportMARC extends BaseExportFormat {
-	# ------------------------------------------------------
-	
 	# ------------------------------------------------------
 	public function __construct(){
 		$this->ops_name = 'MARC';
@@ -91,7 +88,7 @@ class ExportMARC extends BaseExportFormat {
 					}	
 				}
 
-				$o_field = new File_MARC_Data_field($vs_tag,$va_subfields,$vs_ind1,$vs_ind2);
+				$o_field = new File_MARC_Data_Field($vs_tag,$va_subfields,$vs_ind1,$vs_ind2);
 
 			} else { // simple control field
 				$o_field = new File_MARC_Control_Field($vs_element, caDecodeAllEntities(strip_tags($va_item['text'])));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -343,7 +343,7 @@ trait CLIUtilsLocalization {
 								$trname = $lm->translate($def_label['typename_reverse'], $locale);
 								$tdesc = strlen($def_label['description']) ? $lm->translate($def_label['description'], $locale) : '';
 								$trdesc = strlen($def_label['description_reverse']) ? $lm->translate($def_label['description_reverse'], $locale) : '';
-								$t_rel_type->replaceLabel(['typename' => $tname, 'typename_reverse' => $trname, 'description' => $tdesc, 'description_reverse' => $tr_desc], $locale, null, $element_info['is_preferred']);
+								$t_rel_type->replaceLabel(['typename' => $tname, 'typename_reverse' => $trname, 'description' => $tdesc, 'description_reverse' => $trdesc], $locale, null, $element_info['is_preferred']);
 							}
 						}
 					}

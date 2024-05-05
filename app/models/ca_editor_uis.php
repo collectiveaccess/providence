@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_type_restrictions.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
  	'NAME_SINGULAR' 	=> _t('editor UI'),
@@ -325,7 +320,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['editorPref'])) { $pa_options['editorPref'] = 'cataloguing'; }
 		
 		if ($po_request->user) {
-			switch($pa_options['editorPref']) {
+			switch($pa_options['editorPref'] ?? null) {
 				case 'quickadd':
 					$va_uis_by_type = $po_request->user->getPreference("quickadd_{$vs_table_name}_editor_ui");
 					break;
@@ -726,8 +721,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * @return int Number of screens configured for the current UI
 	  */
 	public function getScreenCount($pn_type_id=null, $pa_options=null) {
+		global $g_request;
 		if (!$this->getPrimaryKey()) { return 0; }
-		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		if(!caGetOption('user_id', $pa_options, null) && $g_request) { $pa_options['user_id'] = $g_request->getUserID(); }
 		$pa_options['showAll'] = true;
 		
 		$vs_opts_md5 = md5(print_r(array('showAll' => true), true));
@@ -897,8 +893,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$va_nav = [];
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
+			$is_relationship = Datamodel::isRelationship($this->get('editor_type'));
 			$va_screen_restrictions = $va_screen['typeRestrictions'] ?? null;
-		    if(is_array($va_screen_restrictions)) { $va_screen_restrictions = caMakeTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); }
+		    if(is_array($va_screen_restrictions)) { 
+		    	if($is_relationship) {
+		    		$va_screen_restrictions = caMakeRelationshipTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); 
+		    	} else {
+		    		$va_screen_restrictions = caMakeTypeIDList($this->get('editor_type'), array_keys($va_screen_restrictions)); 
+		    	}
+		    }
 			
 			if(is_array($restrict_to_types) && is_array($va_screen_restrictions) && (sizeof($va_screen_restrictions) > 0)) {
 				$vb_skip = true;
@@ -1570,7 +1573,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		foreach($va_bundles as $vs_bundle_name => $vs_placement_code) {
-			$t_screen->addPlacement($vs_bundle_name, "screen_{$vn_screen_id}_{$vs_bundle_name}", [], $pn_rank=null, $pa_options=null);
+			$t_screen->addPlacement($vs_bundle_name, "screen_{$vs_bundle_name}", [], $pn_rank=null, $pa_options=null);
 		}
 		
 		$va_bundles_for_return = array_map(function($v) {

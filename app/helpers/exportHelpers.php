@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
-/**
-*
-*/
 require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
 # ----------------------------------------
@@ -129,10 +125,11 @@ function caExportFileInfoForTemplate(string $table, string $template) : ?string 
  * @throws ApplicationException
  */
 function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filename, $options=null) {
+	caIncrementExportCount();
+	
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
 	$pa_access_values = caGetOption('checkAccess', $options, null);
-	
 	$view->setVar('t_subject', $pt_subject);
 	
 	$vs_template_identifier = null;
@@ -222,6 +219,8 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
  * @throws ApplicationException
  */
 function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
+	caIncrementExportCount();
+	
 	if (is_array($template_identifier)) {
 		$template_info = $template_identifier;
 		$template_info['identifier'] = pathinfo($template_info['path'], PATHINFO_FILENAME);
@@ -258,6 +257,9 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 		$view->setVar('marginLeft', caGetOption('marginLeft', $template_info, '0mm'));
 		$view->setVar('base_path', $vs_base_path = pathinfo($template_info['path'], PATHINFO_DIRNAME));
 
+		// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
+		$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
+		
 		$view->addViewPath($vs_base_path."/local");
 		$view->addViewPath($vs_base_path);
 		
@@ -375,14 +377,19 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * @throws ApplicationException
  */
 function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
+	caIncrementExportCount();
+	
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
+	$criteria_summary = caGetOption('criteriaSummary', $options, '');
+	
+	if(method_exists($result, 'seek')) { $result->seek(0); }
 	$view->setVar('result', $result);
 	$view->setVar('t_set', caGetOption('set', $options, null));
-	$view->setVar('criteria_summary', caGetOption('criteriaSummary', $options, ''));
+	$view->setVar('criteria_summary', $criteria_summary);
 	
 	$table = $result->tableName();
 	
@@ -738,13 +745,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					}
 					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
 					$objDrawing->setName('Image');
-					$objDrawing->setPath($vs_logo_path);
 					$objDrawing->setHeight(36);
 					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
-					$criteria_summary = (strlen($vs_criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
-					$criteria_summary = wordwrap($vs_criteria_summary, 50, "\n", true);
-					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$vs_criteria_summary : ''));
+					$criteria_summary = (strlen($criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
+					$criteria_summary = wordwrap($criteria_summary, 50, "\n", true);
+					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$criteria_summary : ''));
 			
 				}
 				if(!$request || $config->get('excel_report_footer_enabled')){
@@ -996,7 +1002,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 				$view->setVar("param_{$n}", $values[$n] = $request->getParameter($n, pString));
 			}
 		}
-		Session::setVar("print_labels_options_{$m[2]}", $values);
+		Session::setVar("print_labels_options_{$label_code}", $values);
 	}
 	
 	$border = ($show_borders) ? "border: 1px dotted #000000; " : "";
@@ -1306,5 +1312,18 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 		$printed_properly = false;
 		return false;
 	}
+}
+# ----------------------------------------
+/**
+ * Log export counts for Pawtucket
+ */
+function caIncrementExportCount() : bool {
+	global $g_request, $g_set_export_count;
+	if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && $g_request && !$g_set_export_count) {
+		BanHammer::verdict($g_request, ['usePlugin' => 'ExportFrequency']);
+		$g_set_export_count = true;
+		return true;
+	}
+	return false;
 }
 # ----------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,20 +33,12 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Service/BaseService.php");
 require_once(__CA_LIB_DIR__."/Export/OAIPMH/OaiIdentifier.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/accessHelpers.php");
-
-require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
-
 
 class OAIPMHService extends BaseService {
 	const OAI_PMH_NAMESPACE_URI    = 'http://www.openarchives.org/OAI/2.0/';
@@ -121,6 +113,26 @@ class OAIPMHService extends BaseService {
 	 * 'target' table name for the current request
 	 */
 	private $table;
+
+	/**
+	 * 
+	 */
+	private $ops_provider;
+
+	/**
+	 * 
+	 */
+	private $opa_provider_list;
+
+	/**
+	 * 
+	 */
+	private $opa_provider_info;
+	
+	/**
+	 * 
+	 */
+	private $_tokenExpirationTime;
 	
 	# -------------------------------------------------------
 	/** 
@@ -154,6 +166,9 @@ class OAIPMHService extends BaseService {
 		$this->opa_provider_list = $this->config->getAssoc('providers');
 		if(!is_array($this->opa_provider_info = $this->opa_provider_list[$ps_provider])) {
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Invalid provider '%1'.", $ps_provider));
+		}
+		if(($this->opa_provider_info['dontFilterByACL']) && !defined('__CA_DISABLE_ACL__')) {
+			define('__CA_DISABLE_ACL__', true);
 		}
 	
 		if (!($vn_limit = (int)$this->opa_provider_info['maxRecordsPerRequest'])) {
@@ -692,10 +707,14 @@ class OAIPMHService extends BaseService {
 							$recordElement = $verbElement->appendChild($oaiData->createElement('record'));
 							$this->createElementWithChildren($oaiData, $recordElement, 'header', $headerData);
 							$metadataElement = $oaiData->createElement('metadata');
-							$o_doc_src = DomDocument::loadXML($vs_item_xml);
+							
+							$doc = new DOMDocument();
+							$o_doc_src = $doc->loadXML($vs_item_xml);
 							$recordElement->appendChild($metadataElement);
 							if($o_doc_src) { // just in case the xml fails to load through DomDocument for some reason (e.g. a bad mapping or very weird characters)
-								$metadataElement->appendChild($oaiData->importNode($o_doc_src->documentElement, true));
+								if($doc->documentElement && ($n = $oaiData->importNode($doc->documentElement, true))) {
+									$metadataElement->appendChild($n);
+								}
 							}
 						}
 					}
@@ -982,4 +1001,3 @@ class OAIPMHService extends BaseService {
 	}	
 	# -------------------------------------------------------	
 }
-?>

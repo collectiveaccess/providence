@@ -42,6 +42,9 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 	private $opa_hits;
 	private $opn_current_row;
 	protected $opo_subject_instance;
+	private $ops_subject_table_name;
+	private $opn_subject_tablenum;
+	private $ops_subject_primary_key;
 	
 	# -------------------------------------------------------
 	/**

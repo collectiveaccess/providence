@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
 require_once(__CA_MODELS_DIR__.'/ca_replication_log.php');
 require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
@@ -96,6 +95,12 @@ class ReplicationService {
 			case 'getpublicguids':
 				$va_return = self::getPublicGUIDs($po_request);
 				break;
+			case 'getcurrentvalue':
+				$va_return = self::getCurrentValueForBundle($po_request);
+				break;
+			case 'setcurrentvalue':
+				$va_return = self::setCurrentValueForBundle($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint '.$ps_endpoint);
 
@@ -115,6 +120,8 @@ class ReplicationService {
 
 		$pn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$pn_limit) { $pn_limit = null; }
+		
+		$is_push_missing = $po_request->getParameter('push_missing', pInteger);
 		
 		if(($max_retries = (int)$o_replication_conf->get('max_media_upload_retries')) < 0) {
 			$max_retries = 5;
@@ -176,7 +183,7 @@ class ReplicationService {
 
 			$va_media = [];
 			// passing a 4th param here changes the behavior slightly
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]), $va_media);
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['push_missing' => $is_push_missing, 'telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]), $va_media);
 
 			if(sizeof($va_media) > 0) {
 				$va_push_list = [];
@@ -244,7 +251,7 @@ class ReplicationService {
 				}
 			}
 		} else {
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]));
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['push_missing' => $is_push_missing, 'telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]));
 		}
 
         foreach($va_log as $i => $l) {
@@ -609,24 +616,88 @@ class ReplicationService {
 		$pk = Datamodel::primaryKey($table);
 		$t = Datamodel::getInstance($table);
 		
+		$has_deleted = $t->hasField('deleted');
+		
 		$db = new Db();
 		if($t->hasField('access')) {
 			$qr = $db->query("
 				SELECT g.guid 
 				FROM ca_guids g
 				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
-				WHERE t.access IN (?)
+				WHERE t.access IN (?) ".($has_deleted ? 'AND t.deleted = 0' : '')."
 			", [$table_num, $access]);
 		} else {
 			$qr = $db->query("
 				SELECT g.guid 
 				FROM ca_guids g
 				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+				".($has_deleted ? 'WHERE t.deleted = 0' : '')."
 			", [$table_num]);
 		}
 		
 		
 		return $qr->getAllFieldValues('guid');	
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getCurrentValueForBundle($po_request) {
+		$bundle = $po_request->getParameter('bundle', pString);
+	
+		if($po_request->getRequestMethod() === 'POST') { 
+			$guids = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$guids = explode(";", $po_request->getParameter('guids', pString));
+		}
+		
+		$acc = [];
+		foreach($guids as $guid) {
+			if($t_instance = ca_objects::getInstanceByGUID($guid)) {
+				$v = $t_instance->get($bundle);
+				$acc[$guid] = $v;
+			}
+		}	
+		return $acc;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function setCurrentValueForBundle($po_request) {
+		$bundle = $po_request->getParameter('bundle', pString);
+		$tmp = explode('.', $bundle);
+		$element_code = array_pop($tmp);
+		if($po_request->getRequestMethod() === 'POST') { 
+			$guids = json_decode($po_request->getRawPostData(), true);
+		} else {
+			throw new ApplicationException(_t('No guids set in post'));
+		}
+		
+		$acc = [];
+		foreach($guids as $guid => $values) {
+			if($t_instance = ca_objects::getInstanceByGUID($guid)) {
+				$i = 0;
+				foreach($values as $value) {
+					if($i == 0) {
+						$t_instance->replaceAttribute([$element_code => $value], $element_code);
+					} else {
+						$t_instance->addAttribute([$element_code => $value], $element_code);
+					}
+					$t_instance->update();
+					$i++;
+				}
+			}
+		}	
+		return $acc;
 	}
 	# -------------------------------------------------------
 }

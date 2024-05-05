@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-/**
- *
- */
 require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
 require_once(__CA_APP_DIR__."/helpers/themeHelpers.php");
 require_once(__CA_LIB_DIR__.'/Print/PDFRenderer.php');
@@ -107,6 +103,7 @@ class BaseFindController extends ActionController {
 	 * Set up basic "find" action
 	 */
 	public function Index($pa_options=null) {
+		$vb_dummy = null;
 		$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
 		
 		$t_instance 				= Datamodel::getInstanceByTableName($this->ops_tablename, true);
@@ -140,6 +137,7 @@ class BaseFindController extends ActionController {
 		// Set display options
 		$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
 		
+		$vb_type = null;
 		$vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type);
 		if(is_null($vn_type_id) || $t_instance::typeCodeForID($vn_type_id)) { // occurrence searches are inherently type-restricted
 			$va_display_options['restrictToTypes'] = $vn_type_id ? [$vn_type_id] : null;
@@ -437,7 +435,7 @@ class BaseFindController extends ActionController {
 		// threshold declared in the chosen template.
 		if(
 			!$is_background &&
-			caProcessingQueueIsEnabled() &&
+			caTaskQueueIsEnabled() &&
 			is_array($tinfo = caGetPrintTemplateDetails('labels', $_REQUEST['label_form'] ?? '')) && 
 			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
 			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
@@ -446,7 +444,7 @@ class BaseFindController extends ActionController {
 			$is_background = true;	
 		}
 		
-		if($is_background && caProcessingQueueIsEnabled()) {
+		if($is_background && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -496,7 +494,7 @@ class BaseFindController extends ActionController {
 				$this->Index();
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue label export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue label export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
@@ -520,7 +518,7 @@ class BaseFindController extends ActionController {
 		// threshold declared in the chosen template.
 		if(
 			!$is_background &&
-			caProcessingQueueIsEnabled() &&
+			caTaskQueueIsEnabled() &&
 			is_array($tinfo = caGetPrintTemplateDetails('results', $_REQUEST['export_format'] ?? '')) && 
 			($bthreshold = caGetOption('backgroundThreshold', $tinfo, null)) &&
 			(sizeof($this->opo_result_context->getResultList() ?? []) > $bthreshold)
@@ -529,7 +527,7 @@ class BaseFindController extends ActionController {
 			$is_background = true;	
 		}
 		
-		if($is_background && caProcessingQueueIsEnabled()) {
+		if($is_background && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			if($this->ops_find_type === 'basic_browse') {
@@ -582,7 +580,7 @@ class BaseFindController extends ActionController {
 				
 				return;
 			} else {
-				$this->postError(100, _t("Couldn't queue export", ), "BaseFindController->export()");
+				$this->postError(100, _t("Couldn't queue export"), "BaseFindController->export()");
 			}
 		}
 		Session::setVar($this->ops_tablename.'_search_export_in_background', false);
@@ -910,6 +908,8 @@ class BaseFindController extends ActionController {
 	 * Set up variables for "tools" widget
 	 */
 	public function Tools($pa_parameters) {
+		$vb_dummy = null;
+		
 		if (!$items_per_page = $this->opo_result_context->getItemsPerPage()) { $items_per_page = $this->opa_items_per_page[0]; }
 		if (!$vs_view 			= $this->opo_result_context->getCurrentView()) { 
 			$tmp = array_keys($this->opa_views);
@@ -1082,6 +1082,7 @@ class BaseFindController extends ActionController {
 	 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
 	 */
 	public function saveResultsEditorData() {
+		$vb_dummy = null;
 		if(!$this->request->user->canDoAction('can_use_spreadsheet_editor_'.$this->ops_tablename)) { 
 			throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
 		}
@@ -1174,6 +1175,7 @@ class BaseFindController extends ActionController {
 	 * @return array 
 	 */
 	private function _getDisplayList($display_id) {
+		$dummy = null;
 		$t_display = new ca_bundle_displays($display_id);
 		
 		$vs_view = $this->opo_result_context->getCurrentView();

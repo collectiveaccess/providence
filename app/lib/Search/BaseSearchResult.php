@@ -39,6 +39,7 @@ class BaseSearchResult extends SearchResult {
 	private $opa_locales = null;
 	
 	private $ops_filter_field = null;
+	private $opa_filter_values = [];
 	
 	/**
 	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)

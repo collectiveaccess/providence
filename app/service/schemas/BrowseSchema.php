@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -313,6 +313,34 @@ class BrowseSchema extends \GraphQLServices\GraphQLSchema {
 						'type' => Type::listOf($browseAvailableSortOption),
 						'description' => 'Available sort options for result'
 					]
+				]
+			]),
+			$browseCountType = new ObjectType([
+				'name' => 'BrowseCount',
+				'description' => 'Browse result count',
+				'fields' => [
+					'browse' => [
+						'type' => Type::string(),
+						'description' => 'Browse as string'
+					],
+					'facets' => [
+						'type' => Type::listOf($browseDataValueType),
+						'description' => 'Browse facets'
+					],
+					'item_count' => [
+						'type' => Type::int(),
+						'description' => 'Number of items in browse result'
+					]
+				]
+			]),
+			$browseCountsType = new ObjectType([
+				'name' => 'BrowseCounts',
+				'description' => 'Browse result counts',
+				'fields' => [
+					'counts' => [
+						'type' => Type::listOf($browseCountType),
+						'description' => 'List of counts for browses'
+					],
 				]
 			]),
 		];

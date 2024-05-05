@@ -111,12 +111,15 @@ var caUI = caUI || {};
 						that.isPlaying[playerName] = true;
 						that.players[playerName].play();
 					} else {
+						jQuery("#" + playerName).css("opacity", 0.2);
 						that.players[playerName].on('canplaythrough', (event) => {
 							if(that.isPlaying[playerName]) { return; }
 							that.isPlaying[playerName] = true;
 							
 							that.players[playerName].currentTime = t;
 							that.players[playerName].play();
+							
+							jQuery("#" + playerName).css("opacity", 1.0);
 						});
 					}
 					break;
@@ -170,6 +173,26 @@ var caUI = caUI || {};
 					break;
 				case 'MediaElement':
 					that.players[playerName][0].addEventListener('timeupdate', f);
+					break;
+				default:
+					return null;
+					break;
+			}
+		};
+		
+		// Register handler ready event
+		that.onReady = function(playerName, f) {
+			if (!that.players[playerName]) return null;
+			
+			switch(that.playerTypes[playerName]) {
+				case 'VideoJS':
+					that.players[playerName].addEvent('ready', f);
+					break;
+				case 'Plyr':
+					that.players[playerName].on('ready', f);
+					break;
+				case 'MediaElement':
+					that.players[playerName][0].addEventListener('ready', f);
 					break;
 				default:
 					return null;

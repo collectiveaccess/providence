@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 class ExternalExportManager {
     # ------------------------------------------------------
     /**
@@ -41,6 +40,21 @@ class ExternalExportManager {
      * Logging instance for external export log (usually set to application log)
      */
     private $log;
+    
+    /**
+     *
+     */
+    private static $plugins = [];
+    
+    /**
+     *
+     */
+    private $log_entries; 
+    
+    /**
+     *
+     */
+    private $log_id; 
     
     # ------------------------------------------------------
     /**
@@ -140,11 +154,7 @@ class ExternalExportManager {
             }
             
             // get output plugin
-            if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Output/{$format}.php")) { 
-                throw ExternalExportManagerException(_t('Invalid output plugin %1', $format));
-            }
-            $plugin_class = "WLPlug{$format}";
-            $plugin = new $plugin_class;
+            $plugin = self::getOutputPlugin($format);
             
             if (!($t_instance = $table::find($id, ['returnAs' => 'firstModelInstance']))) { 
             	$this->log->logError(_t('Skipping  %1:%2 for target %3 because the row does not exist', $table, $id, $target));
@@ -300,6 +310,7 @@ class ExternalExportManager {
 								$files = array_merge($files, $f=$this->process($target_table, $id, array_merge($options, ['mediaIndex' => $media_index, 'target' => $target, 'skipTransport' => true])));
 							}
 						} else {
+							//print "[$target] Process $target_table :: $id\n";
 							$files = $this->process($target_table, $id, array_merge($options, ['target' => $target, 'skipTransport' => true]));
 						}
 						$seen["{$target_table}/{$id}"] = true;
@@ -350,11 +361,7 @@ class ExternalExportManager {
 		if(is_array($destination)) {
 			$transport = caGetOption('type', $destination, null);
 			// get transport plugin
-			if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Transport/{$transport}.php")) { 
-				throw ExternalExportManagerException(_t('Invalid transport plugin %1', $transport));
-			}
-			$plugin_class = "WLPlug{$transport}";
-			$plugin = new $plugin_class;
+			$plugin = self::getTransportPlugin($transport);
 		
 			try {
 				$plugin->process($destination, $files, ['logLevel' => caGetOption('logLevel', $options, null)]);
@@ -452,6 +459,36 @@ class ExternalExportManager {
 			@unlink($f);
 		}
 		return true;
+	}
+    # ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public static function getOutputPlugin(string $format) {
+		if(isset(self::$plugins['output'][$format])) { return self::$plugins['output'][$format]; }
+		if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Output/{$format}.php")) { 
+			throw ExternalExportManagerException(_t('Invalid output plugin %1', $format));
+		}
+		$plugin_class = "WLPlug{$format}";
+		$plugin = new $plugin_class;
+		
+		self::$plugins['output'][$format] = $plugin;
+		return $plugin;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public static function getTransportPlugin(string $transport) {
+		if(isset(self::$plugins['transport'][$transport])) { return self::$plugins['transport'][$transport]; }
+		if (!require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/Transport/{$transport}.php")) { 
+			throw ExternalExportManagerException(_t('Invalid transport plugin %1', $transport));
+		}
+		$plugin_class = "WLPlug{$transport}";
+		$plugin = new $plugin_class;
+		
+		self::$plugins['transport'][$transport] = $plugin;
+		return $plugin;
 	}
     # ------------------------------------------------------
 }
