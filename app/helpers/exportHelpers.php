@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -257,6 +257,9 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 		$view->setVar('marginLeft', caGetOption('marginLeft', $template_info, '0mm'));
 		$view->setVar('base_path', $vs_base_path = pathinfo($template_info['path'], PATHINFO_DIRNAME));
 
+		// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
+		$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
+		
 		$view->addViewPath($vs_base_path."/local");
 		$view->addViewPath($vs_base_path);
 		

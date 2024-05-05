@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,52 +25,51 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 global $g_ui_locale_id;
 
 $t_subject 			= $this->getVar('t_subject');
-$vn_subject_id 		= $this->getVar('subject_id');
+$subject_id 		= $this->getVar('subject_id');
 
-$vs_field_name_prefix = $this->getVar('field_name_prefix');
-$vs_n 				= $this->getVar('n');
-$vs_q				= caUcFirstUTF8Safe($this->getVar('q'));
+$field_name_prefix = $this->getVar('field_name_prefix');
+$n 				= $this->getVar('n');
+$q				= caUcFirstUTF8Safe($this->getVar('q'));
 
 $vb_can_edit	 	= $t_subject->isSaveable($this->request);
 
-$vs_form_name 		= "RepresentationAnnotationQuickAddForm";
+$form_name 		= "RepresentationAnnotationQuickAddForm";
 
-$va_notifications 	= $this->getVar('notifications');
+$notifications 	= $this->getVar('notifications');
 ?>		
-<form action="#" class="quickAddSectionForm" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
+<form action="#" class="quickAddSectionForm" name="<?= $form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $form_name.$field_name_prefix.$n; ?>">
 	<div class='quickAddDialogHeader'><?php 	
 		if ($vb_can_edit) {
-			if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
-				print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
+			if (($subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
+				print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete annotation"), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
 			}
-			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save annotation"), "caAnnoEditorScreenSaveButton", array( "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-				.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
+			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save annotation"), "caAnnoEditorScreenSaveButton", array( "onclick" => "caSaveAnnotation{$form_name}{$field_name_prefix}{$n}(event);"))
+				.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
 		}
 ?>
 	</div>
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
-	<div class="caAnnoEditorEditorErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"></div>
-	<div class="quickAddSectionBox" id="<?= $vs_form_name.'Container'.$vs_field_name_prefix.$vs_n; ?>">
+	<div class="caAnnoEditorEditorErrorContainer" id="<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>"></div>
+	<div class="quickAddSectionBox" id="<?= $form_name.'Container'.$field_name_prefix.$n; ?>">
 <?php
-		$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
+		$form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 				'width' => '625px',
 				'request' => $this->request, 
-				'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
+				'formName' => $form_name.$field_name_prefix.$n,
 				'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
 				'quickadd' => true
 			));
 			
-			print join("\n", $va_form_elements);
+			print join("\n", $form_elements);
 ?>
-		<input type='hidden' name='_formName' value='<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
-		<input type='hidden' name='q' value='<?= htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
+		<input type='hidden' name='_formName' value='<?= $form_name.$field_name_prefix.$n; ?>'/>
+		<input type='hidden' name='q' value='<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8'); ?>'/>
 		
-		<input type='hidden' id='caAnnoEditorAnnotationID' name='annotation_id' value='<?= $vn_subject_id; ?>'/>
+		<input type='hidden' id='caAnnoEditorAnnotationID' name='annotation_id' value='<?= $subject_id; ?>'/>
 		<input type='hidden' name='representation_id' value='<?= $t_subject->get('representation_id'); ?>'/>
 		<input type='hidden' name='type_code' value='<?= $t_subject->get('type_code'); ?>'/>
 		
@@ -82,22 +81,22 @@ $va_notifications 	= $this->getVar('notifications');
 					instance.on( 'focus', function( evt ) { evt.editor.focusManager.blur( true ); } );
 				});
 			});
-			function caSaveAnnotation<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
+			function caSaveAnnotation<?= $form_name.$field_name_prefix.$n; ?>(e) {
 				jQuery.each(CKEDITOR.instances, function(k, instance) {
 					instance.updateElement();
 				});
 
-				jQuery.post('<?= caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
+				jQuery.post('<?= caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						
-						var inputID = jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
-						var itemIDID = jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteItemIDID');
+						var inputID = jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").parent().data('autocompleteInputID');
+						var itemIDID = jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").parent().data('autocompleteItemIDID');
 					
 						jQuery('#' + inputID).val(resp.display);
 						jQuery('#' + itemIDID).val(resp.id);
 						
 <?php
-	if ($vn_subject_id) {
+	if ($subject_id) {
 ?>
 						// Reload the item that has changed
 						caAnnoEditorTlReload(jQuery("#caAnnoEditorTlCarousel"), resp.id);
@@ -119,10 +118,10 @@ $va_notifications 	= $this->getVar('notifications');
 						}
 						content += '</ul></div>';
 						
-						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
+						jQuery("#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>").html(content).slideDown(200);
 						
 						var quickAddClearErrorInterval = setInterval(function() {
-							jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+							jQuery("#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>").slideUp(500);
 							clearInterval(quickAddClearErrorInterval);
 						}, 3000);
 					}
@@ -133,21 +132,21 @@ $va_notifications 	= $this->getVar('notifications');
 				if (show) {
 					var content = 	'<div class="notification-info-box rounded"><ul class="notification-info-box">' + 
 										'<li class="notification-info-box"><?= addslashes(_t("Really delete annotation? %1 %2", 
-												caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Yes"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caDeleteAnnotation(true);")),
-												caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("No"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(false); return false;"))
+												caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Yes"), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "caDeleteAnnotation(true);")),
+												caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("No"), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "caConfirmDeleteAnnotation(false); return false;"))
 											)); ?></li>' +
 										'</ul></div>';
-					jQuery('#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>').html(content).slideDown(200);
+					jQuery('#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>').html(content).slideDown(200);
 				} else {
-					jQuery('#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>').slideUp(200, function() { jQuery(this).html(''); });
+					jQuery('#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>').slideUp(200, function() { jQuery(this).html(''); });
 				}
 			}
 			
 			function caDeleteAnnotation() {
-				jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'deleteAnnotation'); ?>', {annotation_id: <?= (int)$vn_subject_id; ?>}, function(resp) {
+				jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'deleteAnnotation'); ?>', {annotation_id: <?= (int)$subject_id; ?>}, function(resp) {
 					if (resp.code == 0) {
 						// delete succeeded... so update clip list
-						caAnnoEditorTlRemove(jQuery("#caAnnoEditorTlCarousel"), <?= (int)$vn_subject_id; ?>);
+						caAnnoEditorTlRemove(jQuery("#caAnnoEditorTlCarousel"), <?= (int)$subject_id; ?>);
 						caAnnoEditorDisableAnnotationForm();
 					} else {
 						// error
@@ -157,7 +156,7 @@ $va_notifications 	= $this->getVar('notifications');
 						}
 						content += '</ul></div>';
 						
-						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
+						jQuery("#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>").html(content).slideDown(200);
 					}
 				});
 			}
@@ -166,33 +165,33 @@ $va_notifications 	= $this->getVar('notifications');
 			//
 			// If any notifications are set by the controller loading this form we want to display them
 			//
-			if(is_array($va_notifications) && sizeof($va_notifications)) {
+			if(is_array($notifications) && sizeof($notifications)) {
 ?>
 				jQuery(document).ready(function() {
 					var content = '<div class="notification-info-box rounded"><ul class="notification-info-box">';
 <?php
-					$vs_content = '';
-					foreach($va_notifications as $va_notification) {
-						switch($va_notification['type']) {
+					$content = '';
+					foreach($notifications as $notification) {
+						switch($notification['type']) {
 							case __NOTIFICATION_TYPE_ERROR__:
-								$vs_content .= "<li class='notification-error-box'>".$va_notification['message']."</li>";
+								$content .= "<li class='notification-error-box'>".$notification['message']."</li>";
 								break;
 							case __NOTIFICATION_TYPE_WARNING__:
-								$vs_content .= "<li class='notification-warning-box'>".$va_notification['message']."</li>";
+								$content .= "<li class='notification-warning-box'>".$notification['message']."</li>";
 								break;
 							case __NOTIFICATION_TYPE_INFO__:
 							default:
-								$vs_content .= "<li class='notification-info-box'>".$va_notification['message']."</li>";
+								$content .= "<li class='notification-info-box'>".$notification['message']."</li>";
 								break;
 						}
 					}
 ?>	
-					content += '<?= addslashes($vs_content); ?>';
+					content += '<?= addslashes($content); ?>';
 					content += '</ul></div>';
-					jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").hide().html(content).slideDown(200);
+					jQuery("#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>").hide().html(content).slideDown(200);
 						
 					var quickAddClearErrorInterval = setInterval(function() {
-						jQuery("#<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+						jQuery("#<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>").slideUp(500);
 						clearInterval(quickAddClearErrorInterval);
 					}, 3000);
 				});
@@ -202,3 +201,4 @@ $va_notifications 	= $this->getVar('notifications');
 		</script>
 	</div>
 </form>
+<?= TooltipManager::getLoadHTML(); ?>

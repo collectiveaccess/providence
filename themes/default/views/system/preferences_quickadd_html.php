@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,41 +25,38 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	
-	$t_user = $this->getVar('t_user');
-	$vs_group = $this->getVar('group');
- 
- ?>
+$t_user = $this->getVar('t_user');
+$group = $this->getVar('group');
+?>
 <div class="sectionBox">
 <?php
-	print $vs_control_box = caFormControlBox(
+	print $control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'PreferencesForm').' '.
 		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction(), array()), 
 		'', 
 		''
 	);
 
-	$va_group_info = $t_user->getPreferenceGroupInfo($vs_group);
-	print "<h1>"._t("Preferences").": "._t($va_group_info['name'])."</h1>\n";
+	$group_info = $t_user->getPreferenceGroupInfo($group);
+	print "<h1>"._t("Preferences").": "._t($group_info['name'])."</h1>\n";
 	
 	print caFormTag($this->request, 'Save', 'PreferencesForm');
 	
-	$va_prefs = $t_user->getValidPreferences($vs_group);
+	$prefs = $t_user->getValidPreferences($group);
 	
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
 	foreach(array(
 		'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items'
-	) as $vs_table) {
-		if (!caTableIsActive($vs_table)) { continue; }
-		$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
+	) as $table) {
+		if (!caTableIsActive($table)) { continue; }
+		$t_instance = Datamodel::getInstanceByTableName($table, true);
 		print "<h2>"._t('User interfaces for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 		
 		print "<table width='100%'><tr valign='top'><td width='250'>";
-		foreach($va_prefs as $vs_pref) {
-			if (!preg_match("!^quickadd_{$vs_table}_!", $vs_pref)) { continue; }
-			print $t_user->preferenceHtmlFormElement($vs_pref, '^ELEMENT', array());
+		foreach($prefs as $pref) {
+			if (!preg_match("!^quickadd_{$table}_!", $pref)) { continue; }
+			print $t_user->preferenceHtmlFormElement($pref, '^ELEMENT', array());
 		}
 		print "</td>";
 		
@@ -69,8 +66,6 @@
 ?>
 		<input type="hidden" name="action" value="<?= $this->request->getAction(); ?>"/>
 	</form>
-<?php
-	print $vs_control_box;
-?>
+<?= $control_box; ?>
 </div>
 	<div class="editorBottomPadding"><!-- empty --></div>
