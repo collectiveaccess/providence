@@ -1233,17 +1233,19 @@ class Installer {
 						}
 					}
 					
-					$settings = $this->_processSettings(null, $placement['settings'], [
-						'table' => $table, 
-						'leftTable' => $table, 
-						'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
-						'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
-						'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
-					]);
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
-					if (!$t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings']])) {
+					if (!($t_placement = $t_ui_screens->addPlacement($bundle, $placement_code, $settings, null, ['additional_settings' => $available_bundles[$bundle]['settings'], 'returnInstance' => true]))) {
 						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
+					} else {
+						$settings = $this->_processSettings($t_placement, $placement['settings'], [
+							'table' => $table, 
+							'leftTable' => $table, 
+							'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
+							'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
+							'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
+						]);
+						$t_placement->update();
 					}
 				}
 
@@ -2467,7 +2469,7 @@ class Installer {
 							}
 						
 							$datatype = (int)$t_instance ? $t_instance->get('datatype') : null;
-							if ($setting_name === 'restrictToTypes' && $t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype)){
+							if (($setting_name === 'restrictToTypes') && ($t_authority_instance = \AuthorityAttributeValue::elementTypeToInstance($datatype))){
 								if ($t_authority_instance instanceof \BaseModelWithAttributes && is_string($setting_value)){
 									$type_id = $t_authority_instance->getTypeIDForCode($setting_value);
 									if ($type_id){
@@ -2488,9 +2490,9 @@ class Installer {
 							} else {
 								// some settings allow multiple values under the same key, for instance restrict_to_types.
 								// in those cases $settings[$setting_name] becomes an array of values
-								if (isset($settings_list[$setting_name]) && (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple']))) {
+								if (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple'] ?? false)) {
 									if (!is_array($settings_list[$setting_name])) {
-										$settings_list[$setting_name] = array($settings_list[$setting_name]);
+										$settings_list[$setting_name] = [];
 									}
 									$settings_list[$setting_name][] = $setting_value;
 								} else {
