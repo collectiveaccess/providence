@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-
 BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 	'NAME_SINGULAR' 	=> _t('change log entry'),
 	'NAME_PLURAL' 		=> _t('change log entries'),
@@ -243,6 +237,7 @@ class ca_change_log extends BaseModel {
 		}
 		
 		$telescope = caGetOption('telescope', $pa_options, false);
+		$is_push_missing = caGetOption('push_missing', $pa_options, false);
 		
 		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
 		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
@@ -421,6 +416,13 @@ class ca_change_log extends BaseModel {
 						    }
 						    $va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
 						    break;
+						case 'home_location_id':
+							if($is_push_missing) {
+								unset($va_snapshot['home_location_id']);
+								break;
+							} else {
+								goto deflabel;
+							}
 						case 'element_id':
 							if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
 								goto deflabel;
