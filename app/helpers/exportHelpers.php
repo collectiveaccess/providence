@@ -1389,6 +1389,24 @@ function caXLSXStyles(?array $options=null) : array {
 				]
 			]
 		],
+		'header' => [
+			'font'=> [
+				'name' => 'Arial',
+				'size' => 18,
+				'bold' => true
+			],
+			'alignment' => [
+				'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+				'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+				'wrap' => true,
+				'shrinkToFit'=> false
+			],
+			'borders' => [
+				'allborders' => [
+					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK
+				]
+			]
+		],
 		'cell' => [
 			'font' => [
 				'name' => 'Arial',
