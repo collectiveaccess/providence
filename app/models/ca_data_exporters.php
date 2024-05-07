@@ -197,9 +197,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	protected function initSettings() {
-		$va_settings = [];
+		$settings = [];
 
-		$va_settings['exporter_format'] = array(
+		$settings['exporter_format'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
 			'width' => 40, 'height' => 1,
@@ -210,7 +210,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('Set exporter type, i.e. the format of the exported data. Currently supported: XML, MARC21 and CSV.')
 		);
 
-		$va_settings['wrap_before'] = array(
+		$settings['wrap_before'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 70, 'height' => 6,
@@ -220,7 +220,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted before the first item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
 		);
 
-		$va_settings['wrap_after'] = array(
+		$settings['wrap_after'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 70, 'height' => 6,
@@ -230,7 +230,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted after the last item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
 		);
 
-		$va_settings['wrap_before_record'] = array(
+		$settings['wrap_before_record'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 70, 'height' => 6,
@@ -240,7 +240,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('The text set here will be inserted before each record-level export.')
 		);
 
-		$va_settings['wrap_after_record'] = array(
+		$settings['wrap_after_record'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 70, 'height' => 6,
@@ -250,7 +250,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('The text set here will be inserted after each record-level export.')
 		);
 
-		$va_settings['typeRestrictions'] = array(
+		$settings['typeRestrictions'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 70, 'height' => 6,
@@ -260,7 +260,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
 		);
 
-		$va_settings['locale'] = array(
+		$settings['locale'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
@@ -271,13 +271,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		);
 
 		// if exporter_format is set, pull in format-specific settings
-		if($vs_format = $this->getSetting('exporter_format')) {
-			if (is_array($va_format_settings = ca_data_exporters::getFormatSettings($vs_format))) {
-				$va_settings += $va_format_settings;
+		if($format = $this->getSetting('exporter_format')) {
+			if (is_array($format_settings = ca_data_exporters::getFormatSettings($format))) {
+				$settings += $format_settings;
 			}
 		}
 		
-		$this->setAvailableSettings($va_settings);
+		$this->setAvailableSettings($settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1281,7 +1281,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 	
 		if (!($t_instance = ca_data_exporters::loadInstanceByID($record_id, $table_num, $options))) {
-			//throw new ApplicationException(_t("Record with ID %1 does not exist in table %2", $record_id, $table_num));
 			return [];
 		}
 		
@@ -1300,7 +1299,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// BEGIN evaluate skip criteria
 		//
-		if(($settings['skipIfEmpty'] ?? false) && (!(strlen($t_instance->get($source))>0))) {
+		if(($settings['skipIfEmpty'] ?? false) && (!(strlen($t_instance->get($source)) > 0))) {
 			return [];
 		}
 		
@@ -1532,7 +1531,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if(!is_array($values) && strlen($values)) { $values = [$values]; }
 				
-				if(is_array($values) && sizeof($values)) {
+				if(is_array($values) && (sizeof($values) || !$omit_if_empty)) {
 					if(!$is_repeat) {
 						if($deduplicate) { $values = array_unique($values); } 
 	
@@ -1636,7 +1635,7 @@ itemOutput:
 				// Add current value as variable "value", accessible in expressions as ^value
 				$vars = ca_data_exporters::$s_variables;
 				$vars['value'] = $item['text'];
-				$vars['value_raw'] = $return_raw_data ? $item['text_raw'] : null;
+				$vars['value_raw'] = $return_raw_data ? $item['text_raw'] ?? null : null;
 				if(is_array($expr_tags)) {
 					foreach($expr_tags as $expr_tag) {
 						if($expr_tag == $source) { 
@@ -1704,7 +1703,7 @@ itemOutput:
 			}
 		}
 		
-		if (($settings['omitIfNoChildren']?? false) && sizeof(array_filter($info['children'], function($v) { return substr($v['element'], 0, 1) !== '@'; })) === 0) {
+		if (($settings['omitIfNoChildren'] ?? false) && sizeof(array_filter($info['children'], function($v) { return substr($v['element'], 0, 1) !== '@'; })) === 0) {
 		    return [];
 		}
 
