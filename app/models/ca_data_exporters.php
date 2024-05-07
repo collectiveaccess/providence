@@ -1305,12 +1305,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		// If omitIfEmpty is set and get() returns nothing, we ignore this exporter item and all children
-		if(($omit_if_empty = ($settings['omitIfEmpty'] ?? null)) && (!(strlen($t_instance->get($omit_if_empty)) > 0))) {
+		if(($omit_if_empty = ($settings['omitIfEmpty'] ?? null)) && (!(strlen($t_instance->get(($current_context ? "{$current_context}." : '').$omit_if_empty)) > 0))) {
 			return [];
 		}
 		
 		// If omitIfNotEmpty is set and get() returns a value, we ignore this exporter item and all children
-		if(($omit_if_not_empty = ($settings['omitIfNotEmpty'] ?? null)) && (strlen($t_instance->get($omit_if_not_empty)) > 0)) {
+		if(($omit_if_not_empty = ($settings['omitIfNotEmpty'] ?? null)) && (strlen($t_instance->get(($current_context ? "{$current_context}." : '').$omit_if_not_empty)) > 0)) {
 			return [];
 		}
 		//
@@ -1471,9 +1471,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
-				$item_info[] = array(
+				$item_info[] = [
 					'element' => $element,
-				);
+				];
 			}
 		} else if($source) {
 			// Handle non-attribute sources (relationships, labels)
@@ -1491,10 +1491,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					goto itemOutput;
 				}
 
-				$item_info[] = array(
+				$item_info[] = [
 					'text' => trim($matches[1]),
 					'element' => $element,
-				);
+				];
 			} else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
 				// Relationship type
 				if(isset($options[$source]) && strlen($options[$source])>0) {							
@@ -1503,10 +1503,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					if($skip_if_expr && ExpressionParser::evaluate($skip_if_expr, ca_data_exporters::$s_variables)) {
 						goto itemOutput;
 					}
-					$item_info[] = array(
+					$item_info[] = [
 						'text' => $options[$source],
 						'element' => $element,
-					);
+					];
 				}
 			} else {
 				// Values
@@ -1838,14 +1838,14 @@ itemOutput:
 						break;
 					default:
 						if($new_table_num) {
-							$get_options = array(
+							$get_options = [
 								'restrictToTypes' => $restrict_to_types,
 								'restrictToRelationshipTypes' => $restrict_to_rel_types,
 								'restrictToBundleValues' => $restrict_to_bundle_vals,
 								'checkAccess' => $check_access,
 								'sort' => $va_sort,
 								'showDeleted' => $include_deleted = caGetOption('includeDeleted', $context_settings, false)
-							);
+							];
 							$options['includeDeleted'] = $include_deleted;
 							if($o_log) { $o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($get_options,true))); }
 
@@ -1853,11 +1853,11 @@ itemOutput:
 							$context_is_related_table = true;
 						} else { // container or invalid context
 							$va_context_tmp = explode('.', $context);
-							if(sizeof($va_context_tmp) != 2) {
+							if(sizeof($va_context_tmp) !== 2) {
 								if($o_log) { $o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $context)); }
 								return [];
 							}
-
+							
 							$attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
 
 							$info = [];
@@ -1867,14 +1867,13 @@ itemOutput:
 									$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
 									$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($attrs,true)));
 								}
-								$vn_i = 0;
+								$index = 0;
 								foreach($attrs as $vo_attr) {
 									$va_attribute_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
-										array_merge(['currentContext' => $context, 'ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
+										array_merge(['currentContext' => $context, 'ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
 									);
-
 									$info = array_merge($info, $va_attribute_export);
-									$vn_i++;
+									$index++;
 								}
 							} else {
 								$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
@@ -2548,7 +2547,6 @@ itemOutput:
 	 * @return BaseExportFormat Export format writer instance, or null if invalid format is specified.
 	 */
 	public static function getExportFormatInstance(string $format) : ?BaseExportFormat {
-		// TODO: we may want to auto-load this
 		switch(strtoupper($format)) {
 			case 'XML':
 				$o_export = new ExportXML();
