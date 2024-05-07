@@ -339,7 +339,7 @@ class BaseBrowseController extends BaseFindController {
 				break;
 			# ------------------------------------
 			case 'EXPORT':
-				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), ['output' => 'STREAM', 'display' => $t_display, 'browseCriteria' => $this->opo_browse->getCriteriaAsStrings(null, ['sense' => 'singular'])]);
+				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), ['output' => 'STREAM', 'display' => $t_display, 'browseCriteria' => $this->opo_browse->getCriteriaAsStrings(null, ['sense' => 'singular', 'returnAs' => 'array'])]);
 				break;
 			# ------------------------------------
 			case 'EXPORTWITHMAPPING':

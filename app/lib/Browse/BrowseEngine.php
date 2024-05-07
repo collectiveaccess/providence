@@ -576,6 +576,7 @@ class BrowseEngine extends BaseFindEngine {
 	 * @param array $options Options include:
 	 *		delimiter = delimiter between facet values. [Default is ';']
 	 *		sense = Sense of facet title to index criteria on. Set to 'singular' for singular sense; 'plural' for plural sense. [Default is singular]
+	 *		returnAs = Return value as delimited string or array. [Default is string]
 	 * @return array
 	 *
 	 * @see BrowseEngine::getCriteria
@@ -583,12 +584,13 @@ class BrowseEngine extends BaseFindEngine {
 	public function getCriteriaAsStrings(?string $ps_facet_name=null, ?array $options=null) {
 		$criteria = $this->getCriteriaWithLabels($ps_facet_name);
 		$delimiter = caGetOption('delimiter', $options, ';');
+		$return_as = caGetOption('returnAs', $options, 'string');
 		
 		$criteria_by_facet = [];
 		foreach($criteria as $facet => $criteria_list) {
 			$facet_info = $this->getInfoForFacet($facet);
 			
-			$criteria_by_facet[$facet_info[caGetOption('sense', $options, 'singular') ? 'label_singular' : 'label_plural']] = join($delimiter, $criteria_list);
+			$criteria_by_facet[$facet_info[caGetOption('sense', $options, 'singular') ? 'label_singular' : 'label_plural']] = ($return_as == 'array') ? $criteria_list : join($delimiter, $criteria_list);
 		}
 		return $criteria_by_facet;
 	}
