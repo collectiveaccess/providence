@@ -1270,6 +1270,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$ignore_context = caGetOption('ignoreContext', $options);
 		$current_context = caGetOption('currentContext', $options);
 		$attribute_id = caGetOption('attribute_id', $options);
+		$offset = (int)caGetOption('offset', $options, 0); 
 
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $item_id, $table_num, $record_id));
 
@@ -1299,7 +1300,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// BEGIN evaluate skip criteria
 		//
-		if(($settings['skipIfEmpty'] ?? false) && (!(strlen($t_instance->get($source)) > 0))) {
+		if(($skip_if_empty = ($settings['skipIfEmpty'] ?? false)) && (!(strlen($t_instance->get($source)) > 0))) {
 			return [];
 		}
 		
@@ -1344,14 +1345,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $attribute_id));
 			$relative_to = "{$t_instance->tableName()}.{$t_attr->getElementCode()}";
 			
-			// Skip on valid expression?
-			$this->getVariableValues($t_instance, $expr_tags ?? [], $relative_to);
-			if($skip_if_expr && ExpressionParser::evaluate($skip_if_expr, ca_data_exporters::$s_variables)) {
-				goto itemOutput;
-			}
-
 			if($template) { // if template is set, run through template engine as <unit>
-				$offset = (int)caGetOption('offset', $options, 0);
 				$get_with_template = trim($t_instance->getWithTemplate("
 					<unit relativeTo='{$relative_to}' start='{$offset}' length='1'>
 						{$template}
@@ -1391,9 +1385,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $source));
 					$o_log->logDebug(_t("Value array is %1.", print_r($values, true)));
 
-					foreach ($values as $vo_val) {
+					foreach($values as $vo_val) {
 					    if ($vo_val->getElementCode() !== $source)  { continue; }
-					
 						$display_val_options = is_array($get_options) ? $get_options : []; 
 						switch($vo_val->getDatatype()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__: 
@@ -1531,7 +1524,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if(!is_array($values) && strlen($values)) { $values = [$values]; }
 				
-				if(is_array($values) && (sizeof($values) || !$omit_if_empty)) {
+				if(is_array($values) && (sizeof($values) || !$skip_if_empty)) {
 					if(!$is_repeat) {
 						if($deduplicate) { $values = array_unique($values); } 
 	
@@ -1597,7 +1590,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 itemOutput:
 		// reset UI locale if we unset it
-		if($locale && $$old_ui_locale) {
+		if($locale && $old_ui_locale) {
 			$g_ui_locale = $old_ui_locale;
 		}
 
@@ -1630,8 +1623,7 @@ itemOutput:
 				continue; 
 			}
 
-			// handle skipIfExpression setting for non-repeating 
-			if($skip_if_expr && !$is_repeat) {
+			if($skip_if_expr) {
 				// Add current value as variable "value", accessible in expressions as ^value
 				$vars = ca_data_exporters::$s_variables;
 				$vars['value'] = $item['text'];
@@ -1643,10 +1635,10 @@ itemOutput:
 							continue;
 						}
 						if(isset($vars[$expr_tag])) { continue; }
-						$vars[$expr_tag] = $t_instance->get($expr_tag, ['convertCodesToIdno' => true]);
+						$tag_val = $t_instance->get(($current_context ? "{$current_context}." : '').$expr_tag, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
+						$vars[$expr_tag] = $tag_val[$offset] ?? null;
 					}
 				}
-				
 				if(ExpressionParser::evaluate($skip_if_expr, $vars)) {
 					unset($item_info[$i]);
 					continue;
