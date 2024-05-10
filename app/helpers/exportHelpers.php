@@ -1256,7 +1256,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 				$o_pdf->setPage(caGetOption('pageSize', $template_info, 'letter'), caGetOption('pageOrientation', $template_info, 'portrait'), caGetOption('marginTop', $template_info, '0mm'), caGetOption('marginRight', $template_info, '0mm'), caGetOption('marginBottom', $template_info, '0mm'), caGetOption('marginLeft', $template_info, '0mm'));
 		
 				if (!$filename_template = $config->get("{$table}_summary_file_naming")) {
-					$filename_template = $view->getVar('filename') ? $filename_template : caGetOption('filename', $template_info, 'print_summary');
+					$filename_template = $view->getVar('filename') ?: caGetOption('filename', $template_info, 'print_summary');
 				}
 				
 				if (!($filename = caProcessTemplateForIDs($filename_template, $table, [$t_instance->getPrimaryKey()]))) {
