@@ -131,6 +131,7 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 	if (!is_array($pa_values)) { return array(); }
 	$va_values = array();
 	foreach($pa_values as $vm_id => $va_value_list_by_locale) {
+		if(!is_array($va_value_list_by_locale)) { continue; }
 		if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
