@@ -55,6 +55,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         $shibSP = $this->auth_config->get('shibboleth_service_provider');
         try{
             $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
+            session_write_close();
         } catch (Exception $e) {
             throw new ShibbolethException("Could not create SimpleSAML auth object");
         }
