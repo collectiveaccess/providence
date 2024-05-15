@@ -1236,8 +1236,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$db = $this->getReindexDbConnection();
 					if($this->last_indexing_result) { $this->last_indexing_result->reap(); }
 					$this->last_indexing_result = $db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)), [], ['resultMode' => MYSQLI_ASYNC]);
-			
-					if($r) { $r->free(); }
 				} else {
 					$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
 				}
