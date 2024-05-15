@@ -68,16 +68,18 @@ class BaseRefineableSearchController extends BaseFindController {
 		
 		// browse criteria in an easy-to-display format
 		$va_browse_criteria = array();
-		foreach($this->opo_browse->getCriteriaWithLabels() as $vs_facet_code => $va_criteria) {
-			$va_facet_info = $this->opo_browse->getInfoForFacet($vs_facet_code);
-			if(!($va_facet_info['label_singular'] ?? null)) { continue; }
-			
-			$va_criteria_list = array();
-			foreach($va_criteria as $vn_criteria_id => $vs_criteria_label) {
-				$va_criteria_list[] = $vs_criteria_label;
+		if($this->opo_browse) {
+			foreach($this->opo_browse->getCriteriaWithLabels() as $vs_facet_code => $va_criteria) {
+				$va_facet_info = $this->opo_browse->getInfoForFacet($vs_facet_code);
+				if(!($va_facet_info['label_singular'] ?? null)) { continue; }
+				
+				$va_criteria_list = array();
+				foreach($va_criteria as $vn_criteria_id => $vs_criteria_label) {
+					$va_criteria_list[] = $vs_criteria_label;
+				}
+				
+				$va_browse_criteria[$va_facet_info['label_singular']] = join('; ', $va_criteria_list);
 			}
-			
-			$va_browse_criteria[$va_facet_info['label_singular']] = join('; ', $va_criteria_list);
 		}
 		$this->view->setVar('browse_criteria', $va_browse_criteria);
 		
