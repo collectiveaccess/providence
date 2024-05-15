@@ -2707,6 +2707,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && (bool) $va_item['settings']['convertNewlinesToHTML']
 							     && is_string( $vm_val )
 							) {
+								$vm_val = str_replace(chr(11), "\n", $vm_val); // Excel sometimes embeds vertical tabs as newlines, and PHP has no idea how to deal with that :-(
 								$vm_val = nl2br( $vm_val );
 							}
 							if ( ( $va_item['settings']['collapseSpaces'] ?? false )
