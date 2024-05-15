@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/SMS/BaseSMSPlugIn.php : 
+ * app/lib/Plugins/SMS/BaseSMSPlugin.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,17 +28,12 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
-  /**
-    *
-    */ 
-    
+ */   
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugSMS.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");
 
-abstract class BaseSMSPlugIn Extends WLPlug {
+abstract class BaseSMSPlugin Extends WLPlug {
 	// properties for this plugin instance
 	protected $properties = array(
 		
@@ -66,4 +61,3 @@ abstract class BaseSMSPlugIn Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
-?>

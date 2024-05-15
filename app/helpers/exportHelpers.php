@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
-/**
-*
-*/
 require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
 # ----------------------------------------
@@ -129,10 +125,11 @@ function caExportFileInfoForTemplate(string $table, string $template) : ?string 
  * @throws ApplicationException
  */
 function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filename, $options=null) {
+	caIncrementExportCount();
+	
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
 	$pa_access_values = caGetOption('checkAccess', $options, null);
-	
 	$view->setVar('t_subject', $pt_subject);
 	
 	$vs_template_identifier = null;
@@ -222,6 +219,8 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
  * @throws ApplicationException
  */
 function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
+	caIncrementExportCount();
+	
 	if (is_array($template_identifier)) {
 		$template_info = $template_identifier;
 		$template_info['identifier'] = pathinfo($template_info['path'], PATHINFO_FILENAME);
@@ -258,6 +257,9 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 		$view->setVar('marginLeft', caGetOption('marginLeft', $template_info, '0mm'));
 		$view->setVar('base_path', $vs_base_path = pathinfo($template_info['path'], PATHINFO_DIRNAME));
 
+		// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
+		$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
+		
 		$view->addViewPath($vs_base_path."/local");
 		$view->addViewPath($vs_base_path);
 		
@@ -375,26 +377,35 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
  * @throws ApplicationException
  */
 function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
+	caIncrementExportCount();
+	
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
+	// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
+	$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
+	
+	$criteria_summary = caGetOption('criteriaSummary', $options, '');
+	
+	if(method_exists($result, 'seek')) { $result->seek(0); }
 	$view->setVar('result', $result);
 	$view->setVar('t_set', caGetOption('set', $options, null));
-	$view->setVar('criteria_summary', caGetOption('criteriaSummary', $options, ''));
+	$view->setVar('criteria_summary', $criteria_summary);
 	
 	$table = $result->tableName();
 	
-	$type = $display_id = null;
+	$template_type = caGetOption('printTemplateType', $options, 'results');
+	
+	$format = $display_id = null;
 	if($t_display = caGetOption('display', $options, null)) {
 		$display_id = $t_display->getPrimaryKey();
 	}
 	$export_config = $template_info = null;
-	
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
-		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), substr($template, 5));
-		$type = 'pdf';
+		$template_info = caGetPrintTemplateDetails($template_type, substr($template, 5));
+		$format = caGetOption('fileFormat', $template_info, 'pdf');	// allow override of format
 	} elseif (!(bool)$config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
 		$display_id = substr($template, 9);
 		
@@ -421,21 +432,24 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				);
 			}
 			$view->setVar('display_list', $display_list);
+		} elseif(is_array($template_info = caGetPrintTemplateDetails($template_type, $template))) {
+			// Try template "straight"
+			$format = caGetOption('format', $template_info, 'pdf');
 		} else {
 			throw new ApplicationException(_t("Invalid format %1", $template));
 		}
-		$template_info = caGetPrintTemplateDetails(caGetOption('printTemplateType', $options, 'results'), 'display');
-		$type = 'pdf';
+		$template_info = caGetPrintTemplateDetails($template_type, 'display');
+		$format = 'pdf';
 	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_!', $template, $m)) {
 		switch($m[1]) {
 			case 'csv':
 			case 'tab':
-				$type = $m[1];
+				$format = $m[1];
 				$display_id = substr($template, 5);
 				break;
 			case 'xlsx':
 			case 'docx':
-				$type = $m[1];
+				$format = $m[1];
 				$display_id = substr($template, 6);
 				break;
 			default:
@@ -445,13 +459,13 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			
 					switch($export_config[$table][$template]['type']) {
 						case 'xlsx':
-							$type = 'xlsx';
+							$format = 'xlsx';
 							break;
 						case 'csv':
-							$type = 'csv';
+							$format = 'csv';
 							break;
 						case 'tab':
-							$type = 'tab';
+							$format = 'tab';
 							break;
 					}
 				} else {
@@ -485,9 +499,17 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			];
 		}
 		$view->setVar('display_list', $display_list);
+	} else {
+		// custom non-PDF display
+		$template_info = caGetPrintTemplateDetails($template_type, $template);
+		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
+		$content = $view->render("{$template_dir}/{$display_id}.php");
+		
+		print $content;
+		return $content;
 	}
 	
-	if(!$type) { throw new ApplicationException(_t('Invalid export type')); }
+	if(!$format) { throw new ApplicationException(_t('Invalid export format')); }
 	
 	if(!($filename_stub = caGetOption('filename', $options, null))) { 
 		if(is_array($template_info)) {
@@ -500,12 +522,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	}
 	$filename_stub = preg_replace('![^A-Za-z0-9_\-\.]+!', '_', $filename_stub);
 	
-	switch($type) {
+	switch($format) {
 		case 'tab':
 		case 'csv':
-			$delimiter = ($type === 'tab') ? "\t" : ",";
-			$mimetype = ($type === 'tab') ? "text/tab-separated-values" : "text/csv";
-			$extension = ($type === 'tab') ? "tsv" : "csv";
+			$delimiter = ($format === 'tab') ? "\t" : ",";
+			$mimetype = ($format === 'tab') ? "text/tab-separated-values" : "text/csv";
+			$extension = ($format === 'tab') ? "tsv" : "csv";
 			
 			$display_list = $view->getVar('display_list');
 			$rows = $row = [];
@@ -631,7 +653,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				}
 			}
 	
-			$line = 2 ;
+			$line = 2;
 
 			// Other lines
 			while($result->nextHit()) {
@@ -736,13 +758,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					}
 					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
 					$objDrawing->setName('Image');
-					$objDrawing->setPath($vs_logo_path);
 					$objDrawing->setHeight(36);
 					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
-					$criteria_summary = (strlen($vs_criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
-					$criteria_summary = wordwrap($vs_criteria_summary, 50, "\n", true);
-					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$vs_criteria_summary : ''));
+					$criteria_summary = (strlen($criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
+					$criteria_summary = wordwrap($criteria_summary, 50, "\n", true);
+					$o_sheet->getHeaderFooter()->setOddHeader('&L&G& '.(($config->get('excel_report_show_search_term')) ? '&R&B&12 '.$criteria_summary : ''));
 			
 				}
 				if(!$request || $config->get('excel_report_footer_enabled')){
@@ -944,10 +965,10 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			
 			if($output === 'STREAM') { 
 				$request->isDownload(true);
-				caExportViewAsPDF($view, $template_info, $filename, array_merge($options, ['printTemplateType' => 'results']));
+				caExportViewAsPDF($view, $template_info, $filename, array_merge($options, ['printTemplateType' => $template_type]));
 			} else {
 				$tmp_filename = caGetTempFileName('caExportResult', '');
-				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename, 'printTemplateType' => 'results'])) {
+				if(!caExportViewAsPDF($view, $template_info, $filename, ['writeToFile' => $tmp_filename, 'printTemplateType' => $template_type])) {
 					return null;
 				}
 				return [
@@ -994,7 +1015,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 				$view->setVar("param_{$n}", $values[$n] = $request->getParameter($n, pString));
 			}
 		}
-		Session::setVar("print_labels_options_{$m[2]}", $values);
+		Session::setVar("print_labels_options_{$label_code}", $values);
 	}
 	
 	$border = ($show_borders) ? "border: 1px dotted #000000; " : "";
@@ -1251,9 +1272,10 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 				$o_pdf->setPage(caGetOption('pageSize', $template_info, 'letter'), caGetOption('pageOrientation', $template_info, 'portrait'), caGetOption('marginTop', $template_info, '0mm'), caGetOption('marginRight', $template_info, '0mm'), caGetOption('marginBottom', $template_info, '0mm'), caGetOption('marginLeft', $template_info, '0mm'));
 		
 				if (!$filename_template = $config->get("{$table}_summary_file_naming")) {
-					$filename_template = $view->getVar('filename') ? $filename_template : caGetOption('filename', $template_info, 'print_summary');
+					$filename_template = $view->getVar('filename') ?: caGetOption('filename', $template_info, 'print_summary');
 				}
-				if (!($filename = caProcessTemplateForIDs($filename_template, $table, [$subject_id]))) {
+				
+				if (!($filename = caProcessTemplateForIDs($filename_template, $table, [$t_instance->getPrimaryKey()]))) {
 					$filename = 'print_summary';
 				}
 				
@@ -1303,5 +1325,120 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 		$printed_properly = false;
 		return false;
 	}
+}
+# ----------------------------------------
+/**
+ * Log export counts for Pawtucket
+ */
+function caIncrementExportCount() : bool {
+	global $g_request, $g_set_export_count;
+	if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && $g_request && !$g_set_export_count) {
+		BanHammer::verdict($g_request, ['usePlugin' => 'ExportFrequency']);
+		$g_set_export_count = true;
+		return true;
+	}
+	return false;
+}
+# ----------------------------------------
+# XLSX helpers
+# ----------------------------------------
+/** 
+ *
+ *
+ * return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+ */
+function caInitXSLXWorkbook(?array $options=null) {
+	return new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+}
+# ----------------------------------------
+/** 
+ *
+ *
+ * return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+ */
+function caInitXLSXSheet($workbook, ?array $options=null) : \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet {
+	$styles = caXLSXStyles($options);
+	$sheet = $workbook->getActiveSheet();
+	$sheet->getParent()->getDefaultStyle()->applyFromArray($styles['cell']);
+	$sheet->setTitle("CollectiveAccess");
+	return $sheet;
+}
+# ----------------------------------------
+/** 
+ *
+ *
+ * return array
+ */
+function caXLSXStyles(?array $options=null) : array {
+	return [
+		'title' => [
+			'font'=> [
+				'name' => 'Arial',
+				'size' => 12,
+				'bold' => true
+			],
+			'alignment' => [
+				'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+				'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+				'wrap' => true,
+				'shrinkToFit'=> false
+			],
+			'borders' => [
+				'allborders' => [
+					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK
+				]
+			]
+		],
+		'header' => [
+			'font'=> [
+				'name' => 'Arial',
+				'size' => 18,
+				'bold' => true
+			],
+			'alignment' => [
+				'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+				'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+				'wrap' => true,
+				'shrinkToFit'=> false
+			],
+			'borders' => [
+				'allborders' => [
+					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK
+				]
+			]
+		],
+		'cell' => [
+			'font' => [
+				'name' => 'Arial',
+				'size' => 11,
+				'bold' => false
+			],
+			'alignment' => [
+				'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+				'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+				'wrap' => true,
+				'shrinkToFit'=> false
+			],
+			'borders' => [
+				'allborders' => [
+					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+				]
+			]
+		]
+	];
+}
+# ----------------------------------------
+/** 
+ *
+ *
+ * return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+ */
+function caOutputXSLX($workbook, ?array $options=null) : bool {
+	$o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
+	header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header('Content-Disposition:inline;filename='.caGetOption('filename', $options, 'report.xlsx'));
+	$o_writer->save('php://output');
+	
+	return true;
 }
 # ----------------------------------------

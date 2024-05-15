@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 	
 	$include_media = $t['includeMedia'] ?? false;
 	$media_versions = $t['mediaVersions'] ?? ["thumbnail", "small", "medium", "large", "original"];
+	$media_bundles = $t['mediaBundles'] ?? null;
 
 	$target_pk = \Datamodel::primaryKey($t['table']);
 	$rels = $rec->getRelatedItems($t['table'], ['checkAccess' => $check_access, 'primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]], 'restrictToTypes' => $t['restrictToTypes'], 'restrictToRelationshipTypes' => $t['restrictToRelationshipTypes']]);
@@ -73,13 +74,30 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 	
 			$rel_type = array_shift($rel_types);
 			$bundles = \GraphQLServices\Helpers\extractBundleNames($r, $t);
-			$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, ['primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]);
+			$data = \GraphQLServices\Helpers\fetchDataForBundles($r, $bundles, ['filterNonPrimaryRepresentations' => false, 'primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]);
 	
 			$media = [];
 			if($include_media) {
-				$m = $resolve_to_related ? $r : \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]));
+				$m = $resolve_to_related ? $r : \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['filterNonPrimaryRepresentations' => false, 'primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]));
 				
-				if(is_array($reps = $m->getRepresentations(array_merge($media_versions, ['original']), null, ['restrictToTypes' => $t['restrictMediaToTypes']]))) {
+				if(($m->tableName() === 'ca_object_representations') && $m->getPrimaryKey()) {
+					$minfo = [];
+					foreach($m->getMediaVersions('media') as $version) {
+						$minfo['urls'][$version] = $m->getMediaUrl('media', $version);
+						$minfo['paths'][$version] = $m->getMediaPath('media', $version);
+						$minfo['info'][$version]['WIDTH'] = $m->getMediaInfo('media', $version, 'width');
+						$minfo['info'][$version]['HEIGHT'] = $m->getMediaInfo('media', $version, 'HEIGHT');
+						$minfo['info'][$version]['MIMETYPE'] = $m->getMediaInfo('media', $version, 'mimetype');
+						$minfo['info'][$version]['PROPERTIES']['duration'] = $m->getMediaInfo('media', $version, 'duration');
+					}
+					
+					$reps = [
+						$m->getPrimaryKey() => $minfo
+					];
+				} else {
+					$reps = $m->getRepresentations(array_merge($media_versions, ['original']), null, ['restrictToTypes' => $t['restrictMediaToTypes']]);
+				}
+				if(is_array($reps)) {
 					foreach($reps as $rep_id => $rep_info) {
 						$versions = [];
 						foreach($rep_info['urls'] as $version => $url) {
@@ -96,6 +114,13 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 							];
 						}
 						
+						$media_data = null;
+						if(is_array($media_bundles) && sizeof($media_bundles)) {
+							if($t_rep = \ca_object_representations::findAsInstance(['representation_id' => $rep_id])) {
+								$media_data = \GraphQLServices\Helpers\fetchDataForBundles($t_rep, $media_bundles, ['primaryIDs' => ['ca_object_representations' => [$rep_id]]]);
+							}
+						}
+						
 						$media[] = [
 							'id' => $rep_id,
 							'idno' => $rep_info['idno'],
@@ -109,7 +134,8 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 							'height' => $rep_info['info']['original']['HEIGHT'],
 							'mimetype' => $rep_info['info']['original']['MIMETYPE'],
 							'filesize' => @filesize($rep_info['paths']['original']),
-							'duration' => $rep_info['info']['original']['PROPERTIES']['duration'] ?? null
+							'duration' => $rep_info['info']['original']['PROPERTIES']['duration'] ?? null,
+							'bundles' => $media_data
 						];
 					}
 				}
@@ -117,13 +143,13 @@ function processTarget(\BaseModel $rec, string $table, array $t, ?array $options
 			
 			$targets = [];
 			if(is_array($t['targets']) && sizeof($t['targets'])) {
-				$m = \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]));
+				$m = \Datamodel::getInstance($t['table'], false, $r->get($t['table'].'.'.$target_pk, ['filterNonPrimaryRepresentations' => false, 'primaryIDs' => [$rec->tableName() => [$rec->getPrimaryKey()]]]));
 				foreach($t['targets'] as $st) {
 					$targets[] = processTarget($m, $m->tableName(), $st, ['resolveRelativeToRelated' => $st['resolveRelativeToRelated'] ?? false]);
 				}
 			}
 		
-			if(is_array($rel_ids = $r->get("{$linking_table}.relation_id", ['returnAsArray' => true]))) {
+			if(is_array($rel_ids = $r->get("{$linking_table}.relation_id", ['filterNonPrimaryRepresentations' => false, 'returnAsArray' => true]))) {
 				foreach($rel_ids as $rel_id) {
 					$rel_list[] = array_merge([
 						'id' => $rel_id,
@@ -203,13 +229,13 @@ function processItemMedia(\BaseModel $rec, string $table, array $t, ?array $opti
 				}
 				$media_list[] = [
 					'id' => $qr_reps->getPrimaryKey(),
-					'idno' => $qr_reps->get('ca_object_representations.idno'),
-					'type' => $qr_reps->get('ca_object_representations.type_id'),
-					'name' => $qr_reps->get('ca_object_representations.preferred_labels.name'),
-					'mimetype' => $qr_reps->get('ca_object_representations.mimetype'),
-					'mediaclass' => $qr_reps->get('ca_object_representations.mediaclass'),
-					'originalFilename' => $qr_reps->get('ca_object_representations.original_filename'),
-					'md5' => $qr_reps->get('ca_object_representations.md5'),
+					'idno' => $qr_reps->get('ca_object_representations.idno', ['filterNonPrimaryRepresentations' => false]),
+					'type' => $qr_reps->get('ca_object_representations.type_id', ['filterNonPrimaryRepresentations' => false]),
+					'name' => $qr_reps->get('ca_object_representations.preferred_labels.name', ['filterNonPrimaryRepresentations' => false]),
+					'mimetype' => $qr_reps->get('ca_object_representations.mimetype', ['filterNonPrimaryRepresentations' => false]),
+					'mediaclass' => $qr_reps->get('ca_object_representations.mediaclass', ['filterNonPrimaryRepresentations' => false]),
+					'originalFilename' => $qr_reps->get('ca_object_representations.original_filename', ['filterNonPrimaryRepresentations' => false]),
+					'md5' => $qr_reps->get('ca_object_representations.md5', ['filterNonPrimaryRepresentations' => false]),
 					'versions' => $versions,
 					'bundles' => $bundle_data,
 					'isPrimary' => $rinfo['is_primary'] ?? false,

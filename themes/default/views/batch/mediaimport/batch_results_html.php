@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -125,7 +125,7 @@
 		}
 		print "<script type='text/javascript'>";
 		print "jQuery('#batchProcessingMediaPreview').hide();";
-		print "jQuery('#batchProcessingReport').html('".addslashes($vs_buf)."').fadeIn(300);"; 
+		print "jQuery('#batchProcessingReport').html(".json_encode($vs_buf).").fadeIn(300);"; 
 		print "jQuery('#batchProcessingMore').fadeIn(300);"; 
 		print "</script>";
 		caFlushOutput();

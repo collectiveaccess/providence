@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__."/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/Db/DbResult.php");
 require_once(__CA_LIB_DIR__."/Db/DbStatement.php");
@@ -202,7 +197,9 @@ class Db_pdo_mysql extends DbDriverBase {
 		$logger = null;
 		if(defined('__CA_LOG_DATABASE_QUERIES__') && __CA_LOG_DATABASE_QUERIES__) {
 			$logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'queries'], null);
-			$logger->logInfo(caPrintStacktrace(defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
+			$logger->logInfo(
+				caPrintStacktrace(defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]
+			);
 			$logger->logInfo(json_encode(['query' => $ps_sql, 'params' => $pa_values]));
 		}
 		try {
@@ -301,7 +298,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	public function rollbackTransaction($po_caller) {
 		if (!$this->opr_db->rollBack()) {
 			$po_caller->postError(250, "Could not rollback transaction", "Db->pdo_mysql->rollbackTransaction()");
-			throw new DatabaseException(_t("Could not rollback transaction: %1", $e->getMessage()), 250, "Db->pdo_mysql->rollbackTransaction()");
+			throw new DatabaseException(_t("Could not rollback transaction"), 250, "Db->pdo_mysql->rollbackTransaction()");
 			return false;
 		}
 		return true;

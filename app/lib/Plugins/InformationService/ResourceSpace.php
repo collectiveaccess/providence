@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017 Whirl-i-Gig
+ * Copyright 2017-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
-
-
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -172,7 +166,7 @@ class WLPlugInformationServiceResourceSpace Extends BaseInformationServicePlugin
 	public function getExtendedInformation($pa_settings, $ps_rs_id, $pa_options=null) {
 		$va_config = $this->_getConfiguration($pa_settings, $pa_options);
         foreach($va_config as $va_api){
-            if(!$vs_resourcespace_instance == $va_api['rsInstance']){
+            if(!($vs_resourcespace_instance == $va_api['rsInstance'])){
                 continue;
             }
     		$vs_resourcespace_base_api_url = $va_api['apiURL'];

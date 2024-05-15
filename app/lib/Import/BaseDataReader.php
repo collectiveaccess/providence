@@ -28,13 +28,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
- */
- 
- 
+ */ 
 /**
  * Input type constants. Returned by inputType() to indicate what sort of input this reader takes (eg. File, URL, text, etc.)
  */ 

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,8 @@ var caUI = caUI || {};
 			
 			initialValueList: [],
 			
+			perTransactionNotesAndDueDate: false,
+			
 			removeButtonIcon: '(X)',
 			
 			cookieJar: jQuery.cookieJar('caBundleVisibility')
@@ -57,6 +59,8 @@ var caUI = caUI || {};
 		jQuery('#' + that.transactionListContainerID).hide();
 		jQuery('#' + that.transactionSubmitContainerID).hide();
 		jQuery('#' + that.transactionResultsContainerID).hide();
+		
+		jQuery('#transactionDueDate').datepicker({minDate: 0, dateFormat: 'yy-mm-dd'});
 		
 		jQuery('#' + that.autocompleteID).autocomplete( { 
 				source: that.searchURL,
@@ -118,11 +122,13 @@ var caUI = caUI || {};
 						}
 					});				
 			
+					var transaction_notes = jQuery('#transactionNotes').val();
+					var transaction_due_date = jQuery('#transactionDueDate').val();
 					jQuery.ajax({
 						url: that.saveTransactionURL,
 						type: 'POST',
 						dataType: 'json',
-						data: { user_id: that.user_id, item_list: JSON.stringify(that.itemList) },
+						data: { user_id: that.user_id, item_list: JSON.stringify(that.itemList), transaction_notes: transaction_notes, transaction_due_date: transaction_due_date },
 						success: function(data) {
 								// clear item list
 								jQuery('#' + that.transactionListContainerID + ' .transactionList li').remove();
@@ -210,7 +216,7 @@ var caUI = caUI || {};
 				}
 		
 				// Show notes and due date if item is available
-				if ((data.status == 0) || (data.status == 3)) {
+				if (!that.perTransactionNotesAndDueDate && ((data.status == 0) || (data.status == 3))) {
 					// add note field
 					_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + data.object_id + '" rows="2" cols="80"></textarea></div>';
 		

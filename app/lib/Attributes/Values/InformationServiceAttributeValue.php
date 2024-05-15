@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,17 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
 define("__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__", 20);
 
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/InformationServiceManager.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
 global $_ca_attribute_settings;
@@ -261,7 +255,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					return array(
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_tmp[2],		// uri
-						'value_decimal1' => is_numeric($va_tmp[1]) ? $va_tmp[1] : null, 		// id
+						'value_decimal1' => is_numeric($va_tmp[1]) && ($va_tmp[1] < pow(2, 64))  ? $va_tmp[1] : null, 		// id
 						'value_blob' => caSerializeForDatabase($va_info),
 						'value_sortable' => $this->sortableValue($vs_display_text)
 					);
@@ -324,6 +318,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				if($selected_result && !caGetOption('isRecursive', $pa_options, false)) {
 					return self::parseValue($selected_result['url'], $pa_element_info, array_merge($pa_options, ['isRecursive' => true]));
 				}
+				if(!$selected_result) {
+					return null;
+				}
 				return [
 			        'value_longtext1' => $ps_value,
 			        'value_longtext2' => '',
@@ -333,13 +330,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			    ];
 			}
 		}
-
-		return array(
-			'value_longtext1' => '',	// text
-			'value_longtext2' => '',	// url
-			'value_decimal1' => null,	// id
-			'value_blob' => null		// extra info
-		);
+		return null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -367,6 +358,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 		}
 		
+		$vs_element = '';
+		
         if (!$pb_for_search) {
         	// Add additional UI elements for services that require them (Eg. Numishare)
         	$additional_ui_controls = method_exists($this->opo_plugin, 'getAdditionalFields') ? $this->opo_plugin->getAdditionalFields($pa_element_info) : [];
@@ -377,6 +370,22 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
     		}, $additional_ui_controls);
     		
     		$additional_ui_gets_str = sizeof($additional_ui_gets) ? ','.join(',', $additional_ui_gets) : '';
+    		
+    		$additional_fields = $this->opo_plugin->getAdditionalFields($pa_element_info);
+    		
+    		$hidden_val = '{{'.$pa_element_info['element_id'].'}}';
+    		if(is_array($additional_fields)) {
+    			foreach($additional_fields as $f) {
+    				switch($f['name']) {
+    					case 'id':
+    						$hidden_val .= "|{$vs_service}:{{id}}";
+    						break;
+    					default: 
+    						$hidden_val .= "|{{{$f['name']}}}";
+    						break;
+    				}
+    			}
+    		}
     		
             $vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
             	$additional_ui_elements.
@@ -394,7 +403,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
                 caHTMLHiddenInput(
                     '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
                     array(
-                        'value' => '{{'.$pa_element_info['element_id'].'}}',
+                        'value' => $hidden_val,
                         'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
                     )
                 );

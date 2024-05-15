@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
- require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
-
+ */ 
+require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 
 class MediaUploadManager {
 	# ------------------------------------------------------
@@ -180,7 +178,7 @@ class MediaUploadManager {
 				$sessions = array_slice($sessions, 0, $limit);
 			}
 			
-			$sessions = array_map(function($s) use ($user_dir_path, $importer_forms, $t_session) {
+			$sessions = array_map(function($s) use ($user_dir_path, $t_session) {
 				$session = ca_media_upload_sessions::find($s['session_id']);
 				$files = $session->getFileList();
 				$files_proc = [];
@@ -299,7 +297,7 @@ class MediaUploadManager {
 			'last_activity_on' => ['>', time() - 15],
 			'cancelled' => 0,
 		];
-		return $c = ca_media_upload_sessions::find($params, ['returnAs' => 'count']) ? $c : 0;
+		return ($c = ca_media_upload_sessions::find($params, ['returnAs' => 'count'])) ? $c : 0;
 	}
 	# ------------------------------------------------------
     /**

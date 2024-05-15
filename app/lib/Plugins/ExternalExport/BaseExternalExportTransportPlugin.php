@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 
@@ -42,6 +38,8 @@ abstract class BaseExternalExportTransportPlugin Extends WLPlug {
 	protected $properties = [
 		
 	];
+	
+	protected $opo_config;
 
 	// plugin info
 	protected $info =[

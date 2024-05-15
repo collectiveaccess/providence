@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,11 +26,11 @@
  * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
  * Template configuration:
  *
- * @name PDF display
- * @type omit
+ * @name PDF
+ * @type page
  * @pageSize letter
  * @pageOrientation portrait
- * @tables ca_objects
+ * @tables *
  *
  * @marginTop 0.75in
  * @marginLeft 0.25in
@@ -71,14 +71,18 @@ $t_set				= $this->getVar("t_set");
 $result->seek(0);
 
 $start = $c = 0;
+$table = $result->tableName();
 while($result->nextHit()) {
 	$c++;
-	$object_id = $result->get('ca_objects.object_id');		
+	$id = $result->getPrimaryKey();		
 ?>
 	<div class="row">
 		<table>
 			<tr>
 				<td><b><?php print $c; ?></b>&nbsp;&nbsp;</td>
+<?php
+	if($table === 'ca_objects') {
+?>
 				<td>
 <?php 
 				if ($path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
@@ -90,16 +94,21 @@ while($result->nextHit()) {
 				}	
 ?>								
 
-				</td><td>
+				</td>
+<?php
+	}
+?>
+				<td>
 					<div class="metaBlock">
 <?php
-						print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 	
+						print "<div class='title'>".$result->getWithTemplate("^{$table}.preferred_labels.name (^{$table}.idno)")."</div>"; 	
 ?>
 						<table  width="100%"  cellpadding="0" cellspacing="0">
 <?php				
 			
 						foreach($display_list as $placement_id => $display_item) {	
-							if (!($display_value = trim($t_display->getDisplayValue($result, $placement_id, array('forReport' => true, 'purify' => true))))) { continue; }
+							$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+							if (!($display_value = trim($t_display->getDisplayValue($result, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true])))) { continue; }
 ?>
 							<tr>
 								<td width="30%" style='padding: 4px;'><?php print $display_item['display']; ?></td>

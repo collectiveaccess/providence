@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
 
 class InterstitialSearchResult extends BaseSearchResult {
@@ -77,6 +72,7 @@ class InterstitialSearchResult extends BaseSearchResult {
 				];
 			}
 		}
+		return true;
 	}
 	# -------------------------------------
 }

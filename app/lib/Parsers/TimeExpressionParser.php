@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
@@ -312,8 +307,29 @@ class TimeExpressionParser {
 							break(2);
 						# ----------------------
 						case TEP_TOKEN_INTEGER:
-							// is this a quarter century expression?
-							if (((int)$va_token['value'] > 0) && ((int)$va_token['value'] <= 21)) {
+							if((strlen($va_token['value']) === 8) && preg_match("!^[\d]+$!", $va_token['value'])) {
+								// is this an 8-digit compacted ISO date?
+								$year = (int)substr($va_token['value'], 0, 4);
+								$month = (int)substr($va_token['value'], 4, 2);
+								$day = (int)substr($va_token['value'], 6, 2);
+								
+								if(($month >= 1) && ($month <=12) && ($day >= 1) && ($day <= $this->daysInMonth($month, $year))) {
+									$va_dates['start'] = array(
+										'month' => $month, 'day' => $day, 'year' => $year, 'era' => TEP_ERA_AD,
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+									);
+									$va_dates['end'] = array(
+										'month' => $month, 'day' => $day, 'year' => $year, 'era' => TEP_ERA_AD,
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false, 'dont_window' => true
+									);
+									
+									$this->skipToken();
+									$vn_state = TEP_STATE_ACCEPT;
+									$vb_can_accept = true;
+									break(2);
+								} 
+							} elseif (((int)$va_token['value'] > 0) && ((int)$va_token['value'] <= 21)) {
+								// is this a quarter century expression?
 								$va_peek = $this->peekToken(2);
 								if ($va_peek['type'] == TEP_TOKEN_ALPHA) {
 									if (preg_match('!^Q([\d]{1})$!i', $va_peek['value'], $va_matches)) {
@@ -1755,16 +1771,14 @@ class TimeExpressionParser {
 					$vn_end_year = (($vn_century - 1) * 100) + 99;
 				}
 				
-				if (!isset($va_dates['start']) || !$va_dates['start']) {
-					$vn_start_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'century', $vn_start_year);
-					$va_dates['start'] = array(
-						'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-						'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
-						'dont_window' => true
-					);
-					if(!is_null($era)) {
-						$va_dates['start']['era'] = $era;
-					}
+				$vn_start_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'century', $vn_start_year);
+				$va_dates['start'] = array(
+					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false,
+					'dont_window' => true
+				);
+				if(!is_null($era)) {
+					$va_dates['start']['era'] = $era;
 				}
 				if (!$vb_is_range) {
 					$vn_end_year = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'end', 'century', $vn_end_year);
@@ -2628,8 +2642,10 @@ class TimeExpressionParser {
 	 *		isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
 	 *  	useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
 	 *  	useRomanNumeralsForCenturies (true|false) [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
-	 *		start_as_iso8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
-	 *		end_as_iso8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
+	 *		startAsISO8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
+	 *		start_as_iso8601 (true|false) Synonym for startAsISO8601
+	 *		endAsISO8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
+	 *		end_as_iso8601 (true|false) Synonym for endAsISO8601
 	 *		dontReturnValueIfOnSameDayAsStart (true|false) [Only valid in conjunction with end_as_iso8601]
 	 *		startHistoricTimestamp
 	 *		endHistoricTimestamp
@@ -2768,11 +2784,10 @@ class TimeExpressionParser {
 			
 			$va_end_pieces = $this->getHistoricDateParts($va_dates['end']);
 				
-			if ($pa_options['start_as_iso8601'] ?? null) {
+			if ($start_as_iso = caGetOption(['start_as_iso8601', 'startAsISO8601'], $pa_options, false)) {
 				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
-			if ($pa_options['end_as_iso8601'] ?? null) {
-
+			if ($end_as_iso = caGetOption(['end_as_iso8601', 'endAsISO8601'], $pa_options, false)) {
 				if(caGetOption('dontReturnValueIfOnSameDayAsStart', $pa_options, false)) {
 					if(
 						$va_start_pieces['year'] == $va_end_pieces['year'] &&
@@ -2790,7 +2805,7 @@ class TimeExpressionParser {
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
 					return $va_start_pieces['year'];
 				}
-				if (($pa_options['start_as_iso8601'] ?? null) || ($pa_options['end_as_iso8601'] ?? null)) {
+				if (($start_as_iso) || $end_as_iso) {
 					return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 				}
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
@@ -3167,7 +3182,7 @@ class TimeExpressionParser {
 								}
 							} else {
 								// date range within single year with time
-								$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'month' => $va_start_pieces['month'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
+								$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
 								$vs_end_date = $this->_datetimeToText($va_end_pieces, $pa_options);
 								return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date;
 							}
@@ -3617,7 +3632,7 @@ class TimeExpressionParser {
 		return date("t", mktime(0, 0, 0, $pn_month, 1, $pn_year));
 	}
 	# -------------------------------------------------------------------
-	public function daysInYear($pn_year) {
+	public function daysInYear($year) {
 		return ((($year % 4) == 0) && ((($year % 100) != 0) || (($year %400) == 0))) ? 366 : 365;
 	}
 	# -------------------------------------------------------------------

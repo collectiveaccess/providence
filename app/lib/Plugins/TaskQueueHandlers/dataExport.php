@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-/**
- * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
- * See https://github.com/openai/whisper
- */
-
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
@@ -104,7 +99,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		$exp = $parameters["searchExpressionForDisplay"];
 		
 		$params['searchExpressionForDisplay'] = array(
-			'label' => $is_summary ? _('Subject') : _('Query'),
+			'label' => $is_summary ? _t('Subject') : _t('Query'),
 			'value' => $exp
 		);
 		
@@ -152,8 +147,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			return false;
 		}
 		if(!($result = caMakeSearchResult($parameters['table'], $parameters['results'], ['sort' => $parameters['sort'], 'sortDirection' => $parameters['sortDirection']]))) {
-			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid table or id. Table was '%1'; id was '%2'", $table, $id)); 
-			$this->error->setError(551, _t("Invalid table or id. Table was '%1'; id was '%2'", $table, $id),"dataExport->process()");
+			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid table or id. Table was '%1''", $parameters['table'])); 
+			$this->error->setError(551, _t("Invalid table or id. Table was '%1'", $parameters['table']),"dataExport->process()");
 			return false;
 		}
 		

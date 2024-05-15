@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 AssetLoadManager::register("panel");
 
 $t_item 				= $this->getVar('t_subject');
@@ -100,7 +99,7 @@ $formats 				= $this->getVar('formats');
 							<?= _t('Download')."<br/>{$display_select_html}"; ?>	
 							
 <?php
-	if(caProcessingQueueIsEnabled()) {
+	if(caTaskQueueIsEnabled()) {
 		$background_opts = ['value' => 1, 'id' => 'caProcessInBackground'];
 		if(Session::getVar($t_item->tableName().'_summary_export_in_background')) {
 			$background_opts['checked'] = 1;

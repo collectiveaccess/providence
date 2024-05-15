@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,8 @@
  *
  * ----------------------------------------------------------------------
  */
- namespace CA\Attributes;
- /**
-  *
-  */ 	
-require_once(__CA_LIB_DIR__.'/Configuration.php');
-
+namespace CA\Attributes;
+	
 require_once(__CA_LIB_DIR__.'/Attributes/Values/ContainerAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/TextAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/DateRangeAttributeValue.php');
@@ -74,6 +70,8 @@ class Attribute {
 	private $opn_element_id;
 	private $opn_locale_id;
 	private $ops_value_source;
+	private $opn_table_num;
+	private $opn_row_id;
 	
 	static $s_instance_cache = array();
 	static $s_attribute_types = array();

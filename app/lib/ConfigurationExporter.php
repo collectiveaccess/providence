@@ -30,24 +30,6 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
-
-require_once(__CA_LIB_DIR__."/Configuration.php");
-require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
-require_once(__CA_MODELS_DIR__."/ca_lists.php");
-require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
-require_once(__CA_MODELS_DIR__."/ca_locales.php");
-require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
-require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
-require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
-require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
-require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
-require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-
-
 final class ConfigurationExporter {
 	# -------------------------------------------------------
 	/** @var Configuration */
@@ -1428,6 +1410,18 @@ final class ConfigurationExporter {
 			}
 
 			$vo_roles->appendChild($vo_role);
+			
+	
+			if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno(Datamodel::getTableNum($t_role->tableNum()), 'code'))) {
+				foreach($va_deleted as $vs_deleted_idno) {
+					$vo_role = $this->opo_dom->createElement("role");
+					$vo_role->setAttribute("code", $vs_deleted_idno);
+					$vo_role->setAttribute("deleted", 1);
+					$vo_roles->appendChild($vo_role);
+
+					$this->printStatus(_t("Exporting deleted role %1", $vs_deleted_idno));
+				}
+			}
 		}
 
 		return $vo_roles;
@@ -1488,17 +1482,6 @@ final class ConfigurationExporter {
 		$t_user = new ca_users();
 
 		$vo_logins = $this->opo_dom->createElement("logins");
-
-		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_role->tableNum(), 'code'))) {
-			foreach($va_deleted as $vs_deleted_idno) {
-				$vo_role = $this->opo_dom->createElement("role");
-				$vo_roles->appendChild($vo_role);
-				$vo_role->setAttribute("code", $vs_deleted_idno);
-				$vo_role->setAttribute("deleted", 1);
-
-				$this->printStatus(_t("Exporting deleted role %1", $vs_deleted_idno));
-			}
-		}
 
 		$qr_users = $this->opo_db->query("SELECT * FROM ca_users WHERE active = 1");
 

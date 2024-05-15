@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
 require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearchResult.php'); 
@@ -53,6 +49,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	private $tep;			// date/time expression parse
 	
+	protected $debug = false;
 	
 	private $q_lookup_word = null;
 	private $insert_word_sql = '';
@@ -72,6 +69,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	private $delete_dependent_sql = "";
 	private $q_delete_dependent_sql = null;
 	
+	private $lookup_word_sql = "";
+	private $opqr_insert_word = null;
+	
+	private $delete_with_field_num_sql_without_rel_type_id = "";
+	private $q_delete_with_field_num_without_rel_type_id = null;
+	
+	private $get_result_desc_data = false;
 	
 	static public $whitespace_tokenizer_regex;
 	static public $punctuation_tokenizer_regex;
@@ -84,6 +88,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
 	static protected $filter_stop_words = null;
+	
+	/**
+	 * Separate connection for async inserts when reindexng
+	 */
+	private $reindex_db = null;
+	private $last_indexing_result = null;
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -157,11 +168,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(($max_indexing_buffer_size = (int)$this->search_config->get('max_indexing_buffer_size')) < 1) {
 			$max_indexing_buffer_size = 5000;
 		}
-		
 		$this->options = array(
 				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
 				'maxIndexingBufferSize' => $max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
-				'maxWordIndexInsertSegmentSize' => ceil($max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
+				'maxWordIndexInsertSegmentSize' => ceil($max_indexing_buffer_size), // maximum number of word index rows to put into a single insert
 				'maxWordCacheSize' => 1048576,								// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
@@ -214,7 +224,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	public function search(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) {
+	public function search(int $subject_tablenum, string $search_expression, array $filters, $rewritten_query) {
 		$this->initSearch($subject_tablenum, $search_expression, $filters, $rewritten_query);
 		$hits = $this->_filterQueryResult(
 			$subject_tablenum, 
@@ -683,7 +693,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			foreach($terms as $term) {
 				$hits = $this->_processQueryTerm($subject_tablenum, $term);
 				if(!is_array($hits)) { continue; }
-				if ($i == 0) { $acc = $hits; continue; }
+				if ($i == 0) { $i++; $acc = $hits; continue; }
 				$acc = array_intersect_key($acc, $hits);
 				$i++;
 			}
@@ -893,7 +903,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$qinfo = $this->_queryForDateRangeAttribute(new DateRangeAttributeValue(), $ap, $text, $text_upper);
 				break;
 			case __CA_ATTRIBUTE_VALUE_TIMECODE__:
-				$qinfo = $this->_queryForNumericAttribute(new TimecodeAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
+				$qinfo = $this->_queryForNumericAttribute(new TimeCodeAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
 				break;
 			case __CA_ATTRIBUTE_VALUE_LENGTH__:
 				$qinfo = $this->_queryForNumericAttribute(new LengthAttributeValue(), $ap, $text, $text_upper, 'value_decimal1');
@@ -1199,19 +1209,19 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	public function flushContentBuffer() : void {
 		// add fields to doc
-		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
+		$vn_max_word_segment_size = 200000; //(int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
 		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
 			while(sizeof(self::$doc_content_buffer) > 0) {
 				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
-					$this->db->query("SET unique_checks=0");
-					$this->db->query("SET foreign_key_checks=0");
-				}
-				$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
-				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
-					$this->db->query("SET unique_checks=1");
-					$this->db->query("SET foreign_key_checks=1");
+					$db = $this->getReindexDbConnection();
+					if($this->last_indexing_result) { $this->last_indexing_result->reap(); }
+					$this->last_indexing_result = $db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)), [], ['resultMode' => MYSQLI_ASYNC]);
+			
+					if($r) { $r->free(); }
+				} else {
+					$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
 				}
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
@@ -1297,7 +1307,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	public function removeRowIndexing(int $subject_tablenum, int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pa_field_nums=null, ?int $pn_field_row_id=null, ?int $pn_rel_type_id=null) {
+	public function removeRowIndexing(?int $subject_tablenum, ?int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pa_field_nums=null, ?int $pn_field_row_id=null, ?int $pn_rel_type_id=null) {
 
 		//print "[SqlSearchDebug] removeRowIndexing: $subject_tablenum/$pn_subject_row_id<br>\n";
 		$vn_rel_type_id = $pn_rel_type_id ? $pn_rel_type_id : 0;
@@ -1944,7 +1954,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $ap['access_point']));
 			}
 			
 			$pk = $t_table->primaryKey(true);
@@ -1952,7 +1962,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$field = $tmp[1];
 			
 			if(!$t_table->hasField($field)) { 
-				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $access_point));
+				throw new ApplicationException(_t('Invalid field %1 in bundle %2', $field, $ap['access_point']));
 			}
 		} else {
 			$field = 'cav.'.$attr_field;
@@ -2163,7 +2173,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($ap['type'] === 'INTRINSIC') {
 			$tmp = explode('.', $ap['access_point']);
 			if (!($t_table = Datamodel::getInstance($tmp[0], true))) {
-				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $access_point));
+				throw new ApplicationException(_t('Invalid table %1 in bundle %2', $tmp[0], $ap['access_point']));
 			}
 			
 			$pk = $t_table->primaryKey(true);
@@ -2257,6 +2267,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		}
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function getReindexDbConnection() {
+		if(!$this->reindex_db) {
+			$this->reindex_db = new Db(null, ['uniqueConnection' => true]);
+		}
+		return $this->reindex_db;
 	}
 	# -------------------------------------------------------
 }

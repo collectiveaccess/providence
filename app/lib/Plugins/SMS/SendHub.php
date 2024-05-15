@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,8 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugSMS.php");
 include_once(__CA_LIB_DIR__."/Plugins/SMS/BaseSMSPlugin.php");
-include_once(__CA_MODELS_DIR__."/ca_users.php");
 
 class WLPlugSMSSendHub Extends BaseSMSPlugin Implements IWLPlugSMS {
 	
@@ -136,4 +130,3 @@ class WLPlugSMSSendHub Extends BaseSMSPlugin Implements IWLPlugSMS {
 	}
 	# ------------------------------------------------
 }
-?>

@@ -181,7 +181,7 @@ class SnoballStemmer
         $results = array();
 
         if ( !is_array($words) ) {
-            $words = split("[ ,;\n\r\t]+", trim($words));
+            $words = preg_split("/[ ,;\n\r\t]+/", trim($words));
         }
 
         foreach ( $words as $word ) {
@@ -732,4 +732,4 @@ class SnoballStemmer
     	}
     }
 }
-?>
+

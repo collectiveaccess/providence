@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
 class BaseLookupController extends ActionController {
 	# -------------------------------------------------------
@@ -200,7 +196,7 @@ class BaseLookupController extends ActionController {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
 					if((strlen($ps_restrict_to_search) > 0)) {
-						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 						if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
 							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
 							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));

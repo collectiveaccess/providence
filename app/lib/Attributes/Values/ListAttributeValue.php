@@ -30,14 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
 define("__CA_ATTRIBUTE_VALUE_LIST__", 3);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AuthorityAttributeValue.php');
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 global $_ca_attribute_settings;
 
@@ -288,6 +284,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
 	 */
 	protected $ops_name_plural = 'List items';
+	
+	/**
+	 *
+	 */
+	protected $opn_item_id;
+	
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
 		parent::__construct($pa_value_array);
@@ -588,7 +590,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		// dependant field visibility
 		$vs_show_hide_js = '';
-		$cases = $all_ids =  [];
+		$cases = $all_ids = [];
 		if(Configuration::load()->get('enable_dependent_field_visibility')) {
 			switch($render_as) {
 				case 'radio_buttons':
@@ -618,20 +620,20 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
                         $va_tmp = self::resolveHideIfSelectedKey($vs_key);
                         if(!is_array($va_tmp)) { continue; }
 
-                        $ids[] = $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
+                        $all_ids[] = "Screen".$va_tmp[0]."_".$va_tmp[1].'_bundle';
                     }
                     
                     switch($render_as) {
 						case 'radio_buttons':
 							$cases[] = [
 								'condition' => "((jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').length == 0) || (jQuery('[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val() == ''))",
-								'ids' => $ids
+								'ids' => $all_ids
 							]; 
 							break;
 						default:
 							$cases[] = [
 								'condition' => "{$vs_select}.val() == ''",
-								'ids' => $ids
+								'ids' => $all_ids
 							]; 
 							break;
 					}
@@ -687,24 +689,38 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					}
 				}
 			}
+			
 		    if(is_array($cases) && sizeof($cases)) {
 			    $all_ids = array_unique($all_ids);
-			    $all_ids_sel = array_map(function($v) { return "#{$v}"; }, $all_ids);
-			    $case_switch = array_map(function($v) 
+			    $case_switch = array_map(function($v)
 			        { 
 			            $id_list = array_map(function($x) { return "#{$x}"; }, $v['ids']);
-			            return "if(".$v['condition'].") { jQuery('".join(',', $id_list)."').hide(); }";
-			    
+			            
+			            $buf = '';
+			            foreach($id_list as $id) {
+			            	$buf .= "if(xmap['{$id}'] === undefined) { xmap['{$id}'] = false; }";
+			            	$buf .= "if(({$v['condition']}) && !xmap['{$id}']) { xmap['{$id}'] = true; }";
+			            }
+			    		return $buf;
 			        }, $cases);
+			        
                 $vs_show_hide_js = "
 <script type='text/javascript'>jQuery(document).ready(function() { 
     var select = {$vs_select};
-	select.change(function() {
-	    jQuery('".join(',', $all_ids_sel)."').show();
+	select.change(function(e, p) {
+		let isInit = (p && p['init']);
+		let t = isInit ? 0 : 250;
+		let xmap = {};
 	    ".join("\n", $case_switch)."
-
+	    for(var k in xmap) {
+	    	if(xmap[k]) {
+	    		jQuery(k).slideUp(t);
+	    	} else {
+	    		jQuery(k).width('100%').slideDown(t);
+	    	}
+	    }
 	});
-	select.trigger('change');
+	select.trigger('change', {'init': true});
 	caUI.utils.showUnsavedChangesWarning(false);
   });</script>\n";
             }

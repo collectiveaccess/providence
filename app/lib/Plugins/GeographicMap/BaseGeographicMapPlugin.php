@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,6 +58,9 @@ abstract class BaseGeographicMapPlugIn Extends WLPlug {
 	protected $opn_map_extent_south;
 	protected $opn_map_extent_east;
 	protected $opn_map_extent_west;
+	
+	protected $opn_width;
+	protected $opn_height;
 	
 	// map item list
 	protected $opa_map_items = array();
@@ -394,4 +397,3 @@ abstract class BaseGeographicMapPlugIn Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
-?>

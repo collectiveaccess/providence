@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * Portions derived from the PHP JPEG Metadata Toolkit (http://electronics.ozhiker.com)
  * Copyright 2004 Evan Hunter
@@ -32,11 +32,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/BaseMediaMetadataParser.php");
 
 /**
@@ -90,11 +85,17 @@ class XMPParser extends BaseMediaMetadataParser {
 	# -------------------------------------------------------
 	private $ops_filepath = null;					// path to parsed JPEG-format file
 
-	private $opa_metadata = array();			//
+	private $opa_metadata = [];			//
 	private $ops_header_data = null;
-	private $opa_isset = array();
+	private $opa_isset = [];
+	private $opa_header_data = [];
+	private $opo_old_metadata = [];
+	private $opo_metadata = [];
+	private $o_rdf;
+	private $o_rdf_desc;
+	private $o_creator;
 	# -------------------------------------------------------
-	private $opa_fields = array();
+	private $opa_fields = [];
 	# -------------------------------------------------------
 	/**
 	 * XMP "fields" we support. Each of these maps to a specific element in the XMP RDF document
@@ -205,7 +206,7 @@ class XMPParser extends BaseMediaMetadataParser {
 	 */
 	public function parse($ps_filepath) {
 		$va_jpeg_header_data = $this->getJPEGHeaderData($ps_filepath);
-		if (!is_array($va_jpeg_header_data)) { $va_jpeg_header_data = array(); }
+		if (!is_array($va_jpeg_header_data)) { $va_jpeg_header_data = []; }
 		$this->ops_filepath = $ps_filepath;
 		$this->opa_header_data = $va_jpeg_header_data;
 
@@ -218,13 +219,13 @@ class XMPParser extends BaseMediaMetadataParser {
 			$va_namespaces = $this->opo_old_metadata->getNameSpaces(true);
 			$this->opo_metadata = $this->opo_old_metadata;
 
-			$va_data = array();
+			$va_data = [];
 			foreach($this->opo_old_metadata->children($va_namespaces['rdf']) as $vn_i => $o_rdf) {
 				foreach($o_rdf->children($va_namespaces['rdf']) as $vn_i => $o_rdf_desc) {
 					foreach($va_namespaces as $vs_namespace => $vs_namespace_url) {
 						foreach($o_rdf_desc->children($vs_namespace_url) as $vs_tag => $o_item) {
 							$va_extracted_values = $o_item->xpath(".//rdf:li");
-							$va_values = array();
+							$va_values = [];
 							foreach($va_extracted_values as $o_value_list) {
 								$va_values[] = (string)$o_value_list;
 							}
@@ -249,7 +250,7 @@ class XMPParser extends BaseMediaMetadataParser {
 			$this->o_rdf = $this->opo_metadata ->xpath('//rdf:RDF');
 			$this->o_rdf_desc = $this->opo_metadata ->xpath('//rdf:RDF/rdf:Description');
 			$this->o_creator = null;
-			$this->opa_isset = array();
+			$this->opa_isset = [];
 		} else {
 			$this->initMetadata();
 		}
@@ -264,7 +265,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		<rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#" xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/" xmlns:Iptc4xmpCore="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" xmp:CreatorTool="CollectiveAccess" xmp:ModifyDate="'.date("c").'" xmp:CreateDate="'.date("c").'" xmp:MetadataDate="'.date("c").'"> </rdf:Description></rdf:RDF></x:xmpmeta>';
 
 		$this->opo_metadata = simplexml_load_string($vs_xmp_data);
-		$this->opa_metadata = array();
+		$this->opa_metadata = [];
 
 
 		$this->opo_metadata->registerXPathNamespace("x", "adobe:ns:meta/");
@@ -274,7 +275,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		$this->o_rdf = $this->opo_metadata ->xpath('//rdf:RDF');
 		$this->o_rdf_desc = $this->opo_metadata ->xpath('//rdf:RDF/rdf:Description');
 		$this->o_creator = null;
-		$this->opa_isset = array();
+		$this->opa_isset = [];
 	}
 	# -------------------------------------------------------
 	/**
@@ -759,7 +760,7 @@ class XMPParser extends BaseMediaMetadataParser {
 	 * @return array The JPEG header with the specified segment removed
 	 */
 	private function removeJPEGHeaderSegment($ps_segment_name, $pa_jpeg_header_data) {
-		$va_filtered_data = array();
+		$va_filtered_data = [];
 		foreach ($pa_jpeg_header_data as $vn_segno => $va_segment) {
 			if ($va_segment['SegName'] == $ps_segment_name) { continue; }
 			$va_filtered_data[] = $va_segment;
@@ -864,4 +865,3 @@ class XMPParser extends BaseMediaMetadataParser {
 	}
 	# -------------------------------------------------------
 }
-?>

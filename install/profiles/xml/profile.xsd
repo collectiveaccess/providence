@@ -392,6 +392,7 @@
     <xs:attribute name="code" type="elementCodeType" use="required"/>
     <xs:attribute name="datatype" type="datatypeList" use="required"/>
     <xs:attribute name="list" type="xs:string" use="optional"/>
+    <xs:attribute name="deleted" type="booleanType" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="typeRestrictions">

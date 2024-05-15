@@ -113,22 +113,31 @@ var caUI = caUI || {};
 			var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
 
 			var defaultLocaleSelectedIndex = 0;
-			for(i=0; i < localeList.length; i++) {
-				if (!isNew) {
-					if (localeList[i].value !== templateValues.locale_id) { continue; }
-				} else {
-					if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value='" + localeList[i].value + "']").length > 0) {
-						if(jQuery(this.container + " select." + this.localeClassName).length > 1) {
-							continue;
-						}
-					}
-				}
-
-				defaultLocaleSelectedIndex = i;
-				if (isNew && localeList[i].value == options.defaultLocaleID) {
-					break;
-				}
-			}
+			
+			if(that.mode === 'preferred') {
+                for(i=0; i < localeList.length; i++) {
+                    if (!isNew) {
+                        if (localeList[i].value !== templateValues.locale_id) { continue; }
+                    } else {
+                        if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value='" + localeList[i].value + "']").length > 0) {
+                            if(jQuery(this.container + " select." + this.localeClassName).length > 1) {
+                                continue;
+                            }
+                        }
+                    }
+    
+                    defaultLocaleSelectedIndex = i;
+                    if (isNew && localeList[i].value == options.defaultLocaleID) {
+                        break;
+                    }
+                }
+            } else {
+                const isDefaultLocale = (element) => element.value == options.defaultLocaleID;
+                defaultLocaleSelectedIndex = localeList.findIndex((element) => element.value == templateValues.locale_id);
+                if(defaultLocaleSelectedIndex === -1) {
+                     defaultLocaleSelectedIndex = localeList.findIndex(isDefaultLocale);
+                }
+            }
 
 			// set default values for <select> elements
 			var i;

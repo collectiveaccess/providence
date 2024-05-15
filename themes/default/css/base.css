@@ -23,6 +23,10 @@ body {
     overflow: auto !important;
 }
 
+a, p, div {
+    overflow-wrap: break-word;
+}
+
 form{
     display:inline;
 }
@@ -5367,7 +5371,7 @@ table.uiScreenItem .fa{
 #dashboardControls {text-align: right; padding:0px 0px 0px 10px;}
 a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none; font-size:11px; color: #777;}
 
-.portlet { margin:.5em 1em 1.5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
+.portlet { margin:.5em 1em .5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
 .portlet-header {
 	font-family: "DIN-Regular", Arial, Helvetica, sans-serif;
 	font-size: 13px;
@@ -5386,9 +5390,14 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
 .portlet-content {
     background-color: #fbfbfb;
     border: 1px solid #eee;
-    padding:15px 0px 15px 15px;
+    padding: 3px 10px 3px 10px;
     line-height:1.5em;
 }
+
+.ui-tabs-panel {
+	padding: 0px !important;
+}
+
 .ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
 .ui-sortable-placeholder * { visibility: hidden; }
 
@@ -5431,6 +5440,7 @@ a.dashboardRemoveWidget {
 }
 .dashboardWidgetContentContainer {
     position: relative;
+    padding: 5px;
 }
 .dashboardWidgetContentContainer ul{
     list-style-type: none;
@@ -5451,6 +5461,7 @@ a.dashboardRemoveWidget {
 
 .dashboardWidgetScrollMedium {
     height: 300px;
+    width: 100%;
     overflow-x: auto;
     overflow-y: auto;
 }
@@ -5469,6 +5480,11 @@ a.dashboardRemoveWidget {
     background-color:#DEDEDE;
     font-weight:bold;
 }
+
+.dashboardWidgetTable tr {
+	border-bottom: 1px dotted #999;
+}
+
 .dashboardWidgetTable td{
     padding:5px;
     background-color:#f2f2f2;
@@ -5934,8 +5950,6 @@ div.caItemListSortControlTrigger {
 select.caItemListSortControlTrigger {
     font-size: 9px;
     font-weight: normal;
-    height: 17px;
-    vertical-align: top;
 }
 
 .caItemListSortControlContainer {
@@ -6215,11 +6229,17 @@ div.editLink {
     padding-top:25px;
     float:right;
 }
-.accessName {
+
+div.accessName {
+    margin-bottom: 5px;
+}
+
+span.accessName {
     font-weight: bold;
     font-size: 12px;
     color: #134959;
     line-height:1.75em;
+    margin-bottom: 5px;
 }
 
 .inheritFromParent {
@@ -6231,6 +6251,10 @@ div.editLink {
     float: right;
 }
 
+div.inheritName {
+    font-size: 9px; 
+    font-style: italic;
+}
 /* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */
 /* -------------------------------------------------*/
@@ -6672,7 +6696,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     margin: 0px;
     padding:0px !important;
     border: 2px solid #999999;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 9999;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
 }
 
@@ -6854,16 +6878,23 @@ div.caRepresentationMediaReplicationControls {
 }
 
  /* Metadata Export */
- 
- #exporterUploadArea {
- 	border: 1px dashed #ccc;
- 	display:none;
- 	font-family: 'DIN-Regular', helvetica, sans-serif;
- 	font-size:16px;
- 	color:#333;
- 	text-align: center;
-	padding: 10px;
- }
+#importerUploadArea, #exporterUploadArea {
+    border: 1px dashed #ccc; 
+    text-align: center; 
+    padding: 10px; 
+    display: none;
+    font-size: 16px; 
+    color: #333;
+}
+
+div.exporterUploadText, div.importerUploadText {
+    cursor: pointer;
+}
+
+#caAddImportersButton, #caCloseImportersButton, #caAddExportersButton, #caCloseExportersButton {
+    display: none;
+}
+
 .ui-progressbar {
 	border:1px solid #eeeeee !important;
 }
@@ -7364,6 +7395,26 @@ div.caLibraryTransactionListItemRemoveButton {
 
 div.caLibrarySubmitListContainer {
 	text-align: center;
+}
+
+div.caLibraryTransactionListTransactionOptionsContainer {
+	text-align: left;
+}
+
+div.caLibraryTransactionListTransactionNotesContainer {
+	margin: 3px 0 3px 40px;
+}
+
+div.caLibraryTransactionListTranactionNotesLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListTransactionDueDateContainer {
+	margin: 3px 0 3px 40px;
+}
+
+div.caLibraryTransactionListTransactionDueDateLabel {
+	font-size: 11px;
 }
 
 div.caLibraryTransactionResultsContainer {
@@ -8213,6 +8264,108 @@ span.developerBundleCode, a.developerBundleCode {
     height: none !important;
 }    
 
+/* hierarchy tools */
+.hierarchyTools {
+    min-height: 20px;
+}
+
+.hierarchyToolsItem {
+    box-sizing: border-box !important;
+    text-align: center;
+    float: left; 
+    width: 180px; 
+    height: 180px;
+       
+}
+.hierarchyToolsItem .hierarchyToolsItemImage {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%); 
+}
+.hierarchyToolsItem .hierarchyToolsItemText {
+    margin: 0;
+    position: absolute;
+    left: 0px;
+    bottom: 5px;
+    background-color: #444;
+    padding: 4px;
+    opacity: 0.8;
+    
+    color: #fff;
+    text-decoration: none;
+    font-weight: normal;
+    font-size: 12px;
+    
+    width: 100%;
+    text-align: center;
+    
+    display: none;
+}
+
+.hierarchyToolsItem .hierarchyToolsItemText a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.hierarchyToolsItem .hierarchyToolsItemSelect {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: auto; height: auto;
+    padding: 1px;
+    border-radius: 5px;
+}
+
+.hierarchyToolsItem:hover .hierarchyToolsItemText {
+   display: block;
+}
+
+.hierarchyToolsItem.selected {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia {
+    display: none;
+    float: left;
+}
+
+.hierarchyToolsControlDownloadMedia select {
+	width: 40px;
+	font-size: 10px;
+	margin: 0px 0px 0px 4px;
+}
+
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlDownloadMedia {
+    margin-top: 5px;
+}
+
+.hierarchyToolsMessage {
+    display: none;
+    text-align: center;
+    padding: 5px 5px 15px 0px;
+	font-size: 12px;
+}
+
+.hierarchyToolsControlSelect {
+    display: none;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.hierarchyToolsMessage {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* generic editor bundle */
 div.genericEditorContent {
 	padding: 10px;
 	font-size: 12px;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2019 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@ $hide_zero_counts 		= $this->getVar('hide_zero_counts');
 ?>
 <div class="dashboardWidgetContentContainer" style="font-size:13px; padding-right:10px;">
 <?php
-	print _t("There are ");
+	print _t("There are").' ';
 	$va_counts = array();
 	$i = 1;
 	foreach($this->getVar('counts') as $vs_table => $count) {
@@ -48,7 +48,7 @@ $hide_zero_counts 		= $this->getVar('hide_zero_counts');
 			foreach($count as $type_id => $info) {
 				if($hide_zero_counts && ($info['count'] == 0)) { continue; }
 				$typename = caGetListItemByIDForDisplay($type_id, ['return' => ($info['count'] == 1) ? 'singular' : 'plural']);
-				$va_counts[] = $vs_and."<b><a>".caSearchLink($po_request,$info['count'], '', $vs_table, "{$vs_table}.type_id:".caGetListItemIdno($type_id), ['type_id' => $type_id]).'</a></b>&nbsp;'.mb_strtolower($typename);
+				$va_counts[] = $vs_and."<b><a>".caSearchLink($po_request,$info['count'], '', $vs_table, "{$vs_table}.type_id:".caGetListItemIdno($type_id), ['type_id' => $type_id]).'</a></b>&nbsp;'.$typename;
 			}
 		} else {
 			if($hide_zero_counts && ($count == 0)) { continue; }

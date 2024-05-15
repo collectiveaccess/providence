@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
 require_once(__CA_LIB_DIR__.'/Auth/PasswordHash.php');
 
@@ -41,8 +40,6 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 
 		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
-
-		$o_log = new Eventlog();
 
 		// external database config
 		$vs_extdb_host = $o_auth_config->get("extdb_host");
@@ -62,10 +59,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 		// couldn't connect to external database
 		if(!$o_ext_db->connected()) {
-			$o_log->log(array(
-				'CODE' => 'LOGF', 'SOURCE' => 'ExternalDBAuthAdapter',
-				'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, RequestHTTP::ip())
-			));
+			caLogEvent('LOGF', _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, RequestHTTP::ip()), 'ExternalDBAuthAdapter');
 			return false;
 		}
 

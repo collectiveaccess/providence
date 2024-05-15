@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,36 +29,44 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- * @file A class to interact with the VIAF API
- */
-
 use \GuzzleHttp\Client;
 
 require_once(__CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__ . "/Plugins/InformationService/BaseInformationServicePlugin.php");
 
-
 global $g_information_service_settings_viaf;
-$g_information_service_settings_viaf = [];
+$g_information_service_settings_viaf = [
+	'searchOn' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'options' => [
+			_t('All') => 'cql.any',
+			_t('Personal names') => 'local.personalNames',
+		],
+		'default' => 'cql.any',
+		'width' => 90, 'height' => 1,
+		'label' => _t(''),
+		'description' => _t('Search on')
+	]
+];
 
-
+/**
+ * @file A class to interact with the VIAF API
+ */
 class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implements IWLPlugInformationService
 {
-
     # ------------------------------------------------
-    static $s_settings;
-    const VIAF_SERVICES_BASE_URL = 'http://www.viaf.org/viaf';
+    const VIAF_SERVICES_BASE_URL = 'https://www.viaf.org/viaf';
     const VIAF_LOOKUP = 'search';
+    
+    static $s_settings;
     private $o_client;
     # ------------------------------------------------
 
     /**
      * WLPlugInformationServiceVIAF constructor.
      */
-    public function __construct()
-    {
+    public function __construct() {
         global $g_information_service_settings_viaf;
 
         WLPlugInformationServiceVIAF::$s_settings = $g_information_service_settings_viaf;
@@ -68,15 +76,19 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
         $this->description = _t('Provides access to VIAF service');
     }
 
-    public function getAvailableSettings()
-    {
+    public function getAvailableSettings() {
         return WLPlugInformationServiceVIAF::$s_settings;
     }
 
-    public function lookup($pa_settings, $ps_search, $pa_options = null)
-    {
+    public function lookup($pa_settings, $ps_search, $pa_options = null)  {
+   		if(preg_match("!^http[s]{0,1}://www.viaf.org/viaf/([\d]+)!", $ps_search, $m)) {
+   			$ps_search = $m[1];
+   		}
+   		
+   		$search_on = caGetOption('searchOn', $pa_settings, 'cql.any');
+   		
         $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&httpAccept=application/json&query=".urlencode("cql.any all \"{$ps_search}\""), [
+        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&httpAccept=application/json&query=".urlencode("{$search_on} all \"{$ps_search}\""), [
             'headers' => [
                 'Accept' => 'application/json'
             ]
@@ -100,9 +112,8 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
         return $va_return;
     }
 
-    public function getExtendedInformation($pa_settings, $ps_url)
-    {
-        return ['display' => "<p><a href='$ps_url' target='_blank'>$ps_url</a></p>"];
+    public function getExtendedInformation($pa_settings, $ps_url) {
+        return ['display' => "<p><a href='{$ps_url}' target='_blank'>{$ps_url}</a></p>"];
     }
 
     /**

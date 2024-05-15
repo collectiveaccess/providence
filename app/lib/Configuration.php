@@ -161,15 +161,15 @@ class Configuration {
 		}
 		$o_config = ($vs_top_level_config_path === $this->ops_config_file_path) ? $this : Configuration::load($vs_top_level_config_path, false, false, true);
 
-        
-		
 		$vs_filename = pathinfo($ps_file_path, PATHINFO_BASENAME);
-		if (($vb_inherit_config = $o_config->get('allowThemeInheritance')) && !$pb_dont_load_from_default_path) {
+		
+		$app_config = ($vs_filename !== 'app.conf') ? Configuration::load(__CA_APP_CONFIG__) : $o_config;
+		if (($vb_inherit_config = $app_config->get(['allowThemeInheritance', 'allow_theme_inheritance'])) && !$pb_dont_load_from_default_path) {
 		    $i=0;
-            while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
+            while($vs_inherit_from_theme = trim(trim($app_config->get(['inheritFrom', 'inherit_from'])), "/")) {
                 $i++;
                 $vs_inherited_config_path = __CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/{$vs_filename}";
-                if (file_exists($vs_inherited_config_path) && !in_array($vs_inherited_config_path, $va_config_file_list) && ($vs_inherited_config_path !== $vs_config_file_path)) {
+                if (file_exists($vs_inherited_config_path) && !in_array($vs_inherited_config_path, $va_config_file_list) && ($vs_inherited_config_path !== $this->ops_config_file_path)) {
                     array_unshift($va_config_file_list, $vs_inherited_config_path);
                 }
                 if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
-/**
- *
  */
 require_once(__CA_LIB_DIR__."/BaseRefineableSearchController.php");
 require_once(__CA_LIB_DIR__."/Browse/ObjectBrowse.php");
@@ -149,7 +145,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 				'sort_direction' => $vs_sort_direction, 
 				'appendToSearch' => $vs_append_to_search,
 				'checkAccess' => $va_access_values,
-				'no_cache' => $vb_is_new_search,
+				'no_cache' => $vb_is_new_search || !$this->opo_result_context->cacheIsValid(),
 				'dontCheckFacetAvailability' => true,
 				'filterNonPrimaryRepresentations' => true,
 				'rootRecordsOnly' => $this->view->getVar('hide_children'),
@@ -195,6 +191,13 @@ class BaseSearchController extends BaseRefineableSearchController {
 				}
 				
 				$vo_result = $po_search->getResults($va_search_opts);
+				
+				if((!$vo_result || !$vo_result->numHits()) && $po_search->numCriteria() > 1) {
+					$po_search->removeAllCriteria();
+					$po_search->addCriteria('_search', $vs_search_with_suffix);
+					$po_search->execute($va_search_opts);
+					$vo_result = $po_search->getResults($va_search_opts);
+				}
 		
 				$n = (isset($pa_options['result']) && is_a($pa_options['result'], 'SearchResult')) ? $pa_options['result']->numHits() : $vo_result->numHits();
 			
@@ -306,7 +309,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 				break;
 			# ------------------------------------
 			case 'EXPORT':
-				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display]);
+				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display, 'criteriaSummary' => $vs_search, 'browseCriteria' => $this->opo_browse->getCriteriaAsStrings(null, ['sense' => 'singular', 'returnAs' => 'array'])]);
 				break;
 			# ------------------------------------
 			case 'HTML': 
@@ -440,14 +443,6 @@ class BaseSearchController extends BaseRefineableSearchController {
 		}
 		
 		return $va_subtypes;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */ 
-	public function getPartialResult($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
-		return parent::getPartialResult($pa_options);
 	}
 	# -------------------------------------------------------
 	/**

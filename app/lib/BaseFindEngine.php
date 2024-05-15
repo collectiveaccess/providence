@@ -633,7 +633,7 @@ class BaseFindEngine extends BaseObject {
 			SELECT l.{$table_pk}, l.locale_id
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
-			{$pref_sql} and l.locale_id = 1
+			{$pref_sql}
 			ORDER BY l.`{$label_field}` {$direction}
 			{$limit_sql}
 		";
@@ -672,7 +672,10 @@ class BaseFindEngine extends BaseObject {
 		
 		$direction = self::sortDirection($direction);
 		$rel_types = caGetOption('relationshipTypes', $options, null);
-		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field, $rel_types);
+		
+		$primary_table = caGetOption('primaryTable', $options, null);
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field, $rel_types, $options);
 		$join_sql = join("\n", $joins);
 		
 		$is_preferred = caGetOption('isPreferred', $options, null);
@@ -828,6 +831,7 @@ class BaseFindEngine extends BaseObject {
 		
 		$table_num = $t_table->tableNum();
 		$table_name = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
 		
 		if(!method_exists($t_table, 'getPolicyConfig')) { return []; }
 		if(!is_array($policy_info = $table_name::getPolicyConfig($policy))) {
@@ -1150,7 +1154,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $element_code, string $direction) {
 		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -1164,7 +1168,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		
-		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code);
 		$join_sql = join("\n", $joins);
 		
 		$sql = "SELECT cav.value_sortable val
@@ -1458,19 +1462,46 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getJoins($t_table, $t_rel_table, string $sort_field, array $rel_types=null) {
+	private function _getJoins($t_table, $t_rel_table, string $sort_field, array $rel_types=null, ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		$path = Datamodel::getPath($table, $rel_table);
-		$path = array_keys($path);
+		if($t_table->isRelationship() && ($primary_table = caGetOption('primaryTable', $options, null)) && ($primary_table !== $rel_table)) {
+			$path = Datamodel::getPath($primary_table, $rel_table);
+			$path = array_keys($path);
+			array_unshift($path, $table);
+		} else {
+			$path = Datamodel::getPath($table, $rel_table);
+			$path = array_keys($path);
+		}
 
 		$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 		
 		$joins = [];
 		switch($psize = sizeof($path)) {
+			case 4:
+				$pt_pk = Datamodel::primaryKey($primary_table);
+				$joins[] = "LEFT JOIN {$primary_table} AS pt ON t.{$pt_pk} = pt.{$pt_pk}";
+				$linking_table = $path[2];
+				
+				$rel_types = caMakeRelationshipTypeIDList($linking_table, $rel_types);
+				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND (l.type_id IN (".join(',', array_map('intval', $rel_types)).") OR (l.type_id IS NULL))" : '';
+	
+				if ($path[1] === $rel_table) {
+					$t_relation = Datamodel::getInstance($linking_table, true);
+					// self relation
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$pt_pk} = l.{$pt_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
+				} elseif ($is_attribute) {
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$pt_pk} = l.{$pt_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+				} else {							
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$pt_pk} = l.{$pt_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+				}
+				break;
 			case 3:
 				$linking_table = $path[1];
 				

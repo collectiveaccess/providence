@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
+AssetLoadManager::register("fileupload");
 
-	AssetLoadManager::register("fileupload");
+$t_instance = $this->getVar('t_instance');
+$o_config = $t_instance->getAppConfig();
+$t_rep = $this->getVar('t_rep');
 
- 	$t_instance = $this->getVar('t_instance');
- 	$o_config = $t_instance->getAppConfig();
- 	$t_rep = $this->getVar('t_rep');
+$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
- 	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
-
-	print $vs_control_box = caFormControlBox(
-		caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
-		'',
-		''
-	);
-
+print $vs_control_box = caFormControlBox(
+	caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+	caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
+	'',
+	''
+);
 ?>
 	<div id="batchProcessingTableProgressGroup" style="display: none;">
 		<div class="batchProcessingStatus"><span id="batchProcessingTableStatus" > </span></div>
@@ -120,7 +118,10 @@
 				}
 				print caHTMLCheckboxInput('include_subdirectories', $va_opts).' '._t('Include all sub-directories');
 				$va_opts['style'] = 'margin-left: 10px';
-				print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import');
+				
+				if($this->getVar('user_can_delete_media_on_import')) {
+					print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import');
+				}
 ?>
 				</div>
 			</div>

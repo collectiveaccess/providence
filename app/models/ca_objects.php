@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
@@ -321,10 +317,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access control settings from parent') => 0,
-				_t('Inherit item-level access control settings from parent') => 1
+				_t('Do not inherit item-level access control settings from parents') => 0,
+				_t('Inherit item-level access control settings from parents') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
+			'LABEL' => _t('Inherit item-level access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set from parent objects are applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -600,6 +596,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+		$this->BUNDLES['hierarchy_tools'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy tools'));
 		
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		
@@ -626,6 +623,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
 		
 		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location display value'), 'displayOnly' => true);
+		$this->BUNDLES['_checkout'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current object checkout data'), 'displayOnly' => true);
 		
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
@@ -772,14 +770,13 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					$va_reps[$qr_res->get('representation_id')] = $qr_res->getRow();
 				}
 				
-				$t_object_x_rep = new ca_objects_x_object_representations();
-				$t_object_x_rep->setTransaction($o_t);
 				foreach($va_reps as $vn_representation_id => $va_rep) {
-					$t_object_x_rep->setMode(ACCESS_WRITE);
 					$va_rep['object_id'] = $t_dupe->getPrimaryKey();
+					
+					$t_object_x_rep = new ca_objects_x_object_representations();
+					$t_object_x_rep->setTransaction($o_t);
 					$t_object_x_rep->set($va_rep);
 					$t_object_x_rep->insert();
-					
 					if ($t_object_x_rep->numErrors()) {
 						$this->errors = $t_object_x_rep->errors;
 						if ($vb_we_set_transaction) { $o_t->rollback();}
@@ -1017,7 +1014,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *
 	 * @param array $pa_options Options include:
 	 *		returnAsText = return status as displayable text [Default=false]
-	 *		returnAsText = return detailed status information in an array [Default=false]
+	 *		returnAsArray = return detailed status information in an array [Default=false]
 	 * @return mixed Will return a numeric status code by default; status text for display if returnAsText option is set; or an array with details on the checkout if the returnAsArray option is set. Will return null if not object is loaded or if the object may not be checked out.
 	 */
 	public function getCheckoutStatus($pa_options=null) {
@@ -1136,7 +1133,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *
 	 */
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
-		switch($ps_bundle_name) {
+		$bundle_bits = explode('.', $ps_bundle_name);
+		switch($bundle_bits[0]) {
 			case 'home_location_value':
 				$q = caMakeSearchResult('ca_objects', [$pn_row_id]);
 				if ($q && $q->nextHit()) {
@@ -1147,6 +1145,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 						return $t_loc->getWithTemplate($t);
 					}
 				}
+				break;
+			case '_checkout':
+				$data = $this->getCheckoutStatus(['returnAsArray' => true]);
+				if(!($key = $bundle_bits[1] ?? null)) { $key = 'status'; }
+				return $data[$key] ?? null;
 				break;
 			default:
 				return self::renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options);

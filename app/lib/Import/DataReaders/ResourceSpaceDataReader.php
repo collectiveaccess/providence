@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017-2018 Whirl-i-Gig
+ * Copyright 2017-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
- 
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 use GuzzleHttp\Client;
@@ -44,6 +39,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 	private $opa_row_buf = array();
 	private $opn_current_row = -1;
     protected $opa_row_ids = null;
+    private $opa_api_credentials;
 	# -------------------------------------------------------
 	/**
 	 *

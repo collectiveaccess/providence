@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2022 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  
@@ -47,233 +42,25 @@ class BaseRepresentationRelationship extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * @param array $pa_options Options include:
-	 *		dontForcePrimary = Don't force primary flag is none is set. [Default is false]
+	 * Overrides get() to support primary representation filtering
 	 *
-	 * @return bool
+	 * Options:
+	 *		All supported by BaseModelWithAttributes::get() plus:
+	 *		filterPrimaryRepresentations = Set filtering of primary representations in those models that support representations [Default is true]
+	 *		filterNonPrimaryRepresentations = Set filtering of non-primary representations in those models that support representations [Default is true]
 	 */
-	public function insert($pa_options=null) {
-		if(caGetOption('dontForcePrimary', $pa_options, false)) { return parent::insert($pa_options); }
+	public function get($ps_field, $pa_options=null) {
 		
-		$vb_we_set_transaction = false;
-		if ($this->inTransaction()) {
-			$o_trans = $this->getTransaction();
-		} else {
-			$o_trans = new Transaction($this->getDb());
-			$this->setTransaction($o_trans);
-			$vb_we_set_transaction = true;
-		}
-		
-		$o_db = $o_trans->getDb();
-	
-		list($vs_target_table, $vs_target_key) = $this->_getTarget();
-		$vs_rel_table = $this->tableName();
-		
-		$t_target = Datamodel::getInstanceByTableName($vs_target_table);
-		
-		$vn_target_id = $this->get($vs_target_key);
-		if (!$t_target->load($vn_target_id)) { 
-			// invalid object
-			$this->postError(720, _t("Related %1 does not exist", $t_target->getProperty('NAME_SINGULAR')), "BaseRepresentationRelationship->insert()");
-			return false;
-		}
-		if (!$this->get('is_primary')) {
-			// force is_primary to be set if no other represention is so marked 
-	
-			// is there another rep for this object marked is_primary?
-			$qr_res = $o_db->query("
-				SELECT oxor.relation_id
-				FROM {$vs_rel_table} oxor
-				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-				WHERE
-					oxor.{$vs_target_key} = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
-			", (int)$vn_target_id);
-			if(!$qr_res->nextRow()) {
-				// nope - force this one to be primary
-				$this->set('is_primary', 1);
+		if($this->_rowAsSearchResult) {
+			if (method_exists($this->_rowAsSearchResult, "filterPrimaryRepresentations")) {
+				$this->_rowAsSearchResult->filterPrimaryRepresentations(caGetOption('filterPrimaryRepresentations', $pa_options, false));
 			}
-		
-			$vb_rc = parent::insert($pa_options);
-			if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
-			return $vb_rc;
-		} else {
-			// unset other reps is_primary field
-			//$o_db->beginTransaction();
-		
-			$o_db->query("
-				UPDATE {$vs_rel_table}
-				SET is_primary = 0
-				WHERE
-					{$vs_target_key} = ?
-			", (int)$vn_target_id);
-		
-			if (!$vb_rc = parent::insert($pa_options)) {
-				if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
-			} else {
-				if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
+			if (method_exists($this->_rowAsSearchResult, "filterNonPrimaryRepresentations")) {
+				$this->_rowAsSearchResult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $pa_options, false));
 			}
-		
-			return $vb_rc;
+			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
 		}
-	}
-	# ------------------------------------------------------
-	/**
-	 * @param array $pa_options Options include:
-	 *		dontForcePrimary = Don't force primary flag is none is set. [Default is false]
-	 *
-	 * @return bool
-	 */
-	public function update($pa_options=null) {
-		if(caGetOption('dontForcePrimary', $pa_options, false)) { return parent::update($pa_options); }
-		
-		$vb_we_set_transaction = false;
-		if ($this->inTransaction()) {
-			$o_trans = $this->getTransaction();
-		} else {
-			$o_trans = new Transaction($this->getDb());
-			$this->setTransaction($o_trans);
-			$vb_we_set_transaction = true;
-		}
-		$o_db = $o_trans->getDb();
-	
-		list($vs_target_table, $vs_target_key) = $this->_getTarget();
-		
-		$vs_rel_table = $this->tableName();
-		$t_target = Datamodel::getInstanceByTableName($vs_target_table);
-		
-		$vn_target_id = $this->get($vs_target_key);
-		if (!$t_target->load($vn_target_id)) { 
-			// invalid target
-			$this->postError(720, _t("Related %1 does not exist", $t_target->getProperty('NAME_SINGULAR')), "BaseRepresentationRelationship->update()");
-			return false;
-		}
-	
-		if ($this->changed('is_primary')) {
-			if (!$this->get('is_primary')) {
-			
-				// force is_primary to be set if no other represention is so marked 
-				// is there another rep for this object marked is_primary?
-				$qr_res = $o_db->query("
-					SELECT oxor.relation_id
-					FROM {$vs_rel_table} oxor
-					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-					WHERE
-						oxor.{$vs_target_key} = ? AND oxor.is_primary = 1 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-				", (int)$vn_target_id, (int)$this->getPrimaryKey());
-				if(!$qr_res->nextRow()) {
-					// nope - force one to be primary
-					//$this->set('is_primary', 1);
-					$qr_res = $o_db->query("
-						SELECT oxor.relation_id
-						FROM {$vs_rel_table} oxor
-						INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-						WHERE
-							oxor.{$vs_target_key} = ? AND oxor.is_primary = 0 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-						ORDER BY oxor.`rank`, oxor.relation_id
-					", (int)$vn_target_id, (int)$this->getPrimaryKey());
-					if ($qr_res->nextRow()) {
-						$o_db->query("
-							UPDATE {$vs_rel_table}
-							SET is_primary = 1
-							WHERE
-								relation_id = ?
-						", (int)$qr_res->get('relation_id'));
-						if (!($vb_rc = parent::update($pa_options))) {
-							if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
-						} else {
-							if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
-						}
-					}
-				}
-			
-				return parent::update($pa_options);
-			} else {
-				// unset other reps is_primary field
-				$o_db->query("
-					UPDATE {$vs_rel_table}
-					SET is_primary = 0
-					WHERE
-						{$vs_target_key} = ?
-				", (int)$vn_target_id);
-				if (!($vb_rc = parent::update($pa_options))) {
-					if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
-				} else {
-					if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
-				}
-				return $vb_rc;
-			}
-		} else {
-			$vb_rc = parent::update($pa_options);
-			if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
-			return $vb_rc;
-		}
-	}
-	# ------------------------------------------------------
-	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-	
-		list($vs_target_table, $vs_target_key) = $this->_getTarget();
-		$vs_rel_table = $this->tableName();
-		
-		$t_target = Datamodel::getInstanceByTableName($vs_target_table);
-		
-		$vn_target_id = $this->get($vs_target_key);
-		if (!$t_target->load($vn_target_id)) { 
-			// invalid object
-			$this->postError(720, _t("Related %1 does not exist", $t_target->getProperty('NAME_SINGULAR')), "BaseRepresentationRelationship->delete()");
-			return false;
-		}
-	
-		$vb_we_set_transaction = false;
-		if ($this->inTransaction()) {
-			$o_trans = $this->getTransaction();
-		} else {
-			$o_trans = new Transaction($this->getDb());
-			$this->setTransaction($o_trans);
-			$vb_we_set_transaction = true;
-		}
-		$o_db = $o_trans->getDb();
-		
-		if($vb_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
-	
-			if ($this->get('is_primary')) {
-		
-				// make some other row primary
-				$qr_res = $o_db->query("
-					SELECT oxor.relation_id
-					FROM {$vs_rel_table} oxor
-					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-					WHERE
-						oxor.{$vs_target_key} = ? AND oxor.is_primary = 0 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-					ORDER BY
-						oxor.`rank`, oxor.relation_id
-				", (int)$vn_target_id, (int)$this->getPrimaryKey());
-				if($qr_res->nextRow()) {
-					// nope - force this one to be primary
-					$t_rep_link = Datamodel::getInstanceByTableName($vs_rel_table);
-					$t_rep_link->setTransaction($o_trans);
-					if ($t_rep_link->load($qr_res->get('relation_id'))) {
-						$t_rep_link->setMode(ACCESS_WRITE);
-						$t_rep_link->set('is_primary', 1);
-						$t_rep_link->update();
-				
-						if ($t_rep_link->numErrors()) {
-							$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'BaseRepresentationRelationship->delete()');
-							if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
-							return false;
-						}
-					} else {
-						$this->postError(2700, _t('Could not load %1-representation link', $t_target->getProperty('NAME_SINGULAR')), 'BaseRepresentationRelationship->delete()');
-						if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
-						return false;
-					}				
-				}
-			} 
-			if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
-		} else {
-			if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
-		}
-	
-		return $vb_rc;
+		return parent::get($ps_field, $pa_options);
 	}
 	# ------------------------------------------------------
 }

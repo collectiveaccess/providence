@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,21 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
-# ----------------------------------------------------------------------
-# --- Import classes
-# ----------------------------------------------------------------------
-include_once(__CA_LIB_DIR__."/BaseObject.php");
 include_once(__CA_LIB_DIR__."/Media/MediaInfoCoder.php");
 include_once(__CA_LIB_DIR__."/File/FileInfoCoder.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimeExpressionParser.php");
 include_once(__CA_LIB_DIR__."/Parsers/TimecodeParser.php");
 include_once(__CA_LIB_DIR__."/ApplicationChangeLog.php");
-
 
 # ----------------------------------------------------------------------
 class SearchResult extends BaseObject {
@@ -55,6 +45,8 @@ class SearchResult extends BaseObject {
 	// ----
 	
 	private $opa_options;
+	
+	protected $ops_subject_pk;
 
 	/**
 	 * @var IWLPlugSearchEngineResult
@@ -607,7 +599,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
-			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
+			$vs_access_sql = " AND (p.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 		
 		$vs_pk = $t_rel_instance->primaryKey();
@@ -877,19 +869,34 @@ class SearchResult extends BaseObject {
 	/**
 	 * 
 	 */
-	public function prefetchChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
+	public function prefetchCreatedOnChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
-		if (self::$s_timestamp_cache['fetched'][$vs_key] ?? null) { return true; }
+		if (self::$s_timestamp_cache['fetchedCreatedOn'][$vs_key] ?? null) { return true; }
 		
 		$o_log = new ApplicationChangeLog();
 	
 		if (!is_array(self::$s_timestamp_cache['created_on'][$ps_tablename] ?? null)) { self::$s_timestamp_cache['created_on'][$ps_tablename] = array(); }
 		self::$s_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
+		
+		self::$s_timestamp_cache['fetchedCreatedOn'][$vs_key] = true;
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function prefetchModifiedOnChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
+		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
+		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
+		if (self::$s_timestamp_cache['fetchedModifiedOn'][$vs_key] ?? null) { return true; }
+		
+		$o_log = new ApplicationChangeLog();
+	
 		if (!is_array(self::$s_timestamp_cache['last_changed'][$ps_tablename] ?? null)) { self::$s_timestamp_cache['last_changed'][$ps_tablename] = array(); }
 		self::$s_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
 
-		self::$s_timestamp_cache['fetched'][$vs_key] = true;
+		self::$s_timestamp_cache['fetchedModifiedOn'][$vs_key] = true;
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -1621,7 +1628,7 @@ class SearchResult extends BaseObject {
 //
 				if ($va_path_components['field_name'] == 'created') {
 					if (!isset(self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id])) {
-						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
+						$this->prefetchCreatedOnChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
@@ -1665,7 +1672,7 @@ class SearchResult extends BaseObject {
 //		
 				if ($va_path_components['field_name'] == 'lastModified') {
 					if (!isset(self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id])) {
-						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
+						$this->prefetchModifiedOnChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
@@ -1737,7 +1744,7 @@ class SearchResult extends BaseObject {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
 					
-					$vm_val = $t_instance->renderBundleForDisplay($va_path_components['field_name'], $vn_row_id, self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $va_val_opts);
+					$vm_val = $t_instance->renderBundleForDisplay($va_path_components['field_name'].($va_path_components['subfield_name'] ? '.'.$va_path_components['subfield_name'] : ''), $vn_row_id, self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $va_val_opts);
 					
 					if ($pa_options['returnWithStructure'] ?? null) { 
 						if ($pa_options['returnAllLocales'] ?? null) { 
@@ -1896,11 +1903,11 @@ class SearchResult extends BaseObject {
 			if(is_array($vm_val)) {
 				foreach($vm_val as $i => $v) {
 					if(is_array($v)) { continue; }
-					if($v === strip_tags($v)) {
+					if($v === strip_tags($v, ['a', 'i', 'b', 'em', 'strong'])) {
 						$vm_val[$i] = nl2br($v);
 					}
 				}
-			} elseif($vm_val === strip_tags($vm_val)) {
+			} elseif($vm_val === strip_tags($vm_val, ['a', 'i', 'b', 'em', 'strong'])) {
 				$vm_val = nl2br($vm_val);
 			}
 		} elseif ($vb_convert_line_breaks) {
@@ -2043,6 +2050,7 @@ class SearchResult extends BaseObject {
 		// Make sure spec has a table name, otherwise we can get caught in an infinite loop when we pull using the spec
 		if ((substr($va_spec[0], 0, 3) !== 'ca_') || !Datamodel::tableExists($va_spec[0])) { array_unshift($va_spec, $va_path_components['table_name']); }
 		
+		$row_ids = [];
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
 			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_rel_instance->hasField('access') && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
@@ -2078,10 +2086,6 @@ class SearchResult extends BaseObject {
 		
 		if ($pa_options['unserialize'] && !$pa_options['returnAsArray']) { return array_shift($va_return_values); }	
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
-		
-		if ($vb_return_as_link) {
-			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
-		}
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
@@ -2289,7 +2293,7 @@ class SearchResult extends BaseObject {
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
 					
-					if ($vb_return_value_id) {
+					if ($vb_return_value_id && (!$va_path_components['subfield_name'] || ($va_path_components['subfield_name'] === $vs_element_code))) {
 						$va_return_values[(int)$vn_id][] = $o_value->getValueID();
 						continue;
 					}
@@ -2465,12 +2469,12 @@ class SearchResult extends BaseObject {
                                         if (preg_match("!\[([^\]]+)!", $vs_val_proc, $va_matches)) {
                                             $va_tmp = explode(',', $va_matches[1]);
                                             if ((sizeof($va_tmp) == 2) && (is_numeric($va_tmp[0])) && (is_numeric($va_tmp[1]))) {
-                                                $vs_val_proc = array('latitude' => trim($va_tmp[0]), 'longitude' => trim($va_tmp[1]), 'path' => trim($va_matches[1]), 'label' => $this->ops_text_value);
+                                                $vs_val_proc = array('latitude' => trim($va_tmp[0]), 'longitude' => trim($va_tmp[1]), 'path' => trim($va_matches[1]), 'label' => $vs_val_proc);
                                             } else {
-                                                $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                                $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $vs_val_proc);
                                             }
                                         } else {
-                                            $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
+                                            $vs_val_proc = array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $vs_val_proc);
                                         }
                                     }
 									$vb_dont_return_value = false;
@@ -2829,7 +2833,7 @@ class SearchResult extends BaseObject {
 							}
 						}
 						
-						$va_return_values[$vn_id][$vm_locale_id][] = $d;
+						$va_return_values[$vn_i][$vn_locale_id][] = $d;
 					}
 				}
 				break;
@@ -3941,7 +3945,7 @@ class SearchResult extends BaseObject {
 			return strlen($b) <=> strlen($a);
 		});
 		
-		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9\/=<])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}

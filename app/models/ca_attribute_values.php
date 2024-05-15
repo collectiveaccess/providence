@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
 require_once(__CA_MODELS_DIR__.'/ca_attribute_value_multifiles.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
  	'NAME_SINGULAR' 	=> _t('attribute value'),
@@ -253,10 +247,10 @@ class ca_attribute_values extends BaseModel {
 		$this->clear();
 		
 		$t_element = ca_attributes::getElementInstance($pa_element_info['element_id']);
+		$pa_element_info['settings'] = $t_element->getSettings(); // make sure all element settings arent present in the element info array
 		
 		if ($this->inTransaction()) { $pa_options['transaction'] = $this->getTransaction(); }
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set('attribute_id', $pn_attribute_id);
 		$this->set('element_id', $pa_element_info['element_id']);
 		
@@ -284,8 +278,7 @@ class ca_attribute_values extends BaseModel {
                     }
                 }
             }
-		
-		
+            
 			$this->useBlobAsFileField(false);
 			if (!$o_attr_value->numErrors()) {
 				foreach($va_values as $vs_key => $vs_val) {

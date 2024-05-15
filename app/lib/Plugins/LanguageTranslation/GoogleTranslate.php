@@ -32,11 +32,8 @@
 namespace CA\LanguageTranslation\Plugins;
 use Google\Cloud\Translate\V2\TranslateClient;
  
- /**
-  *
-  */
-  require_once(__CA_LIB_DIR__.'/Plugins/LanguageTranslation/BaseLanguageTranslationManagerPlugin.php');
-  require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugLanguageTranslation.php');
+require_once(__CA_LIB_DIR__.'/Plugins/LanguageTranslation/BaseLanguageTranslationManagerPlugin.php');
+require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugLanguageTranslation.php');
  
 class GoogleTranslate Extends BaseLanguageTranslationManagerPlugin Implements \IWLPlugLanguageTranslation {	
 	# ------------------------------------------------
@@ -89,7 +86,7 @@ class GoogleTranslate Extends BaseLanguageTranslationManagerPlugin Implements \I
 	public function translateList(array $text, string $to_lang, ?array $options=null) : array {
 		$values = [];
 		foreach($text as $t) {
-			$values[] = $this->translate($t, $to_long, $options);
+			$values[] = $this->translate($t, $to_lang, $options);
 		}
 		return $values;	
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Db.php');
 require_once(__CA_LIB_DIR__.'/Search/SearchIndexer.php');
 require_once(__CA_LIB_DIR__.'/Utils/LockingTrait.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
 	'NAME_SINGULAR' 	=> _t('search indexing queue entry'),

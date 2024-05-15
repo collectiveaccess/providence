@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__."/IDNumbering/IDNumber.php");
 require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 
@@ -496,7 +495,7 @@ class MultipartIDNumber extends IDNumber {
 			$i++;
 		}
 		if ($blank_count > 0) {
-			return (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1;
+			return (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1;
 		}
 
 		$stub = trim(join($separator, $tmp));
@@ -593,7 +592,7 @@ class MultipartIDNumber extends IDNumber {
 				$num = $min;
 			}
 			
-			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
+			if (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) {
 				return sprintf("%0{$zeropad_to_length}d", $num);
 			} else {
 				return $num;
@@ -677,7 +676,7 @@ class MultipartIDNumber extends IDNumber {
 				case 'NUMERIC':
 					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
 					
-					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null)) {
+					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) {
 						$v = str_pad($v, $zeropad_to_length, "0", STR_PAD_LEFT);
 					}
 					$n = $padding - strlen($v);
@@ -1006,7 +1005,7 @@ class MultipartIDNumber extends IDNumber {
 				$extra_size = 10;
 			}
 			foreach($extra_values as $i => $v) {
-				$element_controls[] = "<input type='text' name='{$name}_extra_{$i}' id='{$name}_extra_{$i}' value='".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."' size='{$extra_size}'".($options['readonly'] ? ' disabled="1" ' : '').">";
+				$element_controls[] = "<input type='text' name='{$name}_extra_{$i}' id='{$name}_extra_{$i}' value='".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."' size='{$extra_size}'".($options['readonly'] ? ' readonly="1" ' : '').">";
 				$element_control_names[] = $name.'_extra_'.$i;
 			}
 		}
@@ -1256,7 +1255,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 			$tmp[$ename] = $element_values[$name.'_'.$ename];
 
-			if ($zeropad_to_length = caGetOption('zeropad_to_length', $info, null)) {
+			if ($zeropad_to_length = caGetOption('zeropad_to_length', $info, null, ['castTo' => 'int'])) {
 				$tmp[$ename] = str_pad($tmp[$ename], $zeropad_to_length, "0", STR_PAD_LEFT);
 			}
 
@@ -1359,13 +1358,13 @@ class MultipartIDNumber extends IDNumber {
 				$width = $this->getElementWidth($element_info, 3);
 
 				if ($generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} elseif ($element_value == '') {
 						$next_num = $this->getNextValue($element_name, null, true);
 						$element .= "<span id='".$id_prefix.$element_form_name."'>&lt;"._t('%1 on save', $next_num)."&gt;</span>";
 				} else {
 					if ($element_info['editable']) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
@@ -1377,7 +1376,7 @@ class MultipartIDNumber extends IDNumber {
 
 				if (!$element_value) { $element_value = $element_info['value']; }
 				if ($element_info['editable'] || $generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} else {
 					$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 				}
@@ -1389,7 +1388,7 @@ class MultipartIDNumber extends IDNumber {
 				if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default'] ?? null; }
 				$width = $this->getElementWidth($element_info, 3);
 				if (!$element_value || $element_info['editable'] || $generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} else {
 					$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 				}
@@ -1409,13 +1408,13 @@ class MultipartIDNumber extends IDNumber {
 					}
 
 					if ($element_info['editable'] || $generate_for_search_form) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'"/>'.$v;
 					}
 				} else {
 					if ($element_info['editable'] || $generate_for_search_form) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
@@ -1427,14 +1426,14 @@ class MultipartIDNumber extends IDNumber {
 				$width = $this->getElementWidth($element_info, 3);
 
 				if ($generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} else {
 					if ($element_value == '') {
 						$next_num = $this->getParentValue();
 						$element .= '&lt;'._t('%1', $next_num).'&gt;'.'<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($next_num, ENT_QUOTES, 'UTF-8').'"/>';
 					} else {
 						if ($element_info['editable']) {
-							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 						} else {
 							$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 						}

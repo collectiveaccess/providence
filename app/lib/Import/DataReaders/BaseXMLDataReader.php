@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
@@ -111,6 +106,21 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * Root tag to use when basePath is set
 	 */
 	protected $ops_base_root_tag = null;
+	
+	/**
+	 *
+	 */
+	protected $ops_xml_namespace;
+	
+	/**
+	 *
+	 */
+	protected $ops_xml_namespace_prefix;
+	
+	/**
+	 *
+	 */
+	protected $ops_additional_xml_namespaces;
 	# -------------------------------------------------------
 	/**
 	 *
