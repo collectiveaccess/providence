@@ -1211,7 +1211,7 @@
     <metadataElement code="adminbiohist" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Administrative/Biographical History Element</name>
+          <name>Administrative/Biographical History</name>
           <description>A description of the
             context in which the materials being described were created, assembled, and/or
             maintained is as important as the description of the materials themselves</description>
