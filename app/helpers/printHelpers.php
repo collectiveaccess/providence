@@ -102,7 +102,6 @@ function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
 		$va_show_only_in = array_map(function($v) { return trim($v); }, explode(',', $va_show_only_in));
 	}
 	
-
 	$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_type);
 	
 	$va_templates = array();
@@ -164,7 +163,7 @@ function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
 
 						if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_\-]+[A-Za-z0-9_\-]*$/", $vs_template_tag)) {
 							if ($vb_for_html_select && !isset($va_templates[$va_template_info['name']])) {
-								$va_templates[$va_template_info['name']] = '_pdf_'.$vs_template_tag;
+								$va_templates[$va_template_info['name']] = '_'.($va_template_info['fileFormat'] ?? 'pdf').'_'.$vs_template_tag;
 							} elseif (!isset($va_templates[$vs_template_tag])) {
 								$va_templates[$vs_template_tag] = array(
 									'name' => $va_template_info['name'],

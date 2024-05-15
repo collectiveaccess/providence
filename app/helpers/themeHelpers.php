@@ -520,12 +520,12 @@ function caObjectRepresentationThumbnails($po_request, $pn_representation_id, $p
 				break;
 			# -------------------------------
 			case "basic":
-				$va_links[$vn_rep_id] = "<a href='#' id='repThumb_{$i}' onclick='return setItem({$i});' class='repThumb'>".$vs_thumb.$vs_rep_label."</a>\n";
+				$va_links[$vn_rep_id] = "<a href='#' id='repThumb_{$i}' onclick='return setItem({$i});' class='repThumb' data-representation_id='{$vn_rep_id}'>".$vs_thumb.$vs_rep_label."</a>\n";
 				break;
 			# -------------------------------
 			default:
 			case "detail":
-				$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb.$vs_rep_label, $vs_class, $pt_object->tableName(), $pt_object->getPrimaryKey(), array("representation_id" => $vn_rep_id));
+				$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb.$vs_rep_label, $vs_class, $pt_object->tableName(), $pt_object->getPrimaryKey(), ["representation_id" => $vn_rep_id], ['data-representation_id' => $vn_rep_id]);
 				break;
 			# -------------------------------
 		}

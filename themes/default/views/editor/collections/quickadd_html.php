@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,27 +25,26 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 global $g_ui_locale_id;
 
 $t_subject 			= $this->getVar('t_subject');
-$vn_subject_id 		= $this->getVar('subject_id');
+$subject_id 		= $this->getVar('subject_id');
 
-$va_restrict_to_types = $this->getVar('restrict_to_types');
+$restrict_to_types = $this->getVar('restrict_to_types');
 
-$vs_field_name_prefix = $this->getVar('field_name_prefix');
-$vs_n 				= $this->getVar('n');
-$vs_q				= caUcFirstUTF8Safe($this->getVar('q'));
+$field_name_prefix = $this->getVar('field_name_prefix');
+$n 				= $this->getVar('n');
+$q				= caUcFirstUTF8Safe($this->getVar('q'));
 
 $vb_can_edit	 	= $t_subject->isSaveable($this->request);
 
-$vs_form_name = "CollectionQuickAddForm";
+$form_name = "CollectionQuickAddForm";
 ?>		
 <script type="text/javascript">
 	var caQuickAddFormHandler = caUI.initQuickAddFormHandler({
-		formID: '<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>',
-		formErrorsPanelID: '<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>',
-		formTypeSelectID: '<?= $vs_form_name; ?>TypeID<?= $vs_field_name_prefix.$vs_n; ?>', 
+		formID: '<?= $form_name.$field_name_prefix.$n; ?>',
+		formErrorsPanelID: '<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>',
+		formTypeSelectID: '<?= $form_name; ?>TypeID<?= $field_name_prefix.$n; ?>', 
 		
 		formUrl: '<?= caNavUrl($this->request, 'editor/collections', 'CollectionQuickAdd', 'Form'); ?>',
 		fileUploadUrl: '<?= caNavUrl($this->request, "editor/collections", "CollectionEditor", "UploadFiles"); ?>',
@@ -56,34 +55,35 @@ $vs_form_name = "CollectionQuickAddForm";
 		busyIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>'
 	});
 </script>
-<form action="#" class="quickAddSectionForm" name="<?= $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
+<form action="#" class="quickAddSectionForm" name="<?= $form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $form_name.$field_name_prefix.$n; ?>">
 	<div class='quickAddDialogHeader'><?php 
-		print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
+		print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$form_name}TypeID{$field_name_prefix}{$n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $restrict_to_types)))."</div>"; 
 		if ($vb_can_edit) {
-			print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
-			.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", ["onclick" => "caQuickAddFormHandler.cancel(event);"])."</div>\n";
+			print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add %1", $t_subject->getTypeName()), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
+			.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$form_name}{$field_name_prefix}{$n}", ["onclick" => "caQuickAddFormHandler.cancel(event);"])."</div>\n";
 		}
 		print "<div class='quickAddProgress'></div><br style='clear: both;'/>";
 ?>
 	</div>
 	
 	<div class="quickAddFormTopPadding"><!-- empty --></div>
-	<div class="quickAddErrorContainer" id="<?= $vs_form_name; ?>Errors<?= $vs_field_name_prefix.$vs_n; ?>"> </div>	
-	<div class="quickAddSectionBox" id="<?= $vs_form_name.'Container'.$vs_field_name_prefix.$vs_n; ?>">
+	<div class="quickAddErrorContainer" id="<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>"> </div>	
+	<div class="quickAddSectionBox" id="<?= $form_name.'Container'.$field_name_prefix.$n; ?>">
 <?php
-			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
+			$form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
 					'restrictToTypes' => array($t_subject->get('type_id')),
-					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
+					'formName' => $form_name.$field_name_prefix.$n,
 					'forceLabelForNew' => $this->getVar('forceLabel'),						// force query text to be default in label fields
 					'quickadd' => true
 			));
 			
-			print join("\n", $va_form_elements);
+			print join("\n", $form_elements);
 ?>
-		<input type='hidden' name='_formName' value='<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
-		<input type='hidden' name='q' value='<?= htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
+		<input type='hidden' name='_formName' value='<?= $form_name.$field_name_prefix.$n; ?>'/>
+		<input type='hidden' name='q' value='<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8'); ?>'/>
 		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
-		<input type='hidden' name='types' value='<?= htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
+		<input type='hidden' name='types' value='<?= htmlspecialchars(is_array($restrict_to_types) ? join(',', $restrict_to_types) : ''); ?>'/>
 	</div>
 </form>
+<?= TooltipManager::getLoadHTML(); ?>

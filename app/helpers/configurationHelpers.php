@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/helpers/configurationHelpers.php : utility functions for setting database-stored configuration values
+ * app/helpers/configurationHelpers.php : utility functions for handling configuration values
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,8 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
-# ----------------------------------------------------------------
 /**
   * Returns a sorted list of profiles. Keys are display names and values are profile codes (filename without .xml extension).
   *
@@ -89,5 +87,24 @@ function caFlushOutput() {
 	echo str_pad('',4096)."\n";
 	@ob_flush();
 	flush();
+}
+# ----------------------------------------------------------------
+/**
+ *
+ */
+function caValidateJSON(array $data, string $schema, array &$errors, ?array $options=null) : ?bool {
+	$validator = new JsonSchema\Validator;
+	$validator->validate($data, (object)['$ref' => 'file://'.$schema], JsonSchema\Constraints\Constraint::CHECK_MODE_TYPE_CAST);
+	
+	if(!is_array($errors)) { $errors = []; }
+	
+	if ($validator->isValid()) {
+		return true;
+	} else {
+		foreach ($validator->getErrors() as $error) {
+			$errors[] = $error['property'] ? _t('%1 (in %2)', $error['message'], $error['property']) : $error['message']; 
+		}
+		return false;
+	}
 }
 # ----------------------------------------------------------------

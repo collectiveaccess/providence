@@ -29,7 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once('/var/simplesamlphp/lib/_autoload.php');
+require_once(__CA_BASE_DIR__.'/vendor/simplesamlphp/simplesamlphp/lib/_autoload.php');
 require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
@@ -55,6 +55,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         $shibSP = $this->auth_config->get('shibboleth_service_provider');
         try{
             $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
+            session_write_close();
         } catch (Exception $e) {
             throw new ShibbolethException("Could not create SimpleSAML auth object");
         }

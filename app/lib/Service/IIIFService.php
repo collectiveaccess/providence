@@ -42,6 +42,10 @@ class IIIFService {
 	 * @throws Exception
 	 */
 	public static function dispatch(string $identifier, RequestHTTP $request, ResponseHTTP $response) {
+		if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PROVIDENCE') && !$request->isLoggedIn()) {
+			throw new AccessException(_t('Not logged in'));
+		}
+		
 		$va_path = array_filter(array_slice(explode("/", $request->getPathInfo()), 3), 'strlen');
 		$vs_key = $identifier."/".join("/", $va_path);
 		

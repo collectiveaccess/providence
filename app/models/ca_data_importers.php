@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -466,6 +466,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'label' => _t('Default display name format'),
 			'description' => _t('Transform label using options for formatting entity display names. Default is to use value as is. Other options are surnameCommaForename, forenameCommaSurname, forenameSurname. See DataMigrationUtils::splitEntityName().')
+		);
+		
+		$settings['formatSettings'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Data format-specific settings'),
+			'description' => _t('Data format-specific settings, in JSON-format, for data format readers that support additional settings.')
 		);
 		
 		$this->setAvailableSettings($settings);
@@ -1513,7 +1523,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($o_trans) { $o_trans->rollback(); }
 				return false;
 			}
-			$va_reader_opts = array('headers' => ($vn_num_initial_rows_to_skip > 0), 'basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
+			$va_reader_opts = [
+				'headers' => ($vn_num_initial_rows_to_skip > 0), 
+				'basePath' => $t_mapping->getSetting('basePath'), 
+				'formatSettings' => @json_decode($t_mapping->getSetting('formatSettings'), true),
+				'originalFilename' => caGetOption('originalFilename', $pa_options, null)
+			];
 		
 			if (!$o_reader->read($ps_source, $va_reader_opts)) {
 				$this->logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
@@ -2692,6 +2707,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && (bool) $va_item['settings']['convertNewlinesToHTML']
 							     && is_string( $vm_val )
 							) {
+								$vm_val = str_replace(chr(11), "\n", $vm_val); // Excel sometimes embeds vertical tabs as newlines, and PHP has no idea how to deal with that :-(
 								$vm_val = nl2br( $vm_val );
 							}
 							if ( ( $va_item['settings']['collapseSpaces'] ?? false )
@@ -4297,10 +4313,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getDataReader($ps_source, $ps_format=null) {
+	public function getDataReader($ps_source, $ps_format=null, ?array $options=null) {
 		//$o_reader_manager = new DataReaderManager();
 		
-		return DataReaderManager::getDataReaderForFormat($ps_format, array('noCache' => true));
+		return DataReaderManager::getDataReaderForFormat($ps_format, []);
 		
 		//if (!$ps_format) {
 			// TODO: try to figure out format from source

@@ -170,7 +170,7 @@ class BrowseEngine extends BaseFindEngine {
 
 		$this->opo_ca_browse_cache = new BrowseCache();
 		if ($pn_browse_id) {
-			$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
+			//$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 			$this->opo_ca_browse_cache->load($pn_browse_id);
 		} else {
 			$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
@@ -575,6 +575,8 @@ class BrowseEngine extends BaseFindEngine {
 	 * @param string $ps_facet_name Optional name of facet for which to list criteria
 	 * @param array $options Options include:
 	 *		delimiter = delimiter between facet values. [Default is ';']
+	 *		sense = Sense of facet title to index criteria on. Set to 'singular' for singular sense; 'plural' for plural sense. [Default is singular]
+	 *		returnAs = Return value as delimited string or array. [Default is string]
 	 * @return array
 	 *
 	 * @see BrowseEngine::getCriteria
@@ -582,12 +584,13 @@ class BrowseEngine extends BaseFindEngine {
 	public function getCriteriaAsStrings(?string $ps_facet_name=null, ?array $options=null) {
 		$criteria = $this->getCriteriaWithLabels($ps_facet_name);
 		$delimiter = caGetOption('delimiter', $options, ';');
+		$return_as = caGetOption('returnAs', $options, 'string');
 		
 		$criteria_by_facet = [];
 		foreach($criteria as $facet => $criteria_list) {
 			$facet_info = $this->getInfoForFacet($facet);
 			
-			$criteria_by_facet[$facet_info['label_plural']] = join($delimiter, $criteria_list);
+			$criteria_by_facet[$facet_info[caGetOption('sense', $options, 'singular') ? 'label_singular' : 'label_plural']] = ($return_as == 'array') ? $criteria_list : join($delimiter, $criteria_list);
 		}
 		return $criteria_by_facet;
 	}

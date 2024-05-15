@@ -194,7 +194,7 @@ class RequestHTTP extends Request {
 		// @todo: REMOVE IN FUTURE VERSION
 		// JSON API (deprecated)
 		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
-		if($this->ops_script_name=="service.php") {
+		if(in_array($this->ops_script_name, ["service", "service.php"])) {
 			$this->ops_raw_post_data = file_get_contents("php://input");
 
 			if($_SERVER["PHP_AUTH_USER"] && $_SERVER["PHP_AUTH_PW"]){

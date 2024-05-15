@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -200,6 +200,9 @@ class ca_data_exporter_items extends BaseModel {
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($id=null, ?array $options=null) {		
 		global $_ca_data_exporter_items_settings;
 		parent::__construct($id, $options);
@@ -209,6 +212,9 @@ class ca_data_exporter_items extends BaseModel {
 		
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	protected function initSettings($pa_settings=null){
 		$va_settings = is_array($pa_settings) ? $pa_settings : array();
 		
@@ -268,6 +274,20 @@ class ca_data_exporter_items extends BaseModel {
 		);
 		
 		$va_settings['repeat_element_for_multiple_values'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Repeat element for multiple values'),
+			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
+		);
+		
+		$va_settings['repeatElementForMultipleValues'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
 			'width' => 40, 'height' => 1,
@@ -404,8 +424,28 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Original values'),
 			'description' => _t('Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).')
 		);
+		
+		$va_settings['originalValues'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Original values'),
+			'description' => _t('Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).')
+		);
 
 		$va_settings['replacement_values'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Replacement values'),
+			'description' => _t('Return-separated list of replacement values that correspond to the mapped values from the original data source.')
+		);
+		
+		$va_settings['replacementValues'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 10,
@@ -551,8 +591,36 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Start as ISO8601'),
 			'description' => _t('If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
 		);
+		
+		$va_settings['startAsISO8601'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Start as ISO8601'),
+			'description' => _t('If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
 
 		$va_settings['end_as_iso8601'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('End as ISO8601'),
+			'description' => _t('If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
+		
+		$va_settings['endAsISO8601'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
 			'width' => 40, 'height' => 1,
@@ -679,6 +747,9 @@ class ca_data_exporter_items extends BaseModel {
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function getReplacementArray($ps_searches,$ps_replacements) {
 		if(!$ps_searches) return false;
 
@@ -694,6 +765,9 @@ class ca_data_exporter_items extends BaseModel {
 		return $va_return;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */	
 	static public function replaceText($ps_text,$pa_replacements){
 		$vs_original_text = $ps_text;
 

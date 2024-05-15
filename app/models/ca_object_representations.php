@@ -1034,7 +1034,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$t_annotation = new $vs_annotation_table();
  		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
- 		$t_annotation->setMode(ACCESS_WRITE);
  		
  		$t_annotation->set('representation_id', $vn_representation_id);
  		$t_annotation->set('type_code', $o_coder->getType());

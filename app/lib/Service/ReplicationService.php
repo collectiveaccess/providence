@@ -121,6 +121,8 @@ class ReplicationService {
 		$pn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$pn_limit) { $pn_limit = null; }
 		
+		$is_push_missing = $po_request->getParameter('push_missing', pInteger);
+		
 		if(($max_retries = (int)$o_replication_conf->get('max_media_upload_retries')) < 0) {
 			$max_retries = 5;
 		}
@@ -181,7 +183,7 @@ class ReplicationService {
 
 			$va_media = [];
 			// passing a 4th param here changes the behavior slightly
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]), $va_media);
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['push_missing' => $is_push_missing, 'telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]), $va_media);
 
 			if(sizeof($va_media) > 0) {
 				$va_push_list = [];
@@ -249,7 +251,7 @@ class ReplicationService {
 				}
 			}
 		} else {
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]));
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['push_missing' => $is_push_missing, 'telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]));
 		}
 
         foreach($va_log as $i => $l) {
