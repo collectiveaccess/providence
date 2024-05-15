@@ -18,7 +18,7 @@
     "guzzlehttp/psr7": "2.4.*",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
-    "knplabs/github-api": "3.7",
+    "knplabs/github-api": "^3.14",
     "laminas/laminas-stdlib": "*",
     "laminas/laminas-escaper": "*",
     "league/climate": ">=1.0.0",
