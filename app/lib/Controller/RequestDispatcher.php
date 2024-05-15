@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__."/BaseObject.php");
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
@@ -249,7 +244,7 @@ class RequestDispatcher extends BaseObject {
 							if(
 								in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) 
 								||
-								(in_array(strtolower($this->ops_controller), ['replication', 'simple', 'statistics']))
+								(in_array(strtolower($this->ops_controller), ['replication', 'statistics']))
 								|| 
 								!$this->request->isServiceAuthRequest()
 							) {
