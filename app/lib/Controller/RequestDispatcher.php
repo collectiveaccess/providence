@@ -249,7 +249,7 @@ class RequestDispatcher extends BaseObject {
 							if(
 								in_array('json', array_map(function($v) { return strtolower($v); }, $this->opa_module_path)) 
 								||
-								(in_array(strtolower($this->ops_controller), ['replication', 'simple', 'statistics']))
+								(in_array(strtolower($this->ops_controller), ['replication', 'statistics']))
 								|| 
 								!$this->request->isServiceAuthRequest()
 							) {
