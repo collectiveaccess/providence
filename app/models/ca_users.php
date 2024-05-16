@@ -3529,6 +3529,7 @@ class ca_users extends BaseModel {
 				$va_vars = $va_role_info['vars'];
 				
 				if (is_array($va_vars['bundle_access_settings'] ?? null)) {
+					$ps_bundle_name = preg_replace("!^ca_attribute_!", "", $ps_bundle_name);
 					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
 						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
 						
