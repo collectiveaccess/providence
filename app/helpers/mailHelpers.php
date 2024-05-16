@@ -156,6 +156,13 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 					]
 				);
 			}
+			/** Other provider blocks can be put here
+			 * Remember to add the correct package to the top of file to include them
+			 * EG
+			 * if($xoauth2_provider == 'Google'){
+			 *	
+			 * }
+			 */
 
 			if($provider){
 				$o_mail->setOAuth(
