@@ -88,6 +88,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $doc_content_buffer = [];			// content buffer used when indexing
 	
 	static protected $filter_stop_words = null;
+	
+	/**
+	 * Separate connection for async inserts when reindexng
+	 */
+	private $reindex_db = null;
+	private $last_indexing_result = null;
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -161,11 +168,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(($max_indexing_buffer_size = (int)$this->search_config->get('max_indexing_buffer_size')) < 1) {
 			$max_indexing_buffer_size = 5000;
 		}
-		
 		$this->options = array(
 				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
 				'maxIndexingBufferSize' => $max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
-				'maxWordIndexInsertSegmentSize' => ceil($max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
+				'maxWordIndexInsertSegmentSize' => ceil($max_indexing_buffer_size), // maximum number of word index rows to put into a single insert
 				'maxWordCacheSize' => 1048576,								// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
@@ -1203,19 +1209,19 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	public function flushContentBuffer() : void {
 		// add fields to doc
-		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
+		$vn_max_word_segment_size = 200000; //(int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
 		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
 			while(sizeof(self::$doc_content_buffer) > 0) {
 				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
-					$this->db->query("SET unique_checks=0");
-					$this->db->query("SET foreign_key_checks=0");
-				}
-				$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
-				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
-					$this->db->query("SET unique_checks=1");
-					$this->db->query("SET foreign_key_checks=1");
+					$db = $this->getReindexDbConnection();
+					if($this->last_indexing_result) { $this->last_indexing_result->reap(); }
+					$this->last_indexing_result = $db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)), [], ['resultMode' => MYSQLI_ASYNC]);
+			
+					if($r) { $r->free(); }
+				} else {
+					$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
 				}
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
@@ -2261,6 +2267,16 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		}
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function getReindexDbConnection() {
+		if(!$this->reindex_db) {
+			$this->reindex_db = new Db(null, ['uniqueConnection' => true]);
+		}
+		return $this->reindex_db;
 	}
 	# -------------------------------------------------------
 }

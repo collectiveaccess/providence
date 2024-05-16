@@ -6878,16 +6878,23 @@ div.caRepresentationMediaReplicationControls {
 }
 
  /* Metadata Export */
- 
- #exporterUploadArea {
- 	border: 1px dashed #ccc;
- 	display:none;
- 	font-family: 'DIN-Regular', helvetica, sans-serif;
- 	font-size:16px;
- 	color:#333;
- 	text-align: center;
-	padding: 10px;
- }
+#importerUploadArea, #exporterUploadArea {
+    border: 1px dashed #ccc; 
+    text-align: center; 
+    padding: 10px; 
+    display: none;
+    font-size: 16px; 
+    color: #333;
+}
+
+div.exporterUploadText, div.importerUploadText {
+    cursor: pointer;
+}
+
+#caAddImportersButton, #caCloseImportersButton, #caAddExportersButton, #caCloseExportersButton {
+    display: none;
+}
+
 .ui-progressbar {
 	border:1px solid #eeeeee !important;
 }

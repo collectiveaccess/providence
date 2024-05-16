@@ -466,6 +466,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		limit = 		maximum number of records to return [default=null; no limit]
 	 * 		dontCache =		don't cache
 	 *		checkAccess =   Array of access values to filter returned values on. If omitted no filtering is performed. [Default is null]
+	 *		filterExpression = expression to filter returned items on. Eg. ^ca_list_items.preferred_labels.name_plural ~= /Puppy/i [Default is null].
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
@@ -598,6 +599,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if ((!isset($pa_options['includeSelf']) || !$pa_options['includeSelf']) && ($vn_item_id == $pn_item_id)) { continue; }
 				if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly']) && ($qr_res->get('parent_id') != $pn_item_id)) { continue; }
+				
+				if($filter_expr && ($t_item = ca_list_items::find($vn_item_id)) && !caEvaluateExpression($t_item, $filter_expr)) {
+					continue;
+				}
 				
 				$va_items[$vn_item_id][$vn_locale_id = $qr_res->get('locale_id')] = $qr_res->getRow();
 				$va_seen_locales[$vn_locale_id] = true;

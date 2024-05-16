@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-
-$va_importer_list = $this->getVar('importer_list');
+$importer_list = $this->getVar('importer_list');
 
 if (!$this->request->isAjax()) {
 ?>
@@ -36,23 +35,23 @@ if (!$this->request->isAjax()) {
 	});
 </script>
 <div class="sectionBox">
-	<?php
-		print caFormControlBox(
+	<?= caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
 		);
 	?>
-	
-	
 	<div id="batchProcessingTableProgressGroup" style="display: none;">
 		<div class="batchProcessingStatus"><span id="batchProcessingTableStatus" > </span></div>
 		<div id="progressbar"></div>
 	</div>
 	
-	<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
-		<span style="font-size: 16px; color: #333; "><?= _t("Drag importer worksheets here to add or update"); ?></span>
+	<div id="importerUploadArea">
+		<form enctype="multipart/form-data" method='post' action="#" style="display: none;">
+			<input type="file" name="mapping[]" id="mappingUploadInput" multiple/>
+		</form>
+		<div class="importerUploadText"><?= caNavIcon(__CA_NAV_ICON_ADD__, '20px'); ?> <?= _t("Click or drag importer worksheets here to add or update"); ?></div>
 	</div>
 	<div style="margin: 10px 0 0 0;">
 <?php 
@@ -70,29 +69,29 @@ if (!$this->request->isAjax()) {
 			<thead>
 			<tr>
 				<th>
-					<?php _p('Name'); ?>
+					<?= _t('Name'); ?>
 				</th>
 				<th>
-					<?php _p('Code'); ?>
+					<?= _t('Code'); ?>
 				</th>
 				<th>
-					<?php _p('Type'); ?>
+					<?= _t('Type'); ?>
 				</th>
 				<th>
-					<?php _p('Source'); ?>
+					<?= _t('Source'); ?>
 				</th>
 				<th>
-					<?php _p('Mapping'); ?>
+					<?= _t('Mapping'); ?>
 				</th>
 				<th>
-					<?php _p('Last modified'); ?>
+					<?= _t('Last modified'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 			</tr>
 			</thead>
 			<tbody>
 <?php
-	if(sizeof($va_importer_list) == 0) {
+	if(sizeof($importer_list) == 0) {
 ?>
 			<tr>
 				<td colspan='7'>
@@ -101,35 +100,35 @@ if (!$this->request->isAjax()) {
 			</tr>
 <?php
 	} else {
-		foreach($va_importer_list as $va_importer) {
+		foreach($importer_list as $importer) {
 ?>
 			<tr>
 				<td>
-					<?= $va_importer['label']; ?>
+					<?= $importer['label']; ?>
 				</td>
 				<td>
-					<?= $va_importer['importer_code']; ?>
+					<?= $importer['importer_code']; ?>
 				</td>
 				<td>
-					<?= $va_importer['importer_type']; ?>
+					<?= $importer['importer_type']; ?>
 				</td>
 				<td>
-					<?= (isset($va_importer['settings']['sourceUrl'])) ? _t('Google Drive') : _t('File upload'); ?>
+					<?= (isset($importer['settings']['sourceUrl'])) ? _t('Google Drive') : _t('File upload'); ?>
 				</td>
 				<td>
 <?php  
-					print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; 
+					print $importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; 
 
-					if(isset($va_importer['settings']['sourceUrl'])) {
-						print caNavButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Reload"), '', 'batch', 'MetadataImport', 'Load', array('google_drive_url' => urlencode($va_importer['settings']['sourceUrl'])), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
+					if(isset($importer['settings']['sourceUrl'])) {
+						print caNavButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Reload"), '', 'batch', 'MetadataImport', 'Load', array('google_drive_url' => urlencode($importer['settings']['sourceUrl'])), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
 					}
 ?>				</td>
 				<td>
-					<?= caGetLocalizedDate($va_importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
+					<?= caGetLocalizedDate($importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?= caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
@@ -152,17 +151,13 @@ if (!$this->request->isAjax()) {
 		batchCookieJar.set('importerUploadAreaIsOpen', open);
 		if (open) {
 			jQuery("#importerUploadArea").slideDown(animate ? 150 : 0);
-			jQuery("#caCloseImportersButton").show();
+			jQuery("#caCloseImportersButton").css('display', 'block');
 			jQuery("#caAddImportersButton").hide();
 		} else {
 			jQuery("#importerUploadArea").slideUp(animate ? 150 : 0);
 			jQuery("#caCloseImportersButton").hide();
-			jQuery("#caAddImportersButton").show();
+			jQuery("#caAddImportersButton").css('display', 'block');
 		}
-	}
-	
-	function caImporterUploadAreaIsOpen() {
-		return batchCookieJar.get('importerUploadAreaIsOpen');
 	}
 	
 	jQuery(document).ready(function() {
@@ -173,6 +168,7 @@ if (!$this->request->isAjax()) {
 			url: '<?= caNavUrl($this->request, 'batch', 'MetadataImport', 'UploadImporters'); ?>',
 			dropZone: jQuery('#importerUploadArea'),
 			singleFileUploads: false,
+			fileInput: jQuery("#mappingUploadInput"),
 			done: function (e, data) {
 				if (data.result.error) {
 					jQuery("#batchProcessingTableProgressGroup").show(250);
@@ -209,6 +205,11 @@ if (!$this->request->isAjax()) {
 				jQuery("#batchProcessingTableStatus").html(msg.replace("%1", caUI.utils.formatFilesize(data.loaded) + " (" + progress + "%)"));
 				
 			}
+		});
+		
+		jQuery('div.importerUploadText').on('click', function(e) {
+			jQuery("#mappingUploadInput").click(); 
+			e.preventDefault();
 		});
 		
 		caOpenImporterUploadArea(batchCookieJar.get('importerUploadAreaIsOpen'), false);
