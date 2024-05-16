@@ -69,7 +69,8 @@
   "config": {
     "discard-changes": true,
     "allow-plugins" : {
-      "php-http/discovery": false
+      "php-http/discovery": false,
+      "simplesamlphp/composer-module-installer": true
     }
   }
 }
