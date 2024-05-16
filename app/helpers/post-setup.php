@@ -225,6 +225,7 @@ if (!defined("__CA_SMTP_PORT__")) {
 # details must be set in  __CA_SMTP_AUTH__, __CA_SMTP_USER__, __CA_SMTP_PASSWORD__
 # and __CA_SMTP_SSL__
 #
+# If authentication method is XOAUTH2, extra settings below this are also needed
 
 # __CA_SMTP_AUTH__ = authentication method for outgoing mail connection
 #
@@ -254,6 +255,38 @@ if (!defined("__CA_SMTP_PASSWORD__")) {
 if (!defined("__CA_SMTP_SSL__")) {
 	define("__CA_SMTP_SSL__", '');
 }
+# ---- XOAUTH SETTINGS ---
+# __CA_SMTP_XOAUTH_PROVIDER__ = Email provider: Might be Azure, Microsoft, Google or Yahoo. Only tested with Azure so far 
+#
+if (!defined("__CA_SMTP_XOAUTH_PROVIDER__")) {
+	define("__CA_SMTP_XOAUTH_PROVIDER__", '');
+}
+
+# __CA_SMTP_XOAUTH_CLIENTID__ = This would be the 'Application ID' for Azure
+if (!defined("__CA_SMTP_XOAUTH_CLIENTID__")) {
+	define("__CA_SMTP_XOAUTH_CLIENTID__", '');
+}
+
+# __CA_SMTP_XOAUTH_CLIENTSECRET__ = Client Secret
+if (!defined("__CA_SMTP_XOAUTH_CLIENTSECRET__")) {
+	define("__CA_SMTP_XOAUTH_CLIENTSECRET__", '');
+}
+
+# __CA_SMTP_XOAUTH_AZURE_TENANTID__ = This is only needed for Azure OAUTH provider
+if (!defined("__CA_SMTP_XOAUTH_AZURE_TENANTID__")) {
+	define("__CA_SMTP_XOAUTH_AZURE_TENANTID__", '');
+}
+
+# __CA_SMTP_XOAUTH_EMAIL__ = email the OAUTH is being authenticated against
+if (!defined("__CA_SMTP_XOAUTH_EMAIL__")) {
+	define("__CA_SMTP_XOAUTH_EMAIL__", '');
+}
+
+# __CA_SMTP_XOAUTH_REFRESH_TOKEN__ = get this by going to your ca install https://youdomain.com/vendor/phpmailer/phpmailer/get_oauth_token.php
+if (!defined("__CA_SMTP_XOAUTH_REFRESH_TOKEN__")) {
+	define("__CA_SMTP_XOAUTH_REFRESH_TOKEN__", '');
+}
+
 
 # --------------------------------------------------------------------------------------------
 # Caching configuration
