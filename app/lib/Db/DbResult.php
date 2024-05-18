@@ -791,7 +791,10 @@ class DbResult extends DbBase {
 	 * Free result memory
 	 */
 	function free() {
-		if ($this->opo_db) { $this->opo_db->free($this, $this->opr_res); }
+		if ($this->opo_db && $this->opr_res) { 
+			$this->opo_db->free($this, $this->opr_res); 
+			unset($this->opr_res);
+		}
 	}
 	
 	/**

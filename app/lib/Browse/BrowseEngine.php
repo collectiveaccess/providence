@@ -7202,7 +7202,7 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 						}
 					}
 
-					$natural_sort = caGetOption('natural_sort', $va_facet_info, true);
+					$natural_sort = caGetOption('natural_sort', $va_facet_info, $vs_rel_table_name !== 'ca_entities');
 					
 					// Get labels for facet items
 					if (sizeof($va_row_ids = array_keys($va_facet_items))) {
