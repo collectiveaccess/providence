@@ -289,7 +289,9 @@ class TaskQueue extends BaseObject {
 		if (!($proc_id = $this->registerProcess())) {
 			return false;
 		}
-		$tasks = caGetOption('limit-to-tasks', $options, null);
+		if(is_array($tasks = caGetOption('limit-to-tasks', $options, null))) {
+			$tasks = array_filter($tasks, 'strlen');	
+		}
 		
 		$sql_handler_criteria = '';
 		$sql_params = [];
@@ -325,6 +327,7 @@ class TaskQueue extends BaseObject {
 			", $sql_params);
 			if (($num_rows = $qr_tasks->numRows()) > 0) {
 				$qr_tasks->nextRow();
+				$proc_handler = $qr_tasks->get('handler');
 				
 				if(is_array($tasks) && sizeof($tasks)) {
 					if(!in_array($proc_handler, $tasks)) { 
@@ -341,8 +344,6 @@ class TaskQueue extends BaseObject {
 					, [time(), (int)$qr_tasks->get('task_id')]);
 					
 				$this->updateRegisteredProcess($proc_id, $qr_tasks->get('row_key'), $qr_tasks->get('entity_key'));
-				
-				$proc_handler = $qr_tasks->get('handler');
 				
 				$proc_parameters = unserialize(base64_decode($qr_tasks->get('parameters')));
 				
