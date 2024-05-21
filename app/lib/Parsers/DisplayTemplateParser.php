@@ -668,6 +668,14 @@ class DisplayTemplateParser {
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
+							case 'next':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".next.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'previous':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".previous.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
 							// allow labels as units
 							case 'preferred_labels':
 							case 'nonpreferred_labels':
@@ -802,6 +810,14 @@ class DisplayTemplateParser {
 								break;
 							case 'siblings':
 								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'next':
+								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".next.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'previous':
+								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".previous.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							case 'related':
