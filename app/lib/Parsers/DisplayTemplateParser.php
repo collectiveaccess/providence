@@ -976,7 +976,7 @@ class DisplayTemplateParser {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
 					
-					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
+					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, false)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						$relative_to = (string)$o_node->relativeTo;
