@@ -2490,7 +2490,7 @@ class Installer {
 							} else {
 								// some settings allow multiple values under the same key, for instance restrict_to_types.
 								// in those cases $settings[$setting_name] becomes an array of values
-								if (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple'] ?? false)) {
+								if ($settings_info[$setting_name]['multiple'] ?? false) {
 									if (!is_array($settings_list[$setting_name])) {
 										$settings_list[$setting_name] = [];
 									}

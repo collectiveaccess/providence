@@ -2626,11 +2626,29 @@ trait HistoryTrackingCurrentValueTrait {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Filter string for inclusion in reports, filter most HTML tags 
 	 *
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	private static function _filterValueForReport(?string $text) : ?string {
+		return strip_tags($text, ['b', 'strong', 'em', 'i', 'u', 's']);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 * @param string $ps_bundle_name
+	 * @param int $pn_row_id
+	 * @param array $pa_values
+	 * @param array $pa_options Options include:
+	 *		forReport = filter HTML links from output for use in PDF output. [Default is false]
+	 *
+	 * @return string
 	 */
 	public function renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
-		$for_report = caGetOption('forReport', $pa_options, false);
-		switch($ps_bundle_name) {
+		$bundle_bits = explode('.', $ps_bundle_name);
+		switch($bundle_bits[0]) {
 			case 'ca_objects_location':
 			case 'ca_objects_location_date':
 			case 'history_tracking_current_value':
@@ -2643,6 +2661,8 @@ trait HistoryTrackingCurrentValueTrait {
 					$policy = caGetOption('policy', $pa_options, null);
 					if (is_array($h = $this->getHistory(['useTemplate' => caGetOption('useTemplate', $pa_options, null), 'limit' => 1, 'currentOnly' => true, 'policy' => $policy, 'row_id' => $pn_row_id])) && (sizeof($h) > 0)) {
 						$va_current_location = array_shift(array_shift($h));
+						
+						$for_report = caGetOption('forReport', $pa_options, false);
 					
 						$va_path_components = caGetOption('pathComponents', $pa_options, null);
 						if (is_array($va_path_components) && $va_path_components['subfield_name']) {
@@ -2651,18 +2671,20 @@ trait HistoryTrackingCurrentValueTrait {
 							$path = array_keys($path);
 							if($va_path_components['subfield_name'] === $path[1]) { // is ref to interstitial
 								if (($t_rel = Datamodel::getInstanceByTableName($path[1], true)) && $t_rel->load($va_current_location['relation_id'])) {
-									
-									return $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									$v = $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									if($for_report) { $v = self::_filterValueForReport($v); }
+									return $v;
 								}
 							} elseif (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
-								return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+								$v = $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+								if ($for_report) { $v = self::_filterValueForReport($v); }
+								return $v;
+								
 							}
 						} 
-						$ret =  (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
-						if($for_report) {
-							$ret = strip_tags($ret, $this->getAppConfig()->get('report_allowed_text_tags') ?? []);
-						}
-						return $ret;
+						$v =  (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
+						if ($for_report) { $v = self::_filterValueForReport($v); }
+						return $v;
 					}
 				} 
 				return '';
@@ -2679,7 +2701,9 @@ trait HistoryTrackingCurrentValueTrait {
 						while($qr->nextHit()) { 
 							$contents[] = $qr->getWithTemplate($template);
 						}
-						return join($delimiter, $contents);
+						$v =  join($delimiter, $contents);
+						if($for_report) { $v = self::_filterValueForReport($v); }
+						return $v;
 					}
 				}
 				return null;
