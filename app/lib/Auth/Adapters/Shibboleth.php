@@ -132,12 +132,11 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         if($this->opo_shibAuth->isAuthenticated()){
             $default_roles =  $this->auth_config->get('shibboleth_users_default_roles');
             $default_groups = $this->auth_config->get('shibboleth_users_default_groups');
-            
-            $map = $this->getAttributeMap();
-            
+                
             $attrs = $this->opo_shibAuth->getAttributes();
             
         	if($this->debug) { 
+            	$map = $this->getAttributeMap();
         		$this->log->logInfo(_t("[Shibboleth::debug] User info mapping was %1", print_R($map, true)));
         		$this->log->logInfo(_t("[Shibboleth::debug] User info attributes were %1", print_R($attrs, true)));
         	}
