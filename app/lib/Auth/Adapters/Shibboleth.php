@@ -61,8 +61,8 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
     public function __construct(){
     	if(caIsRunFromCLI()) { return; }
-        $this->debug = (bool)$this->auth_config->get('shibboleth_debug');
         $this->auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+        $this->debug = (bool)$this->auth_config->get('shibboleth_debug');
         $shibSP = $this->auth_config->get('shibboleth_service_provider');
         
         $this->log = caGetLogger();
