@@ -57,8 +57,17 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
             $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
             session_write_close();
         } catch (Exception $e) {
-            throw new ShibbolethException("Could not create SimpleSAML auth object");
+            throw new ShibbolethException("Could not create SimpleSAML auth object: {$e}");
         }
+
+        if (!array_key_exists('uid', $this->auth_config->get('shibboleth_field_map'))) {
+          throw new ShibbolethException(_t("uid not found in attribute map"));
+        }
+
+        if (!array_key_exists('email', $this->auth_config->get('shibboleth_field_map'))) {
+          throw new ShibbolethException(_t("email not found in attribute map"));
+        }
+
     }
 	# --------------------------------------------------------------------------------
 	/**
@@ -71,14 +80,10 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		} catch (Exception $e){
 			die("Shibboleth error: {$e}");
 		}
-		
+
 		if(!$this->opo_shibAuth->isAuthenticated()){
 			return false;
 		}
-		if (!($attrs = $this->opo_shibAuth->getAttributes())) { return false; }
-		$uid = $this->mapAttribute('uid', $attrs);
-	
-	    if (!$uid) { return false; }
 	    return true;
 	}
     # --------------------------------------------------------------------------------
