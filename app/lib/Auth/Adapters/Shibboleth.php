@@ -253,8 +253,8 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	private function mapAttribute(string $key, array $values) {
 		$map = $this->getAttributeMap();
 		foreach($map as $k => $v) {
-			if($v === $key) {
-				$x = $values[$k] ?? null;
+			if($k === $key) {
+				$x = $values[$v] ?? null;
 				return is_array($x) ? array_shift($x) : $x;
 			}
 		}
