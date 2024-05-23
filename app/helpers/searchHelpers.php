@@ -986,7 +986,7 @@ function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 	
 	$va_query = [];
 	foreach ($va_items as $id => $subquery) {
-		if ($subquery->getTerm()->field) {
+		if ($subquery && property_exists($subquery, 'field') && $subquery->field) {
 			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
 				$va_query[] = 'AND';
 			} else if (($va_signs[$id] === false) && $id) {
