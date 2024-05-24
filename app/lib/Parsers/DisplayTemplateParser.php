@@ -29,9 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
-
  
 class DisplayTemplateParser {
 	# -------------------------------------------------------------------
@@ -991,8 +989,7 @@ class DisplayTemplateParser {
 					} else {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
-					
-					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, false)) {
+					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
 						$relative_to = (string)$o_node->relativeTo;
@@ -1008,7 +1005,7 @@ class DisplayTemplateParser {
 						$va_proc_templates = caCreateLinksFromText(
 							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
-							array_merge(['addRelParameter' => true, 'requireLinkTags' => false, 'bundle' => $o_node->bundle, 'attributes' => $link_attributes], $pa_options)
+							array_merge(['addRelParameter' => true, 'bundle' => $o_node->bundle, 'attributes' => $link_attributes], $pa_options, ['requireLinkTags' => false])
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
 					} elseif(strlen($vs_tag) && ($vs_tag[0] !=='~')) { 

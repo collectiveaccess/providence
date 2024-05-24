@@ -795,7 +795,7 @@ class Installer {
 					$t_restriction->set('include_subtypes', (bool)$restriction['includeSubtypes'] ? 1 : 0);
 					$t_restriction->set('type_id', $type_id);
 					$t_restriction->set('element_id', $element_id);
-
+					
 					$this->_processSettings($t_restriction, $restriction['settings'], ['source' => "MetadataElement:{$element_code}"]);
 					$t_restriction->insert();
 
