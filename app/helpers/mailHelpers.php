@@ -137,7 +137,8 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 		$o_mail->SMTPAutoTLS = (bool)($ssl ?? false);
 		$o_mail->SMTPAuth   = (bool)$smtp_auth;
 		$o_mail->AuthType	= $smtp_auth;
-		$o_mail->Port       = $smtp_config['port']; 
+		$o_mail->Port       = $smtp_config['port'];
+		$o_mail->CharSet 	= 'UTF-8';
 
 		if($smtp_auth == 'XOAUTH2'){
 			$xoauth2_provider = $o_config->get('smtp_xoauth_provider');

@@ -2431,6 +2431,7 @@ function caGetDefaultMediaViewer($ps_mimetype) {
  * @return array An array of tags, or an array of arrays when parseOptions option is set.
  */
 function caGetTemplateTags($ps_template, $pa_options=null) {
+	if(!strlen($ps_template)) { return []; }
 	$key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_template);
 	if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 	
