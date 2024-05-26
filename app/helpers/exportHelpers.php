@@ -406,6 +406,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
 		$template_info = caGetPrintTemplateDetails($template_type, substr($template, 5));
 		$format = caGetOption('fileFormat', $template_info, 'pdf');	// allow override of format
+		$display_id = substr($template, 5);
 	} elseif (!(bool)$config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
 		$display_id = substr($template, 9);
 		
@@ -499,7 +500,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			];
 		}
 		$view->setVar('display_list', $display_list);
-	} else {
+	} elseif($format !== 'pdf') {
 		// custom non-PDF display
 		$template_info = caGetPrintTemplateDetails($template_type, $template);
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);

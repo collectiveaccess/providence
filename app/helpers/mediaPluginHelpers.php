@@ -880,28 +880,28 @@ function caGetExifTagArgsForExport($data) {
 	return $tag_args;
 }
 # ------------------------------------------------------------------------------------------------
-function caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_id) {
+/**
+ *
+ */
+function caExportMediaMetadataForRecord(string $table, string $type_code, int $id) {
 	$o_app_config = Configuration::load();
 
-	if (!($vs_media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
-	$o_metadata_config = Configuration::load($vs_media_metadata_config);
+	if (!($media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
+	$o_metadata_config = Configuration::load($media_metadata_config);
 
-	$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-	if(!isset($va_mappings[$ps_table])) { return false; }
+	$mappings = $o_metadata_config->getAssoc('export_mappings');
+	if(!isset($mappings[$table])) { return false; }
 
-	if(isset($va_mappings[$ps_table][$ps_type_code])) {
-		$vs_export_mapping = $va_mappings[$ps_table][$ps_type_code];
-	} elseif(isset($va_mappings[$ps_table]['__default__'])) {
-		$vs_export_mapping = $va_mappings[$ps_table]['__default__'];
-	} else {
-		$vs_export_mapping = false;
+	$export_mapping = null;
+	if(isset($mappings[$table][$type_code])) {
+		$export_mapping = $mappings[$table][$type_code];
+	} elseif(isset($mappings[$table]['__default__'])) {
+		$export_mapping = $mappings[$table]['__default__'];
 	}
-
-	if($vs_export_mapping) {
-		return ca_data_exporters::exportRecord($vs_export_mapping, $pn_id);
+	if(!is_string($export_mapping) || !strlen($export_mapping)) {
+		return false;
 	}
-
-	return false;
+	return ca_data_exporters::exportRecord($export_mapping, $id);
 }
 # ------------------------------------------------------------------------------------------------
 /**
