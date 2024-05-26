@@ -313,7 +313,6 @@ class TaskQueue extends BaseObject {
 			$max_process_count = 1000000;
 		}
 		while(($num_rows > 0) && ($processed_count <= $max_process_count)) {
-		
 			$qr_tasks = $o_db->query("
 					SELECT * 
 					FROM ca_task_queue
@@ -328,7 +327,10 @@ class TaskQueue extends BaseObject {
 				$qr_tasks->nextRow();
 				
 				if(is_array($tasks) && sizeof($tasks)) {
-					if(!in_array($proc_handler, $tasks)) { continue; }
+					if(!in_array($proc_handler, $tasks)) { 
+						$num_rows--;
+						continue; 
+					}
 				}
 				
 				// lock task
