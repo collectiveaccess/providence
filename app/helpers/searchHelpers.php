@@ -825,7 +825,7 @@ function caGetQueryStringForHTMLFormInput($po_result_context, $pa_options=null) 
 			foreach($va_value_list as $vn_i => $vs_value) {
 				if (!strlen(trim($vs_value))) { continue; }
 				if ((strpos($vs_value, ' ') !== false) && ($vs_value[0] != '[')) {
-					$vs_query_element = '"'.str_replace('"', '', $vs_value).'"';
+					$vs_query_element = '"'.str_replace('"', "\\\"", $vs_value).'"';
 				} else {
 					$vs_query_element = $vs_value;
 				}
@@ -889,7 +889,7 @@ function caGetDisplayStringForHTMLFormInput($po_result_context, $pa_options=null
 		) { continue; }
 
 		if(!is_array($pa_form_values[$vs_dotless_element])) { $pa_form_values[$vs_dotless_element] = array($pa_form_values[$vs_dotless_element]); }
-		if(!($vs_label = trim($pa_form_values["{$vs_dotless_element}_label"]))) { $vs_label = "???"; }
+		//if(!($vs_label = trim($pa_form_values["{$vs_dotless_element}_label"]))) { $vs_label = "xxx"; }
 		
 		if(isset($pa_form_values["{$vs_dotless_element}_autocomplete"])) {
 			if(!is_array($pa_form_values["{$vs_dotless_element}_autocomplete"])) { $pa_form_values["{$vs_dotless_element}_autocomplete"] = [$pa_form_values["{$vs_dotless_element}_autocomplete"]]; }
@@ -939,7 +939,7 @@ function caGetDisplayStringForHTMLFormInput($po_result_context, $pa_options=null
 			}
 		}
 		
-		$va_display_string[] = "{$vs_label}: ".join("; ", $va_values);
+		$va_display_string[] = ($vs_label ? "{$vs_label}: " : '').join("; ", $va_values);
 	}
 	
 	$po_result_context->setParameter("pawtucketAdvancedSearchFormDisplayString_{$pa_form_values['_advancedFormName']}", $va_display_string);
@@ -2204,7 +2204,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
  *
  * @return array A list of terms
  */
-function caExtractTermsForSearch($search) {
+function caExtractTermsForSearch($search, ?array $options=null) {
 	if(is_string($search)) {
 		$qp = new LuceneSyntaxParser();
 		$qp->setEncoding('UTF-8');
@@ -2221,8 +2221,9 @@ function caExtractTermsForSearch($search) {
 	$terms = [];
 	switch(get_class($parsed)) {
 		case 'Zend_Search_Lucene_Search_Query_Boolean':
-			foreach($parsed->getSubqueries() as $sq) {
-				$terms = array_merge($terms, caExtractTermsForSearch($sq));
+			$signs = $parsed->getSigns();
+			foreach($parsed->getSubqueries() as $i => $sq) {
+				$terms = array_merge($terms, caExtractTermsForSearch($sq, array_merge($options ?? [], ['sign' => $signs[$i]])));
 			}
 			break;
 		case 'Zend_Search_Lucene_Search_Query_MultiTerm':
@@ -2235,13 +2236,15 @@ function caExtractTermsForSearch($search) {
 			}
 			break;
 		case 'Zend_Search_Lucene_Index_Term':
-			$terms[] = caConvertSearchTermsToText($parsed->field, $parsed->text);
+			$terms[] = caConvertSearchTermsToText($parsed->field, $parsed->text, $options);
 			break;
 		case 'Zend_Search_Lucene_Search_Query_Term':
-			$terms[] = caConvertSearchTermsToText($parsed->getTerm()->field, $parsed->getTerm()->text);
+			$terms[] = caConvertSearchTermsToText($parsed->getTerm()->field, $parsed->getTerm()->text, $options);
 			break;	
 		case 'Zend_Search_Lucene_Search_Query_Wildcard':
 		case 'Zend_Search_Lucene_Search_Query_Fuzzy':
+			$terms[] = caConvertSearchTermsToText($parsed->field, $parsed->getPattern()->text, $options);
+			break;
 		case 'Zend_Search_Lucene_Search_Query_Insignificant':
 		case 'Zend_Search_Lucene_Search_Query_Empty':
 			// noop
@@ -2261,13 +2264,23 @@ function caExtractTermsForSearch($search) {
  *
  * @return string
  */
-function caConvertSearchTermsToText($field, $term) : string {
-	$tmp = explode('.', $field);
+function caConvertSearchTermsToText($field, $term, ?array $options=null) : string {
+	if(!preg_match("![A-Za-z0-9]+!", $term)) { return $term; }
+	$sign = caGetOption('sign', $options, '');
+	$prefix = caGetOption('prefix', $options, null);
+	$tmp = $field ? explode('.', $field) : [];
 	
 	if($t_instance = Datamodel::getInstance($tmp[0], true)) {
 		if ($tmp[1] === $t_instance->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
 			return $t_instance->getTypeName($term);
 		}
+	}
+	if($sign === true) {
+		$term = '+'.($prefix ? "{$prefix}:" : '').$term;
+	} elseif($sign === false) {
+		$term = '-'.($prefix ? "{$prefix}:" : '').$term;
+	} else {
+		$term = ($prefix ? "{$prefix}:" : '').$term;
 	}
 	return $term;
 }
