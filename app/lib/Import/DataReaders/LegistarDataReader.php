@@ -44,8 +44,13 @@ class LegistarDataReader extends BaseDataReader {
 	
 	private $source = null;
 	private $start = 0;
-	private $limit = 100;
+	private $limit = 10;
 	private $total_items = null;
+	
+	/**
+	 * History for current row, fetched with _getMatterHistory()
+	 */
+	private $matter_history = null;
 	
 	/**
 	 * Legistar web API search url
@@ -69,8 +74,12 @@ class LegistarDataReader extends BaseDataReader {
 		$this->ops_description = _t('Reads data from the Legistar data service');
 		
 		$this->opa_formats = ['legistar'];	// must be all lowercase to allow for case-insensitive matching
+		if($source || $options) {
+			if($source == '*') { $source = ''; }
+			$this->read($source, $options);
+		}
 	}
-		# -------------------------------------------------------
+	# -------------------------------------------------------
 	/**
 	 * 
 	 * 
@@ -80,7 +89,7 @@ class LegistarDataReader extends BaseDataReader {
 	 */
 	public function read($source, $options=null) {
 		parent::read($source, $options);
-		
+		if($source == '*') { $source = ''; }
 		$this->current_row = -1;
 		$this->current_offset = -1;
 		$this->items = [];
@@ -116,28 +125,15 @@ class LegistarDataReader extends BaseDataReader {
 	 */
 	private function getData() {
 	    try {
-	    	$this->client = new \GuzzleHttp\Client(['base_uri' => $x=LegistarDataReader::$s_legistar_base_url]);
+	    	$this->client = new \GuzzleHttp\Client(['base_uri' => LegistarDataReader::$s_legistar_base_url]);
 			
 			// TODO: add filters
 			if(!in_array($this->data_type, ['matters', 'events'])) {
 				$this->data_type = 'matters';
 			}
 			
-			$url = "/v1/".$this->ops_client_code."/".$this->data_type."?\$top=".(int)$this->limit."&\$skip=".(int)$this->start;
-			if($this->ops_api_key) {
-				$url .= "&token=".$this->ops_api_key;
-			}
-			$filter = rawurlencode(trim($this->source));
-			if(strlen($filter)) {
-				$url .= "&filter={$filter}";
-			}
-			try {
-				$response = $this->client->request("GET", $url);
-			} catch(Exception $e) {
-				print "error=".$e->getMessage()."\n";
-			}
-			$data = json_decode((string)$response->getBody(), true);
-			
+			$data = $this->_d($this->data_type, null, ['$top' => (int)$this->limit, '$skip' => (int)$this->start, '$filter' => rawurlencode(trim($this->source))], []);
+		
 			if (is_array($data)) {
 			    $this->total_items = sizeof($data);
 			    $this->start += sizeof($data);
@@ -158,10 +154,13 @@ class LegistarDataReader extends BaseDataReader {
 		if (!$this->items || !is_array($this->items) || !sizeof($this->items)) { return false; }
 		
 		$this->current_offset++;
+        $this->matter_history = null;
 		
 		if(isset($this->items[$this->current_offset]) && is_array($this->items[$this->current_offset])) {
 		    $this->current_row++;
 			$this->row_buf = $this->items[$this->current_offset];
+			$this->row_buf = array_merge($this->row_buf, $this->_getVirtualFields());
+			
 			return true;
 		} elseif($this->current_row < $this->total_items) {
 		    // get next frame
@@ -176,6 +175,28 @@ class LegistarDataReader extends BaseDataReader {
 	/**
 	 * 
 	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getVirtualFields() : array {
+		$acc = [];
+		
+		// preload history of current matter
+		$this->_getMatterHistory();
+		
+		$acc['votes'] = $this->_getVote(['mode' => 'votes']);
+		$acc['rollcalls'] = $this->_getVote(['mode' => 'rollcalls']);
+		$acc['sponsors'] = $this->_getSponsors();
+		$acc = array_merge($acc ?? [], $this->_getRefs());
+		$acc['committee'] = $this->_getCommittee();
+		$acc = array_merge($acc ?? [], $this->_getAttachments());
+		
+		return $acc;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
 	 * @param int $row_num
 	 * @return bool
 	 */
@@ -183,6 +204,7 @@ class LegistarDataReader extends BaseDataReader {
 		$row_num = (int)$row_num;
 		
         if (($row_num >= 0) && ($row_num < $this->total_items)) {
+        	$this->matter_history = null;
             $this->current_row = $row_num;
             $this->start = $row_num;
             return (bool)$this->getData();
@@ -207,7 +229,7 @@ class LegistarDataReader extends BaseDataReader {
 		
 		if (is_array($this->row_buf) && ($col) && (isset($this->row_buf[$col]))) {
 			if($return_as_array) {
-				return [$this->row_buf[$col]];
+				return is_array($this->row_buf[$col]) ? $this->row_buf[$col] : [$this->row_buf[$col]];
 			} else {
 				return $this->row_buf[$col];
 			}
@@ -222,6 +244,7 @@ class LegistarDataReader extends BaseDataReader {
 	 */
 	public function getRow($options=null) {
 		if (isset($this->items[$this->current_offset]) && is_array($row = $this->items[$this->current_offset])){
+			$row = array_merge($row, $this->_getVirtualFields());
 			return array_map(function($v) { return !is_array($v) ? [$v] : $v; }, $row);
 		}
 		
@@ -262,6 +285,241 @@ class LegistarDataReader extends BaseDataReader {
 	 */
 	public function valuesCanRepeat() {
 		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return array
+	 */
+	private function _d(string $data_type, string $path=null, ?array $params=null, ?array $options) : array {
+		$url = "/v1/".$this->ops_client_code."/".$data_type;
+		if($path) { $url .= '/'.$path; }
+		$params = is_array($params) ? $params : [];
+		
+		if($this->ops_api_key) {
+			$params['token'] = $this->ops_api_key;
+		}
+		$params = array_filter($params, 'strlen');
+		$query_string = http_build_query($params);
+		
+		try {
+			if($options['debug'] ?? false) { print "LOAD ".$url.($query_string ? "?{$query_string}" : "")."\n"; }
+			$response = $this->client->request("GET", $url.($query_string ? "?{$query_string}" : ""));
+		} catch(Exception $e) {
+			print "error=".$e->getMessage()."\n";
+		}
+		$data = @json_decode((string)$response->getBody(), true);
+			
+		return $data ?? [];
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return array
+	 */
+	private function _genCriteria(string $type, int $id) {
+		switch($type) {
+			case 'histories':
+				return [
+					"MatterHistoryPassedFlag" => [0, 1],
+					"MatterHistoryActionBodyName" => $id
+				];
+				break;
+			case 'votes':
+				return [
+					"EventItemPassedFlag" => [0, 1],
+					"EventItemMatterId" => $id
+				];
+				break;
+			case 'rollcalls':
+				return ["EventItemRollCallFlag" => 1];
+				break;
+			case 'attachments':
+				return ["MatterAttachmentIsSupportingDocument" => false];
+				break;
+					
+		}
+		return [];
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getMatterHistory() : array {
+		// Get history : https://webapi.legistar.com/v1/Seattle/matters/1791/histories?$filter=MatterHistoryActionBodyName%20eq%20%27City%20Council%27
+		$matter_id = $this->row_buf['MatterId'];
+		$this->matter_history = $this->_d('Matters', $matter_id.'/Histories', [], []); //'$filter' => "(MatterHistoryActionBodyName eq 'City Council') or (MatterHistoryActionBodyName eq 'Full Council')"
+	
+		return $this->matter_history;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getVote(?array $options=null) : string {
+		$acc = [];
+		
+		$matter_id = $this->row_buf['MatterId'];
+		$mode = caGetOption('mode', $options, 'votes', ['validValues' => ['votes', 'rollcalls']]);
+		if(!in_array($mode, ['votes', 'rollcalls'])) { throw new ApplicationException(_t('Invalid _getVote() mode: %1', $mode)); }
+		
+		$votes = [];
+		
+		if(is_array($this->matter_history)) {
+			$history = array_filter($this->matter_history, function($v) {
+				return in_array($v['MatterHistoryActionBodyName'], ['City Council', 'Full Council']);
+			});
+			foreach($history as $d) {
+				if($event_id = $d['MatterHistoryEventId']) {
+					// Get event items for event: https://webapi.legistar.com/v1/seattle/Events/1440/EventItems?AgendaNote=1&MinutesNote=1&Attachments=1&$filter=EventItemMatterId+eq+1791
+					if($mode == 'rollcalls') {
+						$filter = "(EventItemMatterId eq {$matter_id}) and (EventItemRollCallFlag eq 1)";
+					} else {
+						$filter = "(EventItemMatterId eq {$matter_id}) and (EventItemPassedFlag eq 0 or EventItemPassedFlag eq 1)";
+					}
+					
+					$ei_data = $this->_d('Events', $event_id.'/EventItems', ['$filter' => $filter, 'AgendaNote' => 1, 'MinutesNote' => 1, 'Attachments' => 1], []);
+					if(is_array($ei_data)) {
+						$event_item_ids = array_unique(array_map(function($v) {
+							return $v['EventItemId'];
+						}, $ei_data));
+						foreach($event_item_ids as $event_item_id) {
+							if(is_array($ei_vote_data = $this->_d('EventItems', $event_item_id.'/'.ucfirst($mode), [], []))) {
+								foreach($ei_vote_data as $vote) {
+									switch($mode) {
+										case 'rollcalls':
+											$votes[strtolower($vote['RollCallValueName'])][] = $vote['RollCallPersonName'] ?? '???';
+											break;
+										case 'votes':
+											$votes[strtolower($vote['VoteValueName'])][] = $vote['VotePersonName'] ?? '???';
+											break;		
+									}
+								}
+							}
+							
+						}
+					}
+				}
+			}
+		}
+		
+		$tally = sizeof($votes['in favor'] ?? []).'/'.sizeof($votes['opposed'] ?? []);
+		
+		//
+		return $tally;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getSponsors() : string {
+		$acc = [];
+		
+		$matter_id = $this->row_buf['MatterId'];
+		
+		$sponsors = [];
+		$data = $this->_d('Matters', $matter_id.'/Sponsors', [], []);
+	
+		if(is_array($data)) {
+			foreach($data as $d) {
+				$sponsors[] = $d['MatterSponsorName'] ?? '???';
+			}
+		}
+		
+		$sponsors = array_unique($sponsors);
+	
+		return join(', ', $sponsors);
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getRefs() : array {
+		$acc = [];
+		
+		$matter_id = $this->row_buf['MatterId'];
+		
+		$references = $reference_ids = [];
+		$data = $this->_d('Matters', $matter_id.'/Relations', [], []);
+	
+		if(is_array($data)) {
+			foreach($data as $d) {
+				if(!($rel_matter_id = ($d['MatterRelationMatterId'] ?? null))) { continue; }
+				if($matter = $this->_d('Matters', $rel_matter_id, [], [])) {
+					$references[] = $matter['MatterFile'] ?? '???';
+					$reference_ids[] = $rel_matter_id;
+				}
+			}
+		}
+		
+		$references = array_unique($references);
+	
+		return [
+			'references' => $references,
+			'reference_ids' => $reference_ids
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getCommittee() : string {
+		$committees = [];
+		
+		$matter_id = $this->row_buf['MatterId'];
+		if(is_array($this->matter_history)) {
+			$history = array_filter($this->matter_history, function($v) {
+				return !in_array($v['MatterHistoryActionBodyName'], ['City Council', 'Full Council']) && strlen($v['MatterHistoryPassedFlag']) && in_array((int)$v['MatterHistoryPassedFlag'], [0,1], true);
+			});
+			foreach($history as $h) {
+				$committees[] = $h['MatterHistoryActionBodyName'];	
+			}
+		}
+		$committees = array_unique($committees);
+		
+		return join(', ', $committees);
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param 
+	 * @return array
+	 */
+	private function _getAttachments() : array {
+		$attachments = [];
+		
+		$matter_id = $this->row_buf['MatterId'];
+		
+		$a_data = $this->_d('Matters', $matter_id.'/Attachments', [], []); //['$filter' => "(MatterAttachmentIsSupportingDocument eq false)"
+		if(is_array($a_data)) {
+			foreach($a_data as $a) {
+				$attachments[] = $a['MatterAttachmentHyperlink'];
+				$attachment_filenames[] = $a['MatterAttachmentName'];
+			}
+		}
+		
+		return [
+			'attachments' => $attachments,
+			'attachment_filenames' => $attachment_filenames
+		];
 	}
 	# -------------------------------------------------------
 }

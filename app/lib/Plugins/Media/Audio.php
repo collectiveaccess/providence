@@ -770,6 +770,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$tag = (($caption_count || ($ui == 'plyr-video')) && ($ui !== 'plyr-audio')) ? 'video' : 'audio';
 
 				if($ui = caGetOption('user_interface', $options, false, ['forceLowercase' => true]) !== 'mediaelement') {
+					if($tag === 'audio') {
+						print caHTMLImage($poster_frame_url); 
+					}
 ?>
 					<div class="<?= $class; ?> audio-responsive" style="width: <?= $width; ?>; height: <?= $height; ?>;">
 						<<?= $tag; ?> id="<?= $id; ?>" playsinline controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" >

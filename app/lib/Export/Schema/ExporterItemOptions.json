@@ -1,0 +1,228 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://collectiveaccess.org/schema/Exporter/ExportItems.schema.json",
+    "title": "Exporter item options",
+    "description": "Data exporter item option definitions",
+    "additionalProperties": false,
+    "type": "object", 
+    "properties": {  
+        "default": {
+            "description": "Value to use if data source value is blank.",
+            "type": "string"
+        },
+        "delimiter": {
+            "description": "Delimiter to use when joining repeating values.",
+            "type": ["string", "array"],
+            "items": {
+                "type": "string"
+            }
+        },
+        "prefix": {
+            "description": "Text to prepend to value prior to export.",
+            "type": "string"
+        },
+        "suffix": {
+            "description": "Text to append to value prior to export.",
+            "type": "string"
+        },
+        "template": {
+            "description": "'Format exported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values. This setting can also be used to set static values for exporter items without data source.",
+            "type": "string"
+        },
+        "maxLength": {
+            "description": "Truncate to specified length if value exceeds that length.",
+            "type": "integer"
+        },
+        "repeat_element_for_multiple_values": {
+            "description": "If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.",
+            "type": ["boolean", "integer"]
+        },
+        "repeatElementForMultipleValues": {
+            "description": "If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.",
+            "type": ["boolean", "integer"]
+        },
+        "filterNonPrimaryRepresentations": {
+            "description": "Determines if only primary object representations or if all representations are returned. Default is to only return the primary representation.",
+            "type": ["boolean", "integer"]
+        },
+        "deduplicate": {
+            "description": "Remove duplicate values from returned set of values for export.",
+            "type": ["boolean", "integer"]
+        },
+        "convertCodesToDisplayText": {
+            "description": "If set, id values refering to foreign keys are returned as preferred label text in the current locale.",
+            "type": ["boolean", "integer"]
+        },
+        "convertCodesToIdno": {
+            "description": "If set, id values refering to foreign keys are returned as idno.",
+            "type": ["boolean", "integer"]
+        },
+        "returnIdno": {
+            "description": "If set, idnos are returned for List attribute values instead of primary key values. Do not combine this with convertCodesToDisplayText!",
+            "type": ["boolean", "integer"]
+        },
+        "stripTags": {
+            "description": "If set, HTML/XML tags are removed from output.",
+            "type": ["boolean", "integer"]
+        },
+        "skipIfExpression": {
+            "description": "The current mapping is skipped if the given expression evaluates to true.",
+            "type": "string"
+        },
+        "skipIfEmpty": {
+            "description": "The current mapping is skipped if the source value is empty.",
+            "type": ["boolean", "integer"]
+        },
+        "filterByRegExp": {
+            "description": "Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.",
+            "type": "string"
+        },
+        "original_values": {
+            "description": "Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).",
+            "type": "string"
+        },
+        "originalValues": {
+            "description": "Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).",
+            "type": "string"
+        },
+        "replacement_values": {
+            "description": "Return-separated list of replacement values that correspond to the mapped values from the original data source.",
+            "type": "string"
+        },
+        "replacementValues": {
+            "description": "Return-separated list of replacement values that correspond to the mapped values from the original data source.",
+            "type": "string"
+        },
+        "locale": {
+            "description": "Locale code to use to get the field values. If not set, the system/user default is used.",
+            "type": "string"
+        },
+        "returnAllLocales": {
+            "description": "Return all available values for any locale. If not set, only values for the current locale are returned.'",
+            "type": ["boolean", "integer"]
+        },
+        "omitIfEmpty": {
+            "description": "Omit this item and all its children unless this bundle specifier returns a result.",
+            "type": "string"
+        },
+        "omitIfNotEmpty": {
+            "description": "Omit this item and all its children if this bundle specifier returns a non-empty result.",
+            "type": ["boolean", "integer"]
+        },
+        "omitIfNoChildren": {
+            "description": "Omit this item if it has no children.",
+            "type": ["boolean", "integer"]
+        },
+        "context": {
+            "description": "This setting can be used to switch the context of the export for this exporter item and all its children to a different table, for instance to related entities. The element is automatically repeated for all selected related records. Leave empty to inherit context from parent item.",
+            "type": ["string", "array"],
+            "items": {
+                "type": "string"
+            }
+        },
+        "locale": {
+            "description": "Locale code to use to get the field values. If not set, the system/user default is used.",
+            "type": "string"
+        },
+        "restrictToTypes": {
+            "description": "Restricts the context of the mapping to only records of the designated type. Only valid when context is set.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "filterTypes": {
+            "description": "Filter returned list item hierarachy returning only items with the specified types. Only valid for export of list item attributes.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "restrictToRelationshipTypes": {
+            "description": "Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "restrictToBundleValues": {
+            "description": "Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "checkAccess": {
+            "description": "Restricts the context of the mapping to only records with one of the designated access values. Only valid when context is set.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "sort": {
+            "description": "Sorts the values returned for a context switch on these fields. Only valid when context is set.",
+            "type": "string"
+        },
+        "start_as_iso8601": {
+            "description": "If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
+            "type": ["boolean", "integer"]
+        },
+        "startAsISO8601": {
+            "description": "If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
+            "type": ["boolean", "integer"]
+        },
+        "end_as_iso8601": {
+            "description": "If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
+            "type": ["boolean", "integer"]
+        },
+        "endAsISO8601": {
+            "description": "If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.",
+            "type": ["boolean", "integer"]
+        },
+        "timeOmit": {
+            "description": "If set, only the date portion of a date/time value is exported.",
+            "type": ["boolean", "integer"]
+        },
+        "dontReturnValueIfOnSameDayAsStart": {
+            "description": "If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applies to exports of DateRange attributes and only in conjunction with end_as_iso8601.",
+            "type": ["boolean", "integer"]
+        },
+        "dateFormat": {
+            "description": "Formatting option for DateRange attributes.",
+            "type": "string"
+        },
+        "coordinatesOnly": {
+            "description": "Formatting option for Geocode attributes. Forces return of coordinates only, omitting text labels.",
+            "type": ["boolean", "integer"]
+        },
+        "stripNewlines": {
+            "description": "Formatting option for text attributes. Removes any newline characters in output.",
+            "type": ["boolean", "integer"]
+        },
+        "_id": {
+            "description": "ID of item as set in mapping.",
+            "type": "string"
+        },
+        "applyRegularExpressions": {
+            "description": "A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "match": {
+                        "description": "Perl-compatible regular expression",
+                        "type": "string"
+                    },
+                    "replaceWith": {
+                        "description": "Replacement value.",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "includeDeleted": {
+            "description": "Include deleted records in the exported data set.",
+            "type": ["boolean", "integer"]
+        }
+    }
+}

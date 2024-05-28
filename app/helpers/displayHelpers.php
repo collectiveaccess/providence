@@ -131,6 +131,7 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 	if (!is_array($pa_values)) { return array(); }
 	$va_values = array();
 	foreach($pa_values as $vm_id => $va_value_list_by_locale) {
+		if(!is_array($va_value_list_by_locale)) { continue; }
 		if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
@@ -1214,10 +1215,10 @@ function caEditorInspector($po_view, $pa_options=null) {
 			if(is_array($vs_additional_info)){
 				$vs_buf .= "<br/>";
 				foreach($vs_additional_info as $vs_info){
-					$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+					$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()), ['requireLinkTags' => true])."<br/>\n";
 				}
 			} else {
-				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()), ['requireLinkTags' => true])."<br/>\n";
 			}
 		}
 
@@ -2430,6 +2431,7 @@ function caGetDefaultMediaViewer($ps_mimetype) {
  * @return array An array of tags, or an array of arrays when parseOptions option is set.
  */
 function caGetTemplateTags($ps_template, $pa_options=null) {
+	if(!strlen($ps_template)) { return []; }
 	$key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_template);
 	if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 	

@@ -79,25 +79,27 @@ if(!$is_ajax) {
 <?php
 		if(sizeof($jobs_processing_data)>0) {
 ?>
-			<div id="running_<?= $widget_id; ?>"><div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
-				<tr>
-					<th><strong><?= _t("Jobs currently being processed").":"; ?></strong></th>
-				</tr>
+			<div id="running_<?= $widget_id; ?>">			
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= _t("Jobs currently being processed").":"; ?></strong></div>
+				<div class="dashboardWidgetScrollMedium">
+					<table class='dashboardWidgetTable'>
 <?php
 			foreach($jobs_processing_data as $job) {
 ?>
-				<tr>
-					<td>
-						<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
-						
-						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
-						<?= trackProcessingWidget::getStatusForDisplay( $job['status'], $this ); ?>
-					</td>
-				</tr>
+						<tr>
+							<td>
+								<?= "<h2>"._t('<em>%1</em>', caUcFirstUTF8Safe($job['handler_name']))."</h2>"; ?>
+								
+								<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
+								<?= trackProcessingWidget::getStatusForDisplay( $job['status'], $this ); ?>
+							</td>
+						</tr>
 <?php
 			}
 ?>
-			</table></div><!-- end dashboardWidgetScrollMedium --></div><!-- end running -->
+					</table>
+				</div><!-- end dashboardWidgetScrollMedium -->
+			</div><!-- end running -->
 <?php
 		};
 		if(sizeof($jobs_queued_data)>0) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once('/var/simplesamlphp/lib/_autoload.php');
+require_once(__CA_BASE_DIR__.'/vendor/simplesamlphp/simplesamlphp/lib/_autoload.php');
 require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
@@ -45,6 +45,16 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	private $opo_shibAuth = null;
 	
+	/**
+	 *
+	 */
+	private $log = null;
+	
+	/**
+	 *
+	 */
+	private $debug = false;
+	
 	# --------------------------------------------------------------------------------
 	/**
 	 *
@@ -52,12 +62,28 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
     public function __construct(){
     	if(caIsRunFromCLI()) { return; }
         $this->auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+        $this->debug = (bool)$this->auth_config->get('shibboleth_debug');
         $shibSP = $this->auth_config->get('shibboleth_service_provider');
+        
+        $this->log = caGetLogger();
+        
+        if($this->debug) { $this->log->logDebug(_t("[Shibboleth::debug] Created new shib context")); }
         try{
             $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
+            session_write_close();
         } catch (Exception $e) {
-            throw new ShibbolethException("Could not create SimpleSAML auth object");
+       		if($this->debug) { $this->log->logDebug(_t("Could not create SimpleSAML auth object: %1", $e->getMessage())); }
+            throw new ShibbolethException(_t("Could not create SimpleSAML auth object: %1", $e->getMessage()));
         }
+        
+        $map = $this->getAttributeMap();
+		if (!array_key_exists('uid', $map)) {
+			throw new ShibbolethException(_t("uid not found in attribute map"));
+		}
+		
+		if (!array_key_exists('email', $map)) {
+			throw new ShibbolethException(_t("email not found in attribute map"));
+		}
     }
 	# --------------------------------------------------------------------------------
 	/**
@@ -65,19 +91,28 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	public function authenticate($username, $password = '', $options=null) {
     	if(caIsRunFromCLI()) { return false; }
+    	
+        if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Attempting to authenticate with {$username}::{$password}")); }
 		try{
         	$this->opo_shibAuth->requireAuth();
 		} catch (Exception $e){
-			die("Shibboleth error: {$e}");
+			if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Error while attempting to authenticate with {$username}::{$password}: %1",$e->getMessage())); }
+			throw new ShibbolethException(_t("Shibboleth error: %1", $e->getMessage()));
 		}
 		
 		if(!$this->opo_shibAuth->isAuthenticated()){
 			return false;
 		}
-		if (!($attrs = $this->opo_shibAuth->getAttributes())) { return false; }
+		if (!($attrs = $this->opo_shibAuth->getAttributes())) { 
+			if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Received not attrbitures while attempting to authenticate with {$username}::{$password}")); }
+			return false; 	
+		}
 		$uid = $this->mapAttribute('uid', $attrs);
-	
+		
+		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Got uid {$uid} while attemtping to authenticate with {$username}::{$password}. Attributes were %1", print_R($attrs, true))); }
 	    if (!$uid) { return false; }
+		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Authentication with {$username}::{$password} was successful")); }
+	   
 	    return true;
 	}
     # --------------------------------------------------------------------------------
@@ -86,31 +121,42 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	public function getUserInfo($username, $password, $options=null) {
     	if(caIsRunFromCLI()) { return null; }
+    	
+    	if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Getting user info with {$username}::{$password}")); }
         if(!$this->opo_shibAuth->isAuthenticated()){
             if (!$this->authenticate($username, $password)) {
+        		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info authentication with {$username}::{$password} failed")); }
                 throw new ShibbolethException(_t("User could not be authenticated."));
             }
         }
         if($this->opo_shibAuth->isAuthenticated()){
             $default_roles =  $this->auth_config->get('shibboleth_users_default_roles');
             $default_groups = $this->auth_config->get('shibboleth_users_default_groups');
-            
-            $map = array_flip($this->auth_config->get('shibboleth_field_map'));
-            
+                
             $attrs = $this->opo_shibAuth->getAttributes();
+            
+        	if($this->debug) { 
+            	$map = $this->getAttributeMap();
+        		$this->log->logInfo(_t("[Shibboleth::debug] User info mapping was %1", print_R($map, true)));
+        		$this->log->logInfo(_t("[Shibboleth::debug] User info attributes were %1", print_R($attrs, true)));
+        	}
             
 			$uid = $this->mapAttribute('uid', $attrs);
 			$email = $this->mapAttribute('email', $attrs);
 			$fname = $this->mapAttribute('fname', $attrs);
 			$lname = $this->mapAttribute('lname', $attrs);
+			
+        	if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info got values uid={$uid}; email={$email}; fname={$fname}; lname={$lname}")); }
             
             if(empty($uid)) { 
+        		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info authentication with {$username}::{$password} failed because no user id was set")); }
             	throw new ShibbolethException(_t("User id not set."));
             }
             if(empty($email)) { 
+        		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info authentication with {$username}::{$password} failed because no email was set")); }
             	throw new ShibbolethException(_t("User email address not set."));
             }
-            return [
+            $ret = [
                 'user_name' => $username ? $username : $uid,
 				'email' => $email,
 				'fname' => $fname,
@@ -119,7 +165,11 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				'roles' => $default_roles,
 				'groups' => $default_groups
             ];
-        }
+            if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info succeeded with {$username}::{$password}; values are: %1", print_R($ret, true))); }
+            return $ret;
+        } 
+        
+        if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info failed with {$username}::{$password} failed")); }
 		throw new ShibbolethException(_t("User could not be found."));
     }
 	# --------------------------------------------------------------------------------
@@ -198,10 +248,10 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
     }
 	# --------------------------------------------------------------------------------
 	/**
-	 *
+	 * 
 	 */
 	private function mapAttribute(string $key, array $values) {
-		$map = $this->auth_config->get('shibboleth_field_map');
+		$map = $this->getAttributeMap();
 		foreach($map as $k => $v) {
 			if($k === $key) {
 				$x = $values[$v] ?? null;
@@ -209,6 +259,18 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			}
 		}
 		return null;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Fetch attribute map from configuration. 
+	 *
+	 * return array
+	 */
+	private function getAttributeMap() : ?array {
+		if(is_array($map = $this->auth_config->get('shibboleth_field_map'))) {
+			return $map;
+		}
+		throw new ShibbolethException(_t("shibboleth_field_map not found in configuration"));
 	}
 	# --------------------------------------------------------------------------------
 }

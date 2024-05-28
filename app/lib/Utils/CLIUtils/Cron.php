@@ -39,7 +39,8 @@ trait CLIUtilsCron {
 			'quiet' => (bool)$po_opts->getOption("quiet"), 
 			'restart' => $po_opts->getOption("restart"),
 			'skip-recurring-tasks' => $po_opts->getOption("skip-recurring-tasks"),
-			'recurring-tasks-only' => $po_opts->getOption("recurring-tasks-only")
+			'recurring-tasks-only' => $po_opts->getOption("recurring-tasks-only"),
+			'limit-to-tasks' => preg_split('![;,]+!', $po_opts->getOption("tasks"))
 		]);
 	}
 	# -------------------------------------------------------
@@ -50,7 +51,8 @@ trait CLIUtilsCron {
 		return array(
 			"restart|r" => _t("Restart/reset unfinished tasks before queue processing. This option can be useful when the task queue script (or the whole machine) crashed and you have 'zombie' entries in your task queue. This option shouldn't interfere with any existing task queue processes that are actually running."),
 			"skip-recurring-tasks|s" => _t("Skip running of recurring tasks and run only queued tasks."),
-			"recurring-tasks-only|o" => _t("Only run recurring tasks, ignoring queued tasks.")
+			"recurring-tasks-only|o" => _t("Only run recurring tasks, ignoring queued tasks."),
+			"tasks|t=s" => _t("Only process specified tasks (eg. mediaproc.")
 		);
 	}
 	# -------------------------------------------------------

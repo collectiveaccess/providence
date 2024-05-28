@@ -791,14 +791,26 @@ class DbResult extends DbBase {
 	 * Free result memory
 	 */
 	function free() {
-		if ($this->opo_db) { $this->opo_db->free($this, $this->opr_res); }
+		if ($this->opo_db && $this->opr_res) { 
+			$this->opo_db->free($this, $this->opr_res); 
+			unset($this->opr_res);
+		}
+	}
+	
+	/**
+	 * Reap result of asynchronous MySQL query
+	 *
+	 * @return 
+	 */
+	function reap() {
+		if ($this->opo_db) { return $this->opo_db->reap($this, $this->opr_res); }
+		return null;
 	}
 
 	/**
 	 * Destructor
 	 */
 	function __destruct() {
-		//print "DESTRUCT Result set\n";
 		$this->free();
 		unset($this->opo_db);
 	}

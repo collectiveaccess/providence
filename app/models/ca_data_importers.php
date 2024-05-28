@@ -2707,6 +2707,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && (bool) $va_item['settings']['convertNewlinesToHTML']
 							     && is_string( $vm_val )
 							) {
+								$vm_val = str_replace(chr(11), "\n", $vm_val); // Excel sometimes embeds vertical tabs as newlines, and PHP has no idea how to deal with that :-(
 								$vm_val = nl2br( $vm_val );
 							}
 							if ( ( $va_item['settings']['collapseSpaces'] ?? false )
@@ -4339,6 +4340,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pa_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
 		$pa_other_values = caGetOption('otherValues', $pa_options, array(), array('castTo' => 'array'));
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
+		if(is_array($ps_delimiter)) { $ps_delimiter = array_shift($ps_delimiter); }
+		
 		$hierarchical_delimiter = caGetOption('hierarchicalDelimiter', $pa_options, null);
 		$pn_lookahead = caGetOption('lookahead', $pa_options, 0, array('castTo' => 'int'));
 		

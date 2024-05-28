@@ -5019,3 +5019,46 @@ function caFileIsIncludable($ps_file) {
 		return (bool)$config->get('run_task_queue');
 	}
 	# ----------------------------------------
+	/**
+	 * Evaluate expression on model instance or current row of search result
+	 * 
+	 * @param BaseModel|SearchResult $item
+	 * @param string $expression
+	 * @param array $options Options include:
+	 *		context = Prefix to add to tag. [Default is null]
+	 *		... other optiond are passed through to get()
+	 *
+	 * @return bool
+	 */
+	function caEvaluateExpression($item, string $expression, ?array $options=null) : bool {
+		$expr_tags = caGetTemplateTags($expression);
+		$values = caGetTagValuesFromDataItem($item, $expr_tags, $options);
+		return (bool)ExpressionParser::evaluate($expression, $values);
+	}
+	# ----------------------------------------
+	/**
+	 * Return array with values for tags from a model instance or current row of search result
+	 *
+	 * @param BaseModel|SearchResult $item
+	 * @param array $tags
+	 * @param array $options Options include:
+	 *		context = Prefix to add to tag. [Default is null]
+	 *		... other optiond are passed through to get()
+	 *
+	 * @return array
+	 */
+	function caGetTagValuesFromDataItem($item, array $tags, ?array $options=null) : array {
+		if(!is_array($options)) {
+			$options = ['convertCodesToIdno' => true, 'returnAsArray' => false];
+		}	
+		$context = caGetOption('context', $options, null);
+		$vars = [];
+		if(is_array($tags)) {
+			foreach($tags as $tag) {
+				$v = $item->get(($context ? "{$context}." : '').$tag, $options);
+				$vars[$tag] = $v;
+			}
+		}
+		return $vars;
+	}
+	# ----------------------------------------

@@ -3529,6 +3529,7 @@ class ca_users extends BaseModel {
 	 * @return int
 	 */
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
+		if(!$ps_bundle_name) { return false; }
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
 
@@ -3539,6 +3540,7 @@ class ca_users extends BaseModel {
 				$va_vars = $va_role_info['vars'];
 				
 				if (is_array($va_vars['bundle_access_settings'] ?? null)) {
+					$ps_bundle_name = caConvertBundleNameToCode($ps_bundle_name);
 					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
 						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
 						

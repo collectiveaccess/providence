@@ -1401,7 +1401,7 @@ class BatchProcessor {
 		$vn_file_num = 0;
 		foreach($va_sources as $vs_source) {
 			if(is_dir($vs_source)) { continue; }
-			if(!is_readable($vs_source)) { continue; }
+			if(file_exists($vs_source) && !is_readable($vs_source)) { continue; }
 			$vn_file_num++;
 			$t_importer = new ca_data_importers();
 			if (($ret = $t_importer->importDataFromSource($vs_source, $ps_importer, [

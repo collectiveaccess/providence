@@ -73,9 +73,17 @@ if (!defined("__CA_ADMIN_EMAIL__")) {
 # authenticate, configure your login and connection details in  __CA_SMTP_AUTH__, 
 # __CA_SMTP_USER__, __CA_SMTP_PASSWORD__ and __CA_SMTP_SSL__
 #
-# __CA_SMTP_AUTH__ = authentication method for outgoing mail connection (set to PLAIN, LOGIN or CRAM-MD5; leave blank if no authentication is used.)
+# __CA_SMTP_AUTH__ = authentication method for outgoing mail connection (set to PLAIN, LOGIN, XOAUTH2 or CRAM-MD5; leave blank if no authentication is used.)
 # __CA_SMTP_SSL__ = SSL method to use for outgoing mail connection (set to SSL or TLS; leave blank if no authentication is used.)
 
+## Extra SMTP XOAUTH2 Authentication settings: These settings must be set if __CA_SMTP_AUTH__ is set to XOAUTH2 (with exception of __CA_SMTP_XOAUTH2_AZURE_TENANTID, which is only needed if provider is Azure)
+# __CA_SMTP_XOAUTH_PROVIDER__ = Email provider: Might be Azure, Microsoft, Google or Yahoo. Only tested with Azure so far 
+# __CA_SMTP_XOAUTH_CLIENTID__ = This would be the 'Application ID' for Azure
+# __CA_SMTP_XOAUTH_CLIENTSECRET__ = Client Secret
+# __CA_SMTP_XOAUTH_AZURE_TENANTID__ = This is only needed for Azure OAUTH provider
+# __CA_SMTP_XOAUTH_EMAIL__ = email the OAUTH is being authenticated against
+# __CA_SMTP_XOAUTH_REFRESH_TOKEN__ = get this by going to your ca install https://youdomain.com/vendor/phpmailer/phpmailer/get_oauth_token.php
+# ----------------------------------------------------------------------------------------------
 
 # Set your preferred time zone here. The default is to use US Eastern Standard Time. 
 # A list of valid time zone settings is available at http://us3.php.net/manual/en/timezones.php

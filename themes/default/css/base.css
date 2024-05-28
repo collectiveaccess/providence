@@ -6696,7 +6696,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     margin: 0px;
     padding:0px !important;
     border: 2px solid #999999;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 9999;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
 }
 
@@ -6878,16 +6878,23 @@ div.caRepresentationMediaReplicationControls {
 }
 
  /* Metadata Export */
- 
- #exporterUploadArea {
- 	border: 1px dashed #ccc;
- 	display:none;
- 	font-family: 'DIN-Regular', helvetica, sans-serif;
- 	font-size:16px;
- 	color:#333;
- 	text-align: center;
-	padding: 10px;
- }
+#importerUploadArea, #exporterUploadArea {
+    border: 1px dashed #ccc; 
+    text-align: center; 
+    padding: 10px; 
+    display: none;
+    font-size: 16px; 
+    color: #333;
+}
+
+div.exporterUploadText, div.importerUploadText {
+    cursor: pointer;
+}
+
+#caAddImportersButton, #caCloseImportersButton, #caAddExportersButton, #caCloseExportersButton {
+    display: none;
+}
+
 .ui-progressbar {
 	border:1px solid #eeeeee !important;
 }

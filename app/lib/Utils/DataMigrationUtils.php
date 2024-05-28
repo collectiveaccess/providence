@@ -701,8 +701,11 @@ class DataMigrationUtils {
 						$name['surname'] = $tmp[1];
 						break;
 					case 3:
-						$name['forename'] = $tmp[0];
-						$name['surname'] = join(' ', array_slice($tmp, 1));
+						$name['forename'] = array_shift($tmp);
+						if(!in_array($tmp[0], $ind_suffixes)) {
+							$name['middlename'] = array_shift($tmp);
+						}
+						$name['surname'] = join(' ', $tmp);
 						break;
 					case 4:
 					default:
