@@ -148,7 +148,7 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
 			$view->setVar('t_display', $t_display);
 			$view->setVar('display_id', $vn_display_id);
 		
-			$va_display_list = array();
+			$va_display_list = [];
 			$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
@@ -362,6 +362,35 @@ function caGenerateDownloadFileName(string $ps_template, ?array $options=null) :
 }
 # ----------------------------------------
 /**
+ * Generate default display list when user has no accesible displays
+ *
+ * @param string $table
+ *
+ * @return array
+ */
+function caExportGetDefaultDisplay(string $table) : ?array {
+	if(!($t_instance = Datamodel::getInstance($table, true))) { return null; }
+	$display_list = [];
+	
+	if($idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
+		$display_list[-1] = array(
+			'placement_id' => -1,
+			'bundle_name' => $f = "{$table}.{$idno_fld}",
+			'display' => $t_instance->getDisplayLabel($f),
+			'settings' => []
+		);
+	}
+	$display_list[-2] = array(
+		'placement_id' => -2,
+		'bundle_name' => $f = "{$table}.preferred_labels.".$t_instance->getLabelDisplayField(),
+		'display' => $t_instance->getDisplayLabel($f),
+		'settings' => []
+	);
+	
+	return $display_list;
+}
+# ----------------------------------------
+/**
  * Export search result set as a PDF, XLSX, DOCX, TAB or CSV file.
  * 
  * @param RequestHTTP $request
@@ -406,14 +435,14 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
 		$template_info = caGetPrintTemplateDetails($template_type, substr($template, 5));
 		$format = caGetOption('fileFormat', $template_info, 'pdf');	// allow override of format
-		$display_id = substr($template, 5);
+		if(is_numeric(substr($template, 5))) { $display_id = substr($template, 5); }
 	} elseif (!(bool)$config->get('disable_pdf_output') && (substr($template, 0, 9) === '_display_')) {
-		$display_id = substr($template, 9);
+		if(is_numeric(substr($template, 9))) { $display_id = substr($template, 9); }
 		
 		if ($display_id && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 			$view->setVar('display', $t_display);
 			
-			$placements = $t_display->getPlacements(array('settingsOnly' => true));
+			$placements = $t_display->getPlacements(['settingsOnly' => true]);
 			$view->setVar('display_list', $placements);
 			foreach($placements as $placement_id => $display_item) {
 				$settings = caUnserializeForDatabase($display_item['settings']);
@@ -446,12 +475,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			case 'csv':
 			case 'tab':
 				$format = $m[1];
-				$display_id = substr($template, 5);
+				if(is_numeric(substr($template, 5))) { $display_id = substr($template, 5); }
 				break;
 			case 'xlsx':
 			case 'docx':
 				$format = $m[1];
-				$display_id = substr($template, 6);
+				if(is_numeric(substr($template, 6))) { $display_id = substr($template, 6); }
 				break;
 			default:
 				// Look it up in app.conf export_formats
@@ -500,7 +529,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			];
 		}
 		$view->setVar('display_list', $display_list);
-	} elseif($format !== 'pdf') {
+	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx'])) {
 		// custom non-PDF display
 		$template_info = caGetPrintTemplateDetails($template_type, $template);
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
@@ -508,7 +537,13 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		
 		print $content;
 		return $content;
-	}
+	} elseif(!$display_id || !is_numeric($display_id)) {
+		// Generate default display list when no display is specified
+		$display_list = $placements = caExportGetDefaultDisplay($table);
+		$view->setVar('display_list', $display_list);
+		$view->setVar('display', $t_display);
+		$view->setVar('t_display', $t_display);
+	}	
 	
 	if(!$format) { throw new ApplicationException(_t('Invalid export format')); }
 	
@@ -545,7 +580,11 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			while($result->nextHit()) {
 				$row = [];
 				foreach($display_list as $placement_id => $display_item) {
-					$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
+					$value = $t_display ? 
+						html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8')
+						:
+						$result->get($display_item['bundle_name'])	
+					;
 					$value = preg_replace("![\r\n\t]+!", " ", $value);
 					
 					// quote values as required
@@ -640,7 +679,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					'bundle_name' => "ca_object_representations.media.{$version}",
 				]);
 			}
-	
+			
 			// Column headers
 			$o_sheet->getRowDimension($line)->setRowHeight(30);
 			foreach($display_list as $placement_id => $info) {
@@ -715,7 +754,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							}
 
 						}
-					} elseif ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : []))) {
+					} elseif ($t_display && ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : [])))) {
 						$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
 						// We trust the autosizing up to a certain point, but
 						// we want column widths to be finite :-).
@@ -727,6 +766,10 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 								$o_sheet->getColumnDimension($supercol.$column)->setWidth(50);
 							}
 						}
+					} else {
+						$display_text = $result->get($info['bundle_name']);
+						$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
+						
 					}
 
 					if (!($column = next($a_to_z))) {
@@ -918,8 +961,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							}
 						}
 
-					} elseif ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(array('request' => $request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : array()))) {
-
+					} elseif ($t_display && ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(array('request' => $request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : [])))) {
 						$textrun = $contentCell->createTextRun();
 			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
@@ -930,7 +972,19 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							$styleContentFont
 						);
 
-					}}
+					} else {
+						$display_text = $result->get($info['bundle_name']);
+						$textrun = $contentCell->createTextRun();
+			
+						if ($request && $config->get('report_include_labels_in_docx_output')) {
+							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+						}
+						$textrun->addText(
+							preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
+							$styleContentFont
+						);
+					}
+				}
 				$line++;
 				// Two text break
 				$section->addTextBreak(2);
@@ -1163,7 +1217,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 		$view->setVar('display_id', $display_id);
 
 		$placements = $t_display->getPlacements(['returnAllAvailableIfEmpty' => true, 'table' => $t_instance->tableNum(), 'user_id' => $request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'no_tooltips' => true, 'format' => 'simple', 'settingsOnly' => true, 'omitEditingInfo' => true]);
-		$display_list = array();
+		$display_list = [];
 		foreach($placements as $placement_id => $display_item) {
 			$settings = caUnserializeForDatabase($display_item['settings']);
 
@@ -1225,7 +1279,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, int 
 	$values = caGetPrintTemplateParameters('summary', $m[2], ['view' => $view, 'request' => $request]);
 	Session::setVar("print_summary_options_{$m[2]}", $values);
 
-	$barcode_files_to_delete = array();
+	$barcode_files_to_delete = [];
 
 	try {
 		$view->setVar('base_path', $base_path = pathinfo($template_info['path'], PATHINFO_DIRNAME));
