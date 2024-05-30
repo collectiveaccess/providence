@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,6 +98,54 @@ class PreferencesController extends ActionController {
 	# -------------------------------------------------------
 	public function EditSearchBuilderPrefs() {
 		AssetLoadManager::register("ca", "bundleListEditor");
+		$search_builder_config = Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
+		
+		
+		$current_table = 'ca_'.$this->request->getActionExtra();	// url action extra is table name without "ca_" (eg. places => ca_places)
+		if(!($t_instance = Datamodel::getInstance($current_table, true))) {
+			throw new ApplicationException(_t('Invalid table %1', $current_table));
+		}
+		
+		$filters = caGetSearchBuilderFilters($t_instance, $search_builder_config);
+	
+		$available_filters = [];
+		foreach($filters as $i => $filter_info) {
+			$available_filters[$filter_info['id']] = ['placement_id' => $i, 'display' => $filter_info['label'], 'bundle' => $filter_info['id']];
+		}
+		$available_priority_filters = $available_filters;
+		
+		$selected_filters = [];
+		if (!is_array($selected_filter_list = $this->request->user->getPreference("{$current_table}_searchbuilder_bundle_list"))) { $selected_filter_list = []; }
+		
+		$selected_priority_filters = [];
+		if (!is_array($selected_priority_filter_list = $this->request->user->getPreference("{$current_table}_searchbuilder_priority_list"))) { $selected_priority_filter_list = []; }
+		
+		if (!is_array($selected_filter_list) || !sizeof($selected_filter_list)) { 
+			$selected_filters = $available_filters; 
+			$available_filters = [];	
+		} else {
+			foreach($selected_filter_list as $filter) {
+				if(isset($available_filters[$filter])) {
+					$selected_filters[$available_filters[$filter]['bundle']] = $available_filters[$filter];
+					unset($available_filters[$filter]);
+				}
+			}
+		}
+		if (!is_array($selected_priority_filter_list) || !sizeof($selected_priority_filter_list)) { 
+			$selected_priority_filters = []; 
+		} else {
+			foreach($selected_priority_filter_list as $filter) {
+				if(isset($available_priority_filters[$filter])) {
+					$selected_priority_filters[$available_priority_filters[$filter]['bundle']] = $available_priority_filters[$filter];
+					unset($available_priority_filters[$filter]);
+				}
+			}
+		}
+		$this->view->setVar('available_bundles', $available_filters);
+		$this->view->setVar('selected_bundles', $selected_filters);
+		$this->view->setVar('available_priority_bundles', $available_priority_filters);
+		$this->view->setVar('selected_priority_bundles', $selected_priority_filters);
+		
 		
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'searchbuilder');
@@ -275,6 +323,33 @@ class PreferencesController extends ActionController {
 				
 				$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
 				return $this->EditQuickSearchPrefs();
+				break;
+			case 'EditSearchBuilderPrefs':
+				$group = 'searchbuilder';
+				$current_table = 'ca_'.$this->request->getActionExtra();
+				if (in_array($current_table, PreferencesController::$s_duplicable_tables)) {
+					$this->view->setVar('current_table', $current_table);
+					foreach($this->request->user->getValidPreferences($group) as $pref) {
+						if(!$this->getRequest()->getUser()->isValidPreference("{$current_table}_{$pref}")) { continue; }
+						switch($pref) {
+							case 'searchbuilder_priority_list':
+								$k = 'usePriorityBundleList';
+								break;
+							case 'searchbuilder_bundle_list':
+								$k = 'useBundleList';
+								break;
+							default:
+								continue(2);
+						}
+						$bundle_list = array_unique(array_map(function($v) { return preg_replace("!_[\d]+$!", "", $v); }, explode(';', $this->request->getParameter($k, pString))));
+								print_r($bundle_list);
+						$this->request->user->setPreference("{$current_table}_{$pref}", $bundle_list);
+					}
+				}
+				
+				$this->view->setVar('group', 'searchbuilder');
+				$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
+				return $this->EditSearchBuilderPrefs();
 				break;
 			case 'EditDeveloperPrefs':
 				$vs_group = 'developer';

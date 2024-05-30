@@ -6051,7 +6051,7 @@ div.preferenceColumnHeader {
 
 div.preferencePlacementList {
     width: 350px;
-    height: 350px;
+    height: 250px;
     overflow: auto;
     margin-right:10px;
 }
