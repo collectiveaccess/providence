@@ -42,6 +42,8 @@ create index i_unit_id on ca_change_log(unit_id);
 create index i_table_num on ca_change_log (logged_table_num);
 create index i_batch_id on ca_change_log (batch_id);
 CREATE INDEX i_date_unit on ca_change_log(log_datetime, unit_id); 
+create index i_created_on on ca_change_log(logged_table_num, changetype, log_datetime);
+create index i_modified_on on ca_change_log(logged_table_num, log_datetime);
 
 
 /*==========================================================================*/
@@ -70,6 +72,7 @@ create table ca_change_log_subjects
 create index i_log_id on ca_change_log_subjects(log_id);
 create index i_subject on ca_change_log_subjects(subject_row_id, subject_table_num);
 CREATE INDEX i_log_plus on ca_change_log_subjects (log_id, subject_table_num, subject_row_id);
+create index i_modified_on on ca_change_log_subjects(log_id, subject_table_num);
 
 
 /*==========================================================================*/
@@ -7896,4 +7899,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (196, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (197, unix_timestamp());

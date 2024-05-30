@@ -3541,6 +3541,7 @@ class ca_users extends BaseModel {
 				
 				if (is_array($va_vars['bundle_access_settings'] ?? null)) {
 					$ps_bundle_name = caConvertBundleNameToCode($ps_bundle_name);
+					if($ps_bundle_name === Datamodel::primaryKey($ps_table_name)) { return true; }	// always allow primary key
 					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
 						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
 						
