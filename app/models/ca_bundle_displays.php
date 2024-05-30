@@ -2392,7 +2392,10 @@ if (!$pb_omit_editing_info) {
 					// resolve template relative to current record
 					$rtc = null;
 					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
-					if($element_code !== '_generic_bundle_') {
+					if(!in_array($element_code, ['_generic_bundle_', 'history_tracking_current_value'], true)) {
+						// Set container context for all bundles except generic and current value bundles
+						// We skip current value bundles because some extant templates pull in data outside of the current value
+						// container for display, and as current value never repeats the utility of setting context here is limited
 						$dt = ca_metadata_elements::getElementDatatype($element_code);
 						$rtc = ($dt === 0) ? $vs_bundle_name : null;
 					}
