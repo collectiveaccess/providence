@@ -2292,7 +2292,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 			:
 			caUcFirstUTF8Safe($t->getProperty('NAME_PLURAL'));
 	} else {
-		$va_result['optgroup'] = $va_result['group'] = _t('Miscelleaneous');
+		$va_result['optgroup'] = $va_result['group'] = _t('Miscellaneous');
 	}
 	
 	if (in_array($vs_name, $priority)) {	// Bundle is given priority
