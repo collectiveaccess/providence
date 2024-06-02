@@ -57,7 +57,7 @@ $priority_to_display_items = $this->getVar('selected_priority_bundles');
 				<tr valign="top">
 					<td>
 						<div class="bundleDisplayEditorSearchForm">
-							<input type="text" name="priority_available_search" id="bundlePriorityEditorAvailableListSearch" placeholder="<?= _t('Search'); ?>"/>
+							<input type="text" name="priority_available_search" id="bundlePriorityEditorAvailableListSearch" placeholder="<?= _t('Filter'); ?>"/>
 							<i class="caIcon fas fa-search fa-1x"></i>
 						</div>
 						
