@@ -10,7 +10,7 @@ CollectiveAccess is freely available under the open source GNU Public License ve
 
 ### About CollectiveAccess 2.0
 
-This version of CollectiveAccess is compatible with PHP versions 7.4, 8.0, 8.1 and 8.2. 
+This version of CollectiveAccess is compatible with PHP versions 8.2 and 8.3.  It can be made to work with PHP versions as old as 7.4, but it is unsupported when used with pre 8.2 versions of PHP.
 
 ### What's New
 
@@ -34,7 +34,7 @@ Your database is out-of-date. Please install all schema migrations starting with
  
 The migration number may vary depending upon the version you're upgrading from. Click on the `here` link to begin the database update process. 
 
-The search engine and system for sorting data are new in version 2.0. After updating your 1.7.x installation you must run the ```caUtils update-from-1.7``` command.
+The search engine and system for sorting data are new in version 2.0. After updating your 1.7.x installation you must run the ```caUtils update-from-1-7``` command.
 
 
 ### Updating from Providence version 1.6 or earlier
