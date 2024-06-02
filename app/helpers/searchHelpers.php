@@ -2039,7 +2039,7 @@ function caGetPriorityBundlesForSearchBuilder(string $table, Configuration $sear
 	}
 	
 	if(!is_array($priority)) {
-		$priority = $search_builder_config->get("search_builder_priority_{$table}");
+		$priority = [];
 	}
 	
 	return $priority;
@@ -2053,10 +2053,11 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
 	$t_user = $g_request ? $g_request->getUser() : null;
 	
 	if(!$t_user || !($user_bundles = $t_user->getPreference("{$table}_searchbuilder_bundle_list"))) {
-		$user_bundles = $search_builder_config->get(["search_builder_bundles_{$table}", "query_builder_bundles_{$table}"]);
+		$user_bundles = $search_builder_config->get(["search_builder_include_{$table}", "query_builder_include_{$table}"]);
 	}
-	if(!is_array($user_bundles)) {
-		$user_bundles = $search_builder_config->get("search_builder_include_{$table}");
+	if(!is_array($user_bundles) || !sizeof($user_bundles)) {
+		$t_search_form = new ca_search_forms();
+		$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
 	}
 	
 	$priority_bundles = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, $options);
@@ -2079,7 +2080,7 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_b
 	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
 	
 	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? []);
-	//if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
+	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
 	
 	$table = $t_subject->tableName();
 	$t_search_form = new ca_search_forms();
