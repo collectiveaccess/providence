@@ -489,9 +489,20 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 
 			$field_sql = null;
 			if (is_array($ap)) {
-				$field_sql = " AND swi.field_table_num = ? AND swi.field_num = ?";
-				$params[] = $ap['table_num'];
-				$params[] = $ap['field_num'];
+				if($ap['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+					$element_ids = ca_metadata_elements::getElementsForSet($ap['element_id'], ['idsOnly' => true]);
+					if(!is_array($element_ids) || !sizeof($element_ids)) {
+						$element_ids = [$ap['element_id']];
+					}
+					
+					$field_sql = " AND swi.field_table_num = ? AND swi.field_num IN (?)";
+					$params[] = $ap['table_num'];
+					$params[] = array_map(function($v) { return "A{$v}"; }, $element_ids);
+				} else {
+					$field_sql = " AND swi.field_table_num = ? AND swi.field_num = ?";
+					$params[] = $ap['table_num'];
+					$params[] = $ap['field_num'];
+				}
 			
 				if (is_array($ap['relationship_type_ids']) && sizeof($ap['relationship_type_ids'])) {
 					$field_sql .= " AND swi.rel_type_id IN (?)";

@@ -1292,6 +1292,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
 			$vm_return = (int)$t_element->get('datatype');
+		} else {
+			return null;
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');

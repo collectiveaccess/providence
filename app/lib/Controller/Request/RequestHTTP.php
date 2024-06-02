@@ -689,20 +689,23 @@ class RequestHTTP extends Request {
 	 */
 	function setInternalRedirect(array $components) : bool {
 		$app = AppController::getInstance();
-		
 		$module = $controller = $action = $action_extra = null;
 		foreach($components as $k => $v) {
 			switch(strtolower($k)) {
 				case 'module':
+					if($v === '*') { $v = $this->getModulePath(); }
 					$this->setModulePath($module = $v);
 					break;
 				case 'controller':
+					if($v === '*') { $v = $this->getController(); }
 					$this->setController($controller = $v);
 					break;
 				case 'action':
+					if($v === '*') { $v = $this->getAction(); }
 					$this->setAction($action = $v);
 					break;
 				case 'actionextra':
+					if($v === '*') { $v = $this->getActionExtra(); }
 					$this->setActionExtra($action_extra = $v);
 					break;
 			}
