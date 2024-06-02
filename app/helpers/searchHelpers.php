@@ -690,7 +690,7 @@ function caSplitSearchResultByType($pr_res, $pa_options=null) {
  *
  * @return Configuration 
  */
-function caGetSearchConfig() {
+function caGetSearchConfig() : ?Configuration {
 	return Configuration::load(__CA_CONF_DIR__.'/search.conf');
 }
 # ---------------------------------------
@@ -699,8 +699,20 @@ function caGetSearchConfig() {
  *
  * @return Configuration 
  */
-function caGetSearchIndexingConfig() {
+function caGetSearchIndexingConfig() : ?Configuration {
 	return Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
+}
+# ---------------------------------------
+/**
+ * 
+ *
+ * @return Configuration 
+ */
+function caGetSearchBuilderConfig() : ?Configuration {
+	if(file_exists(__CA_CONF_DIR__.'/search_builder.conf')) {
+		return Configuration::load(__CA_CONF_DIR__.'/search_builder.conf');
+	}
+	return Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
 }
 # ---------------------------------------
 /**
@@ -1930,6 +1942,7 @@ function caSearchIsForSets($ps_search, $pa_options=null) {
 		}
 	}
 	if(sizeof($va_sets) == 0) { return false; }
+	
 	$t_set = new ca_sets();
 	return $t_set->getPreferredDisplayLabelsForIDs(array_keys($va_sets));
 }
@@ -1937,11 +1950,39 @@ function caSearchIsForSets($ps_search, $pa_options=null) {
 /**
  *
  */
-function caFlattenContainers(ca_search_forms $t_search_form, string $table, ?array $options=null) {
+function caFlattenContainers(ca_search_forms $t_search_form, string $table, Configuration $search_builder_config, ?array $options=null) {
+	$return_all = caGetOption('returnAll', $options, false);
+	
+	$user_bundles = $return_all ? null : caGetUserBundlesForSearchBuilder($table, $search_builder_config, $options);
+	if(!is_array($user_bundles) || !sizeof($user_bundles)) { 
+		$user_bundles = null;
+	}
+	
+	$priority = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, $options);
+	
+	$user_bundles = array_merge($user_bundles ?? [], $priority ?? []);
+	if(!sizeof($user_bundles)) { $user_bundles = null; }
+	
+	$priority_parents = array_map(function($v) {
+		$tmp = array_slice(explode('.', $v), 0, 2);
+		return join('.', $tmp);
+	}, $priority);
+	
+	$user_bundle_parents = array_map(function($v) {
+		$tmp = array_slice(explode('.', $v), 0, 2);
+		return join('.', $tmp);
+	}, $user_bundles);
+	
 	$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
 	$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted']]);
-	foreach ($bundles as $id => $bundle_info) {
-		$element_code = caGetBundleNameForSearchSearchBuilder($b=$bundle_info['bundle']);
+	
+	foreach($bundles as $id => $bundle_info) {
+		$b = $bundle_info['bundle'];
+		if(!$return_all && is_array($user_bundles) && !in_array($b, $user_bundles) && !in_array($b, $user_bundle_parents) && !in_array($b, $priority_parents)) { 
+			unset($bundles[$id]);
+			continue; 
+		}
+		$element_code = caGetBundleNameForSearchSearchBuilder($b);
 		
 		if (ca_metadata_elements::getElementDatatype($element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
 			if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code, ['useDisambiguationLabels' => $use_disambiguation_labels]))) {
@@ -1950,18 +1991,24 @@ function caFlattenContainers(ca_search_forms $t_search_form, string $table, ?arr
 					if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
 					$sub_element_code = $sub_element['element_code'];
 					
+					if(!$return_all && is_array($user_bundles) && !in_array("{$b}.{$sub_element_code}", $user_bundles)) { 
+						continue; 
+					}
+					
 					if ($sub_element['element_id'] == $sub_element['hier_element_id']) {	// is root
 						if(!is_array($b) && !is_array($bundles[$b])) { $bundles[$b] = []; }
 						$bundles[$b] = array_merge($bundles[$b], [
 							'id' => "{$bundle_info['bundle']}",
 							'bundle' => "{$bundle_info['bundle']}",
-							'label' => $sub_element['display_label']
+							'label' => $sub_element['display_label'],
+							'description' => ['description']
 						]);
 					} else {
 						$bundles[$b]['bundles'][] = [
 							'id' => "{$bundle_info['bundle']}.{$sub_element_code}",
 							'bundle' => "{$bundle_info['bundle']}.{$sub_element_code}",
-							'label' => $sub_element['display_label']
+							'label' => $sub_element['display_label'],
+							'description' => ['description']
 						];
 					}
 					
@@ -1983,20 +2030,67 @@ function caGetBundleNameForSearchSearchBuilder($ps_name) {
 /**
  *
  */
-function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query_builder_config) {
-	$key = 'filters_'.$t_subject->tableName();
-	if (CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
+function caGetPriorityBundlesForSearchBuilder(string $table, Configuration $search_builder_config, ?array $options=null) {
+	global $g_request;
+	$t_user = $g_request ? $g_request->getUser() : null;
 	
-	$vs_table = $t_subject->tableName();
+	if(!$t_user || !($priority = $t_user->getPreference("{$table}_searchbuilder_priority_list"))) {
+		$priority = $search_builder_config->get(["search_builder_priority_{$table}", "query_builder_priority_{$table}"]);
+	}
+	
+	if(!is_array($priority)) {
+		$priority = $search_builder_config->get("search_builder_priority_{$table}");
+	}
+	
+	return $priority;
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_builder_config, ?array $options=null) {
+	global $g_request;
+	$t_user = $g_request ? $g_request->getUser() : null;
+	
+	if(!$t_user || !($user_bundles = $t_user->getPreference("{$table}_searchbuilder_bundle_list"))) {
+		$user_bundles = $search_builder_config->get(["search_builder_bundles_{$table}", "query_builder_bundles_{$table}"]);
+	}
+	if(!is_array($user_bundles)) {
+		$user_bundles = $search_builder_config->get("search_builder_include_{$table}");
+	}
+	
+	$priority_bundles = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, $options);
+	
+	// Remove priority bundles from user list if double-set
+	foreach($priority_bundles as $i => $pb) {
+		if(($index = array_search($pb, $user_bundles)) !== false) {
+			unset($user_bundles[$index]);
+			continue;
+		}
+	}
+	
+	return $user_bundles;
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_builder_config, ?array $options=null) {
+	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
+	
+	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? []);
+	//if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
+	
+	$table = $t_subject->tableName();
 	$t_search_form = new ca_search_forms();
 	$filters = array_values(array_map(
-		function ($pa_bundle) use ($t_subject, $po_query_builder_config) {
-			return caMapBundleToSearchBuilderFilterDefinition($t_subject, $pa_bundle, $po_query_builder_config);
+		function ($pa_bundle) use ($t_subject, $search_builder_config) {
+			return caMapBundleToSearchBuilderFilterDefinition($t_subject, $pa_bundle, $search_builder_config);
 		},
-		caFlattenContainers($t_search_form, $vs_table, ['useDisambiguationLabels' => true])
+		caFlattenContainers($t_search_form, $table, $search_builder_config, ['useDisambiguationLabels' => true, 'returnAll' => caGetOption('returnAll', $options, false)])
 	));
-	$va_include= $po_query_builder_config->get('query_builder_include_' . $vs_table);
-	$va_exclude = $po_query_builder_config->get('query_builder_exclude_' . $vs_table);
+	$va_include = $search_builder_config->get(["search_builder_include_{$table}", "query_builder_include_{$table}"]);
+	$va_exclude = $search_builder_config->get(["search_builder_exclude_{$table}", "query_builder_exclude_{$table}"]);
 	if(is_array($va_exclude) && sizeof($va_exclude)) {
 		$filters = array_filter($filters, function ($vo_filter) use ($va_exclude) {
 			return array_search($vo_filter['id'], $va_exclude) === false;
@@ -2007,32 +2101,33 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query
 			return array_search($vo_filter['id'], $va_include) !== false;
 		});
 	}
-	$va_priority = $po_query_builder_config->get('query_builder_priority_' . $vs_table);
-
-	usort($filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {
+	
+	$priority = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, $options);
+	
+	usort($filters, function ($pa_a, $pa_b) use ($priority, $table) {
 		$vs_a_id = $pa_a['id'];
 		$vs_b_id = $pa_b['id'];
-		$vn_a_index = array_search($vs_a_id, $va_priority, true);
-		$vn_b_index = array_search($vs_b_id, $va_priority, true);
+		$vn_a_index = array_search($vs_a_id, $priority, true);
+		$vn_b_index = array_search($vs_b_id, $priority, true);
 		if ($vn_a_index !== false || $vn_b_index !== false) {
 			// At least one of (a, b) has priority, so the one with highest explicit priority should be first.
-			$vn_a_position = $vn_a_index === false ? 0 : sizeof($va_priority) - $vn_a_index;
-			$vn_b_position = $vn_b_index === false ? 0 : sizeof($va_priority) - $vn_b_index;
+			$vn_a_position = $vn_a_index === false ? 0 : sizeof($priority) - $vn_a_index;
+			$vn_b_position = $vn_b_index === false ? 0 : sizeof($priority) - $vn_b_index;
 			return $vn_b_position - $vn_a_position;
 		} else {
 			// Neither (a, b) has priority, so look at the tables they reference; there are three cases for each
 			// field specifier:
 			// 1. a field name on its own (no dot), which is either an implicit field on the table being searched,
 			//    or an access point defined in `search_indexing.conf`.
-			// 2. a field specified as `table.field` where `table` is the same as `$vs_table`, which is explicitly
+			// 2. a field specified as `table.field` where `table` is the same as `$table`, which is explicitly
 			//    part of the table being searched.
-			// 3. a field specified as `table.field` where `table` is a different table to `$vs_table`.
+			// 3. a field specified as `table.field` where `table` is a different table to `$table`.
 			$vn_a_split = strpos($vs_a_id, '.');
 			$vs_a_table = $vn_a_split === false ? null : substr($vs_a_id, 0, $vn_a_split);
-			$vb_a_is_main_table = $vs_a_table === null || $vs_a_table === $vs_table;
+			$vb_a_is_main_table = $vs_a_table === null || $vs_a_table === $table;
 			$vn_b_split = strpos($vs_b_id, '.');
 			$vs_b_table = $vn_b_split === false ? null : substr($vs_b_id, 0, $vn_b_split);
-			$vb_b_is_main_table = $vs_b_table === null || $vs_b_table === $vs_table;
+			$vb_b_is_main_table = $vs_b_table === null || $vs_b_table === $table;
 			if ($vb_a_is_main_table && $vb_b_is_main_table) {
 				// Both (a, b) are in the main table, so sort alphabetically by label.
 				return strcasecmp($pa_a['label'], $pa_b['label']);
@@ -2054,12 +2149,19 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query
 	foreach($filters as $vn_i => $filter) {
 		$bundles = $filter['bundles'];
 		unset($filter['bundles']);
-		$filters_proc[] = $filter;
+		$filter_bits = explode('.', $filter['id']);
+		$filter_terminal = array_pop($filter_bits);
+		$filter_datatype = ca_metadata_elements::getElementDatatype($filter_terminal);
 		
+		$filters_proc[] = array_merge($filter, ($show_container_in_labels && (($filter_datatype === __CA_ATTRIBUTE_VALUE_CONTAINER__))) ? ['label' => $filter['label']._t(' (all contents)')] : []);
 		if(is_array($bundles)) { 
 			foreach($bundles as $b) {
-				$b['label'] = str_repeat("&nbsp;", 5).'↳ '.$b['label'];	// add sub-field indent
-				$filters_proc[] = caMapBundleToSearchBuilderFilterDefinition($t_subject, $b, $po_query_builder_config);
+				if($show_container_in_labels) {
+					$b['label'] = $filter['label'].' → '.$b['label'];	// add sub-field indent
+				} else {
+					$b['label'] = str_repeat("&nbsp;", 5).'↳ '.$b['label'];	// add sub-field indent
+				}
+				$filters_proc[] = caMapBundleToSearchBuilderFilterDefinition($t_subject, $b, $search_builder_config);
 			}
 		}
 	}
@@ -2070,13 +2172,15 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $po_query
 /**
  *
  */
-function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bundle, Configuration $vo_query_builder_config) {
+function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bundle, Configuration $search_builder_config) {
 	$vs_name = $pa_bundle['bundle'];
 	$va_name = explode('.', $vs_name);
 	$vs_name_no_table = caGetBundleNameForSearchSearchBuilder($vs_name);
-	$vs_table = $t_subject->tableName();
-	$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
-	$va_operators_by_type = $vo_query_builder_config->get('query_builder_operators');
+	$table = $t_subject->tableName();
+	
+	$priority = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, []);
+	
+	$va_operators_by_type = $search_builder_config->get(['search_builder_operators', 'query_builder_operators']);
 	$va_field_info = $t_subject->getFieldInfo($vs_name_no_table);
 	$vn_display_type = null;
 	$vs_list_code = null;
@@ -2084,6 +2188,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	$va_result = array(
 		'id' => $vs_name,
 		'label' => $pa_bundle['label'],
+		'description' => $pa_bundle['description'],
 		'type' => 'string',
 		'bundles' => isset($pa_bundle['bundles']) ? $pa_bundle['bundles'] : null
 	);
@@ -2164,7 +2269,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 		$va_result['input'] = 'select';
 		$va_result['values'] = (object)$va_select_options;
 		$va_result['operators'] = $va_operators_by_type['select'];
-	} elseif($vs_name === "{$vs_table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
+	} elseif($vs_name === "{$table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
 		$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 	} else {
 		$va_result['input'] = 'text';
@@ -2175,22 +2280,24 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	}
 	
 	// Set up option groups
-	if (in_array($vs_name, $va_priority)) {
-		// Bundle is given priority
-		$va_result['optgroup'] = _t('Frequently Used');
+	$tmp = explode('.', $vs_name);
+	if($t = Datamodel::getInstance($tmp[0], true)) {
+		if(is_a($t, "BaseLabel")) {
+			$t = $t->getSubjectTableInstance();
+		}
+		
+		$va_result['optgroup'] = $va_result['group'] = ($t->tableName() !== $table) ? 
+			_t('Related %1', mb_convert_case($t->getProperty('NAME_PLURAL'), MB_CASE_LOWER , "UTF-8"))
+			:
+			caUcFirstUTF8Safe($t->getProperty('NAME_PLURAL'));
 	} else {
-		$tmp = explode('.', $vs_name);
-		if($t = Datamodel::getInstance($tmp[0], true)) {
-			if(is_a($t, "BaseLabel")) {
-				$t = $t->getSubjectTableInstance();
-			}
-			
-			$va_result['optgroup'] = ($t->tableName() !== $vs_table) ? 
-				_t('Related %1', mb_convert_case($t->getProperty('NAME_PLURAL'), MB_CASE_LOWER , "UTF-8"))
-				:
-				caUcFirstUTF8Safe($t->getProperty('NAME_PLURAL'));
-		} else {
-			$va_result['optgroup'] = _t('Miscelleaneous');
+		$va_result['optgroup'] = $va_result['group'] = _t('Miscelleaneous');
+	}
+	
+	if (in_array($vs_name, $priority)) {	// Bundle is given priority
+		$btmp = explode('.', $vs_name);
+		if((sizeof($btmp) < 3) || (in_array(join('.', array_slice($btmp, 0, 2)), $priority))) {
+			$va_result['optgroup'] = _t('Frequently Used');
 		}
 	}
 	return $va_result;

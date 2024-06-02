@@ -37,6 +37,9 @@ class PreferencesController extends ActionController {
 		'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
 	);
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
@@ -45,30 +48,45 @@ class PreferencesController extends ActionController {
 		$this->request->user->loadUserPrefDefs(true); 
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditUIPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'ui');
 		$this->render('preferences_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditCataloguingPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'cataloguing');
 		$this->render('preferences_cataloguing_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditBatchPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'batch');
 		$this->render('preferences_batch_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditQuickAddPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'quickadd');
 		$this->render('preferences_quickadd_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditQuickSearchPrefs() {
 		AssetLoadManager::register("ca", "bundleListEditor");
 		
@@ -96,29 +114,44 @@ class PreferencesController extends ActionController {
 		$this->render('preferences_quicksearch_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditSearchBuilderPrefs() {
 		AssetLoadManager::register("ca", "bundleListEditor");
-		$search_builder_config = Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
-		
+		$search_builder_config = caGetSearchBuilderConfig();
 		
 		$current_table = 'ca_'.$this->request->getActionExtra();	// url action extra is table name without "ca_" (eg. places => ca_places)
 		if(!($t_instance = Datamodel::getInstance($current_table, true))) {
 			throw new ApplicationException(_t('Invalid table %1', $current_table));
 		}
 		
-		$filters = caGetSearchBuilderFilters($t_instance, $search_builder_config);
+		$filters = caGetSearchBuilderFilters($t_instance, $search_builder_config, ['returnAll' => true, 'showContainerInLabel' => true]);
 	
 		$available_filters = [];
 		foreach($filters as $i => $filter_info) {
-			$available_filters[$filter_info['id']] = ['placement_id' => $i, 'display' => $filter_info['label'], 'bundle' => $filter_info['id']];
+			$available_filters[$filter_info['id']] = [
+				'placement_id' => $i, 
+				'display' => "<span class='bundleDisplayEditorPlacementListItemTitle'>{$filter_info['group']}</span> {$filter_info['label']}", 
+				'bundle' => $filter_info['id'],
+				'description' => "<h3>{$filter_info['label']}</h3><em>{$filter_info['id']}</em><p>{$filter_info['description']}</p>"
+			];
 		}
 		$available_priority_filters = $available_filters;
 		
 		$selected_filters = [];
-		if (!is_array($selected_filter_list = $this->request->user->getPreference("{$current_table}_searchbuilder_bundle_list"))) { $selected_filter_list = []; }
+		if (!is_array($selected_filter_list = $this->request->user->getPreference("{$current_table}_searchbuilder_bundle_list"))) { 
+			if(!is_array($selected_filter_list = $search_builder_config->get("search_builder_include_{$current_table}"))) {
+				$selected_filter_list = [];
+			}
+		}
 		
 		$selected_priority_filters = [];
-		if (!is_array($selected_priority_filter_list = $this->request->user->getPreference("{$current_table}_searchbuilder_priority_list"))) { $selected_priority_filter_list = []; }
+		if (!is_array($selected_priority_filter_list = $this->request->user->getPreference("{$current_table}_searchbuilder_priority_list"))) { 
+			if(!is_array($selected_priority_filter_list = $search_builder_config->get("search_builder_priority_{$current_table}"))) {
+				$selected_priority_filter_list = [];
+			}
+		}
 		
 		if (!is_array($selected_filter_list) || !sizeof($selected_filter_list)) { 
 			$selected_filters = $available_filters; 
@@ -141,23 +174,30 @@ class PreferencesController extends ActionController {
 				}
 			}
 		}
+		
 		$this->view->setVar('available_bundles', $available_filters);
 		$this->view->setVar('selected_bundles', $selected_filters);
 		$this->view->setVar('available_priority_bundles', $available_priority_filters);
 		$this->view->setVar('selected_priority_bundles', $selected_priority_filters);
 		
-		
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'searchbuilder');
+		
 		$this->render('preferences_searchbuilder_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditUnitsPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'units');
 		$this->render('preferences_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */	
 	public function EditProfilePrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'profile');
@@ -165,6 +205,9 @@ class PreferencesController extends ActionController {
 		$this->render('preferences_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditDuplicationPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'duplication');
@@ -202,6 +245,9 @@ class PreferencesController extends ActionController {
 		$this->render('preferences_duplication_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditDeveloperPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'developer');
@@ -209,6 +255,9 @@ class PreferencesController extends ActionController {
 		$this->render('preferences_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Save() {
 		$vs_view_name = 'preferences_html.php';
 			
@@ -310,9 +359,12 @@ class PreferencesController extends ActionController {
 						$this->request->user->setPreference("{$vs_current_table}_duplicate_element_settings", $vm_val);
 					}
 				}
-				$this->view->setVar('group', 'duplication');
+				$this->request->user->update();
+				
 				$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
-				return $this->EditDuplicationPrefs();
+				$this->response->setRedirect(caNavUrl($this->request, '*', '*', 'EditDuplicationPrefs/'.$this->request->getActionExtra()));
+				
+				return true; 
 				break;
 			case 'EditQuickSearchPrefs':
 				$vs_group = 'quicksearch';
@@ -326,7 +378,8 @@ class PreferencesController extends ActionController {
 				break;
 			case 'EditSearchBuilderPrefs':
 				$group = 'searchbuilder';
-				$current_table = 'ca_'.$this->request->getActionExtra();
+				$action_extra = $this->request->getActionExtra();
+				$current_table = "ca_{$action_extra}";
 				if (in_array($current_table, PreferencesController::$s_duplicable_tables)) {
 					$this->view->setVar('current_table', $current_table);
 					foreach($this->request->user->getValidPreferences($group) as $pref) {
@@ -342,14 +395,16 @@ class PreferencesController extends ActionController {
 								continue(2);
 						}
 						$bundle_list = array_unique(array_map(function($v) { return preg_replace("!_[\d]+$!", "", $v); }, explode(';', $this->request->getParameter($k, pString))));
-								print_r($bundle_list);
 						$this->request->user->setPreference("{$current_table}_{$pref}", $bundle_list);
 					}
 				}
+				$this->request->user->update();
+				CompositeCache::flush('SearchBuilder');
 				
-				$this->view->setVar('group', 'searchbuilder');
 				$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
-				return $this->EditSearchBuilderPrefs();
+				
+				$this->response->setRedirect(caNavUrl($this->request, '*', '*', 'EditSearchBuilderPrefs/'.$this->request->getActionExtra()));
+				return true; 
 				break;
 			case 'EditDeveloperPrefs':
 				$vs_group = 'developer';

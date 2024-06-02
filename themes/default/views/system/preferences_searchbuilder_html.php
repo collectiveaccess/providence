@@ -49,51 +49,60 @@ $priority_to_display_items = $this->getVar('selected_priority_bundles');
 	
 	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'PreferencesForm');
 ?>
-	<h3><?= _t("Priority options"); ?></h3>
+	<h3><?= _t("Frequently used search options"); ?></h3>
 	<div class="bundleDisplayPlacementEditorContainer">
-	<div id="bundlPriorityPlacementEditor" class="bundleDisplayPlacementEditor">
-		<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the search options in the search builder interface priority list."); ?></div>
-		<table>
-			<tr valign="top">
-				<td>
-					<div class="preferenceColumnHeader"><?= _t("Available searches"); ?></div>
-		
-					<div id="bundlePriorityEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
-				</td>
-				<td>
-					<div class="preferenceColumnHeader"><?= _t("Searches to include in builder priority list"); ?></div>
-					
-					<div id="bundlePriorityEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
-				</td>
-			</tr>
-		</table>
-		
-		
-		<input type="hidden" id="useBundleList" name="useBundleList" value=""/>
+		<div id="bundlPriorityPlacementEditor" class="bundleDisplayPlacementEditor">
+			<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the search options in the <em>frequently used</em> options list. The list includes oft-used options shown at the top of the options list."); ?></div>
+			<table>
+				<tr valign="top">
+					<td>
+						<div class="bundleDisplayEditorSearchForm">
+							<input type="text" name="priority_available_search" id="bundlePriorityEditorAvailableListSearch" placeholder="<?= _t('Search'); ?>"/>
+							<i class="caIcon fas fa-search fa-1x"></i>
+						</div>
+						
+						<div class="preferenceColumnHeader"><?= _t("Available options"); ?></div>
+						
+						<div id="bundlePriorityEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
+					</td>
+					<td>
+						<div class="preferenceColumnHeader"><?= _t("Options in <em>frequently used</em> list"); ?></div>
+						
+						<div id="bundlePriorityEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
+					</td>
+				</tr>
+			</table>
+			
+			
+			<input type="hidden" id="useBundleList" name="useBundleList" value=""/>
+		</div>
 	</div>
-	
-	<h3><?= _t("Available options"); ?></h3>
+	<h3><?= _t("Search options"); ?></h3>
 	<div class="bundleDisplayPlacementEditorContainer">
-	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
-		<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the search options in the search builder interface."); ?></div>
-		<table>
-			<tr valign="top">
-				<td>
-					<div class="preferenceColumnHeader"><?= _t("Available searches"); ?></div>
-		
-					<div id="bundleDisplayEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
-				</td>
-				<td>
-					<div class="preferenceColumnHeader"><?= _t("Searches to include in builder"); ?></div>
-					
-					<div id="bundleDisplayEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
-				</td>
-			</tr>
-		</table>
-		
-		<input type="hidden" id="usePriorityBundleList" name="usePriorityBundleList" value=""/>
+		<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
+			<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to modify available search options."); ?></div>
+			<table>
+				<tr valign="top">
+					<td>
+						<div class="bundleDisplayEditorSearchForm">
+							<input type="text" name="available_search" id="bundleEditorAvailableListSearch" placeholder="<?= _t('Search'); ?>"/>
+							<i class="caIcon fas fa-search fa-1x"></i>
+						</div>
+						<div class="preferenceColumnHeader"><?= _t("Available options"); ?></div>
+			
+						<div id="bundleDisplayEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
+					</td>
+					<td>
+						<div class="preferenceColumnHeader"><?= _t("Used options"); ?></div>
+						
+						<div id="bundleDisplayEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
+					</td>
+				</tr>
+			</table>
+			
+			<input type="hidden" id="usePriorityBundleList" name="usePriorityBundleList" value=""/>
+		</div>
 	</div>
-	
 	<script type="text/javascript">
 		let bundleDisplayOps = null;
 		let bundlePriorityOps = null;
@@ -103,8 +112,10 @@ $priority_to_display_items = $this->getVar('selected_priority_bundles');
 				toDisplayListID: 'bundleDisplayEditorToDisplayList',
 				
 				availableDisplayList: <?= json_encode($available_items); ?>,
-				initialDisplayList: 	<?= json_encode($to_display_items); ?>,
+				initialDisplayList: <?= json_encode($to_display_items); ?>,
 				initialDisplayListOrder : <?= json_encode(array_keys($to_display_items)); ?>,
+				
+				availableSearchID: 'bundleEditorAvailableListSearch',
 				
 				displayBundleListID: 'useBundleList',
 				
@@ -118,8 +129,10 @@ $priority_to_display_items = $this->getVar('selected_priority_bundles');
 				toDisplayListID: 'bundlePriorityEditorToDisplayList',
 				
 				availableDisplayList: <?= json_encode($priority_available_items); ?>,
-				initialDisplayList: 	<?= json_encode($priority_to_display_items); ?>,
+				initialDisplayList: <?= json_encode($priority_to_display_items); ?>,
 				initialDisplayListOrder : <?= json_encode(array_keys($priority_to_display_items)); ?>,
+				
+				availableSearchID: 'bundlePriorityEditorAvailableListSearch',
 				
 				displayBundleListID: 'usePriorityBundleList',
 				
@@ -136,3 +149,4 @@ $priority_to_display_items = $this->getVar('selected_priority_bundles');
 <?= $control_box; ?>
 </div>
 <div class="editorBottomPadding"><!-- empty --></div>
+
