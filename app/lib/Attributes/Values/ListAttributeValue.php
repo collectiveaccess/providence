@@ -131,8 +131,8 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'displayType' => DT_SELECT,
 		'default' => 1,
 		'width' => 40, 'height' => 1,
-		'label' => _t('Render list as'),
-		'description' => _t('Set the presentation of the list to select, checkboxes, radio buttons, look or browser.'),
+		'label' => _t('Render list in editor as'),
+		'description' => _t('Set the presentation of the list when editing to select, checkboxes, radio buttons, type-ahead lookup or browser.'),
 		'options' => array(
 			_t('Drop-down list') => 'select',
 			_t('Yes/no checkbox') => 'yes_no_checkboxes',
@@ -144,6 +144,26 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 			_t('Vertical hierarchy browser (upward)') => 'vert_hierbrowser',
 			_t('Vertical hierarchy browser (downward)') => 'vert_hierbrowser_down',
 		)
+	),
+	'renderInSearchBuilder' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => 1,
+		'width' => 40, 'height' => 1,
+		'label' => _t('Render list in search builder as'),
+		'description' => _t('Set the presentation of the list to a select list or text box.'),
+		'options' => array(
+			_t('Drop-down list') => 'select',
+			_t('Text box') => 'text',
+		)
+	),
+	'useTextEntryInSearchBuilderWhenListLongerThan' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => 500,
+		'width' => 4, 'height' => 1,
+		'label' => _t('Use text entry for list in search builder when list is longer than'),
+		'description' => _t('Forces use of text entry for list in search builder when the list length exceeds the specified number of items.')
 	),
 	'auto_shrink' => array(
 		'formatType' => FT_NUMBER,

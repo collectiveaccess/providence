@@ -2213,6 +2213,8 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	$va_field_info = $t_subject->getFieldInfo($vs_name_no_table);
 	$vn_display_type = null;
 	$vs_list_code = null;
+	$element_id = null;
+	$t_element = null;
 	$va_select_options = null;
 	$va_result = array(
 		'id' => $vs_name,
@@ -2221,7 +2223,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 		'type' => 'string',
 		'bundles' => isset($pa_bundle['bundles']) ? $pa_bundle['bundles'] : null
 	);
-	if ($va_field_info) {
+	if (is_array($va_field_info)) {
 		// Get the list code and display type for further processing below.
 		$vs_list_code = $va_field_info['LIST'] ?? $va_field_info['LIST_CODE'] ?? null;
 		$vn_display_type = $va_field_info['DISPLAY_TYPE'] ?? null;
@@ -2249,8 +2251,10 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 				$va_result['type'] = 'datetime';
 				break;
 		}
-	} elseif(ca_metadata_elements::getElementID($vs_name_no_table)) {
+	} elseif($element_id = ca_metadata_elements::getElementID($vs_name_no_table)) {
 			$vs_list_code = ca_metadata_elements::getElementListID($vs_name_no_table);
+			$t_element = ca_metadata_elements::getInstance($element_id);
+			
 			$vn_display_type = $vs_list_code ? DT_SELECT : DT_FIELD;
 			// Convert CA attribute datatype to query builder type and operators.
 			switch (ca_metadata_elements::getElementDatatype($vs_name_no_table)) { 
@@ -2285,9 +2289,12 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	// Process list types and use a text field for non-list types.
 	if (in_array($vn_display_type, array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ), true)) {
 		if (!$va_select_options) {
-			$va_select_options = array();
+			$va_select_options = [];
 			$t_list = new ca_lists();
-			if($t_list->numItemsInList($vs_list_code) > 200) {
+			$max_length = $t_element ? $t_element->getSetting('useTextEntryInSearchBuilderWhenListLongerThan') : 200;
+			$render_in_builder = $t_element ? $t_element->getSetting('renderInSearchBuilder') : null;
+	
+			if(!$vs_list_code || ($t_list->numItemsInList($vs_list_code) > $max_length)) {
 				$va_select_options = null;
 			} else {
 				$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
@@ -2299,7 +2306,9 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 				}
 			}
 		}
-		$va_result['input'] = is_array($va_select_options) ? 'select' : 'text';
+		if(!in_array($render_in_builder, ['select', 'text'])) { $render_in_builder = 'select'; }
+		
+		$va_result['input'] = is_array($va_select_options) ? $render_in_builder : 'text';
 		$va_result['values'] = is_array($va_select_options) ? (object)$va_select_options : null;
 		$va_result['operators'] = $va_operators_by_type[$va_result['input']];
 	} elseif($vs_name === "{$table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
