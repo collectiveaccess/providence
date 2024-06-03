@@ -1191,7 +1191,7 @@ class SearchResult extends BaseObject {
 			$vs_access_chk_key  = $va_path_components['field_name'] ?? null;
 		}
 
-		if (($va_path_components['field_name'] !== 'access') && (caGetBundleAccessLevel($va_path_components['table_name'], $vs_access_chk_key) == __CA_BUNDLE_ACCESS_NONE__)) {
+		if (($va_path_components['field_name'] !== 'access') && (caGetBundleAccessLevel($va_path_components['table_name'], $vs_access_chk_key ?? Datamodel::primaryKey($va_path_components['table_name'])) == __CA_BUNDLE_ACCESS_NONE__)) {
 			return null;
 		}
 		
@@ -2051,6 +2051,14 @@ class SearchResult extends BaseObject {
 				$va_path_components['field_name'] = $va_path_components['components'][1] = 'preferred_labels';
 				$va_path_components['subfield_name'] = $va_path_components['components'][2] = $t_rel_instance->getLabelDisplayField();
 				$va_path_components['num_components'] = sizeof($va_path_components['components']);
+				
+				// Return primary key (which is always accessible) when user does not have access to label
+				if(caGetBundleAccessLevel($va_path_components['table_name'], $va_path_components['field_name']) == __CA_BUNDLE_ACCESS_NONE__) {
+					$va_path_components['field_name'] = $va_path_components['components'][1] = $t_rel_instance->primaryKey();
+					$va_path_components['subfield_name'] = null;
+					unset($va_path_components['components'][2]);
+					$va_path_components['num_components'] = sizeof($va_path_components['components']);
+				}
 			}	
 		}
 		
