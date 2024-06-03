@@ -2030,12 +2030,36 @@ function caGetBundleNameForSearchSearchBuilder($ps_name) {
 /**
  *
  */
+function caExpandWithSubBundlesForSearchBuilder(array $bundles) {
+	foreach($bundles as $b) {
+		$element_code = caGetBundleNameForSearchSearchBuilder($b);
+		if (ca_metadata_elements::getElementDatatype($element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+			if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code, ['useDisambiguationLabels' => true]))) {
+		
+				foreach($sub_elements as $sub_element) {
+					if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
+					$sub_element_code = $sub_element['element_code'];
+					
+					if ($sub_element['element_id'] != $sub_element['hier_element_id']) {	// is root
+						$bundles[] = "{$b}.{$sub_element_code}";
+					}
+				}
+			}
+		}
+	}
+	return $bundles;
+}
+# ---------------------------------------
+/**
+ *
+ */
 function caGetPriorityBundlesForSearchBuilder(string $table, Configuration $search_builder_config, ?array $options=null) {
 	global $g_request;
 	$t_user = $g_request ? $g_request->getUser() : null;
 	
 	if(!$t_user || !($priority = $t_user->getPreference("{$table}_searchbuilder_priority_list"))) {
 		$priority = $search_builder_config->get(["search_builder_priority_{$table}", "query_builder_priority_{$table}"]);
+		$priority = caExpandWithSubBundlesForSearchBuilder($priority);
 	}
 	
 	if(!is_array($priority)) {
@@ -2057,7 +2081,8 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
 	}
 	if(!is_array($user_bundles) || !sizeof($user_bundles)) {
 		$t_search_form = new ca_search_forms();
-		$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
+	 	$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
+		$user_bundles = caExpandWithSubBundlesForSearchBuilder($user_bundles);
 	}
 	
 	$priority_bundles = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, $options);
