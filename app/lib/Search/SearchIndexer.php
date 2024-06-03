@@ -606,10 +606,15 @@ class SearchIndexer extends SearchBase {
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
 
 		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
+			
+			$field_data_proc = [];
+			foreach(array_keys($pa_changed_fields) as $k) {
+				$field_data_proc[$k] = $pa_field_data[$k];
+			}
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_table_num,
 				'row_id' => $pn_subject_row_id,
-				'field_data' => $pa_field_data,
+				'field_data' => $field_data_proc,
 				'reindex' => $pb_reindex_mode ? 1 : 0,
 				'changed_fields' => $pa_changed_fields,
 				'options' => $pa_options

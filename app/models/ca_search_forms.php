@@ -766,6 +766,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_table_name_or_num) { return null; }
 		
 		$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $pa_options, false);
+		
+		if(is_array($restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) && sizeof($restrict_to_types)) {
+			$restrict_to_types = caMakeTypeIDList($pm_table_name_or_num, $restrict_to_types);
+		}
 
 		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
 		$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
@@ -902,6 +906,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							if (in_array($va_field_info['FIELD_TYPE'] ?? null, array(FT_MEDIA, FT_FILE))) { continue; }
 
 							$vs_bundle = $vs_table.'.'.$vs_field;
+							if (caGetBundleAccessLevel($vs_primary_table, $vs_bundle) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+
 							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_bundle);
 							
 							$vs_display = "<div id='searchFormEditor_{$vs_table}_{$vs_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".$policy_label.$vs_label."</div>";
@@ -926,6 +932,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
 
 							if (caGetBundleAccessLevel($vs_primary_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
+
+							if(is_array($restrict_to_types) && sizeof($restrict_to_types) && !ca_metadata_elements::elementIsApplicableToType($vs_table, $restrict_to_types, $vs_field)) { continue; }
 
 							$vs_bundle = $vs_table.'.'.$vs_field;
 							$vs_label = $label ?? $t_instance->getDisplayLabel($vs_bundle, ['useDisambiguationLabels' => $use_disambiguation_labels]);

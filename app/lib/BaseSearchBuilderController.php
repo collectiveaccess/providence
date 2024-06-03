@@ -77,7 +77,7 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 		$search_builder_config = caGetSearchBuilderConfig();
 		
 		$builder_options = [
-			'filters' => caGetSearchBuilderFilters($t_model, $search_builder_config),
+			'filters' => caGetSearchBuilderFilters($t_model, $search_builder_config, ['restrictToTypes' => [$this->opn_type_restriction_id]]),
 			'icons' => $search_builder_config->get(['search_builder_icons', 'query_builder_icons']),
 			'sort_filters' => false
 		];

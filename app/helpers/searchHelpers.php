@@ -1974,7 +1974,7 @@ function caFlattenContainers(ca_search_forms $t_search_form, string $table, Conf
 	}, $user_bundles);
 	
 	$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
-	$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted']]);
+	$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted'], 'restrictToTypes' => caGetOption('restrictToTypes', $options, null)]);
 	
 	foreach($bundles as $id => $bundle_info) {
 		$b = $bundle_info['bundle'];
@@ -2077,9 +2077,12 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
  *
  */
 function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_builder_config, ?array $options=null) {
+	global $g_request;
+	$t_user = $g_request ? $g_request->getUser() : null;
+	
 	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
 	
-	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? []);
+	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? [], $t_user ? $t_user->getUserID() : '');
 	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
 	
 	$table = $t_subject->tableName();
@@ -2088,7 +2091,7 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_b
 		function ($pa_bundle) use ($t_subject, $search_builder_config) {
 			return caMapBundleToSearchBuilderFilterDefinition($t_subject, $pa_bundle, $search_builder_config);
 		},
-		caFlattenContainers($t_search_form, $table, $search_builder_config, ['useDisambiguationLabels' => true, 'returnAll' => caGetOption('returnAll', $options, false)])
+		caFlattenContainers($t_search_form, $table, $search_builder_config, ['useDisambiguationLabels' => true, 'returnAll' => caGetOption('returnAll', $options, false), 'restrictToTypes' => caGetOption('restrictToTypes', $options, null)])
 	));
 	$va_include = $search_builder_config->get(["search_builder_include_{$table}", "query_builder_include_{$table}"]);
 	$va_exclude = $search_builder_config->get(["search_builder_exclude_{$table}", "query_builder_exclude_{$table}"]);
@@ -2259,17 +2262,21 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 		if (!$va_select_options) {
 			$va_select_options = array();
 			$t_list = new ca_lists();
-			$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
-			if (is_array($va_items)) {
-				$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
-				foreach ($va_items as $va_item) {
-					$va_select_options[$is_item_val_fld ? $va_item['item_value'] : $va_item['idno']] = str_repeat("&nbsp;", (int)$va_item['LEVEL'] * 5).$va_item['name_singular'];
+			if($t_list->numItemsInList($vs_list_code) > 200) {
+				$va_select_options = null;
+			} else {
+				$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
+				if (is_array($va_items)) {
+					$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
+					foreach ($va_items as $va_item) {
+						$va_select_options[$is_item_val_fld ? $va_item['item_value'] : $va_item['idno']] = str_repeat("&nbsp;", (int)$va_item['LEVEL'] * 5).$va_item['name_singular'];
+					}
 				}
 			}
 		}
-		$va_result['input'] = 'select';
-		$va_result['values'] = (object)$va_select_options;
-		$va_result['operators'] = $va_operators_by_type['select'];
+		$va_result['input'] = is_array($va_select_options) ? 'select' : 'text';
+		$va_result['values'] = is_array($va_select_options) ? (object)$va_select_options : null;
+		$va_result['operators'] = $va_operators_by_type[$va_result['input']];
 	} elseif($vs_name === "{$table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
 		$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 	} else {
