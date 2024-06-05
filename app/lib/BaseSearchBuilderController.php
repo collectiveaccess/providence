@@ -74,10 +74,11 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 		$t_model = Datamodel::getInstanceByTableName($this->ops_tablename, true);
 		$va_access_values = caGetUserAccessValues($this->request);
 		
-		$search_builder_config = Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
+		$search_builder_config = caGetSearchBuilderConfig();
+		
 		$builder_options = [
-			'filters' => caGetSearchBuilderFilters($t_model, $search_builder_config),
-			'icons' => $search_builder_config->getAssoc('query_builder_icons'),
+			'filters' => caGetSearchBuilderFilters($t_model, $search_builder_config, ['restrictToTypes' => [$this->opn_type_restriction_id]]),
+			'icons' => $search_builder_config->get(['search_builder_icons', 'query_builder_icons']),
 			'sort_filters' => false
 		];
 		$this->view->setVar('options', $builder_options);

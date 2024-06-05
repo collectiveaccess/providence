@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -204,6 +204,17 @@ class BaseFindController extends ActionController {
 					($va_display_item['bundle_name'] === 'nonpreferred_labels')
 				) {
 					$display_list[$i]['is_sortable'] = true;
+					
+					// Sort on presented field when overriding related bundle with single-tag template
+					// Eg. If showing entity label with template to only show first name, sort should be on first name,
+					// not default related entity field (which is displayname)
+					$template = caGetOption('format', $display_list[$i]['settings'] ?? [], null);
+					$tags = caGetTemplateTags($template);
+					if(is_array($tags) && (sizeof($tags) === 1) && preg_match("!^{$va_display_item['bundle_name']}\.(.*)!", $tags[0], $m)) {
+						$display_list[$i]['bundle_sort'] = $vs_label_table_name.'.'.$m[1];
+						continue;
+					} 
+					
 					$display_list[$i]['bundle_sort'] = $vs_label_table_name.'.'.$t_instance->getLabelSortField();
 					continue;
 				}

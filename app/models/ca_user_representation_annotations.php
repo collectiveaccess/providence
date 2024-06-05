@@ -58,6 +58,13 @@ BaseModel::$s_ca_models_definitions['ca_user_representation_annotations'] = arra
 				'DEFAULT' => '',
 				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('The locale from which the annotation originates.')
 		),
+		'idno' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => 'Identifer', 'DESCRIPTION' => 'Unique identifier for annotation (optional).'
+		),
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -65,6 +72,13 @@ BaseModel::$s_ca_models_definitions['ca_user_representation_annotations'] = arra
 				'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
 				'DEFAULT' => '',
 				'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who created the annotation.')
+		),
+		'session_id' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => 'Session id', 'DESCRIPTION' => 'For anonymous annotations, the id of the session in which the annotation was created.'
 		),
 		'type_code' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 

@@ -5162,6 +5162,8 @@ div.bundleDisplayEditorPlacement {
     -webkit-border-radius: 3px;
     background-size:14px 14px;
     font-size:12px;
+    
+    cursor: pointer;
 }
 div.bundleDisplayEditorPlacement .fa {
 	font-size:18px;
@@ -5176,6 +5178,18 @@ div.bundleDisplayEditorPlacementList {
     height: 450px;
     overflow: auto;
     margin-right:10px;
+}
+
+div.bundleDisplayEditorSearchForm {
+    position: relative;
+    float: right; 
+    margin-right: 35px;
+}
+
+div.bundleDisplayEditorSearchForm i.caIcon {
+    position: absolute;
+    right: 5px;
+    top: 5px;
 }
 
 span.bundleDisplayEditorPlacementListItemTitle {
@@ -6051,7 +6065,7 @@ div.preferenceColumnHeader {
 
 div.preferencePlacementList {
     width: 350px;
-    height: 350px;
+    height: 250px;
     overflow: auto;
     margin-right:10px;
 }

@@ -1188,10 +1188,10 @@ class SearchResult extends BaseObject {
 		if ($va_path_components['table_name'] != $this->ops_table_name) {
 			$vs_access_chk_key  = $va_path_components['table_name'].($va_path_components['field_name'] ? '.'.$va_path_components['field_name'] : '');
 		} else {
-			$vs_access_chk_key  = $va_path_components['field_name'];
+			$vs_access_chk_key  = $va_path_components['field_name'] ?? null;
 		}
 
-		if (($va_path_components['field_name'] !== 'access') && (caGetBundleAccessLevel($va_path_components['table_name'], $vs_access_chk_key) == __CA_BUNDLE_ACCESS_NONE__)) {
+		if (($va_path_components['field_name'] !== 'access') && (caGetBundleAccessLevel($va_path_components['table_name'], $vs_access_chk_key ?? Datamodel::primaryKey($va_path_components['table_name'])) == __CA_BUNDLE_ACCESS_NONE__)) {
 			return null;
 		}
 		
@@ -1531,6 +1531,8 @@ class SearchResult extends BaseObject {
 					$vm_val = $va_hier_list;
 					goto filter;
 					break;
+				case 'next':
+				case 'previous':
 				case 'siblings':
 					// grab siblings 
 					$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
@@ -1562,20 +1564,54 @@ class SearchResult extends BaseObject {
 						){ 
 							continue;
 						}
+						;
+						if(in_array($va_path_components['hierarchical_modifier'], ['previous', 'next'], true) && !caGetOption('sort', $pa_options, null) && ($sort_idno_fld = $t_instance->getProperty('ID_NUMBERING_SORT_FIELD'))) {
+							$pa_options['sort'] = $t_instance->tableName().".{$sort_idno_fld}";
+						}
 						$qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], SearchResult::$opa_hierarchy_siblings_prefetch_cache[$va_path_components['table_name']][$vn_id][$vs_opt_md5], $pa_options);
-						
+					
 						$va_tmp = array($va_path_components['table_name']);
 						if ($va_path_components['field_name']) { $va_tmp[] = $va_path_components['field_name']; }
 						if ($va_path_components['subfield_name']) { $va_tmp[] = $va_path_components['subfield_name']; }
 						$vs_hier_fld_name = join(".", $va_tmp);
 							
 						$vs_pk = $t_instance->primaryKey();
-						while($qr_hier->nextHit()) {
-							$vm_val = $qr_hier->get($vs_hier_fld_name, $pa_options);
-							$va_hier_list[$qr_hier->get($va_path_components['table_name'].'.'.$vs_pk)] = $vb_return_as_array ? array_shift($vm_val) : $vm_val;;
+						if(in_array($va_path_components['hierarchical_modifier'], ['previous', 'next'], true)) {
+							$max = caGetOption('max', $pa_options, 1);
+							$ids = $filtered_hier_list = [];
+							while($qr_hier->nextHit()) {
+								$id = $qr_hier->get($va_path_components['table_name'].'.'.$vs_pk);
+								
+								if($id == $vn_row_id) {
+									if ($va_path_components['hierarchical_modifier'] === 'next') {
+										while(($max > 0) && $qr_hier->nextHit()) {
+											$rel_id = $qr_hier->get($va_path_components['table_name'].'.'.$vs_pk);
+											$vm_val = $qr_hier->get($vs_hier_fld_name, $pa_options);
+											$filtered_hier_list[$rel_id] = $vb_return_as_array ? array_shift($vm_val) : $vm_val;
+											$max--;
+										}
+									} else {
+										while(($max > 0) && sizeof($ids)) {
+											$rel_id = array_pop($ids);
+											$ci = $qr_hier->currentIndex();
+											$qr_hier->seek($ci);
+											$vm_val = $qr_hier->get($vs_hier_fld_name, $pa_options);
+											$filtered_hier_list[$rel_id] = $vb_return_as_array ? array_shift($vm_val) : $vm_val;
+											$max--;
+										}
+									}
+									$va_hier_list = $filtered_hier_list;
+									break;
+								}
+								$ids[] = $id;
+							}
+						} else {
+							while($qr_hier->nextHit()) {
+								$vm_val = $qr_hier->get($vs_hier_fld_name, $pa_options);
+								$va_hier_list[$qr_hier->get($va_path_components['table_name'].'.'.$vs_pk)] = $vb_return_as_array ? array_shift($vm_val) : $vm_val;
+							}
 						}
 					}
-					
 					$va_hier_list = $do_highlighting ? array_map($this->highlight, $va_hier_list) : $va_hier_list;
 					if (!$vb_return_as_array) { 
 						return $vb_return_as_count ? sizeof($va_hier_list) : join($vs_hierarchical_delimiter, $va_hier_list);
@@ -2015,6 +2051,14 @@ class SearchResult extends BaseObject {
 				$va_path_components['field_name'] = $va_path_components['components'][1] = 'preferred_labels';
 				$va_path_components['subfield_name'] = $va_path_components['components'][2] = $t_rel_instance->getLabelDisplayField();
 				$va_path_components['num_components'] = sizeof($va_path_components['components']);
+				
+				// Return primary key (which is always accessible) when user does not have access to label
+				if(caGetBundleAccessLevel($va_path_components['table_name'], $va_path_components['field_name']) == __CA_BUNDLE_ACCESS_NONE__) {
+					$va_path_components['field_name'] = $va_path_components['components'][1] = $t_rel_instance->primaryKey();
+					$va_path_components['subfield_name'] = null;
+					unset($va_path_components['components'][2]);
+					$va_path_components['num_components'] = sizeof($va_path_components['components']);
+				}
 			}	
 		}
 		
@@ -3734,6 +3778,12 @@ class SearchResult extends BaseObject {
 		} elseif ($modifier == 'siblings') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'siblings';
+		} elseif ($modifier == 'next') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'next';
+		} elseif ($modifier == 'previous') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'previous';
 		}
 		
 		switch(sizeof($va_tmp)) {
@@ -3886,7 +3936,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	static public function _isHierarchyModifier($pm_modifier) {
-		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'descendants', 'branch', 'siblings'];
+		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'descendants', 'branch', 'siblings', 'next', 'previous'];
 	
 		if (is_array($pm_modifier)) {
 			return (sizeof(array_intersect($va_hierarchy_modifiers, $pm_modifier)) > 0);

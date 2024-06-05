@@ -29,9 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
-
  
 class DisplayTemplateParser {
 	# -------------------------------------------------------------------
@@ -668,6 +666,14 @@ class DisplayTemplateParser {
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
+							case 'next':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".next.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'previous':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".previous.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
 							// allow labels as units
 							case 'preferred_labels':
 							case 'nonpreferred_labels':
@@ -802,6 +808,14 @@ class DisplayTemplateParser {
 								break;
 							case 'siblings':
 								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'next':
+								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".next.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'previous':
+								if (!is_array($va_relative_ids = $pr_res->get($t_rel_instance->tableName().".previous.".$t_rel_instance->primaryKey(), $va_get_options))) { $va_relative_ids = []; }
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							case 'related':
@@ -975,7 +989,6 @@ class DisplayTemplateParser {
 					} else {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
-					
 					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
 						$va_linking_ids = [$pr_res->getPrimaryKey()];
@@ -992,7 +1005,7 @@ class DisplayTemplateParser {
 						$va_proc_templates = caCreateLinksFromText(
 							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
-							array_merge(['addRelParameter' => true, 'requireLinkTags' => false, 'bundle' => $o_node->bundle, 'attributes' => $link_attributes], $pa_options)
+							array_merge(['addRelParameter' => true, 'bundle' => $o_node->bundle, 'attributes' => $link_attributes], $pa_options, ['requireLinkTags' => false])
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
 					} elseif(strlen($vs_tag) && ($vs_tag[0] !=='~')) { 

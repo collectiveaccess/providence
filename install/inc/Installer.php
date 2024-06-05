@@ -795,7 +795,7 @@ class Installer {
 					$t_restriction->set('include_subtypes', (bool)$restriction['includeSubtypes'] ? 1 : 0);
 					$t_restriction->set('type_id', $type_id);
 					$t_restriction->set('element_id', $element_id);
-
+					
 					$this->_processSettings($t_restriction, $restriction['settings'], ['source' => "MetadataElement:{$element_code}"]);
 					$t_restriction->insert();
 
@@ -2490,7 +2490,7 @@ class Installer {
 							} else {
 								// some settings allow multiple values under the same key, for instance restrict_to_types.
 								// in those cases $settings[$setting_name] becomes an array of values
-								if (!isset($settings_info[$setting_name]) || ($settings_info[$setting_name]['multiple'] ?? false)) {
+								if ($settings_info[$setting_name]['multiple'] ?? false) {
 									if (!is_array($settings_list[$setting_name])) {
 										$settings_list[$setting_name] = [];
 									}

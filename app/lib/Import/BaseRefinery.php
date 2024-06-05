@@ -167,14 +167,18 @@ abstract class BaseRefinery {
 		
 		$delimiters = caGetOption("delimiter", $options, [';']);
 		if(!is_array($delimiters)) { $delimiters = [$delimiters]; }
-		if(!isset($delimiters[0]) || !strlen($delimiter[0])) { $delimiter[0] = ';'; }
+		$delimiters = array_filter($delimiters, 'strlen');
+		if(!sizeof($delimiters)) { $delimiters = [';']; }
 		$delimiter = $delimiters[0];
 		
 		if ($reader && !$reader->valuesCanRepeat()) {
 			// Expand delimited values in non-repeating sources to simulate repeats
 			foreach($source_data as $k => $v) {
 				if (!is_array($source_data[$k])) {
-				   $source_data[$k] = array_filter(preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $source_data[$k]), "strlen");
+				   $source_data[$k] = is_array($delimiters) ? 
+				   	array_filter(preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $source_data[$k]), "strlen")
+				   	:
+				   	[0 => $source_data[$k]];
 				}
 			}
 		}
@@ -259,7 +263,7 @@ abstract class BaseRefinery {
 			}
 			// delimiter?
 			if(!is_null($get_at_index) && sizeof($delimiters)) {
-				$dvals = preg_split('!('.preg_quote(join('|', $delimiters), ')!').'!', $mval[0]);
+				$dvals = preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $mval[0]);
 				return $dvals[$get_at_index] ?? null;
 			}
 			return ($return_as_string && is_array($mval)) ? trim(join($delimiter, $mval)) : $mval;

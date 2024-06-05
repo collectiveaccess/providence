@@ -363,6 +363,9 @@ class Media extends BaseObject {
 		# by a plugin and convert to an intermediate format supported by a second plugin
 		# in order to allow the second plug-in to write out the file in the desired format.
 		$rc = $this->instance->write($filepath, $mimetype, $options);
+		if(caGetOption('temporary', $options, false)) {
+			$this->tmp_files[] = $rc;
+		}
 		$this->errors = $this->instance->errors;
 		return $rc;
 	}
