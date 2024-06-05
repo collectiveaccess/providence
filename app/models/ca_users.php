@@ -1985,7 +1985,7 @@ class ca_users extends BaseModel {
 			$va_pref_info = $this->getPreferenceInfo($ps_pref);
 			
 			if (is_null($vs_current_value = $this->getPreference($ps_pref))) { $vs_current_value = $this->getPreferenceDefault($ps_pref); }
-			$vs_output = "";
+			$output = "";
 			$vs_class = "";
 			$vs_classname = "";
 			if(isset($pa_options['classname']) && $pa_options['classname']){
@@ -2056,9 +2056,9 @@ class ca_users extends BaseModel {
 					}
 					
 					if ($vn_display_height > 1) {
-						$vs_output = "<textarea name='pref_$ps_pref' rows='".$vn_display_height."' cols='".$vn_display_width."'>".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."</textarea>\n";
+						$output = "<textarea name='pref_$ps_pref' rows='".$vn_display_height."' cols='".$vn_display_width."'>".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."</textarea>\n";
 					} else {
-						$vs_output = "<input type='text' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
+						$output = "<input type='text' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
 					}
 					break;
 				# ---------------------------------
@@ -2150,7 +2150,7 @@ class ca_users extends BaseModel {
 							
 							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName()) && (!isset($pa_options['genericUIList']) || !$pa_options['genericUIList'])) {
 								
-								$vs_output = '';
+								$output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);
 								
 								$va_types = array();
@@ -2180,25 +2180,25 @@ class ca_users extends BaseModel {
 									
 									if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { continue; }
 				
-									$vs_output .= "<tr><td>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$va_type['LEVEL']).$va_type['name_singular']."</td><td><select name='pref_{$ps_pref}_{$vn_type_id}'>\n";
+									$output .= "<tr><td>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$va_type['LEVEL']).$va_type['name_singular']."</td><td><select name='pref_{$ps_pref}_{$vn_type_id}'>\n";
 									foreach($va_opts as $vs_val => $vs_opt) {
 										$vs_selected = ($vs_val == ($va_values[$vn_type_id] ?? null)) ? "SELECTED" : "";
-										$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' {$vs_selected}>{$vs_opt}</option>\n";	
+										$output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' {$vs_selected}>{$vs_opt}</option>\n";	
 									}
-									$vs_output .= "</select></td></tr>\n";
+									$output .= "</select></td></tr>\n";
 								}
 							} else {
 								
 								$va_opts = $this->_getUIList($vn_table_num);
 								
-								if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $vs_output = ''; break(2); }
+								if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $output = ''; break(2); }
 								
-								$vs_output = "<tr><td> </td><td><select name='pref_$ps_pref'>\n";
+								$output = "<tr><td> </td><td><select name='pref_$ps_pref'>\n";
 								foreach($va_opts as $vs_val => $vs_opt) {
 									$vs_selected = ($vs_val == $vs_current_value) ? "SELECTED" : "";
-									$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
+									$output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
 								}
-								$vs_output .= "</select></td></tr>\n";
+								$output .= "</select></td></tr>\n";
 							}
 							
 							break(2);
@@ -2206,63 +2206,113 @@ class ca_users extends BaseModel {
 							$va_opts = $va_pref_info["choiceList"];
 							break;
 					}
-					if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $vs_output = ''; break; }
+					if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $output = ''; break; }
 					
 					
-					$vs_output = "<select name='pref_{$ps_pref}'".$vs_class.">\n";
+					$output = "<select name='pref_{$ps_pref}'".$vs_class.">\n";
 					foreach($va_opts as $vs_opt => $vs_val) {
 						$vs_selected = ($vs_val == $vs_current_value) ? "selected='1'" : "";
-						$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
+						$output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
 					}
-					$vs_output .= "</select>\n";
+					$output .= "</select>\n";
 					break;
 				# ---------------------------------
 				case 'DT_CHECKBOXES':
-					if ($va_pref_info["formatType"] == 'FT_BIT') {
-						$vs_selected = ($vs_current_value) ? "CHECKED" : "";
-						$vs_output .= "<input type='checkbox' name='pref_$ps_pref' value='1'".$vs_class." $vs_selected>\n";	
-					} else {
-						if ($vb_use_table = (isset($pa_options['useTable']) && (bool)$pa_options['useTable'])) {
-							$vs_output .= "<table width='100%'>";
-						}
-						$vn_num_table_columns = (isset($pa_options['numTableColumns']) && ((int)$pa_options['numTableColumns'] > 0)) ? (int)$pa_options['numTableColumns'] : 3;
-						
-						$vn_c = 0;
-						foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
-							if (is_array($vs_current_value)) {
-								$vs_selected = (in_array($vs_val, $vs_current_value)) ? "CHECKED" : "";
-							} else {
-								$vs_selected = '';
+					switch($va_pref_info["formatType"]) {
+						case 'FT_BIT':
+							$vs_selected = ($vs_current_value) ? "CHECKED" : "";
+							$output .= "<input type='checkbox' name='pref_$ps_pref' value='1'".$vs_class." $vs_selected>\n";	
+							break;
+						case 'FT_OBJECTS_FIND_VIEW_LIST':
+							$c = 0;
+							$table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info['formatType']);
+							$t_instance = Datamodel::getInstanceByTableNum($table_num, true);
+							$table = $t_instance->tableName();
+							
+							$values = $this->getPreference($ps_pref);
+						//	print_R($vs_current_value);
+							if (!is_array($values)) { $values = []; }
+							if ($t_instance && method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
+								$output = '';
+								$types = [];
+								if ((bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+									$types['_NONE_'] = ['LEVEL' => 0, 'name_singular' => _t('NONE'),  'name_plural' => _t('NONE')];
+								}
+								$types += $t_instance->getTypeList(['returnHierarchyLevels' => true]);
+								
+								if(!is_array($types) || !sizeof($types)) { $types = [1 => array()]; }	// force ones with no types to get processed for __all__
+							
+								$views = caGetFindViewList('ca_objects');
+								
+								$output .= "<table width='100%'>";
+								foreach($types as $type_id => $type) {
+									$opts = [];
+									
+									foreach($views as $view_text => $view) {
+										$opts[$view] = $view_text;
+									}
+									
+									if (!is_array($opts) || (sizeof($opts) == 0)) { continue; }
+				
+									$output .= "<tr><td width='33%'><div>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$type['LEVEL']).$type['name_singular']."</div></td><td><div class='preferenceCheckBoxList'>\n";
+									
+									foreach($opts as $val => $opt) {
+										if (is_array($vs_current_value[$table][$type_id])) {
+											$selected = (in_array($val, $vs_current_value[$table][$type_id])) ? "CHECKED" : "";
+										} else {
+											$selected = '';
+										}
+										
+										$output .= "<div><input type='checkbox' name='pref_{$ps_pref}_{$type_id}[]' value='".htmlspecialchars($val, ENT_QUOTES, 'UTF-8')."' {$vs_class} {$selected}> {$opt}</div>\n";	
+									}
+									$output .= "</div></td></tr>\n";
+								}
+								$output .= "</table>";
 							}
+							break;
+						default:
+							if ($vb_use_table = (isset($pa_options['useTable']) && (bool)$pa_options['useTable'])) {
+								$output .= "<table width='100%'>";
+							}
+							$vn_num_table_columns = (isset($pa_options['numTableColumns']) && ((int)$pa_options['numTableColumns'] > 0)) ? (int)$pa_options['numTableColumns'] : 3;
 							
-							if ($vb_use_table && ($vn_c == 0)) { $vs_output .= "<tr>"; }
-							if ($vb_use_table) { $vs_output .= "<td width='".(floor(100/$vn_num_table_columns))."%'>"; }
-							$vs_output .= "<input type='checkbox' name='pref_".$ps_pref."[]' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'".$vs_class." $vs_selected> ".$vs_opt." \n";	
-							
-							if ($vb_use_table) { $vs_output .= "</td>"; }
-							$vn_c++;
-							if ($vb_use_table && !($vn_c % $vn_num_table_columns)) { $vs_output .= "</tr>\n"; $vn_c = 0; }
-						}
-						if ($vb_use_table) {
-							$vs_output .= "</table>";
-						}
+							$c = 0;
+							foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
+								if (is_array($vs_current_value)) {
+									$vs_selected = (in_array($vs_val, $vs_current_value)) ? "CHECKED" : "";
+								} else {
+									$vs_selected = '';
+								}
+								
+								if ($vb_use_table && ($c == 0)) { $output .= "<tr>"; }
+								if ($vb_use_table) { $output .= "<td width='".(floor(100/$vn_num_table_columns))."%'>"; }
+								$output .= "<div><input type='checkbox' name='pref_".$ps_pref."[]' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'".$vs_class." $vs_selected> ".$vs_opt."</div>\n";	
+								
+								if ($vb_use_table) { $output .= "</td>"; }
+								$c++;
+								if ($vb_use_table && !($c % $vn_num_table_columns)) { $output .= "</tr>\n"; $c = 0; }
+							}
+							if ($vb_use_table) {
+								$output .= "</table>";
+							}
+							break;		
 					}
 					break;
 				# ---------------------------------
 				case 'DT_STATEPROV_LIST':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select", 'class' => $vs_classname), array('value' => $vs_current_value));
-					$vs_output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value, 'class' => $vs_classname));
+					$output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value, 'class' => $vs_classname));
 					
 					break;
 				# ---------------------------------
 				case 'DT_COUNTRY_LIST':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caGetCountryList(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$output .= caHTMLSelect("pref_{$ps_pref}", caGetCountryList(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
 						
 					if ($va_pref_info['stateProvPref']) {
-						$vs_output .="<script type='text/javascript'>\n";
-						$vs_output .= "var caStatesByCountryList = ".json_encode(caGetStateList()).";\n";
+						$output .="<script type='text/javascript'>\n";
+						$output .= "var caStatesByCountryList = ".json_encode(caGetStateList()).";\n";
 						
-						$vs_output .= "
+						$output .= "
 							jQuery(document).ready(function() {
 								jQuery('#pref_{$ps_pref}').on('change', null, {countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}, caUI.utils.updateStateProvinceForCountry);
 							
@@ -2270,18 +2320,18 @@ class ca_users extends BaseModel {
 							});
 						";
 						
-						$vs_output .="</script>\n";
+						$output .="</script>\n";
 					}
 					break;
 				# ---------------------------------
 				case 'DT_CURRENCIES':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
 					break;
 				# ---------------------------------
 				case 'DT_RADIO_BUTTONS':
 					foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
 						$vs_selected = ($vs_val == $vs_current_value) ? "CHECKED" : "";
-						$vs_output .= "<input type='radio' name='pref_$ps_pref'".$vs_class." value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
+						$output .= "<input type='radio' name='pref_$ps_pref'".$vs_class." value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
 					}
 					break;
 				# ---------------------------------
@@ -2296,7 +2346,7 @@ class ca_users extends BaseModel {
 						$vn_max_input_length = $vn_display_width;
 					}
 					
-					$vs_output = "<input type='password' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
+					$output = "<input type='password' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
 					
 					break;
 				# ---------------------------------
@@ -2322,11 +2372,11 @@ class ca_users extends BaseModel {
 					$vs_errors = '';
 				}
 			}
-			if ($ps_format && $vs_output) {
+			if ($ps_format && $output) {
 				$vs_format = $ps_format;
-				$vs_format = str_replace("^ELEMENT", $vs_output, $vs_format);
+				$vs_format = str_replace("^ELEMENT", $output, $vs_format);
 			} else {
-				$vs_format = $vs_output;
+				$vs_format = $output;
 			}
 			
 			$vs_format = str_replace("^EXTRA", '',  $vs_format);
@@ -2494,6 +2544,7 @@ class ca_users extends BaseModel {
 	private function _editorPrefFormatTypeToTableNum($ps_pref_format_type) {
 		switch($ps_pref_format_type) {
 			case 'FT_OBJECT_EDITOR_UI':
+			case 'FT_OBJECTS_FIND_VIEW_LIST':
 				$vn_table_num = 57;
 				break;
 			case 'FT_OBJECT_LOT_EDITOR_UI':
