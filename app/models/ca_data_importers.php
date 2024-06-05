@@ -4668,7 +4668,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private function _closeLogs() {
 		if(is_array($this->detlog)) {
-			array_map(function($v) { fclose($v); }, $this->detlog);
+			array_map(function($v) { if(is_resource($v)) { fclose($v); } }, $this->detlog);
 		}
 		$this->log = null;
 		$this->detlog = null;
