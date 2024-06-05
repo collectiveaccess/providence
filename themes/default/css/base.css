@@ -6063,11 +6063,21 @@ div.preferenceColumnHeader {
     text-align: left;
 }
 
-div.preferencePlacementList {
-    width: 350px;
-    height: 250px;
-    overflow: auto;
-    margin-right:10px;
+div.preferenceCheckBoxList {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: start;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+div.preferenceCheckBoxList input {
+	margin: 0 10px 0 10px;
+}
+
+div.preferenceCheckBoxList div {
+    width: 100px;
 }
 
 .searchReindexHelpText{
@@ -8447,3 +8457,5 @@ div.searchResultDesc ul {
 #algebraSetControls {
 	display: none;
 }
+
+

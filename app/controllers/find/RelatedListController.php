@@ -62,9 +62,7 @@ class RelatedListController extends BaseSearchController {
 
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		$this->opa_views = array(
-			'list' => _t('list'),
-		);
+		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), $this->ops_tablename, ['type_id' => $this->opn_type_restriction_id]);
 
 		$this->opo_result_context = new ResultContext($this->getRequest(), $this->ops_tablename, 'related_list_bundle');
 	}
