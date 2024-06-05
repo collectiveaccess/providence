@@ -56,9 +56,7 @@ class ListsController extends BaseSearchController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
-		$this->opa_views = array(
-			'list' => _t('list')
-		 );
+		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), 'ca_lists');
 		
 		$this->opo_browse = new ListItemBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 		

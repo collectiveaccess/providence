@@ -55,10 +55,7 @@ class RelationshipTypesController extends BaseSearchController {
 		if(!$po_request || !$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_configure_relationship_types')) {
 			throw new AccessException(_t('Access denied'));
 		}
-		
-		$this->opa_views = array(
-			'list' => _t('list')
-		 );
+		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), 'ca_relationship_types');
 	}
 	# -------------------------------------------------------
 	/**
