@@ -471,6 +471,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['transcription_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of transcriptions'));
 		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
 		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
+		$this->BUNDLES['caption_files'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption files'));
+		$this->BUNDLES['caption_file_locales'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption file locales'));
 		$this->BUNDLES['media_dimensions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media dimensions'));
 		$this->BUNDLES['media_duration'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media duration'));
 		$this->BUNDLES['media_class'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media class'));
@@ -2759,6 +2761,24 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 */
 	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
 		switch($bundle_name) {
+			case 'caption_files':
+				$files = [];
+				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {
+					foreach($file_instances as $file_instance){
+						$files[] = $file_instance->getFileUrl('caption_file');
+					}
+				}
+				return $files;
+				break;
+			case 'caption_file_locales':
+				$file_locales = [];
+				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {
+					foreach($file_instances as $file_instance){
+						$file_locales[] = ca_locales::IDToCode($file_instance->get('locale_id'));
+					}
+				}
+				return $file_locales;
+				break;
 			case 'transcription_count':
 				return $this->numTranscriptions($row_id);
 				break;
