@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -315,13 +315,18 @@ class Db_mysqli extends DbDriverBase {
 			$logger->logInfo(caPrintStacktrace((defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
 			$logger->logInfo($prefix.json_encode(['query' => $vs_sql, 'params' => $pa_values]));
 		}
-		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
-			//print "<pre>".caPrintStacktrace()."</pre>\n";
-			$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
-			if($logger) {
-				$logger->logError($prefix.json_encode(['errorNumber' => $error_num, 'errorMessage' => $error_message]));
+		
+		try {
+			if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
+				//print "<pre>".caPrintStacktrace()."</pre>\n";
+				$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
+				if($logger) {
+					$logger->logError($prefix.json_encode(['errorNumber' => $error_num, 'errorMessage' => $error_message]));
+				}
+				throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
 			}
-			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
+		} catch(mysqli_sql_exception $e) {
+			throw new DatabaseException(250, $e->getMessage(), "Db->mysqli->execute()");
 		}
 
 		if($logger) {
