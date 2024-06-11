@@ -448,15 +448,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$text = preg_replace("!\|$!", '', $text);
 			if ($this->do_stemming && !$do_not_stem && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
 				$text_stem = $this->stemmer->stem($text);
-				if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
-					$text = $text_stem.'*';
+				if ((($text !== $text_stem) || $this->search_config->get('always_stem')) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
+					$text = $text_stem; //.'*';
 					$word_field = 'sw.stem';
 				}
 			}
 			
-			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
-				$text .= '*';
-			}
 			$this->searched_terms[] = $text;
 			
 			$params = [$subject_tablenum];
@@ -1220,7 +1217,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	public function flushContentBuffer() : void {
 		// add fields to doc
-		$vn_max_word_segment_size = 200000; //(int)$this->getOption('maxWordIndexInsertSegmentSize');
+		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
 		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
