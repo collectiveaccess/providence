@@ -1095,7 +1095,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 				
 				if(!$dont_check_access_value) {
-					if((int)$qr_res->get('access') > 0) {
+					if((int)$qr_res->get('access') >= $access) {
 						$ret[$set_id] = true;
 						continue;
 					}
@@ -2609,6 +2609,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	*			user_id -> ca_users.user_id that owns or has access to set
 	*			owner - if set, returns only sets owned by the passed user_id
 	*			table - if set, list is restricted to sets that can contain the specified item. You can pass a table name or number. If omitted sets containing any content will be returned.
+	*			tables = 
 	*			setType - Restricts returned sets to those of the specified type. You can pass a type_id or list item code for the set type. If omitted sets are returned regardless of type.
 	*			access - read = 1, write = 2; Restricts returned sets to those with at least the specified access level for the specified user. If "owner" is true then this option has no effect.
 	*			checkAccess - Restricts returned sets to those with an access level of the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
@@ -2616,11 +2617,17 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	*
 	*
 	*/
-	public function getSetsForUser($pa_options){
+	public function getSetsForUser(?array $pa_options = null){
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null;
 		$pm_table_name_or_num = isset($pa_options['table']) ? $pa_options['table'] : null;
 		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
+		
+		$tables = caGetOption('tables', $pa_options, null);
+		if(is_array($tables)) { 
+			$tables = array_map(function($v) { return Datamodel::getTableNum($v); }, array_filter($tables, function($v) { return Datamodel::getInstance($v, true); }));
+		}
+		
 		$pm_type = isset($pa_options['setType']) ? $pa_options['setType'] : null;
 		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
 		$pa_public_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
@@ -2636,7 +2643,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_params = array();
 			$o_db = $this->getDb();
 			
-			if ($vn_table_num) {
+			if(is_array($tables) && sizeof($tables)) {
+				$va_sql_wheres[] = "(cs.table_num IN (?))";
+				$va_sql_params[] = $tables;
+			} elseif ($vn_table_num) {
 				$va_sql_wheres[] = "(cs.table_num = ?)";
 				$va_sql_params[] = (int)$vn_table_num;
 			}
