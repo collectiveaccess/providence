@@ -7374,6 +7374,7 @@ create table ca_search_indexing_queue
   entry_id        int unsigned      not null AUTO_INCREMENT,
   table_num       tinyint unsigned  not null,
   row_id          int unsigned      not null,
+  priority        tinyint unsigned  not null default 100,
   field_data      LONGTEXT          null,
   reindex         tinyint unsigned  not null default 0,
   changed_fields  LONGTEXT          null,
@@ -7384,7 +7385,8 @@ create table ca_search_indexing_queue
 
   primary key (entry_id),
   index i_table_num_row_id (table_num, row_id),
-  index i_started_on (started_on)
+  index i_priority (priority),
+  index i_started_on (started_on, priority)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /*==========================================================================*/
@@ -7899,4 +7901,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (197, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (198, unix_timestamp());

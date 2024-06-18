@@ -66,6 +66,14 @@ BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
 			'DEFAULT' => '',
 			'LABEL' => 'Field data', 'DESCRIPTION' => 'Field data'
 		),
+		'priority' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 100,
+			'LABEL' => 'Priority', 'DESCRIPTION' => 'Indexing priority',
+			'BOUNDS_VALUE' => array(0,255)
+		),
 		'reindex' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES,
 			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -222,7 +230,7 @@ class ca_search_indexing_queue extends BaseModel {
 			
 			do {
 				$num_entries = 0;
-				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY entry_id LIMIT 10")) {
+				if ($o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue WHERE started_on IS NULL ORDER BY priority, entry_id LIMIT 10")) {
 					$num_entries = (int)$o_result->numRows();
 					if($num_entries > 0) {
 						$o_si = new SearchIndexer($o_db);
@@ -259,7 +267,7 @@ class ca_search_indexing_queue extends BaseModel {
 	 */
 	static public function flush() {
 		$o_db = new Db();
-		$o_db->query("DELETE FROM ca_search_indexing_queue");
+		$o_db->query("TRUNCATE TABLE ca_search_indexing_queue");
 	}
 	# ------------------------------------------------------
 }
