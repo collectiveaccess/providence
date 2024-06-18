@@ -420,10 +420,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			// remove search indexing for deleted set items
 			$set_item_table_num = Datamodel::getTableNum('ca_set_items');
 			foreach($va_item_ids as $vn_item_id) {
-				$this->getSearchIndexer()->commitRowUnIndexing($set_item_table_num, $vn_item_id, ['queueIndexing' => true]);
+				$this->getSearchIndexer()->commitRowUnIndexing($set_item_table_num, $vn_item_id, ['queueIndexing' => true, 'priority' => 50]);
 				$this->getSearchIndexer()->removeDependentIndexing($set_item_table_num, $vn_item_id);
 			}
-			$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $this->getPrimaryKey(), ['queueIndexing' => true]);
+			$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $this->getPrimaryKey(), ['queueIndexing' => true, 'priority' => 50]);
 			$this->getSearchIndexer()->removeDependentIndexing($this->tableNum(), $this->getPrimaryKey());
 		}
 

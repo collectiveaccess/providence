@@ -3502,7 +3502,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 					$o_indexer = $this->getSearchIndexer();
 					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
+					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, ['queueIndexing' => $pb_queue_indexing, 'priority' => 200]);
 				}
 			}
 			if (!caGetOption('dontLogChange', $pa_options, false)) { $this->logChange("D", null, ['log_id' => caGetOption('log_id', $pa_options, null)]); }
@@ -3666,7 +3666,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		# --- complete delete of search index entries
 		#
 		if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-			$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
+			$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, ['queueIndexing' => $pb_queue_indexing, 'priority' => 200]);
 		}
 		
 		# cancel and pending queued tasks against this record

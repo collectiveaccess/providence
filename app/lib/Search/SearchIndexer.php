@@ -82,7 +82,7 @@ class SearchIndexer extends SearchBase {
 			}
 			self::$s_search_indexing_queue_inserts = []; // nuke cache
             foreach($va_insert_segments as $x) {
-			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES {$x}");
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options, priority) VALUES {$x}");
             }
 		}
 
@@ -93,7 +93,7 @@ class SearchIndexer extends SearchBase {
 			}
 			self::$s_search_unindexing_queue_inserts = array(); // nuke cache
             foreach($va_insert_segments as $x) {
-			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES {$x}");
+			    $o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies, priority) VALUES {$x}");
             }
 		}
 	}
@@ -373,7 +373,15 @@ class SearchIndexer extends SearchBase {
 				}
 			}
 
-			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), $pa_options);
+			$this->indexRow(
+				$vn_table_num, 
+				$vn_id, 
+				$va_field_data[$vn_id], 
+				false, 
+				null, 
+				[$vs_table_pk => true], 
+				$pa_options
+			);
 
 		}
 		return true;
@@ -507,54 +515,62 @@ class SearchIndexer extends SearchBase {
 		}
 	}
 	# ------------------------------------------------
-	private function queueIndexRow($pa_row_values) {
-		foreach($pa_row_values as $vs_fld => &$vm_val) {
-			if(!$this->opo_search_indexing_queue->hasField($vs_fld)) {
+	/**
+	 *
+	 */
+	private function queueIndexRow(array $row_values) : bool {
+		foreach($row_values as $fld => &$val) {
+			if(!$this->opo_search_indexing_queue->hasField($fld)) {
 				return false;
 			}
 
-			if(is_null($vm_val)) {
-				$vm_val = array();
+			if(is_null($val)) {
+				$val = [];
 			}
 
-			if(is_array($vm_val)) {
-				$vm_val = caSerializeForDatabase($vm_val);
+			if(is_array($val)) {
+				$val = caSerializeForDatabase($val);
 			}
 		}
 
 		self::$s_search_indexing_queue_inserts[] = array(
-			'table_num' => $pa_row_values['table_num'],
-			'row_id' => $pa_row_values['row_id'],
-			'field_data' => $pa_row_values['field_data'],
-			'reindex' => $pa_row_values['reindex'] ? 1 : 0,
-			'changed_fields' => $pa_row_values['changed_fields'],
-			'options' => $pa_row_values['options'],
+			'table_num' => $row_values['table_num'],
+			'row_id' => $row_values['row_id'],
+			'field_data' => $row_values['field_data'],
+			'reindex' => $row_values['reindex'] ? 1 : 0,
+			'changed_fields' => $row_values['changed_fields'],
+			'options' => $row_values['options'],
+			'priority' => $row_values['priority'] ?? 100
 		);
 		SearchIndexer::$queued_entry_count++;
 
 		return true;
 	}
 	# ------------------------------------------------
-	private function queueUnIndexRow($pa_row_values) {
-		foreach($pa_row_values as $vs_fld => &$vm_val) {
-			if(!$this->opo_search_indexing_queue->hasField($vs_fld)) {
+	/**
+	 *
+	 */
+	private function queueUnIndexRow(array $row_values) : bool {
+		foreach($row_values as $fld => &$val) {
+			if(!$this->opo_search_indexing_queue->hasField($fld)) {
 				return false;
 			}
 
-			if(is_null($vm_val)) {
-				$vm_val = array();
+			if(is_null($val)) {
+				$val = [];
 			}
 
-			if(is_array($vm_val)) {
-				$vm_val = caSerializeForDatabase($vm_val);
+			if(is_array($val)) {
+				$val = caSerializeForDatabase($val);
 			}
 		}
 
 		self::$s_search_unindexing_queue_inserts[] = array(
-			'table_num' => $pa_row_values['table_num'],
-			'row_id' => $pa_row_values['row_id'],
+			'table_num' => $row_values['table_num'],
+			'row_id' => $row_values['row_id'],
 			'is_unindex' => 1,
-			'dependencies' => $pa_row_values['dependencies'],
+			'dependencies' => $row_values['dependencies'],
+			'priority' => $row_values['priority'] ?? 100
 		);
 		SearchIndexer::$queued_entry_count++;
 
@@ -586,8 +602,9 @@ class SearchIndexer extends SearchBase {
 	 * 		(to prevent endless recursive reindexing). Should always be null when called externally.
 	 * @param null|array $pa_changed_fields list of fields that have changed (and must be indexed)
 	 * @param null|array $pa_options
-	 * 		queueIndexing -
-	 * 		isNewRow -
+	 * 		queueIndexing =
+	 * 		isNewRow = 
+	 *		priority = priority for queued indexing entries [Default is 100]
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -606,7 +623,7 @@ class SearchIndexer extends SearchBase {
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
 
 		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
-			
+			$priority = caGetOption('priority', $pa_options, 100);
 			$field_data_proc = [];
 			foreach(array_keys($pa_changed_fields) as $k) {
 				$field_data_proc[$k] = $pa_field_data[$k];
@@ -617,7 +634,8 @@ class SearchIndexer extends SearchBase {
 				'field_data' => $field_data_proc,
 				'reindex' => $pb_reindex_mode ? 1 : 0,
 				'changed_fields' => $pa_changed_fields,
-				'options' => $pa_options
+				'options' => $pa_options,
+				'priority' => $priority
 			));
 			return;
 		}
@@ -746,7 +764,15 @@ if (!$for_current_value_reindex) {
 								$o_indexer = new SearchIndexer($this->opo_db);
 								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 								while($qr_children_res->nextHit()) {
-									$o_indexer->indexRow($pn_subject_table_num, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true));
+									$o_indexer->indexRow(
+										$pn_subject_table_num, 
+										$qr_children_res->get($vs_subject_pk), 
+										['parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)], 
+										false, 
+										$pa_exclusion_list, 
+										[$vs_field => true],
+										['priority' => 150]
+									);
 								}
 							}
 						}
@@ -1566,10 +1592,26 @@ if (!$for_current_value_reindex) {
 					$this->opo_engine->removeRowIndexing($va_row_to_reindex['table_num'], $va_row_to_reindex['row_id'], null, null, null, $va_row_to_reindex['relationship_type_id']);
 					if ($vb_support_attributes) {
 						if ($t_dep->load($va_row_to_reindex['row_id'])) {
-							$o_indexer->indexRow($va_row_to_reindex['table_num'], $va_row_to_reindex['row_id'], $t_dep->getFieldValuesArray(), true, $pa_exclusion_list);
+							$o_indexer->indexRow(
+								$va_row_to_reindex['table_num'], 
+								$va_row_to_reindex['row_id'], 
+								$t_dep->getFieldValuesArray(), 
+								true, 
+								$pa_exclusion_list
+								null,
+								['priority' => 200]
+							);
 						}
 					} else {
-						$o_indexer->indexRow($va_row_to_reindex['table_num'], $va_row_to_reindex['row_id'], $va_row_to_reindex['field_values'], true, $pa_exclusion_list);
+						$o_indexer->indexRow(
+							$va_row_to_reindex['table_num'], 
+							$va_row_to_reindex['row_id'], 
+							$va_row_to_reindex['field_values'], 
+							true, 
+							$pa_exclusion_list,
+							null,
+							['priority' => 200]
+						);
 					}
 
 					$va_rows_seen[$va_row_to_reindex['table_num']][$va_row_to_reindex['row_id']] = true;
@@ -1588,7 +1630,16 @@ if (!$for_current_value_reindex) {
 				$o_indexer = new SearchIndexer($this->opo_db);
 				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 				while($qr_children_res->nextHit()) {
-					$o_indexer->indexRow($pn_subject_table_num, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array());
+					$vn_id = $qr_children_res->get($vs_subject_pk);
+					$o_indexer->indexRow(
+						$pn_subject_table_num, 
+						$vn_id, 
+						[$vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')], 
+						true, 
+						$pa_exclusion_list, 
+						[],
+						['priority' => 150]
+					);
 				}
 			}
 		}
@@ -1940,15 +1991,20 @@ if (!$for_current_value_reindex) {
 		return $this->opo_engine->removeRowIndexing(null, null, $table_num, null, $row_id);
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function commitRowUnIndexing($pn_subject_table_num, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 
 		if(caGetOption('queueIndexing', $pa_options, false) && !$this->opo_app_config->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
-			$this->queueUnIndexRow(array(
+			$priority = caGetOption('priority', $options, 100);
+			$this->queueUnIndexRow([
 				'table_num' => $pn_subject_table_num,
 				'row_id' => $pn_subject_row_id,
-				'dependencies' => $this->opa_dependencies_to_update
-			));
+				'dependencies' => $this->opa_dependencies_to_update,
+				'priority' => $priority
+			]);
 			return;
 		}
 
@@ -1988,8 +2044,15 @@ if (!$for_current_value_reindex) {
 					// trigger reindexing of related rows in dependent tables
 					if (isset($va_seen_items[$va_item['table_num']][$va_item['row_id']])) { continue; }
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], null, null, null, $va_item['relationship_type_id']);
-
-					$this->indexRow($va_item['table_num'], $va_item['row_id'], $va_field_values[$va_item['table_num']][$va_item['row_id']]);
+					$this->indexRow(
+						$va_item['table_num'], 
+						$va_item['row_id'], 
+						$va_field_values[$va_item['table_num']][$va_item['row_id']],
+						false,
+						null,
+						null,
+						['priority' => 200]
+					);
 					$this->_doCountIndexing(Datamodel::getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
 				
 					$va_seen_items[$va_item['table_num']][$va_item['row_id']] = true;
@@ -3218,7 +3281,15 @@ if (!$for_current_value_reindex) {
 	            $this->opo_engine->removeRowIndexing($subject_table_num, $subject_row_id, Datamodel::getTableNum($rel_table), $field_nums);
 	        }
 	    }
-	    $this->indexRow($subject_table_num, $subject_row_id, $values, false, null, null, ['forCurrentValueReindex' => $policy]);
+	    $this->indexRow(
+	    	$subject_table_num, 
+	    	$subject_row_id, 
+	    	$values, 
+	    	false, 
+	    	null, 
+	    	null, 
+	    	['forCurrentValueReindex' => $policy, 'priority' => 50]
+	    );
 	}
 	# ------------------------------------------------
 }
