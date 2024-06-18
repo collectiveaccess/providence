@@ -33,10 +33,6 @@ $current_sort 		= $this->getVar('current_sort');
 $ar				= $this->getVar('access_restrictions');
 
 $item_count = 0;	
-
-$label_is_in_display = (bool)sizeof(array_filter($display_list, function($v) {
-	return in_array($v['bundle_name'], ['ca_objects.preferred_labels', 'ca_object_labels.name']);
-}));
 ?>
 <form id="caFindResultsForm">
 <?php
@@ -65,12 +61,12 @@ $label_is_in_display = (bool)sizeof(array_filter($display_list, function($v) {
 		}
 		print "<div class='objectFullText'>";
 		
-		if(!$label_is_in_display) {
 		$labels = $result->getDisplayLabels($this->request);
-			print "<div class='objectFullTextTitle'>".caEditorLink($this->request, implode("<br/>", $labels), '', 'ca_objects', $object_id, array())."</div>";
-		}
+		print "<div class='objectFullTextTitle'>".caEditorLink($this->request, implode("<br/>", $labels), '', 'ca_objects', $object_id, array())."</div>";
+		
 		// Output configured fields in display
 		foreach($display_list as $placement_id => $info) {
+			if(in_array($info['bundle_name'], ['ca_objects.preferred_labels', 'ca_object_labels.name'])) { continue; }
 			if ($display_text = $t_display->getDisplayValue($result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))) {
 				print "<div class='objectFullTextTextBlock'><span class='formLabel'>".$info['display']."</span>: ".$display_text."</div>\n";
 			}
