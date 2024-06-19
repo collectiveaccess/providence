@@ -859,7 +859,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				exit;
 			} else {
 				$path = file_exists($output_filename) ? $output_filename : caGetTempFileName('caExport', 'xlsx');
-				$o_writer->save($path));
+				$o_writer->save($path);
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 					'path' => $path,
