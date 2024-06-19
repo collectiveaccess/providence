@@ -858,7 +858,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_writer->save('php://output');
 				exit;
 			} else {
-				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
+				$path = file_exists($output_filename) ? $output_filename : caGetTempFileName('caExport', 'xlsx');
+				$o_writer->save($path);
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 					'path' => $path,
@@ -1030,7 +1031,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_writer->save('php://output');
 				return;
 			} else {
-				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
+				$path = file_exists($output_filename) ? $output_filename : caGetTempFileName('caExport', 'xlsx');
+				$o_writer->save($path);
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'path' => $path,

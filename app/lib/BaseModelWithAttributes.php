@@ -341,6 +341,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			// queued values 
 			foreach(($this->opa_attributes_to_add + $this->opa_attributes_to_edit) as $a) {
 				foreach($pa_values as $k => $v) {
+					$datatype = ca_metadata_elements::getDataTypeForElementCode($k);
+					// Media and files never match existing
+					if(in_array($datatype, [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__], true)) {
+						continue(2);
+					}
 					if(!array_key_exists($k, $a['values']) || ($a['values'][$k] !== $v)) {
 						continue(2);
 					}
