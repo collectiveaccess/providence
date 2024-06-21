@@ -1597,7 +1597,7 @@ if (!$for_current_value_reindex) {
 								$va_row_to_reindex['row_id'], 
 								$t_dep->getFieldValuesArray(), 
 								true, 
-								$pa_exclusion_list
+								$pa_exclusion_list,
 								null,
 								['priority' => 200]
 							);
