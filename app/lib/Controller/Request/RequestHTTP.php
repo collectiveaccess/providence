@@ -738,7 +738,15 @@ class RequestHTTP extends Request {
 		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {			
 			$disable_background_processing = $this->getAppConfig()->get(['disable_background_processing']);
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && !$disable_background_processing && $this->getAppConfig()->get('run_search_indexing_queue') ) {
-				if(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0)) {
+				if(
+					!ca_search_indexing_queue::isRunning() 
+					&& 
+					(
+						(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0))
+						||
+						(ca_search_indexing_queue::count() > 0)
+					)
+				) {
 					\CA\Process\Background::run('searchIndexingQueue');
 				}
 			}
