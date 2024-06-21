@@ -560,7 +560,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		
 		print $content;
 		return $content;
-	} elseif(!$display_id || !is_numeric($display_id)) {
+	} elseif((!$display_id || !is_numeric($display_id)) && !sizeof($display_list)) {
 		// Generate default display list when no display is specified
 		$display_list = $placements = caExportGetDefaultDisplay($table);
 		$view->setVar('display_list', $display_list);
@@ -643,13 +643,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			}
 			break;
 		case 'xlsx':
-
 			$precision = ini_get('precision');
 			ini_set('precision', 12);
 	
 			$t_display				= $view->getVar('display');
-			$va_display_list 		= $view->getVar('display_list');
-
+			$display_list 		= $view->getVar('display_list');
+			
 			$ratio_pixels_to_excel_height = 0.85;
 			$ratio_pixels_to_excel_width = 0.135;
 
@@ -788,7 +787,11 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 						}
 					} else { 
-						$display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : []));	
+						$display_text = $t_display ? 
+							$t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : []))
+							:
+							$result->get($info['bundle_name']);
+						;	
 					}
 					
 					$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
