@@ -819,6 +819,14 @@ if (!$for_current_value_reindex) {
 							}
 							$va_content[$t_item->get('idno')] = true;
 							$va_content[$t_item->get('item_value')] = true;
+							if(($va_data['INDEX_LIST_ANCESTORS'] ?? false) || in_array('INDEX_LIST_ANCESTORS', $va_data, true)) {
+								$ancestor_ids = $t_item->get('ca_list_items.parents.item_id', ['returnAsArray' => true]);
+								$ancestor_labels = $t_item->get('ca_list_items.parents.preferred_labels', ['returnAsArray' => true]);
+								$ancestor_idno = $t_item->get('ca_list_items.parents.idno', ['returnAsArray' => true]);
+								foreach($ancestor_ids as $i => $id) {
+									$va_content[$id] = $va_content[$ancestor_labels[$i]] = $va_content[$ancestor_idno[$i]] = true;
+								}	
+							}
 						}  else {
 							// is this field related to something?
 							if (is_array($va_rels = Datamodel::getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field] ?? null)) {
