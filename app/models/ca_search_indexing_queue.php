@@ -243,12 +243,12 @@ class ca_search_indexing_queue extends BaseModel {
 									caUnserializeForDatabase($o_result->get('field_data')),
 									(bool)$o_result->get('reindex'), null,
 									caUnserializeForDatabase($o_result->get('changed_fields')),
-									array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
+									array_merge(caUnserializeForDatabase($o_result->get('options')), ['queueIndexing' => false, 'queueIsRunning' => true])
 								);
 							} else { // is_unindex = 1, so it's a commitRowUnindexing() call
 								$o_si->commitRowUnIndexing(
 									$o_result->get('table_num'), $o_result->get('row_id'),
-									['queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies'))]
+									['queueIndexing' => false, 'queueIsRunning' => true, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies'))]
 								);
 							}
 
