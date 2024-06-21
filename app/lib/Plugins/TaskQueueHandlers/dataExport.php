@@ -34,6 +34,7 @@ include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
+include_once(__CA_LIB_DIR__.'/File/FileMimeTypes.php');
 
 class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
@@ -237,9 +238,14 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			}
 			
 			if(is_array($res)) {
+				if(!($ext = ($res['extension'] ?? null))) {
+					if(!($ext = Media::getExtensionForMimetype($res['mimetype']))) {
+						$ext = FileMimeTypes::fileExtensionForMimetype($res['mimetype']);
+					}
+				}
 				if($t_download) {
 					$md = $t_download->get('ca_user_export_downloads.metadata');
-					$md['extension'] = Media::getExtensionForMimetype($res['mimetype']);
+					$md['extension'] = $ext;
 					$t_download->set([
 						'generated_on' => _t('now'),
 						'status' => 'COMPLETE',
