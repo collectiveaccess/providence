@@ -1083,8 +1083,13 @@ class RequestHTTP extends Request {
 	 * @return string
 	 */
 	static public function ip() {
-		if (isset($_SERVER['HTTP_X_REAL_IP']) && $_SERVER['HTTP_X_REAL_IP']) { return $_SERVER['HTTP_X_REAL_IP']; }
-		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) { return $_SERVER['HTTP_X_FORWARDED_FOR']; }
+		foreach([
+			'HTTP_CF_CONNECTING_IP', // Cloudflare
+			'HTTP_X_REAL_IP',
+			'HTTP_X_FORWARDED_FOR'
+		] as $h) {
+			if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
+		}
 		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 	}
 	# ----------------------------------------
