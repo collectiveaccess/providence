@@ -1083,9 +1083,10 @@ class RequestHTTP extends Request {
 	 * @return string
 	 */
 	static public function ip() {
-		$headers = Configuration::load()->getList('request_ip_headers');
-		foreach($headers as $h) {
-			if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
+		if(is_array($headers = Configuration::load()->getList('request_ip_headers'))) {
+			foreach($headers as $h) {
+				if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
+			}
 		}
 		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 	}
