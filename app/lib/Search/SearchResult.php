@@ -1229,6 +1229,7 @@ class SearchResult extends BaseObject {
 		
 			switch($va_path_components['hierarchical_modifier']) {
 				case 'parent':
+				case 'parents':
 					$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 					if ($va_path_components['related']) {
 						// [RELATED TABLE PARENT]
@@ -1262,7 +1263,9 @@ class SearchResult extends BaseObject {
 							}
 						}
 						
-						$va_parent_ids = array_slice($va_parent_ids, 0, 1);
+						if($va_path_components['hierarchical_modifier'] === 'parent') {
+							$va_parent_ids = array_slice($va_parent_ids, 0, 1);
+						}
 					
 						if (!($qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], $va_parent_ids, $pa_options))) {
 							return $pa_options['returnAsArray'] ? array() : null;
@@ -3766,6 +3769,9 @@ class SearchResult extends BaseObject {
 		} elseif ($modifier == 'parent') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'parent';
+		} elseif ($modifier == 'parents') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'parents';
 		} elseif ($modifier == 'children') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'children';
@@ -3936,7 +3942,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	static public function _isHierarchyModifier($pm_modifier) {
-		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'descendants', 'branch', 'siblings', 'next', 'previous'];
+		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'parents', 'children', 'descendants', 'branch', 'siblings', 'next', 'previous'];
 	
 		if (is_array($pm_modifier)) {
 			return (sizeof(array_intersect($va_hierarchy_modifiers, $pm_modifier)) > 0);

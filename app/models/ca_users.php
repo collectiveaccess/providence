@@ -427,7 +427,7 @@ class ca_users extends BaseModel {
 			return false;
 		} catch(Exception $e) { // some other error in auth class, e.g. user couldn't be found in directory
 			$this->postError(925, $e->getMessage(), 'ca_users->insert()');
-			caLogError('SYS', _t('Authentication adapter could not create user. Message was: %1', $e->getMessage(), 'ca_users->insert'));
+			caLogEvent('SYS', _t('Authentication adapter could not create user. Message was: %1', $e->getMessage(), 'ca_users->insert'));
 			return false;
 		}
 		
@@ -611,7 +611,7 @@ class ca_users extends BaseModel {
 			try {
 				AuthenticationManager::deleteUser($this->get('user_name'));
 			} catch (Exception $e) {
-				caLogError('SYS', _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage(), 'ca_users->delete'));
+				caLogEvent('SYS', _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage(), 'ca_users->delete'));
 			}
 		}
 
@@ -3116,7 +3116,7 @@ class ca_users extends BaseModel {
 		$this->set('active', 0);
 		$this->update();
 
-		caLogError('SYS', _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name')), 'ca_users->passwordResetDeactivateAccount');
+		caLogEvent('SYS', _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name')), 'ca_users->passwordResetDeactivateAccount');
 			
 		global $g_request;
 		caSendMessageUsingView(
@@ -3254,7 +3254,7 @@ class ca_users extends BaseModel {
 				try{
 					$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
 				} catch (Exception $e) {
-					caLogError('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
+					caLogEvent('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
 					return false;
 				}
 
@@ -3278,7 +3278,7 @@ class ca_users extends BaseModel {
 				
 				if (!$this->getPrimaryKey()) {
 					$msg = _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()));
-					caLogError('SYS', $msg, 'ca_users->authenticate()');
+					caLogEvent('SYS', $msg, 'ca_users->authenticate()');
 					throw new ApplicationException($msg);
 				}
 
@@ -3311,19 +3311,19 @@ class ca_users extends BaseModel {
                             !$this->canDoAction('is_administrator')
                         ) {
                         	$msg = _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username);
-                            caLogError('SYS', $msg, 'ca_users->authenticate()');
+                            caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                             return false;
                         }
                         return true;
                     } else {
                     	$msg = _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username);
-                        caLogError('SYS', $msg, 'ca_users->authenticate()');
+                        caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                         return false;
                     }
                 }
             }  catch (Exception $e) {
                 $msg = _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage());
-                caLogError('SYS', $msg, 'ca_users->authenticate()');
+                caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                 return false;
             }
         }

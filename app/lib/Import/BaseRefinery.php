@@ -153,6 +153,7 @@ abstract class BaseRefinery {
 	 *		delimiter = Delimiter to join array values with when returnAsString option is set; or the delimiter to use when breaking apart a value for return via the returnDelimitedValueAt option. Multiple delimiters may be passed in an array. When an array is used the first delimiter will be used to join values for return as a string. [Default is ";"]
 	 *		returnDelimitedValueAt = Return a specific part of a value delimited by the "delimiter" option when $index is set to a non-null value. The option value is a zero-based index. [Default is null – return entire value]
 	 *		applyImportItemSettings = Apply mapping options such as applyRegularExpressions to value. [Default is true]
+	 *		ignoreIndexForNonRepeatingValues = If value is non-repeating (has only one value) then assume it is constant across all value indices (Eg. return the single value regardless of specified index) [Default is false]
 	 *
 	 * @return mixed An array or string
 	 */
@@ -253,7 +254,8 @@ abstract class BaseRefinery {
 		
 		// Get specific index for repeating value
 		if (is_array($mval) && !is_null($value_index)) {
-			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : null;
+			// Set mapped value to value at index; if source data has only one value and ignoreIndexForNonRepeatingValues
+			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : ((sizeof($mval) === 1) ? $mval[0] : null);
 			
 			if (is_array($item['settings']['original_values']) && (($ix = array_search(mb_strtolower($mval[0]), $item['settings']['original_values'], true)) !== false)) {
 				$mval[0] = $item['settings']['replacement_values'][$ix];

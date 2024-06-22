@@ -265,6 +265,25 @@ class ca_search_indexing_queue extends BaseModel {
 	/**
 	 *
 	 */
+	static public function count() {
+		$o_db = new Db();
+		if($qr = $o_db->query("SELECT count(*) c FROM ca_search_indexing_queue")) {
+			$qr->nextRow();
+			return (int)$qr->get('c');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function isRunning() {
+		return self::lockExists();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function flush() {
 		$o_db = new Db();
 		$o_db->query("TRUNCATE TABLE ca_search_indexing_queue");
