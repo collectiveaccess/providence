@@ -1083,11 +1083,8 @@ class RequestHTTP extends Request {
 	 * @return string
 	 */
 	static public function ip() {
-		foreach([
-			'HTTP_CF_CONNECTING_IP', // Cloudflare
-			'HTTP_X_REAL_IP',
-			'HTTP_X_FORWARDED_FOR'
-		] as $h) {
+		$headers = Configuration::load()->getList('request_ip_headers');
+		foreach($headers as $h) {
 			if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
 		}
 		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
