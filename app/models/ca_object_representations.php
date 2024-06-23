@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -577,36 +577,44 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::update($options)) {
-			if(is_array($va_media_info = $this->getMediaInfo('media'))) {
-				$this->set('md5', $va_media_info['INPUT']['MD5']);
-				$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
-				if($media_mimetype) { $this->set('media_class', caGetMediaClass($media_mimetype)); }
-				
-				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
-					foreach($type_defaults as $m => $default_type) {
-						if(caCompareMimetypes($media_mimetype, $m)) {
-							$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
-							if (!($vn_rc = parent::update($options))) {
-								$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+			if((
+				!caGetOption('updateOnlyMediaVersions', $options, null)
+				&&
+				!caGetOption('startAtTime', $options, null)
+				&&
+				!caGetOption('startAtPage', $options, null)
+			)) {
+				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('md5', $va_media_info['INPUT']['MD5']);
+					$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
+					$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
+					
+					if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
+						foreach($type_defaults as $m => $default_type) {
+							if(caCompareMimetypes($media_mimetype, $m)) {
+								$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
+								if (!($vn_rc = parent::update($options))) {
+									$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+								}
+								break;
 							}
-							break;
-						}
-					}	
+						}	
+					}
+					
+					if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
+						$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+					}
+				}
+				if ($vb_media_has_changed) {
+					$va_metadata = $this->get('media_metadata', array('binary' => true));
+					caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
+									
+					// Extract metadata mapping with configured mappings
+					$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 				}
 				
-				if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
-					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
-				}
+				$vn_rc = parent::update($options);
 			}
-			if ($vb_media_has_changed) {
-				$va_metadata = $this->get('media_metadata', array('binary' => true));
-				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
-								
-				// Extract metadata mapping with configured mappings
-				$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
-			}
-			
-			$vn_rc = parent::update($options);
 		}
 		
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
