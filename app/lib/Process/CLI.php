@@ -97,7 +97,7 @@ class CLI {
 				$this->log->logError(_t("Could not run async %1 via Symfony/process; %2", $command_str, $e->getMessage()));
 				return false;
 			}
-			
+			sleep(1);
 			$pid = $process->getPid();
 			$this->log->logDebug(_t("Got PID %1 for %2 via Symfony/process", $pid, $command_str));
 			
