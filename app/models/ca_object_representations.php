@@ -480,6 +480,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['media_colorspace'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media colorspace'));
 		$this->BUNDLES['media_resolution'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media resolution'));
 		$this->BUNDLES['media_bitdepth'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit depth'));
+		$this->BUNDLES['media_bitrate'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit rate'));
+		$this->BUNDLES['media_bitspersample'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit per sample'));
+		$this->BUNDLES['media_samplerate'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media sample rate'));
+		
 		$this->BUNDLES['media_filesize'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media filesize'));
 		$this->BUNDLES['media_center_x'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media x-coordinate'));
 		$this->BUNDLES['media_center_y'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media y-coordinate'));
@@ -2815,6 +2819,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			case 'media_bitdepth':
 			case 'media_center_x':
 			case 'media_center_y':
+			case 'media_bitrate':
+			case 'media_bitspersample':
+			case 'media_samplerate':
 				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
 					$info = $qr->getMediaInfo('media');
 					$version = caGetOption('version', $options, 'original');
@@ -2868,6 +2875,21 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 						case 'media_bitdepth':
 							if (isset($info[$version]['PROPERTIES']['bitdepth']) && ($depth = $info[$version]['PROPERTIES']['bitdepth'])) {
 								return intval($depth).' bpp';
+							}
+							break;
+						case 'media_bitrate':
+							if (isset($info[$version]['PROPERTIES']['bitrate']) && ($depth = $info[$version]['PROPERTIES']['bitrate'])) {
+								return intval($depth).' bps';
+							}
+							break;
+						case 'media_bitspersample':
+							if (isset($info[$version]['PROPERTIES']['audio']['bits_per_sample']) && ($depth = $info[$version]['PROPERTIES']['audio']['bits_per_sample'])) {
+								return intval($depth).' bps';
+							}
+							break;
+						case 'media_samplerate':
+							if (isset($info[$version]['PROPERTIES']['sample_frequency']) && ($depth = $info[$version]['PROPERTIES']['sample_frequency'])) {
+								return intval($depth).' hz';
 							}
 							break;
 						case 'media_center_x':
