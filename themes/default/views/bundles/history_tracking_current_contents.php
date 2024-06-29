@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */ 
-if(!$qr_result = $this->getVar('qr_result')) { return; }
+if(!($qr_result = $this->getVar('qr_result'))) { return; }
 
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_subject 		= $this->getVar('t_subject');				// ca_storage_locations
