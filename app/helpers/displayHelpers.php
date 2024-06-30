@@ -5655,3 +5655,47 @@ function caHighlightText($content, $highlight_words) {
 	return $content;
 }
 # ------------------------------------------------------------------
+/**
+ *
+ */
+function caApplyFindViewUserRestrictions(ca_users $t_user, string $table, ?array $options=null) : array {
+	$views = caGetFindViewList($table);
+	if(!is_a($t_user, 'ca_users', )) { return $views; }
+	if(!$t_user->isValidPreference("find_{$table}_available_result_views")) { return $views; }
+	
+	$allowed_views = $t_user->getPreference("find_{$table}_available_result_views");
+	
+	$type_id = caGetOption('type_id', $options, null);
+	if(is_array($allowed_views[$table][$type_id]) && sizeof($allowed_views[$table][$type_id])) {
+		foreach($views as $i => $v) {
+			if(!in_array($v, $allowed_views[$table][$type_id], true)) {
+				unset($views[$i]);
+			}
+		}
+	}
+	return $views;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caGetFindViewList($table_name_or_num) : ?array {
+	if(!($t_instance = Datamodel::getInstance($table_name_or_num, true))) { return null; }
+	$table = $t_instance->tableName();
+	
+	switch($table) {
+		case 'ca_objects':
+			return [
+				'list' => _t('list'),
+				'full' => _t('full'),
+				'thumbnail' => _t('thumbnails'),
+			];
+			break;
+		default:
+			return [
+				'list' => _t('list')
+			];
+			break;
+	}	
+}
+# ------------------------------------------------------------------

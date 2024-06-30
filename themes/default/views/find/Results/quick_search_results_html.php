@@ -137,7 +137,7 @@
 		return false;
 	}
 <?php
-	if (!$t_instance->getAppConfig()->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
+	if ($t_instance && !$t_instance->getAppConfig()->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
 ?>
 		jQuery(document).ready(function() {
 			caQuickSearchShowHideResults('show', '<?= str_replace("/", "-", array_shift(array_keys($searches))); ?>');

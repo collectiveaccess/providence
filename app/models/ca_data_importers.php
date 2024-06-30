@@ -2682,7 +2682,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							
 							$va_conv_vals[ $vn_i ] = $vm_val;
-							if ( $o_reader->valuesCanRepeat() ) {
+							if ( $o_reader->valuesCanRepeat() || (isset($va_item['settings']['delimiter']) && $va_item['settings']['delimiter'])) {
 								if(!is_array($va_row_with_replacements[ $va_item['source'] ?? null] ?? null)) { 
 									$va_row_with_replacements[ $va_item['source']] = $va_row[ $va_item['source']] =  $va_row[mb_strtolower( $va_item['source'])] = []; 
 								}
@@ -3117,103 +3117,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							                   && (int) $va_item['settings']['maxLength'] )
 								? (int) $va_item['settings']['maxLength'] : null;
 
-							// if ( isset( $va_item['settings']['delimiter'] ) && $va_item['settings']['delimiter']
-// 							     && ! $vb_use_as_single_value
-// 							) {
-// 								if ( ! is_array( $va_item['settings']['delimiter'] ) ) {
-// 									$va_item['settings']['delimiter'] = array( $va_item['settings']['delimiter'] );
-// 								}
-// 
-// 								if ( sizeof( $va_item['settings']['delimiter'] ) ) {
-// 									foreach ( $va_item['settings']['delimiter'] as $vn_index => $vs_delim ) {
-// 										$va_item['settings']['delimiter'][ $vn_index ] = preg_quote( $vs_delim, "!" );
-// 									}
-// 									$va_val_list = preg_split( "!(" . join( "|", $va_item['settings']['delimiter'] )
-// 									                           . ")!", $vm_val );
-// 
-// 									// Add delimited values
-// 									$vn_orig_c = $vn_c;
-// 									foreach ( $va_val_list as $vs_list_val ) {
-// 										if($use_constant = ($va_item['settings']['useConstant'] ?? null)) {
-// 											$vs_list_val = $use_constant; 
-// 										}
-// 										$vs_list_val = trim( ca_data_importers::replaceValue( $vs_list_val, $va_item,
-// 											[ 'log' => $o_log, 'logReference' => $vs_idno ] ) );
-// 										if ( $vn_max_length && ( mb_strlen( $vs_list_val ) > $vn_max_length ) ) {
-// 											$vs_list_val = mb_substr( $vs_list_val, 0, $vn_max_length );
-// 										}
-// 										if ( ! is_array( $va_group_buf[ $vn_c ] ) ) {
-// 											$va_group_buf[ $vn_c ] = array();
-// 										}
-// 
-// 
-// 										switch ( $vs_item_terminal ) {
-// 											case 'preferred_labels':
-// 											case 'nonpreferred_labels':
-// 												if ( $t_instance = Datamodel::getInstance( $vs_target_table, true ) ) {
-// 													$va_group_buf[ $vn_c ][ $t_instance->getLabelDisplayField() ]
-// 														= $vs_list_val;
-// 												}
-// 
-// 												if ( ! $vb_item_error_policy_is_default
-// 												     || ! isset( $va_group_buf[ $vn_c ]['_errorPolicy'] )
-// 												) {
-// 													if ( is_array( $va_group_buf[ $vn_c ] ) ) {
-// 														$va_group_buf[ $vn_c ]['_errorPolicy'] = $vs_item_error_policy;
-// 													}
-// 												}
-// 
-// 												if ( $vs_item_terminal == 'preferred_labels' ) {
-// 													$vs_preferred_label_for_log = $vm_val;
-// 												}
-// 												break;
-// 											default:
-// 												$va_group_buf[ $vn_c ] = array_merge( $va_group_buf[ $vn_c ], array(
-// 													$vs_item_terminal => $vs_list_val,
-// 													'_errorPolicy'    => $vs_item_error_policy
-// 												) );
-// 												if ( ! $vb_item_error_policy_is_default
-// 												     || ! isset( $va_group_buf[ $vn_c ]['_errorPolicy'] )
-// 												) {
-// 													if ( is_array( $va_group_buf[ $vn_c ] ) ) {
-// 														$va_group_buf[ $vn_c ]['_errorPolicy'] = $vs_item_error_policy;
-// 													}
-// 												}
-// 												break;
-// 										}
-// 										
-// 										
-// 										if(is_array($va_group_buf[ $vn_c ]) && sizeof($va_group_buf[ $vn_c ])) {
-// 											$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
-// 										}
-// 										$vn_c++;
-// 									}
-// 									$vn_c = $vn_orig_c;
-// 
-// 									// Replicate constants as needed: constant is already set for first constant in group, 
-// 									// but will not be set for repeats so we set them here
-// 
-// 									if ( sizeof( $va_group_buf ) > 1 ) {
-// 										foreach ( $va_items_by_group_proc[ $vn_group_id ] as $va_gitem ) {
-// 											if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'],
-// 												$va_gmatches )
-// 											) {
-// 
-// 												$va_gitem_dest     = explode( ".", $va_gitem['destination'] );
-// 												$vs_gitem_terminal = $va_gitem_dest[ sizeof( $va_gitem_dest ) - 1 ];
-// 												for ( $vn_gc = 1; $vn_gc < sizeof( $va_group_buf ); $vn_gc ++ ) {
-// 													$va_group_buf[ $vn_gc ][ $vs_gitem_terminal ]
-// 														= $va_gmatches[1];        // Set it and go onto the next item
-// 												}
-// 											}
-// 
-// 										}
-// 									}
-// 
-// 									continue;    // Don't add "regular" value below
-// 								}
-// 							}
-
 							if ( $vn_max_length && ( mb_strlen( $vm_val ) > $vn_max_length ) ) {
 								$vm_val = mb_substr( $vm_val, 0, $vn_max_length );
 							}
@@ -3388,8 +3291,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 			
-				//print_r($va_content_tree);
-			    //die("done\n");
+				// print_r($va_content_tree);
+// 			    die("done\n");
 			
 				if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 	
@@ -4668,7 +4571,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private function _closeLogs() {
 		if(is_array($this->detlog)) {
-			array_map(function($v) { fclose($v); }, $this->detlog);
+			array_map(function($v) { if(is_resource($v)) { fclose($v); } }, $this->detlog);
 		}
 		$this->log = null;
 		$this->detlog = null;

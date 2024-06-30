@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,7 +146,9 @@ $g_mimetypes_to_info= array(
 	'application/futuresplash'	=>	array('name' => 'Adobe Flash'),
 	'application/windows-media' => array('name' => 'Windows Media'),
 	'text/vtt' => array('name' => 'VTT'),
-	'text/srt' => array('name' => 'SRT')
+	'text/srt' => array('name' => 'SRT'),
+	'text/csv' => array('name' => 'CSV'),
+	'text/tab-separated-values' => array('name' => 'TAB'),
  );
  
  global $g_file_extensions_to_mimetypes;
@@ -610,7 +612,9 @@ $g_mimetypes_to_info= array(
 	'cab'    => 'application/vnd.ms-cab-compressed',
 	'odt'    => 'application/vnd.oasis.opendocument.text',
 	'ods'    => 'application/vnd.oasis.opendocument.spreadsheet',
-	'wmv'	 => 'application/windows-media'
+	'wmv'	 => 'application/windows-media',
+	'csv'	 => 'text/csv',
+	'tab'	 => 'text/tab-separated-values'
  );
  
  
@@ -638,6 +642,16 @@ $g_mimetypes_to_info= array(
  	 */
  	static function nameForFileExtension($ps_extension) {
  		return FileMimeTypes::nameForMimeType(FileMimeTypes::mimeTypeForFileExtension($ps_extension));
+ 	}
+ 	# ------------------------------------------------
+ 	/**
+ 	 * Converts mimetype into file extension. Null is returned if
+ 	 * mimetype is unknown.
+ 	 */
+ 	static function FileExtensionForMimetype($ps_mimetype) {
+ 		global $g_file_extensions_to_mimetypes;
+ 		$tmp = array_flip($g_file_extensions_to_mimetypes);
+ 		return $tmp[$ps_mimetype] ?? null;
  	}
  	# ------------------------------------------------
  }

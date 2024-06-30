@@ -146,32 +146,30 @@ var caUI = caUI || {};
 				settingsForm =  that.availableDisplayList[bundle] ?  that.availableDisplayList[bundle].settingsForm : '';
 				id = id + '_0'; 
 			}
-			
-			let id_proc = id.replace(/[^A-Za-z0-9\-_]+/, '_');
 
 			// Store the settings form HTML for lazy insertion.
 			// TODO: Use namespaces to prevent id collisions with multiple of this plugin on a single page.
 			caUI.bundlelisteditor.settingsForms[id] = settingsForm;
 			let tt = placement_info.description;
 
-			output =  "<div id='displayElement_" + id_proc +"' class='" + that.displayItemClass + "' data-bundle='" + bundle + "' title='" + tt + "'>";
+			output =  "<div id='displayElement_" + id +"' class='" + that.displayItemClass + "'>";
 			if (that.allowSettings) {
-				output += "<div class='bundleDisplayElementSettingsControl'><a href='#' onclick='caUI.bundlelisteditor.initSettingsForm(\"" + id + "\"); jQuery(\".elementSettingsUI\").fadeOut(250); jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "_") +"\").fadeIn(250); return false; '>" + that.settingsIcon + "</a></div>";
+				output += "<div class='bundleDisplayElementSettingsControl'><a href='#' onclick='caUI.bundlelisteditor.initSettingsForm(\"" + id + "\"); jQuery(\".elementSettingsUI\").fadeOut(250); jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeIn(250); return false; '>" + that.settingsIcon + "</a></div>";
 			}
 			output += "<div style='width:75%'>" + label + " </div>";
 			output += "</div>\n";	
 			
 			if (that.allowSettings) {		
-				output += "<div id='displayElementSettings_" + id_proc + "' class='elementSettingsUI' style='display: none;'>" + label + "<div class='settingsFormContainer'></div><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "_") +"\").fadeOut(250); return false; '>" + that.saveSettingsIcon + "</a></div>";
+				output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>" + label + "<div class='settingsFormContainer'></div><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.saveSettingsIcon + "</a></div>";
 			}
 			
-			return { element: output, target: "displayElement_" + id_proc };
+			return { element: output, target: "displayElement_" + id };
 		}
 		// ------------------------------------------------------------------------------------
 		that._updateBundleListFormElement = function() {
 			var bundle_list = [];
 			jQuery.each(jQuery('#' + that.toDisplayListID + " div." + that.displayItemClass), function(k, v) { 
-				bundle_list.push(jQuery(v).data('bundle'));
+				bundle_list.push(jQuery(v).attr('id').replace('displayElement_', ''));
 			});
 			jQuery('#' + that.displayBundleListID).val(bundle_list.join(';'));
 			
@@ -193,7 +191,7 @@ var caUI = caUI || {};
 	// Lazily insert popup settings form HTML from map.
 	caUI.bundlelisteditor.initSettingsForm = function (id) {
 		if (caUI.bundlelisteditor.settingsForms[id]) {
-			$('#displayElementSettings_' + id.replace(/\./g, '_') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
+			$('#displayElementSettings_' + id.replace(/\./g, '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
 				.html(caUI.bundlelisteditor
 				.settingsForms[id])					
 				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes

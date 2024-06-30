@@ -43,6 +43,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	
 	private $delete_sql;	// sql DELETE statement (for unindexing)
 	private $q_delete;		// prepared statement for delete (subject_tablenum and subject_row_id only specified)
+	private $delete_sql_no_rel_type;
+	private $q_delete_no_rel_type;
 	
 	private $stemmer;		// snoball stemmer
 	private $do_stemming = true;
@@ -448,15 +450,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$text = preg_replace("!\|$!", '', $text);
 			if ($this->do_stemming && !$do_not_stem && !$is_blank && !$is_not_blank && !preg_match("![^A-Za-z]+!u", $text)) {
 				$text_stem = $this->stemmer->stem($text);
-				if (($text !== $text_stem) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
-					$text = $text_stem.'*';
+				if ((($text !== $text_stem) || $this->search_config->get('always_stem')) && ($text_stem[strlen($text_stem)-1] !== '*')) { 
+					$text = $text_stem; //.'*';
 					$word_field = 'sw.stem';
 				}
 			}
 			
-			if(($word_field !== 'sw.stem') && ($this->search_config->get('always_stem'))) {
-				$text .= '*';
-			}
 			$this->searched_terms[] = $text;
 			
 			$params = [$subject_tablenum];
@@ -1220,7 +1219,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	public function flushContentBuffer() : void {
 		// add fields to doc
-		$vn_max_word_segment_size = 200000; //(int)$this->getOption('maxWordIndexInsertSegmentSize');
+		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
 		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
@@ -1319,46 +1318,34 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function removeRowIndexing(?int $subject_tablenum, ?int $pn_subject_row_id, ?int $pn_field_tablenum=null, $pa_field_nums=null, ?int $pn_field_row_id=null, ?int $pn_rel_type_id=null) {
-
-		//print "[SqlSearchDebug] removeRowIndexing: $subject_tablenum/$pn_subject_row_id<br>\n";
 		$vn_rel_type_id = $pn_rel_type_id ? $pn_rel_type_id : 0;
-		
 		
 		// remove dependent row indexing
 		if ($subject_tablenum && $pn_subject_row_id &&  !is_null($pn_field_tablenum) && !is_null($pn_field_row_id) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 			foreach($pa_field_nums as $pn_field_num) {
 				if(!$pn_field_num) { continue; }
-				//print "DELETE ROW WITH FIELD NUM $subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num/$pn_field_row_id<br>";
 				$this->q_delete_with_field_row_id_and_num->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, (int)$pn_field_row_id, $vn_rel_type_id);
 			}
 			return true;
-		} else {
-			if ($subject_tablenum && $pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
-				//print "DELETE ROW $subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_row_id<br>";
-				return $this->q_delete_with_field_row_id->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id, $vn_rel_type_id);
-			} else {
-				if (!is_null($pn_field_tablenum) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
-					foreach($pa_field_nums as $pn_field_num) {
-						if(!$pn_field_num) { continue; }
-						//print "DELETE FIELD $subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num<br>";
-						
-						if (!is_null($pn_rel_type_id)) {
-						    $this->q_delete_with_field_num->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, $vn_rel_type_id);
-					    } else {
-					        $this->q_delete_with_field_num_without_rel_type_id->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num);
-					    }
-					}
-					return true;
+		} elseif ($subject_tablenum && $pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
+			return $this->q_delete_with_field_row_id->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id, $vn_rel_type_id);
+		} elseif (!is_null($pn_field_tablenum) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+			foreach($pa_field_nums as $pn_field_num) {
+				if(!$pn_field_num) { continue; }
+				
+				if (!is_null($pn_rel_type_id)) {
+					$this->q_delete_with_field_num->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, $vn_rel_type_id);
 				} else {
-					if (!$subject_tablenum && !$pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
-						//print "DELETE DEP $pn_field_tablenum/$pn_field_row_id<br>";
-						$this->q_delete_dependent_sql->execute((int)$pn_field_tablenum, (int)$pn_field_row_id, $vn_rel_type_id);
-					} else {
-						//print "DELETE ALL $subject_tablenum/$pn_subject_row_id<br>";
-						return $this->q_delete->execute((int)$subject_tablenum, (int)$pn_subject_row_id, $vn_rel_type_id);
-					}
+					$this->q_delete_with_field_num_without_rel_type_id->execute((int)$subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num);
 				}
 			}
+			return true;
+		} elseif (!$subject_tablenum && !$pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
+			$this->q_delete_dependent_sql->execute((int)$pn_field_tablenum, (int)$pn_field_row_id, $vn_rel_type_id);
+		} elseif($vn_rel_type_id > 0) {
+			return $this->q_delete->execute((int)$subject_tablenum, (int)$pn_subject_row_id, $vn_rel_type_id);
+		} else {
+			return $this->q_delete_no_rel_type->execute((int)$subject_tablenum, (int)$pn_subject_row_id);
 		}
 	}
 	# ------------------------------------------------
@@ -1649,6 +1636,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$this->delete_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (rel_type_id = ?)";
 		$this->q_delete = $this->db->prepare($this->delete_sql);
+		
+		$this->delete_no_rel_type = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?)";
+		$this->q_delete_no_rel_type = $this->db->prepare($this->delete_no_rel_type);
 		
 		$this->delete_with_field_num_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (rel_type_id = ?)";
 		$this->q_delete_with_field_num = $this->db->prepare($this->delete_with_field_num_sql);

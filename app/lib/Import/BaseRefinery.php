@@ -153,6 +153,7 @@ abstract class BaseRefinery {
 	 *		delimiter = Delimiter to join array values with when returnAsString option is set; or the delimiter to use when breaking apart a value for return via the returnDelimitedValueAt option. Multiple delimiters may be passed in an array. When an array is used the first delimiter will be used to join values for return as a string. [Default is ";"]
 	 *		returnDelimitedValueAt = Return a specific part of a value delimited by the "delimiter" option when $index is set to a non-null value. The option value is a zero-based index. [Default is null – return entire value]
 	 *		applyImportItemSettings = Apply mapping options such as applyRegularExpressions to value. [Default is true]
+	 *		ignoreIndexForNonRepeatingValues = If value is non-repeating (has only one value) then assume it is constant across all value indices (Eg. return the single value regardless of specified index) [Default is false]
 	 *
 	 * @return mixed An array or string
 	 */
@@ -167,14 +168,18 @@ abstract class BaseRefinery {
 		
 		$delimiters = caGetOption("delimiter", $options, [';']);
 		if(!is_array($delimiters)) { $delimiters = [$delimiters]; }
-		if(!isset($delimiters[0]) || !strlen($delimiter[0])) { $delimiter[0] = ';'; }
+		$delimiters = array_filter($delimiters, 'strlen');
+		if(!sizeof($delimiters)) { $delimiters = [';']; }
 		$delimiter = $delimiters[0];
 		
 		if ($reader && !$reader->valuesCanRepeat()) {
 			// Expand delimited values in non-repeating sources to simulate repeats
 			foreach($source_data as $k => $v) {
 				if (!is_array($source_data[$k])) {
-				   $source_data[$k] = array_filter(preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $source_data[$k]), "strlen");
+				   $source_data[$k] = is_array($delimiters) ? 
+				   	array_filter(preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $source_data[$k]), "strlen")
+				   	:
+				   	[0 => $source_data[$k]];
 				}
 			}
 		}
@@ -249,7 +254,8 @@ abstract class BaseRefinery {
 		
 		// Get specific index for repeating value
 		if (is_array($mval) && !is_null($value_index)) {
-			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : null;
+			// Set mapped value to value at index; if source data has only one value and ignoreIndexForNonRepeatingValues
+			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : ((sizeof($mval) === 1) ? $mval[0] : null);
 			
 			if (is_array($item['settings']['original_values']) && (($ix = array_search(mb_strtolower($mval[0]), $item['settings']['original_values'], true)) !== false)) {
 				$mval[0] = $item['settings']['replacement_values'][$ix];
@@ -259,7 +265,7 @@ abstract class BaseRefinery {
 			}
 			// delimiter?
 			if(!is_null($get_at_index) && sizeof($delimiters)) {
-				$dvals = preg_split('!('.preg_quote(join('|', $delimiters), ')!').'!', $mval[0]);
+				$dvals = preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $mval[0]);
 				return $dvals[$get_at_index] ?? null;
 			}
 			return ($return_as_string && is_array($mval)) ? trim(join($delimiter, $mval)) : $mval;

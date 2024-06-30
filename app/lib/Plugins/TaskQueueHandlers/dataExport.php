@@ -34,6 +34,7 @@ include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/Media.php");
 include_once(__CA_APP_DIR__."/helpers/exportHelpers.php");
+include_once(__CA_LIB_DIR__.'/File/FileMimeTypes.php');
 
 class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
@@ -137,6 +138,9 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			]
 		));
 		
+		
+		$report = ['errors' => [], 'notes' => []];
+		
 		$t_download = ca_user_export_downloads::findAsInstance(['download_id' => $parameters['download_id'], 'user_id' => $parameters['user_id']]);
 		
 		$o_app = AppController::getInstance($req, $resp);
@@ -172,7 +176,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); 
+						$report['errors'][] = $parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export failed', __CA_APP_DISPLAY_NAME__), 'data_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -187,14 +191,14 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); 
+						$report['errors'][] = $parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Label export failed', __CA_APP_DISPLAY_NAME__), 'label_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
 				case 'SUMMARY':
 					if(!$result->nextHit()) {
 						$this->error->setError(551, _t("[TaskQueue::dataExport::process] Record does not exist", $mode),"dataExport->process()");
-						$parameters['errors'] = _t('Record does not exist');
+						$report['errors'][] = $parameters['errors'] = _t('Record does not exist');
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
 						break;
 					}
@@ -208,7 +212,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed');
+						$report['errors'][] = $parameters['errors'] = _t('Output failed');
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Summary export failed', __CA_APP_DISPLAY_NAME__), 'summary_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -223,7 +227,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 							]]
 						]);
 					} else {
-						$parameters['errors'] = _t('Output failed'); 
+						$report['errors'][] = $parameters['errors'] = _t('Output failed'); 
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Set export failed', __CA_APP_DISPLAY_NAME__), 'set_export_failure.tpl', $parameters, null, null, []);
 					}
 					break;
@@ -234,9 +238,14 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			}
 			
 			if(is_array($res)) {
+				if(!($ext = ($res['extension'] ?? null))) {
+					if(!($ext = Media::getExtensionForMimetype($res['mimetype']))) {
+						$ext = FileMimeTypes::fileExtensionForMimetype($res['mimetype']);
+					}
+				}
 				if($t_download) {
 					$md = $t_download->get('ca_user_export_downloads.metadata');
-					$md['extension'] = Media::getExtensionForMimetype($res['mimetype']);
+					$md['extension'] = $ext;
 					$t_download->set([
 						'generated_on' => _t('now'),
 						'status' => 'COMPLETE',
@@ -244,7 +253,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 						'metadata' => $md
 					]);
 					if(!$t_download->update()) {
-						$md['error'] = join('; ', $t_download->getErrors());
+						$report['errors'][] = $md['error'] = join('; ', $t_download->getErrors());
+						$logger->logError(_t("[TaskQueue::dataExport::process] Could not set download as completed: %1", $md['error']));
 						$t_download->clearMedia('export_file');
 						$t_download->set([
 							'generated_on' => _t('now'),
@@ -258,7 +268,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			} else {
 				if($t_download) {
 					$md = $t_download->get('ca_user_export_downloads.metadata');
-					$md['error'] = $parameters['errors'] ?: _t('Unknown error');
+					$report['errors'][] = $md['error'] = $parameters['errors'] ?: _t('Unknown error');
+					$logger->logError(_t("[TaskQueue::dataExport::process] Set download error: %1", $md['error']));
 					$t_download->set([
 						'generated_on' => _t('now'),
 						'status' => 'ERROR',
@@ -271,7 +282,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		} catch(Exception $e) {
 			if($t_download) {
 				$md = $t_download->get('ca_user_export_downloads.metadata');
-				$md['error'] = $e->getMessage();
+				$report['errors'][] = $md['error'] = $e->getMessage();
+				$logger->logError(_t("[TaskQueue::dataExport::process] Set download exception: %1", $md['error']));
 					
 				$t_download->set([
 					'generated_on' => _t('now'),
@@ -282,7 +294,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 				$t_download->update();
 			}
 		}
-		return false;
+		return $report;
 	}
 	# --------------------------------------------------------------------------------
 	/**

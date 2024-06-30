@@ -880,6 +880,33 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Remove stray temporary files from application tmp diectory
+	 *
+	 * Currently deletes:
+	 *		wkhtmltopdf tmp files
+	 */
+	function caCleanTmpDirectory() {
+		$config = Configuration::load();
+		if (($threshold = (int)$config->get('tmp_directory_garbage_collection_threshold')) <= 0) {
+			$threshold = 1800;
+		}
+		
+		$files_to_delete = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, false, false, true, ['notModifiedSince' => time() - $threshold]);
+	
+		$count = 0;
+		foreach($files_to_delete as $file_to_delete) {
+			if(is_writeable($file_to_delete)) {
+				if(preg_match("!^".__CA_APP_DIR__.'/tmp'."/wkhtmltopdf[\d]+!", $file_to_delete)) {
+					@unlink($file_to_delete);
+					$count++;
+				}
+			}
+		}
+		
+		return $count;
+	}
+	# ----------------------------------------
+	/**
 	 *
 	 */
 	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null, $options=null) {
@@ -1063,9 +1090,9 @@ function caFileIsIncludable($ps_file) {
 		if (
 			caGetOption('strict', $pa_options, false)
 			?
-				preg_match("!^(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				preg_match("!^(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#\(\)\[\]]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
 				:
-				preg_match("!(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+				preg_match("!(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#\(\)\[\]]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
 			) {
 			return array(
 				'protocol' => $va_matches[1],
@@ -3834,11 +3861,8 @@ function caFileIsIncludable($ps_file) {
 	        if (sizeof($va_tokens) > 2000) { 
 	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
-	    	if (sizeof($va_tokens) > 2000) { 
-	    		$va_tokens = array_slice($va_tokens, 0, 500, true); // delete last quarter of token buffer if it gets too long
-	    	}
 	    
-	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
+	        $va_tokens[$vs_token] = time();
 	        
 	        PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
 	    }

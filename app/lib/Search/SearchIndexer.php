@@ -597,19 +597,28 @@ class SearchIndexer extends SearchBase {
 		if (!$pb_reindex_mode && !$for_current_value_reindex && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
 		$vb_started_indexing = false;
-
+		
+		$global_indexed_field_list = $this->getIndexedFieldsForTable($pn_subject_table_num);
+		if(!sizeof($global_indexed_field_list)) { return; }
+		
 		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
 		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
 
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
+		if(!sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
 
 		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
+			
+			$field_data_proc = [];
+			foreach(array_keys($pa_changed_fields) as $k) {
+				$field_data_proc[$k] = $pa_field_data[$k];
+			}
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_table_num,
 				'row_id' => $pn_subject_row_id,
-				'field_data' => $pa_field_data,
+				'field_data' => $field_data_proc,
 				'reindex' => $pb_reindex_mode ? 1 : 0,
 				'changed_fields' => $pa_changed_fields,
 				'options' => $pa_options
@@ -675,7 +684,7 @@ if (!$for_current_value_reindex) {
 					//
 					if (!preg_match('!^_ca_attribute_(.*)$!', $vs_field, $va_matches)) { continue; }
 
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!$pb_reindex_mode) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
+					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
 						continue;	// skip unchanged attribute value
 					}
 
@@ -707,12 +716,12 @@ if (!$for_current_value_reindex) {
 					//
 					// Plain old field
 					//
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!$pb_reindex_mode) && (!isset($pa_changed_fields[$vs_field])) && ($vs_field != $vs_subject_pk) ) {	// skip unchanged
+					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field])) && ($vs_field != $vs_subject_pk) ) {	// skip unchanged
 						continue;
 					}
 
 					if (is_null($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
-
+					
 					//
 					// Hierarchical indexing in primary table
 					//
@@ -814,6 +823,14 @@ if (!$for_current_value_reindex) {
 							}
 							$va_content[$t_item->get('idno')] = true;
 							$va_content[$t_item->get('item_value')] = true;
+							if(($va_data['INDEX_LIST_ANCESTORS'] ?? false) || in_array('INDEX_LIST_ANCESTORS', $va_data, true)) {
+								$ancestor_ids = $t_item->get('ca_list_items.parents.item_id', ['returnAsArray' => true]);
+								$ancestor_labels = $t_item->get('ca_list_items.parents.preferred_labels', ['returnAsArray' => true]);
+								$ancestor_idno = $t_item->get('ca_list_items.parents.idno', ['returnAsArray' => true]);
+								foreach($ancestor_ids as $i => $id) {
+									$va_content[$id] = $va_content[$ancestor_labels[$i]] = $va_content[$ancestor_idno[$i]] = true;
+								}	
+							}
 						}  else {
 							// is this field related to something?
 							if (is_array($va_rels = Datamodel::getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field] ?? null)) {

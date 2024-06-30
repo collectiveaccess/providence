@@ -484,7 +484,7 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 					}
 				}
 			} elseif(is_string($va_attrs)) {
-				$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['delimiter' => caGetOption('delimiter', $pa_options, null),'returnDelimitedValueAt' => $pn_c, 'returnAsString' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
+				$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['delimiter' => caGetOption('delimiter', $pa_options, null), 'returnAsString' => true, 'ignoreIndexForNonRepeatingValues' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
 			} else {
 				 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 			}
@@ -1351,6 +1351,7 @@ function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, 
 							
 							// Default idno for representation is the file name
 							if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
+							$va_val['_matchOn'] = $va_match_on;
 							break;
 						default:
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }

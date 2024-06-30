@@ -4368,7 +4368,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -6140,7 +6140,7 @@ class BrowseEngine extends BaseFindEngine {
 					} else {
 						$vs_container_sql = '';
 						$va_params = [$vn_element_id];
-						if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+						if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 							$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 							$va_params[] = $va_container_ids[$vs_container_code];
 						}
@@ -6473,7 +6473,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -6662,7 +6662,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}

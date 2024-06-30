@@ -2564,7 +2564,6 @@ if (!$pb_omit_editing_info) {
 	public function savePlacementsFromHTMLForm($request, $ps_form_prefix, $ps_placement_code) {;
 		if ($vs_bundles = $request->getParameter("{$ps_placement_code}{$ps_form_prefix}displayBundleList", pString)) {
 			$va_bundles = explode(';', $vs_bundles);
-			
 			$t_display = new ca_bundle_displays($this->getPrimaryKey());
 			if ($this->inTransaction()) { $t_display->setTransaction($this->getTransaction()); }
 			$placements = $t_display->getPlacements(array('user_id' => $request->getUserID()));
@@ -2610,7 +2609,7 @@ if (!$pb_omit_editing_info) {
 					}
 				}
 				
-				if($placement_id === 0) {
+				if(((int)$placement_id === 0)) {
 					$t_display->addPlacement($vs_bundle, $va_settings[$placement_id] ?? null, $i + 1, array('user_id' => $request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? []));
 					if ($t_display->numErrors()) {
 						$this->errors = $t_display->errors;
@@ -2619,7 +2618,6 @@ if (!$pb_omit_editing_info) {
 				} else {
 					$t_placement = new ca_bundle_display_placements($placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $i + 1);
 					
 					if (is_array($va_settings[$placement_id] ?? null)) {

@@ -9094,6 +9094,7 @@ side. For many self-relations the direction determines the nature and display te
 							case 'base':
 								// Always use label from base, if set for the locale
 								foreach(reset($base) as $blabel) {
+									$blabel = array_shift($blabel);
 									if(($label['locale_id'] ?? null) == ($blabel['locale_id'] ?? null)) {
 										$use_label_by_locale_id[$locale_id] = array_filter($blabel, function($k) use ($label_fields) { return in_array($k, $label_fields); }, ARRAY_FILTER_USE_KEY);
 										break(2);

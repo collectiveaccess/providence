@@ -78,6 +78,15 @@ class PreferencesController extends ActionController {
 	/**
 	 *
 	 */
+	public function EditFindPrefs() {
+		$this->view->setVar('t_user', $this->request->user);
+		$this->view->setVar('group', 'find');
+		$this->render('preferences_find_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditQuickAddPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'quickadd');
@@ -300,6 +309,25 @@ class PreferencesController extends ActionController {
 					}
 				}
 				$vs_view_name = 'preferences_batch_html.php';
+				break;
+			case 'EditFindPrefs':
+				$vs_group = 'find';
+				
+				$find_prefs = [];
+				foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+					foreach($_REQUEST AS $vs_k => $vs_v) {
+						if(!preg_match("!^pref_find_(ca_[a-z]+)_available_result_views_([\d]+)$!", $vs_k, $m)) {
+							continue;
+						}
+						$table = $m[1];
+						$type_id = $m[2];
+						if (preg_match("!pref_{$vs_pref}!", $vs_k, $va_matches)) {
+							$find_prefs[$table][$type_id] = $vs_v;
+						}
+					}
+				}
+				$this->request->user->setPreference($vs_pref, $find_prefs);
+				$vs_view_name = 'preferences_find_html.php';
 				break;
 			case 'EditQuickAddPrefs':
 				$vs_group = 'quickadd';

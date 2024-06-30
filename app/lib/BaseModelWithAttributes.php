@@ -341,6 +341,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			// queued values 
 			foreach(($this->opa_attributes_to_add + $this->opa_attributes_to_edit) as $a) {
 				foreach($pa_values as $k => $v) {
+					$datatype = ca_metadata_elements::getDataTypeForElementCode($k);
+					// Media and files never match existing
+					if(in_array($datatype, [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__], true)) {
+						continue(2);
+					}
 					if(!array_key_exists($k, $a['values']) || ($a['values'][$k] !== $v)) {
 						continue(2);
 					}
@@ -433,20 +438,27 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				$vn_element_datatype = ca_metadata_elements::getElementDatatype($vn_element_id);
 				
 				unset($element_codes[$vs_element_code]);
+				
+				$attr_val = $o_attr_value->getDisplayValue();
+				$attr_val_idno = $o_attr_value->getDisplayValue(['output' => 'idno']);
 				if (
 					(
-						array_key_exists($vn_element_id, $pa_values) && ($pa_values[$vn_element_id] !== $o_attr_value->getDisplayValue()) 
+						array_key_exists($vn_element_id, $pa_values) && (!in_array($pa_values[$vn_element_id], [$attr_val, $attr_val_idno], true)) 
 						&& 
-						!(($pa_values[$vn_element_id] == "") && (is_null($o_attr_value->getDisplayValue())))
+						!(($pa_values[$vn_element_id] == "") && (is_null($attr_val)))
 						&& 
+						!(is_null($pa_values[$vn_element_id]) && is_null($attr_val))
+						&&
 						!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
 					)
 					||
 					(
-						array_key_exists($vs_element_code, $pa_values) && ($pa_values[$vs_element_code] !== $o_attr_value->getDisplayValue()) 
+						array_key_exists($vs_element_code, $pa_values) && (!in_array($pa_values[$vs_element_code], [$attr_val, $attr_val_idno], true)) 
 						&&
-						!(($pa_values[$vs_element_code] == "") && (is_null($o_attr_value->getDisplayValue())))
+						!(($pa_values[$vs_element_code] == "") && (is_null($attr_val_idno)))
 						&& 
+						!(is_null($pa_values[$vs_element_code]) && is_null($attr_val_idno))
+						&&
 						!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
 					)
 					||

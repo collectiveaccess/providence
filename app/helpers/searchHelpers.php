@@ -1974,7 +1974,7 @@ function caFlattenContainers(ca_search_forms $t_search_form, string $table, Conf
 	}, $user_bundles);
 	
 	$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
-	$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted']]);
+	$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted'], 'restrictToTypes' => caGetOption('restrictToTypes', $options, null)]);
 	
 	foreach($bundles as $id => $bundle_info) {
 		$b = $bundle_info['bundle'];
@@ -2030,12 +2030,36 @@ function caGetBundleNameForSearchSearchBuilder($ps_name) {
 /**
  *
  */
+function caExpandWithSubBundlesForSearchBuilder(array $bundles) {
+	foreach($bundles as $b) {
+		$element_code = caGetBundleNameForSearchSearchBuilder($b);
+		if (ca_metadata_elements::getElementDatatype($element_code) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+			if(is_array($sub_elements = ca_metadata_elements::getElementsForSet($element_code, ['useDisambiguationLabels' => true]))) {
+		
+				foreach($sub_elements as $sub_element) {
+					if (((int)$sub_element['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) && ($sub_element['parent_id'] > 0)) { continue; }	// skip sub-containers
+					$sub_element_code = $sub_element['element_code'];
+					
+					if ($sub_element['element_id'] != $sub_element['hier_element_id']) {	// is root
+						$bundles[] = "{$b}.{$sub_element_code}";
+					}
+				}
+			}
+		}
+	}
+	return $bundles;
+}
+# ---------------------------------------
+/**
+ *
+ */
 function caGetPriorityBundlesForSearchBuilder(string $table, Configuration $search_builder_config, ?array $options=null) {
 	global $g_request;
 	$t_user = $g_request ? $g_request->getUser() : null;
 	
 	if(!$t_user || !($priority = $t_user->getPreference("{$table}_searchbuilder_priority_list"))) {
 		$priority = $search_builder_config->get(["search_builder_priority_{$table}", "query_builder_priority_{$table}"]);
+		$priority = caExpandWithSubBundlesForSearchBuilder($priority);
 	}
 	
 	if(!is_array($priority)) {
@@ -2057,7 +2081,8 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
 	}
 	if(!is_array($user_bundles) || !sizeof($user_bundles)) {
 		$t_search_form = new ca_search_forms();
-		$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
+	 	$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
+		$user_bundles = caExpandWithSubBundlesForSearchBuilder($user_bundles);
 	}
 	
 	$priority_bundles = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, $options);
@@ -2077,9 +2102,12 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
  *
  */
 function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_builder_config, ?array $options=null) {
+	global $g_request;
+	$t_user = $g_request ? $g_request->getUser() : null;
+	
 	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
 	
-	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? []);
+	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? [], $t_user ? $t_user->getUserID() : '');
 	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
 	
 	$table = $t_subject->tableName();
@@ -2088,7 +2116,7 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_b
 		function ($pa_bundle) use ($t_subject, $search_builder_config) {
 			return caMapBundleToSearchBuilderFilterDefinition($t_subject, $pa_bundle, $search_builder_config);
 		},
-		caFlattenContainers($t_search_form, $table, $search_builder_config, ['useDisambiguationLabels' => true, 'returnAll' => caGetOption('returnAll', $options, false)])
+		caFlattenContainers($t_search_form, $table, $search_builder_config, ['useDisambiguationLabels' => true, 'returnAll' => caGetOption('returnAll', $options, false), 'restrictToTypes' => caGetOption('restrictToTypes', $options, null)])
 	));
 	$va_include = $search_builder_config->get(["search_builder_include_{$table}", "query_builder_include_{$table}"]);
 	$va_exclude = $search_builder_config->get(["search_builder_exclude_{$table}", "query_builder_exclude_{$table}"]);
@@ -2185,6 +2213,8 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	$va_field_info = $t_subject->getFieldInfo($vs_name_no_table);
 	$vn_display_type = null;
 	$vs_list_code = null;
+	$element_id = null;
+	$t_element = null;
 	$va_select_options = null;
 	$va_result = array(
 		'id' => $vs_name,
@@ -2193,7 +2223,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 		'type' => 'string',
 		'bundles' => isset($pa_bundle['bundles']) ? $pa_bundle['bundles'] : null
 	);
-	if ($va_field_info) {
+	if (is_array($va_field_info)) {
 		// Get the list code and display type for further processing below.
 		$vs_list_code = $va_field_info['LIST'] ?? $va_field_info['LIST_CODE'] ?? null;
 		$vn_display_type = $va_field_info['DISPLAY_TYPE'] ?? null;
@@ -2221,8 +2251,10 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 				$va_result['type'] = 'datetime';
 				break;
 		}
-	} elseif(ca_metadata_elements::getElementID($vs_name_no_table)) {
+	} elseif($element_id = ca_metadata_elements::getElementID($vs_name_no_table)) {
 			$vs_list_code = ca_metadata_elements::getElementListID($vs_name_no_table);
+			$t_element = ca_metadata_elements::getInstance($element_id);
+			
 			$vn_display_type = $vs_list_code ? DT_SELECT : DT_FIELD;
 			// Convert CA attribute datatype to query builder type and operators.
 			switch (ca_metadata_elements::getElementDatatype($vs_name_no_table)) { 
@@ -2257,19 +2289,28 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	// Process list types and use a text field for non-list types.
 	if (in_array($vn_display_type, array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ), true)) {
 		if (!$va_select_options) {
-			$va_select_options = array();
+			$va_select_options = [];
 			$t_list = new ca_lists();
-			$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
-			if (is_array($va_items)) {
-				$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
-				foreach ($va_items as $va_item) {
-					$va_select_options[$is_item_val_fld ? $va_item['item_value'] : $va_item['idno']] = str_repeat("&nbsp;", (int)$va_item['LEVEL'] * 5).$va_item['name_singular'];
+			$max_length = $t_element ? $t_element->getSetting('useTextEntryInSearchBuilderWhenListLongerThan') : 200;
+			$render_in_builder = $t_element ? $t_element->getSetting('renderInSearchBuilder') : null;
+	
+			if(!$vs_list_code || ($t_list->numItemsInList($vs_list_code) > $max_length)) {
+				$va_select_options = null;
+			} else {
+				$va_items = $t_list->getItemsForList($vs_list_code, ['extractValuesByUserLocale' => true, 'returnHierarchyLevels' => true]);
+				if (is_array($va_items)) {
+					$is_item_val_fld = in_array($vs_name_no_table, ['access', 'status']); // old-tyme fields that use item_value rather than idno
+					foreach ($va_items as $va_item) {
+						$va_select_options[$is_item_val_fld ? $va_item['item_value'] : $va_item['idno']] = str_repeat("&nbsp;", (int)$va_item['LEVEL'] * 5).$va_item['name_singular'];
+					}
 				}
 			}
 		}
-		$va_result['input'] = 'select';
-		$va_result['values'] = (object)$va_select_options;
-		$va_result['operators'] = $va_operators_by_type['select'];
+		if(!in_array($render_in_builder, ['select', 'text'])) { $render_in_builder = 'select'; }
+		
+		$va_result['input'] = is_array($va_select_options) ? $render_in_builder : 'text';
+		$va_result['values'] = is_array($va_select_options) ? (object)$va_select_options : null;
+		$va_result['operators'] = $va_operators_by_type[$va_result['input']];
 	} elseif($vs_name === "{$table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
 		$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 	} else {
