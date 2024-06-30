@@ -56,18 +56,8 @@ class SearchCollectionsAdvancedController extends BaseAdvancedSearchController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
-		if($this->request->config->get('enable_full_thumbnail_result_views_for_ca_collections_search')){
-			$this->opa_views = array(
-				'list' => _t('list'),
-				'thumbnail' => _t('thumbnails'),
-				'full' => _t('full')
-			);
-		}else{
-			$this->opa_views = array(
-				'list' => _t('list')
-			);
-		}
 		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), 'ca_collections', ['returnAll' => $this->request->config->get('enable_full_thumbnail_result_views_for_ca_collections_search'), 'type_id' => $this->opn_type_restriction_id]);
+		$this->opo_browse = new CollectionBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 	}
 	# -------------------------------------------------------
 	/**

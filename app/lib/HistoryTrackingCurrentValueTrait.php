@@ -864,9 +864,14 @@ trait HistoryTrackingCurrentValueTrait {
 					foreach($dinfo as $type => $dspec) {
 						if (isset($dspec['date']) && $dspec['date']) {
 							$spec_has_date = true;
-							$element_code = array_shift(explode('.', $dspec['date']));
-							if($this->attributeDidChange($element_code)) {
-								$date_has_changed = true;
+							$dspec_dates = is_array($dspec['date']) ? $dspec['date'] : [$dspec['date']];
+							
+							foreach($dspec_dates as $d) {
+								$element_code = array_shift(explode('.', $d));
+								if($this->attributeDidChange($element_code)) {
+									$date_has_changed = true;
+									break;
+								}
 							}
 						}
 					}
