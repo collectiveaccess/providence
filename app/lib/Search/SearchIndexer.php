@@ -607,9 +607,9 @@ class SearchIndexer extends SearchBase {
 
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
-		if(!sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
+		if(!$pb_reindex_mode && !sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
 
-		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
+		if(!$pb_reindex_mode && caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			
 			$field_data_proc = [];
 			foreach(array_keys($pa_changed_fields) as $k) {
