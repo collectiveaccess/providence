@@ -1952,7 +1952,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_rel_field_list = array();
 			foreach($t_rel_table->getFields() as $vs_rel_field) {
 				if($vs_rel_field == $t_rel_table->primaryKey()) {
-					$va_rel_field_list[] = "rel.{$vs_rel_field} as list_{$vs_rel_field}";
+					$va_rel_field_list[] = "rel.{$vs_rel_field} list_{$vs_rel_field}";
 				} else {
 					$va_rel_field_list[] = "rel.{$vs_rel_field}";
 				}
@@ -1964,7 +1964,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars, casi.representation_id, casi.annotation_id,
+				casi.set_id, casi.item_id set_item_id, casi.row_id, casi.`rank`, casi.vars, casi.representation_id, casi.annotation_id,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
 				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
@@ -2015,7 +2015,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				continue;
 			}
 			if (!$sort && isset($pa_options['returnItemIdsOnly']) && ($pa_options['returnItemIdsOnly'])) {
-				$va_items[$qr_res->get('item_id')] = true;
+				$va_items[$qr_res->get('set_item_id')] = true;
 				continue;
 			}
 			
@@ -2070,12 +2070,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_row['representation_count'] = (int)($va_representation_counts[$qr_res->get('row_id')] ?? 0);
 			}	
 			
-			if (is_array($va_labels[$vn_item_id = $qr_res->get('item_id')])) {
+			if (is_array($va_labels[$vn_item_id = $qr_res->get('set_item_id')])) {
 				$va_row = array_merge($va_row, $va_labels[$vn_item_id]);
 			}
 			if (isset($pa_options['returnItemAttributes']) && is_array($pa_options['returnItemAttributes']) && sizeof($pa_options['returnItemAttributes'])) {
 				// TODO: doing a load for each item is inefficient... must replace with a query
-				$t_item = new ca_set_items($va_row['item_id']);
+				$t_item = new ca_set_items($va_row['set_item_id']);
 				
 				foreach($pa_options['returnItemAttributes'] as $vs_element_code) {
 					$va_row['ca_attribute_'.$vs_element_code] = $t_item->getAttributesForDisplay($vs_element_code);
@@ -2091,7 +2091,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
 			}
 		
-			$va_items[$qr_res->get('item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
+			$va_items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
 		}
 		
 		if ($sort) {
