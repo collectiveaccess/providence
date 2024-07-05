@@ -55,6 +55,7 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	escapeValue = function (value, autoquote=true, prefix=null, suffix=null) {
+	    if(typeof value === 'number') value = '' + value;
 		if(typeof value !== 'string') return value;
 		value = value.replaceAll(/([\-\+&\|!\(\)\{}\[\]\^"'~\*\?:\\])/g, '\\$1');
 		
