@@ -744,7 +744,7 @@ class RequestHTTP extends Request {
 					(
 						(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0))
 						||
-						(ca_search_indexing_queue::count() > 0)
+						(ca_search_indexing_queue::hasEntries())
 					)
 				) {
 					\CA\Process\Background::run('searchIndexingQueue');

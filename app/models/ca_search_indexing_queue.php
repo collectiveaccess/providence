@@ -269,6 +269,18 @@ class ca_search_indexing_queue extends BaseModel {
 	/**
 	 *
 	 */
+	static public function hasEntries() {
+		$o_db = new Db();
+		if($qr = $o_db->query("SELECT entry_id c FROM ca_search_indexing_queue WHERE started_on IS NULL LIMIT 1")) {
+			if(!$qr->nextRow()) { return false; }
+			return (bool)$qr->get('entry_id');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	static public function isRunning() {
 		return self::lockExists();
 	}
