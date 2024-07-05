@@ -65,6 +65,7 @@ function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa
 	
 	$apply_import_item_settings = $pa_item['settings']["{$ps_refinery_name}_applyImportItemSettings"];
 	$hier_delimiter = $pa_item['settings']["{$ps_refinery_name}_hierarchicalDelimiter"];
+	$hier_types = $pa_item['settings']["{$ps_refinery_name}_hierarchicalTypes"];
 	
 	if($hier_delimiter && !is_array($hier_delimiter)) { $hier_delimiter = [$hier_delimiter]; }
 	
@@ -103,8 +104,12 @@ function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa
 			$name_hier = [$vs_name];
 			$idno_hier = [$vs_idno];
 		}
+		
+		$def_type = $vs_type;
 		foreach($name_hier as $x => $vs_name) {
 			$vs_idno = $idno_hier[$x] ?? $idno_hier[0];
+			$vs_type = (is_array($hier_types) && isset($hier_types[$x])) ? $hier_types[$x] : $def_type;
+			
 			$c++;
 			$pa_source_data["LEVEL_".($c + 1)] = '';
 			if (!is_array($va_parent)) {
