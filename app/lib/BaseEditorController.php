@@ -73,7 +73,11 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if (!($vs_type_name = $t_subject->getTypeName())) {
+			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
+		}
+		
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		//
 		// Are we duplicating?
@@ -82,9 +86,6 @@ class BaseEditorController extends ActionController {
 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
-			}
-			if (!($vs_type_name = $t_subject->getTypeName())) {
-				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 			}
 			// Trigger "before duplicate" hook
 			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(
@@ -257,9 +258,14 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = []; }
-
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
-
+		
+		if (!($vs_type_name = $t_subject->getTypeName())) {
+			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
+		}
+		
+		
+		if(!$this->verifyAccess($t_subject)) { return; }
+		
 		if($vn_above_id) {
 			// Convert "above" id (the id of the record we're going to make the newly created record parent of
 			if (($t_instance = Datamodel::getInstanceByTableName($this->ops_table_name)) && $t_instance->load($vn_above_id)) {
@@ -303,10 +309,6 @@ class BaseEditorController extends ActionController {
 			}
 
 			if ($vn_context_id && !$t_subject->get($vs_idno_context_field)) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
-		}
-
-		if (!($vs_type_name = $t_subject->getTypeName())) {
-			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 		}
 
 		if ($vn_subject_id && !$t_subject->getPrimaryKey()) {
@@ -513,13 +515,11 @@ class BaseEditorController extends ActionController {
 
 		if (!$vn_subject_id) { return; }
 
-
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
-
-
 		if (!$vs_type_name = $t_subject->getTypeName()) {
 			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 		}
+		
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		//
 		// Does user have access to row?
@@ -694,9 +694,8 @@ class BaseEditorController extends ActionController {
 	public function Summary($pa_options=null) {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-
-
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger') || ($this->request->user->getPreference('show_template_debugger') !== 'hide')) {
 			$this->render('../template_test_html.php');
@@ -787,7 +786,7 @@ class BaseEditorController extends ActionController {
 	public function PrintSummary($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 		
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
         if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
         
@@ -859,7 +858,7 @@ class BaseEditorController extends ActionController {
 	public function PrintBundle($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		//
 		// PDF output
@@ -974,9 +973,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
-
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if (ca_user_roles::isValidAction('can_view_change_log_'.$t_subject->tableName()) && (!$this->request->user->canDoAction('can_view_change_log_'.$t_subject->tableName()))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
@@ -998,7 +995,7 @@ class BaseEditorController extends ActionController {
 		list($subject_id, $t_subject) = $this->_initView($options);
 		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
@@ -1021,7 +1018,7 @@ class BaseEditorController extends ActionController {
 		list($subject_id, $t_subject) = $this->_initView($options);
 		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
@@ -1131,8 +1128,7 @@ class BaseEditorController extends ActionController {
 	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
-
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
 			if (method_exists($t_subject, "changeType")) {
@@ -1548,7 +1544,7 @@ class BaseEditorController extends ActionController {
 	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
 
@@ -1568,8 +1564,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
-
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		$va_errors = [];
 		$t_watch_list = new ca_watch_list();
@@ -1612,8 +1607,7 @@ class BaseEditorController extends ActionController {
 	public function getHierarchyForDisplay($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
-
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		$vs_hierarchy_display = $t_subject->getHierarchyNavigationHTMLFormBundle($this->request, 'caHierarchyOverviewPanelBrowser', [], array('open_hierarchy' => true, 'no_close_button' => true, 'hierarchy_browse_tab_class' => 'foo'));
 		$this->view->setVar('hierarchy_display', $vs_hierarchy_display);
@@ -1628,7 +1622,7 @@ class BaseEditorController extends ActionController {
 	public function reload() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		$ps_bundle = $this->request->getParameter("bundle", pString);
 		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
@@ -1673,7 +1667,7 @@ class BaseEditorController extends ActionController {
 	public function loadBundleValues() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 		
 		$ps_bundle_name = $this->request->getParameter("bundle", pString);
 		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
@@ -1698,7 +1692,7 @@ class BaseEditorController extends ActionController {
 	public function processTemplate() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
 		$ps_template = $this->request->getParameter("template", pString);
@@ -1715,7 +1709,7 @@ class BaseEditorController extends ActionController {
 	public function getMediaAttributeList() {
 	    list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 		
 		$ps_bundle_name = $this->request->getParameter("bundle", pString);
 		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
@@ -1778,7 +1772,7 @@ class BaseEditorController extends ActionController {
 
 		$t_item->load($vn_item_id);
 
-		if (!$this->_checkAccess($t_item, array('dontRedirectOnDelete' => true))) {
+		if(!$this->verifyAccess($t_item)) { 
 			$t_item->clear();
 			$t_item->clearErrors();
 		}
@@ -1899,58 +1893,71 @@ class BaseEditorController extends ActionController {
 	 * Called just after record is deleted. Individual editor controllers can override this to implement their
 	 * own post-deletion cleanup logic.
 	 *
-	 * @param BaseModel $pt_subject Model instance of row that was deleted
+	 * @param BaseModel $subject Model instance of row that was deleted
+	 * @param array $options 
 	 * @return bool True if post-deletion cleanup was successful, false if not
+	 *
+	 * @throws ItemNotFoundException, AccessEception
 	 */
-	protected function _checkAccess($pt_subject, $pa_options=null) {
+	protected function _checkAccess(BaseModel $subject, ?array $options=null) : bool {
+		//
+		// Is record loaded?
+		//
+		if (!$subject->isLoaded()) {
+			if (!caGetOption('dontRedirectOnDelete', $options, false)) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
+			}
+			throw new ItemNotFoundException(_t('Item does not exist'), 'DOES_NOT_EXIST');
+		}
+		
 		//
 		// Is record deleted?
 		//
-		if ($pt_subject->hasField('deleted') && $pt_subject->get('deleted')) {
-			if (!caGetOption('dontRedirectOnDelete', $pa_options, false)) {
+		if ($subject->hasField('deleted') && $subject->get('deleted')) {
+			if (!caGetOption('dontRedirectOnDelete', $options, false)) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
 			}
-			return false;
+			throw new ItemNotFoundException(_t('Item was deleted'), 'DELETED');
 		}
 
 		//
 		// Is record of correct type?
 		//
 		$va_restrict_to_types = null;
-		if ($pt_subject->getAppConfig()->get('perform_type_access_checking')) {
+		if ($subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__));
 		}
 		if (
 			is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)
 			&&
 			(
-				($pt_subject->get('type_id')) && ($pt_subject->getPrimaryKey() && !in_array($pt_subject->get('type_id'), $va_restrict_to_types))
+				($subject->get('type_id')) && ($subject->getPrimaryKey() && !in_array($subject->get('type_id'), $va_restrict_to_types))
 				//||
-				//(!$pt_subject->getPrimaryKey() && !in_array($this->request->getParameter('type_id', pInteger), $va_restrict_to_types))
+				//(!$subject->getPrimaryKey() && !in_array($this->request->getParameter('type_id', pInteger), $va_restrict_to_types))
 			)
 		) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
-			return false;
+			throw new AccessException();
 		}
 
 		//
 		// Is record from correct source?
 		//
 		$va_restrict_to_sources = null;
-		if ($pt_subject->getAppConfig()->get('perform_source_access_checking') && $pt_subject->hasField('source_id')) {
+		if ($subject->getAppConfig()->get('perform_source_access_checking') && $subject->hasField('source_id')) {
 			if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__)))) {
-				if (is_array($va_restrict_to_sources) && $pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources)) {
+				if (is_array($va_restrict_to_sources) && $subject->get('source_id') && !in_array($subject->get('source_id'), $va_restrict_to_sources)) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
-					return;
+					return false;
 				}
 				if (
-					(!$pt_subject->get('source_id'))
+					(!$subject->get('source_id'))
 					||
-					($pt_subject->get('source_id') && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources))
+					($subject->get('source_id') && !in_array($subject->get('source_id'), $va_restrict_to_sources))
 					||
 					((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
 				) {
-					$pt_subject->set('source_id', $pt_subject->getDefaultSourceID(array('request' => $this->request)));
+					$subject->set('source_id', $subject->getDefaultSourceID(array('request' => $this->request)));
 				}
 			}
 		}
@@ -1958,13 +1965,39 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if (caACLIsEnabled($pt_subject) && $pt_subject->getPrimaryKey()) {
-			if (method_exists($pt_subject, 'checkACLAccessForUser') && $pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
+		if (caACLIsEnabled($subject) && $subject->getPrimaryKey()) {
+			if (method_exists($subject, 'checkACLAccessForUser') && $subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-				return false;
+				throw new AccessException();
 			}
 		}
 
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function verifyAccess(BaseModel $t_subject) : bool {
+		if (!($type_name = $t_subject->getTypeName())) {
+			$type_name = $t_subject->getProperty('NAME_SINGULAR');
+		}
+		try {
+			$this->_checkAccess($t_subject, ['dontRedirectOnDelete' => true]);
+		} catch(ItemNotFoundException $e) {
+			$this->notification->addNotification($e->getDisplayMessage($type_name), __NOTIFICATION_TYPE_ERROR__);
+			$this->redirectAfterDelete($t_subject);
+			return false;
+		} catch(AccessException $e) {
+			$this->notification->addNotification(_t('You do not have access to this %1', $type_name), __NOTIFICATION_TYPE_ERROR__);
+			$this->redirectAfterDelete($t_subject);
+			return false;
+		} catch(Exception $e) {
+			$this->notification->addNotification(_t('Unknown error while attempting to access %1', $type_name), __NOTIFICATION_TYPE_ERROR__);
+			$this->redirectAfterDelete($t_subject);
+			return false;
+		}
+		
 		return true;
 	}
 	# -------------------------------------------------------
@@ -2626,7 +2659,7 @@ class BaseEditorController extends ActionController {
 		$ps_version = $this->request->getParameter('version', pString);
 
 
-		if (!$this->_checkAccess($t_subject)) { throw new ApplicationException(_t('Access denied')); }
+		if(!$this->verifyAccess($t_subject)) { return; }
 
 		//
 		// Does user have access to bundle?
@@ -2745,9 +2778,9 @@ class BaseEditorController extends ActionController {
 		if (!$t_subject->isLoaded()) { 
 			throw new ApplicationException(_t('Invalid id %1', $vn_subject_id));
 		}
-		if (!$this->_checkAccess($t_subject)) { 
-			throw new ApplicationException(_t('Access denied'));
-		}
+		
+		if(!$this->verifyAccess($t_subject)) { return; }
+		
 		$table = $t_subject->tableName();
 		$location_id = $this->request->getParameter('location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
