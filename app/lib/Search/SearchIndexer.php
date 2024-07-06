@@ -2143,7 +2143,7 @@ if (!$for_current_value_reindex) {
 					
 					// get related rows via self relation
 					$vs_sql = "
-						SELECT *
+						SELECT *, t0.type_id rel_type_id 
 						FROM ".$t_self_rel->tableName()." t0
 						{$vs_sql_joins}
 						WHERE
@@ -2156,7 +2156,7 @@ if (!$for_current_value_reindex) {
 				while($qr_res->nextRow()) {
 					$vn_left_id = $qr_res->get($t_self_rel->getLeftTableFieldName());
 					$vn_right_id = $qr_res->get($t_self_rel->getRightTableFieldName());
-					$vn_rel_type_id = $qr_res->get('type_id');
+					$vn_rel_type_id = $qr_res->get('rel_type_id');
 
 					$va_info = $this->getTableIndexingInfo($vs_dep_table, $vs_dep_table);
 					
