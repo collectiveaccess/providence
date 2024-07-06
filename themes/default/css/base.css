@@ -8369,8 +8369,13 @@ span.developerBundleCode, a.developerBundleCode {
 	margin: 0px 0px 0px 4px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems {
+.hierarchyToolsControlSetImage {
     margin-top: 0px;
+}
+
+.hierarchyToolsControlRemoveItems {
+     margin: 0 0 0 25px;
+     
 }
 
 .hierarchyToolsMessage {
