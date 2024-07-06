@@ -3084,7 +3084,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			while($qr->nextHit()) {
 				$items[$id = $qr->getPrimaryKey()] = [
 					'id' => $id,
-					'label' => $qr->get('preferred_labels'),
+					'label' => isset($pa_bundle_settings['itemDisplayTemplate']) ? $qr->getWithTemplate($pa_bundle_settings['itemDisplayTemplate']) : $qr->get('preferred_labels'),
 					'idno' => $qr->get('idno'),
 					'media' => $qr->get('ca_object_representations.media.preview170'),		// TODO: configrable media versions
 					'url' => $g_request ? caEditorUrl($g_request, $table, $id, false, [], ['actionExtra' => $g_request->getActionExtra()]) : null,

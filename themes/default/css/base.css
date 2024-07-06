@@ -8353,19 +8353,24 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 10px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia {
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlAccess {
     display: none;
     float: left;
 }
 
-.hierarchyToolsControlDownloadMedia select {
+.hierarchyToolsControlDownloadMedia {
+    display: none;
+    width: 100%;
+}
+
+.hierarchyToolsControlDownloadMedia select, .hierarchyToolsControlAccess select {
 	width: 40px;
 	font-size: 10px;
 	margin: 0px 0px 0px 4px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlDownloadMedia {
-    margin-top: 5px;
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems {
+    margin-top: 0px;
 }
 
 .hierarchyToolsMessage {

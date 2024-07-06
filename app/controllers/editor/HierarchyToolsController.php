@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */
  
-
 class HierarchyToolsController extends ActionController {
 	# -------------------------------------------------------
 	/**
@@ -307,6 +306,47 @@ class HierarchyToolsController extends ActionController {
 		} else {
 			$this->response->setHTTPResponseCode(204, _t('No files to download'));
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Remove media from hierarchy and make standlone
+	 */
+	public function setAccess() {
+		$ids = $this->request->getParameter('ids', pArray);	// list of ids to remove
+		
+		if(!is_array($ids) || !sizeof($ids)) {
+			throw new ApplicationException(_t('ID list is empty'));
+		}
+		
+		$access = $this->request->getParameter('access', pInteger);
+		
+		$c = 0;
+		$errors = [];
+		foreach($ids as $id) {
+			$id = (int)$id;
+			
+			if(!$this->subject->load($id)) {
+				continue;
+			}
+			if(!$this->subject->isSaveable($this->request)) {
+				throw new ApplicationException(_t('Access denied'));
+			}
+			if(!$this->subject->get('parent_id')) {
+				throw new ApplicationException(_t('Target is not a child record'));	
+			}
+			$this->subject->set('access', $access);
+			$this->subject->update();
+			
+			if($this->subject->numErrors() > 0) {
+				$errors[] = join('; ', $this->subject->getErrors());
+				continue;
+			}
+			$c++;
+		}
+		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'message' => _t('Set access for %1 items', $c)];
+		
+		$this->view->setVar('response', $resp);
+		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
 }
