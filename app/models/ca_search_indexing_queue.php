@@ -245,6 +245,7 @@ class ca_search_indexing_queue extends BaseModel {
 							}
 
 							$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id = ?', [$o_result->get('entry_id')]);
+							self::lockRenew();
 						}
 					}
 				}
