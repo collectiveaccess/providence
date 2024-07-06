@@ -1901,16 +1901,6 @@ class BaseEditorController extends ActionController {
 	 */
 	protected function _checkAccess(BaseModel $subject, ?array $options=null) : bool {
 		//
-		// Is record loaded?
-		//
-		if (!$subject->isLoaded()) {
-			if (!caGetOption('dontRedirectOnDelete', $options, false)) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
-			}
-			throw new ItemNotFoundException(_t('Item does not exist'), 'DOES_NOT_EXIST');
-		}
-		
-		//
 		// Is record deleted?
 		//
 		if ($subject->hasField('deleted') && $subject->get('deleted')) {
