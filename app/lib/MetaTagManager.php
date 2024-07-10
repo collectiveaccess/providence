@@ -90,6 +90,24 @@ class MetaTagManager {
 			'type' => $ps_type
 		);
 		
+			return true;
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Add <script> tag to response.
+		 *
+		 * @param $ps_src (string) - href attribute of <script> tag
+		 * @param $ps_type (string) - type attribute of <link> tag [optional]
+		 * @return (bool) - Always return true
+		 */
+		static function addScript($ps_src, $ps_type=null,$options=null) {
+			if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
+
+			MetaTagManager::$opa_tags['script'][] = array(
+				'src' => $ps_src,
+				'type' => $ps_type
+			);
+
 		return true;
 	}
 	# --------------------------------------------------------------------------------
@@ -127,6 +145,10 @@ class MetaTagManager {
 					$vs_buf .= "<link rel='".htmlspecialchars($va_link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($va_link['href'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."/>\n";
 				}
 			}
+			if (is_array(MetaTagManager::$opa_tags['script'] ?? null) && sizeof(MetaTagManager::$opa_tags['script'])) {
+				foreach(MetaTagManager::$opa_tags['script'] as $vn_i => $va_link) {
+					$vs_buf .= "<script src='".htmlspecialchars($va_link['src'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."></script>\n";
+				}
 		}
 		return $vs_buf;
 	}
