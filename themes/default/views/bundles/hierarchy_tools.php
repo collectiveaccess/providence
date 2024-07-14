@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,25 +25,24 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	AssetLoadManager::register('tabUI');
-	
-	$t_subject 			= $this->getVar('t_subject');
-	$subject_label	= $t_subject->getLabelForDisplay();
-	if (($priv_table = $t_subject->tableName()) == 'ca_list_items') { $priv_table = 'ca_lists'; }		// actions happen to be on names for ca_lists for ca_list_items
-	
-	$batch 			= $this->getVar('batch');
-	$parent_id 		= $this->getVar('parent_id');
-	$ancestors 		= $this->getVar('ancestors');
-	$id 				= $this->getVar('id');
-	$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$items_in_hier 	= $t_subject->getHierarchySize();
-	$bundle_preview	= '('.$items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
-	
-	$bundle_settings = $this->getVar('settings');
+AssetLoadManager::register('tabUI');
 
-	$num_per_page = caGetOption('numPerPage', $bundle_settings, 10);
-	$errors = []
+$t_subject 			= $this->getVar('t_subject');
+$subject_label	= $t_subject->getLabelForDisplay();
+if (($priv_table = $t_subject->tableName()) == 'ca_list_items') { $priv_table = 'ca_lists'; }		// actions happen to be on names for ca_lists for ca_list_items
+
+$batch 			= $this->getVar('batch');
+$parent_id 		= $this->getVar('parent_id');
+$ancestors 		= $this->getVar('ancestors');
+$id 				= $this->getVar('id');
+$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$items_in_hier 	= $t_subject->getHierarchySize();
+$bundle_preview	= '('.$items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
+
+$bundle_settings = $this->getVar('settings');
+
+$num_per_page = caGetOption('numPerPage', $bundle_settings, 10);
+$errors = []
 ?>	
 
 <?php
@@ -65,26 +64,37 @@
 		<div class="hierarchyToolsMessage"></div>
 		<div class="hierarchyTools">
 			<div class="hierarchyToolsControlTransferItems button labelInfo">
-				<?= _t('Move to'); ?>
-				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_transfer_autocomplete" value="" id="<?= $id_prefix; ?>_transfer_autocomplete" class="lookupBg"  placeholder=<?= json_encode(_t('Album name')); ?>/>
+				<?= _t('Move to'); ?><br/>
+				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_transfer_autocomplete" value="" id="<?= $id_prefix; ?>_transfer_autocomplete" class="lookupBg"  placeholder=<?= json_encode(_t('album name')); ?>/>
 				<a href="#"><?= caNavIcon(__CA_NAV_ICON_MOVE__, '15px'); ?></a>
 				<input type="hidden" name="<?= $id_prefix; ?>_transfer_id" id="<?= $id_prefix; ?>_transfer_id" value=""/>
 			</div>
 			<div class="hierarchyToolsControlCreateWithItems button labelInfo">
-				<?= _t('Create'); ?>
-				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_create_with_name" value="" id="<?= $id_prefix; ?>_create_with_name" placeholder=<?= json_encode(_t('Album name')); ?>/>
+				<?= _t('Create new'); ?><br/>
+				<input type="text" style="width: 100px;" name="<?= $id_prefix; ?>_create_with_name" value="" id="<?= $id_prefix; ?>_create_with_name" placeholder=<?= json_encode(_t('album name')); ?>/>
 				<a href="#"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?></a>
+			</div>
+			<div class="hierarchyToolsControlAccess button labelInfo">
+				<?= _t('Set access to'); ?><br/>
+				<?= $t_subject->htmlFormElement('access', '^ELEMENT', ['id' => "{$id_prefix}_access", 'width' => '100px']); ?>
+				<a href="#"><?= caNavIcon(__CA_NAV_ICON_GO__, '15px'); ?></a>
 			</div>
 			<div class="hierarchyToolsControlRemoveItems button labelInfo"><a href="#"><?= caNavIcon(__CA_NAV_ICON_DELETE__, '15px'); ?> <?= _t('Extract'); ?></a></div>
 			<div class="hierarchyToolsControlSetImage button labelInfo"><a href="#"><?= caNavIcon(__CA_NAV_ICON_IMAGE__, '15px'); ?> <?= _t('Set image'); ?></a></div>
-			<div class="hierarchyToolsControlDownloadMedia button labelInfo"><a href="#"><?= caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '15px'); ?> <?= caHTMLSelect("{$id_prefix}_download_version", $download_versions, ['id' => "{$id_prefix}_download_version"]); ?></a></div>
 			
 			<div class="hierarchyToolsControlSelect button labelInfo">
 				<a href="#" class="hierarchyToolsControlSelectAll"><?= _t('all'); ?></a> / <a href="#" class="hierarchyToolsControlSelectNone"><?= _t('none'); ?></a>
 			</div>
 		</div>
+		
 		<br class="clear"/>
 		<div class="caItemList hierarchyTools"> </div>
+		
+		<div class="hierarchyToolsControlDownloadMedia button labelInfo">
+			<?= _t('Download'); ?>
+			<?= caHTMLSelect("{$id_prefix}_download_version", $download_versions, ['id' => "{$id_prefix}_download_version"]); ?>
+			<a href="#"><?= caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '15px'); ?></a>
+		</div>
 		<input type="hidden" name="<?= $id_prefix; ?>_selection" id="<?= $id_prefix; ?>_selection" style="width: 670px"/>
 	</div><!-- bundleContainer -->
 
@@ -92,7 +102,7 @@
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo hierarchyToolsItem {selected}">
 			<div class="hierarchyToolsItemImage">{media}</div>
 			<div class="hierarchyToolsItemSelect"><input type="checkbox" value="{n}" name="<?= $id_prefix; ?>_selection_{n}" id="<?= $id_prefix; ?>_selection_{n}"/></div>
-			<div class="hierarchyToolsItemText"><a href='{url}'>{label}</a> ({idno})</div>
+			<div class="hierarchyToolsItemText"><a href='{url}'>{label}</a></div>
 		</div>
 	</textarea>
 </div>
@@ -144,9 +154,9 @@
 				jQuery('.hierarchyToolsControlSetImage').hide();
 			}
 			if(selectedList.length >= 1) {
-				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia').show();
+				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia, .hierarchyToolsControlAccess').show();
 			} else {
-				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia').hide();
+				jQuery('.hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia, .hierarchyToolsControlAccess').hide();
 			}
 			jQuery('#<?= $id_prefix; ?>_selection').val(selectedList.join(';'));
 		}
@@ -241,6 +251,24 @@
 			jQuery('#<?= "{$id_prefix}"; ?>').find('.hierarchyToolsItemSelect').find('input').attr('checked', false);
 			<?= $id_prefix; ?>caUpdateHierarchyToolsUI();
 		});
+		
+		jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsControlAccess a').on('click', function(e) {
+			let ids = jQuery('#<?= $id_prefix; ?>_selection').val().split(';');
+			let access = jQuery('#<?= $id_prefix; ?>_access').val();
+			
+			jQuery.getJSON('<?= caNavUrl($this->request, 'editor', 'HierarchyTools', 'setAccess'); ?>/t/<?= $t_subject->tableName(); ?>', {ids: ids, access: access}, function(d) {
+				if(d && d['ok'] && caBundleUpdateManager) { 
+					setTimeout(function() { 
+						caBundleUpdateManager.reloadBundle('hierarchy_tools'); 
+					}, 5000);
+				} 
+				let e = jQuery('#<?= $id_prefix; ?>').find('.hierarchyToolsMessage').html(d.message).slideDown(250);
+				
+				setTimeout(function() { 
+					jQuery(e).slideUp(250);
+				}, 5000);
+			});
+		});
 <?php 
 	if($total_count === 0) {
 ?>
@@ -252,6 +280,5 @@
 <?php
 	}
 ?>
-
 	});
 </script>

@@ -154,7 +154,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $table, 'instance' => $this));
 
-
 			if (!$this->inTransaction()) {
 				$this->setTransaction(new Transaction($this->getDb()));
 				$vb_we_set_transaction = true;
@@ -3084,7 +3083,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			while($qr->nextHit()) {
 				$items[$id = $qr->getPrimaryKey()] = [
 					'id' => $id,
-					'label' => $qr->get('preferred_labels'),
+					'label' => isset($pa_bundle_settings['itemDisplayTemplate']) ? $qr->getWithTemplate($pa_bundle_settings['itemDisplayTemplate']) : $qr->get('preferred_labels'),
 					'idno' => $qr->get('idno'),
 					'media' => $qr->get('ca_object_representations.media.preview170'),		// TODO: configrable media versions
 					'url' => $g_request ? caEditorUrl($g_request, $table, $id, false, [], ['actionExtra' => $g_request->getActionExtra()]) : null,
@@ -4870,11 +4869,21 @@ if (!$vb_batch) {
                                     if (($vs_key !== 'empty') && !$vs_path) { continue; }
                             
                                     $vn_rep_type_id = $po_request->getParameter([$vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], $vs_prefix_stub.'type_id_new_'.$va_matches[1]], pInteger);
-                                    if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
-                                        $t_list = new ca_lists();
-                                        if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
-                                            $vn_rep_type_id = array_shift($va_rep_type_ids);
-                                        }
+                                    
+                                    // Set default representation type when none is explicitly set
+                                    $conf_restrict_to_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $va_bundle_settings, null);
+                                    if(!$vn_rep_type_id) {
+                                    	if(!($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
+											$t_list = new ca_lists();
+											if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
+												$vn_rep_type_id = array_shift($va_rep_type_ids);
+											}
+										}
+										// Default to first type in type restriction if default type is not in restriction for current bundle
+										// https://github.com/collectiveaccess/providence/issues/1591
+										if(is_array($conf_restrict_to_types) && !in_array($vn_rep_type_id, $conf_restrict_to_types, true)) {
+											$vn_rep_type_id = array_shift($conf_restrict_to_types);
+										}
                                     }
                         
                                     if (is_array($pa_options['existingRepresentationMap'] ?? null) && isset($pa_options['existingRepresentationMap'][$vs_path]) && $pa_options['existingRepresentationMap'][$vs_path]) {

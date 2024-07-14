@@ -216,6 +216,8 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                 $vs_units = 'as_entered'; 
             }
             
+            $add_period_after_units = $this->config->get('add_period_after_units');
+            
             switch($vs_units) {
                 default:
                 case 'metric':
@@ -272,11 +274,17 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 $vo_inches = new Zend_Measure_Length($vn_inches, Zend_Measure_Length::INCH, $g_ui_locale);
                                 
                                 $vs_value = $vo_feet->convertTo($vs_convert_to_units, $vn_precision);
-                                if(in_array($vs_convert_to_units, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
+                                if(in_array($vs_convert_to_units, $add_period_after_units)) { $vs_value .= '.'; }
+                                
+                                $iprecision = (int)$this->config->get('inch_decimal_precision');
+                                if(!$dprecision) { $dprecision = 2; }
                                 
                                 if (($vn_inches > 0) && ($vs_units === 'fractions')) {
-                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $this->config->get('inch_decimal_precision'), 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
-                                    if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
+                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $iprecision, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
+                                    if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
+                                } elseif($vn_inches > 0) {
+                                	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches). " in";
+                                	if($add_period_after_units) { $vs_value .= '.'; }
                                 }
                                 return trim($vs_value);
                                 break;
@@ -289,20 +297,19 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 $vo_feet = new Zend_Measure_Length($vn_whole_feet, Zend_Measure_Length::FEET, $g_ui_locale);
                                 $vo_inches = new Zend_Measure_Length($vn_inches, Zend_Measure_Length::INCH, $g_ui_locale);
                                 
-                                
-                                if (is_null($vn_precision)) {
-                                    $vn_precision = $this->config->get(strtolower($vs_convert_to_units).'_decimal_precision');
-                                }
                                 $vs_value = $vo_miles->convertTo($vs_convert_to_units, $vn_precision);
-                                if(in_array($vs_convert_to_units, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
+                                if(in_array($vs_convert_to_units, $add_period_after_units)) { $vs_value .= '.'; }
                                 
                                 if ($vn_whole_feet > 0) {
                                     $vs_value .= " ".$vo_feet->convertTo(Zend_Measure_Length::FEET, $this->config->get('feet_decimal_precision'));
-                                    if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
+                                    if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
                                 }
                                 if (($vn_inches > 0) && ($vs_units === 'fractions')) {
                                     $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => Zend_Measure_Length::INCH, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
-                                    if(in_array(Zend_Measure_Length::INCH, $this->config->get('add_period_after_units'))) { $vs_value .= '.'; }
+                                    if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
+                                } elseif($vn_inches > 0) {
+                                	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches). " in";
+                                	if($add_period_after_units) { $vs_value .= '.'; }
                                 }
                                 return trim($vs_value);
                                 break;
@@ -322,7 +329,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                     break;
             }
     
-            if(in_array($pa_value_array['value_longtext2'], $this->config->get('add_period_after_units'))) {
+            if(in_array($pa_value_array['value_longtext2'], $add_period_after_units)) {
                 $vs_value .= '.';
             }
             return $vs_value;

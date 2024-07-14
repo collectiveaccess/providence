@@ -5086,3 +5086,20 @@ function caFileIsIncludable($ps_file) {
 		return $vars;
 	}
 	# ----------------------------------------
+	/**
+	 * Randomize order of array while preserving keys
+	 *
+	 * @param array
+	 * @return array
+	 */
+	function caShuffleArray(array $array) : array { 
+		$keys = array_keys($array); 
+		shuffle($keys); 
+		
+		$rarray = []; 
+		foreach ($keys as $key) {
+			$rarray[$key] = $array[$key]; 
+		}
+		return $rarray; 
+	}
+	# ----------------------------------------

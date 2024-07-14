@@ -504,7 +504,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->numRows() > 0) {
 			$vs_subject_table = Datamodel::getTableName($this->get('table_num'));
-			$t_subject = Datamodel::getInstanceByTableNum($this->get('table_num'), true);
+			if(!$t_subject = Datamodel::getInstanceByTableNum($this->get('table_num'), true)) { return []; }
 			$t_placement = new ca_bundle_display_placements();
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			

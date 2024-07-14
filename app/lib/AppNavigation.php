@@ -465,7 +465,11 @@ class AppNavigation extends BaseObject {
 				
 				$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$va_info['handler']['module']);
 
-				$vs_output = $o_action_controller->{$va_info['handler']['action']}($va_params);
+				try {
+					$vs_output = $o_action_controller->{$va_info['handler']['action']}($va_params);
+				} catch(Exception $e) {
+					// noop - any editor exception is handled in the direct editor request
+				}
 			
 				if ($o_action_controller->numErrors()) {
 					return join('; ', $o_action_controller->getErrors());

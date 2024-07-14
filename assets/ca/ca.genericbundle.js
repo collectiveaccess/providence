@@ -532,6 +532,16 @@ var caUI = caUI || {};
 
 			return this;
 		};
+		
+		that.deleteNewFromBundle = function() {
+			let mx = this.getNIndex();
+			for(let i=0; i <= mx; i++) {
+				that.deleteFromBundle('new_' + i);
+			} 
+			that.n = 0;
+		
+			return this;
+		};
 
 		that.getCount = function() {
 			return this.counter;

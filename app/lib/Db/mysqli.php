@@ -316,17 +316,29 @@ class Db_mysqli extends DbDriverBase {
 			$logger->logInfo($prefix.json_encode(['query' => $vs_sql, 'params' => $pa_values]));
 		}
 		
+		$is_error = false;
+		$error_num = $error_message = null;
 		try {
 			if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
-				//print "<pre>".caPrintStacktrace()."</pre>\n";
-				$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
-				if($logger) {
-					$logger->logError($prefix.json_encode(['errorNumber' => $error_num, 'errorMessage' => $error_message]));
-				}
-				throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
+				$is_error = true;
+				
+				$error_num = mysqli_errno($this->opr_db);
+				$error_message = mysqli_error($this->opr_db);
 			}
 		} catch(mysqli_sql_exception $e) {
-			throw new DatabaseException(250, $e->getMessage(), "Db->mysqli->execute()");
+			$is_error = true;
+			
+			$error_num = $e->getCode();
+			$error_message = $e->getError();
+		}
+		
+		if($is_error) {
+			$po_statement->postError($this->nativeToDbError($error_num), $error_message, "Db->mysqli->execute()");
+				
+			if($err_logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'db_errors'], null)) {
+				$err_logger->logError($prefix.json_encode(['code' => $this->nativeToDbError($error_num), 'errorNumber' => $error_num, 'errorMessage' => $error_message, 'sql' => $vs_sql, 'stacktrace' => caPrintStacktrace()]));
+			}
+			throw new DatabaseException($error_num, $error_message, "Db->mysqli->execute()");
 		}
 
 		if($logger) {

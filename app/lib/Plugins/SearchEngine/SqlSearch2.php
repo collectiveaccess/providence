@@ -632,6 +632,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			
 			$w = 0;
+			
+			// Remove empty words and bare wildcards - have no meaning in phrase search
+			$words = array_filter($words, function($v) {
+				$v = preg_replace("![\*\? ]+!", "", $v);
+				return strlen($v);
+			});
+			if(!sizeof($words)) { return []; }
 	 		foreach($words as $w => $word) {
 	 			$word_op = '=';
 	 			if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {

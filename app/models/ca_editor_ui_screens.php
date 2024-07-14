@@ -1549,6 +1549,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Number of items to load per page'),
 										'description' => _t('Maximum number of items to render on initial load.')
 									),
+									'itemDisplayTemplate' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "100px",
+										'label' => _t('Item display template'),
+										'description' => _t('Caption for item in hierarchy list.')
+									]
 								];
 								break;
 							case 'authority_references_list':
