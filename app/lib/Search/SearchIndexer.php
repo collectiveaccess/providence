@@ -230,6 +230,7 @@ class SearchIndexer extends SearchBase {
 			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 
 			$vn_table_num = $t_instance->tableNum();
+			$table_name_display = $t_instance->getProperty('NAME_PLURAL');
 
 			$va_fields_to_index = $this->getFieldsToIndex($vn_table_num);
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
@@ -239,7 +240,7 @@ class SearchIndexer extends SearchBase {
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
-				print CLIProgressBar::start($vn_num_rows, _t('Indexing %1', $t_instance->getProperty('NAME_PLURAL')));
+				print CLIProgressBar::start($vn_num_rows, _t('Indexing %1', $table_name_display));
 			}
 
 			$vn_c = 0;
@@ -278,7 +279,7 @@ class SearchIndexer extends SearchBase {
 
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
 				if ($pb_display_progress && $pb_interactive_display) {
-					CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
+					CLIProgressBar::setMessage(_t("[Index: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
 					print CLIProgressBar::next();
 				}
 
@@ -610,7 +611,6 @@ class SearchIndexer extends SearchBase {
 		if(!$pb_reindex_mode && !sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
 
 		if(!$pb_reindex_mode && caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
-			
 			$field_data_proc = [];
 			foreach(array_keys($pa_changed_fields) as $k) {
 				$field_data_proc[$k] = $pa_field_data[$k];
@@ -716,7 +716,7 @@ if (!$for_current_value_reindex) {
 					//
 					// Plain old field
 					//
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field])) && ($vs_field != $vs_subject_pk) ) {	// skip unchanged
+					if (!$pb_reindex_mode && $vb_can_do_incremental_indexing && !$pb_is_new_row && !isset($pa_changed_fields[$vs_field]) && ($vs_field != $vs_subject_pk)) {	// skip unchanged
 						continue;
 					}
 
