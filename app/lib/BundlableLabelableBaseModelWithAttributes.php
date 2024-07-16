@@ -4871,7 +4871,7 @@ if (!$vb_batch) {
                                     $vn_rep_type_id = $po_request->getParameter([$vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], $vs_prefix_stub.'type_id_new_'.$va_matches[1]], pInteger);
                                     
                                     // Set default representation type when none is explicitly set
-                                    $conf_restrict_to_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $va_bundle_settings, null);
+                                    $conf_restrict_to_types = array_filter(caGetOption(['restrict_to_types', 'restrictToTypes'], $va_bundle_settings, []) ?? [], 'strlen');
                                     if(!$vn_rep_type_id) {
                                     	if(!($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
 											$t_list = new ca_lists();
@@ -4881,7 +4881,7 @@ if (!$vb_batch) {
 										}
 										// Default to first type in type restriction if default type is not in restriction for current bundle
 										// https://github.com/collectiveaccess/providence/issues/1591
-										if(is_array($conf_restrict_to_types) && !in_array($vn_rep_type_id, $conf_restrict_to_types, true)) {
+										if(is_array($conf_restrict_to_types) && sizeof($conf_restrict_to_types) && !in_array($vn_rep_type_id, $conf_restrict_to_types, true)) {
 											$vn_rep_type_id = array_shift($conf_restrict_to_types);
 										}
                                     }
