@@ -255,7 +255,8 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'SERIAL':
 					if ($v) {
-						if (!preg_match("/^[0-9]+$/", $v)) {
+						$prefix = $info['prefix'] ?? '';
+						if (!preg_match("/^{$prefix}[0-9]+$/", $v)) {
 							$element_errors[$ename] = _t("'%1' is not valid for %2; only numbers are allowed", $v, $info['description']);
 						}
 					}
@@ -495,7 +496,7 @@ class MultipartIDNumber extends IDNumber {
 			$i++;
 		}
 		if ($blank_count > 0) {
-			return (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1;
+			return ($element_info['prefix'] ?? '').((($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1);
 		}
 
 		$stub = trim(join($separator, $tmp));
@@ -558,11 +559,14 @@ class MultipartIDNumber extends IDNumber {
 			if ($this->db->numErrors()) {
 				return "ERR";
 			}
-			
 			// Figure out what the sequence (last) number in the multipart number taken from the field is...
 			if ($qr_res->numRows()) {
 				while($qr_res->nextRow()) {
 					$tmp = $this->explodeValue($qr_res->get($field));
+					
+					if($element_info['prefix'] ?? null) { 
+						$tmp[$i] = preg_replace("!^".$element_info['prefix']."!", "", $tmp[$i]);
+					}
 					if(is_numeric($tmp[$i]) && (intval($tmp[$i]) < pow(2,64))) {
 						$num = intval($tmp[$i]) + 1;
 						break;
@@ -593,10 +597,10 @@ class MultipartIDNumber extends IDNumber {
 			}
 			
 			if (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) {
-				return sprintf("%0{$zeropad_to_length}d", $num);
-			} else {
-				return $num;
-			}
+				$num = sprintf("%0{$zeropad_to_length}d", $num);
+			} 
+			
+			return ($element_info['prefix'] ?? '').$num;
 		} else {
 			return 'ERR'; 
 		}
@@ -1045,10 +1049,10 @@ class MultipartIDNumber extends IDNumber {
 					checkDupes: ".(($options['check_for_dupes'] && !$next_in_seq_is_present) ? '1' : '0').",
 					includesSequence: ".($next_in_seq_is_present ? '1' : '0').",
 
-					singularAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use'))."',
-					pluralAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use %1 times'))."',
+					singularAlreadyInUseMessage: ".json_encode(_t('Identifier is already in use')).",
+					pluralAlreadyInUseMessage: ".json_encode(_t('Identifier is already in use %1 times')).",
 					
-					sequenceMessage: '&lt;".addslashes(_t('%1 on save'))."&gt;'
+					sequenceMessage: ".json_encode("&lt;"._t('%1 on save')."&gt;")."
 				});
 			";
 
