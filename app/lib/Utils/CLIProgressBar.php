@@ -24,12 +24,7 @@ class CLIProgressBar
     /**
      * Merged with options passed in start function 
      */
-    protected static $defaults = array(
-        'format' => "\r:message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]",
-        'message' => 'Running',
-        'size' => 30,
-        'width' => null
-    );
+    protected static $defaults;
 
     /**
      * Runtime options 
@@ -97,14 +92,14 @@ class CLIProgressBar
         $bar = floor($fractionComplete * self::$size);
         $barSize = min($bar, self::$size);
 
-        $barContents = str_repeat('=', $barSize);
+        $barContents = str_repeat('▩', $barSize);
         if ($bar < self::$size) {
-            $barContents .= '>';
+            $barContents .= '|';
             $barContents .= str_repeat(' ', self::$size - $barSize);
         } elseif ($fractionComplete > 1) {
             $barContents .= '!';
         } else {
-            $barContents .= '=';
+            $barContents .= '▩';
         }
 
         $percent = number_format($fractionComplete * 100, 0);
@@ -119,7 +114,7 @@ class CLIProgressBar
         $etc = round($rate * $left, 2);
 
         if (self::$done) {
-            $etcNowText = '< 1 sec';
+            $etcNowText = _t('< 1 sec');
         } else {
             $etcNowText = '???';
         }
@@ -136,15 +131,15 @@ class CLIProgressBar
             $barContents
         );
 
-        $width = strlen(preg_replace('@(?:\r|:\w+:)@', '', $return));
+        $width = mb_strlen(preg_replace('@(?:\r|:\w+:)@', '', $return));
 
-        if (strlen(self::$message) > (self::$width - $width - 3)) {
-            $message = substr(self::$message, 0, (self::$width - $width - 4)) . '...';
+        if (mb_strlen(self::$message) > (self::$width - $width - 3)) {
+            $message = mb_substr(self::$message, 0, (self::$width - $width - 4)) . '...';
             $padding = '';
-            echo "\n" . strlen($return);
+            echo "\n" . mb_strlen($return);
         } else {
             $message = self::$message;
-            $width += strlen($message);
+            $width += mb_strlen($message);
             $padding = str_repeat(' ', (self::$width - $width));
         }
 
@@ -216,6 +211,14 @@ class CLIProgressBar
      */
     public static function reset($options = array())
     {
+    	if(!self::$defaults) {
+    		self::$defaults = array(
+				'format' => _t("\r:message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]"),
+				'message' => _t('Running'),
+				'size' => 30,
+				'width' => null
+			);
+    	}
         $options = array_merge(self::$defaults, $options);
 
         if (empty($options['done'])) {
@@ -301,7 +304,7 @@ class CLIProgressBar
      * @static
      * @return string representation of the time
      */
-    protected static function humanTime($seconds, $nowText = '< 1 sec')
+    protected static function humanTime(int $seconds, ?string $nowText = '< 1 sec')
     {
         $prefix = '';
         if ($seconds < 0) {
@@ -323,8 +326,7 @@ class CLIProgressBar
             $minutes = (int) ($seconds / 60);
             $seconds = $seconds - $minutes * 60;
         }
-        $seconds = (int) $seconds;
-
+        
         $return = array();
 
         if ($days) {
@@ -336,11 +338,11 @@ class CLIProgressBar
         if ($minutes){
             $return[] = sprintf("%02dm", $minutes);
         }
-        if ($seconds){
-            $return[] = sprintf("%02ds", $seconds);
+        if ((int)$seconds){
+            $return[] = sprintf("%02ds", (int)$seconds);
         }
         if (!$return) {
-            return $nowText;
+            return ($seconds == 0) ? '-' : $nowText;
         }
         return $prefix . implode(':', array_slice($return, 0, 2));
     }
