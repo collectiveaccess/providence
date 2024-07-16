@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1134,7 +1134,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						}
 					} else {
 						// invalid operation
-						$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);	
+						$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : ($id ? 'edit' : 'add')), $bundle_name));	
 					}
 					
 					foreach($instance->errors() as $e) {
@@ -1212,7 +1212,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$rc = $instance->update();
 						} else {
 							// invalid operation
-							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);
+							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : ($id ? 'edit' : 'add')), $bundle_name));
 						}
 					} elseif(!$intrinsics_only) {
 						$warnings[] = Error\warning($idno, "", _t('Bundle %1 was skipped because it does not exist', $bundle_name), $bundle_name);	
