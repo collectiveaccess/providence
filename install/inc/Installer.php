@@ -832,7 +832,7 @@ class Installer {
 
 		if($element['deleted'] && $t_md_element->getPrimaryKey()) {
 			$this->logStatus(_t('Deleting metadata element with code %1', $element_code));
-			$t_md_element->delete(true, ['hard' => true]);
+			$t_md_element->delete(true, ['hard' => false]);
 			return false; // we don't want the postprocessing to kick in. our work here is done.
 		}
 
