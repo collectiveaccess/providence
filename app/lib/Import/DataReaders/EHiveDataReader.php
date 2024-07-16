@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -97,7 +97,8 @@ class EHiveDataReader extends BaseXMLDataReader {
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
 		try {
-			$this->opo_xml = DOMDocument::load($ps_source);
+			$this->opo_xml = new DOMDocument();
+			$this->opo_xml->load($ps_source);
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
 		} catch (Exception $e) {
 			return null;

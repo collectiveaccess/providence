@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/BaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_object_representation_captions'] = array(
  	'NAME_SINGULAR' 	=> _t('object representation caption file'),
@@ -177,6 +172,12 @@ class ca_object_representation_captions extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
+	
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'ObjectRepresentationCaptionSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'ObjectRepresentationCaptionSearchResult';
 	
 
 	# ------------------------------------------------------

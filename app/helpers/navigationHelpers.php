@@ -1004,17 +1004,29 @@
 		
 		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
 			// Make sure record link points to exists
+			$ck = md5($ps_table.$pn_id);
+			if(MemoryCache::contains($ck, 'editorUrlLinkVerifications')) {
+				if(!MemoryCache::fetch($ck, 'editorUrlLinkVerifications')) { return null; }
+			}
 			if (($pn_id > 0) && !$t_table->load($pn_id)) {
+				MemoryCache::save($ck, null, 'editorUrlLinkVerifications');
 				return null;
 			}
+			MemoryCache::save($ck, true, 'editorUrlLinkVerifications');
 		}
 		
 		$action_extra = caGetOption('actionExtra', $pa_options, null);
 		if($bundle = caGetOption('bundle', $pa_options, null)) {
-			$t_table->load($pn_id);
-			$type_id = $t_table->getTypeID();
-			if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
-				$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
+			$ck = md5($ps_table.$bundle.$type_id);
+			if(MemoryCache::contains($ck, 'editorUrlActionExtras')) {
+				$action_extra = MemoryCache::fetch($ck, 'editorUrlActionExtras');
+			} else {
+				$t_table->load($pn_id);
+				$type_id = $t_table->getTypeID();
+				if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
+					$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
+				}
+				MemoryCache::save($ck, $action_extra, 'editorUrlActionExtras');
 			}
 		}
 		

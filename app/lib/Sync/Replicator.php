@@ -404,6 +404,10 @@ class Replicator {
                 // Dictionary with log_ids sent from this source in this session
                 $this->sent_log_ids = [];
                 
+                $is_push_missing = ((bool)$this->opo_replication_conf->get('sources')[$source_key]['push_missing']
+									||
+									(bool)$this->opo_replication_conf->get('sources')[$target_key]['push_missing']) ? 1 : 0;
+                
 				while(true) { // use chunks of 10 entries until something happens (success/err)
 					if($single_log_id_mode) {
 						if($single_log_id_mode > 1) { break; }
@@ -427,6 +431,7 @@ class Replicator {
 						->addGetParameter('includeMetadata', $include_metadata_json)
 						->addGetParameter('excludeMetadata', $exclude_metadata_json)
 						->addGetParameter('pushMediaTo', $push_media_to)
+						->addGetParameter('push_missing', $is_push_missing)
 						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 						->request()->getRawData();
 									
@@ -445,11 +450,7 @@ class Replicator {
                     //$this->logDebug(_t("[%1] %2", $this->source_key, print_r($this->source_log_entries,true)), Zend_Log::DEBUG);
                     
                     $filtered_log_entries = null;
-					if (
-						(bool)$this->opo_replication_conf->get('sources')[$source_key]['push_missing']
-						||
-						(bool)$this->opo_replication_conf->get('sources')[$target_key]['push_missing']
-					) {
+					if ($is_push_missing) {
 						// harvest guids used for updates
 						
 						$subject_guids = [];
@@ -540,10 +541,10 @@ class Replicator {
 										// Should insert on server...
 										//if(($source_log_entry['changetype'] !== 'I') || in_array((int)$source_log_entry['logged_table_num'], [3,4], true) || $single_log_id_mode){
 											// ... which means synthesizing log from current state if update
-                                			$this->_findMissingGUID($source_log_subject['guid'], 0, $single_log_id_mode);
+                                			$this->_findMissingGUID($source_log_subject['guid'], 0, $single_log_id_mode, $is_push_missing);
                                 			                            			
 											// try to push unresolved guids
-                                			$this->_processUnresolvedGUIDs($single_log_id_mode);    
+                                			$this->_processUnresolvedGUIDs($single_log_id_mode, $is_push_missing);    
                                 		//}
                                     }
                                 }	// end subject loop							
@@ -589,6 +590,7 @@ class Replicator {
 						$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
 							->addGetParameter('system_guid', $source_system_guid)
 							->addGetParameter('setIntrinsics', $this->set_intrinsics_json)
+							->addGetParameter('push_missing', $is_push_missing)
 							->setRequestBody($this->source_log_entries)
 							->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 							->request();
@@ -621,7 +623,7 @@ class Replicator {
 						$this->log(_t("[%1] Last replicated log ID is: %2 (%3).", $source_key, $response_data['replicated_log_id'], date(DATE_RFC2822, $last_log_entry['log_datetime'])), Zend_Log::DEBUG);
 																					
 						// try to push unresolved guids
-						$this->_processUnresolvedGUIDs($single_log_id_mode);  
+						$this->_processUnresolvedGUIDs($single_log_id_mode, $is_push_missing);  
 					}
 
 					if (isset($response_data['warnings']) && is_array($response_data['warnings']) && sizeof($response_data['warnings'])) {
@@ -678,7 +680,7 @@ class Replicator {
 	 *
 	 * @return 
 	 */
-	public function _findMissingGUID(string $missing_guid, int $level=0, ?bool $single_log_id_mode=false) : ?bool {		
+	public function _findMissingGUID(string $missing_guid, int $level=0, ?bool $single_log_id_mode=false, ?bool $is_push_missing=false) : ?bool {		
 		if ($this->source_log_entries_for_missing_guids_seen_guids[$missing_guid]) { 
 			$this->logDebug(_t("[%1] Skipped %2 because we've seen it already.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
 			return $this->missing_guid_created[$missing_guid] ?? false; 
@@ -699,6 +701,7 @@ class Replicator {
 			->addGetParameter('includeMetadata', $this->get_log_service_params['includeMetadata'])
 			->addGetParameter('excludeMetadata', $this->get_log_service_params['excludeMetadata'])
 			->addGetParameter('pushMediaTo', $this->get_log_service_params['pushMediaTo'])
+			->addGetParameter('push_missing', $is_push_missing)
 			->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 			->request()->getRawData();
 			
@@ -865,7 +868,7 @@ class Replicator {
 							$new_dependent_guids = [];
 							foreach($dependent_guids as $dep_guid) {
 								$this->logDebug(_t("[%1] Run _findMissingGUID for dependency %2 of %3", $this->source_key, $dep_guid, $missing_guid),Zend_Log::DEBUG);
-								if($skip_guids[$dep_guid] || !$this->_findMissingGUID($dep_guid, $level+1, $single_log_id_mode)) {
+								if($skip_guids[$dep_guid] || !$this->_findMissingGUID($dep_guid, $level+1, $single_log_id_mode, $is_push_missing)) {
 									$new_dependent_guids[] = $dep_guid;
 									$unresolved_dependent_guids[$dep_guid]++;
 									
@@ -951,6 +954,7 @@ class Replicator {
 								->addGetParameter('includeMetadata', $this->get_log_service_params['includeMetadata'])
 								->addGetParameter('excludeMetadata', $this->get_log_service_params['excludeMetadata'])
 								->addGetParameter('pushMediaTo', $this->get_log_service_params['pushMediaTo'])
+								->addGetParameter('push_missing', $is_push_missing)
 								->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 								->request()->getRawData();
 							if (is_array($attr_log)) {
@@ -990,6 +994,7 @@ class Replicator {
 					$o_backlog_resp = $this->target->setRequestMethod('POST')->setEndpoint('applylog')
 						->addGetParameter('system_guid', $this->source_guid)
 						->addGetParameter('setIntrinsics', $this->set_intrinsics_json)
+						->addGetParameter('push_missing', $is_push_missing)
 						->setRequestBody($entries)
 						->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 						->request();
@@ -1021,7 +1026,7 @@ class Replicator {
 	/**
 	 *
 	 */
-	private function _processUnresolvedGUIDs(?bool $single_log_id_mode=false) {
+	private function _processUnresolvedGUIDs(?bool $single_log_id_mode=false, ?bool $is_push_missing=false) {
 		// try to push unresolved guids
 		$pushed = $skipped = $failed = 0;
 		if(is_array($this->unresolved_guids) && sizeof($this->unresolved_guids)) {
@@ -1034,7 +1039,7 @@ class Replicator {
 
 			foreach($guid_already_exists as $guid => $guid_info) {
 				if(!is_array($guid_info)) {
-					if(is_null($this->_findMissingGUID($guid, 0, $single_log_id_mode))) {
+					if(is_null($this->_findMissingGUID($guid, 0, $single_log_id_mode, $is_push_missing))) {
 						$this->log(_t("[%1] Could not push unresolved guid %2", $this->source_key, $guid), Zend_Log::DEBUG);
 						$failed++;
 					} else {
@@ -1151,6 +1156,7 @@ class Replicator {
 		$log = $o_source->setEndpoint('getlog')
 			->clearGetParameters()
 			->addGetParameter('forGUID', $guid)
+			->addGetParameter('push_missing', 1)
 			->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 			->request()->getRawData();
 		

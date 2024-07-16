@@ -701,8 +701,11 @@ class DataMigrationUtils {
 						$name['surname'] = $tmp[1];
 						break;
 					case 3:
-						$name['forename'] = $tmp[0];
-						$name['surname'] = join(' ', array_slice($tmp, 1));
+						$name['forename'] = array_shift($tmp);
+						if(!in_array($tmp[0], $ind_suffixes)) {
+							$name['middlename'] = array_shift($tmp);
+						}
+						$name['surname'] = join(' ', $tmp);
 						break;
 					case 4:
 					default:
@@ -1076,7 +1079,7 @@ class DataMigrationUtils {
 		
 		
 		$pb_output_errors 				= caGetOption('outputErrors', $options, false);
-		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, false);
+		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, true);
 		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'displayname'), array('castTo' => "array"));
 		$ps_event_source 				= caGetOption('importEventSource', $options, '?'); 
 		$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $options, false);
@@ -1210,7 +1213,7 @@ class DataMigrationUtils {
 				case 'nonpreferred_labels':
 					$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
 				
-					if ($pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
+					if (($vs_table_class == 'ca_entities') && $pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
 						// entities only
 						$va_params = array($vs_label_spec => array('displayname' => trim($pa_label['displayname'])));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }

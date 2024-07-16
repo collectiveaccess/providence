@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,8 +85,8 @@
 						
 						while($o_res->nextHit()) {
 							$vs_type = $t_instance->getTypeCode((int)$o_res->get($vs_table.'.type_id'));
-							if (!($vs_template = $o_search_config->get($vs_table.'_'.$vs_type.'_quicksearch_result_display_template'))) {
-								$vs_template = $o_search_config->get($vs_table.'_quicksearch_result_display_template');
+							if (!($vs_template = $t_instance->getAppConfig()->get($vs_table.'_'.$vs_type.'_quicksearch_result_display_template'))) {
+								$vs_template = $t_instance->getAppConfig()->get($vs_table.'_quicksearch_result_display_template');
 							}
 							
 							if ($vs_template) {
@@ -137,7 +137,7 @@
 		return false;
 	}
 <?php
-	if (!Configuration::load()->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
+	if ($t_instance && !$t_instance->getAppConfig()->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
 ?>
 		jQuery(document).ready(function() {
 			caQuickSearchShowHideResults('show', '<?= str_replace("/", "-", array_shift(array_keys($searches))); ?>');

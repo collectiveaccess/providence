@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -363,6 +363,157 @@ trait CLIUtilsAccessControl {
 	 */
 	public static function apply_acl_inheritanceHelp() {
 		return _t('Apply inherited access control lists.');
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public static function import_logins($po_opts=null) {
+		$errors = $messages = [];
+
+		$import_file = (string)$po_opts->getOption('file');
+		
+		try {
+			$d = DelimitedDataParser::load($import_file);
+		} catch(Exception $e) {
+			CLIUtils::addError(_t("Could not open import file %1", $import_file));
+			return false;
+		}
+		if(!($output_path = (string)$po_opts->getOption('report'))) {
+			$output_path = 'passwords.txt';
+		}
+		if(!($fp = @fopen($output_path, "w"))) {
+			CLIUtils::addError(_t("Could not open output file %1", $output_path));
+			return false;
+		}
+		
+		print CLIProgressBar::start($d->numRows(), _t('Importing logins using %1', $import_file));
+		
+		$added = $updated = $removed = 0;
+		while($d->nextRow()) {
+			$row = $d->getRow();
+			$row = array_map('trim', $row);
+			
+			print CLIProgressBar::next(1, _t('Importing %1', $row[2]));
+			
+			if(!$row[3]) { continue; }
+			
+			switch(strtolower($row[3])) {
+				case 'add':
+					if($t_user = ca_users::findAsInstance(['email' => $row[2]])) {
+						$t_user->set('password', ($password = caGenerateRandomPassword(8)));
+						$t_user->set('userclass', (strtolower($row[4]) == 'pawtucket') ? 1 : 0);
+						$t_user->update();
+						
+						if($t_user->numErrors()) {
+							$errors[] = _t('Could not reset password for  user %1 %2 (%3): %4', $row[0], $row[1], $row[2], join('; ', $t_user->getErrors()));
+						} else {
+							$messages[] = _t('Reset password for user %1 %2 (%3)', $row[0], $row[1], $row[2]);
+							fputcsv($fp, [$row[0], $row[1], $row[2], $password]);
+						}
+						if(is_array($roles = preg_split('![;,]+!', $row[5]))) {
+							$t_user->addRoles($roles);
+						}
+						if(is_array($groups = preg_split('![;,]+!', $row[6]))) {
+							$t_user->addToGroups($groups);
+						}
+						$updated++;
+						break;
+					}
+					$t_user = new ca_users();
+					$t_user->set([
+						'userclass' => (strtolower($row[4]) == 'pawtucket') ? 1 : 0,
+						'user_name' => $row[2],
+						'email' => $row[2],
+						'fname' => $row[0],
+						'lname' => $row[1],
+						'password' => ($password = caGenerateRandomPassword(8)),
+						'active' => 1
+					]);
+					$t_user->insert();
+					if($t_user->numErrors()) {
+						$errors[] = _t('Could not create user %1 %2 (%3): %4', $row[0], $row[1], $row[2], join('; ', $t_user->getErrors()));
+					} else {
+						if(is_array($roles = preg_split('![;,]+!', $row[5]))) {
+							$t_user->addRoles($roles);
+						}
+						if(is_array($groups = preg_split('![;,]+!', $row[6]))) {
+							$t_user->addToGroups($groups);
+						}
+						$added++;
+						$messages[] = _t('Created user %1 %2 (%3)', $row[0], $row[1], $row[2]);
+						fputcsv($fp, [$row[0], $row[1], $row[2], $password]);
+					}
+					break;
+				case 'remove':
+					if($t_user = ca_users::findAsInstance(['email' => $row[2]])) {
+						$t_user->delete(true);
+						if($t_user->numErrors()) {
+							$errors[] = _t('Could not delete user %1 %2 (%3): %4', $row[0], $row[1], $row[2], join('; ', $t_user->getErrors()));
+						} else {
+							$removed++;
+							$messages[] = _t('Deleted user %1 %2 (%3)', $row[0], $row[1], $row[2]);
+						}
+					} else {
+						$errors[] = _t('Could not find user %1 %2 (%3) to delete', $row[0], $row[1], $row[2]);
+					}
+					break;
+				default:
+					// skip
+					break;
+			}
+		}
+		print CLIProgressBar::finish();	
+		fclose($fp);
+		
+		foreach($errors as $error) {
+			CLIUtils::addError($error);
+		}
+		foreach($messages as $message) {
+			CLIUtils::addMessage($message);
+		}
+		CLIUtils::addMessage(_t('Added %1; updated %2; removed %3', $added, $updated, $removed));
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_loginsParamList() {
+		return array(
+			"file|f=s" => _t("CSV or XLSX file with logins to import"),
+			"report|r=s" => _t("Name of file to write created logins to. If omitted login information will be written to a file named 'passwords.txt' in the current directory."),
+		);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_loginsUtilityClass() {
+		return _t('Access control');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_loginsShortHelp() {
+		return _t('Import logins from spreadsheet.');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function import_loginsHelp() {
+		return _t('Batch import logins from a spreadsheet. Sheet should be CSV or XLSX format and include the following columns in the prescribed order: first name, last name, email address, action (where action is either "add" or "remove"), type (either "providence" or "pawtucket", roles and groups).
+
+Note that:
+
+(a) If the action is not "add" or "remove" the row will be ignored.
+(b) All rows will be imported. Do not add column headers.
+(c) User names for newly created users will be their email address.
+(d) If class is set to anything other than "pawtucket" a back-end (Providence) login will be created.
+(e) Lists of roles and groups should be separated with semicolons or commas.
+(f) User passwords are randomly generated. If a user already exists with the specified email address their password will be reset to a random value.');
 	}
 	# -------------------------------------------------------
 }

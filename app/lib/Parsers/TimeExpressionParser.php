@@ -2642,8 +2642,10 @@ class TimeExpressionParser {
 	 *		isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
 	 *  	useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
 	 *  	useRomanNumeralsForCenturies (true|false) [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
-	 *		start_as_iso8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
-	 *		end_as_iso8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
+	 *		startAsISO8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
+	 *		start_as_iso8601 (true|false) Synonym for startAsISO8601
+	 *		endAsISO8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
+	 *		end_as_iso8601 (true|false) Synonym for endAsISO8601
 	 *		dontReturnValueIfOnSameDayAsStart (true|false) [Only valid in conjunction with end_as_iso8601]
 	 *		startHistoricTimestamp
 	 *		endHistoricTimestamp
@@ -2782,11 +2784,10 @@ class TimeExpressionParser {
 			
 			$va_end_pieces = $this->getHistoricDateParts($va_dates['end']);
 				
-			if ($pa_options['start_as_iso8601'] ?? null) {
+			if ($start_as_iso = caGetOption(['start_as_iso8601', 'startAsISO8601'], $pa_options, false)) {
 				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
-			if ($pa_options['end_as_iso8601'] ?? null) {
-
+			if ($end_as_iso = caGetOption(['end_as_iso8601', 'endAsISO8601'], $pa_options, false)) {
 				if(caGetOption('dontReturnValueIfOnSameDayAsStart', $pa_options, false)) {
 					if(
 						$va_start_pieces['year'] == $va_end_pieces['year'] &&
@@ -2804,7 +2805,7 @@ class TimeExpressionParser {
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'yearOnly'))) { 
 					return $va_start_pieces['year'];
 				}
-				if (($pa_options['start_as_iso8601'] ?? null) || ($pa_options['end_as_iso8601'] ?? null)) {
+				if (($start_as_iso) || $end_as_iso) {
 					return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 				}
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
@@ -3719,7 +3720,7 @@ class TimeExpressionParser {
 	 * @param array $pa_start_pieces
 	 * @param array $pa_end_pieces
 	 *
-	 * @return string CENTURY|DECADE|YEAR|MONTH|DAY if interval; false is not interval
+	 * @return string CENTURY|DECADE|YEAR|MONTH|DAY|DAY_RANGE if interval; false is not interval
 	 */
 	public function isDMYRange($pa_start_pieces, $pa_end_pieces) {
 		if (
@@ -3770,6 +3771,13 @@ class TimeExpressionParser {
 			return 'DAY';
 		}
 		
+		if (
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'DAY_RANGE';
+		}
+		
 		return false;
 	}
 	# -------------------------------------------------------------------
@@ -3785,12 +3793,18 @@ class TimeExpressionParser {
 	 * @return string
 	 */
 	public function getISODateRange($pa_start_date, $pa_end_date, $pa_options=null) {
-		$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
-		$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
+		if(($pa_start_date['day'] == 1) && ($pa_start_date['month'] == 1) && ($pa_end_date['day'] == 31) && ($pa_end_date['month'] == 12)) {
+			$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
+			$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
+		} else {
+			$start = $this->getISODateTime($pa_start_date, 'FULL', $pa_options);
+			$end = $this->getISODateTime($pa_end_date, 'FULL', $pa_options);
+		}
 		
 		switch($this->isDMYRange($pa_start_date, $pa_end_date)) {
 			case 'DAY':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
+			case 'DAY_RANGE':
 			case 'MONTH':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
 		}

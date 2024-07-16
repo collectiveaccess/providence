@@ -229,7 +229,6 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 						];
 					}
 				} elseif($rel = \Datamodel::getInstance($f, true)) {	// straight table name
-					
 					// relationships
 					$map = [
 						'row_id' => ['name' => $rel->primaryKey(), 'datatype' => 'Numeric'],
@@ -276,7 +275,6 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							'id' => $id
 						];
 					}
-				
 				} else {
 					// Metadata elements
 					foreach($d as $index => $by_locale) {

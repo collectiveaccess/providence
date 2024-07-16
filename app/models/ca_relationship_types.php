@@ -341,7 +341,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return information, including typenames filterd by user locale, for relationship types for the 
+	 * Return information, including typenames filtered by user locale, for relationship types for the 
 	 * specified relationship table (eg. ca_objects_x_entities, ca_entities_x_occurrences).
 	 *
 	 * @params mixed $pm_table_name_or_num

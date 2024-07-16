@@ -18,7 +18,7 @@
     "guzzlehttp/psr7": "2.4.*",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
-    "knplabs/github-api": "3.7",
+    "knplabs/github-api": "^3.14",
     "laminas/laminas-stdlib": "*",
     "laminas/laminas-escaper": "*",
     "league/climate": ">=1.0.0",
@@ -42,11 +42,11 @@
     "ext-simplexml": "*",
     "phpseclib/phpseclib": "^2.0",
     "ankitpokhrel/tus-php": "^2.0",
-    "tedivm/stash": "0.17.*",
+    "tedivm/stash": "^1.0",
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
     "firebase/php-jwt": "^6.0",
-    "softonic/graphql-client": "^1.3",
+    "softonic/graphql-client": "^2.1",
     "whikloj/bagittools": "^3.0",
     "voku/stop-words": "^2.0",
     "tecnickcom/tc-lib-barcode": "^1.17",
@@ -54,15 +54,23 @@
     "deeplcom/deepl-php": "^1.3",
     "google/cloud-translate": "^1.12",
     "phpmailer/phpmailer": "^6.8",
-    "smalot/pdfparser": "^2.7"
+    "smalot/pdfparser": "^2.7",
+    "justinrainbow/json-schema": "^5.2"
   },
   "suggest": {
-    "binaryoung/jieba-php": "^0.1.0"
+    "binaryoung/jieba-php": "^0.1.0",
+    "simplesamlphp/simplesamlphp": "^2.2: required for SAML SSO logins",
+    "league/oauth2-client": "Required to autheticate oauth2 for phpmailer. Already installed through softonic/graphql-client",
+    "greew/oauth2-azure-provider" :  "Needed for Microsoft Azure XOAUTH2 authentication",
+    "hayageek/oauth2-yahoo": "Needed for Yahoo XOAUTH2 authentication",
+    "league/oauth2-google": "Needed for Google XOAUTH2 authentication",
+    "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
   },
   "config": {
     "discard-changes": true,
     "allow-plugins" : {
-      "php-http/discovery": false
+      "php-http/discovery": false,
+      "simplesamlphp/composer-module-installer": true
     }
   }
 }

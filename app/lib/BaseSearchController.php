@@ -309,7 +309,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 				break;
 			# ------------------------------------
 			case 'EXPORT':
-				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display]);
+				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), $vs_search, ['output' => 'STREAM', 'checkAccess' => $va_access_values, 'display' => $t_display, 'criteriaSummary' => $vs_search, 'browseCriteria' => $this->opo_browse->getCriteriaAsStrings(null, ['sense' => 'singular', 'returnAs' => 'array'])]);
 				break;
 			# ------------------------------------
 			case 'HTML': 

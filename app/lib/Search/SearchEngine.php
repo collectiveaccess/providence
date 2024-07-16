@@ -579,7 +579,6 @@ class SearchEngine extends SearchBase {
 				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
-				
 				$va_terms = [];
 				$vs_term = (string)$po_term->getTerm()->text;
 				foreach($va_fields as $vs_field) {
@@ -603,7 +602,7 @@ class SearchEngine extends SearchBase {
 						$vs_term .= '|';
 					}
 					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field.($vs_rel_types ? "/{$vs_rel_types}" : ''));
-					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : false;
+					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
 					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : [];
 				}
 				
@@ -698,7 +697,7 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it a labels? Rewrite the field for that.
+		// Is it a label? Rewrite the field for that.
 		$va_tmp = preg_split('/[\/\|]+/', $vs_fld);
 		$va_tmp2 = explode('.', ($va_tmp[0] ?? null));
 		if (isset($va_tmp2[1]) && (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels')))) {

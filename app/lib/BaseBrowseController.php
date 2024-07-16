@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -339,7 +339,7 @@ class BaseBrowseController extends BaseFindController {
 				break;
 			# ------------------------------------
 			case 'EXPORT':
-				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), ['output' => 'STREAM', 'display' => $t_display]);
+				caExportResult($this->request, $vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), ['output' => 'STREAM', 'display' => $t_display, 'browseCriteria' => $this->opo_browse->getCriteriaAsStrings(null, ['sense' => 'singular', 'returnAs' => 'array'])]);
 				break;
 			# ------------------------------------
 			case 'EXPORTWITHMAPPING':

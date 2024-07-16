@@ -285,9 +285,12 @@ class TaskQueue extends BaseObject {
 	/**
 	 *
 	 */
-	function processQueue($handler='') {
+	function processQueue($handler='', ?array $options=null) {
 		if (!($proc_id = $this->registerProcess())) {
 			return false;
+		}
+		if(is_array($tasks = caGetOption('limit-to-tasks', $options, null))) {
+			$tasks = array_filter($tasks, 'strlen');	
 		}
 		
 		$sql_handler_criteria = '';
@@ -312,7 +315,6 @@ class TaskQueue extends BaseObject {
 			$max_process_count = 1000000;
 		}
 		while(($num_rows > 0) && ($processed_count <= $max_process_count)) {
-		
 			$qr_tasks = $o_db->query("
 					SELECT * 
 					FROM ca_task_queue
@@ -325,6 +327,14 @@ class TaskQueue extends BaseObject {
 			", $sql_params);
 			if (($num_rows = $qr_tasks->numRows()) > 0) {
 				$qr_tasks->nextRow();
+				$proc_handler = $qr_tasks->get('handler');
+				
+				if(is_array($tasks) && sizeof($tasks)) {
+					if(!in_array($proc_handler, $tasks)) { 
+						$num_rows--;
+						continue; 
+					}
+				}
 				
 				// lock task
 				$o_db->query('
@@ -335,7 +345,6 @@ class TaskQueue extends BaseObject {
 					
 				$this->updateRegisteredProcess($proc_id, $qr_tasks->get('row_key'), $qr_tasks->get('entity_key'));
 				
-				$proc_handler = $qr_tasks->get('handler');
 				$proc_parameters = unserialize(base64_decode($qr_tasks->get('parameters')));
 				
 				if(!($h = $this->getHandler($proc_handler))) {
@@ -562,8 +571,8 @@ class TaskQueue extends BaseObject {
 	 * tasks here. Every time you call runPeriodicTasks() all plugins implementing the PeriodicTask hook will be run.
 	 * You should use standard cron scheduling to control when and how often periodic tasks are run.
 	 */
-	function runPeriodicTasks() {
-		$this->app_plugin_manager->hookPeriodicTask();
+	function runPeriodicTasks(?array $options=null) {
+		$this->app_plugin_manager->hookPeriodicTask($options);
 	}
 	# ---------------------------------------------------------------------------
 	# Process management
@@ -713,14 +722,21 @@ class TaskQueue extends BaseObject {
 	public static function run(?array $options=null) : bool {
 		$tq = new TaskQueue();
 		$quiet = caGetOption('quiet', $options, true);
+		if(!is_array($tasks = caGetOption('limit-to-tasks', $options, null)) && strlen($tasks)) { 
+			$options['limit-to-tasks'] = preg_split('![,;]+!', $tasks);
+		}
 
 		if(caGetOption('restart', $options, false))  { $tq->resetUnfinishedTasks(); }
 
-		if (!$quiet) { CLIUtils::addMessage(_t("Processing queued tasks...")); }
-		$tq->processQueue();	
+		if(!caGetOption('recurring-tasks-only', $options, null)) {
+			if (!$quiet) { CLIUtils::addMessage(_t("Processing queued tasks...")); }
+			$tq->processQueue(null, $options);	
+		}
 
-		if (!$quiet) { CLIUtils::addMessage(_t("Processing recurring tasks...")); }
-		$tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
+		if(!caGetOption('skip-recurring-tasks', $options, null)) {
+			if (!$quiet) { CLIUtils::addMessage(_t("Processing recurring tasks...")); }
+			$tq->runPeriodicTasks($options);	// Process recurring tasks implemented in plugins
+		}
 		if (!$quiet) {  CLIUtils::addMessage(_t("Processing complete.")); }
 		
 		return true;

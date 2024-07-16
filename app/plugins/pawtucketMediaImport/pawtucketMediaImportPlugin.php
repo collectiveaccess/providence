@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,41 +24,44 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
-  
-	class pawtucketMediaImportPlugin extends BaseApplicationPlugin {
-		# -------------------------------------------------------
-		private $opo_config;
-		/** @var KLogger  */
-		private $opo_log;
-		# -------------------------------------------------------
-		public function __construct($ps_plugin_path) {
-			$this->description = _t('Pawtucket Media Import Processor');
-			$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'plugin.conf');
-			$this->opo_log = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log']);
-			parent::__construct();
-		}
-		# -------------------------------------------------------
-		/**
-		 * Override checkStatus() to return true - the pawtucketMediaImport plugin always initializes ok
-		 */
-		public function checkStatus() {
-			return array(
-				'description' => $this->getDescription(),
-				'errors' => [],
-				'warnings' => [],
-				'available' => true
-			);
-		}
-		# -------------------------------------------------------
-		/**
-		 * Run periodic tasks
-		 */
-		public function hookPeriodicTask() {
-			$ret = ca_media_upload_sessions::processSessions(['limit' => 20]);
-			$this->opo_log->logInfo(__CLASS__ . ": Processed $ret sessions");
-			// Allow plugins after pawtuckeMediaImport to also process
-			return true;
-		}
-		# -------------------------------------------------------
+ */  
+class pawtucketMediaImportPlugin extends BaseApplicationPlugin {
+	# -------------------------------------------------------
+	private $opo_config;
+	/** @var KLogger  */
+	private $opo_log;
+	# -------------------------------------------------------
+	public function __construct($ps_plugin_path) {
+		$this->description = _t('Pawtucket Media Import Processor');
+		$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'plugin.conf');
+		$this->opo_log = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log']);
+		parent::__construct();
 	}
+	# -------------------------------------------------------
+	/**
+	 * Override checkStatus() to return true - the pawtucketMediaImport plugin always initializes ok
+	 */
+	public function checkStatus() {
+		return array(
+			'description' => $this->getDescription(),
+			'errors' => [],
+			'warnings' => [],
+			'available' => true
+		);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Run periodic tasks
+	 */
+	public function hookPeriodicTask(?array $options=null) {
+		if($tasks = caGetOption('limit-to-tasks', $options, null)) {
+			if(!in_array('pawtucketMediaImport', $tasks)) { return true; }
+		}
+		
+		$ret = ca_media_upload_sessions::processSessions(['limit' => 20]);
+		$this->opo_log->logInfo(__CLASS__ . ": Processed $ret sessions");
+		// Allow plugins after pawtuckeMediaImport to also process
+		return true;
+	}
+	# -------------------------------------------------------
+}

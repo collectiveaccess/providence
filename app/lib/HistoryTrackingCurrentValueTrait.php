@@ -864,9 +864,14 @@ trait HistoryTrackingCurrentValueTrait {
 					foreach($dinfo as $type => $dspec) {
 						if (isset($dspec['date']) && $dspec['date']) {
 							$spec_has_date = true;
-							$element_code = array_shift(explode('.', $dspec['date']));
-							if($this->attributeDidChange($element_code)) {
-								$date_has_changed = true;
+							$dspec_dates = is_array($dspec['date']) ? $dspec['date'] : [$dspec['date']];
+							
+							foreach($dspec_dates as $d) {
+								$element_code = array_shift(explode('.', $d));
+								if($this->attributeDidChange($element_code)) {
+									$date_has_changed = true;
+									break;
+								}
 							}
 						}
 					}
@@ -1108,6 +1113,7 @@ trait HistoryTrackingCurrentValueTrait {
 		   
 					if (!is_array($va_date_elements) && $va_date_elements) { $va_date_elements = [$va_date_elements]; }
 	
+					$has_empty_date = false;
 					if($pb_date_mode) {
 						$va_dates[] = $current_date_arr;
 					} else {
@@ -1115,20 +1121,30 @@ trait HistoryTrackingCurrentValueTrait {
 							foreach($va_date_elements as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_object_lots.{$vs_date_element}";
+								
+								if(!($dv = $qr_lots->get($vs_date_spec, array('sortable' => true)))) { $has_empty_date = true; continue; }
+								
 								$va_dates[] = [
-									'sortable' => $qr_lots->get($vs_date_spec, array('sortable' => true)),
+									'sortable' => $dv,
 									'bounds' => explode("/", $qr_lots->get($vs_date_spec, array('sortable' => true))),
 									'display' => $qr_lots->get($vs_date_spec)
 								];
+								break;
 							}
 						}
 					}
-					if (!sizeof($va_dates)) {
+					if (!sizeof($va_dates) && !$has_empty_date) {
 						$va_dates[] = [
 							'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_lots->getCreationTimestamp(null, array('timestampOnly' => true))),
 							'bounds' => array(0, $vn_date),
 							'display' => caGetLocalizedDate($vn_date)
 						];
+					} elseif(!sizeof($va_dates) && $has_empty_date) {
+						$va_dates[] = array(
+							'sortable' => '',
+							'bound' => '',
+							'display' => ''
+						);
 					}
 						
 					$vn_lot_id = $qr_lots->get('ca_object_lots.lot_id');
@@ -1216,6 +1232,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_loans_".$qr_loans->get('ca_relationship_types.type_code')."_displayTemplate", "ca_loans_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 					}
 					
+					$has_empty_date = false;
 					$va_dates = [];
 					
 					if($pb_date_mode) {
@@ -1227,6 +1244,7 @@ trait HistoryTrackingCurrentValueTrait {
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_loans.{$vs_date_element}";
 								
 								$d = $qr_loans->get($vs_date_spec, array('sortable' => true));
+								if(!$d) { $has_empty_date = true; continue; }
 								$b = explode("/", $d);
 								if(($b[0] <= $vn_current_date) && ($b[1] > $vn_current_date)) { 
 									$b[0] = $vn_current_date;
@@ -1237,13 +1255,20 @@ trait HistoryTrackingCurrentValueTrait {
 									'bounds' => $b,
 									'display' => $qr_loans->get($vs_date_spec)
 								);
+								break;
 							}
 						}
-						if (!sizeof($va_dates)) {
+						if (!sizeof($va_dates) && !$has_empty_date) {
 							$va_dates[] = array(
 								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_loans->get('lastModified.direct')),
 								'bounds' => array(0, $vn_date),
 								'display' => caGetLocalizedDate($vn_date)
+							);
+						} elseif(!sizeof($va_dates) && $has_empty_date) {
+							$va_dates[] = array(
+								'sortable' => '',
+								'bound' => '',
+								'display' => ''
 							);
 						}
 					}
@@ -1341,6 +1366,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", "ca_movements_".$qr_movements->get('ca_relationship_types.type_code')."_displayTemplate", "ca_movements_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
 					}
 					
+					$has_empty_date = false;
 					$va_dates = [];
 					if($pb_date_mode) {
 						$va_dates[] = $current_date_arr;
@@ -1349,19 +1375,29 @@ trait HistoryTrackingCurrentValueTrait {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_movements.{$vs_date_element}";
+								
+								if(!($dv = $qr_movements->get($vs_date_spec, array('sortable' => true)))) { $has_empty_date = true; continue; }
+								
 								$va_dates[] = array(
-									'sortable' => $qr_movements->get($vs_date_spec, array('sortable' => true)),
+									'sortable' => $dv,
 									'bounds' => explode("/", $qr_movements->get($vs_date_spec, array('sortable' => true))),
 									'display' => $qr_movements->get($vs_date_spec)
 								);
+								break;
 							}
 						}
 					}
-					if (!sizeof($va_dates)) {
+					if (!sizeof($va_dates) && !$has_empty_date) {
 						$va_dates[] = array(
 							'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_movements->get('lastModified.direct')),
 							'bound' => array(0, $vn_date),
-							'display' => caGetLocalizedDate($vn_date)
+							'display' => $qr_movements->get('lastModified')
+						);
+					} elseif(!sizeof($va_dates) && $has_empty_date) {
+						$va_dates[] = array(
+							'sortable' => '',
+							'bound' => '',
+							'display' => ''
 						);
 					}
 					
@@ -1466,6 +1502,7 @@ trait HistoryTrackingCurrentValueTrait {
 					}
 					$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_occurrences_{$vs_type_idno}_childDisplayTemplate", "ca_occurrences_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template, ['castTo' => 'string']);
 				
+					$has_empty_date = false;
 					$va_dates = [];
 					if($pb_date_mode) {
 						$va_dates[] = $current_date_arr;
@@ -1474,18 +1511,28 @@ trait HistoryTrackingCurrentValueTrait {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);	
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_occurrences.{$vs_date_element}";
+								
+								if(!($dv = $qr_occurrences->get($vs_date_spec, array('sortable' => true)))) { $has_empty_date = true; continue; }
+								
 								$va_dates[] = array(
-									'sortable' => $qr_occurrences->get($vs_date_spec, array('sortable' => true)),
+									'sortable' => $dv,
 									'bounds' => explode("/", $qr_occurrences->get($vs_date_spec, array('sortable' => true))),
 									'display' => $qr_occurrences->get($vs_date_spec)
 								);
+								break;
 							}
 						}
-						if (!sizeof($va_dates)) {
+						if (!sizeof($va_dates) && !$has_empty_date) {
 							$va_dates[] = array(
 								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_occurrences->get('lastModified.direct')),
 								'bounds' => array(0, $vn_date),
 								'display' => caGetLocalizedDate($vn_date)
+							);
+						} elseif(!sizeof($va_dates) && $has_empty_date) {
+							$va_dates[] = array(
+								'sortable' => '',
+								'bound' => '',
+								'display' => ''
 							);
 						}
 					}
@@ -1590,6 +1637,7 @@ trait HistoryTrackingCurrentValueTrait {
 					}
 					$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(["ca_entities_{$vs_type_idno}_childDisplayTemplate", "ca_entities_{$vs_type_idno}_childTemplate"], $pa_bundle_settings, $vs_display_template);
 				
+					$has_empty_date = false;
 					$va_dates = [];
 					
 					if($pb_date_mode) {
@@ -1599,18 +1647,28 @@ trait HistoryTrackingCurrentValueTrait {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);	
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_entities.{$vs_date_element}";
+								
+								if(!($dv = $qr_entities->get($vs_date_spec, array('sortable' => true)))) { $has_empty_date = true; continue; }
+								
 								$va_dates[] = array(
-									'sortable' => $qr_entities->get($vs_date_spec, array('sortable' => true)),
+									'sortable' => $dv,
 									'bounds' => explode("/", $qr_entities->get($vs_date_spec, array('sortable' => true))),
 									'display' => $qr_entities->get($vs_date_spec)
 								);
+								break;
 							}
 						}
-						if (!sizeof($va_dates)) {
+						if (!sizeof($va_dates) && !$has_empty_date) {
 							$va_dates[] = array(
 								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_entities->get('lastModified.direct')),
 								'bounds' => array(0, $vn_date),
 								'display' => caGetLocalizedDate($vn_date)
+							);
+						} elseif(!sizeof($va_dates) && $has_empty_date) {
+							$va_dates[] = array(
+								'sortable' => '',
+								'bound' => '',
+								'display' => ''
 							);
 						}
 					}
@@ -1708,6 +1766,7 @@ trait HistoryTrackingCurrentValueTrait {
 					}
 					$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_collections_childDisplayTemplate', 'ca_collections_childTemplate'], $pa_bundle_settings, $vs_display_template);
 				
+					$has_empty_date = false;
 					$va_dates = [];
 					
 					if($pb_date_mode) {
@@ -1717,18 +1776,27 @@ trait HistoryTrackingCurrentValueTrait {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_collections.{$vs_date_element}";
+								
+								if(!($dv = $qr_collections->get($vs_date_spec, array('sortable' => true)))) { $has_empty_date = true; continue; }
+								
 								$va_dates[] = array(
-									'sortable' => $qr_collections->get($vs_date_spec, array('sortable' => true)),
+									'sortable' => $dv,
 									'bounds' => explode("/", $qr_collections->get($vs_date_spec, array('sortable' => true))),
 									'display' => $qr_collections->get($vs_date_spec)
 								);
 							}
 						}
-						if (!sizeof($va_dates)) {
+						if (!sizeof($va_dates) && !$has_empty_date) {
 							$va_dates[] = array(
 								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_collections->get('lastModified.direct')),
 								'bounds' => array(0, $vn_date),
 								'display' => caGetLocalizedDate($vn_date)
+							);
+						} elseif(!sizeof($va_dates) && $has_empty_date) {
+							$va_dates[] = array(
+								'sortable' => '',
+								'bound' => '',
+								'display' => ''
 							);
 						}
 					}
@@ -1826,6 +1894,7 @@ trait HistoryTrackingCurrentValueTrait {
 					}
 					$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_objects_childDisplayTemplate', 'ca_objects_childTemplate'], $pa_bundle_settings, $vs_display_template);
 				
+					$has_empty_date = false;
 					$va_dates = [];
 					
 					if($pb_date_mode) {
@@ -1835,18 +1904,28 @@ trait HistoryTrackingCurrentValueTrait {
 							foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 								$va_date_bits = explode('.', $vs_date_element);
 								$vs_date_spec = (Datamodel::tableExists($va_date_bits[0])) ? $vs_date_element : "ca_objects.{$vs_date_element}";
+								
+								if(!($dv = $qr_objects->get($vs_date_spec, array('sortable' => true)))) { $has_empty_date = true; continue; }
+								
 								$va_dates[] = array(
-									'sortable' => $qr_objects->get($vs_date_spec, array('sortable' => true)),
+									'sortable' => $dv,
 									'bounds' => explode("/", $qr_objects->get($vs_date_spec, array('sortable' => true))),
 									'display' => $qr_objects->get($vs_date_spec)
 								);
+								break;
 							}
 						}
-						if (!sizeof($va_dates)) {
+						if (!sizeof($va_dates) && !$has_empty_date) {
 							$va_dates[] = array(
 								'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_objects->get('lastModified.direct')),
 								'bounds' => array(0, $vn_date),
 								'display' => caGetLocalizedDate($vn_date)
+							);
+						} elseif(!sizeof($va_dates) && $has_empty_date) {
+							$va_dates[] = array(
+								'sortable' => '',
+								'bound' => '',
+								'display' => ''
 							);
 						}
 					}
@@ -2626,10 +2705,29 @@ trait HistoryTrackingCurrentValueTrait {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Filter string for inclusion in reports, filter most HTML tags 
 	 *
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	private static function _filterValueForReport(?string $text) : ?string {
+		return strip_tags($text, ['b', 'strong', 'em', 'i', 'u', 's']);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 * @param string $ps_bundle_name
+	 * @param int $pn_row_id
+	 * @param array $pa_values
+	 * @param array $pa_options Options include:
+	 *		forReport = filter HTML links from output for use in PDF output. [Default is false]
+	 *
+	 * @return string
 	 */
 	public function renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
-		switch($ps_bundle_name) {
+		$bundle_bits = explode('.', $ps_bundle_name);
+		switch($bundle_bits[0]) {
 			case 'ca_objects_location':
 			case 'ca_objects_location_date':
 			case 'history_tracking_current_value':
@@ -2642,6 +2740,8 @@ trait HistoryTrackingCurrentValueTrait {
 					$policy = caGetOption('policy', $pa_options, null);
 					if (is_array($h = $this->getHistory(['useTemplate' => caGetOption('useTemplate', $pa_options, null), 'limit' => 1, 'currentOnly' => true, 'policy' => $policy, 'row_id' => $pn_row_id])) && (sizeof($h) > 0)) {
 						$va_current_location = array_shift(array_shift($h));
+						
+						$for_report = caGetOption('forReport', $pa_options, false);
 					
 						$va_path_components = caGetOption('pathComponents', $pa_options, null);
 						if (is_array($va_path_components) && $va_path_components['subfield_name']) {
@@ -2650,14 +2750,20 @@ trait HistoryTrackingCurrentValueTrait {
 							$path = array_keys($path);
 							if($va_path_components['subfield_name'] === $path[1]) { // is ref to interstitial
 								if (($t_rel = Datamodel::getInstanceByTableName($path[1], true)) && $t_rel->load($va_current_location['relation_id'])) {
-									
-									return $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									$v = $t_rel->get(join('.', array_merge([$path[1]], array_slice($va_path_components['components'], 3))), ['convertCodesToDisplayText' => true]);
+									if($for_report) { $v = self::_filterValueForReport($v); }
+									return $v;
 								}
 							} elseif (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
-								return $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+								$v = $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+								if ($for_report) { $v = self::_filterValueForReport($v); }
+								return $v;
+								
 							}
 						} 
-						return (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
+						$v =  (in_array($ps_bundle_name, ['ca_objects_location_date', 'history_tracking_current_date'])) ? $va_current_location['date'] : $va_current_location['display'];
+						if ($for_report) { $v = self::_filterValueForReport($v); }
+						return $v;
 					}
 				} 
 				return '';
@@ -2674,7 +2780,9 @@ trait HistoryTrackingCurrentValueTrait {
 						while($qr->nextHit()) { 
 							$contents[] = $qr->getWithTemplate($template);
 						}
-						return join($delimiter, $contents);
+						$v =  join($delimiter, $contents);
+						if($for_report) { $v = self::_filterValueForReport($v); }
+						return $v;
 					}
 				}
 				return null;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,66 +25,65 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$subject_table				= $t_subject->tableName();
-	
-	$settings 					= $this->getVar('settings');
+$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 
-	$read_only					= (isset($settings['readonly']) && $settings['readonly']);
-	$bundle_name				= $this->getVar('bundle_name');
-	
-	$history					= $this->getVar('history');
-	$current_value 				= $t_subject->getCurrentValue();
-	
-	$placement_code 			= $this->getVar('placement_code');
-	$placement_id				= (int)($settings['placement_id'] ?? null);
-	
-	$show_return_home_controls = false;
-	if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
-		$show_return_home_controls = true;
-	}
+$t_subject					= $this->getVar('t_subject');
+$subject_table				= $t_subject->tableName();
 
-	$vs_relationship_type		= $this->getVar('location_relationship_type');
-	$vs_change_location_url		= $this->getVar('location_change_url');
-	
-	$occ_types  				= $this->getVar('occurrence_types');
-	$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));
-	
-	$coll_types  				= $this->getVar('collection_types');
-	$coll_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $coll_types));
-	
-	$entity_types  				= $this->getVar('entity_types');
-	$entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $entity_types));
-	
-	$policy  					= $this->getVar('policy');
-	$policy_info  				= $this->getVar('policy_info');
-	
-	$display_mode 				= caGetOption('displayMode', $settings, null);
-	
-	$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
-	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
-	
-	$batch			= $this->getVar('batch');
-	
-	$home_location_idno = null;
-	if ($t_subject->hasField('home_location_id')) {
-		$t_location = ca_storage_locations::find($t_subject->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
-		$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
+$settings 					= $this->getVar('settings');
+
+$read_only					= (isset($settings['readonly']) && $settings['readonly']);
+$bundle_name				= $this->getVar('bundle_name');
+
+$history					= $this->getVar('history');
+$current_value 				= $t_subject->getCurrentValue();
+
+$placement_code 			= $this->getVar('placement_code');
+$placement_id				= (int)($settings['placement_id'] ?? null);
+
+$show_return_home_controls = false;
+if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
+	$show_return_home_controls = true;
+}
+
+$vs_relationship_type		= $this->getVar('location_relationship_type');
+$vs_change_location_url		= $this->getVar('location_change_url');
+
+$occ_types  				= $this->getVar('occurrence_types');
+$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));
+
+$coll_types  				= $this->getVar('collection_types');
+$coll_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $coll_types));
+
+$entity_types  				= $this->getVar('entity_types');
+$entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $entity_types));
+
+$policy  					= $this->getVar('policy');
+$policy_info  				= $this->getVar('policy_info');
+
+$display_mode 				= caGetOption('displayMode', $settings, null);
+
+$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
+$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
+
+$batch			= $this->getVar('batch');
+
+$home_location_idno = null;
+if ($t_subject->hasField('home_location_id')) {
+	$t_location = ca_storage_locations::find($t_subject->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
+	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
+}
+
+if (!$this->request->isAjax()) {
+	if ($batch) {
+		print caBatchEditorRelationshipModeControl($t_subject, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 	}
-	
-    if (!$this->request->isAjax()) {
-    	if ($batch) {
-			print caBatchEditorRelationshipModeControl($t_subject, $vs_id_prefix);
-		} else {
-			print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
-			print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
-		}
-	}
-	
-	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
+}
+
+$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 	<div class="bundleContainer">
@@ -800,7 +799,7 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddLoan').on('click', function(e) {
+				jQuery('<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddLoanButton').on('click', '#<?= $vs_id_prefix; ?>AddLoan', function(e) {
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;
@@ -849,7 +848,7 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddMovement').on('click', function(e) {
+				jQuery("#<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddMovementButton").on('click', '#<?= $vs_id_prefix; ?>AddMovement', function(e) {
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;
@@ -939,7 +938,7 @@ if($show_entity_controls) {
 <?php
 			if(caGetOption('always_create_new_occurrence', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>').on('click', function(e) { 
+				jQuery('<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddOccurrenceButton<?= $vn_type_id; ?>').on('click', '#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>', function(e) { 
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;

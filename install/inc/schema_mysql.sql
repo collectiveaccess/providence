@@ -42,6 +42,8 @@ create index i_unit_id on ca_change_log(unit_id);
 create index i_table_num on ca_change_log (logged_table_num);
 create index i_batch_id on ca_change_log (batch_id);
 CREATE INDEX i_date_unit on ca_change_log(log_datetime, unit_id); 
+create index i_created_on on ca_change_log(logged_table_num, changetype, log_datetime);
+create index i_modified_on on ca_change_log(logged_table_num, log_datetime);
 
 
 /*==========================================================================*/
@@ -70,6 +72,7 @@ create table ca_change_log_subjects
 create index i_log_id on ca_change_log_subjects(log_id);
 create index i_subject on ca_change_log_subjects(subject_row_id, subject_table_num);
 CREATE INDEX i_log_plus on ca_change_log_subjects (log_id, subject_table_num, subject_row_id);
+create index i_modified_on on ca_change_log_subjects(log_id, subject_table_num);
 
 
 /*==========================================================================*/
@@ -7080,8 +7083,10 @@ create table ca_user_representation_annotations
 (
   annotation_id                  int unsigned                   not null AUTO_INCREMENT,
   representation_id              int unsigned                   not null,
+  idno                           varchar(255)                   null,
   locale_id                      smallint unsigned,
   user_id                        int unsigned                   null,
+  session_id                     varchar(255)                   null,
   type_code                      varchar(30)                    not null,
   props                          longtext                       not null,
   preview                        longblob                       not null,
@@ -7100,6 +7105,8 @@ create table ca_user_representation_annotations
 create index i_representation_id on ca_user_representation_annotations(representation_id);
 create index i_locale_id on ca_user_representation_annotations(locale_id);
 create index i_user_id on ca_user_representation_annotations(user_id);
+create index i_session_id on ca_user_representation_annotations(session_id);
+create index u_idno on ca_user_representation_annotations(idno);
 
 
 /*==========================================================================*/
@@ -7892,4 +7899,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (195, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (197, unix_timestamp());

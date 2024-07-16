@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,6 @@
  */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
-require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
  
 class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
@@ -1221,7 +1220,9 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			];
 			
 			foreach($pa_versions as $vs_version) {
-				$va_media_tags['tags'][$vs_version] = $t->getMediaTag('ca_object_representations.media', $vs_version);
+				$alt = $alt_texts[$t->get($vs_pk)] ?? '';
+				
+				$va_media_tags['tags'][$vs_version] = $t->getMediaTag('ca_object_representations.media', $vs_version, ['alt' => $alt]);
 				$va_media_tags['info'][$vs_version] = $t->getMediaInfo('ca_object_representations.media', $vs_version);
 				$va_media_tags['urls'][$vs_version] = $t->getMediaUrl('ca_object_representations.media', $vs_version);
 				$va_media_tags['paths'][$vs_version] = $t->getMediaPath('ca_object_representations.media', $vs_version);

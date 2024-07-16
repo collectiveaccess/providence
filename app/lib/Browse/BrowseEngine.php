@@ -170,7 +170,7 @@ class BrowseEngine extends BaseFindEngine {
 
 		$this->opo_ca_browse_cache = new BrowseCache();
 		if ($pn_browse_id) {
-			$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
+			//$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
 			$this->opo_ca_browse_cache->load($pn_browse_id);
 		} else {
 			$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num);
@@ -575,6 +575,8 @@ class BrowseEngine extends BaseFindEngine {
 	 * @param string $ps_facet_name Optional name of facet for which to list criteria
 	 * @param array $options Options include:
 	 *		delimiter = delimiter between facet values. [Default is ';']
+	 *		sense = Sense of facet title to index criteria on. Set to 'singular' for singular sense; 'plural' for plural sense. [Default is singular]
+	 *		returnAs = Return value as delimited string or array. [Default is string]
 	 * @return array
 	 *
 	 * @see BrowseEngine::getCriteria
@@ -582,12 +584,13 @@ class BrowseEngine extends BaseFindEngine {
 	public function getCriteriaAsStrings(?string $ps_facet_name=null, ?array $options=null) {
 		$criteria = $this->getCriteriaWithLabels($ps_facet_name);
 		$delimiter = caGetOption('delimiter', $options, ';');
+		$return_as = caGetOption('returnAs', $options, 'string');
 		
 		$criteria_by_facet = [];
 		foreach($criteria as $facet => $criteria_list) {
 			$facet_info = $this->getInfoForFacet($facet);
 			
-			$criteria_by_facet[$facet_info['label_plural']] = join($delimiter, $criteria_list);
+			$criteria_by_facet[$facet_info[caGetOption('sense', $options, 'singular') ? 'label_singular' : 'label_plural']] = ($return_as == 'array') ? $criteria_list : join($delimiter, $criteria_list);
 		}
 		return $criteria_by_facet;
 	}
@@ -1560,7 +1563,7 @@ class BrowseEngine extends BaseFindEngine {
 								
 								// Map deaccession fields to deaccession bundle, which is used for access control on all
 								$bundle_name = (in_array($vs_field_name, ['is_deaccessioned', 'deaccession_date', 'deaccession_notes', 'deaccession_type_id', 'deaccession_disposal_date'])) ? 'ca_objects_deaccession' : $vs_field_name;
-								if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
+								if ($t_user && $t_user->isLoaded() && $bundle_name && ($t_user->getBundleAccessLevel($vs_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
 				
 
 								if ($va_facet_info['relative_to']) {
@@ -2119,7 +2122,7 @@ class BrowseEngine extends BaseFindEngine {
 							case 'relationship_types':  
 								$vs_rel_table_name = $va_facet_info['table'];
 								
-								if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) {  break; }
+								if ($t_user && $t_user->isLoaded() && $vs_rel_table_name && ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) {  break; }
 				
 								if (!is_array($va_restrict_to_relationship_types = ($va_facet_info['restrict_to_relationship_types'] ?? null))) { $va_restrict_to_relationship_types = array(); }
 								$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table']);
@@ -2408,7 +2411,7 @@ class BrowseEngine extends BaseFindEngine {
 								
 								// Map deaccession fields to deaccession bundle, which is used for access control on all
 								$bundle_name = (in_array($vs_field_name, ['deaccession_type_id'])) ? 'ca_objects_deaccession' : $vs_field_name;
-								if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
+								if ($t_user && $t_user->isLoaded() && $bundle_name && ($t_user->getBundleAccessLevel($vs_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { break; }
 				
 
 								if ($va_facet_info['relative_to'] ?? null) {
@@ -4365,7 +4368,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -4914,7 +4917,7 @@ class BrowseEngine extends BaseFindEngine {
 				
 				// Map deaccession fields to deaccession bundle, which is used for access control on all
 				$bundle_name = (in_array($vs_field_name, ['deaccession_type_id'])) ? 'ca_objects_deaccession' : $vs_field_name;
-				if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+				if ($t_user && $t_user->isLoaded() && $bundle_name && ($t_user->getBundleAccessLevel($vs_browse_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 				
 				$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
@@ -5333,7 +5336,7 @@ class BrowseEngine extends BaseFindEngine {
 				
 				// Map deaccession fields to deaccession bundle, which is used for access control on all
 				$bundle_name = (in_array($vs_field_name, ['is_deaccessioned', 'deaccession_date', 'deaccession_notes', 'deaccession_type_id', 'deaccession_disposal_date'])) ? 'ca_objects_deaccession' : $vs_field_name;
-				if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+				if ($t_user && $t_user->isLoaded() && $bundle_name && ($t_user->getBundleAccessLevel($vs_browse_table_name, $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 				
 				$va_field_info = $t_item->getFieldInfo($vs_field_name);
 
@@ -5997,7 +6000,7 @@ class BrowseEngine extends BaseFindEngine {
 				}
 				
 				$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
-				if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+				if ($t_user && $t_user->isLoaded() && $vs_container_code && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 				
 				if ($vb_is_element) {
 					$va_joins = array(
@@ -6137,7 +6140,7 @@ class BrowseEngine extends BaseFindEngine {
 					} else {
 						$vs_container_sql = '';
 						$va_params = [$vn_element_id];
-						if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+						if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 							$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 							$va_params[] = $va_container_ids[$vs_container_code];
 						}
@@ -6367,7 +6370,7 @@ class BrowseEngine extends BaseFindEngine {
 				}
 				
 				$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
-				if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+				if ($t_user && $t_user->isLoaded() && $vs_container_code && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 				
 				if ($vb_is_element) {
 					$va_joins = array(
@@ -6470,7 +6473,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -6556,7 +6559,7 @@ class BrowseEngine extends BaseFindEngine {
 				}
 				
 				$vs_container_code = (is_array($va_element_code) && (sizeof($va_element_code) > 0)) ? array_pop($va_element_code) : null;
-				if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+				if ($t_user && $t_user->isLoaded() && $vs_container_code && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_container_code) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 				
 				if ($vb_is_element) {
 					$va_joins = array(
@@ -6659,7 +6662,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -6734,7 +6737,7 @@ class BrowseEngine extends BaseFindEngine {
 				$vs_rel_table_name = $va_facet_info['table'] ?? null;
 				$va_params = $this->opo_ca_browse_cache->getParameters();
 				
-				if ($t_user && $t_user->isLoaded() && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
+				if ($t_user && $t_user->isLoaded() && $vs_rel_table_name && ($t_user->getBundleAccessLevel($vs_browse_table_name, $vs_rel_table_name) < __CA_BUNDLE_ACCESS_READONLY__)) { return []; }
 				
 
 				// Make sure we honor type restrictions for the related authority
@@ -7199,7 +7202,7 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 						}
 					}
 
-					$natural_sort = caGetOption('natural_sort', $va_facet_info, true);
+					$natural_sort = caGetOption('natural_sort', $va_facet_info, $vs_rel_table_name !== 'ca_entities');
 					
 					// Get labels for facet items
 					if (sizeof($va_row_ids = array_keys($va_facet_items))) {

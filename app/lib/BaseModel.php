@@ -2462,7 +2462,7 @@ class BaseModel extends BaseObject {
 		foreach($this->FIELDS as $vs_field => $va_attr) {
 
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
-			$vs_field_value = $this->get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
+			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
 			if (isset($va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) && (bool)$va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) { continue; }
 			
@@ -3616,7 +3616,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 
 					if ($qr_record_check->numRows() > 0) {
 						if ($pb_delete_related) {
-							if(SearchIndexer::isIndexed($vs_many_table) || $t_related->getProperty('LOG_CHANGES_TO_SELF')) {
+							if((SearchIndexer::isIndexed($vs_many_table) || $t_related->getProperty('LOG_CHANGES_TO_SELF')) || !in_array($vs_many_table, ['ca_acl']) ) {
 								while($qr_record_check->nextRow()) {
 									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
 										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
@@ -12212,6 +12212,9 @@ $pa_options["display_form_field_tips"] = true;
 		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans 				= caGetOption('transaction', $pa_options, null);
 		$pa_check_access 		= caGetOption('checkAccess', $pa_options, null);
+		$ps_sort 				= caGetOption('sort', $pa_options, null);
+		$ps_sort_direction 		= caGetOption('sortDirection', $pa_options, 'ASC', ['validValues' => ['ASC', 'DESC']]);
+		
 		
 		$created_ts = $modified_ts = null;
 		if($created = caGetOption('created', $pa_options, null)) {
@@ -12485,20 +12488,19 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_sql = "SELECT {$select_flds} FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';
-		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
-			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
-			$va_tmp = explode(".", $vs_sort);
+		if ($ps_sort) {
+			$va_tmp = explode(".", $ps_sort);
 			if (sizeof($va_tmp) > 0) {
 				switch($va_tmp[0]) {
 					case $vs_table:
 						if ($t_instance->hasField($va_tmp[1])) {
-							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$vs_sort_direction}";
+							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$ps_sort_direction}";
 						}
 						break;
 					default:
 						if (sizeof($va_tmp) == 1) {
 							if ($t_instance->hasField($va_tmp[0])) {
-								$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY `{$ps_sort}` {$ps_sort_direction}";
 							}
 						}
 						break;
@@ -12603,7 +12605,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
-					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
+					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids), ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
 				} else {
 					return array_unique(array_values($va_ids));
 				}

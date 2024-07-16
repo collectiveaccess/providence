@@ -25,68 +25,63 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseSearchBuilderController.php");
- 	
- 	class SearchObjectsBuilderController extends BaseSearchBuilderController {
- 		# -------------------------------------------------------
- 		/**
- 		 * Name of subject table (ex. for an object search this is 'ca_objects')
- 		 */
- 		protected $ops_tablename = 'ca_objects';
- 		
- 		/** 
- 		 * Number of items per search results page
- 		 */
- 		protected $opa_items_per_page = array(8, 16, 24, 32);
- 		 
- 		/**
- 		 * List of search-result views supported for this find
- 		 * Is associative array: values are view labels, keys are view specifier to be incorporated into view name
- 		 */ 
- 		protected $opa_views;
- 		
- 		/**
- 		 * Name of "find" used to defined result context for ResultContext object
- 		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
- 		 */
- 		protected $ops_find_type = 'search_builder';
- 		 
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
-			$this->opa_views = array(
-				'thumbnail' => _t('thumbnails'),
-				'full' => _t('full'),
-				'list' => _t('list')
-			 );
+require_once(__CA_LIB_DIR__."/BaseSearchBuilderController.php");
 
-			 $this->opo_browse = new ObjectBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
-		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Search handler (returns search form and results, if any)
- 		 * Most logic is contained in the BaseSearchController->Index() method; all you usually
- 		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
- 		 * (eg. ObjectSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Index() 
- 		 */ 
- 		public function Index($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			
-			AssetLoadManager::register('querybuilder');
- 			AssetLoadManager::register('imageScroller');
- 			AssetLoadManager::register('tabUI');
- 			AssetLoadManager::register('panel');
-            return parent::Index($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns "search tools" widget
- 		 */ 
- 		public function Tools($pa_parameters) {
- 			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectSearch()
- 			return parent::Tools($pa_parameters);
- 		}
- 		# -------------------------------------------------------
- 	}
+class SearchObjectsBuilderController extends BaseSearchBuilderController {
+	# -------------------------------------------------------
+	/**
+	 * Name of subject table (ex. for an object search this is 'ca_objects')
+	 */
+	protected $ops_tablename = 'ca_objects';
+	
+	/** 
+	 * Number of items per search results page
+	 */
+	protected $opa_items_per_page = array(8, 16, 24, 32);
+	 
+	/**
+	 * List of search-result views supported for this find
+	 * Is associative array: values are view labels, keys are view specifier to be incorporated into view name
+	 */ 
+	protected $opa_views;
+	
+	/**
+	 * Name of "find" used to defined result context for ResultContext object
+	 * Must be unique for the table and have a corresponding entry in find_navigation.conf
+	 */
+	protected $ops_find_type = 'search_builder';
+	 
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), 'ca_objects', ['type_id' => $this->opn_type_restriction_id]);
+		$this->opo_browse = new ObjectBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Search handler (returns search form and results, if any)
+	 * Most logic is contained in the BaseSearchController->Index() method; all you usually
+	 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
+	 * (eg. ObjectSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Index() 
+	 */ 
+	public function Index($pa_options=null) {
+		$pa_options['search'] = $this->opo_browse;
+		
+		AssetLoadManager::register('querybuilder');
+		AssetLoadManager::register('imageScroller');
+		AssetLoadManager::register('tabUI');
+		AssetLoadManager::register('panel');
+		return parent::Index($pa_options);
+	}
+	# -------------------------------------------------------
+	# Sidebar info handler
+	# -------------------------------------------------------
+	/**
+	 * Returns "search tools" widget
+	 */ 
+	public function Tools($pa_parameters) {
+		// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectSearch()
+		return parent::Tools($pa_parameters);
+	}
+	# -------------------------------------------------------
+}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -579,10 +579,10 @@ trait CLIUtilsImportExport {
 		} else {
 			if(is_array($va_errors) && sizeof($va_errors)){
 				foreach($va_errors as $vs_error){
-					CLIUtils::addMessage(_t("Warning").":".$vs_error);
+					CLIUtils::addMessage($vs_error);
 				}
 			}
-			CLIUtils::addMessage("Created mapping %1 from %2", CLIUtils::textWithColor($t_exporter->get('exporter_code'), 'yellow'), $vs_file_path);
+			CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_exporter->get('exporter_code'), 'yellow'), $vs_file_path));
 			return true;
 		}
 	}

@@ -5162,6 +5162,8 @@ div.bundleDisplayEditorPlacement {
     -webkit-border-radius: 3px;
     background-size:14px 14px;
     font-size:12px;
+    
+    cursor: pointer;
 }
 div.bundleDisplayEditorPlacement .fa {
 	font-size:18px;
@@ -5176,6 +5178,18 @@ div.bundleDisplayEditorPlacementList {
     height: 450px;
     overflow: auto;
     margin-right:10px;
+}
+
+div.bundleDisplayEditorSearchForm {
+    position: relative;
+    float: right; 
+    margin-right: 35px;
+}
+
+div.bundleDisplayEditorSearchForm i.caIcon {
+    position: absolute;
+    right: 5px;
+    top: 5px;
 }
 
 span.bundleDisplayEditorPlacementListItemTitle {
@@ -6049,11 +6063,21 @@ div.preferenceColumnHeader {
     text-align: left;
 }
 
-div.preferencePlacementList {
-    width: 350px;
-    height: 350px;
-    overflow: auto;
-    margin-right:10px;
+div.preferenceCheckBoxList {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: start;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+div.preferenceCheckBoxList input {
+	margin: 0 10px 0 10px;
+}
+
+div.preferenceCheckBoxList div {
+    width: 100px;
 }
 
 .searchReindexHelpText{
@@ -6696,7 +6720,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     margin: 0px;
     padding:0px !important;
     border: 2px solid #999999;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 9999;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
 }
 
@@ -6878,16 +6902,23 @@ div.caRepresentationMediaReplicationControls {
 }
 
  /* Metadata Export */
- 
- #exporterUploadArea {
- 	border: 1px dashed #ccc;
- 	display:none;
- 	font-family: 'DIN-Regular', helvetica, sans-serif;
- 	font-size:16px;
- 	color:#333;
- 	text-align: center;
-	padding: 10px;
- }
+#importerUploadArea, #exporterUploadArea {
+    border: 1px dashed #ccc; 
+    text-align: center; 
+    padding: 10px; 
+    display: none;
+    font-size: 16px; 
+    color: #333;
+}
+
+div.exporterUploadText, div.importerUploadText {
+    cursor: pointer;
+}
+
+#caAddImportersButton, #caCloseImportersButton, #caAddExportersButton, #caCloseExportersButton {
+    display: none;
+}
+
 .ui-progressbar {
 	border:1px solid #eeeeee !important;
 }
@@ -8322,19 +8353,29 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 10px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia {
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlAccess {
     display: none;
     float: left;
 }
 
-.hierarchyToolsControlDownloadMedia select {
+.hierarchyToolsControlDownloadMedia {
+    display: none;
+    width: 100%;
+}
+
+.hierarchyToolsControlDownloadMedia select, .hierarchyToolsControlAccess select {
 	width: 40px;
 	font-size: 10px;
 	margin: 0px 0px 0px 4px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlDownloadMedia {
-    margin-top: 5px;
+.hierarchyToolsControlSetImage {
+    margin-top: 0px;
+}
+
+.hierarchyToolsControlRemoveItems {
+     margin: 0 0 0 25px;
+     
 }
 
 .hierarchyToolsMessage {
@@ -8426,3 +8467,5 @@ div.searchResultDesc ul {
 #algebraSetControls {
 	display: none;
 }
+
+

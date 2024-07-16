@@ -1292,6 +1292,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
 			$vm_return = (int)$t_element->get('datatype');
+		} else {
+			return null;
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
@@ -1595,6 +1597,44 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @param string|int $table
+	 * @param string|int $element_code_or_id
+	 * @return bool
+	 */
+	static public function elementIsApplicableToType($table, array $types, $element_code_or_id) : bool {
+		$cache_key = caMakeCacheKeyFromOptions($types, $table.$element_code_or_id);
+		if(CompositeCache::contains($cache_key, 'ElementApplicability')) {
+			return CompositeCache::fetch($cache_key, 'ElementApplicability');
+		}
+		if(!$element_code_or_id) {  return false; }
+		if(!($t_element = self::getInstance($element_code_or_id))) { 
+			CompositeCache::save($cache_key, false, 'ElementApplicability');
+			return false; 
+		}
+		$table_num = Datamodel::getTableNum($table);
+	
+		$type_res_list = $t_element->getTypeRestrictions($table_num);
+		if(is_array($type_res_list)) {
+			foreach($type_res_list as $type_res) {
+				if($type_res['table_num'] != $table_num) { continue; }
+				
+				if(!$type_res['type_id']) { 
+					CompositeCache::save($cache_key, true, 'ElementApplicability');
+					return true; 
+				}
+				if(in_array($type_res['type_id'], $types)) { 
+					CompositeCache::save($cache_key, true, 'ElementApplicability');
+					return true; 
+				}
+			}
+		}
+		CompositeCache::save($cache_key, false, 'ElementApplicability');
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get ca_metadata_elements instance for given code or ID
 	 * @param $pm_element_code_or_id
 	 * @return ca_metadata_elements|mixed|null
@@ -1653,6 +1693,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$this->errors = $t_restriction->errors();
 			return false;
 		}
+		CompositeCache::flush('ElementApplicability');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1680,6 +1721,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$this->errors = $o_db->errors();
 			return false;
 		}
+		CompositeCache::flush('ElementApplicability');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1704,6 +1746,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$this->errors = $o_db->errors();
 			return false;
 		}
+		CompositeCache::flush('ElementApplicability');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1728,21 +1771,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
 		}
 		
+		$params = [(int)$vn_element_id];
+		
 		$o_db = $this->getDb();
 
 		$vs_table_type_sql = '';
 		if ($pn_table_num > 0) {
-			$vs_table_type_sql .= ' AND table_num = '.intval($pn_table_num);
+			$vs_table_type_sql .= ' AND table_num = ?';
+			$params[] = intval($pn_table_num);
 		}
 		if ($pn_type_id > 0) {
-			$vs_table_type_sql .= ' AND type_id = '.intval($pn_type_id);
+			$vs_table_type_sql .= ' AND (type_id IN (?) OR type_id IS NULL)';
+			$params[] = (is_array($types_ids)) ? $type_ids : [$type_id];
 		}
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_metadata_type_restrictions
 			WHERE
 				element_id = ? {$vs_table_type_sql}
-		", (int)$vn_element_id);
+		", $params);
 
 		if ($o_db->numErrors()) {
 			$this->errors = $o_db->errors();

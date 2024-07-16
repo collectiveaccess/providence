@@ -131,6 +131,7 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 	if (!is_array($pa_values)) { return array(); }
 	$va_values = array();
 	foreach($pa_values as $vm_id => $va_value_list_by_locale) {
+		if(!is_array($va_value_list_by_locale)) { continue; }
 		if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
@@ -1214,10 +1215,10 @@ function caEditorInspector($po_view, $pa_options=null) {
 			if(is_array($vs_additional_info)){
 				$vs_buf .= "<br/>";
 				foreach($vs_additional_info as $vs_info){
-					$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+					$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()), ['requireLinkTags' => true])."<br/>\n";
 				}
 			} else {
-				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()), ['requireLinkTags' => true])."<br/>\n";
 			}
 		}
 
@@ -2430,6 +2431,7 @@ function caGetDefaultMediaViewer($ps_mimetype) {
  * @return array An array of tags, or an array of arrays when parseOptions option is set.
  */
 function caGetTemplateTags($ps_template, $pa_options=null) {
+	if(!strlen($ps_template)) { return []; }
 	$key = caMakeCacheKeyFromOptions($pa_options ?? [], $ps_template);
 	if(MemoryCache::contains($key, 'DisplayTemplateParserUtils')) { return MemoryCache::fetch($key, 'DisplayTemplateParserUtils'); }
 	
@@ -3166,8 +3168,15 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		}
 		$va_items = $va_tmp;
 		unset($va_tmp);
+	} elseif(method_exists($pt_rel, 'isSelfRelationship') && $pt_rel->isSelfRelationship()) {
+		foreach($va_items as $k => $item) {
+			if(!isset($item['relation_id'])) { continue; }
+			if($pt_rel->load($item['relation_id'])) {
+				$va_items[$k]['direction'] = strtolower($pt_rel->getOrientationForRelationship($va_primary_ids));
+				$va_items[$k]['relationship_type_id'] = $va_items[$k]['type_id'] = (($va_items[$k]['type_id'] ?? null) ? ($va_items[$k]['direction'] ? $va_items[$k]['direction'].'_'.$va_items[$k]['type_id'] : $va_items[$k]['type_id']) : null);
+			}
+		}
 	}
-
 	if(is_array($pa_options['sortOrder'] ?? null)) {
 		$va_items_sorted = [];
 		foreach($pa_options['sortOrder'] as $id) {
@@ -5401,7 +5410,7 @@ function caGetRepresentationDownloadFileName(string $table, array $data, ?array 
 	} 
 
 	$filename = html_entity_decode($filename);
-	return preg_replace("![^A-Za-z0-9_\-\.&]+!", "_", $filename);
+	return preg_replace("![^A-Za-z0-9_\-\.&()]+!", "_", $filename);
 }
 # ------------------------------------------------------------------
 /**
@@ -5651,5 +5660,49 @@ function caHighlightText($content, $highlight_words) {
 	$content = preg_replace("/(?<![A-Za-z0-9])(".join('|', $highlight_words).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 	
 	return $content;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caApplyFindViewUserRestrictions(ca_users $t_user, string $table, ?array $options=null) : array {
+	$views = caGetFindViewList($table);
+	if(!is_a($t_user, 'ca_users', )) { return $views; }
+	if(!$t_user->isValidPreference("find_{$table}_available_result_views")) { return $views; }
+	
+	$allowed_views = $t_user->getPreference("find_{$table}_available_result_views");
+	
+	$type_id = caGetOption('type_id', $options, null);
+	if(is_array($allowed_views[$table][$type_id]) && sizeof($allowed_views[$table][$type_id])) {
+		foreach($views as $i => $v) {
+			if(!in_array($v, $allowed_views[$table][$type_id], true)) {
+				unset($views[$i]);
+			}
+		}
+	}
+	return $views;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caGetFindViewList($table_name_or_num) : ?array {
+	if(!($t_instance = Datamodel::getInstance($table_name_or_num, true))) { return null; }
+	$table = $t_instance->tableName();
+	
+	switch($table) {
+		case 'ca_objects':
+			return [
+				'list' => _t('list'),
+				'full' => _t('full'),
+				'thumbnail' => _t('thumbnails'),
+			];
+			break;
+		default:
+			return [
+				'list' => _t('list')
+			];
+			break;
+	}	
 }
 # ------------------------------------------------------------------

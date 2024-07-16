@@ -258,7 +258,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_rank Optional value that determines sort order of bundles in the screen. If omitted, placement is added to the end of the screen.
 	 * @param array $pa_options Optional array of options. Supports the following options:
 	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
-	 * @return int Returns placement_id of newly created placement on success, false on error
+	 *		returnInstance = return newly created ca_editor_ui_bundle_placements instance instead of placement_id
+	 * @return int|ca_editor_ui_bundle_placements Returns placement_id of newly created placement on success (or ca_editor_ui_bundle_placements instance if returnInstance option is set), false on error
 	 */
 	public function addPlacement($ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank=null, $pa_options=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }
@@ -315,7 +316,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Dependent field visibility config relies on UI config
 		if ($this->getAppConfig()->get('enable_dependent_field_visibility')) { CompositeCache::flush('ca_metadata_elements_available_settings'); }
-		return $t_placement->getPrimaryKey();
+		return caGetOption('returnInstance', $pa_options, false) ? $t_placement : $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
 	/**
@@ -916,6 +917,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						if (!($t_rel = Datamodel::getInstanceByTableName($bundle, true))) { continue(2); }
 						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $bundle));
+						
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -1184,9 +1186,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show set representation button?'),
+								'showOnSelect' => ['useRepresentationRelationshipType'],
 								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
-							)
+							),
+							'useRepresentationRelationshipType' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'useRelationshipTypeList' => $va_path[1],
+								'width' => "475px", 'height' => "75px",
+								'takesLocale' => false,
+								'default' => '',
+								'multiple' => false,
+								'label' => _t('Use relationship type'),
+								'description' => _t('Relationship type to link selected representations with.')
+							),
 						);
+						
+						if($va_path[1] === 'ca_objects_x_object_representations') {
+							unset($va_additional_settings['useRepresentationRelationshipType']);
+							unset($va_additional_settings['showSetRepresentationButton']['showOnSelect']);
+						}
 				
 						if(
 							!($policies = array_merge(
@@ -1530,6 +1549,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Number of items to load per page'),
 										'description' => _t('Maximum number of items to render on initial load.')
 									),
+									'itemDisplayTemplate' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "100px",
+										'label' => _t('Item display template'),
+										'description' => _t('Caption for item in hierarchy list.')
+									]
 								];
 								break;
 							case 'authority_references_list':
