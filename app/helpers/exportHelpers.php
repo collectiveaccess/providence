@@ -607,10 +607,10 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					$b = $display_item['bundle_name'] ?? null;
 					if($t) {
 						$value = $result->getWithTemplate($t);
+					} elseif($t_display) {
+						$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['forReport' => true, 'convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
 					} elseif($b) {
 						$value = $result->get($b, ['convertCodesToDisplayText' => true, 'delimiter' => '; ']);
-					} elseif($t_display) {
-						$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
 					} else {
 						$value = '';
 					}
