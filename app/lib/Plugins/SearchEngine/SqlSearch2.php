@@ -1191,7 +1191,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$incremental_reindexing = (bool)$this->can('incremental_reindexing');
 		
-		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $incremental_reindexing) {
+		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $incremental_reindexing && !($options['dontRemoveExistingIndexing'] ?? false)) {
 			$this->removeRowIndexing($this->indexing_subject_tablenum, $this->indexing_subject_row_id, $content_tablenum, array($content_fieldname), $content_row_id, $rel_type_id);
 		}
 		if (!$words) {
