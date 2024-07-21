@@ -487,7 +487,7 @@ class SearchIndexer extends SearchBase {
 					if ($vn_id == $pn_subject_row_id) { continue; }
 					
 					$o_indexer->opo_engine->startRowIndexing($subject_table_num, $vn_id);
-					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $pn_content_row_id, $pa_values_to_index, array_merge($pa_data));
+					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $pn_content_row_id, $pa_values_to_index, array_merge($pa_data, ['dontRemoveExistingIndexing' => $pa_options['dontRemoveExistingIndexing'] ?? false]));
 					$o_indexer->opo_engine->commitRowIndexing();
 				}
 			}
@@ -501,7 +501,7 @@ class SearchIndexer extends SearchBase {
 					if ($vn_id == $pn_subject_row_id) { continue; }
 
 					$o_indexer->opo_engine->startRowIndexing($subject_table_num, $vn_id);
-					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $is_generic ? $pn_subject_row_id : $pn_content_row_id, $pa_values_to_index, array_merge($pa_data));
+					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $is_generic ? $pn_subject_row_id : $pn_content_row_id, $pa_values_to_index, array_merge($pa_data, ['dontRemoveExistingIndexing' => $pa_options['dontRemoveExistingIndexing'] ?? false]));
 					$o_indexer->opo_engine->commitRowIndexing();
 				}
 			}
@@ -716,10 +716,9 @@ if (!$for_current_value_reindex) {
 					//
 					// Plain old field
 					//
-					if (!$pb_reindex_mode && $vb_can_do_incremental_indexing && !$pb_is_new_row && !isset($pa_changed_fields[$vs_field]) && ($vs_field != $vs_subject_pk)) {	// skip unchanged
+					if (!$vb_initial_reindex_mode && $vb_can_do_incremental_indexing && !$pb_is_new_row && !isset($pa_changed_fields[$vs_field]) && ($vs_field != $vs_subject_pk)) {	// skip unchanged
 						continue;
 					}
-
 					if (is_null($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
 					
 					//
