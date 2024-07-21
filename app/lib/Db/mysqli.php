@@ -329,7 +329,7 @@ class Db_mysqli extends DbDriverBase {
 			$is_error = true;
 			
 			$error_num = $e->getCode();
-			$error_message = $e->getError();
+			$error_message = $e->getMessage();
 		}
 		
 		if($is_error) {
