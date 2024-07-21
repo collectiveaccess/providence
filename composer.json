@@ -34,6 +34,7 @@
     "pear/file_marc": "~1.2",
     "phpoffice/phpspreadsheet": "v1.22",
     "phpoffice/phpword": "v0.18.*",
+    "phpoffice/phppresentation": "dev-master",
     "phpunit/phpunit": "^9.5",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "webonyx/graphql-php": "^14.1",
