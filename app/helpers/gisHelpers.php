@@ -395,6 +395,10 @@
  	 * Converts $ps_value from degrees minutes seconds format to decimal
  	 */
 	function caGISminutesToSignedDecimal($ps_value){
+		$vn_deg = 0;
+		$vn_min = 0;
+		$vn_sec = 0;
+
 		$ps_value = trim($ps_value);
 		$vs_value = preg_replace('/[^0-9A-Za-z\.\-]+/', ' ', $ps_value);
 		
