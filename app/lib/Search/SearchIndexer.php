@@ -684,7 +684,7 @@ if (!$for_current_value_reindex) {
 					//
 					if (!preg_match('!^_ca_attribute_(.*)$!', $vs_field, $va_matches)) { continue; }
 
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
+					if (!$vb_initial_reindex_mode && $vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
 						continue;	// skip unchanged attribute value
 					}
 
