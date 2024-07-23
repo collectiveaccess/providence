@@ -8767,7 +8767,11 @@ side. For many self-relations the direction determines the nature and display te
 				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
 				foreach($va_expression_tags as $vs_tag) {
 					$t = caParseTagOptions($vs_tag);
-					$va_row[$vs_tag] = $this->get($t['tag'], $t['options']);
+					$opts = $t['options'] ?? [];
+					if(!isset($opts['convertCodesToIdno']) && !isset($opts['convertCodesToIdno'])) {
+						$opts['convertCodesToIdno'] = true;
+					}
+					$va_row[$vs_tag] = $this->get($t['tag'], $opts);
 				}
 			}
 			
@@ -8775,7 +8779,6 @@ side. For many self-relations the direction determines the nature and display te
 			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()))) {
 				$t_violation = $t_found;
 			}
-					
 			if (!$vb_skip && ExpressionParser::evaluate(html_entity_decode($va_rule['expression']), $va_row)) {
 				// violation
 				if ($t_violation->getPrimaryKey()) {
