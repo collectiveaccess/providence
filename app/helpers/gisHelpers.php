@@ -406,6 +406,9 @@
 		list($vn_deg, $vn_min, $vn_sec, $vs_dir) = explode(' ',$vs_value);
 		$vn_pos = ($vn_deg < 0) ? -1:1;
 		if (in_array(strtoupper($vs_dir), array('S', 'W'))) { $vn_pos = -1; }
+
+		//Readded Workaround for missing metadata -> caused by broken images
+		if(!is_numeric($vn_deg)) {$vn_deg = 0};
 		
 		$vn_deg = abs(round($vn_deg,6));
 		$vn_min = abs(round($vn_min,6));
