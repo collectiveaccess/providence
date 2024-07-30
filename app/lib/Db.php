@@ -146,7 +146,15 @@ class Db extends DbBase {
 			return true;
 		}
 	}
-
+	/**
+	 * Disconnect
+	 *
+	 * @return Bool
+	 */
+	public function disconnect() {
+		return $this->opo_db->disconnect();
+	}
+	
 	/**
 	 * Fetches the Configuration object.
 	 *

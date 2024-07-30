@@ -151,10 +151,10 @@ class Db_mysqli extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function disconnect() {
-		//if (!is_resource($this->opr_db)) { return true; }
-		//if (!@mysql_close($this->opr_db)) {
-		//	return false;
-		//}
+		if (!is_object($this->opr_db)) { return true; }
+		if (!mysqli_close($this->opr_db)) {
+			return false;
+		}
 		return true;
 	}
 
