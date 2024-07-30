@@ -122,7 +122,7 @@ class Db_mysqli extends DbDriverBase {
 		$this->ops_db_pass = $pa_options["password"];
 		$this->ops_db_db = $pa_options["database"];
 		$this->ops_db_port = $pa_options["port"] ?? 3306;
-		$this->use_ssl = $pa_options["ssl"] ?? false;
+		$this->use_ssl = $pa_options["use_ssl"] ?? false;
 		$this->ssl_verify_cert = $pa_options["ssl_verify_cert"] ?? true;
 		$this->ssl_key = $pa_options["ssl_key"] ?? null;
 		$this->ssl_certificate = $pa_options["ssl_certificate"] ?? null;
@@ -147,7 +147,7 @@ class Db_mysqli extends DbDriverBase {
 		$flags = null;
 		if($this->use_ssl) {
 			mysqli_options($this->opr_db, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, (bool)$this->ssl_verify_cert);
-			mysqli_ssl_set($this->opr_db, $this->ssl_key, $this->ssl_certificate, $this->ssl_ca_certificate, $this->ssl_ca_path);
+			mysqli_ssl_set($this->opr_db, $this->ssl_key, $this->ssl_certificate, $this->ssl_ca_certificate, $this->ssl_ca_path, null);
 			$flags = MYSQLI_CLIENT_SSL;
 		}
 		if(!mysqli_real_connect($this->opr_db , $this->ops_db_host, $this->ops_db_user, $this->ops_db_pass, $this->ops_db_db, $this->ops_db_port, null, $flags)) {
