@@ -313,6 +313,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	/**
 	 * Override update() to generate sortable version of user-defined identifier field
+	 *
+	 * @param array $pa_options Options include:
+	 *		bulkMode = don't abort transaction on error [Default is false]
 	 */ 
 	public function update($pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -322,11 +325,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
+		
+		$bulk = caGetOption('bulkMode', $pa_options, false);
 
 		$this->opo_app_plugin_manager->hookBeforeBundleUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
 
 		$vb_we_set_transaction = false;
-		if (!$this->inTransaction()) {
+		if (!$bulk && !$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		}
