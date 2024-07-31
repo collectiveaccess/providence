@@ -87,7 +87,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	static private $metadata_elements; 					// cached metadata element info
 	static private $fieldnum_cache = [];				// cached field name-to-number values used when indexing
 	static private $stop_words = null;
-	static private $doc_content_buffer = [];			// content buffer used when indexing
+	private $doc_content_buffer = [];			// content buffer used when indexing
 	
 	static protected $filter_stop_words = null;
 	
@@ -180,7 +180,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'omitPrivateIndexing' => false,								//
 				'excludeFieldsFromSearch' => null,
 				'restrictSearchToFields' => null,
-				'strictPhraseSearching' => true							// strict phrase searching finds only records with the precise phrase; non-strict will find fields with all of the words, in any order
+				'strictPhraseSearching' => true,							// strict phrase searching finds only records with the precise phrase; non-strict will find fields with all of the words, in any order
+				'useAsync' => true
 		);
 		
 		// Defines specific capabilities of this engine and plug-in
@@ -209,7 +210,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function __destruct() {	
-		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
+		if (is_array($this->doc_content_buffer) && sizeof($this->doc_content_buffer)) {
 			if($this->db && !$this->db->connected()) {
 				$this->db->connect();
 			}
@@ -219,6 +220,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		unset($this->search_config);
 		unset($this->db);
 		unset($this->tep);
+		
+		if($this->reindex_db) {
+			$this->reindex_db->disconnect();
+		}
 	}
 	# -------------------------------------------------------
 	# Query
@@ -1195,7 +1200,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$this->removeRowIndexing($this->indexing_subject_tablenum, $this->indexing_subject_row_id, $content_tablenum, array($content_fieldname), $content_row_id, $rel_type_id);
 		}
 		if (!$words) {
-			self::$doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.')';
+			$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.')';
 		} else {
 			if((bool)$this->search_config->get('group_index_for_repeating_terms_in_field')) {
 				$u = array_unique($words);
@@ -1207,7 +1212,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				if(!strlen($vs_word)) { continue; }
 				if (!($word_id = (int)$this->getWordID($vs_word))) { continue; }
 			
-				self::$doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.')';
+				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.')';
 			}
 		}
 	}
@@ -1216,7 +1221,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function commitRowIndexing() : void {
-		if (sizeof(self::$doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
+		if (sizeof($this->doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
@@ -1229,23 +1234,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
-		if (is_array(self::$doc_content_buffer) && sizeof(self::$doc_content_buffer)) {
-			while(sizeof(self::$doc_content_buffer) > 0) {
-				if (defined("__CollectiveAccess_IS_REINDEXING__")) {
+		if (is_array($this->doc_content_buffer) && sizeof($this->doc_content_buffer)) {
+			while(sizeof($this->doc_content_buffer) > 0) {
+				if (defined("__CollectiveAccess_IS_REINDEXING__") && $this->getOption('useAsync')) {
 					$db = $this->getReindexDbConnection();
 					if($this->last_indexing_result) { $this->last_indexing_result->reap(); }
-					$this->last_indexing_result = $db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)), [], ['resultMode' => MYSQLI_ASYNC]);
-			
+					$this->last_indexing_result = $db->query($this->insert_word_index_sql."\n".join(",", array_splice($this->doc_content_buffer, 0, $vn_max_word_segment_size)), [], ['resultMode' => MYSQLI_ASYNC]);
 					if($r) { $r->free(); }
 				} else {
-					$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice(self::$doc_content_buffer, 0, $vn_max_word_segment_size)));
+					$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice($this->doc_content_buffer, 0, $vn_max_word_segment_size)));
 				}
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}
 	
 		// clean up
-		self::$doc_content_buffer = [];
+		$this->doc_content_buffer = [];
 		$this->_checkWordCacheSize();
 	}
 	# ------------------------------------------------
