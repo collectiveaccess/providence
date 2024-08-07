@@ -560,7 +560,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		
 		print $content;
 		return $content;
-	} elseif((!$display_id || !is_numeric($display_id)) && !sizeof($display_list)) {
+	} elseif((!$display_id || !is_numeric($display_id)) && (!is_array($display_list) || !sizeof($display_list))) {
 		// Generate default display list when no display is specified
 		$display_list = $placements = caExportGetDefaultDisplay($table);
 		$view->setVar('display_list', $display_list);
