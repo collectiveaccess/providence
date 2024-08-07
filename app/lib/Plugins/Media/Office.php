@@ -296,6 +296,8 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 				} catch(\PhpOffice\PhpPresentation\Reader\Exception $e) {
 					// noop
+				} catch(\PhpOffice\PhpPresentation\Exception\FileNotFoundException $e) {
+					// noop
 				}
 			}
 		}
