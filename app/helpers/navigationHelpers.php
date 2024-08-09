@@ -177,7 +177,7 @@
 					if ($use_query_string) { 
 					    $query_params[$vs_name] = $vs_value;
 					} else {
-					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
+					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : rawurlencode($vs_value));
 				    }
 					$vn_i++;
 				}
