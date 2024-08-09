@@ -29,7 +29,7 @@
     "league/flysystem-ziparchive": ">=1.0.0",
     "magento/zendframework1": "~1.15",
     "maximebf/debugbar": ">=1.0.0",
-    "monolog/monolog": "~1.0",
+    "monolog/monolog": "~3.7",
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
     "phpoffice/phpspreadsheet": "v1.22",
