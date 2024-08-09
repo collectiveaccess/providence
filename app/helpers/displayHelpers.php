@@ -3168,8 +3168,15 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		}
 		$va_items = $va_tmp;
 		unset($va_tmp);
+	} elseif(method_exists($pt_rel, 'isSelfRelationship') && $pt_rel->isSelfRelationship()) {
+		foreach($va_items as $k => $item) {
+			if(!isset($item['relation_id'])) { continue; }
+			if($pt_rel->load($item['relation_id'])) {
+				$va_items[$k]['direction'] = strtolower($pt_rel->getOrientationForRelationship($va_primary_ids));
+				$va_items[$k]['relationship_type_id'] = $va_items[$k]['type_id'] = (($va_items[$k]['type_id'] ?? null) ? ($va_items[$k]['direction'] ? $va_items[$k]['direction'].'_'.$va_items[$k]['type_id'] : $va_items[$k]['type_id']) : null);
+			}
+		}
 	}
-
 	if(is_array($pa_options['sortOrder'] ?? null)) {
 		$va_items_sorted = [];
 		foreach($pa_options['sortOrder'] as $id) {

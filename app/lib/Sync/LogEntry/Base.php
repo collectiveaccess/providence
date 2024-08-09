@@ -510,7 +510,9 @@ abstract class Base {
 					} else {
 						if (($vs_field === 'user_id') && ($AUTH_CURRENT_USER_ID > 0)) {
 							$vm_val = $AUTH_CURRENT_USER_ID;
-						} elseif (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id'])) {	// let auto-resolved fields fall through
+						} elseif (
+							!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id', 'representation_id', 'annotation_id'])
+						) {	// let auto-resolved fields fall through
 							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 						}
 					}

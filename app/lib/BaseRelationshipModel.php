@@ -54,6 +54,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
 			$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
 			
+			$t_left->setTransaction($this->getTransaction());
+			$t_right->setTransaction($this->getTransaction());
+			
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
 					if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
@@ -72,6 +75,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		if ($vn_rc = parent::update($pa_options)) {
 			$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
 			$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
+			
+			$t_left->setTransaction($this->getTransaction());
+			$t_right->setTransaction($this->getTransaction());
 			
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
@@ -93,6 +99,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vn_right_id = $this->get($this->getRightTableFieldName());
 		
 		$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
+		
+		$t_left->setTransaction($this->getTransaction());
+		$t_right->setTransaction($this->getTransaction());
 		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {

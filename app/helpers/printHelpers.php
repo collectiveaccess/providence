@@ -212,6 +212,10 @@ function caGetPrintTemplateDetails($ps_type, $ps_template, $pa_options=null) {
 			$vs_template_path = "{$vs_template_path}/local/{$ps_template}.php";
 		} elseif(file_exists("{$vs_template_path}/{$ps_template}.php")) {
 			$vs_template_path = "{$vs_template_path}/{$ps_template}.php";
+		} elseif(is_numeric($ps_template) && file_exists("{$vs_template_path}/display.php")) {
+			$vs_template_path = "{$vs_template_path}/display.php";
+		} elseif(is_numeric($ps_template) && file_exists("{$vs_template_path}/local/display.php")) {
+			$vs_template_path = "{$vs_template_path}/local/display.php";
 		} else {
 			continue;
 		}
@@ -523,6 +527,7 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 	$va_options = [];
 	if (sizeof($va_formats) > 0) {
 		foreach($va_formats as $vn_ => $va_form_info) {
+			if($va_form_info['type'] === 'omit') { continue; }
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
 	}
@@ -540,7 +545,8 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 			|| 
 			(is_array($va_display_info['settings']['show_only_in'] ?? null) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
 		) { continue; }        
-		$va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
+		$n = !isset($va_options[$va_display_info['name']]) ? $va_display_info['name'] : $va_display_info['name'].' (display)';
+		$va_options[$n] = '_display_'.$va_display_info['display_id']; 
 	}
 	
 	if (sizeof($va_options) == 0) { return ''; }
@@ -600,7 +606,7 @@ function caGetPrintFormatsListAsHTMLForSetItemBundles($ps_id_prefix, $po_request
 				($va_display_info['settings']['show_only_in'] ?? null) && 
 				($va_display_info['settings']['show_only_in'] != 'set_item_bundle'))
 			) { continue; }
-			$va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];
+			if(!isset($va_options[$va_display_info['name']])) { $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id']; }
 		}
 	}
 	

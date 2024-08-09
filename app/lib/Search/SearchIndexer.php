@@ -65,9 +65,11 @@ class SearchIndexer extends SearchBase {
 	 * so this is critical. If you don't pass an Db() instance then the constructor creates a new one, which is useful for
 	 * cases where you're reindexing and not in a transaction.
 	 */
-	public function __construct($opo_db=null, $ps_engine=null) {
+	public function __construct($opo_db=null, $ps_engine=null, $use_async=true) {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 		parent::__construct($opo_db, $ps_engine);
+		
+		$this->opo_engine->setOption('useAsync', $use_async);
 
 		$this->opo_metadata_element = new ca_metadata_elements();
 		$this->opo_search_indexing_queue = new ca_search_indexing_queue();
@@ -156,7 +158,7 @@ class SearchIndexer extends SearchBase {
 		if(!$table_num) {
 			return false;
 		}
-		$o_indexer = new SearchIndexer();
+		$o_indexer = new SearchIndexer(null, null, false);
 		$tables = $o_indexer->getIndexedTables();
 		
 		return isset($tables[$table_num]);
@@ -230,6 +232,7 @@ class SearchIndexer extends SearchBase {
 			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
 
 			$vn_table_num = $t_instance->tableNum();
+			$table_name_display = $t_instance->getProperty('NAME_PLURAL');
 
 			$va_fields_to_index = $this->getFieldsToIndex($vn_table_num);
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
@@ -239,7 +242,7 @@ class SearchIndexer extends SearchBase {
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
-				print CLIProgressBar::start($vn_num_rows, _t('Indexing %1', $t_instance->getProperty('NAME_PLURAL')));
+				print CLIProgressBar::start($vn_num_rows, _t('Indexing %1', $table_name_display));
 			}
 
 			$vn_c = 0;
@@ -278,7 +281,7 @@ class SearchIndexer extends SearchBase {
 
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
 				if ($pb_display_progress && $pb_interactive_display) {
-					CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
+					CLIProgressBar::setMessage(_t("[Index: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
 					print CLIProgressBar::next();
 				}
 
@@ -373,15 +376,7 @@ class SearchIndexer extends SearchBase {
 				}
 			}
 
-			$this->indexRow(
-				$vn_table_num, 
-				$vn_id, 
-				$va_field_data[$vn_id], 
-				false, 
-				null, 
-				[$vs_table_pk => true], 
-				$pa_options
-			);
+			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), array_merge($pa_options, ['queueIndexing' => true, 'force' => true]));
 
 		}
 		return true;
@@ -486,7 +481,7 @@ class SearchIndexer extends SearchBase {
 		$subject_table_num = $pt_subject->tableNum();
 		
 		if (caGetOption('CHILDREN_INHERIT', $pa_data, false) || (array_search('CHILDREN_INHERIT', $pa_data, true) !== false)) {
-			$o_indexer = new SearchIndexer($this->opo_db);
+			$o_indexer = new SearchIndexer($this->opo_db, null, false);
 		
 			$vn_rel_table_num = $pt_rel ? $pt_rel->tableNum() : $subject_table_num;
 			if (is_array($va_ids = $pt_subject->getHierarchy($pn_subject_row_id, ['idsOnly' => true]))) {
@@ -494,13 +489,13 @@ class SearchIndexer extends SearchBase {
 					if ($vn_id == $pn_subject_row_id) { continue; }
 					
 					$o_indexer->opo_engine->startRowIndexing($subject_table_num, $vn_id);
-					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $pn_content_row_id, $pa_values_to_index, array_merge($pa_data));
+					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $pn_content_row_id, $pa_values_to_index, array_merge($pa_data, ['dontRemoveExistingIndexing' => $pa_options['dontRemoveExistingIndexing'] ?? false]));
 					$o_indexer->opo_engine->commitRowIndexing();
 				}
 			}
 		}
 		if (caGetOption('ANCESTORS_INHERIT', $pa_data, false) || (array_search('ANCESTORS_INHERIT', $pa_data, true) !== false)) {
-			if (!$o_indexer) { $o_indexer = new SearchIndexer($this->opo_db); }
+			if (!$o_indexer) { $o_indexer = new SearchIndexer($this->opo_db, null, false); }
 			if(!$vn_rel_table_num) { $vn_rel_table_num = $pt_rel ? $pt_rel->tableNum() : $subject_table_num; }
 		
 			if (is_array($va_ids = $pt_subject->getHierarchyAncestors($pn_subject_row_id, ['idsOnly' => true]))) {
@@ -508,7 +503,7 @@ class SearchIndexer extends SearchBase {
 					if ($vn_id == $pn_subject_row_id) { continue; }
 
 					$o_indexer->opo_engine->startRowIndexing($subject_table_num, $vn_id);
-					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $is_generic ? $pn_subject_row_id : $pn_content_row_id, $pa_values_to_index, array_merge($pa_data));
+					$o_indexer->opo_engine->indexField($is_generic ? $subject_table_num : $vn_rel_table_num, $ps_field_num, $is_generic ? $pn_subject_row_id : $pn_content_row_id, $pa_values_to_index, array_merge($pa_data, ['dontRemoveExistingIndexing' => $pa_options['dontRemoveExistingIndexing'] ?? false]));
 					$o_indexer->opo_engine->commitRowIndexing();
 				}
 			}
@@ -611,6 +606,7 @@ class SearchIndexer extends SearchBase {
 	public function indexRow($pn_subject_table_num, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_options=null) {
 		$vb_initial_reindex_mode = $pb_reindex_mode;
 		$for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
+		$force = caGetOption('force', $pa_options, false);
 		if (!$pb_reindex_mode && !$for_current_value_reindex && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 //print "INDEX $pn_subject_table_num / $pn_subject_row_id // ".print_R($pa_field_data, true)." // ".print_r($pa_changed_fields, true)."<br>\n\n";
 		$vb_started_indexing = false;
@@ -624,10 +620,11 @@ class SearchIndexer extends SearchBase {
 
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
-		if(!$pb_reindex_mode && !sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
+		if(!$force && !$pb_reindex_mode && !sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
 
 		if($pb_reindex_mode && caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$priority = caGetOption('priority', $pa_options, 100);
+
 			$field_data_proc = [];
 			foreach(array_keys($pa_changed_fields) as $k) {
 				$field_data_proc[$k] = $pa_field_data[$k];
@@ -703,7 +700,7 @@ if (!$for_current_value_reindex) {
 					//
 					if (!preg_match('!^_ca_attribute_(.*)$!', $vs_field, $va_matches)) { continue; }
 
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
+					if (!$force && !$vb_initial_reindex_mode && $vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
 						continue;	// skip unchanged attribute value
 					}
 
@@ -735,10 +732,9 @@ if (!$for_current_value_reindex) {
 					//
 					// Plain old field
 					//
-					if ($vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field])) && ($vs_field != $vs_subject_pk) ) {	// skip unchanged
+					if (!$force && !$vb_initial_reindex_mode && $vb_can_do_incremental_indexing && !$pb_is_new_row && !isset($pa_changed_fields[$vs_field]) && ($vs_field != $vs_subject_pk)) {	// skip unchanged
 						continue;
 					}
-
 					if (is_null($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
 					
 					//
@@ -766,7 +762,7 @@ if (!$for_current_value_reindex) {
 
 							if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 								// trigger reindexing of children
-								$o_indexer = new SearchIndexer($this->opo_db);
+								$o_indexer = new SearchIndexer($this->opo_db, null, false);
 								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 								while($qr_children_res->nextHit()) {
 									$o_indexer->indexRow(
@@ -1308,7 +1304,7 @@ if (!$for_current_value_reindex) {
 				// engines you're going to have a lot of reindexing going on, we may just have to construct a facility to handle large
 				// indexing tasks in a separate process when the number of dependent rows exceeds a certain threshold
 				//
-				$o_indexer = new SearchIndexer($this->opo_db);
+				$o_indexer = new SearchIndexer($this->opo_db, null, false);
 				$t_dep = null;
 				$va_rows_seen = array();
 				foreach($va_rows_to_reindex as $va_row_to_reindex) {
@@ -1359,7 +1355,7 @@ if (!$for_current_value_reindex) {
 			$va_children_ids = $t_subject->getHierarchyAsList($pn_subject_row_id, array('idsOnly' => true));
 			if (is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 				// trigger reindexing of children
-				$o_indexer = new SearchIndexer($this->opo_db);
+				$o_indexer = new SearchIndexer($this->opo_db, null, false);
 				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 				while($qr_children_res->nextHit()) {
 					$vn_id = $qr_children_res->get($vs_subject_pk);
@@ -1662,7 +1658,7 @@ if (!$for_current_value_reindex) {
 
 						if (!caGetOption('reindex', $pa_options, false) && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 							// trigger reindexing of children
-							$o_indexer = new SearchIndexer($this->opo_db);
+							$o_indexer = new SearchIndexer($this->opo_db, null, false);
 							$pt_subject->load($pn_row_id);
 							$va_content = $pt_subject->get($pt_subject->tableName().".".$vs_element_code, array('returnWithStructure' => true,'returnAsArray' => true, 'returnAllLocales' => true));
 

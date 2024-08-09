@@ -415,10 +415,11 @@ class ca_media_upload_sessions extends BaseModel {
 				return ($v['completed_on'] > 0);
 			});
 			foreach($media as $path => $info) {
-				if(ca_object_representations::mediaExists($path)) {
+				if($t_rep = ca_object_representations::mediaExists($path)) {
 					$filename = pathinfo($path, PATHINFO_BASENAME);
 					unset($media[$path]);
-					self::_setSessionWarning($session, $label, $warnings[$filename][] = _t('Media file <em>%1</em> is already loaded (file was skipped)', $filename));
+					$object_idno = $t_rep->get('ca_objects.idno');
+					self::_setSessionWarning($session, $label, $warnings[$filename][] = ($object_idno ? _t('Media file <em>%1</em> is already loaded in %2 (file was skipped)', $filename, $object_idno) : _t('Media file <em>%1</em> is already loaded (file was skipped)', $filename)));
 				}
 			}
 			
@@ -501,14 +502,14 @@ class ca_media_upload_sessions extends BaseModel {
 						$r->insert();
 						
 						if ($r->numErrors()) {
-							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not create media child record %1 for %2: %3 (file was skipped)', $filename, $label, join(", ", $r->getErrors())));
+							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not create media child record in %4 for %1 (%2): %3 (file was skipped)', $filename, $label, join(", ", $r->getErrors()), $t->get("{$table}.idno")));
 							continue;
 						}
 					
 						$r->addLabel(['name' => $label], $locale_id, null, true);
 						
 						if ($r->numErrors()) {
-							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not add label for media child record for %1: %2 (file was skipped)', $label, join(", ", $t->getErrors())));
+							self::_setSessionError($session, $label, $errors[$filename][] = _t('Could not add label for media child record in %3 for %1: %2 (file was skipped)', $label, join(", ", $t->getErrors()),  $t->get("{$table}.idno")));
 							continue;
 						}
 						

@@ -5103,3 +5103,22 @@ function caFileIsIncludable($ps_file) {
 		return $rarray; 
 	}
 	# ----------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array
+	 * @return array
+	 */
+	function caUrlExists(string $url, ?array $options=null) : bool { 
+		$allow_redirects = caGetOption('allowRedirects', $options, true);
+		
+		if(!is_array($headers = @get_headers($url))) { return false; }
+	
+		if(preg_match("!([\d]{3}) OK$!i", $headers[0], $m)) {
+			$sc = (int)$m[1];
+			if(($sc >= 200) && ($sc <= 299)) { return true; }
+			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }
+		}
+		return false;
+	}
+	# ----------------------------------------

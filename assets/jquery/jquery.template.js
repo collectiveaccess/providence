@@ -91,15 +91,13 @@ jQuery.fn.template = function( objValues ){
 		// values. Now, let's convert it into a jQuery DOM
 		// element and return it.
 		strHTML = jQuery.trim(strHTML);
-		if(!strHTML.match(/^</)) {	// if template doesn't start with a tag, wrap it to prevent top-level text from being stripped by jQuery
+		if(!strHTML.match(/^</) || !strHTML.match(/>$/)) {	// if template doesn't start or end with a tag, wrap it to prevent top-level text from being stripped by jQuery
 			strHTML = '<span>' + strHTML + '</span>';
 		}
 		return( jQuery( strHTML ) );
  
 	} else {
- 
 		// Return empty jQuery stack.
 		return( jQuery( [] ) );
- 
 	}
 }

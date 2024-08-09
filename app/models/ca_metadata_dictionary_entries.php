@@ -527,10 +527,12 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 						if(
 							is_array($va_entry_types = ($va_entry['settings']['restrict_to_relationship_types'] ?? null))
 						) {
-							if (sizeof(array_intersect($va_relationship_types, $va_entry_types))) {
-								$vn_entry_id = $vn_id;
-							} else {
-								$vn_entry_id = null;
+							if(sizeof($va_entry_types = array_filter($va_entry_types, 'strlen'))) {
+								if (sizeof(array_intersect($va_relationship_types, $va_entry_types))) {
+									$vn_entry_id = $vn_id;
+								} else {
+									$vn_entry_id = null;
+								}
 							}
 						}
 					}
@@ -538,10 +540,12 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 						if(
 							is_array($va_entry_types = ($va_entry['settings']['restrict_to_types'] ?? null))
 						) {
-							if (sizeof(array_intersect($va_types, $va_entry_types))) {
-								$vn_entry_id = $vn_id;
-							} else {
-								$vn_entry_id = null;
+							if(sizeof($va_entry_types = array_filter($va_entry_types, 'strlen'))) {
+								if (sizeof(array_intersect($va_types, $va_entry_types))) {
+									$vn_entry_id = $vn_id;
+								} else {
+									$vn_entry_id = null;
+								}
 							}
 						}
 					}
