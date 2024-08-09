@@ -2556,7 +2556,7 @@ class SearchResult extends BaseObject {
 								}
 								continue(2);
 							default:
-								if (in_array($o_value->getDisplayValue(array('output' => 'idno')), $pa_exclude_idnos)) {
+								if (in_array($o_value->getDisplayValue(array('output' => 'idno', 'doRefSubstitution' => false)), $pa_exclude_idnos)) {
 									continue(2);
 								}
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
@@ -2573,7 +2573,7 @@ class SearchResult extends BaseObject {
 					$va_spec = $va_path_components['components'];
 					
 					array_pop($va_spec);
-					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno')));
+					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno', 'doRefSubstitution' => false)));
 					
 					if (!$vb_dont_return_value) {
 						$vb_did_return_value = true;
@@ -4001,7 +4001,7 @@ class SearchResult extends BaseObject {
 			return strlen($b) <=> strlen($a);
 		});
 		
-		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9\/=<])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<= |^)(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}
