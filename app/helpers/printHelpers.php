@@ -527,6 +527,7 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 	$va_options = [];
 	if (sizeof($va_formats) > 0) {
 		foreach($va_formats as $vn_ => $va_form_info) {
+			if($va_form_info['type'] === 'omit') { continue; }
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
 	}
@@ -544,7 +545,8 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 			|| 
 			(is_array($va_display_info['settings']['show_only_in'] ?? null) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
 		) { continue; }        
-		if(!isset($va_options[$va_display_info['name']])) { $va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id']; }
+		$n = !isset($va_options[$va_display_info['name']]) ? $va_display_info['name'] : $va_display_info['name'].' (display)';
+		$va_options[$n] = '_display_'.$va_display_info['display_id']; 
 	}
 	
 	if (sizeof($va_options) == 0) { return ''; }
