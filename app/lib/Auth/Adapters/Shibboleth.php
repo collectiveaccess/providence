@@ -283,7 +283,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 * return array
 	 */
 	private function getAttributeMap() : ?array {
-		if(is_array($map = $this->auth_config->get('shibboleth_field_map'))) {
+		if(is_array($map = $this->auth_config->get(['shibboleth_field_map', 'shibboleth_attribute_map']))) {
 			return $map;
 		}
 		throw new ShibbolethException(_t("shibboleth_field_map not found in configuration"));
