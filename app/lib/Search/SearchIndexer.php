@@ -598,12 +598,10 @@ class SearchIndexer extends SearchBase {
 		$vb_initial_reindex_mode = $pb_reindex_mode;
 		$for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
 		$force = caGetOption('force', $pa_options, false);
-		if (!$pb_reindex_mode && !$for_current_value_reindex && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
-
+		
 		$vb_started_indexing = false;
 		
 		$global_indexed_field_list = $this->getIndexedFieldsForTable($pn_subject_table_num);
-		if(!sizeof($global_indexed_field_list)) { return; }
 		
 		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
@@ -611,7 +609,8 @@ class SearchIndexer extends SearchBase {
 
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
-		if(!$force && !$pb_reindex_mode && !sizeof(array_intersect($global_indexed_field_list, array_keys($pa_changed_fields ?? [])))) { return; }
+		
+		if(!$force && !$pb_reindex_mode && !$for_current_value_reindex && !sizeof(array_intersect($global_indexed_field_list ?? [], array_keys($pa_changed_fields ?? [])))) { goto related_indexing; }
 
 		if(!$pb_reindex_mode && caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$field_data_proc = [];
@@ -861,6 +860,7 @@ if (!$for_current_value_reindex) {
 			}
 		}
 }
+
 		// -------------------------------------
 		//
 		// index related fields
@@ -1204,6 +1204,7 @@ if (!$for_current_value_reindex) {
 		}
        	// if ($for_current_value_reindex) { return true; }
 
+related_indexing:
 		if ((!$vb_initial_reindex_mode) && (sizeof($pa_changed_fields) > 0)) {
 			//
 			// When not reindexing then we consider the effect of the change on this row upon related rows that use it
