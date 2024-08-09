@@ -191,7 +191,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
 	/**
 	 * @param string $username Username to create account for
-	 * @param string $passowrd Ignored
+	 * @param string $password Ignored
 	 */
 	public function createUserAndGetPassword($username, $password=null) {
     	if(caIsRunFromCLI()) { return null; }
@@ -218,7 +218,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			case __CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__:
 				return false;
 			case __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__:
-			    return true;
+			    return (bool)$this->auth_config->get('shibboleth_auto_create_new_users');
 			default:
 				return false;
 		}
