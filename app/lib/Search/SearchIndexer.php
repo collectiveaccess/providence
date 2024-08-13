@@ -257,25 +257,15 @@ class SearchIndexer extends SearchBase {
 			$vs_table_pk = $t_instance->primaryKey();
 			$va_field_data = array();
 
-			$va_intrinsic_list = $this->getFieldsToIndex($vs_table, $vs_table, array('intrinsicOnly' => true));
-			$va_intrinsic_list[$vs_table_pk] = array();
 			foreach($va_ids as $vn_i => $vn_id) {
 				if (!($vn_i % 500)) {	// Pre-load attribute values for next 500 items to index; improves index performance
 					$va_id_slice = array_slice($va_ids, $vn_i, 500);
 					if ($va_element_ids) {
 						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
 					}
-					$qr_field_data = $o_db->query("
-						SELECT ".join(", ", array_map(function($v) { return "`{$v}`"; }, array_keys($va_intrinsic_list)))." 
-						FROM {$vs_table}
-						WHERE {$vs_table_pk} IN (?)	
-					", array($va_id_slice));
-
-					$va_field_data = array();
-					while($qr_field_data->nextRow()) {
-						$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
-					}
-
+					
+					$va_field_data = $this->getFieldDataForReindex($vs_table, $va_id_slice);
+					
 					SearchResult::clearCaches();
 				}
 
@@ -595,15 +585,21 @@ class SearchIndexer extends SearchBase {
 	 * @return bool
 	 */
 	public function indexRow($pn_subject_table_num, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_options=null) {
+		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
+		
 		$vb_initial_reindex_mode = $pb_reindex_mode;
 		$for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
 		$force = caGetOption('force', $pa_options, false);
+		
+		if($force && (!is_array($pa_field_data) || !sizeof($pa_field_data))) {
+			$tmp = $this->getFieldDataForReindex($vs_subject_tablename, [$pn_subject_row_id]);
+			$pa_field_data = $tmp[$pn_subject_row_id];
+		}
 		
 		$vb_started_indexing = false;
 		
 		$global_indexed_field_list = $this->getIndexedFieldsForTable($pn_subject_table_num);
 		
-		$vs_subject_tablename = Datamodel::getTableName($pn_subject_table_num);
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
 		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
 
@@ -3234,6 +3230,29 @@ related_indexing:
 	        }
 	    }
 	    $this->indexRow($subject_table_num, $subject_row_id, $values, false, null, null, ['forCurrentValueReindex' => $policy]);
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function getFieldDataForReindex(string $table, array $ids) {		
+		$table_pk = Datamodel::primaryKey($table);
+		
+		$intrinsic_list = $this->getFieldsToIndex($table, $table, ['intrinsicOnly' => true]);
+		$intrinsic_list[$table_pk] = array();
+		
+		$o_db = $this->getDb();
+		$qr_field_data = $o_db->query("
+			SELECT ".join(", ", array_map(function($v) { return "`{$v}`"; }, array_keys($intrinsic_list)))." 
+			FROM {$table}
+			WHERE {$table_pk} IN (?)	
+		", [$ids]);
+
+		$field_data = [];
+		while($qr_field_data->nextRow()) {
+			$field_data[(int)$qr_field_data->get($table_pk)] = $qr_field_data->getRow();
+		}
+		return $field_data;
 	}
 	# ------------------------------------------------
 }
