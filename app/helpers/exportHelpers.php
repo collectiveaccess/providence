@@ -831,13 +831,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1,1);
 		
 				if($request && $config->get('excel_report_header_enabled')){
-					if(file_exists($request->getThemeDirectoryPath()."/graphics/logos/".$request->config->get('report_img'))){
-						$logo_path = $request->getThemeDirectoryPath().'/graphics/logos/'.$request->config->get('report_img');
-					}
-					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
-					$objDrawing->setName('Image');
-					$objDrawing->setHeight(36);
-					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
 					$criteria_summary = (strlen($criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
 					$criteria_summary = wordwrap($criteria_summary, 50, "\n", true);
