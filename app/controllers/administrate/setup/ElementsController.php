@@ -301,7 +301,7 @@ class ElementsController extends BaseEditorController {
 			}
 		
 			/* process type restrictions */
-			$t_restriction = new ca_metadata_type_restrictions(null, null, true);
+			$t_restriction = new ca_metadata_type_restrictions(null, null, false);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
 
 			foreach($_REQUEST as $vs_key => $vs_value) {
@@ -323,7 +323,6 @@ class ElementsController extends BaseEditorController {
 				}
 				if (preg_match('!^type_restrictions_table_num_new_([\d]+)$!', $vs_key, $va_matches)) {
 					// got one to create
-					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('element_id', $t_element->getPrimaryKey());
 					$t_restriction->set('table_num', $this->request->getParameter('type_restrictions_table_num_new_'.$va_matches[1], pInteger));
 					$t_restriction->set('type_id', ($vn_type_id = $this->request->getParameter('type_restrictions_type_id_new_'.$va_matches[1], pInteger)) ? $vn_type_id : null);
