@@ -1634,7 +1634,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				continue;
 			}
 
-			$va_options[$va_item[$pa_options['key'] ?? null] ?? null] = str_repeat('&nbsp;', intval(($va_item['LEVEL'] ?? 0)) * 3).' '.$va_item['name_singular'];
+			$va_options[$va_item[$pa_options['key'] ?? null] ?? null] = str_repeat('&nbsp;', intval(($va_item['LEVEL'] ?? 0)) * 3).' '.$va_item[$singular ? 'name_singular' : 'name_plural'];
 
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
