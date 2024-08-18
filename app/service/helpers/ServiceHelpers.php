@@ -75,6 +75,7 @@ function extractBundleNames($rec, array $args) : array {
  *		start = 
  *		limit = 
  *		filterByAncestors = 
+ *		filterNonPrimaryRepresentations = 
  *
  * @return array
  */
@@ -108,6 +109,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 			// out of bounds; return empty set
 			return [];
 		}
+		
+		$sresult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $options, false));
 		while($sresult->nextHit()) {
 			// ladder up hierarchy looking for matches
 			if(is_array($ancestor_filters) && (sizeof($ancestor_filters) > 0)) {
