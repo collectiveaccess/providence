@@ -151,6 +151,12 @@ if (!defined("__CA_DB_TYPE__")) {
 	define("__CA_DB_TYPE__", 'mysqli');
 }
 
+# __CA_DB_PORT__ = Database server port. Only change if the default 3306 isn't being used
+#
+if (!defined("__CA_DB_PORT__")) {
+        define("__CA_DB_PORT__", '3306');
+}
+
 if (!defined("__CA_DB_USE_SSL__")) {
 	define("__CA_DB_USE_SSL__", false);
 }

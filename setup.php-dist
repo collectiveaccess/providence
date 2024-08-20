@@ -32,6 +32,12 @@ if (!defined("__CA_DB_HOST__")) {
 	define("__CA_DB_HOST__", 'localhost');
 }
 
+# __CA_DB_PORT__ = Database server port. Only change if the default 3306 isn't being used
+# 
+if (!defined("__CA_DB_PORT__")) {
+	define("__CA_DB_PORT__", '3306');
+}
+
 # __CA_DB_USER__ = Database login user name
 #
 if (!defined("__CA_DB_USER__")) {
@@ -216,7 +222,7 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 # __CA_DB_USE_SSL__ = Use SSL encryption for database connections
 #
 if (!defined("__CA_DB_USE_SSL__")) {
-	define("__CA_DB_USE_SSL__", true);
+	define("__CA_DB_USE_SSL__", false);
 }
 
 # __CA_DB_SSL_VERIFY_CERT__ = Verify SSL certificate before use?
