@@ -1383,6 +1383,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$this->num_records_skipped = 0;
 		$this->import_error_list = [];
 		
+		// @TODO: make configurable
+		$bulk_insert_mode = true;
+		
 		$o_config = Configuration::load();
 		
 		$this->log = $o_log = caGetImportLogger($pa_options);
@@ -1417,6 +1420,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t('Import of %1 failed because mapping %2 does not exist.', $ps_source, $ps_mapping));
 			return null;
 		}
+		$setting_skip_duplicate_values = $t_mapping->getSetting('skipDuplicateValues');
 
 		$start 	= caGetOption('start', $pa_options, 0);
 		$limit 	= caGetOption('limit', $pa_options, null);
@@ -3616,18 +3620,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
 												}
 												
-												$t_subject->update(['queueIndexing' => true]);
-												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_element, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
-													if ($vs_item_error_policy == 'stop') {
-														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+												if(!$bulk_insert_mode) {
+													$t_subject->update(['queueIndexing' => true]);
+													if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_element, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+														$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
+														if ($vs_item_error_policy == 'stop') {
+															$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+														
+															$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 													
-														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-														$stopped_on_error = true;
-														goto stop_on_error;
+															$stopped_on_error = true;
+															goto stop_on_error;
+														}
+														continue(3);
 													}
-													continue(3);
 												}
 												
 												try {
@@ -3692,7 +3698,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 															'idno' => $vs_idno, 
 															'dataset' => $vn_dataset, 
 															'row' => $vn_row,
-															'skipExistingValues' => ($t_mapping->getSetting('skipDuplicateValues') || !ca_metadata_elements::getElementSettingsForId($vs_element, 'allowDuplicateValues')),
+															'skipExistingValues' => ($setting_skip_duplicate_values || !ca_metadata_elements::getElementSettingsForId($vs_element, 'allowDuplicateValues')),
 															'source' => $va_element_data[$vs_element]['_source'] ?? null
 														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
@@ -3708,17 +3714,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												$va_opts['matchType'] = $va_element_data[$vs_element]['_matchType']; 
 											}
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
-											$t_subject->update(['queueIndexing' => true]);
 											
-											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, $errored_values = ca_data_importers::formatValuesForLog($va_element_content, $vs_element)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null, 'values' => $errored_values]));
-												if ($vs_item_error_policy == 'stop') {
-													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+											if(!$bulk_insert_mode) {
+												$t_subject->update(['queueIndexing' => true]);
 												
-													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-													$stopped_on_error = true;
-													goto stop_on_error;
+												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, $errored_values = ca_data_importers::formatValuesForLog($va_element_content, $vs_element)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null, 'values' => $errored_values]));
+													if ($vs_item_error_policy == 'stop') {
+														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+													
+														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+													
+														$stopped_on_error = true;
+														goto stop_on_error;
+													}
 												}
 											}
 
@@ -3730,7 +3739,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						} 
 					
-						$t_subject->update(['queueIndexing' => true]);
+						$t_subject->update(['queueIndexing' => true, 'bulkMode' => $bulk_insert_mode]);
 
 						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Update failed: %2", $vs_idno, join('; ', $t_subject->getErrors())), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 							$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' =>  null, 'notes' => null, 'values' => null]));
