@@ -30,7 +30,7 @@ $exporter_count = $this->getVar('exporter_count');
 <h3 class='export'><?= _t('Data exporters'); ?>:
 <div><?php
 	if ($exporter_count == 1) {
-		print "<div>"._t("1 exporer is available")."<div>";
+		print "<div>"._t("1 exporter is available")."<div>";
 	} else {
 		print "<div>"._t("%1 exporters are available", $exporter_count)."</div>";
 	}
