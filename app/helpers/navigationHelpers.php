@@ -110,6 +110,7 @@
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	define('__CA_NAV_ICON_UPLOAD__', 69);
  	define('__CA_NAV_ICON_COPY__', 70);
+ 	define('__CA_NAV_ICON_MERGE__', 71);
  	
  	/**
  	 * Icon position constants
@@ -138,10 +139,9 @@
 
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
-			$vs_url = preg_replace("!service\.php!i", "index.php", $vs_url);
 		} else {
-			$s = preg_replace("!service\.php!i", "index.php", $po_request->getScriptName());
-			$vs_url = $po_request->getBaseUrlPath().'/'.$s;
+			$s = $po_request->getScriptName();
+			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
@@ -860,7 +860,7 @@
  				$vs_fa_class = 'far fa-clock';	
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
- 				$vs_fa_class = 'fas fa-cog far fa-spin';	
+ 				$vs_fa_class = 'fas fa-spinner fa-spin';	
  				break;								
  			case __CA_NAV_ICON_HIER__:
  				$vs_fa_class = 'fas fa-sitemap';
@@ -900,6 +900,9 @@
 				break;	
 			case __CA_NAV_ICON_COPY__:
 				$vs_fa_class = 'fa fa-clipboard';
+				break;	
+			case __CA_NAV_ICON_MERGE__:
+				$vs_fa_class = 'fa fa-compress';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
@@ -1004,29 +1007,17 @@
 		
 		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
 			// Make sure record link points to exists
-			$ck = md5($ps_table.$pn_id);
-			if(MemoryCache::contains($ck, 'editorUrlLinkVerifications')) {
-				if(!MemoryCache::fetch($ck, 'editorUrlLinkVerifications')) { return null; }
-			}
 			if (($pn_id > 0) && !$t_table->load($pn_id)) {
-				MemoryCache::save($ck, null, 'editorUrlLinkVerifications');
 				return null;
 			}
-			MemoryCache::save($ck, true, 'editorUrlLinkVerifications');
 		}
 		
 		$action_extra = caGetOption('actionExtra', $pa_options, null);
 		if($bundle = caGetOption('bundle', $pa_options, null)) {
-			$ck = md5($ps_table.$bundle.$type_id);
-			if(MemoryCache::contains($ck, 'editorUrlActionExtras')) {
-				$action_extra = MemoryCache::fetch($ck, 'editorUrlActionExtras');
-			} else {
-				$t_table->load($pn_id);
-				$type_id = $t_table->getTypeID();
-				if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
-					$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
-				}
-				MemoryCache::save($ck, $action_extra, 'editorUrlActionExtras');
+			$t_table->load($pn_id);
+			$type_id = $t_table->getTypeID();
+			if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
+				$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
 			}
 		}
 		
