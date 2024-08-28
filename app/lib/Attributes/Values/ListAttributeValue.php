@@ -421,20 +421,18 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				if ($o_trans) { $t_item->setTransaction($o_trans); }
 			}
 
-			$vs_get_spec = $use_singular ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural';
-
 			// do we need to get the hierarchy?
 			if ($pa_options['showHierarchy'] ?? false) {
+				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
+
 				if (!$t_item->isLoaded()) { $t_item->load((int)$this->opn_item_id); }
 				
 				if (is_array($pa_options['filterTypes'])) {
 				    return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('filterTypes' => $pa_options['filterTypes'], 'delimiter' => ' ➔ ', $pa_options)));
 				} 
-				
 				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', $pa_options)));
 			}
-
-			return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, array_merge($pa_options, ['return' => $use_singular ? 'singular' : 'plural']));
+			return $t_list->getItemForDisplayByItemID($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
 		}
 		return $this->ops_text_value;
 	}
