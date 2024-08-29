@@ -510,7 +510,7 @@ function caGetUserMediaUploadPath() {
 # ---------------------------------------
 /**
  * Return path to private media upload directory for a user. If user's private directory doesn't
- * exist yet, and media media uploader is enabled, it will be created.
+ * exist yet it will be created.
  *`
  * @param string|int $user User_id, user_name or email of user
  * @param array $options Options include:
@@ -521,11 +521,6 @@ function caGetUserMediaUploadPath() {
  */
 function caGetMediaUploadPathForUser($user, array $options=null) {
 	if(!($user_name = ca_users::userNameFor($user))) { return null; }
-	
-	$config = Configuration::load();
-	if(!$config->get('media_uploader_enabled')) {
-		return caGetSharedMediaUploadPath();
-	}
 	
 	$user_media_path = caGetUserMediaUploadPath();
 	$user_dir = $user_media_path.'/'.caGetUserDirectoryName($user);
