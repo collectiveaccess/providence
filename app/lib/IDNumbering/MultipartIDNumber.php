@@ -1175,13 +1175,14 @@ class MultipartIDNumber extends IDNumber {
 	 * @param bool $always_generate_serial_values Always generate new values for SERIAL elements, even if they are not set with placeholders. [Default is false]
 	 * @return array Array of values for identifer extracted from request
 	 */
-	public function htmlFormValuesAsArray($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false) {
+	public function htmlFormValuesAsArray($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false, ?array $options=null) {
 		if (is_null($value)) {
 			if(isset($_REQUEST[$name]) && $_REQUEST[$name]) { return $_REQUEST[$name]; }
 		}
 		if (!is_array($elements = $this->getElements())) { 
 			return (isset($_REQUEST["{$name}_extra_0"])) ? [$_REQUEST["{$name}_extra_0"]] : null; 
 		}
+		$return_template = caGetOption('returnTemplate', $options, false);
 
 		$element_names = array_keys($elements);
 		$separator = $this->getSeparator();
@@ -1228,8 +1229,11 @@ class MultipartIDNumber extends IDNumber {
 					continue;
 				}
 				$element_values[$name.'_'.$ename] = $element_values[$name.'_'.$ename] ?? null;
-				
-				if (($element_values[$name.'_'.$ename] == '') || ($element_values[$name.'_'.$ename] == '%') || $always_generate_serial_values) {
+		
+				if (!strlen($element_values[$name.'_'.$ename]) && $return_template) {
+					$element_values[$name.'_'.$ename] = '%';
+				}
+				if (!$return_template && (($element_values[$name.'_'.$ename] == '') || ($element_values[$name.'_'.$ename] == '%') || $always_generate_serial_values)) {
 					if ($element_values[$name.'_'.$ename] == '%') { $element_values[$name.'_'.$ename] = ''; }
 					$tmp[$ename] = $this->getNextValue($ename, $tmp, $dont_mark_serial_value_as_used);
 					$isset = $is_not_empty = true;
