@@ -386,6 +386,9 @@ div.clear {
 #leftNav #inspectorChangeType img {
 	padding-top: 1px;
 }
+#leftNav #inspectorHierarchyMerge {
+	padding-top: 6px;
+}
 #inspectorChangeTypeButton {
     font-size: 10px;
     margin: 0px;
