@@ -3516,7 +3516,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		
-		$ps_value = preg_replace("![\-]+!", " ", $ps_value);
+		$ps_value = preg_replace("![\-]+!u", " ", $ps_value);
 
 		$pa_values = array(caConvertFractionalNumberToDecimal(trim($ps_value), $vs_locale));
 
