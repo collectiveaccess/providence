@@ -111,6 +111,7 @@
  	define('__CA_NAV_ICON_UPLOAD__', 69);
  	define('__CA_NAV_ICON_COPY__', 70);
  	define('__CA_NAV_ICON_MERGE__', 71);
+ 	define('__CA_NAV_ICON_SPLIT__', 72);
  	
  	/**
  	 * Icon position constants
@@ -902,7 +903,10 @@
 				$vs_fa_class = 'fa fa-clipboard';
 				break;	
 			case __CA_NAV_ICON_MERGE__:
-				$vs_fa_class = 'fa fa-compress';
+				$vs_fa_class = 'fa fa-object-group';
+				break;	
+			case __CA_NAV_ICON_SPLIT__:
+				$vs_fa_class = 'fa fa-object-ungroup';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
