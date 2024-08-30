@@ -2771,6 +2771,8 @@ related_indexing:
 	 *
 	 */
 	private function _getQueriesForRelatedRows($pt_subject, $pn_subject_row_id, $pt_rel, $pb_reindex_mode, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
+		
 	    $for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
 		$vs_subject_tablename = $pt_subject->tableName();
 		$vs_subject_pk = $pt_subject->primaryKey();
