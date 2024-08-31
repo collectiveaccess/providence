@@ -379,7 +379,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_objects" => ["ca_objects_x_object_representations"]
 		)
 	);
 	
