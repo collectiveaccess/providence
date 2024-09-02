@@ -635,65 +635,65 @@ jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
 /**
  *
  */
-function caHierarchyToolsMergeWarningBox($po_request, $t_instance, $ps_item_name, $pa_parameters) {
-	if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
-		$vs_warning = '<br/>'.$vs_warning;
+function caHierarchyToolsMergeWarningBox($request, $t_instance, $item_name, $parameters) {
+	if ($warning = isset($parameters['warning']) ? $parameters['warning'] : null) {
+		$warning = '<br/>'.$warning;
 	} else {
-		$vs_warning = _t("<br/>Proceeding will permanently delete all component %1", 'items');
+		$warning = _t("<br/>Proceeding will permanently delete all component %1", 'items');
 	}
 
-	$editor_url = caEditorUrl($po_request, $t_instance->tableName(), $t_instance->getPrimaryKey(), true);
+	$editor_url = caEditorUrl($request, $t_instance->tableName(), $t_instance->getPrimaryKey(), true);
 
-	$vs_output = caFormTag($po_request, 'merge', 'caHierarchyMergeForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false,'disableUnsavedChangesWarning' => true]);
-	$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
-		"<div class='delete_warning_box'>"._t('Really merge component %1 for %2? ', 'items', $ps_item_name)."</div>".
+	$output = caFormTag($request, 'merge', 'caHierarchyMergeForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false,'disableUnsavedChangesWarning' => true]);
+	$output .= "<div class='delete-control-box'>".caFormControlBox(
+		"<div class='delete_warning_box'>"._t('Really merge component %1 for %2? ', 'items', $item_name)."</div>".
 		'',
-		$vs_warning,
-		caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Merge"), 'caHierarchyMergeForm', array()).
-		caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $editor_url['module'], $editor_url['controller'], $editor_url['action'], [$editor_url['_pk'] => $editor_url['id']])
+		$warning,
+		caFormSubmitButton($request, __CA_NAV_ICON_DELETE__, _t("Merge"), 'caHierarchyMergeForm', []).
+		caFormNavButton($request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $editor_url['module'], $editor_url['controller'], $editor_url['action'], [$editor_url['_pk'] => $editor_url['id']])
 	)."</div>\n";
 
-	$pa_parameters['t'] = $t_instance->tableName();
-	foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
-		$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
+	$parameters['t'] = $t_instance->tableName();
+	foreach(array_merge($parameters, ['confirm' => 1]) as $f => $v) {
+		$output .= caHTMLHiddenInput($f, ['value' => $v]);
 	}
-	$vs_output .= caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
-	$vs_output .= "</form>\n";
+	$output .= caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
+	$output .= "</form>\n";
 
-	return $vs_output;
+	return $output;
 }
 # ------------------------------------------------------------------------------------------------
 /**
  *
  */
-function caHierarchyToolsSplitWarningBox($po_request, $t_instance, $ps_item_name, $pa_parameters) {
+function caHierarchyToolsSplitWarningBox($request, $t_instance, $item_name, $parameters) {
 	if(!method_exists($t_instance, 'getRepresentationCount')) { return null; }
 	
-	if ($vs_warning = isset($pa_parameters['warning']) ? $pa_parameters['warning'] : null) {
-		$vs_warning = '<br/>'.$vs_warning;
+	if ($warning = isset($parameters['warning']) ? $parameters['warning'] : null) {
+		$warning = '<br/>'.$warning;
 	} else {
-		$vs_warning = _t("<br/>Proceeding will create %1 new component %2", $t_instance->getRepresentationCount(), 'items');
+		$warning = _t("<br/>Proceeding will create %1 new component %2", $t_instance->getRepresentationCount(), 'items');
 	}
 
-	$editor_url = caEditorUrl($po_request, $t_instance->tableName(), $t_instance->getPrimaryKey(), true);
+	$editor_url = caEditorUrl($request, $t_instance->tableName(), $t_instance->getPrimaryKey(), true);
 
-	$vs_output = caFormTag($po_request, 'split', 'caHierarchySplitForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false,'disableUnsavedChangesWarning' => true]);
-	$vs_output .= "<div class='delete-control-box'>".caFormControlBox(
-		"<div class='delete_warning_box'>"._t('Really split %1? ', $ps_item_name)."</div>".
+	$output = caFormTag($request, 'split', 'caHierarchySplitForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false,'disableUnsavedChangesWarning' => true]);
+	$output .= "<div class='delete-control-box'>".caFormControlBox(
+		"<div class='delete_warning_box'>"._t('Really split %1? ', $item_name)."</div>".
 		'',
-		$vs_warning,
-		caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Split"), 'caHierarchySplitForm', array()).
-		caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $editor_url['module'], $editor_url['controller'], $editor_url['action'], [$editor_url['_pk'] => $editor_url['id']])
+		$warning,
+		caFormSubmitButton($request, __CA_NAV_ICON_DELETE__, _t("Split"), 'caHierarchySplitForm', []).
+		caFormNavButton($request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $editor_url['module'], $editor_url['controller'], $editor_url['action'], [$editor_url['_pk'] => $editor_url['id']])
 	)."</div>\n";
 
-	$pa_parameters['t'] = $t_instance->tableName();
-	foreach(array_merge($pa_parameters, array('confirm' => 1)) as $vs_f => $vs_v) {
-		$vs_output .= caHTMLHiddenInput($vs_f, array('value' => $vs_v));
+	$parameters['t'] = $t_instance->tableName();
+	foreach(array_merge($parameters, ['confirm' => 1]) as $f => $v) {
+		$output .= caHTMLHiddenInput($f, ['value' => $v]);
 	}
-	$vs_output .= caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
-	$vs_output .= "</form>\n";
+	$output .= caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
+	$output .= "</form>\n";
 
-	return $vs_output;
+	return $output;
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -1008,9 +1008,9 @@ function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=n
  * @return string HTML implementing the inspector
  */
 function caEditorInspector($view, $options=null) {
-	$style               = null;
-	$idno                = null;
-	$num_objects			= 0;
+	$style              = null;
+	$idno               = null;
+	$num_objects		= 0;
 
 	$t_item 				= $view->getVar('t_item');
 	$table_name = $t_item->tableName();
@@ -1478,14 +1478,13 @@ function caEditorInspector($view, $options=null) {
 		if ($get_spec = $view->request->config->get("{$table_name}_inspector_display_more_info")) {
 			$more_info .= caProcessTemplateForIDs($get_spec, $table_name, [$t_item->getPrimaryKey()]);
 		}
-		if ($more_info) {
+		if (strlen($more_info) > 0) {
 			$tools[] = "
 <div id='inspectorMoreInfo' class='inspectorActionButton'>
 	<div id='inspectorMoreInfoButton'>
 		<a href='#'>".caNavIcon(__CA_NAV_ICON_INFO__, '20px')."</a>
 	</div>
-</div>
-<div id='inspectorInfo' >{$more_info}</div>\n";
+</div>\n";
 
 			TooltipManager::add("#inspectorMoreInfo", _t('See more information about this record'));
 		}
@@ -1493,42 +1492,50 @@ function caEditorInspector($view, $options=null) {
 		// Get component information
 		$object_container_types = $view->request->config->getList('ca_objects_container_types');
 		$object_component_types = $view->request->config->getList('ca_objects_component_types');
+		$takes_components = in_array($t_item->getTypeCode(), $object_container_types);
+		
 		$can_add_component = (($table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 
-		if (method_exists($t_item, 'getComponentCount')) {
-			$component_count = $t_item->getComponentCount();
-			if ($t_ui && ($component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $view->request)) && ($vs_component_list_screen !== $view->request->getActionExtra())) { 
-				$component_count_link = caNavLink($view->request, $component_count, '', '*', '*', $view->request->getAction().'/'.$component_list_screen, [$t_item->primaryKey() => $t_item->getPrimaryKey()]);
-			} else {
-				$component_count_link = $component_count;
+		if($takes_components) {
+			if (method_exists($t_item, 'getComponentCount')) {
+				$component_count = $t_item->getComponentCount();
+				if ($t_ui && ($component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $view->request)) && ($vs_component_list_screen !== $view->request->getActionExtra())) { 
+					$component_count_link = caNavLink($view->request, $component_count, '', '*', '*', $view->request->getAction().'/'.$component_list_screen, [$t_item->primaryKey() => $t_item->getPrimaryKey()]);
+				} else {
+					$component_count_link = $component_count;
+				}
+				$components_tools[] = "<div><strong>"._t('Components').":</strong> {$component_count_link}</div>";
 			}
-			$components_tools[] = "<div><strong>"._t('Components').":</strong> {$component_count_link}</div>";
-		}
-
-		if ($can_add_component) {
-			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
-
-			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
-			$change_type_view->setVar('t_item', $t_item);
-
-			FooterManager::add($change_type_view->render("create_component_html.php"));
-		}
-		
-		// Component hierarchy tools
-		if(($table_name === 'ca_objects') && $view->request->config->get("ca_objects_component_allow_merge_unmerge") && in_array($t_item->getTypeCode(), $object_container_types) && isset($object_component_types[0])) {
-			$container_type_name = mb_strtolower($t_item->getTypeName());
-			$component_type_name = mb_strtolower(caGetListItemForDisplay('object_types', $object_component_types[0], ['return' => 'plural']));
-			if($component_count > 0) {
-				$tools [] = "<div id='inspectorHierarchyMerge' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_MERGE__, '20px'), "button", 'editor', 'HierarchyTools', 'merge', ['t' => 'ca_objects', 'id' => $t_item->getPrimaryKey()], [])."</div>\n";
-				TooltipManager::add('#inspectorHierarchyMerge', _t("Merge media from component %1 into this %2 and delete %1", $component_type_name, $container_type_name));
-			} elseif($t_item->getRepresentationCount() > 0) {
-				$tools [] = "<div id='inspectorHierarchySplit' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_SPLIT__, '20px'), "button", 'editor', 'HierarchyTools', 'split', ['t' => 'ca_objects', 'id' => $t_item->getPrimaryKey()], [])."</div>\n";
-				TooltipManager::add('#inspectorHierarchySplit', _t("Split media in this %1 into component %2", $container_type_name, $component_type_name));
+	
+			if ($can_add_component) {
+				$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
+	
+				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+				$change_type_view->setVar('t_item', $t_item);
+	
+				FooterManager::add($change_type_view->render("create_component_html.php"));
+			}
+			
+			// Component hierarchy tools
+			if(($table_name === 'ca_objects') && $view->request->config->get("ca_objects_component_allow_merge_unmerge") && $takes_components && isset($object_component_types[0])) {
+				$container_type_name = mb_strtolower($t_item->getTypeName());
+				$component_type_name = mb_strtolower(caGetListItemForDisplay('object_types', $object_component_types[0], ['return' => 'plural']));
+				if($component_count > 0) {
+					$tools [] = "<div id='inspectorHierarchyMerge' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_MERGE__, '20px'), "button", 'editor', 'HierarchyTools', 'merge', ['t' => 'ca_objects', 'id' => $t_item->getPrimaryKey()], [])."</div>\n";
+					TooltipManager::add('#inspectorHierarchyMerge', _t("Merge media from component %1 into this %2 and delete %1", $component_type_name, $container_type_name));
+				} elseif($t_item->getRepresentationCount() > 0) {
+					$tools [] = "<div id='inspectorHierarchySplit' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_SPLIT__, '20px'), "button", 'editor', 'HierarchyTools', 'split', ['t' => 'ca_objects', 'id' => $t_item->getPrimaryKey()], [])."</div>\n";
+					TooltipManager::add('#inspectorHierarchySplit', _t("Split media in this %1 into component %2", $container_type_name, $component_type_name));
+				}
 			}
 		}
 
 		if(sizeof($tools) > 0) {
 			$buf .= "<div id='toolIcons'>".join(" ", $tools)."</div><!--End tooIcons-->";
+		}
+		
+		if($more_info) {
+			$buf .= "<div id='inspectorInfo' >{$more_info}</div>\n";
 		}
 	}
 
