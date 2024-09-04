@@ -24,7 +24,7 @@ To install CollectiveAccess version 2.0, first make sure your server meets all o
 
 NOTE: The update process is relatively safe and rarely, if ever, causes data loss. That said, BACKUP YOUR EXISTING DATABASE AND CONFIGURATION prior to updating. You almost certainly will not need it, but if you do you'll be glad it's there.
 
-To update from a version 1.7.x installation, decompress the CollectiveAccess Providence 2.0 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), any local print templates (`app/printTemplates`) and your setup.php file.
+To update from a version 1.7.x installation, decompress the CollectiveAccess Providence 2.0 tar.gz or zip file, and replace the files in your existing installation with those in the update. Take care to preserve your media directory, local configuration directory (`app/conf/local`), any local print templates (`app/printTemplates`) and your `setup.php` file.
 
 Once the updated files are in place, navigate in your web browser to the login screen. You will see this message:
 
