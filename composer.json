@@ -41,7 +41,7 @@
     "zendframework/zend-stdlib": "^3.2",
     "ext-iconv": "*",
     "ext-simplexml": "*",
-    "phpseclib/phpseclib": "^2.0",
+    "phpseclib/phpseclib": ">=2.0.47",
     "ankitpokhrel/tus-php": "^2.0",
     "tedivm/stash": "^1.0",
     "cache/predis-adapter": "^1.1",
