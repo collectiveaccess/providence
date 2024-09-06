@@ -5791,6 +5791,8 @@ function caGetReferenceToExistingRepresentationMedia(ca_object_representations $
  *
  */
 function caGetTextExcerpt(?string $content, array $search_terms, ?array $options=null) : ?string {
+	require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
+	
 	$before = caGetOption('before', $options, 100);
 	$after = caGetOption('after', $options, 100);
 	$search_terms = array_map(function($v) {
@@ -5811,8 +5813,30 @@ function caGetTextExcerpt(?string $content, array $search_terms, ?array $options
 					$index = mb_strpos($content, $m[0]);
 					$start = (($index-$before) > 0) ? ($index-$before) : 0;
 					$length = $before + $after + mb_strlen($m[0]);
-					if($length > (mb_strlen($content) - $start)) { $length = (mb_strlen($content) - $start); }
-					$extext = mb_substr($content, $start, $length);
+					
+					$str = mb_substr($content, $start);
+					if($o_doc = str_get_dom($str)) {
+						$extext = '';
+						foreach($o_doc->children as $i => $node) {
+							switch($node->tag) {
+								case '~text~':
+									$t = $node->html();
+									if(mb_strlen($extext.$t) > $length) {
+										$t = mb_substr($t, 0, $length - mb_strlen($extext));
+									}
+									$extext .= $t;
+									break;
+								default:
+									$extext .= $node->html();
+									break;
+							}
+							
+							if(mb_strlen($extext) >= $length) { break; }
+						}
+					} else {
+						$extext = mb_substr(strip_tags($str), 0, $length);
+					}
+					
 					$excerpts[] = "<p>... {$extext} ...</p>";
 					$content = mb_substr($content, $start + $length);
 				}
