@@ -407,11 +407,11 @@ function caExportGetDefaultDisplay(string $table) : ?array {
  */
 function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
 	caIncrementExportCount();
-	
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
+	$template_file = null;
 	
 	// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
 	$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
@@ -471,17 +471,20 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		}
 		$template_info = caGetPrintTemplateDetails($template_type, 'display');
 		$format = 'pdf';
-	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_!', $template, $m)) {
+	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_(.*)!', $template, $m)) {
 		switch($m[1]) {
 			case 'csv':
 			case 'tab':
-				$format = $m[1];
-				if(is_numeric(substr($template, 5))) { $display_id = substr($template, 5); }
-				break;
 			case 'xlsx':
 			case 'docx':
 				$format = $m[1];
-				if(is_numeric(substr($template, 6))) { $display_id = substr($template, 6); }
+				$template_file = preg_replace('![^A-Za-z0-9_]+!', '', $m[2] ?? null);
+				if(is_numeric($template_file)) { 
+					$display_id = (int)$template_file; 
+					$template_file = null;
+				} elseif($template_file) { 
+					$display_id = null; 
+				}
 				break;
 			}
 	} 
@@ -552,11 +555,11 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			];
 		}
 		$view->setVar('display_list', $display_list);
-	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx'])) {
-		// custom non-PDF display
+	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx']) || !is_null($template_file)) {
+		// custom non-PDF/delimited data display
 		$template_info = caGetPrintTemplateDetails($template_type, $template);
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
-		$content = $view->render("{$template_dir}/{$display_id}.php");
+		$content = $view->render($template_file ? "{$template_dir}/{$template_file}.php" : "{$template_dir}/{$display_id}.php");
 		
 		print $content;
 		return $content;
