@@ -46,8 +46,6 @@
 		<title><?= $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 
 		<script type="text/javascript">window.caBasePath = '<?= $this->request->getBaseUrlPath(); ?>';</script>
-		
-        <link rel="stylesheet" type="text/css" href="<?= $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 <?php
 	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
 	print MetaTagManager::getHTML();
