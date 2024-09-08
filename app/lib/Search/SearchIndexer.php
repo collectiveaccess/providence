@@ -439,7 +439,7 @@ class SearchIndexer extends SearchBase {
 		}
 		$va_ids = $t_subject->getHierarchyAncestors($pn_subject_row_id, array('idsOnly' => true, 'includeSelf' => true, 'omitRoot' => ($hier_type === __CA_HIER_TYPE_MULTI_MONO__)));
 		
-		if((sizeof($va_ids) == 1)) {
+		if(is_array($va_ids) && (sizeof($va_ids) == 1)) {
 			$fld = array_pop(explode('.', $ps_field));
 			if(isset($field_data[$fld])) {
 				$return = array('values' => [$field_data[$fld]], 'path' => $field_data[$fld]);
