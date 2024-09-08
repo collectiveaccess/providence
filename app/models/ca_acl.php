@@ -669,7 +669,7 @@ class ca_acl extends BaseModel {
 				$target_table_num = (int)$t_rel_item->tableNum();
 				
 				$subject_pk = (string)$subject->primaryKey();
-				$subject = (string)$subject->tableName();
+				$subject_table_name = (string)$subject->tableName();
 				$subject_table_num = (int)$subject->tableNum();
 				$subject_id = (int)$subject->getPrimaryKey();
 				
@@ -684,9 +684,9 @@ class ca_acl extends BaseModel {
 				
 				$qr_res = $db->query("
 					SELECT {$target}.{$target_pk}
-					FROM {$subject}
+					FROM {$subject_table_name}
 					".join("\n", $joins)."
-					WHERE ({$subject}.{$subject_pk} = ?) AND {$target}.acl_inherit_from_{$subject} = 1", (int)$subject->getPrimaryKey());
+					WHERE ({$subject_table_name}.{$subject_pk} = ?) AND {$target}.acl_inherit_from_{$subject_table_name} = 1", (int)$subject->getPrimaryKey());
 			
 				while($qr_res->nextRow()) {
 					$target_id = $qr_res->get($target_pk);
