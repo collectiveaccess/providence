@@ -3248,7 +3248,7 @@ related_indexing:
 	    if (strlen($fn = Datamodel::getFieldNum($table_num, $entry)) > 0) {
             return self::$s_search_config_field_entry_to_index_field_nums_cache[$table_num][$entry][$prefix] = ["{$prefix}I{$fn}"]; 
         } elseif(preg_match("!^_ca_attribute_([\d]+)$!", $entry, $m)) {
-            $ids = $this->_getElementsInSet($m[1], ['idsOnly' => true]);
+            $ids = ca_metadata_elements::getElementsForSet($m[1], ['idsOnly' => true]);
             $field_nums = [];
             foreach($ids as $id) {
                 $field_nums[] = "{$prefix}A{$id}"; 
