@@ -611,6 +611,8 @@ class SearchIndexer extends SearchBase {
 		$for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
 		$force = caGetOption('force', $pa_options, false);
 		
+		$can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
+		
 		if($force && (!is_array($pa_field_data) || !sizeof($pa_field_data))) {
 			$tmp = $this->getFieldDataForReindex($vs_subject_tablename, [$pn_subject_row_id]);
 			$pa_field_data = $tmp[$pn_subject_row_id];
@@ -656,8 +658,6 @@ class SearchIndexer extends SearchBase {
 			if (!isset($pa_field_data[$vs_k])) { $pa_field_data[$vs_k] = null; }
 		}
 
-		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
-
 		if (!$pa_exclusion_list) { $pa_exclusion_list = array(); }
 		$pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id] = true;
 if (!$for_current_value_reindex) {
@@ -700,7 +700,7 @@ if (!$for_current_value_reindex) {
 					//
 					if (!preg_match('!^_ca_attribute_(.*)$!', $vs_field, $va_matches)) { continue; }
 
-					if (!$force && !$vb_initial_reindex_mode && $vb_can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
+					if (!$force && !$vb_initial_reindex_mode && $can_do_incremental_indexing && (!$pb_is_new_row) && (!isset($pa_changed_fields[$vs_field]) || !$pa_changed_fields[$vs_field])) {
 						continue;	// skip unchanged attribute value
 					}
 
@@ -737,7 +737,7 @@ if (!$for_current_value_reindex) {
 					//
 					// Plain old field
 					//
-					if (!$force && !$vb_initial_reindex_mode && $vb_can_do_incremental_indexing && !$pb_is_new_row && !isset($pa_changed_fields[$vs_field]) && ($vs_field != $vs_subject_pk)) {	// skip unchanged
+					if (!$force && !$vb_initial_reindex_mode && $can_do_incremental_indexing && !$pb_is_new_row && !isset($pa_changed_fields[$vs_field]) && ($vs_field != $vs_subject_pk)) {	// skip unchanged
 						continue;
 					}
 					if (is_null($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
@@ -901,7 +901,7 @@ if (!$for_current_value_reindex) {
 		//
 		// We also do this indexing if we're in "reindexing" mode. When reindexing is indicated it means that we need to act as if
 		// we're indexing this row for the first time, and all indexing should be performed.
-		if (!$vb_can_do_incremental_indexing || $pb_reindex_mode || $for_current_value_reindex) {
+		if (!$can_do_incremental_indexing || $pb_reindex_mode || $for_current_value_reindex) {
 			$public_access = array_map('intval', $this->opo_app_config->getList('public_access_settings') ?? []);
 			
 			if (is_array($va_related_tables = $this->getRelatedIndexingTables($pn_subject_table_num))) {
@@ -1254,7 +1254,7 @@ related_indexing:
 			//
 			$va_rows_to_reindex = $this->_getDependentRowsForSubject($pn_subject_table_num, $pn_subject_row_id, $va_deps, $va_changed_field_nums);
 
-			if ($vb_can_do_incremental_indexing) {
+			if ($can_do_incremental_indexing) {
 				if (method_exists($vs_subject_tablename, "getDependentCurrentValues")) {
 			    	$current_values = $vs_subject_tablename::getDependentCurrentValues($pn_subject_table_num, $pn_subject_row_id, ['db' => $this->getDb()]);
 				} else {
@@ -1979,7 +1979,7 @@ related_indexing:
 	}
 	# ------------------------------------------------
 	public function commitRowUnIndexing($pn_subject_table_num, $pn_subject_row_id, $pa_options = null) {
-		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
+		$can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 
 		if(caGetOption('queueIndexing', $pa_options, false) && !$this->opo_app_config->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$this->queueUnIndexRow(array(
@@ -2006,7 +2006,7 @@ related_indexing:
 		if (is_array($this->opa_dependencies_to_update)) {
 			$t_subject = Datamodel::getInstanceByTableNum($pn_subject_table_num, true);
 			
-			if (!$vb_can_do_incremental_indexing) {
+			if (!$can_do_incremental_indexing) {
 				$va_seen_items = array();
 
 				// Get row content for indexing in one pass
@@ -2785,7 +2785,7 @@ related_indexing:
 			$pb_force_related = caGetOption('forceRelated', $pa_options, false);
 			$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, false);
 			
-			$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;
+			$can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;
 			
 			
 			$va_table_info = $this->getTableIndexingInfo($vs_subject_tablename, $pb_force_related ? "{$vs_related_table}.related" : $vs_related_table);
