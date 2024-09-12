@@ -579,9 +579,8 @@ if (!$pb_omit_editing_info) {
 									$placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 								}
 							}
-
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
-								case 'DT_SELECT':
+								case DT_SELECT:
 									if ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) {
 										$vb_use_item_values = true;
 									} else {
