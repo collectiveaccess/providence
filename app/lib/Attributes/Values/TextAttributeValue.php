@@ -48,8 +48,8 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 	'maxChars' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
-		'width' => 5, 'height' => 1,
-		'default' => 65535,
+		'width' => 10, 'height' => 1,
+		'default' => 16777216,
 		'label' => _t('Maximum number of characters'),
 		'description' => _t('The maximum number of characters to allow. Input longer than required will be rejected.')
 	),
