@@ -373,7 +373,7 @@ abstract class Base {
 				if(($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) && (intval($va_snapshot[$vs_field]) != 1)) {
 					if(array_key_exists($vs_field . '_guid', $va_snapshot) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
-							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance = \Datamodel::getInstance($this->getModelInstance()->tableNum());
 							$t_instance->setTransaction($this->getTx());
 							if(!$t_instance->loadByGUID($vs_parent_guid) && !(intval($va_snapshot[$vs_field]) == 1)) {
 								throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
@@ -447,7 +447,6 @@ abstract class Base {
 								$item_ids = array_keys(caGetListItems($vs_list));
 								$vn_item_id = array_shift($item_ids);
 							} 
-							\ReplicationService::$s_logger->log("[$vn_item_id] remap $vs_list: ".print_R($item_ids, true));
 							
 							if(!$vn_item_id) {
 								throw new InvalidLogEntryException(
@@ -472,7 +471,7 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, 1);
 					} else {
 						if(array_key_exists($vs_field . '_guid', $va_snapshot) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
-							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance = \Datamodel::getInstance($this->getModelInstance()->tableNum());
 							$t_instance->setTransaction($this->getTx());
 							if($t_instance->loadByGUID($vs_parent_guid)) {
 								$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
