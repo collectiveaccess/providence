@@ -792,7 +792,7 @@
 				$vs_fa_class = 'fas fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fas fa-sliders';
+				$vs_fa_class = 'fas fa-sliders-h';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fas fa-download';
