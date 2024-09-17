@@ -1009,6 +1009,7 @@ class SearchResult extends BaseObject {
 	 *			unserialize = When fetching intrinsic value of type FT_VARS (serialized variables) return unserialized value. [Default is false]
 	 *			list = A list code or array or list codes to restrict returned values to when referencing ca_list_items values. [Default is null]
 	 *          primaryOnly = Return only related representations marked "primary", otherwise return all representations. Has no effect when not pulling related representations. [Default is false]
+	 *			dontReturnDefault = Don't use metadata element default value when value is empty. [Default is false]
 	 *			
 	 *		[Formatting options for strings and arrays]
 	 *			template = Display template use when formatting return values. @see http://docs.collectiveaccess.org/wiki/Display_Templates. [Default is null]
@@ -2625,7 +2626,7 @@ class SearchResult extends BaseObject {
 			}
 		} else {
 			// is blank
-			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
+			$default_value = ($pa_options['dontReturnDefault'] ?? false) ? '' : ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
 			
 			if (($pa_options['returnWithStructure'] ?? null) && ($pa_options['returnBlankValues'] ?? null)) {
 				$va_return_values[(int)$vn_id][null][null][$e = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;

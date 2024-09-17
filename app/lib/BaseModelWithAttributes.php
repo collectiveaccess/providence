@@ -3531,6 +3531,25 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Check if any metadata elements have non-empty values on currently loaded record.
+	 *
+	 * @param array $options No options currently supported
+	 * 
+	 * @return bool
+	 */
+	public function metadataIsSet(?array $options=null) : bool {
+		$element_codes = $this->getApplicableElementCodes();
+		$table_name = $this->tableName();
+		
+		foreach($element_codes as $element_code) {
+			if(strlen($z=$this->get("{$table_name}.{$element_code}", ['dontReturnDefault' => true]))){
+				return true;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Returns list of metadata element codes applicable to the specified type. If no type is specified 
 	 * then all attributes applicable to the model as a whole (regardless of type restrictions) are returned.
 	 *
