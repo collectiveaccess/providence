@@ -221,9 +221,8 @@ function caExtractSettingsValueByUserLocale(string $setting, array $setting_valu
 	// Try to find setting with same language
 	$l = explode('_', $g_ui_locale);
 	$l = $l[0];
-	
 	foreach($setting_values[$setting] as $locale => $val) {
-		if(preg_match("!^{$l}_!", $locale)) {
+		if(preg_match("!^{$l}(_[A-Za-z]{2,3}|$)$!", $locale)) {
 			return $val;
 		}
 	}

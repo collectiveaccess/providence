@@ -826,27 +826,47 @@ function caEditorPrintParametersForm(string $type, string $template, ?array $val
 	if(!is_array($info['params']) || (sizeof($info['params']) === 0)) { return []; }
 	
 	$form_elements = [];
-	
 	foreach($info['params'] as $n => $p) {
 		$default = $p['default'] ?? null;
+		
+		$label = $p['label'];
+		
+		if(is_array($label)) {
+			// Label is localized in the form:
+			// "label": {"en": "Include logo?", "de_DE": "Logo entschließen?" }
+			$label = caExtractSettingsValueByUserLocale('label', $p);
+		}
+		
 		switch(strtolower($p['type'] ?? null)) {
 			case 'list':
 				$attr = ['class' => 'dontTriggerUnsavedChangeWarning'];
 				if($p['multiple'] ?? false) { $attr['multiple'] = 1; }
-				
+			
+				$list_options = null;
+				if(caIsAssociativeArray($p['options'])) {
+					$list_options = $p['options'];
+					foreach($list_options as $k => $v) {
+						if(is_array($v)) {
+							// Options are localized in form:
+							// "options": { "en": {"One": 1, "Two": 2, "Thress": 3 },  "de": {"Eins": 1, "Zwei": 2, "Drei": 3 }
+							$list_options = caExtractSettingsValueByUserLocale('options', $p);
+							break;
+						}
+					}
+				}
 				$dv = $values[$n] ?? $default;
 				if(!is_array($dv)) { $dv = [$dv]; }
 				
-				$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $p['options'], $attr, ['values' => $dv, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
-				$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+				$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $list_options, $attr, ['values' => $dv, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
+				$form_elements[$n] = ['label' => $label, 'element' => $e];
 				break;
 			case 'checkbox':
 				$e = caHTMLCheckboxInput($n, ['value' => $p['value'] ?? 1, 'checked' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning']);
-				$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+				$form_elements[$n] = ['label' => $label, 'element' => $e];
 				break;
 			case 'text':
 				$e = caHTMLTextInput($n, ['placeholder' => caGetOption('placeholder', $p, ''), 'value' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning'], ['width' => caGetOption('width', $p, '200px'), 'height' => caGetOption('height', $p, '200px')]);
-				$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+				$form_elements[$n] = ['label' => $label, 'element' => $e];
 				break;
 		}
 	}
