@@ -159,7 +159,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 							'dataType' => "Text",
 							'values' => [
 								[
-									'value' => $sresult->getWithTemplate($f, ['checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)]),
+									'value' => $sresult->getWithTemplate($f, array_merge($pt['options'] ?? [], ['checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)])),
 									'locale' => null,
 									'subvalues' => null,
 									'id' => null,
