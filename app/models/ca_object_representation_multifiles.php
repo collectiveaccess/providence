@@ -211,7 +211,7 @@ class ca_object_representation_multifiles extends BaseModel {
 		
 		// Check item level restrictions
 		
-		if (caACLIsEnabled($t_rep)) {
+		if (caACLIsEnabled($t_rep, ['context' => 'enforce'])) {
 			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
 				return false;
@@ -249,7 +249,7 @@ class ca_object_representation_multifiles extends BaseModel {
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($t_rep) && $t_rep->getPrimaryKey()) {
+		if (caACLIsEnabled($t_rep, ['context' => 'enforce']) && $t_rep->getPrimaryKey()) {
 			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
 				return false;
@@ -289,7 +289,7 @@ class ca_object_representation_multifiles extends BaseModel {
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($t_rep) && $t_rep->getPrimaryKey()) {
+		if (caACLIsEnabled($t_rep, ['context' => 'enforce']) && $t_rep->getPrimaryKey()) {
 			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;

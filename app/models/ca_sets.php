@@ -2983,7 +2983,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check item level restrictions
-		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this, ['context' => 'enforce']) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
 				return false;

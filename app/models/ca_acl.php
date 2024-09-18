@@ -222,7 +222,7 @@ class ca_acl extends BaseModel {
 	 * @return int An access value 
 	 */
 	public static function accessForRow($t_user, $pn_table_num, $pn_row_id, ?array $options=null) {
-		if(!caACLIsEnabled(Datamodel::getInstance($pn_table_num, true), [])) { return true; }
+		if(!caACLIsEnabled(Datamodel::getInstance($pn_table_num, true), ['context' => 'enforce'])) { return true; }
 		
 		if (!is_object($t_user)) { $t_user = new ca_users(); }
 		$trans = caGetOption('transaction', $options, null);

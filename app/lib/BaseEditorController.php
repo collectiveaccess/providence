@@ -367,7 +367,7 @@ class BaseEditorController extends ActionController {
 				}
 
 				// Set ACL for newly created record
-				if (caACLIsEnabled($t_subject)) {
+				if (caACLIsEnabled($t_subject, ['context' => 'config'])) {
 					$t_subject->setACLUsers(array($this->request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
 					$t_subject->setACLWorldAccess($t_subject->getAppConfig()->get('default_item_access_level'));
 				}
@@ -524,7 +524,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if (caACLIsEnabled($t_subject)) {
+		if (caACLIsEnabled($t_subject, ['context' => 'enforce'])) {
 			if ($t_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				return;
@@ -993,8 +993,7 @@ class BaseEditorController extends ActionController {
 	public function Access(?array $options=null) {
 		AssetLoadManager::register('tableList');
 		list($subject_id, $t_subject) = $this->_initView($options);
-		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-
+		if(!caACLIsEnabled($t_subject, ['context' => 'config'])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1016,7 +1015,7 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
-		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
+		if(!caACLIsEnabled($t_subject, ['context' => 'config'])) { throw new ApplicationException(_t('ACL not enabled')); }
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
@@ -1955,7 +1954,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Does user have access to row?
 		//
-		if (caACLIsEnabled($subject) && $subject->getPrimaryKey()) {
+		if (caACLIsEnabled($subject, ['context' => 'enforce']) && $subject->getPrimaryKey()) {
 			if (method_exists($subject, 'checkACLAccessForUser') && $subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 				throw new AccessException();

@@ -125,7 +125,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this, ['context' => 'enforce'])) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) == __CA_ACL_NO_ACCESS__) {
 				$this->clear();
 				return false;
@@ -276,7 +276,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->setGUID($pa_options);
 		
 		// Set ACL for newly created record
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this, ['context' => 'config'])) {
 			if($AUTH_CURRENT_USER_ID) { $this->setACLUsers([$AUTH_CURRENT_USER_ID => __CA_ACL_EDIT_DELETE_ACCESS__]); }
 			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level'));
 		}
@@ -319,7 +319,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */ 
 	public function update($pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this, ['context' => 'enforce'])) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_ACCESS__) {
 				$this->postError(2580, _t("You do not have edit access for this item: %1/%2", $this->tableName(), $this->getPrimaryKey()), "BundlableLabelableBaseModelWithAttributes->update()");
 				return false;
@@ -428,7 +428,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		global $AUTH_CURRENT_USER_ID;
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this, ['context' => 'enforce'])) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				$this->postError(2580, _t("You do not have delete access for this item"), "BundlableLabelableBaseModelWithAttributes->delete()");
 				return false;
@@ -1216,7 +1216,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this, ['context' => 'enforce'])) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
 				return false;
@@ -1268,7 +1268,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this, ['context' => 'enforce']) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
 				return false;
@@ -1331,7 +1331,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this, ['context' => 'enforce']) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;
@@ -1383,7 +1383,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this, ['context' => 'enforce']) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
 			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
 				return; 
@@ -1540,7 +1540,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+		if (caACLIsEnabled($this, ['context' => 'enforce']) && $this->getPrimaryKey()) {
 			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
 			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
 				return; 
@@ -6535,7 +6535,7 @@ if (!$vb_batch) {
 			}
 		}
 
-		if (caACLIsEnabled(Datamodel::getInstance($vs_related_table, true))) {
+		if (caACLIsEnabled(Datamodel::getInstance($vs_related_table, true), ['context' => 'enforce'])) {
 			$t_user = new ca_users($vn_user_id);
 			if(!$t_user->canDoAction('is_administrator')) {
 				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {

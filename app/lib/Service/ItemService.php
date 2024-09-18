@@ -918,7 +918,7 @@ class ItemService extends BaseJSONService {
         }
         
         // Set ACL for newly created record
-		if (caACLIsEnabled($t_instance)) {
+		if (caACLIsEnabled($t_instance, ['context' => 'config'])) {
 			$t_instance->setACLUsers(array($this->opo_request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
 			$t_instance->setACLWorldAccess($t_instance->getAppConfig()->get('default_item_access_level'));
 		}

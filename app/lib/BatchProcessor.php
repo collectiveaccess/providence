@@ -62,7 +62,6 @@ class BatchProcessor {
 		if ($perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($t_subject->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
-		$perform_item_level_access_checking = caACLIsEnabled($t_subject);
 
 		$we_set_transaction = false;
 		
@@ -117,7 +116,7 @@ class BatchProcessor {
 				//
 				// Does user have access to row?
 				//
-				if (caACLIsEnabled($t_subject) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
+				if (caACLIsEnabled($t_subject, ['context' => 'enforce']) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 					continue;		// skip
 				}
 
@@ -219,7 +218,6 @@ class BatchProcessor {
 		if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($t_subject->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
-		$vb_perform_item_level_access_checking = caACLIsEnabled($t_subject);
 
 		$vb_we_set_transaction = false;
 		$o_tx = caGetOption('transaction',$pa_options);
@@ -256,7 +254,7 @@ class BatchProcessor {
 				}
 
 				// Does user have access to row?
-				if (caACLIsEnabled($t_subject) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
+				if (caACLIsEnabled($t_subject, ['context' => 'enforce']) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 					continue; // skip
 				}
 
@@ -343,7 +341,6 @@ class BatchProcessor {
 		if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($t_subject->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
-		$vb_perform_item_level_access_checking = caACLIsEnabled($t_subject);
 
 		$vb_we_set_transaction = false;
 		$o_tx = caGetOption('transaction',$pa_options);
@@ -380,7 +377,7 @@ class BatchProcessor {
 				}
 
 				// Does user have access to row?
-				if (caACLIsEnabled($t_subject) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
+				if (caACLIsEnabled($t_subject, ['context' => 'enforce']) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_EDIT_ACCESS__)) {
 					continue; // skip
 				}
 

@@ -871,18 +871,32 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
  * Determine if ACL is enabled system wide, or for a specific row
  *
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
- * @param array $options Array of options from caller. If 'dontFilterByACL' key is set to true then ACL will be returned as disabled.
+ * @param array $options Array of options from caller. Options include:
+ *		dontFilterByACL = If  set to true ACL will be returned as disabled. [Default is false]
+ *		context = 	Context in which ACL is being used. Values are "config" (ACL enabled for configuration) 
+ *					and "enforce" (ACL actually being enforced). When ACL is enabled on the front-end (Pawtucket) only
+ *					the "config" context will return true in Providence while "enforce" will return false.
  * 
  * @return bool
  */
 function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
+	$context = $options['context'] ?? null;
 	if(defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
-	if($options['dontFilterByACL'] ?? false) { return false; }
+	
 	$config = Configuration::load();
-	if(!$config->get('perform_item_level_access_checking')) { return false; } 
+	if(!(bool)$config->get('perform_item_level_access_checking')) { return false; } 
+	
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
-	if($t_item && method_exists($t_item, "supportsACL")) {
-		return (bool)$t_item->supportsACL();
+	if($t_item && method_exists($t_item, "supportsACL") && !(bool)$t_item->supportsACL()) {
+		return false;
+	}
+	
+	if ($context === 'config') {
+		return (bool)$config->get('allow_item_level_access_control_configuration');
+	}
+	if ($context === 'enforce') {
+		if($options['dontFilterByACL'] ?? false) { return false; }
+		return (bool)$config->get('perform_item_level_access_control_enforcement');
 	}
 	return true;
 }
