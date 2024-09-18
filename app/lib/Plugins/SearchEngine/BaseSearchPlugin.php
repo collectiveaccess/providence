@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
 require_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngine.php');
 
@@ -98,12 +94,21 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 */
 	protected $searched_terms = [];
 	
+	/**
+	 * Description of matches by return row_id
+	 */
+	protected $seach_result_desc = [];
+	
+	/**
+	 * 
+	 */
+	protected $opa_filters = [];
+	
 	# -------------------------------------------------------
 	/**
 	 * @param Db $db Database connection to use. If omitted a new connection is created.
 	 */
 	public function __construct($db=null) {
-		
 		$this->config = Configuration::load();
 		$this->search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
 		$this->search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
@@ -132,7 +137,7 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 *
 	 * @param string $option Name of option
 	 * @param mixed $value option setting
-	 * @return bool True on succes, false if option in not valid
+	 * @return bool True on success, false if option in not valid
 	 */
 	public function setOption($option, $value) {
 		if ($this->isValidOption($option)) {
@@ -222,7 +227,7 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 *
 	 * @return bool
 	 */
-	public function initSearch(int $subject_tablenum, string $search_expression, array $filters=[], $rewritten_query) : bool {
+	public function initSearch(int $subject_tablenum, string $search_expression, array $filters, $rewritten_query) : bool {
 		$this->searched_terms = [];
 		return true;
 	}
@@ -232,6 +237,13 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 */
 	public function getSearchedTerms() : array {
 		return $this->searched_terms ?? [];
+	}
+	# --------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getSearchResultDesc() : array {
+		return $this->seach_result_desc ?? [];
 	}
 	# --------------------------------------------------
 }

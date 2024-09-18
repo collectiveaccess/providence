@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -405,7 +405,7 @@ function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null, $options=null) {
 		return $ps_wkhtmltopdf_path; 
 	} // don't try exec test on Windows
 	
-	caExec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
+	caExec($ps_wkhtmltopdf_path." > /dev/null 2> /dev/null",$va_output,$vn_return);
 	
 	$vb_ret = (($vn_return == 0) || ($vn_return == 1));
 	
@@ -508,6 +508,42 @@ function caWhisperInstalled(array $options=null) {
 	$logger = caGetLogger();
 	$logger->logError(_t('[mediaPluginHelpers::caWhisperInstalled] Whisper is not installed. Return code was %1; message was %2', $return, join("; ", $output)));	
 	return false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
+ *
+ * @param string $ps_pdfminer_path path to PDFMiner
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
+	if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
+
+	if (!caIsValidFilePath($ps_pdfminer_path)) { 
+		CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+
+	if (!@is_readable($ps_pdfminer_path)) { 
+		CompositeCache::save("mediahelper_pdfminer_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	if ((caGetOSFamily() == OS_WIN32) && $ps_pdfminer_path) { 
+		CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
+		return $ps_pdfminer_path; 
+	} // don't try exec test on Windows
+
+	caExec($ps_pdfminer_path." --version > /dev/null",$va_output,$vn_return);
+	
+	$vb_ret = ($vn_return == 100 || $vn_return == 0);
+
+	CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
+	
+	return $vb_ret ? $ps_pdfminer_path : false;
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -844,28 +880,28 @@ function caGetExifTagArgsForExport($data) {
 	return $tag_args;
 }
 # ------------------------------------------------------------------------------------------------
-function caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_id) {
+/**
+ *
+ */
+function caExportMediaMetadataForRecord(string $table, string $type_code, int $id) {
 	$o_app_config = Configuration::load();
 
-	if (!($vs_media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
-	$o_metadata_config = Configuration::load($vs_media_metadata_config);
+	if (!($media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
+	$o_metadata_config = Configuration::load($media_metadata_config);
 
-	$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-	if(!isset($va_mappings[$ps_table])) { return false; }
+	$mappings = $o_metadata_config->getAssoc('export_mappings');
+	if(!isset($mappings[$table])) { return false; }
 
-	if(isset($va_mappings[$ps_table][$ps_type_code])) {
-		$vs_export_mapping = $va_mappings[$ps_table][$ps_type_code];
-	} elseif(isset($va_mappings[$ps_table]['__default__'])) {
-		$vs_export_mapping = $va_mappings[$ps_table]['__default__'];
-	} else {
-		$vs_export_mapping = false;
+	$export_mapping = null;
+	if(isset($mappings[$table][$type_code])) {
+		$export_mapping = $mappings[$table][$type_code];
+	} elseif(isset($mappings[$table]['__default__'])) {
+		$export_mapping = $mappings[$table]['__default__'];
 	}
-
-	if($vs_export_mapping) {
-		return ca_data_exporters::exportRecord($vs_export_mapping, $pn_id);
+	if(!is_string($export_mapping) || !strlen($export_mapping)) {
+		return false;
 	}
-
-	return false;
+	return ca_data_exporters::exportRecord($export_mapping, $id);
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -883,7 +919,9 @@ function caGetDefaultMediaIconTag($ps_type, $pn_width, $pn_height, $pa_options=n
 		$o_config = Configuration::load();
 		$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 		$va_icons = $o_icon_config->getAssoc($ps_type);
-		return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], array('width' => $va_selected_size['width'], 'height' => $va_selected_size['height']));
+		$alt_text_by_type = $o_icon_config->getAssoc('alt_text');
+		$alt_text = $alt_text_by_type[$ps_type] ?? _t('Default media icon');
+		return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], ['alt' => $alt_text, 'width' => $va_selected_size['width'], 'height' => $va_selected_size['height']]);
 	}
 
 	return null;
@@ -1086,9 +1124,9 @@ function caGetPDFInfo($ps_filepath) {
 		if ($o_pdf && (sizeof($o_pdf->pages) > 0)) { 
 			$o_page = $o_pdf->pages[0];
 			return [
-				'title' => $o_pdf->properties['Title'],
-				'author' => $o_pdf->properties['Author'],
-				'producer' => $o_pdf->properties['Producer'],
+				'title' => $o_pdf->properties['Title'] ?? null,
+				'author' => $o_pdf->properties['Author'] ?? null,
+				'producer' => $o_pdf->properties['Producer'] ?? null,
 				'pages' => sizeof($o_pdf->pages),
 				'width' => $o_page->getWidth(),
 				'height' => $o_page->getHeight()

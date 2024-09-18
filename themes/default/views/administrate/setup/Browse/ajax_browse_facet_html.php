@@ -54,7 +54,7 @@
 ?>
 <script type="text/javascript">
 	function caUpdateFacetDisplay(grouping) {
-		caUIBrowsePanel.showBrowsePanel('<?php print $vs_facet_name; ?>', <?php print ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?php print ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
+		caUIBrowsePanel.showBrowsePanel('<?= $vs_facet_name; ?>', <?= ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?= ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
 	}
 </script>
 
@@ -66,14 +66,14 @@
 		# ------------------------------------------------------------
 		case 'hierarchical';
 ?>
-	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 	<div id="hierarchyBrowserContainer">
 		<div id="hierarchyBrowser" class='hierarchyBrowser'>
 			<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 		</div>
 		<div class="hierarchyBrowserSearchBar">
-			<label for="hierarchyBrowserSearch"><?php print _t("Search"); ?>:</label>
+			<label for="hierarchyBrowserSearch"><?= _t("Search"); ?>:</label>
 			<input id="hierarchyBrowserSearch" type="text" size="40" />
 			<span class="ui-helper-hidden-accessible" role="status" aria-live="polite"></span>
 		</div>
@@ -81,7 +81,7 @@
 		if ($t_item && $t_subject) {
 ?>
 			<div class="hierarchyBrowserHelpText">
-				<?php print _t("Click on a %1 to see more specific %2 within that %3, or use the search field. Click on the arrow next to a %4 to find %5 related to it.", $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL') ); ?>
+				<?= _t("Click on a %1 to see more specific %2 within that %3, or use the search field. Click on the arrow next to a %4 to find %5 related to it.", $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL') ); ?>
 			</div>
 <?php
 		}
@@ -94,20 +94,20 @@
 		jQuery(document).ready(function() {
 
 			oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
-				levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
-				initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
+				levelDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
+				initDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
 
-				editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
-				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>",
+				editUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
+				editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>",
 
-				initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+				initItemID: '<?= $this->getVar('browse_last_id'); ?>',
+				indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 				currentSelectionDisplayID: 'browseCurrentSelection'
 			});
 
 			jQuery('#hierarchyBrowserSearch').autocomplete({
-				source: '<?php print $va_service_urls['search']; ?>',
+				source: '<?= $va_service_urls['search']; ?>',
 				minLength: 3,
 				delay: 800,
 				html: true,
@@ -126,7 +126,7 @@
 		# ------------------------------------------------------------
 		case 'none':
 ?>
-	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 
 	<div class="browseSelectPanelList">
@@ -164,7 +164,7 @@
 ?>
 
 	<div class="browseSelectPanelHeader">
-	<h2 class='browse'><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 <?php 
 	$vs_g = null;
@@ -246,6 +246,6 @@
 
 <script type="text/javascript">
 	function loadFacetGroup(g) {
-		jQuery('#browseSelectPanelContentArea').parent().load("<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $vs_facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
+		jQuery('#browseSelectPanelContentArea').parent().load("<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $vs_facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
 	}
 </script>

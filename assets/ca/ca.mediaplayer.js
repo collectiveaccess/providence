@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,15 +100,28 @@ var caUI = caUI || {};
 					that.isPlaying[playerName] = true;
 					break;
 				case 'Plyr':
-					that.players[playerName].play();
-
+					that.players[playerName].stop();
+					that.isPlaying[playerName] = false;
+					
 					const c = that.players[playerName].currentTime;
-					if (t > c) {
-						that.players[playerName].forward(t - c);
+					let readyState = that.players[playerName].media.readyState;
+					
+					if(readyState >= 1) {
+						that.players[playerName].currentTime = t;
+						that.isPlaying[playerName] = true;
+						that.players[playerName].play();
 					} else {
-						that.players[playerName].rewind(c - t);
-					} 
-					that.isPlaying[playerName] = true;
+						jQuery("#" + playerName).css("opacity", 0.2);
+						that.players[playerName].on('canplaythrough', (event) => {
+							if(that.isPlaying[playerName]) { return; }
+							that.isPlaying[playerName] = true;
+							
+							that.players[playerName].currentTime = t;
+							that.players[playerName].play();
+							
+							jQuery("#" + playerName).css("opacity", 1.0);
+						});
+					}
 					break;
 				case 'MediaElement':
 					that.players[playerName][0].play();
@@ -166,6 +179,52 @@ var caUI = caUI || {};
 					break;
 			}
 		};
+		
+		// Register handler ready event
+		that.onReady = function(playerName, f) {
+			if (!that.players[playerName]) return null;
+			
+			switch(that.playerTypes[playerName]) {
+				case 'VideoJS':
+					that.players[playerName].addEvent('ready', f);
+					break;
+				case 'Plyr':
+					that.players[playerName].on('ready', f);
+					break;
+				case 'MediaElement':
+					that.players[playerName][0].addEventListener('ready', f);
+					break;
+				default:
+					return null;
+					break;
+			}
+		};
+		
+		//
+		that.getPlayerNames = function() {
+			return Object.keys(that.players);
+		}
+		
+		//
+		that.getPlayers = function() {
+			return that.players;
+		}
+		
+		//
+		that.playAll = function() {
+			let players=  that.getPlayers();
+			for(let p in players) {
+				that.play(p);
+			}
+		}
+		
+		//
+		that.stopAll = function() {
+			let players=  that.getPlayers();
+			for(let p in players) {
+				that.stop(p);
+			}
+		}
 		
 		return that;
 	};	

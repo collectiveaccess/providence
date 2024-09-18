@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
@@ -111,6 +106,21 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * Root tag to use when basePath is set
 	 */
 	protected $ops_base_root_tag = null;
+	
+	/**
+	 *
+	 */
+	protected $ops_xml_namespace;
+	
+	/**
+	 *
+	 */
+	protected $ops_xml_namespace_prefix;
+	
+	/**
+	 *
+	 */
+	protected $ops_additional_xml_namespaces;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -146,13 +156,15 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
+		$dom = new DOMDocument();
 		if ($ps_source) { 
-			if(!($this->opo_xml = @DOMDocument::load($ps_source))) { return false;}
+			if(!(@$dom->load($ps_source))) { return false;}
 		} elseif($str = caGetOption('fromString', $pa_options, null))  {
-			if(!($this->opo_xml = @DOMDocument::loadXML($str))) { return false;}
+			if(!(@$dom->loadXML($str))) { return false;}
 		} else {
 			return false;
 		}
+		$this->opo_xml = $dom;
 		try {
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
 		} catch (Exception $e) {
@@ -235,7 +247,8 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function nextRow() {
-		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
+		if(!$this->opo_handle) { return false; }
+		if(!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
 		
 		$this->opa_row_buf = array();
 		$this->_extractXMLValues($o_row);

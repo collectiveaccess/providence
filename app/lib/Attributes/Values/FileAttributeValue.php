@@ -157,12 +157,12 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 			$va_info =  $this->opo_file_info_coder->getFileInfo($this->opa_file_data);
 			
 			$va_dimensions = array();
-			if ($va_info['ORIGINAL_FILENAME']) {
+			if ($va_info['ORIGINAL_FILENAME'] ?? null) {
 				$vs_filename = $va_info['ORIGINAL_FILENAME'];
 			} else {
 				$vs_filename = _t('Uploaded file');
 			}
-			if ($va_info['MIMETYPE']) {
+			if ($va_info['MIMETYPE'] ?? null) {
 				$va_dimensions[] = FileMimeTypes::nameForMimeType($va_info['MIMETYPE']);
 			}
 			if (!isset($va_info['PROPERTIES']['filesize']) || !($vn_filesize = $va_info['PROPERTIES']['filesize'])) {
@@ -189,7 +189,7 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 		$config = Configuration::load();
 		if(!is_array($ps_value) || (isset($ps_value['tmp_name']))) {
 			foreach(caGetAvailableMediaUploadPaths() as $d) {
-				$va_files = caBatchFindMatchingMedia($d.$media_prefix, is_array($ps_value) ? $ps_value['tmp_name'] : $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
+				$va_files = caBatchFindMatchingMedia($d, is_array($ps_value) ? $ps_value['tmp_name'] : $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
 				foreach($va_files as $vs_file) {
 					if (preg_match("!(SynoResource|SynoEA)!", $vs_file)) { continue; } // skip Synology res files
 			
@@ -290,7 +290,7 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function queryFields() : ?array {
-		return ['value_longtext1'];
+		return ['value_longtext1'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**

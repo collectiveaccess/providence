@@ -29,16 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
-/**
- *
- */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_type_restrictions.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_screens'] = array(
  	'NAME_SINGULAR' 	=> _t('editor UI screen'),
@@ -263,7 +258,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_rank Optional value that determines sort order of bundles in the screen. If omitted, placement is added to the end of the screen.
 	 * @param array $pa_options Optional array of options. Supports the following options:
 	 * 		user_id = if specified then add will fail if specified user does not have edit access for the display
-	 * @return int Returns placement_id of newly created placement on success, false on error
+	 *		returnInstance = return newly created ca_editor_ui_bundle_placements instance instead of placement_id
+	 * @return int|ca_editor_ui_bundle_placements Returns placement_id of newly created placement on success (or ca_editor_ui_bundle_placements instance if returnInstance option is set), false on error
 	 */
 	public function addPlacement($ps_bundle_name, $ps_placement_code, $pa_settings, $pn_rank=null, $pa_options=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }
@@ -320,7 +316,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Dependent field visibility config relies on UI config
 		if ($this->getAppConfig()->get('enable_dependent_field_visibility')) { CompositeCache::flush('ca_metadata_elements_available_settings'); }
-		return $t_placement->getPrimaryKey();
+		return caGetOption('returnInstance', $pa_options, false) ? $t_placement : $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
 	/**
@@ -349,7 +345,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	                $t_p = new ca_editor_ui_bundle_placements($placement_id);
 	                $t_p->set('rank', $old_rank = $t_p->get('rank') + 1);
 	                if (!$t_p->update()) {
-	                    $this->errors = $t_o->errors;
+	                    $this->errors = $t_p->errors;
 	                    return false;
 	                }
 	            }
@@ -393,7 +389,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	                $t_p = new ca_editor_ui_bundle_placements($placement_id);
 	                $t_p->set('rank', $t_p->get('rank') + 2);
 	                if (!$t_p->update()) {
-	                    $this->errors = $t_o->errors;
+	                    $this->errors = $t_p->errors;
 	                    return false;
 	                }
 	            }
@@ -554,8 +550,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
 				if (!$pb_settings_only) {
-					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
-					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
+					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings'] ?? null);
+					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'] ?? null;
 					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings, 'table' => $table_name, 'relatedTable' => Datamodel::getTableNum($vs_bundle_name) ? $vs_bundle_name : null));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
@@ -790,6 +786,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 1,
 							'label' => _t('Documentation URL'),
 							'description' => _t('URL pointing to documentation for this field. Leave blank if you wish to use the default URL for this metadata element.')
+						),
+						'dontShowDeleteButton' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => 10, 'height' => 1,
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Do not show delete button'),
+							'description' => _t('If checked the delete control will not be provided.')
 						)
 					);
 					if ($va_elements[$bundle_proc]['datatype'] == 1) {		// 1=text
@@ -853,7 +858,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '0',
 								'label' => _t('Do not show delete button'),
-								'description' => _t('If checked the delete relationship control will not be provided.')
+								'description' => _t('If checked the delete control will not be provided.')
 							),
 							'display_template' => array(
 								'formatType' => FT_TEXT,
@@ -912,6 +917,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						if (!($t_rel = Datamodel::getInstanceByTableName($bundle, true))) { continue(2); }
 						$va_path = array_keys(Datamodel::getPath($t_instance->tableName(), $bundle));
+						
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -1008,6 +1014,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Last item color'),
 								'description' => _t('If set last item in list will use this color.')
 							),
+							'dontShowAddButton' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Do not show add button'),
+								'description' => _t('If checked the add control will not be provided.')
+							),
 							'dontShowDeleteButton' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_CHECKBOXES,
@@ -1015,7 +1030,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '0',
 								'label' => _t('Do not show delete button'),
-								'description' => _t('If checked the delete relationship control will not be provided.')
+								'description' => _t('If checked the delete control will not be provided.')
 							),
 							'display_template' => array(
 								'formatType' => FT_TEXT,
@@ -1082,7 +1097,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'width' => "275px", 'height' => "40px",
 								'takesLocale' => false,
-								'default' => '0',
+								'default' => null,
 								'options' => [_t('Preferred label') => 'preferred_labels', _t('Identifier') => $t_rel->getProperty('ID_NUMBERING_ID_FIELD')],
 								'label' => _t('Prepopulate quick add fields with search text'),
 								'description' => _t('Select quickadd form fields to be pre-filled with the user-entered search value. If no fields are selected then the preferred label will be prepopulated by default.')
@@ -1171,9 +1186,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => false,
 								'label' => _t('Show set representation button?'),
+								'showOnSelect' => ['useRepresentationRelationshipType'],
 								'description' => _t('If checked an option to link media from related records to the edited record will be displayed.')
-							)
+							),
+							'useRepresentationRelationshipType' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'useRelationshipTypeList' => $va_path[1],
+								'width' => "475px", 'height' => "75px",
+								'takesLocale' => false,
+								'default' => '',
+								'multiple' => false,
+								'label' => _t('Use relationship type'),
+								'description' => _t('Relationship type to link selected representations with.')
+							),
 						);
+						
+						if($va_path[1] === 'ca_objects_x_object_representations') {
+							unset($va_additional_settings['useRepresentationRelationshipType']);
+							unset($va_additional_settings['showSetRepresentationButton']['showOnSelect']);
+						}
 				
 						if(
 							!($policies = array_merge(
@@ -1507,6 +1539,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						}
 					} else {
 						switch($bundle) {
+							case 'hierarchy_tools':
+								$va_additional_settings = [									
+									'numPerPage' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_FIELD,
+										'default' => 100,
+										'width' => 5, 'height' => 1,
+										'label' => _t('Number of items to load per page'),
+										'description' => _t('Maximum number of items to render on initial load.')
+									),
+									'itemDisplayTemplate' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "100px",
+										'label' => _t('Item display template'),
+										'description' => _t('Caption for item in hierarchy list.')
+									]
+								];
+								break;
 							case 'authority_references_list':
 								$va_additional_settings = array(
 									'maxReferencesToDisplay' => array(
@@ -1615,6 +1667,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'generic':
 							case 'ca_objects_components_list':
+								$va_additional_settings['containerTemplate'] = [
+									'formatType' => FT_TEXT,
+									'displayType' => DT_FIELD,
+									'default' => '<div>',
+									'width' => "475px", 'height' => 5,
+									'label' => _t('Component display container template'),
+									'description' => _t('Markup to place components within. Markup wraps the series of components formatted using component display templates. Use the placeholder <em>^COMPONENTS</em> to place the component list within the container markup.')
+								];
 								$va_additional_settings['displayTemplate'] = [
 									'formatType' => FT_TEXT,
 									'displayType' => DT_FIELD,
@@ -2109,7 +2169,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                         'takesLocale' => false,
                                         'default' => '0',
                                         'label' => _t('Do not show delete button'),
-                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                        'description' => _t('If checked the delete control will not be provided.')
                                     )
                                 ];
 							    break;
@@ -2135,7 +2195,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
                                         'takesLocale' => false,
                                         'default' => '0',
                                         'label' => _t('Do not show delete button'),
-                                        'description' => _t('If checked the delete relationship control will not be provided.')
+                                        'description' => _t('If checked the delete control will not be provided.')
                                     )
                                 ];
 							    break;
@@ -2429,7 +2489,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace("!^(ca_attribute_|{$table}\.)!", '', $va_placement['bundle_name']);
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($table.'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
-			if(is_array($va_placement['settings']['label'])){
+			if(is_array($va_placement['settings']['label'] ?? null)){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
 				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
@@ -2464,8 +2524,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 *		user_id = if specified then placements are only returned if the user has at least read access to the screen
 	 * @return int Number of placements. 
 	 */
-	public function getPlacementCount($pa_options=null) {
-		return sizeof($this->getPlacementsInDisplay($pa_options));
+	public function getPlacementCount(?array $options=null) : int {
+		return sizeof($this->getPlacementsInScreen($options) ?? []);
 	}
 	# ------------------------------------------------------
 	/** 
@@ -2571,13 +2631,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if($vn_placement_id === 0) {
-					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id], $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
 					if ($t_screen->numErrors()) {
 						$this->errors = $t_screen->errors;
 						return false;
 					}
 				} else {
-					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
+					$t_placement = new ca_editor_ui_bundle_placements($vn_placement_id, null, $va_available_bundles[$vs_bundle]['settings'] ?? []);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->set('rank', $vn_i + 1);
 					

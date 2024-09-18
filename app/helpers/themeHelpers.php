@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 # ---------------------------------------
 /**
  * Generate URL tag for asset in current theme; if asset is not available the graphic in the default theme will be returned.
@@ -157,9 +156,16 @@ function caAddPageCSSClasses($pa_page_classes) {
  * @param RequestHTTP $po_request
  * @return string The "class" attribute with set classes or an empty string if no classes are set
  */
-function caGetPageCSSClasses() {
+function caGetPageCSSClasses(?array $options=null) {
 	global $g_theme_page_css_classes;
-	return (is_array($g_theme_page_css_classes) && sizeof($g_theme_page_css_classes)) ? "class='".join(' ', $g_theme_page_css_classes)."'" : '';
+	if(is_array($g_theme_page_css_classes) && sizeof($g_theme_page_css_classes)) {
+		if(caGetOption('asAttribute', $options, true)) {
+			return "class='".join(' ', $g_theme_page_css_classes)."'";
+		} else {
+			return $g_theme_page_css_classes;
+		}
+	}
+	return null;
 }
 # ---------------------------------------
 /**
@@ -484,7 +490,7 @@ function caObjectRepresentationThumbnails($po_request, $pn_representation_id, $p
 	}
 	$va_links = array();
 	$vn_primary_id = "";
-	foreach($va_reps as $va_rep){
+	foreach($va_reps as $i => $va_rep){
 		if(!isset($va_rep['media']) || !strlen((string)$va_rep['media'])) { continue; }
 		$vn_rep_id = $va_rep["representation_id"];
 		$vs_class = "";
@@ -513,9 +519,13 @@ function caObjectRepresentationThumbnails($po_request, $pn_representation_id, $p
 				$va_links[$vn_rep_id] = "<a href='#' onclick='$(\".{$ps_current_rep_class}\").removeClass(\"{$ps_current_rep_class}\"); $(this).parent().addClass(\"{$ps_current_rep_class}\"); $(this).addClass(\"{$ps_current_rep_class}\"); $(\".jcarousel\").jcarousel(\"scroll\", $(\"#slide".$vn_rep_id."\"), false); return false;' ".(($vs_class) ? "class='".$vs_class."'" : "").">".$vs_thumb.$vs_rep_label."</a>\n";
 				break;
 			# -------------------------------
+			case "basic":
+				$va_links[$vn_rep_id] = "<a href='#' id='repThumb_{$i}' onclick='return setItem({$i});' class='repThumb' data-representation_id='{$vn_rep_id}'>".$vs_thumb.$vs_rep_label."</a>\n";
+				break;
+			# -------------------------------
 			default:
 			case "detail":
-				$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb.$vs_rep_label, $vs_class, $pt_object->tableName(), $pt_object->getPrimaryKey(), array("representation_id" => $vn_rep_id));
+				$va_links[$vn_rep_id] = caDetailLink($po_request, $vs_thumb.$vs_rep_label, $vs_class, $pt_object->tableName(), $pt_object->getPrimaryKey(), ["representation_id" => $vn_rep_id], ['data-representation_id' => $vn_rep_id]);
 				break;
 			# -------------------------------
 		}
@@ -587,7 +597,7 @@ function caDetailItemComments($po_request, $pn_item_id, $t_item, $va_comments, $
 			$va_tag_links[] = caNavLink($po_request, $vs_tag, '', '', 'MultiSearch', 'Index', array('search' => $vs_tag));
 		}
 		$vs_tmp .= "<h2>"._t("Tags")."</h2>\n
-			<div id='tags'>".implode($va_tag_links, ", ")."</div>";
+			<div id='tags'>".implode(", ", $va_tag_links)."</div>";
 	}
 	if($po_request->isLoggedIn()){
 		$vs_tmp .= "<button type='button' class='btn btn-default' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'CommentForm', array("tablename" => $t_item->tableName(), "item_id" => $t_item->getPrimaryKey()))."\"); return false;' >"._t("Add your tags and comment")."</button>";
@@ -836,102 +846,218 @@ function caGetDetailForType($pm_table, $pm_type=null, $pa_options=null) {
  *
  *
  */
-function caGetDisplayImagesForAuthorityItems($pm_table, $pa_ids, $pa_options=null) {
-	if (!($t_instance = Datamodel::getInstanceByTableName($pm_table, true))) { return null; }
-	if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) { return array(); }
-	
-	$ps_return = caGetOption("return", $pa_options, 'tags');
-	
-	if ((!caGetOption("useRelatedObjectRepresentations", $pa_options, array())) && method_exists($t_instance, "getPrimaryMediaForIDs")) {
-		// Use directly related media if defined
-		$va_media = $t_instance->getPrimaryMediaForIDs($pa_ids, array($vs_version = caGetOption('version', $pa_options, 'icon')), $pa_options);
-		$va_media_by_id = array();
-		foreach($va_media as $vn_id => $va_media_info) {
-			if(!is_array($va_media_info)) { continue; }
-			$va_media_by_id[$vn_id] = $va_media_info['tags'][$vs_version];
-		}
-		if(sizeof($va_media_by_id)){
-			return $va_media_by_id;
-		}
-	}
-
-	if(!is_array($pa_options)){
-		$pa_options = array();
-	}
-	$pa_access_values = caGetOption("checkAccess", $pa_options, array());
-	$vs_access_wheres = '';
-	if($pa_options['checkAccess']){
-		$vs_access_wheres = " AND ca_objects.access IN (".join(",", $pa_access_values).") AND ca_object_representations.access IN (".join(",", $pa_access_values).")";
-	}
-	$va_path = array_keys(Datamodel::getPath($vs_table = $t_instance->tableName(), "ca_objects"));
-	$vs_pk = $t_instance->primaryKey();
-
-	$va_params = array();
-
-	$vs_linking_table = $va_path[1];
-
-
-	$vs_rel_type_where = '';
-	if (is_array($va_rel_types = caGetOption('relationshipTypes', $pa_options, null)) && sizeof($va_rel_types)) {
-		$va_rel_types = caMakeRelationshipTypeIDList($vs_linking_table, $va_rel_types);
-		if (is_array($va_rel_types) && sizeof($va_rel_types)) {
-			$vs_rel_type_where = " AND ({$vs_linking_table}.type_id IN (?))";
-			$va_params[] = $va_rel_types;
-		}
-	}
-	
-	$vs_type_where = '';
-	if (is_array($va_object_types = caGetOption('objectTypes', $pa_options, null)) && sizeof($va_object_types)) {
-		$va_object_types = caMakeTypeIDList('ca_objects', $va_object_types);
-		if (is_array($va_object_types) && sizeof($va_object_types)) {
-			$vs_type_where = " AND (ca_objects.type_id IN (?))";
-			$va_params[] = $va_object_types;
-		}
-	}
-
-	if(is_array($pa_ids) && sizeof($pa_ids)) {
-		$vs_id_sql = "AND {$vs_table}.{$vs_pk} IN (?)";
-		$va_params[] = $pa_ids;
-	}
-
-	$vs_sql = "SELECT DISTINCT ca_object_representations.media, {$vs_table}.{$vs_pk}
-		FROM {$vs_table}
-		INNER JOIN {$vs_linking_table} ON {$vs_linking_table}.{$vs_pk} = {$vs_table}.{$vs_pk}
-		INNER JOIN ca_objects ON ca_objects.object_id = {$vs_linking_table}.object_id
-		INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.object_id = ca_objects.object_id
-		INNER JOIN ca_object_representations ON ca_object_representations.representation_id = ca_objects_x_object_representations.representation_id
-		WHERE
-			ca_objects_x_object_representations.is_primary = 1 {$vs_access_wheres} {$vs_rel_type_where} {$vs_type_where} {$vs_id_sql}
-	";
-
-	$o_db = $t_instance->getDb();
-
-	$qr_res = $o_db->query($vs_sql, $va_params);
-	$va_res = array();
-	while($qr_res->nextRow()) {
-		switch($ps_return) {
-			case 'urls':
-				$va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaUrl("media", caGetOption('version', $pa_options, 'icon'));
-				break;
-			case 'paths':
-				$va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaPath("media", caGetOption('version', $pa_options, 'icon'));
-				break;
-			case 'tags':
-			default:
-				$t_instance->load($qr_res->get($t_instance->primaryKey(true)));
-				if ($alt_text_template = Configuration::load()->get("{$vs_table}_alt_text_template")) { 
-					$alt_text = $t_instance->getWithTemplate($alt_text_template);
-				} elseif(is_a($t_instance, "LabelableBaseModelWithAttributes")) {
-					$alt_text = $t_instance->get("{$vs_table}.preferred_labels");
-				} else {
-					$alt_text = null;
+	function caGetDisplayImagesForAuthorityItems($pm_table, $pa_ids, $pa_options=null) {
+		if (!($t_instance = Datamodel::getInstanceByTableName($pm_table, true))) { return null; }
+		if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship()) { return array(); }
+		
+		$config = Configuration::load();
+		$base_url = $config->get('ca_url_root');
+		
+		$ps_return = caGetOption('return', $pa_options, 'tags');
+		$version = caGetOption('version', $pa_options, 'icon');
+		$versions = caGetOption("versions", $pa_options, null);
+		$versions_set = (is_array($versions) && sizeof($versions));
+		
+		if(!is_array($versions) && $version) { $versions = [$version]; }
+		if(!is_array($versions) || !sizeof($versions)) { $versions = [$version]; }
+		$version = $versions[0];
+		
+		if ((!caGetOption("useRelatedObjectRepresentations", $pa_options, array())) && method_exists($t_instance, "getPrimaryMediaForIDs")) {
+			// Use directly related media if defined
+			$va_media = $t_instance->getPrimaryMediaForIDs($pa_ids, $versions, $pa_options);
+			$va_media_by_id = array();
+			foreach($va_media as $vn_id => $va_media_info) {
+				if(!is_array($va_media_info)) { continue; }
+				
+				switch($ps_return) {
+					default:
+					case 'tags':
+						if($versions_set) {
+							foreach($versions as $v) {
+								$va_media_by_id[$vn_id][$v] = $va_media_info['tags'][$v];
+							}
+						} else {
+							$va_media_by_id[$vn_id] = $va_media_info['tags'][$version];
+						}
+						break;
+					case 'urls':
+						if($versions_set) {
+							foreach($versions as $v) {
+								$va_media_by_id[$vn_id][$v] = $va_media_info['urls'][$v];
+							}
+						} else {
+							$va_media_by_id[$vn_id] = $va_media_info['urls'][$version];
+						}
+					case 'paths':
+						if($versions_set) {
+							foreach($versions as $v) {
+								$va_media_by_id[$vn_id][$v] = $va_media_info['paths'][$v];
+							}
+						} else {
+							$va_media_by_id[$vn_id] = $va_media_info['paths'][$version];
+						}
+						break;
+					case 'data':
+						if($versions_set) {
+							foreach($versions as $v) {
+								$va_media_by_id[$vn_id][$v]['path'] = $va_media_info['paths'][$v];
+								$va_media_by_id[$vn_id][$v]['url'] = $va_media_info['urls'][$v];
+								$va_media_by_id[$vn_id][$v]['tag'] = $va_media_info['tags'][$v];
+								$va_media_by_id[$vn_id][$v]['width'] = $va_media_info['info'][$v]['WIDTH'];
+								$va_media_by_id[$vn_id][$v]['height'] = $va_media_info['info'][$v]['HEIGHT'];
+								$va_media_by_id[$vn_id][$v]['mimetype'] = $va_media_info['info'][$v]['MIMETYPE'];
+							}
+							
+		        			$va_media_by_id[$vn_id]['iiif']['url'] = "{$base_url}/service.php/IIIF/".$va_media_info['representation_id']."/info.json";
+						} else {
+							$va_media_by_id[$vn_id] = $va_media_info['paths'][$version];
+						}
+						break;
 				}
-				$va_res[$qr_res->get($vs_pk)] = $qr_res->getMediaTag("media", caGetOption('version', $pa_options, 'icon'), ['alt' => $alt_text]);
-				break;
+					
+			}
+			if(sizeof($va_media_by_id)){
+				return $va_media_by_id;
+			}
 		}
+
+		if(!is_array($pa_options)){ $pa_options = [];}
+		$pa_access_values = caGetOption("checkAccess", $pa_options, array());
+		$vs_access_wheres = '';
+		if($pa_options['checkAccess']){
+			$vs_access_wheres = " AND ca_objects.access IN (".join(",", $pa_access_values).") AND ca_object_representations.access IN (".join(",", $pa_access_values).")";
+		}
+		$vs_table = $t_instance->tableName();
+		$vs_pk = $t_instance->primaryKey();
+		
+		$va_params = array();
+		if ($vs_table === 'ca_objects') {
+			$vs_type_where = '';
+			if (is_array($va_object_types = caGetOption('objectTypes', $pa_options, null)) && sizeof($va_object_types)) {
+				$va_object_types = caMakeTypeIDList('ca_objects', $va_object_types);
+				if (is_array($va_object_types) && sizeof($va_object_types)) {
+					$vs_type_where = " AND (ca_objects.type_id IN (?))";
+					$va_params[] = $va_object_types;
+				}
+			}
+			
+			if(is_array($pa_ids) && sizeof($pa_ids)) {
+				$vs_id_sql = "AND {$vs_table}.{$vs_pk} IN (?)";
+				$va_params[] = $pa_ids;
+			}
+
+			$vs_sql = "SELECT DISTINCT ca_object_representations.media, ca_objects.object_id
+				FROM ca_objects
+				INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.object_id = ca_objects.object_id
+				INNER JOIN ca_object_representations ON ca_object_representations.representation_id = ca_objects_x_object_representations.representation_id
+				WHERE
+					ca_objects_x_object_representations.is_primary = 1 {$vs_access_wheres} {$vs_type_where} {$vs_id_sql}
+			";
+		} else {
+			$va_path = array_keys(Datamodel::getPath($vs_table, "ca_objects"));
+			$vs_pk = $t_instance->primaryKey();
+
+			$vs_linking_table = $va_path[1];
+
+
+			$vs_rel_type_where = '';
+			if (is_array($va_rel_types = caGetOption('relationshipTypes', $pa_options, null)) && sizeof($va_rel_types)) {
+				$va_rel_types = caMakeRelationshipTypeIDList($vs_linking_table, $va_rel_types);
+				if (is_array($va_rel_types) && sizeof($va_rel_types)) {
+					$vs_rel_type_where = " AND ({$vs_linking_table}.type_id IN (?))";
+					$va_params[] = $va_rel_types;
+				}
+			}
+		
+			$vs_type_where = '';
+			if (is_array($va_object_types = caGetOption('objectTypes', $pa_options, null)) && sizeof($va_object_types)) {
+				$va_object_types = caMakeTypeIDList('ca_objects', $va_object_types);
+				if (is_array($va_object_types) && sizeof($va_object_types)) {
+					$vs_type_where = " AND (ca_objects.type_id IN (?))";
+					$va_params[] = $va_object_types;
+				}
+			}
+
+			if(is_array($pa_ids) && sizeof($pa_ids)) {
+				$vs_id_sql = "AND {$vs_table}.{$vs_pk} IN (?)";
+				$va_params[] = $pa_ids;
+			}
+
+			$vs_sql = "SELECT DISTINCT ca_object_representations.media, {$vs_table}.{$vs_pk}
+				FROM {$vs_table}
+				INNER JOIN {$vs_linking_table} ON {$vs_linking_table}.{$vs_pk} = {$vs_table}.{$vs_pk}
+				INNER JOIN ca_objects ON ca_objects.object_id = {$vs_linking_table}.object_id
+				INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.object_id = ca_objects.object_id
+				INNER JOIN ca_object_representations ON ca_object_representations.representation_id = ca_objects_x_object_representations.representation_id
+				WHERE
+					ca_objects_x_object_representations.is_primary = 1 {$vs_access_wheres} {$vs_rel_type_where} {$vs_type_where} {$vs_id_sql}
+			";
+		}
+		$o_db = $t_instance->getDb();
+
+		$qr_res = $o_db->query($vs_sql, $va_params);
+		$va_res = array();
+		
+		$alt_text_template = $config->get("{$vs_table}_alt_text_template");
+		
+		while($qr_res->nextRow()) {
+			$id = $qr_res->get($vs_pk);
+		    switch($ps_return) {
+		        case 'data':
+		        	$t_instance->load($qr_res->get($t_instance->primaryKey(true)));
+		            $alt_text = $alt_text_template ? $t_instance->getWithTemplate($alt_text_template) : $t_instance->get("{$vs_table}.preferred_labels");
+                    
+                    if($versions_set) {
+		        		foreach($versions as $v) {
+		        			$version_info = $qr_res->getMediaInfo("media", $v);
+		        			$va_res[$id][$v]['tag'] = $qr_res->getMediaTag("media", $v, ['alt' => $alt_text]);
+		        			$va_res[$id][$v]['url'] = $qr_res->getMediaUrl("media", $v);
+		        			$va_res[$id][$v]['path'] = $qr_res->getMediaPath("media", $v);
+		        			$va_res[$id][$v]['width'] = $version_info['WIDTH'];
+		        			$va_res[$id][$v]['height'] = $version_info['HEIGHT'];
+		        			$va_res[$id][$v]['mimetype'] = $version_info['MIMETYPE'];
+		        		}
+		        		
+		        		$va_res[$id]['iiif']['url'] = "{$base_url}/service.php/IIIF/".$qr_res->get('ca_object_representations.representation_id')."/info.json";
+		        	} else {
+			        	$va_res[$id] = $qr_res->getMediaTag("media", $version, ['alt' => $alt_text]);
+			        }
+		        	break;
+		        case 'urls':
+		        	if($versions_set) {
+		        		foreach($versions as $v) {
+		        			$va_res[$id][$v] = $qr_res->getMediaUrl("media", $v);
+		        		}
+		        	} else {
+			       		$va_res[$id] = $qr_res->getMediaUrl("media", $version);
+			       	}
+			        break;
+		        case 'paths':
+		        	if($versions_set) {
+		        		foreach($versions as $v) {
+		        			$va_res[$id][$v] = $qr_res->getMgetMediaPathediaUrl("media", $v);
+		        		}
+		        	} else {
+			        	$va_res[$id] = $qr_res->getMediaPath("media", $version);
+			        }
+			        break;
+		        case 'tags':
+		        default:
+		            $t_instance->load($qr_res->get($t_instance->primaryKey(true)));
+		            $alt_text = $alt_text_template ? $t_instance->getWithTemplate($alt_text_template) : $t_instance->get("{$vs_table}.preferred_labels");
+                    
+                    if($versions_set) {
+		        		foreach($versions as $v) {
+		        			$va_res[$id][$v] = $qr_res->getMediaTag("media", $v);
+		        		}
+		        	} else {
+			        	$va_res[$id] = $qr_res->getMediaTag("media", $version, ['alt' => $alt_text]);
+			        }
+			        break;
+			}
+		}
+		return $va_res;
 	}
-	return $va_res;
-}
 # ---------------------------------------
 /**
  * class -> class name of <ul>
@@ -1447,7 +1573,6 @@ function caGetCollectionLevelSummary($po_request, $va_collection_ids, $vn_level)
 			if($vn_rel_object_count){
 				$vs_output .= " <span class='small'>(".$vn_rel_object_count." record".(($vn_rel_object_count == 1) ? "" : "s").")</span>";
 			}
-			$vs_output .= "<br/>";
 			if(!$vb_dont_show_top_level_description){
 				$vs_desc = "";
 				if($vs_sub_collection_desc_template && ($vs_desc = $qr_collections->getWithTemplate($vs_sub_collection_desc_template))){
@@ -1524,7 +1649,8 @@ function caGetBrowseLinks($t_instance, string $bundle, ?array $options=null) : ?
 						
 			switch($bundle_type) {
 				case 'attribute':
-					if(($facet_info['type'] === 'attribute') && ($facet_info['element_code'] === $b)) {
+					$tmp = array_pop(explode('.', $facet_info['element_code']));
+					if(($facet_info['type'] === 'attribute') && ($tmp === $b)) {
 						$facet = $k;
 						$fld = $bundle;
 						break(2);

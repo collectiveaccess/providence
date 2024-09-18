@@ -42,7 +42,7 @@
 		<thead>
 			<tr>
 				<th>
-					<?php print _t('Relationship'); ?>
+					<?= _t('Relationship'); ?>
 				</th>
 <?php
 		// output headers
@@ -90,7 +90,7 @@
 			
 			($i == 2) ? $i = 0 : "";
 ?>
-			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
+			<tr <?= ($i ==1) ? "class='odd'" : ""; ?>>
 				<td>
 <?php
 						if ($t_rel = Datamodel::getInstanceByTableNum($vo_result->get('table_num'), true)) {

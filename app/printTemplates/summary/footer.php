@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,45 +31,48 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
 $t_item = $this->getVar('t_subject');
 
-if($this->request->config->get('summary_header_enabled')) {
-	$footer = '<table class="footerText" style="width: 100%;"><tr>';
-	if($this->request->config->get('summary_show_identifier')) {
-		$footer .= "<td class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
-	}
+$footer = '<table class="footerText" style="width: 100%;"><tr>';
+if($this->getVar('param_showIdentifierInFooter')) {
+	$footer .= "<td class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
+}
 
-	if($this->request->config->get('summary_show_timestamp')) {
-		$footer .= "<td class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</td>";
-	}
-	$footer .= "</tr></table>";
-	
-	
-	switch($this->getVar('PDFRenderer')) {
-		case 'domPDF':
+if($this->getVar('param_showTimestampInFooter')) {
+	$footer .= "<td class='footerText'>".caGetLocalizedDate(null, ['dateFormat' => 'delimited'])."</td>";
+}
+$footer .= "</tr></table>";
+
+switch($this->getVar('PDFRenderer')) {
+	case 'domPDF':
 ?>
 <div id='footer'>
 	<?= $footer; ?>
 </div>
 <?php
-				break;
-		case 'wkhtmltopdf':
+			break;
+	case 'wkhtmltopdf':
 ?>
 <!--BEGIN FOOTER-->
 <!DOCTYPE html>
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-</head>
-<body>
-<?= $footer; ?>
-</body>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?= $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} 
+?>
+	</head>
+	<body>
+		<?= $footer; ?>
+	</body>
 </html>
 <!--END FOOTER-->
-
 <?php
-		break;
-	}
+	break;
 }
+

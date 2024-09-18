@@ -36,7 +36,9 @@
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3)));
+	$base_dir = ($_SERVER['SCRIPT_FILENAME'] && (php_sapi_name() !== 'cli'))  ? preg_replace("!/install$!", "", pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME)) :  join(DIRECTORY_SEPARATOR, array_slice(explode(DIRECTORY_SEPARATOR, __FILE__), 0, -3));
+	if(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__) { $base_dir = preg_replace('!/service$!', '', $base_dir); }
+	define("__CA_BASE_DIR__", $base_dir);
 }
 
 # Path to CollectiveAccess 'app' directory 
@@ -149,6 +151,47 @@ if (!defined("__CA_DB_TYPE__")) {
 	define("__CA_DB_TYPE__", 'mysqli');
 }
 
+# __CA_DB_PORT__ = Database server port. Only change if the default 3306 isn't being used
+#
+if (!defined("__CA_DB_PORT__")) {
+        define("__CA_DB_PORT__", '3306');
+}
+
+if (!defined("__CA_DB_USE_SSL__")) {
+	define("__CA_DB_USE_SSL__", false);
+}
+
+# __CA_DB_SSL_VERIFY_CERT__ = Verify SSL certificate before use?
+#
+if (!defined("__CA_DB_SSL_VERIFY_CERT__")) {
+	define("__CA_DB_SSL_VERIFY_CERT__", true);
+}
+
+# __CA_DB_SSL_KEY__ = The path name to the key file
+#
+if (!defined("__CA_DB_SSL_KEY__")) {
+	define("__CA_DB_SSL_KEY__", null);
+}
+
+# __CA_DB_SSL_CERTIFICATE__ = The path name to the certificate file.
+#
+if (!defined("__CA_DB_SSL_CERTIFICATE__")) {
+	define("__CA_DB_SSL_CERTIFICATE__", null);
+}
+
+# __CA_DB_SSL_CA_CERTIFICATE__ = The path name to the certificate authority file
+#
+if (!defined("__CA_DB_SSL_CA_CERTIFICATE__")) {
+	define("__CA_DB_SSL_CA_CERTIFICATE__", null);
+}
+
+# __CA_DB_SSL_CA_PATH__ = The pathname to a directory that contains trusted SSL CA certificates in PEM format
+#
+if (!defined("__CA_DB_SSL_CA_PATH__")) {
+	define("__CA_DB_SSL_CA_PATH__", null);
+}
+
+
 set_include_path(__CA_LIB_DIR__.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
 
 # The path to the main instance configuration file defined as a constant
@@ -223,6 +266,7 @@ if (!defined("__CA_SMTP_PORT__")) {
 # details must be set in  __CA_SMTP_AUTH__, __CA_SMTP_USER__, __CA_SMTP_PASSWORD__
 # and __CA_SMTP_SSL__
 #
+# If authentication method is XOAUTH2, extra settings below this are also needed
 
 # __CA_SMTP_AUTH__ = authentication method for outgoing mail connection
 #
@@ -252,6 +296,38 @@ if (!defined("__CA_SMTP_PASSWORD__")) {
 if (!defined("__CA_SMTP_SSL__")) {
 	define("__CA_SMTP_SSL__", '');
 }
+# ---- XOAUTH SETTINGS ---
+# __CA_SMTP_XOAUTH_PROVIDER__ = Email provider: Might be Azure, Microsoft, Google or Yahoo. Only tested with Azure so far 
+#
+if (!defined("__CA_SMTP_XOAUTH_PROVIDER__")) {
+	define("__CA_SMTP_XOAUTH_PROVIDER__", '');
+}
+
+# __CA_SMTP_XOAUTH_CLIENTID__ = This would be the 'Application ID' for Azure
+if (!defined("__CA_SMTP_XOAUTH_CLIENTID__")) {
+	define("__CA_SMTP_XOAUTH_CLIENTID__", '');
+}
+
+# __CA_SMTP_XOAUTH_CLIENTSECRET__ = Client Secret
+if (!defined("__CA_SMTP_XOAUTH_CLIENTSECRET__")) {
+	define("__CA_SMTP_XOAUTH_CLIENTSECRET__", '');
+}
+
+# __CA_SMTP_XOAUTH_AZURE_TENANTID__ = This is only needed for Azure OAUTH provider
+if (!defined("__CA_SMTP_XOAUTH_AZURE_TENANTID__")) {
+	define("__CA_SMTP_XOAUTH_AZURE_TENANTID__", '');
+}
+
+# __CA_SMTP_XOAUTH_EMAIL__ = email the OAUTH is being authenticated against
+if (!defined("__CA_SMTP_XOAUTH_EMAIL__")) {
+	define("__CA_SMTP_XOAUTH_EMAIL__", '');
+}
+
+# __CA_SMTP_XOAUTH_REFRESH_TOKEN__ = get this by going to your ca install https://youdomain.com/vendor/phpmailer/phpmailer/get_oauth_token.php
+if (!defined("__CA_SMTP_XOAUTH_REFRESH_TOKEN__")) {
+	define("__CA_SMTP_XOAUTH_REFRESH_TOKEN__", '');
+}
+
 
 # --------------------------------------------------------------------------------------------
 # Caching configuration

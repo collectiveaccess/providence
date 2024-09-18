@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__."/IDNumbering/IDNumber.php");
 require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 
@@ -245,7 +244,7 @@ class MultipartIDNumber extends IDNumber {
 		$i = 0;
 		$element_errors = [];
 		foreach($elements as $ename => $info) {
-			$v = $element_vals[$i];
+			$v = $element_vals[$i] ?? null;
 			$value_len = mb_strlen($v);
 
 			switch($info['type']) {
@@ -256,7 +255,8 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'SERIAL':
 					if ($v) {
-						if (!preg_match("/^[0-9]+$/", $v)) {
+						$prefix = $info['prefix'] ?? '';
+						if (!preg_match("/^{$prefix}[0-9]+$/", $v)) {
 							$element_errors[$ename] = _t("'%1' is not valid for %2; only numbers are allowed", $v, $info['description']);
 						}
 					}
@@ -496,7 +496,7 @@ class MultipartIDNumber extends IDNumber {
 			$i++;
 		}
 		if ($blank_count > 0) {
-			return (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1;
+			return ($element_info['prefix'] ?? '').((($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) ? sprintf("%0{$zeropad_to_length}d", 1) : 1);
 		}
 
 		$stub = trim(join($separator, $tmp));
@@ -517,9 +517,9 @@ class MultipartIDNumber extends IDNumber {
 		} 
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return 'ERR'; }
-		if ((bool)$element_info['sequence_by_type']) {
+		if ((bool)($element_info['sequence_by_type'] ?? false)) {
 			$stypes = is_array($element_info['sequence_by_type']) ? $element_info['sequence_by_type'] : [$element_info['sequence_by_type']];
-			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)$element_info['dont_include_subtypes']]);
+			$sequence_by_types = caMakeTypeIDList($table, $stypes, ['dontIncludeSubtypesInTypeRestriction' => (bool)($element_info['dont_include_subtypes'] ?? false)]);
 			$type = $this->getType();
 			if ($type == '__default__') {
 			    $types = $this->getTypes(); 
@@ -559,11 +559,14 @@ class MultipartIDNumber extends IDNumber {
 			if ($this->db->numErrors()) {
 				return "ERR";
 			}
-			
 			// Figure out what the sequence (last) number in the multipart number taken from the field is...
 			if ($qr_res->numRows()) {
 				while($qr_res->nextRow()) {
 					$tmp = $this->explodeValue($qr_res->get($field));
+					
+					if($element_info['prefix'] ?? null) { 
+						$tmp[$i] = preg_replace("!^".$element_info['prefix']."!", "", $tmp[$i]);
+					}
 					if(is_numeric($tmp[$i]) && (intval($tmp[$i]) < pow(2,64))) {
 						$num = intval($tmp[$i]) + 1;
 						break;
@@ -593,11 +596,11 @@ class MultipartIDNumber extends IDNumber {
 				$num = $min;
 			}
 			
-			if (($zeropad_to_length = (int)$element_info['zeropad_to_length']) > 0) {
-				return sprintf("%0{$zeropad_to_length}d", $num);
-			} else {
-				return $num;
-			}
+			if (($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) > 0) {
+				$num = sprintf("%0{$zeropad_to_length}d", $num);
+			} 
+			
+			return ($element_info['prefix'] ?? '').$num;
 		} else {
 			return 'ERR'; 
 		}
@@ -622,11 +625,11 @@ class MultipartIDNumber extends IDNumber {
 		$output = [];
 
 		foreach ($elements as $element) {
-			$element_info = $elements_normal_order[$element];
+			$element_info = $elements_normal_order[$element] ?? null;
 			$i = array_search($element, $element_names_normal_order);
 			$padding = 20;
 			
-			$v = $element_values[$i];
+			$v = $element_values[$i] ?? null;
 			if(($i === (sizeof($element_names_normal_order) - 1)) && (sizeof($element_values) > sizeof($element_names_normal_order))) {	// last item with extra elements
 				$extra_elements = array_splice($element_values, $i + 1);
 				$v .= $separator.join($separator, $extra_elements);
@@ -677,7 +680,7 @@ class MultipartIDNumber extends IDNumber {
 				case 'NUMERIC':
 					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
 					
-					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null)) {
+					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) {
 						$v = str_pad($v, $zeropad_to_length, "0", STR_PAD_LEFT);
 					}
 					$n = $padding - strlen($v);
@@ -734,9 +737,9 @@ class MultipartIDNumber extends IDNumber {
 		
 		$n = 0;
 		foreach ($elements as $element) {
-			$element_info = $elements_normal_order[$element];
+			$element_info = $elements_normal_order[$element] ?? null;
 			$i = array_search($element, $element_names_normal_order);
-			$v = $element_values[$i];
+			$v = $element_values[$i] ?? null;
 			
 			$range = caGetOption('range', $element_info, 5);
 			$precision = caGetOption('precision', $element_info, 2);
@@ -765,13 +768,13 @@ class MultipartIDNumber extends IDNumber {
 				$ints[] = $this->_numToSortableInt((float)$sv, $range, $precision);
 			} elseif(preg_match('!^([\d]+)([A-Za-z]+)$!', $sv, $m)) {
 				// Treat trailing letters on a numeric values as right-of-decimal (Eg. a sub-identifier)
-				$ints[] = $this->_numToSortableInt($m[0].'.'.$this->_stringToSortableInt($m[1], $range, $precision), $range, $precision);
+				$ints[] = $this->_numToSortableInt((float)($m[0].'.'.$this->_stringToSortableInt($m[1], $range, $precision)), $range, $precision);
 			} elseif(strpos($sv, '.') !== false) {
 				$x = explode('.', $sv);
 				while(sizeof($x) > 0) {
 					$svp = array_shift($x);
 					if(is_numeric($svp)) {
-						$ints[] = $this->_numToSortableInt($svp, $range, $precision);
+						$ints[] = $this->_numToSortableInt((float)$svp, $range, $precision);
 					} else {
 						// Treat as base-36 number
 						$ints[] = $this->_stringToSortableInt($svp, $range, $precision);
@@ -835,7 +838,8 @@ class MultipartIDNumber extends IDNumber {
 		foreach($elements as $element) {
 			$element_info = $elements_normal_order[$element];
 			$i = array_search($element, $elements);
-            if(!is_array($output[$i])) { $output[$i] = []; }
+            if(!is_array($output[$i] ?? null)) { $output[$i] = []; }
+            if(!isset($element_values[$i])) { $element_values[$i] = null; }
 			switch($element_info['type']) {
 				case 'LIST':
 					$output[$i] = array($element_values[$i]);
@@ -980,10 +984,10 @@ class MultipartIDNumber extends IDNumber {
 
 		$next_in_seq_is_present = false;
 		foreach($elements as $ename => $info) {
-			if (($info['type'] == 'SERIAL') && ($element_values[$i] == '')) {
+			if (($info['type'] == 'SERIAL') && (($element_values[$i] ?? null) == '')) {
 				$next_in_seq_is_present = true;
 			}
-			$tmp = $this->genNumberElement($ename, $name, $element_values[$i], $id_prefix, $generate_for_search_form, $options);
+			$tmp = $this->genNumberElement($ename, $name, $element_values[$i] ?? null, $id_prefix, $generate_for_search_form, $options);
 			$element_control_names[] = $name.'_'.$ename;
 
 			if (($options['show_errors']) && (isset($errors[$ename]))) {
@@ -1005,7 +1009,7 @@ class MultipartIDNumber extends IDNumber {
 				$extra_size = 10;
 			}
 			foreach($extra_values as $i => $v) {
-				$element_controls[] = "<input type='text' name='{$name}_extra_{$i}' id='{$name}_extra_{$i}' value='".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."' size='{$extra_size}'".($options['readonly'] ? ' disabled="1" ' : '').">";
+				$element_controls[] = "<input type='text' name='{$name}_extra_{$i}' id='{$name}_extra_{$i}' value='".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."' size='{$extra_size}'".($options['readonly'] ? ' readonly="1" ' : '').">";
 				$element_control_names[] = $name.'_extra_'.$i;
 			}
 		}
@@ -1045,10 +1049,10 @@ class MultipartIDNumber extends IDNumber {
 					checkDupes: ".(($options['check_for_dupes'] && !$next_in_seq_is_present) ? '1' : '0').",
 					includesSequence: ".($next_in_seq_is_present ? '1' : '0').",
 
-					singularAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use'))."',
-					pluralAlreadyInUseMessage: '".addslashes(_t('Identifier is already in use %1 times'))."',
+					singularAlreadyInUseMessage: ".json_encode(_t('Identifier is already in use')).",
+					pluralAlreadyInUseMessage: ".json_encode(_t('Identifier is already in use %1 times')).",
 					
-					sequenceMessage: '&lt;".addslashes(_t('%1 on save'))."&gt;'
+					sequenceMessage: ".json_encode("&lt;"._t('%1 on save')."&gt;")."
 				});
 			";
 
@@ -1171,13 +1175,14 @@ class MultipartIDNumber extends IDNumber {
 	 * @param bool $always_generate_serial_values Always generate new values for SERIAL elements, even if they are not set with placeholders. [Default is false]
 	 * @return array Array of values for identifer extracted from request
 	 */
-	public function htmlFormValuesAsArray($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false) {
+	public function htmlFormValuesAsArray($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false, ?array $options=null) {
 		if (is_null($value)) {
 			if(isset($_REQUEST[$name]) && $_REQUEST[$name]) { return $_REQUEST[$name]; }
 		}
 		if (!is_array($elements = $this->getElements())) { 
 			return (isset($_REQUEST["{$name}_extra_0"])) ? [$_REQUEST["{$name}_extra_0"]] : null; 
 		}
+		$return_template = caGetOption('returnTemplate', $options, false);
 
 		$element_names = array_keys($elements);
 		$separator = $this->getSeparator();
@@ -1223,8 +1228,12 @@ class MultipartIDNumber extends IDNumber {
 					$tmp[$ename] = $element_values[$name.'_'.$ename];
 					continue;
 				}
-
-				if (($element_values[$name.'_'.$ename] == '') || ($element_values[$name.'_'.$ename] == '%') || $always_generate_serial_values) {
+				$element_values[$name.'_'.$ename] = $element_values[$name.'_'.$ename] ?? null;
+		
+				if (!strlen($element_values[$name.'_'.$ename]) && $return_template) {
+					$element_values[$name.'_'.$ename] = '%';
+				}
+				if (!$return_template && (($element_values[$name.'_'.$ename] == '') || ($element_values[$name.'_'.$ename] == '%') || $always_generate_serial_values)) {
 					if ($element_values[$name.'_'.$ename] == '%') { $element_values[$name.'_'.$ename] = ''; }
 					$tmp[$ename] = $this->getNextValue($ename, $tmp, $dont_mark_serial_value_as_used);
 					$isset = $is_not_empty = true;
@@ -1254,7 +1263,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 			$tmp[$ename] = $element_values[$name.'_'.$ename];
 
-			if ($zeropad_to_length = caGetOption('zeropad_to_length', $info, null)) {
+			if ($zeropad_to_length = caGetOption('zeropad_to_length', $info, null, ['castTo' => 'int'])) {
 				$tmp[$ename] = str_pad($tmp[$ename], $zeropad_to_length, "0", STR_PAD_LEFT);
 			}
 
@@ -1322,6 +1331,8 @@ class MultipartIDNumber extends IDNumber {
 		$element_form_name = $name.'_'.$element_name;
 
 		$element_value = $value;
+		$element_info['editable'] = $element_info['editable'] ?? false;
+		
 		switch($element_info['type']) {
 			# ----------------------------------------------------
 			case 'LIST':
@@ -1355,13 +1366,13 @@ class MultipartIDNumber extends IDNumber {
 				$width = $this->getElementWidth($element_info, 3);
 
 				if ($generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} elseif ($element_value == '') {
 						$next_num = $this->getNextValue($element_name, null, true);
 						$element .= "<span id='".$id_prefix.$element_form_name."'>&lt;"._t('%1 on save', $next_num)."&gt;</span>";
 				} else {
 					if ($element_info['editable']) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
@@ -1373,7 +1384,7 @@ class MultipartIDNumber extends IDNumber {
 
 				if (!$element_value) { $element_value = $element_info['value']; }
 				if ($element_info['editable'] || $generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} else {
 					$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 				}
@@ -1382,10 +1393,10 @@ class MultipartIDNumber extends IDNumber {
 			case 'FREE':
 			case 'NUMERIC':
 			case 'ALPHANUMERIC':
-				if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default']; }
+				if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default'] ?? null; }
 				$width = $this->getElementWidth($element_info, 3);
 				if (!$element_value || $element_info['editable'] || $generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} else {
 					$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 				}
@@ -1405,13 +1416,13 @@ class MultipartIDNumber extends IDNumber {
 					}
 
 					if ($element_info['editable'] || $generate_for_search_form) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'"/>'.$v;
 					}
 				} else {
 					if ($element_info['editable'] || $generate_for_search_form) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
@@ -1423,14 +1434,14 @@ class MultipartIDNumber extends IDNumber {
 				$width = $this->getElementWidth($element_info, 3);
 
 				if ($generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 				} else {
 					if ($element_value == '') {
 						$next_num = $this->getParentValue();
 						$element .= '&lt;'._t('%1', $next_num).'&gt;'.'<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($next_num, ENT_QUOTES, 'UTF-8').'"/>';
 					} else {
 						if ($element_info['editable']) {
-							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' disabled="1" ' : '').'/>';
+							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
 						} else {
 							$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 						}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 require_once(__CA_LIB_DIR__."/LocationRelationshipBaseModel.php");
 
@@ -284,7 +280,9 @@ class ca_movements_x_storage_locations extends LocationRelationshipBaseModel {
 				$qr = ca_movements_x_storage_locations::findAsSearchResult(['relation_id' => $row_id]);
 				if($qr->nextHit()) {
 					$data = $qr->get('ca_movements_x_storage_locations.source_info', ['returnAsArray' => true]);
-					return $data[0]['display'];
+					$path = $data[0]['display'] ?? join(" - ", $data[0]['path'] ?? []);
+					
+					return $path;
 				}
 				break;
 		}

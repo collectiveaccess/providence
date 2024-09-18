@@ -38,64 +38,64 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 </script>
 <div class="sectionBox">
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('Version information'); ?></div>
+		<div class="control-box-middle-content"><?= _t('Version information'); ?></div>
 	</div><div class="clear"></div>
 	<table id="caSearchConfigSettingList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Component'); ?>
+					<?= _t('Component'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Version'); ?>
+					<?= _t('Version'); ?>
 				</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
-				<td><?php print _t('Application version'); ?></td>
-				<td><?php print __CollectiveAccess__; ?></td>
+				<td><?= _t('Application version'); ?></td>
+				<td><?= __CollectiveAccess__; ?></td>
 			</tr>
 			<tr>
-				<td><?php print _t('Schema revision'); ?></td>
-				<td><?php print __CollectiveAccess_Schema_Rev__; ?></td>
+				<td><?= _t('Schema revision'); ?></td>
+				<td><?= __CollectiveAccess_Schema_Rev__; ?></td>
 			</tr>
 			<tr>
-				<td><?php print _t('Release type'); ?></td>
-				<td><?php print __CollectiveAccess_Release_Type__; ?></td>
+				<td><?= _t('Release type'); ?></td>
+				<td><?= __CollectiveAccess_Release_Type__; ?></td>
 			</tr>
 			<tr>
-				<td><?php print _t('System GUID'); ?></td>
-				<td><?php print __CA_SYSTEM_GUID__; ?></td>
+				<td><?= _t('System GUID'); ?></td>
+				<td><?= __CA_SYSTEM_GUID__; ?></td>
 			</tr>
 			<tr>
-				<td><?php print _t('Last change log ID'); ?></td>
-				<td><?php print $this->getVar('last_change_log_id'); ?></td>
+				<td><?= _t('Last change log ID'); ?></td>
+				<td><?= $this->getVar('last_change_log_id'); ?></td>
 			</tr>
 			<tr>
-				<td><?php print _t('PHP version'); ?></td>
-				<td><?php print caGetPHPVersion()['version']; ?></td>
+				<td><?= _t('PHP version'); ?></td>
+				<td><?= caGetPHPVersion()['version']; ?></td>
 			</tr>
 			<tr>
-				<td><?php print _t('Operating system'); ?></td>
-				<td><?php print php_uname(); ?></td>
+				<td><?= _t('Operating system'); ?></td>
+				<td><?= php_uname(); ?></td>
 			</tr>
 		</tbody>
 	</table>
 	
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('Search Engine'); ?>: <?php print $this->getVar('search_config_engine_name'); ?></div>
+		<div class="control-box-middle-content"><?= _t('Search Engine'); ?>: <?= $this->getVar('search_config_engine_name'); ?></div>
 	</div><div class="clear"></div>
 	<table id="caSearchConfigSettingList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Setting'); ?>
+					<?= _t('Setting'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Description'); ?>
+					<?= _t('Description'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+				<th class="{sorter: false} list-header-nosort"><?= _t('Status'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -103,9 +103,9 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 while($va_search_config_settings->nextSetting()){
 ?>
 			<tr>
-				<td><?php print $va_search_config_settings->getCurrentName(); ?></td>
+				<td><?= $va_search_config_settings->getCurrentName(); ?></td>
 				<td>
-				<?php print $va_search_config_settings->getCurrentDescription(); ?>
+				<?= $va_search_config_settings->getCurrentDescription(); ?>
 			<?php
 			if($va_search_config_settings->getCurrentStatus()!=__CA_SEARCH_CONFIG_OK__){
 				print "<br />";
@@ -134,7 +134,7 @@ while($va_search_config_settings->nextSetting()){
 	if(is_array($va_general_config_errors) && sizeof($va_general_config_errors)>0) {
 ?>
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t("General configuration issues"); ?></div>
+		<div class="control-box-middle-content"><?= _t("General configuration issues"); ?></div>
 	</div><div class="clear"></div>
 	<table id="caGeneralConfigIssueList" class="listtable">
 		<thead>
@@ -142,7 +142,7 @@ while($va_search_config_settings->nextSetting()){
 				<th class="{sorter: false} list-header-nosort">
 				</th>
 				<th class="{sorter: false} list-header-nosort">
-					<?php print _t('Issue'); ?>
+					<?= _t('Issue'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -151,8 +151,8 @@ while($va_search_config_settings->nextSetting()){
 		foreach($va_general_config_errors as $vs_error){
 ?>
 			<tr>
-				<td><?php print caNavIcon(__CA_NAV_ICON_ALERT__, 2); ?></td>
-				<td><?php print $vs_error; ?></td>
+				<td><?= caNavIcon(__CA_NAV_ICON_ALERT__, 2); ?></td>
+				<td><?= $vs_error; ?></td>
 			</tr>
 <?php
 		}
@@ -165,19 +165,19 @@ while($va_search_config_settings->nextSetting()){
 	
 	
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('Media Processing Plugins'); ?></div>
+		<div class="control-box-middle-content"><?= _t('Media Processing Plugins'); ?></div>
 	</div><div class="clear"></div>
 	
 	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Plugin'); ?>
+					<?= _t('Plugin'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Info'); ?>
+					<?= _t('Info'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+				<th class="{sorter: false} list-header-nosort"><?= _t('Status'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -186,25 +186,25 @@ $va_plugins = $this->getVar('media_config_plugin_list');
 foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 ?>
 			<tr>
-				<td><?php print $vs_plugin_name; ?></td>
+				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
-					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					print $va_plugin_info['description'] ?? ''; 
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
-					if (is_array($va_plugin_info['notices']) && sizeof($va_plugin_info['notices'])) {
+					if (is_array($va_plugin_info['notices'] ?? null) && sizeof($va_plugin_info['notices'])) {
 						print '<div style="color:green;">'.join('<br/>', $va_plugin_info['notices']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_plugin_info['available']){
+	if((bool)($va_plugin_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_plugin_info['unused']){
+		if((bool)($va_plugin_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
@@ -220,19 +220,19 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 	</table>
 
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('PDF Rendering Plugins'); ?></div>
+		<div class="control-box-middle-content"><?= _t('PDF Rendering Plugins'); ?></div>
 	</div><div class="clear"></div>
 	
 	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Plugin'); ?>
+					<?= _t('Plugin'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Info'); ?>
+					<?= _t('Info'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+				<th class="{sorter: false} list-header-nosort"><?= _t('Status'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -241,25 +241,25 @@ $va_plugins = $this->getVar('pdf_renderer_config_plugin_list');
 foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 ?>
 			<tr>
-				<td><?php print $vs_plugin_name; ?></td>
+				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
-					if (is_array($va_plugin_info['notices']) && sizeof($va_plugin_info['notices'])) {
+					if (is_array($va_plugin_info['notices'] ?? null) && sizeof($va_plugin_info['notices'])) {
 						print '<div style="color:green;">'.join('<br/>', $va_plugin_info['notices']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_plugin_info['available']){
+	if((bool)($va_plugin_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_plugin_info['unused']){
+		if((bool)($va_plugin_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
@@ -275,20 +275,20 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 	</table>
 
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('Barcode generation'); ?></div>
+		<div class="control-box-middle-content"><?= _t('Barcode generation'); ?></div>
 	</div><div class="clear"></div>
 	
 	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Component'); ?>
+					<?= _t('Component'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Info'); ?>
+					<?= _t('Info'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Status'); ?>
+					<?= _t('Status'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -298,22 +298,22 @@ $va_barcode_components = $this->getVar('barcode_config_component_list');
 foreach($va_barcode_components as $vs_component_name => $va_component_info){
 ?>
 			<tr>
-				<td><?php print $va_component_info['name']; ?></td>
+				<td><?= $va_component_info['name']; ?></td>
 				<td><?php 
 					print $va_component_info['description']; 
-					if (is_array($va_component_info['errors']) && sizeof($va_component_info['errors'])) {
+					if (is_array($va_component_info['errors'] ?? null) && sizeof($va_component_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_component_info['errors']).'</div>';
 					}
-					if (is_array($va_component_info['warnings']) && sizeof($va_component_info['warnings'])) {
+					if (is_array($va_component_info['warnings'] ?? null) && sizeof($va_component_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_component_info['warnings']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_component_info['available']){
+	if((bool)($va_component_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_component_info['unused']){
+		if((bool)($va_component_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
@@ -329,19 +329,19 @@ foreach($va_barcode_components as $vs_component_name => $va_component_info){
 	</table>
 	
 	<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('Application Plugins'); ?></div>
+		<div class="control-box-middle-content"><?= _t('Application Plugins'); ?></div>
 	</div><div class="clear"></div>
 	
 	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Plugin'); ?>
+					<?= _t('Plugin'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Info'); ?>
+					<?= _t('Info'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+				<th class="{sorter: false} list-header-nosort"><?= _t('Status'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -350,13 +350,13 @@ $va_plugins = $this->getVar('application_config_plugin_list');
 foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 ?>
 			<tr>
-				<td><?php print $vs_plugin_name; ?></td>
+				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
 				?></td>
@@ -381,19 +381,19 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 	</table>
 	
 		<div class="control-box rounded">
-		<div class="control-box-middle-content"><?php print _t('Metadata Extraction Tools'); ?></div>
+		<div class="control-box-middle-content"><?= _t('Metadata Extraction Tools'); ?></div>
 	</div><div class="clear"></div>
 	
 	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Tool'); ?>
+					<?= _t('Tool'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Info'); ?>
+					<?= _t('Info'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+				<th class="{sorter: false} list-header-nosort"><?= _t('Status'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -402,22 +402,22 @@ $va_plugins = $this->getVar('metadata_extraction_config_component_list');
 foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 ?>
 			<tr>
-				<td><?php print $vs_plugin_name; ?></td>
+				<td><?= $vs_plugin_name; ?></td>
 				<td><?php 
 					print $va_plugin_info['description']; 
-					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+					if (is_array($va_plugin_info['errors'] ?? null) && sizeof($va_plugin_info['errors'])) {
 						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
 					}
-					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+					if (is_array($va_plugin_info['warnings'] ?? null) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
 				?></td>
 				<td>
 <?php
-	if((boolean)$va_plugin_info['available']){
+	if((bool)($va_plugin_info['available'] ?? false)){
 		print "<span style=\"color:green\">"._t("Available")."</span>";
 	} else {
-		if((boolean)$va_plugin_info['unused']){
+		if((bool)($va_plugin_info['unused'] ?? false)){
 			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
 		} else {
 			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";

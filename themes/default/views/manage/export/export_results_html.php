@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Execute batch data export'); ?></h1>
+<h1><?= _t('Execute batch data export'); ?></h1>
 
 
 <div class="batchProcessingTableProgressGroup">

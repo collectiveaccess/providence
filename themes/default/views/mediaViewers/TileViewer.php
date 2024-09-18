@@ -74,7 +74,7 @@
 </script>
 <div id="caRepresentationAnnotationEditor" class="caRelationQuickAddPanel"> 
 	<div id="caRepresentationAnnotationEditorContentArea">
-	<div class='quickAddDialogHeader'><?php print _t('Edit annotation'); ?></div>
+	<div class='quickAddDialogHeader'><?= _t('Edit annotation'); ?></div>
 	
 	</div>
 </div>

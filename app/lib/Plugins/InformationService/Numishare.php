@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
-    
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 global $g_information_service_settings_Numishare;
-$g_information_service_settings_Numishare= [
-
-];
+$g_information_service_settings_Numishare= [];
 
 class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Implements IWLPlugInformationService {
 	# ------------------------------------------------
@@ -50,11 +42,15 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	static $services = [
 		'Online Coins of the Roman Empire' => 'http://numismatics.org/ocre/',
 		'Coinage of the Roman Republic Online' => 'http://numismatics.org/crro/',
+		'Art of Devastation' => 'http://numismatics.org/aod/',
 		'PELLA' => 'http://numismatics.org/pella/',
 		'Seleucid Coins Online' => 'http://numismatics.org/sco/',
 		'Ptolemaic Coins Online' => 'http://numismatics.org/pco/',
 		'Antigonid Coins Online' => 'http://numismatics.org/agco/',
-		'Iron Age Coins in Britain' => 'https://iacb.arch.ox.ac.uk/'
+		'Bactrian and Indo-Greek Rulers' => 'https://numismatics.org/bigr/',
+		'IRIS' => 'https://greekcoinage.org/iris/',
+		'Iron Age Coins in Britain' => 'https://iacb.arch.ox.ac.uk/',
+		'OSCAR' => 'https://oscar.nationalmuseum.ch/'
 	];
 	# ------------------------------------------------
 	/**
@@ -91,24 +87,22 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-		$ps_search = urlencode($ps_search);
-		
-		$p = 1;
-		$maxcount = caGetOption('count', $pa_options, 30);
-		$count = 0;
-		$va_items = [];
-		
 		$request = caGetOption('request', $pa_options, null);
+		$maxcount = caGetOption('count', $pa_options, 30);
+		
+		$count = 0;
+		$p = 1;
+		$items = [];
+		
 		$service = $request ? $request->getParameter('service', pString) : null;
-		if(!self::validateService($service)) { 
+		if(strlen($service) && !self::validateService($service)) { 
 			return ['results' => []];
 		}
 		
 		$s = urldecode($ps_search);
-		if (isURL($s) && preg_match("!^{$service}/id/([A-Za-z0-9\.\-]+)$!", $s, $m)) {
-			$ps_search = $m[1];
+		if (isURL($s) && ($service = self::isServiceUrl($s)) && preg_match("!^{$service}[/]*id/(.+)$!", $s, $m)) {
+			$ps_search = 'recordId:"' . $m[1] . '"';
 		}
-		
 		while($count <= $maxcount) {
 			$vs_data = caQueryExternalWebservice("{$service}/apis/search?format=rss&q=".urlencode($ps_search));
 
@@ -122,7 +116,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 							$o_links = $o_entry->{'link'};
 							$va_attr = $o_links[0]->attributes();
 							$vs_url = (string)$va_attr->{'href'};
-							$va_items[(string)$o_entry->{'title'}] = array('label' => (string)$o_entry->{'title'}, 'idno' => str_replace("http://numismatics.org/Numishare/id/", "", (string)$o_entry->{'link'}), 'url' => (string)$o_entry->{'link'});
+							$items[(string)$o_entry->{'title'}] = array('label' => (string)$o_entry->{'title'}, 'idno' => str_replace("http://numismatics.org/Numishare/id/", "", (string)$o_entry->{'link'}), 'url' => (string)$o_entry->{'link'});
 							$count++;
 						}
 					}
@@ -130,9 +124,9 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 			}
 			break;
 		}
-		ksort($va_items);
+		ksort($items);
 		
-		return ['results' => array_values($va_items)];
+		return ['results' => array_values($items)];
 	}
 	# ------------------------------------------------
 	/** 
@@ -144,9 +138,13 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
 		if (
-			!preg_match("!^(http://numismatics.org/[A-Za-z_]+/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+			!preg_match("!^(https?://numismatics\.org/[A-Za-z_]+/)id/(.*)!", $ps_url, $matches)
 			&&
 			!preg_match("!^(https://iacb\.arch\.ox\.ac\.uk/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
+			&&
+			!preg_match("!^(https://greekcoinage\.org\/iris/)id/(.*)!", $ps_url, $matches)
+			&&
+			!preg_match("!^(https://oscar\.nationalmuseum\.ch/)id/([A-Za-z0-9\.\-]+)!", $ps_url, $matches)
 		) { return []; }
 		$service = $matches[1];
 		$id = $matches[2];
@@ -216,14 +214,34 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 	 */
 	public function getAdditionalFieldValues($attribute_value) : array {
 		$uri =  $attribute_value->getUri();
-		if(
-			preg_match("!^(http://numismatics.org/[A-Za-z_]+/)!", $uri, $m)
-			||
-			preg_match("!^(https://iacb.arch.ox.ac.uk/)!", $uri, $m)
-		) {
+		$service = self::isServiceUrl($uri);
+		if($service) {
 			return [$attribute_value->getElementID().'_service' => $m[1]];
 		}
 		return [];
+	}
+	# ------------------------------------------------
+	/**
+	 * Check if URI is for a service we support and if so return the service identifier
+	 *
+	 * @param string $uri
+	 *
+	 * @return string Service identifier or null if not a valid service URI
+	 */
+	private static function isServiceUrl(?string $uri) : ?string {
+		if(!$uri) { return null; }
+		if(
+			preg_match("!^(https?://numismatics.org/[A-Za-z_]+/)!", $uri, $m)
+			||
+			preg_match("!^(https://iacb.arch.ox.ac.uk/)!", $uri, $m)
+			||
+			preg_match("!^(https://greekcoinage\.org\/iris/)!", $uri, $m)
+			||
+			preg_match("!^(https://oscar\.nationalmuseum\.ch/)!", $uri, $m)
+		) {
+			return $m[1];
+		}
+		return null;
 	}
 	# ------------------------------------------------
 	/**

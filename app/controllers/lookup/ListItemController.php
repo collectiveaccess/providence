@@ -88,11 +88,13 @@ class ListItemController extends BaseLookupController {
 			$vn_max_items_per_page = 500;
 		}
 		
+		$vn_list_id = null;
 		$va_level_data = array();
+		
 		foreach($pa_ids as $pn_id) {
 			$va_tmp = explode(":", $pn_id);
-			$vn_id = $va_tmp[0];
-			$vn_start = (int)$va_tmp[1];
+			$vn_id = $va_tmp[0] ?? null;
+			$vn_start = (int)($va_tmp[1] ?? 0);
 			if($vn_start < 0) { $vn_start = 0; }
 			
 			if (!$vn_id && method_exists($t_item, "getHierarchyList")) { 
@@ -102,17 +104,17 @@ class ListItemController extends BaseLookupController {
 					
 					if (sizeof($va_lists)) {
 						// filter out lists that weren't specified
-						foreach($va_list_items as $vn_list_id => $va_list) {
-							if (!in_array($vn_list_id, $va_lists) && !in_array($va_list['list_code'], $va_lists)) {
-								unset($va_list_items[$vn_list_id]);
+						foreach($va_list_items as $item_list_id => $va_list) {
+							if (!in_array($item_list_id, $va_lists) && !in_array($va_list['list_code'] ?? null, $va_lists)) {
+								unset($va_list_items[$item_list_id]);
 							}
 						}
 					} else {
 						if ($this->request->getParameter('voc', pInteger)) {
 							// Only show vocabularies
-							foreach($va_list_items as $vn_list_id => $va_list) {
-								if (!$va_list['use_as_vocabulary']) {
-									unset($va_list_items[$vn_list_id]);
+							foreach($va_list_items as $item_list_id => $va_list) {
+								if (!($va_list['use_as_vocabulary'] ?? false)) {
+									unset($va_list_items[$item_list_id]);
 								}
 							}
 						}
@@ -120,7 +122,8 @@ class ListItemController extends BaseLookupController {
 				}
 			} else {
 				if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
-					$t_list = new ca_lists($vn_list_id = $t_item->get('list_id'));
+					$vn_list_id = $t_item->get('list_id');
+					$t_list = new ca_lists($vn_list_id);
 				
 					$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
 					$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
@@ -135,10 +138,10 @@ class ListItemController extends BaseLookupController {
 						unset($va_item['description']);
 						unset($va_item['icon']);
 					
-						if (!trim($va_item[$vs_label_display_field_name])) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-						if (!trim($va_item[$vs_label_display_field_name])) { $va_item[$vs_label_display_field_name] = '???'; }
+						if (!trim($va_item[$vs_label_display_field_name] ?? null)) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
+						if (!trim($va_item[$vs_label_display_field_name] ?? null)) { $va_item[$vs_label_display_field_name] = '???'; }
 					
-						$va_item['name'] = $va_display_values[$vn_c];
+						$va_item['name'] = $va_display_values[$vn_c] ?? null;
 						if (!trim($va_item['name'])) { $va_item['name'] = '??? '.$vn_item_id; }
 						$va_item['table'] = 'ca_list_items';
 					

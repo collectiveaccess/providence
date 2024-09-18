@@ -506,6 +506,7 @@ class phpVimeo
         else if ($complete->err) {
             throw new VimeoAPIException($complete->err->msg, $complete->err->code);
         }
+        return true;
     }
 
     /**

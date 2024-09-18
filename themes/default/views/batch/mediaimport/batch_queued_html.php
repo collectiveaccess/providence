@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Media import queued for background processing'); ?></h1>
+<h1><?= _t('Media import queued for background processing'); ?></h1>
 
 <div class="batchProcessingHelpText">
 <?php 

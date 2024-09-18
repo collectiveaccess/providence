@@ -32,7 +32,7 @@
 	}
 	if (!$this->request->isAjax()) {
 ?>
-		<?php print caFormTag($this->request, 'Index', 'BasicSearchForm'); ?>
+		<?= caFormTag($this->request, 'Index', 'BasicSearchForm'); ?>
 <?php 
 			print caFormControlBox(
 				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.'</div>',

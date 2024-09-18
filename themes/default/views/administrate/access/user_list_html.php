@@ -44,11 +44,11 @@
 			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New user"), 'administrate/access', 'Users', 'Edit', array('user_id' => 0), [], ['size' => '30px'])
 		); 
 ?>		
-		<h1 style='float:left; margin:10px 0px 10px 0px;'><?php print _t('%1 users', ucfirst($this->getVar('userclass_displayname'))); ?></h1>
+		<h1 style='float:left; margin:10px 0px 10px 0px;'><?= _t('%1 users', ucfirst($this->getVar('userclass_displayname'))); ?></h1>
 <?php
 	if(sizeof($va_user_list)){	
 ?>	
-		<a href='#' id='showTools' style="float:left;margin-top:10px;" onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px");?></a>
+		<a href='#' id='showTools' style="float:left;margin-top:10px;" onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?= caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px");?></a>
 <?php
 		print $this->render('user_tools_html.php');
 	}
@@ -57,19 +57,19 @@
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">
-						<?php print _t('Login name'); ?>
+						<?= _t('Login name'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Name'); ?>
+						<?= _t('Name'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Email'); ?>
+						<?= _t('Email'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Active?'); ?>
+						<?= _t('Active?'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Last login'); ?>
+						<?= _t('Last login'); ?>
 					</th>
 					<th class="{sorter: false} list-header-nosort listtableEditDelete"></th>
 				</tr>
@@ -84,23 +84,23 @@
 ?>
 			<tr>
 				<td>
-					<?php print $va_user['user_name']; ?>
+					<?= $va_user['user_name']; ?>
 				</td>
 				<td>
-					<?php print $va_user['lname'].', '.$va_user['fname']; ?>
+					<?= $va_user['lname'].', '.$va_user['fname']; ?>
 				</td>
 				<td>
-					<?php print $va_user['email']; ?>
+					<?= $va_user['email']; ?>
 				</td>
 				<td>
-					<?php print $va_user['active'] ? _t('Yes') : _t('No'); ?>
+					<?= $va_user['active'] ? _t('Yes') : _t('No'); ?>
 				</td>
 				<td>
-					<?php print ($va_user['last_login'] > 0) ? "<span style='display:none;'>".$va_user['last_login']."</span>".$o_tep->getText() : '-'; ?>
+					<?= ($va_user['last_login'] > 0) ? "<span style='display:none;'>".$va_user['last_login']."</span>".$o_tep->getText() : '-'; ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

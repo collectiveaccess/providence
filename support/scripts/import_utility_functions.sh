@@ -145,10 +145,15 @@ function check_data()
 	local path=$1
 	shift
 	echo "Checking that all data files are present..."
+
 	for d in $@
 	do
-		if [ ! -f "$path/$d" ]; then
-			local msg="Data file $d is not in $path. Cannot run import if data is missing. Check the contents of the $path directory and try again."
+		local dx
+		
+		# Commas must be encoded as "&comma;" as there's no way to directly include commas in a shell script list of strings
+		dx=${d/'&comma;'/','}
+		if [ ! -f "${path}/${dx}" ]; then
+			local msg="Data file $dx is not in $path. Cannot run import if data is missing. Check the contents of the $path directory and try again."
 			
 			log_event $IMPORT_LOG "$msg"
 			echo "$msg"

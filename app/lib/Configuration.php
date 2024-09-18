@@ -161,15 +161,15 @@ class Configuration {
 		}
 		$o_config = ($vs_top_level_config_path === $this->ops_config_file_path) ? $this : Configuration::load($vs_top_level_config_path, false, false, true);
 
-        
-		
 		$vs_filename = pathinfo($ps_file_path, PATHINFO_BASENAME);
-		if (($vb_inherit_config = $o_config->get('allowThemeInheritance')) && !$pb_dont_load_from_default_path) {
+		
+		$app_config = ($vs_filename !== 'app.conf') ? Configuration::load(__CA_APP_CONFIG__) : $o_config;
+		if (($vb_inherit_config = $app_config->get(['allowThemeInheritance', 'allow_theme_inheritance'])) && !$pb_dont_load_from_default_path) {
 		    $i=0;
-            while($vs_inherit_from_theme = trim(trim($o_config->get(['inheritFrom', 'inherit_from'])), "/")) {
+            while($vs_inherit_from_theme = trim(trim($app_config->get(['inheritFrom', 'inherit_from'])), "/")) {
                 $i++;
                 $vs_inherited_config_path = __CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/{$vs_filename}";
-                if (file_exists($vs_inherited_config_path) && !in_array($vs_inherited_config_path, $va_config_file_list) && ($vs_inherited_config_path !== $vs_config_file_path)) {
+                if (file_exists($vs_inherited_config_path) && !in_array($vs_inherited_config_path, $va_config_file_list) && ($vs_inherited_config_path !== $this->ops_config_file_path)) {
                     array_unshift($va_config_file_list, $vs_inherited_config_path);
                 }
                 if(!file_exists(__CA_THEMES_DIR__."/{$vs_inherit_from_theme}/conf/app.conf")) { break; }
@@ -254,7 +254,7 @@ class Configuration {
 			// Write mtimes to cache for each component file (local, theme, stock)
 			if (is_array($mtime_keys) && sizeof($mtime_keys)) {
 				foreach($mtime_keys as $k) {
-					ExternalCache::save($k, self::$s_config_cache[$k], 'ConfigurationCache', 3600 * 3600 * 30);
+					ExternalCache::save($k, self::$s_config_cache[$k] ?? null, 'ConfigurationCache', 3600 * 3600 * 30);
 				}
 			}
 		}
@@ -340,13 +340,13 @@ class Configuration {
 					case 10:
 						switch($vs_token) {
 							case '[':
-								if(!is_array($this->ops_config_settings["lists"][$vs_key]) || !$vb_merge_mode) {
+								if(!is_array($this->ops_config_settings["lists"][$vs_key] ?? null) || !$vb_merge_mode) {
 									$this->ops_config_settings["lists"][$vs_key] = array();
 								}
 								$vn_state = 30;
 								break;
 							case '{':
-								if(!is_array($this->ops_config_settings["assoc"][$vs_key]) || !$vb_merge_mode) {
+								if(!is_array($this->ops_config_settings["assoc"][$vs_key] ?? null) || !$vb_merge_mode) {
 									$this->ops_config_settings["assoc"][$vs_key] = array();
 								}
 								$va_assoc_pointer_stack[] =& $this->ops_config_settings["assoc"][$vs_key];
@@ -647,7 +647,7 @@ class Configuration {
 							case '{':
 								if (!$vn_in_quote && !$vb_escape_set) {
 									$i = sizeof($va_assoc_pointer_stack) - 1;
-									if (!is_array($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !$vb_merge_mode) {
+									if (!isset($va_assoc_pointer_stack[$i]) || !isset($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !is_array($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !$vb_merge_mode) {
 										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];
@@ -692,7 +692,7 @@ class Configuration {
 									$vs_scalar_value .= $vs_token;
 								} else {
 									$i = sizeof($va_assoc_pointer_stack) - 1;
-									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
+									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] ?? null) || !$vb_merge_mode) {
 										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];
@@ -833,7 +833,7 @@ class Configuration {
 		}
 
 		// interpolate scalars
-		if (is_array($this->ops_config_settings["scalars"])) {
+		if (isset($this->ops_config_settings["scalars"]) && is_array($this->ops_config_settings["scalars"])) {
 			foreach($this->ops_config_settings["scalars"] as $vs_key => $vs_val) {
 				$this->ops_config_settings["scalars"][$vs_key] = $this->_interpolateScalar($vs_val);
 			}

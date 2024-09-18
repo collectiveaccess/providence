@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
  */
 require_once(__CA_LIB_DIR__.'/View.php');
 
@@ -275,7 +271,7 @@ trait ModelSettings {
 		$vs_form = '';
 		$va_form_elements = array();
 		$va_settings = $this->getAvailableSettings();
-		$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
+		$va_setting_values = is_array($pa_options['settings'] ?? null) ? $pa_options['settings'] : array();
 		
 		$po_request = 			caGetOption('request', $pa_options, null);
 		$vs_id = 				caGetOption('id', $pa_options, null);
@@ -347,6 +343,8 @@ trait ModelSettings {
 			return false;
 		}
 		
+		$vb_locale_list = $vs_rel_table = $vs_list_code = $vb_show_lists = $vb_policy_list = $vb_referring_policy_list = false;
+		
 		$po_request = caGetOption('request', $pa_options, null);
 		
 		$va_available_settings = $this->getAvailableSettings();
@@ -362,6 +360,10 @@ trait ModelSettings {
 			$vs_input_id = $pa_options['id'];
 		} else {
 			$vs_input_id = "setting_{$ps_setting}";
+		}
+		$input_class = null;
+		if(isset($pa_options['class'])) {
+			$input_class = $pa_options['class'];
 		}
 		if(isset($pa_options['value'])) {
 			$vs_value = $pa_options['value'];
@@ -380,7 +382,7 @@ trait ModelSettings {
 		$vs_return .= '<span id="'.$vs_label_id.'"  class="'.$vs_label_id.'">'.$va_properties['label'].'</span>';
 		
 		
-		if ($vs_help_text = $pa_options['helpText']) {
+		if ($vs_help_text = ($pa_options['helpText'] ?? null)) {
 			$vs_return .= "<a href='#' onclick='jQuery(\"#".str_replace(".", "_", $vs_label_id)."_help_text\").slideToggle(250); return false;' class='settingsKeyButton'>"._t('Key')."</a>";
 		}
 		
@@ -411,7 +413,7 @@ trait ModelSettings {
 				} else {
 					$va_locales = array('_generic' => array());
 				}
-				
+				$vs_locale_label = null;
 				foreach($va_locales as $vs_locale => $va_locale_info) {
 					if ($vb_takes_locale && (sizeof($va_locales) > 1)) { 
 						$vs_locale_label = " (".$va_locale_info['name'].")";
@@ -423,15 +425,15 @@ trait ModelSettings {
 					}
 					
 					if (($vs_locale != '_generic') && (is_array($vs_value))) {		// _generic means this setting doesn't take a locale
-						if (!($vs_text_value = $vs_value[$va_locale_info['locale_id']])) {
+						if (!($vs_text_value = ($vs_value[$va_locale_info['locale_id']] ?? null))) {
 							$vs_text_value = (is_array($vs_value) && isset($vs_value[$va_locale_info['code']])) ? $vs_value[$va_locale_info['code']] : '';
 						}
 					} else {
 						$vs_text_value = $vs_value;
 					}
-					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
+					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"] ?? null, 'height' => $va_properties["height"] ?? null, 'value' => $vs_text_value, 'class' => $input_class,  'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
 					
-					if($va_properties['usewysiwygeditor']) {
+					if($va_properties['usewysiwygeditor'] ?? null) {
 						AssetLoadManager::register("ckeditor");
 						
 						$config = Configuration::load();
@@ -466,7 +468,7 @@ trait ModelSettings {
 				break;
 			# --------------------------------------------
 			case DT_CHECKBOXES:
-				$va_attributes = array('value' => '1', 'id' => $vs_input_id);
+				$va_attributes = array('value' => '1', 'id' => $vs_input_id, 'class' => $input_class);
 				if ((int)$vs_value === 1) {
 					$va_attributes['checked'] = '1';
 				}
@@ -479,7 +481,7 @@ trait ModelSettings {
 					}
 					$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
 					
-					if ($va_attributes['checked']) {
+					if ($va_attributes['checked'] ?? false) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $va_ids)."').hide();
@@ -488,15 +490,15 @@ trait ModelSettings {
 					}
 				}
 				if (isset($va_properties['showOnSelect'])) {
-					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
+					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = [$va_properties['showOnSelect']]; }
 					
-					$va_ids = array();
+					$va_ids = [];
 					foreach($va_properties['showOnSelect'] as $vs_n) {
 						$va_ids[] = "#".$pa_options['id_prefix']."_{$vs_n}_container";
 					}
 					$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideUp(250);';
 					
-					if (!$va_attributes['checked']) {
+					if (!($va_attributes['checked'] ?? false)) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $va_ids)."').hide();
@@ -509,7 +511,7 @@ trait ModelSettings {
 			
 			# --------------------------------------------
 			case DT_COLORPICKER:
-				$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id);
+				$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id, 'class' => $input_class);
 				$vs_return .= caHTMLHiddenInput($vs_input_name, $va_attributes, array());
 				$vs_return .= "<div id='{$vs_input_id}_colorchip' class='colorpicker_chip' style='background-color: #{$vs_value}'><!-- empty --></div>";
 				$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery('#{$vs_input_name}_colorchip').ColorPicker({
@@ -537,8 +539,9 @@ trait ModelSettings {
 				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 				
 				$vs_select_element = '';
+				$va_select_attr = $va_opts = [];
 				
-				if($va_properties['showTypesForTable']) {
+				if($va_properties['showTypesForTable'] ?? false) {
 					$vs_select_element = '';
 					if (!($t_show_types_for_table = Datamodel::getInstanceByTableName($va_properties['showTypesForTable'], true))) {
 						break;
@@ -559,11 +562,11 @@ trait ModelSettings {
 							$va_type_opts[$va_type_info['idno']] = $vn_type_id;
 						}
 					} else { // "normal" (list-based) type restriction
-						$vs_select_element = $t_show_types_for_table->getTypeListAsHTMLFormElement($vs_input_name.(($vn_height > 1) ? '[]' : ''), ['multiple' => ($vn_height > 1), 'width' => $vn_width, 'height' => $vn_height, 'id' => $vs_input_id], ['values' => $vs_value, 'nullOption' => '', 'useDefaultWhenNull' => false]);
+						$vs_select_element = $t_show_types_for_table->getTypeListAsHTMLFormElement($vs_input_name.(($vn_height > 1) ? '[]' : ''), ['multiple' => ($vn_height > 1), 'width' => $vn_width, 'height' => $vn_height, 'id' => $vs_input_id, 'class' => $input_class], ['values' => $vs_value, 'nullOption' => '', 'useDefaultWhenNull' => false]);
 					}
 					
 					if($vs_select_element == '') {
-						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'class' => $input_class);
 						if ($vn_height > 1) {
 							if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
 							$va_opts['values'] = $vs_value;
@@ -578,16 +581,16 @@ trait ModelSettings {
 								}
 							}
 						}
-						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, [], $va_opts);
 					}
 				} elseif (
-					($vs_rel_table = $va_properties['useRelationshipTypeList']) || 
-					($vb_locale_list = (bool)$va_properties['useLocaleList']) || 
-					($vs_list_code = $va_properties['useList']) || 
-					($vb_show_lists = ((bool)$va_properties['showLists'] || 
-					(bool)$va_properties['showVocabularies'])) || 
-					($vb_policy_list = (bool)$va_properties['useHistoryTrackingPolicyList']) ||
-					($vb_referring_policy_list = (bool)$va_properties['useHistoryTrackingReferringPolicyList'])
+					($vs_rel_table = ($va_properties['useRelationshipTypeList'] ?? null)) || 
+					($vb_locale_list = (bool)($va_properties['useLocaleList'] ?? false)) || 
+					($vs_list_code = ($va_properties['useList'] ?? false)) || 
+					($vb_show_lists = ((bool)($va_properties['showLists'] ?? false) || 
+					(bool)($va_properties['showVocabularies'] ?? false))) || 
+					($vb_policy_list = (bool)($va_properties['useHistoryTrackingPolicyList'] ?? false)) ||
+					($vb_referring_policy_list = (bool)($va_properties['useHistoryTrackingReferringPolicyList'] ?? false))
 				) {
 					if ($vs_rel_table) {
 						$t_rel = new ca_relationship_types();
@@ -604,6 +607,9 @@ trait ModelSettings {
 					} else {
 						if ($vb_locale_list) {
 							$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
+							if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+								$va_rel_opts = array_merge([_t('Default') => null], $va_rel_opts);
+							}
 						} elseif($vb_policy_list) {
 							$table = caGetOption('table', $pa_options, null);
 							$rel_table = caGetOption('relatedTable', $pa_options, null);
@@ -632,8 +638,8 @@ trait ModelSettings {
 									$va_rel_opts[_t('All lists')] = '*';
 								}
 								foreach($va_lists as $vn_list_id => $va_list_info) {
-									if ($va_properties['showVocabularies'] && !$va_list_info['use_as_vocabulary']) { continue; }
-									$va_rel_opts[$va_list_info['name'].' ('.$va_list_info['list_code'].')'] = $vn_list_id;
+									if (($va_properties['showVocabularies'] ?? false) && !($va_list_info['use_as_vocabulary'] ?? false)) { continue; }
+									$va_rel_opts[$va_list_info['name'].' ('.($va_list_info['list_code'] ?? null).')'] = $vn_list_id;
 								}
 							}
 						}
@@ -644,7 +650,7 @@ trait ModelSettings {
 						$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
 					}
 					
-					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+					$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'class' => $input_class);
 					if ($vn_height > 1) {
 						if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
 						$va_opts['values'] = $vs_value;
@@ -670,25 +676,23 @@ trait ModelSettings {
 					}
 				} else {
 					if(isset($va_properties['showSortableElementsFor']) && ($va_properties['showSortableElementsFor'] > 0)) {
-						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor']);
-						
+						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor'], false);
 						$elements = array_filter($elements, function($e) {
-							return isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort'];
+							return (isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort']);
 						});
+						
 						$va_select_opts = [
-							_t('User defined sort order') => '',
-							_t('Order created') => 'relation_id',
+							_t('User defined sort order') => ''
 						];
 						foreach($elements as $e) {
 							$va_select_opts[$e['display_label']] = $e['element_code'];
 						}
 						
-						$va_opts = ['id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => $vs_value];
+						$va_opts = ['id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => $vs_value, 'class' => $input_class];
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
-					} elseif (is_array($va_properties['showSortableBundlesFor']) && (strlen($va_properties['showSortableBundlesFor']['table']) > 0)) {
+					} elseif (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
 						$va_select_opts = array_merge([
-							_t('User defined sort order') => '',
-							_t('Order created') => 'relation_id',
+							_t('User defined sort order') => ''
 						], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
 						
 						$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });
@@ -702,14 +706,14 @@ trait ModelSettings {
 								$vs_input_name .= '[]'; 
 								$va_select_attr = ['multiple' => 1];
 							}
-							$va_opts = ['id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'multiple' => 1];
+							$va_opts = ['id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'multiple' => 1, 'class' => $input_class];
 							if(is_array($vs_value) || (strlen($vs_value) > 0)) {
 								$va_opts['value'] = is_array($vs_value) ? $vs_value[0] : $vs_value;
 								$va_opts['values'] = is_array($vs_value) ? $vs_value : [$vs_value];
 							}
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
 						}
-					} elseif ($va_properties['showMetadataElementsWithDataType']) {
+					} elseif ($va_properties['showMetadataElementsWithDataType'] ?? false) {
 						if (!is_array($va_properties['table'])) { $va_properties['table'] = [$va_properties['table']]; }
 						
 						$va_select_opts = [];
@@ -722,18 +726,18 @@ trait ModelSettings {
 								}
 							}
 						
-							if($va_properties['includeIntrinsics']) {
+							if($va_properties['includeIntrinsics'] ?? null) {
 								if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 						
 								foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
 									if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
-									if(in_array($va_field_info['DT_DISPLAY'], array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
-									if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
+									if(in_array($va_field_info['DT_DISPLAY'] ?? null, array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
+									if ($va_field_info['IDENTITY'] ?? null) { continue; }
 								
 									$va_select_opts[$va_field_info['LABEL']] = $vs_f;
 									}	
 								}
-								if($va_properties['includePreferredLabels']) {
+								if($va_properties['includePreferredLabels'] ?? null) {
 									if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 									foreach($t_rep->getLabelUIFields() as $vs_f) {
 										$va_select_opts[$t_rep->getDisplayLabel("{$vs_table}.preferred_labels.{$vs_f}")] = "{$vs_table}.preferred_labels.{$vs_f}";
@@ -741,17 +745,17 @@ trait ModelSettings {
 								}
 							}
 							
-							if (sizeof($va_select_opts)) {	
+							if (is_array($va_select_opts) && sizeof($va_select_opts)) {	
 								
 								$va_select_attr = [];
 								if($vn_height > 1) {
 									$vs_input_name .= '[]'; 
 									$va_select_attr = ['multiple' => 1];
 								}
-								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value), 'class' => $input_class);
 								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 							}
-						} elseif ($va_properties['showLocaleList']) {
+						} elseif ($va_properties['showLocaleList'] ?? null) {
 							$locales = ca_locales::getLocaleList();
 							$vs_select_element = caHTMLSelect($vs_input_name, [], [], []);
 						} else {
@@ -761,6 +765,7 @@ trait ModelSettings {
 							$va_opts = array('width' => $vn_width, 'height' => $vn_height, 'values' => is_array($vs_value) ? $vs_value : [$vs_value]);
 							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 							$va_attr['id'] = $vs_input_id;
+							$va_attr['class'] = $input_class;
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 						}
 					}
@@ -772,7 +777,7 @@ trait ModelSettings {
 				case DT_INTERVAL:
 					$va_val_tmp = explode('|', $vs_value);
 					if(isset($va_properties['prefix'])) { $vs_return .= $va_properties['prefix']; }
-					$vs_return .= caHTMLHiddenInput($vs_input_name, ['value' => $vs_value, 'id' => $vs_input_id]);
+					$vs_return .= caHTMLHiddenInput($vs_input_name, ['value' => $vs_value, 'id' => $vs_input_id, 'class' => $input_class]);
 					$vs_return .= caHTMLTextInput("{$vs_input_name}Quantity", ['size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $va_val_tmp[0], 'id' => "{$vs_input_id}Quantity"]).' ';	
 					$vs_return .= caHTMLSelect("{$vs_input_name}Units", [_t('hours') => 'HOURS', _t('days') => 'DAYS', _t('weeks') => 'WEEKS'], ['id' => "{$vs_input_id}Units"], ['value' => $va_val_tmp[1]]).' ';
 					$vs_return .= caHTMLSelect("{$vs_input_name}Direction", [_t('before') => 'BEFORE', _t('after') => 'AFTER'],['id' => "{$vs_input_id}Direction"], ['value' => $va_val_tmp[2]]);

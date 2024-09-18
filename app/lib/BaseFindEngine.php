@@ -474,7 +474,6 @@ class BaseFindEngine extends BaseObject {
 		list($sort_field, $sort_filter) = array_pad(explode('|', $sort_field), 2, null);
 		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
 		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
-			//throw new ApplicationException(_t('Invalid sort field: %1', $sort_table));
 			return $hits;
 		}
 		
@@ -504,6 +503,9 @@ class BaseFindEngine extends BaseObject {
 		} else {
 			list($sort_field, $set_id) = array_pad(explode('/', $sort_field), 2, null);
 			
+			if(strpos($sort_field, ":") !== false) {
+				list($sort_field, $set_id) = array_pad(explode(':', $sort_field), 2, null);
+			}
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
 			if($is_label = is_a($t_rel_table, 'BaseLabel')) {
@@ -513,8 +515,8 @@ class BaseFindEngine extends BaseObject {
 			}
 			
 			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
-			if(($sort_table === 'ca_set_items')) {
-				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, $sort_field, $set_id, $sort_direction, $options);
+			if((in_array($sort_table, ['ca_sets', 'ca_set_items']))) {
+				$sort_key_values = $this->_sortBySet($t_table, $t_rel_table, $hit_table, 'rank', $set_id, $sort_direction, $options);
 			} elseif ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
 				$sort_key_values = $this->_sortByRelatedIntrinsic($t_table, $t_rel_table, $hit_table, $sort_field, $sort_direction, $options);
 			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred labels
@@ -608,6 +610,8 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _sortByLabels($t_table, string $hit_table, ?string $label_field=null, ?string $direction='asc', ?array $options=null) {
+		global $g_ui_locale_id;
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -626,7 +630,7 @@ class BaseFindEngine extends BaseObject {
 		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
-			SELECT l.{$table_pk}
+			SELECT l.{$table_pk}, l.locale_id
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
 			{$pref_sql}
@@ -634,15 +638,25 @@ class BaseFindEngine extends BaseObject {
 			{$limit_sql}
 		";
 		$qr_sort = $this->db->query($sql);
-		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
 		
-		return array_flip($sort_keys);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			if(($g_ui_locale_id == $row['locale_id']) && isset($sort_keys[$row[$table_pk]][$row['locale_id']])) {
+				unset($sort_keys[$row[$table_pk]][$row['locale_id']]);
+			}
+			
+			$sort_keys[$row[$table_pk]][$row['locale_id']] = $row[$table_pk];
+		}
+		return caExtractValuesByUserLocale($sort_keys);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 */
 	private function _sortByRelatedLabels($t_table, $t_rel_table, string $hit_table, ?string $rel_label_field=null, ?string $direction='asc', ?array $options=null) {
+		global $g_ui_locale_id;
+		
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
@@ -658,7 +672,10 @@ class BaseFindEngine extends BaseObject {
 		
 		$direction = self::sortDirection($direction);
 		$rel_types = caGetOption('relationshipTypes', $options, null);
-		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field, $rel_types);
+		
+		$primary_table = caGetOption('primaryTable', $options, null);
+		
+		$joins = $this->_getJoins($t_table, $t_rel_table, $rel_label_field, $rel_types, $options);
 		$join_sql = join("\n", $joins);
 		
 		$is_preferred = caGetOption('isPreferred', $options, null);
@@ -669,7 +686,7 @@ class BaseFindEngine extends BaseObject {
 		$limit_sql = self::_limitSQL($options);
 		
 		$sql = "
-			SELECT t.{$table_pk}
+			SELECT t.{$table_pk}, rl.locale_id
 			FROM {$table} t
 			{$join_sql}
 			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
@@ -679,9 +696,17 @@ class BaseFindEngine extends BaseObject {
 			{$limit_sql}
 		";
 		$qr_sort = $this->db->query($sql);
-		$sort_keys = $qr_sort->getAllFieldValues($table_pk);
 		
-		return array_flip($sort_keys);
+		$sort_keys = [];
+		while($qr_sort->nextRow()) {
+			$row = $qr_sort->getRow();
+			if(($g_ui_locale_id == $row['locale_id']) && isset($sort_keys[$row[$table_pk]][$row['locale_id']])) {
+				unset($sort_keys[$row[$table_pk]][$row['locale_id']]);
+			}
+			
+			$sort_keys[$row[$table_pk]][$row['locale_id']] = $row[$table_pk];
+		}
+		return caExtractValuesByUserLocale($sort_keys);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -694,7 +719,16 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element: %1', $e));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
-		
+		if(!$attr_val_sort_field) { // no sort field (probably container); look for sortable subelement
+			if(is_array($elements = ca_metadata_elements::getElementsForSet($subelement_code ? $subelement_code : $element_code))) {
+				foreach($elements as $e) {
+					if($attr_val_sort_field = ca_metadata_elements::getElementSortField($e['element_id'])) {
+						break;
+					}
+				}
+			}
+			if(!$attr_val_sort_field) { return array_flip($hits); }
+		}
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
 		
@@ -756,7 +790,7 @@ class BaseFindEngine extends BaseObject {
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h] = true; }
 		}
 		return $sort_keys;
 	}
@@ -775,7 +809,7 @@ class BaseFindEngine extends BaseObject {
 		$sql = "
 			SELECT t.{$table_pk}
 			FROM {$table} t
-			INNER JOIN ca_set_items AS csi ON csi.row_id = t.{$table_pk} AND csi.table_num = ? AND csi.set_id = ?
+			LEFT JOIN ca_set_items AS csi ON t.{$table_pk} = csi.row_id AND csi.table_num = ? AND csi.set_id = ?
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = t.{$table_pk}
 			ORDER BY csi.`{$intrinsic}` {$direction}
 			{$limit_sql}
@@ -793,8 +827,11 @@ class BaseFindEngine extends BaseObject {
 	 *
 	 */
 	private function _sortByHistoryTrackingCurrentValue($t_table, string $hit_table, ?string $policy=null, ?string $direction='asc', ?array $hits=null, ?array $options=null) {
+		global $g_ui_locale_id;
+		
 		$table_num = $t_table->tableNum();
 		$table_name = $t_table->tableName();
+		$table_pk = $t_table->primaryKey();
 		
 		if(!method_exists($t_table, 'getPolicyConfig')) { return []; }
 		if(!is_array($policy_info = $table_name::getPolicyConfig($policy))) {
@@ -804,7 +841,7 @@ class BaseFindEngine extends BaseObject {
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
 		
-		$sql = "SELECT htcv.row_id
+		$sql = "SELECT htcv.row_id, l.locale_id
 				FROM ca_history_tracking_current_values htcv
 				INNER JOIN ca_history_tracking_current_value_labels AS l ON htcv.tracking_id = l.tracking_id
 				INNER JOIN {$hit_table} AS ht ON ht.row_id = htcv.row_id
@@ -813,17 +850,23 @@ class BaseFindEngine extends BaseObject {
 				ORDER BY l.value_sort {$direction}
 					{$limit_sql}";
 		$qr_sort = $this->db->query($sql, [$table_num, $policy]);
+		
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
-			$sort_keys[$row['row_id']] = true;
+			if(($g_ui_locale_id == $row['locale_id']) && isset($sort_keys[$row[$table_pk]])) {
+				unset($sort_keys[$row['row_id']]);
+			}
+			
+			$sort_keys[$row['row_id']][$row['locale_id']] = $row['row_id'];
 		}
 		
 		// Add any row without the attribute set to the end of the sort set
 		foreach($hits as $h) {
-			if (!$sort_keys[$h]) { $sort_keys[$h] = true; }
+			if (!($sort_keys[$h] ?? null)) { $sort_keys[$h][$g_ui_locale_id] = $h; }
 		}
-		return $sort_keys;
+		
+		return caExtractValuesByUserLocale($sort_keys);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -841,7 +884,17 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($subelement_code ? $subelement_code : $element_code);
-
+		if(!$attr_val_sort_field) { // no sort field (probably container); look for sortable subelement
+			if(is_array($elements = ca_metadata_elements::getElementsForSet($subelement_code ? $subelement_code : $element_code))) {
+				foreach($elements as $e) {
+					if($attr_val_sort_field = ca_metadata_elements::getElementSortField($e['element_id'])) {
+						break;
+					}
+				}
+			}
+			if(!$attr_val_sort_field) { return array_flip($hits); }
+		}
+		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code, caGetOption('relationshipTypes', $options, null));
 		$join_sql = join("\n", $joins);
 		$limit_sql = self::_limitSQL($options);
@@ -1046,7 +1099,7 @@ class BaseFindEngine extends BaseObject {
 		
 		$rel_label_table = $t_rel_table->getLabelTableName();
 		
-		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
+		if(!($t_label = $t_table->getLabelTableInstance())) { return []; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
 		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
@@ -1101,7 +1154,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $label_field, string $direction) {
+	private function _getRelatedSortValuesForAttribute(array $hits, $t_table, $t_rel_table, string $element_code, string $direction) {
 		if (!sizeof($hits)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -1115,7 +1168,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		
-		$joins = $this->_getJoins($t_table, $t_rel_table, $label_field);
+		$joins = $this->_getJoins($t_table, $t_rel_table, $element_code);
 		$join_sql = join("\n", $joins);
 		
 		$sql = "SELECT cav.value_sortable val
@@ -1289,7 +1342,7 @@ class BaseFindEngine extends BaseObject {
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		if(!($t_label = $t_table->getLabelTableInstance())) { return $hits; }
+		if(!($t_label = $t_table->getLabelTableInstance())) { return []; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
 		$rel_label_table = $t_rel_table->getLabelTableName();
@@ -1327,7 +1380,7 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
-		
+		if(!$attr_val_sort_field) { return []; }
 
 		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
 					FROM ca_attribute_values cav
@@ -1359,7 +1412,8 @@ class BaseFindEngine extends BaseObject {
 			throw new ApplicationException(_t('Invalid element'));
 		}
 		$attr_val_sort_field = ca_metadata_elements::getElementSortField($element_code);
-
+		if(!$attr_val_sort_field) { return []; }
+		
 		$sql = "SELECT a.row_id, cav.{$attr_val_sort_field} val
 					FROM ca_attribute_values cav
 					INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
@@ -1408,19 +1462,46 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getJoins($t_table, $t_rel_table, string $sort_field, array $rel_types=null) {
+	private function _getJoins($t_table, $t_rel_table, string $sort_field, array $rel_types=null, ?array $options=null) {
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		$path = Datamodel::getPath($table, $rel_table);
-		$path = array_keys($path);
+		if($t_table->isRelationship() && ($primary_table = caGetOption('primaryTable', $options, null)) && ($primary_table !== $rel_table)) {
+			$path = Datamodel::getPath($primary_table, $rel_table);
+			$path = array_keys($path);
+			array_unshift($path, $table);
+		} else {
+			$path = Datamodel::getPath($table, $rel_table);
+			$path = array_keys($path);
+		}
 
 		$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
 		
 		$joins = [];
 		switch($psize = sizeof($path)) {
+			case 4:
+				$pt_pk = Datamodel::primaryKey($primary_table);
+				$joins[] = "LEFT JOIN {$primary_table} AS pt ON t.{$pt_pk} = pt.{$pt_pk}";
+				$linking_table = $path[2];
+				
+				$rel_types = caMakeRelationshipTypeIDList($linking_table, $rel_types);
+				$rel_type_sql = (is_array($rel_types) && (sizeof($rel_types) > 0)) ? " AND (l.type_id IN (".join(',', array_map('intval', $rel_types)).") OR (l.type_id IS NULL))" : '';
+	
+				if ($path[1] === $rel_table) {
+					$t_relation = Datamodel::getInstance($linking_table, true);
+					// self relation
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$pt_pk} = l.{$pt_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON (s.{$rel_table_pk} = l.".$t_relation->getLeftTableFieldName().") OR (s.{$rel_table_pk} = l.".$t_relation->getRightTableFieldName().")";
+				} elseif ($is_attribute) {
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$pt_pk} = l.{$pt_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+				} else {							
+					$joins[] = "LEFT JOIN {$linking_table} AS l ON t.{$pt_pk} = l.{$pt_pk}{$rel_type_sql}";
+					$joins[] = "LEFT JOIN {$rel_table} AS s ON s.{$rel_table_pk} = l.{$rel_table_pk}";
+				}
+				break;
 			case 3:
 				$linking_table = $path[1];
 				

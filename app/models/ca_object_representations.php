@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/BundlableLabelableBaseModelWithAttributes.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_labels.php");
@@ -44,8 +40,8 @@ require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_transcriptions.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
  	'NAME_SINGULAR' 	=> _t('object representation'),
@@ -383,7 +379,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_objects" => ["ca_objects_x_object_representations"]
 		)
 	);
 	
@@ -475,6 +471,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['transcription_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of transcriptions'));
 		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
 		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
+		$this->BUNDLES['caption_files'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption files'));
+		$this->BUNDLES['caption_file_locales'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption file locales'));
 		$this->BUNDLES['media_dimensions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media dimensions'));
 		$this->BUNDLES['media_duration'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media duration'));
 		$this->BUNDLES['media_class'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media class'));
@@ -482,6 +480,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['media_colorspace'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media colorspace'));
 		$this->BUNDLES['media_resolution'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media resolution'));
 		$this->BUNDLES['media_bitdepth'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit depth'));
+		$this->BUNDLES['media_bitrate'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit rate'));
+		$this->BUNDLES['media_bitspersample'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit per sample'));
+		$this->BUNDLES['media_samplerate'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media sample rate'));
+		
 		$this->BUNDLES['media_filesize'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media filesize'));
 		$this->BUNDLES['media_center_x'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media x-coordinate'));
 		$this->BUNDLES['media_center_y'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media y-coordinate'));
@@ -559,6 +561,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	public function update($options=null) {
+		$media_path = null;
 		if(!is_array($options)) { $options = []; }
 		if($vb_media_has_changed = $this->changed('media')) {
 		
@@ -578,36 +581,44 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::update($options)) {
-			if(is_array($va_media_info = $this->getMediaInfo('media'))) {
-				$this->set('md5', $va_media_info['INPUT']['MD5']);
-				$this->set('mimetype', $va_media_info['INPUT']['MIMETYPE']);
-				$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
-				
-				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
-					foreach($type_defaults as $m => $default_type) {
-						if(caCompareMimetypes($media_mimetype, $m)) {
-							$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
-							if (!($vn_rc = parent::update($options))) {
-								$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+			if((
+				!caGetOption('updateOnlyMediaVersions', $options, null)
+				&&
+				!caGetOption('startAtTime', $options, null)
+				&&
+				!caGetOption('startAtPage', $options, null)
+			)) {
+				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('md5', $va_media_info['INPUT']['MD5']);
+					$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
+					$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
+					
+					if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
+						foreach($type_defaults as $m => $default_type) {
+							if(caCompareMimetypes($media_mimetype, $m)) {
+								$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
+								if (!($vn_rc = parent::update($options))) {
+									$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+								}
+								break;
 							}
-							break;
-						}
-					}	
+						}	
+					}
+					
+					if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
+						$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+					}
+				}
+				if ($vb_media_has_changed) {
+					$va_metadata = $this->get('media_metadata', array('binary' => true));
+					caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
+									
+					// Extract metadata mapping with configured mappings
+					$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 				}
 				
-				if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
-					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
-				}
+				$vn_rc = parent::update($options);
 			}
-			if ($vb_media_has_changed) {
-				$va_metadata = $this->get('media_metadata', array('binary' => true));
-				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
-								
-				// Extract metadata mapping with configured mappings
-				$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
-			}
-			
-			$vn_rc = parent::update($options);
 		}
 		
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
@@ -641,6 +652,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 */
 	private function _importEmbeddedMetadata($options=null) {
+		if(caGetOption('dontImportEmbeddedMetadata', $options, false)) { return true; }
 		if(!($path = caGetOption('path', $options, $this->getMediaPath('media', 'original')))) {
 			$path = $this->getOriginalMediaPath('media');
 		}
@@ -921,6 +933,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			foreach($o_coder->getPropertyList() as $vs_property) {
  				$va_tmp[$vs_property] = $o_coder->getProperty($vs_property);
  				$va_tmp[$vs_property.'_raw'] = $o_coder->getProperty($vs_property, true);
+ 				$va_tmp[$vs_property.'_vtt'] = $o_coder->getProperty($vs_property, false, ['vtt' => true]);
  			}
  			
  			$va_tmp['timecodeOffset'] = $vn_timecode_offset;
@@ -1035,7 +1048,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$t_annotation = new $vs_annotation_table();
  		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
- 		$t_annotation->setMode(ACCESS_WRITE);
  		
  		$t_annotation->set('representation_id', $vn_representation_id);
  		$t_annotation->set('type_code', $o_coder->getType());
@@ -1564,11 +1576,20 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					$va_files[$vn_multifile_id][$vs_version.'_url'] = $qr_res->getMediaUrl('media', $vs_version);
 				
 					$va_info = $qr_res->getMediaInfo('media', $vs_version);
+					
 					$va_files[$vn_multifile_id][$vs_version.'_width'] = $va_info['WIDTH'];
 					$va_files[$vn_multifile_id][$vs_version.'_height'] = $va_info['HEIGHT'];
 					$va_files[$vn_multifile_id][$vs_version.'_mimetype'] = $va_info['MIMETYPE'];
 				}
 			}
+			
+			if(!isset($va_files['original_width'])) {
+				$va_info = $qr_res->getMediaInfo('media');
+				$va_files[$vn_multifile_id]['original_width'] = $va_info['INPUT']['WIDTH'] ?? null;
+				$va_files[$vn_multifile_id]['original_height'] = $va_info['INPUT']['HEIGHT'] ?? null;
+				$va_files[$vn_multifile_id]['original_mimetype'] = $va_info['INPUT']['MIMETYPE'] ?? null;
+			}
+			
  		}
  		return $va_files;
  	}
@@ -2385,16 +2406,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * Returns information for representation attached to the current item with the specified MD5 hash. 
 	 # Provided interface compatibility with RepresentableBaseModel classes.
 	 *
-	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+	 * @param string $md5 The MD5 hash to return representation info for. 
 	 * @param array $options No options are currently supported.
 	 *
 	 * @return array An array of representation_ids, or null if there is no match
 	 */
-	public function representationWithMD5($ps_md5, $options=null) {
-		$va_rep_list = array();
-		
-		if ($this->get('md5') == $ps_md5) {
-			return [$this->getPrimaryKey];
+	public function representationWithMD5(string $md5, $options=null) {
+		if ($this->get('md5') == $md5) {
+			return [$this->getPrimaryKey()];
 		}
 		return null;
 	}
@@ -2464,11 +2483,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 * @param array $options Options include:
 	 *		user_id = Finds transcription with specified user_id. The user_id will also be used to determine if a transcription for the current user already exists. If null, only client IP address will be used to find existing transcriptions. [Default is null]
-	 *
+	 *		returnFirstTranscriptionIfNoUserTranscriptionAvailable = Return the first found transcription if none has been created by the user. [Default is false]
 	 * @return ca_representation_transcriptions instance of transcript, null if no representation is loaded or a transcript could not be located.
 	 */
-	public function getTranscription($options=null) {
+	public function getTranscription(?array $options=null) : ?ca_representation_transcriptions {
 		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		
+		$always_return_something = caGetOption('returnFirstTranscriptionIfNoUserTranscriptionAvailable', $options, false);
 		
 		// Try to find transcript by IP address
 		$ip = RequestHTTP::ip();
@@ -2481,7 +2502,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			&&
 			!($transcript = ca_representation_transcriptions::find(['representation_id' => $rep_id, 'ip_addr' => $ip], ['returnAs' => 'firstModelInstance']))
 		) {
-			$transcript = null;
+			$transcript = $always_return_something ? ca_representation_transcriptions::find(['representation_id' => $rep_id], ['returnAs' => 'firstModelInstance']) : null;
 		}
 		return $transcript;
 	}
@@ -2754,6 +2775,24 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 */
 	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
 		switch($bundle_name) {
+			case 'caption_files':
+				$files = [];
+				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {
+					foreach($file_instances as $file_instance){
+						$files[] = $file_instance->getFileUrl('caption_file');
+					}
+				}
+				return $files;
+				break;
+			case 'caption_file_locales':
+				$file_locales = [];
+				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {
+					foreach($file_instances as $file_instance){
+						$file_locales[] = ca_locales::IDToCode($file_instance->get('locale_id'));
+					}
+				}
+				return $file_locales;
+				break;
 			case 'transcription_count':
 				return $this->numTranscriptions($row_id);
 				break;
@@ -2782,11 +2821,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			case 'media_bitdepth':
 			case 'media_center_x':
 			case 'media_center_y':
+			case 'media_bitrate':
+			case 'media_bitspersample':
+			case 'media_samplerate':
 				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
 					$info = $qr->getMediaInfo('media');
 					$version = caGetOption('version', $options, 'original');
 					if(!isset($info[$version])) {
-						$version = array_keys($info); 
+						$version = array_keys(is_array($info) ? $info : []); 
 						$version = array_pop($version);
 					}
 					switch($bundle_name) {
@@ -2835,6 +2877,21 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 						case 'media_bitdepth':
 							if (isset($info[$version]['PROPERTIES']['bitdepth']) && ($depth = $info[$version]['PROPERTIES']['bitdepth'])) {
 								return intval($depth).' bpp';
+							}
+							break;
+						case 'media_bitrate':
+							if (isset($info[$version]['PROPERTIES']['bitrate']) && ($depth = $info[$version]['PROPERTIES']['bitrate'])) {
+								return intval($depth).' bps';
+							}
+							break;
+						case 'media_bitspersample':
+							if (isset($info[$version]['PROPERTIES']['audio']['bits_per_sample']) && ($depth = $info[$version]['PROPERTIES']['audio']['bits_per_sample'])) {
+								return intval($depth).' bps';
+							}
+							break;
+						case 'media_samplerate':
+							if (isset($info[$version]['PROPERTIES']['sample_frequency']) && ($depth = $info[$version]['PROPERTIES']['sample_frequency'])) {
+								return intval($depth).' hz';
 							}
 							break;
 						case 'media_center_x':

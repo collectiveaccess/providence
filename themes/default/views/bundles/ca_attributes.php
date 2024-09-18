@@ -50,8 +50,9 @@ $va_element_value_defaults 	= 	$this->getVar('element_value_defaults');
 $va_failed_inserts 			= 	$this->getVar('failed_insert_attribute_list');
 $va_failed_updates 			= 	$this->getVar('failed_update_attribute_list');
 
-$va_settings 				= 	$this->getVar('settings');
-$vb_read_only				=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
+$settings 					= 	$this->getVar('settings');
+$vb_read_only				=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del			=	$settings['dontShowDeleteButton'] ?? false;
 $vb_batch					=	$this->getVar('batch');
 $va_element_settings 		=	$t_element->getSettings();
 
@@ -88,7 +89,7 @@ $va_errors = array();
 $vs_bundle_preview = '';
 
 $va_template_tags = $va_element_ids;
-if(!($vs_display_template = trim(caGetOption('displayTemplate', $va_settings)))) {
+if(!($vs_display_template = trim(caGetOption('displayTemplate', $settings)))) {
 	$vs_display_template = caGetOption('displayTemplate', $va_element_settings, null);
 }
 
@@ -107,8 +108,8 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 			
 			$attr_table = method_exists($o_value, 'tableName') ? $o_value->tableName() : null;
 			$dt = $o_value->getDatatype();
-			
-			if ($va_failed_updates[$vn_attr_id] && !in_array($dt, array(
+
+			if (is_array($va_failed_updates) && ($va_failed_updates[$vn_attr_id] ?? null) && !in_array($dt, [
 				__CA_ATTRIBUTE_VALUE_LCSH__, 
 				__CA_ATTRIBUTE_VALUE_OBJECTS__,
 				__CA_ATTRIBUTE_VALUE_OBJECTLOTS__,
@@ -121,7 +122,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 				__CA_ATTRIBUTE_VALUE_MOVEMENTS__,
 				__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__,
 				__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__,
-			))) {
+			])) {
 				// copy value from failed update into form (so user can correct it)
 				$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 			} else {
@@ -134,7 +135,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 					// user interface elements beyond the value entry fields (Eg. Numishare)
 					// 
 					foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
-						if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $v; }
+						if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $k; }
 						$va_initial_values[$vn_attr_id][$k] = $v;
 					}
 					break;	
@@ -172,7 +173,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 			}
 			foreach($va_initial_values as $vn_attr_id => $va_values) {
 				foreach($va_values as $vn_element_id => $vs_value) {
-					$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]];
+					$va_initial_values[$vn_attr_id][$vn_element_id.'_label'] = $va_labels[$va_initial_values[$vn_attr_id][$vn_element_id]] ?? null;
 				}
 			}
 		}
@@ -197,18 +198,17 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 
 // bundle settings
 global $g_ui_locale;
-if (!$vs_add_label = $va_settings['add_label'][$g_ui_locale]) {
+if (!$vs_add_label = ($settings['add_label'][$g_ui_locale] ?? null)) {
 	$vs_add_label = _t("Add %1", $vs_element_set_label);
 }
 
 if ($vb_batch) {
 	print caBatchEditorAttributeModeControl($vs_id_prefix);
 } else {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 }
-print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 
-	
 if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], false)) {
 	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 	if (sizeof($va_template_list) > 0) {
@@ -424,8 +424,8 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 			onInitializeItem: caHideBundlesForReadOnlyContainers, /* todo: look for better callback (or make one up?) */
 			
 			listItemClassName: 'repeatingItem',
-			oddColor: '<?= caGetOption('colorOddItem', $va_settings, 'FFFFFF'); ?>',
-			evenColor: '<?= caGetOption('colorEvenItem', $va_settings, 'FFFFFF'); ?>'
+			oddColor: '<?= caGetOption('colorOddItem', $settings, 'FFFFFF'); ?>',
+			evenColor: '<?= caGetOption('colorEvenItem', $settings, 'FFFFFF'); ?>'
 		});
 <?php
 	}

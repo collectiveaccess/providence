@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,29 +28,29 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
-	$vs_data_url = $this->getVar('data_url');
-	$vn_page = (int)$this->getVar('page');
-	$ps_id = 'mirador_'.preg_replace("/[^A-Za-z0-9]+/", "_", $this->getVar('identifier'));
-	
-	$vs_width = caParseElementDimension($this->getVar('width') ? $this->getVar('width') : $this->getVar('viewer_width'), ['returnAsString' => true, 'default' => '100%']);
-	$vs_height = caParseElementDimension($this->getVar('height') ? $this->getVar('height') : $this->getVar('viewer_height'), ['returnAsString' => true, 'default' => '100%']);
+ */ 
+$data_url = $this->getVar('data_url');
+$page = (int)$this->getVar('page');
+$id = 'mirador_'.preg_replace("/[^A-Za-z0-9]+/", "_", $this->getVar('identifier'));
+
+$width = caParseElementDimension($this->getVar('width') ? $this->getVar('width') : $this->getVar('viewer_width'), ['returnAsString' => true, 'default' => '100%']);
+$height = caParseElementDimension($this->getVar('height') ? $this->getVar('height') : $this->getVar('viewer_height'), ['returnAsString' => true, 'default' => '100%']);
 ?>
+<link rel="stylesheet" type="text/css" href="<?= $this->request->getAssetsUrlPath(); ?>/mirador/css/mirador-combined.css"/>	
 <script type="text/javascript" src="<?php print $this->request->getAssetsUrlPath(); ?>/mirador/mirador.js"></script>
 <script type="text/javascript">
     jQuery(document).ready(function() {
       Mirador({
-        "id": "<?php print $ps_id; ?>", 
+        "id": "<?= $id; ?>", 
         "layout": "1x1", 
         "mainMenuSettings" : {
           "show" : false
         },
         "data": [
-          { "manifestUri": "<?php print $vs_data_url; ?>"}
+          { "manifestUri": "<?= $data_url; ?>"}
         ],
         "windowObjects": [{
-        	"loadedManifest" : "<?php print $vs_data_url; ?>",
+        	"loadedManifest" : "<?= $data_url; ?>",
         	"viewType" : "ImageView",
         	"displayLayout": false,
 			"bottomPanel" : true,
@@ -66,11 +66,11 @@
 				}
 			}
         }],
-		"buildPath": '<?php print __CA_URL_ROOT__."/assets/mirador/"; ?>'
+		"buildPath": '<?= __CA_URL_ROOT__."/assets/mirador/"; ?>'
       });
       jQuery(".mirador-icon-metadata-view, .mirador-osd-annotation-controls").hide();
     });
   </script>
-  <div id="<?php print $ps_id; ?>" style="width: <?php print $vs_width; ?>; height: <?php print !$this->getVar('hideOverlayControls') ? "calc({$vs_height} - 24px)" : $vs_height; ?>;">
+  <div id="<?= $id; ?>" style="width: <?= $width; ?>; height: <?= !$this->getVar('hideOverlayControls') ? "calc({$height} - 24px)" : $height; ?>;">
   
   </div>

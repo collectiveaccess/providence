@@ -37,12 +37,12 @@
 	$vs_width = caParseElementDimension($this->getVar('width') ? $this->getVar('width') : $this->getVar('viewer_width'), ['returnAsString' => true, 'default' => '100%']);
 	$vs_height = caParseElementDimension($this->getVar('height') ? $this->getVar('height') : $this->getVar('viewer_height'), ['returnAsString' => true, 'default' => '100%']);
 ?>
-<link rel="stylesheet" type="text/css" href="<?php print $this->request->getAssetsUrlPath(); ?>/diva/diva.css"/>	
-<script type="text/javascript" src="<?php print $this->request->getAssetsUrlPath(); ?>/diva/diva.js"></script>
+<link rel="stylesheet" type="text/css" href="<?= $this->request->getAssetsUrlPath(); ?>/diva/diva.css"/>	
+<script type="text/javascript" src="<?= $this->request->getAssetsUrlPath(); ?>/diva/diva.js"></script>
 <script type="text/javascript">
     jQuery(document).ready(function() {
     	var diva = new Diva('diva-wrapper', {
-			objectData: "<?php print $vs_data_url; ?>",
+			objectData: "<?= $vs_data_url; ?>",
 			fillParentHeight: true,
 			inBookLayout: true,
 			enableFullscreen: true,
@@ -51,6 +51,6 @@
 		});
     });
   </script>
-  <div id="diva-wrapper" class="diva-wrapper" style="width: <?php print $vs_width; ?>; height: <?php print !$this->getVar('hideOverlayControls') ? "calc({$vs_height} - 24px)" : $vs_height; ?>;">
+  <div id="diva-wrapper" class="diva-wrapper" style="width: <?= $vs_width; ?>; height: <?= !$this->getVar('hideOverlayControls') ? "calc({$vs_height} - 24px)" : $vs_height; ?>;">
   
   </div>

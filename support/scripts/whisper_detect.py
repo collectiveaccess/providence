@@ -15,11 +15,13 @@ parser.add_argument('--input', nargs=1,
                     help='Path to file to transcribe', required=True)
 parser.add_argument('--model', nargs=1, default='base',
                     help='Specify whisper model size, base model set as default')
+parser.add_argument('--tmpdir', nargs=1, default='/tmp',
+                            help='Specify whisper temporary directory')
 
 args = parser.parse_args()
 
-def detect(input, model):
-    model = whisper.load_model(model)
+def detect(input, model, tmpdir):
+    model = whisper.load_model(model, None, tmpdir)
     audio = whisper.load_audio(input)
     audio = whisper.pad_or_trim(audio)
     mel = whisper.log_mel_spectrogram(audio).to(model.device)
@@ -33,4 +35,4 @@ def detect(input, model):
     
     return probs.get
 
-detect(args.input[0], args.model)
+detect(args.input[0], args.model, args.tmpdir[0])

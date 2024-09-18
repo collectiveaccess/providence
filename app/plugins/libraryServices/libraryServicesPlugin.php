@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,12 @@ require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
-require_once(__CA_LIB_DIR__.'/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/Db.php');
+require_once(__CA_LIB_DIR__.'/Utils/LockingTrait.php');
 
 class libraryServicesPlugin extends BaseApplicationPlugin {
+	# -------------------------------------------------------
+	use LockingTrait;
 	# -------------------------------------------------------
 	private $opo_config;
 	private $opo_library_services_config;
@@ -61,10 +63,14 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 	 * Perform library services-related periodic tasks
 	 */
 	public function hookPeriodicTask(&$pa_params) {
-		$t_log = new Eventlog();
-		$o_db = new Db();
-		
 		if (!((bool)$this->opo_config->get('enable_library_services'))) { return true; }
+		if(self::lockExists()) { 
+			return false;
+		}
+		if(!self::lockAcquire()) {
+			return false;
+		}
+		$o_db = new Db();
 		
 		if ((bool)$this->opo_config->get('enable_object_checkout')) {
 			$t_user = new ca_users();
@@ -86,32 +92,34 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 					foreach($va_items_by_user as $vn_user_id => $va_items_for_user) {
 						if ($t_user->load($vn_user_id)) {
 							if ($vs_user_email = $t_user->get('email')) {
-								$vs_subject = _t('Notice of items coming due for return');
-								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_coming_due.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Libary item due'])) {
+								if(!($vs_subject = $this->opo_library_services_config->get('coming_due_subject_template'))) {
+									$vs_subject = _t('[%1] Notice of items coming due for return', $vs_app_name);
+								}
+								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "{$vs_subject}", "library_coming_due.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Libary item due'])) {
 									// mark record
 									foreach($va_items_for_user as $va_item) {
 										if ($t_checkout->load($va_item['checkout_id'])) {
 											$t_checkout->set('last_sent_coming_due_email', _t('now'));	
 											$t_checkout->update();
 											if ($t_checkout->numErrors()) {
-												$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not mark checkout coming due message sent time because update failed: %1', join("; ", $t_checkout->getErrors())), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+												caLogEvent('ERR', _t('Could not mark checkout coming due message sent time because update failed: %1', join("; ", $t_checkout->getErrors())), 'libraryServicesPlugin->hookPeriodicTask()');
 											}
 										} else {
-											$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not mark checkout coming due message sent time because checkout id %1 was not found', $va_item['checkout_id']), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+											caLogEvent('ERR', _t('Could not mark checkout coming due message sent time because checkout id %1 was not found', $va_item['checkout_id']), 'libraryServicesPlugin->hookPeriodicTask()');
 										}
 									}
 								} 
 							} else {
 								// no email
-								$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('No email address set for user %1 (%2)', $t_user->get('user_name'), trim($t_user->get('fname').' '.$t_user->get('lname'))), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+								caLogEvent('ERR', _t('No email address set for user %1 (%2)', $t_user->get('user_name'), trim($t_user->get('fname').' '.$t_user->get('lname'))), 'libraryServicesPlugin->hookPeriodicTask()');
 							}
 						} else {
 							// invalid user
-							$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('User id %1 does not exist', $vn_user_id), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+							caLogEvent('ERR',  _t('User id %1 does not exist', $vn_user_id), 'libraryServicesPlugin->hookPeriodicTask()');
 						}
 					}
 				} catch(Exception $e) {
-					$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Invalid interval (%1) specified for coming due notices', $vs_interval), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));
+					caLogEvent('ERR', _t('Invalid interval (%1) specified for coming due notices', $vs_interval), 'libraryServicesPlugin->hookPeriodicTask()');
 				}
 			}
 			
@@ -123,32 +131,34 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 					foreach($va_items_by_user as $vn_user_id => $va_items_for_user) {
 						if ($t_user->load($vn_user_id)) {
 							if ($vs_user_email = $t_user->get('email')) {
-								$vs_subject = _t('Notice of overdue items');
-								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_overdue.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library item overdue'])) {
+								if(!($vs_subject = $this->opo_library_services_config->get('overdue_subject_template'))) {
+									$vs_subject = _t('[%1] Notice of overdue items', $vs_app_name);
+								}
+								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "{$vs_subject}", "library_overdue.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library item overdue'])) {
 									// mark record
 									foreach($va_items_for_user as $va_item) {
 										if ($t_checkout->load($va_item['checkout_id'])) {
 											$t_checkout->set('last_sent_overdue_email', _t('now'));	
 											$t_checkout->update();
 											if ($t_checkout->numErrors()) {
-												$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not mark checkout overdue message sent time because update failed: %1', join("; ", $t_checkout->getErrors())), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+												caLogEvent('ERR', _t('Could not mark checkout overdue message sent time because update failed: %1', join("; ", $t_checkout->getErrors())), 'libraryServicesPlugin->hookPeriodicTask()');
 											}
 										} else {
-											$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not mark checkout overdue message sent time because checkout id %1 was not found', $va_item['checkout_id']), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+											caLogEvent('ERR', _t('Could not mark checkout overdue message sent time because checkout id %1 was not found', $va_item['checkout_id']), 'libraryServicesPlugin->hookPeriodicTask');
 										}
 									}
 								} 
 							} else {
 								// no email
-								$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('No email address set for user %1 (%2)', $t_user->get('user_name'), trim($t_user->get('fname').' '.$t_user->get('lname'))), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+								caLogEvent('ERR', _t('No email address set for user %1 (%2)', $t_user->get('user_name'), trim($t_user->get('fname').' '.$t_user->get('lname'))), 'libraryServicesPlugin->hookPeriodicTask()');
 							}
 						} else {
 							// invalid user
-							$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('User id %1 does not exist', $vn_user_id), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+							caLogEvent('ERR',  _t('User id %1 does not exist', $vn_user_id), 'libraryServicesPlugin->hookPeriodicTask()');
 						}
 					}
 				} catch(Exception $e) {
-					$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Failed to get overdue list'), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));
+					caLogEvent('ERR', _t('Failed to get overdue list'), 'libraryServicesPlugin->hookPeriodicTask()');
 				}
 			}
 			
@@ -160,36 +170,38 @@ class libraryServicesPlugin extends BaseApplicationPlugin {
 					foreach($va_items_by_user as $vn_user_id => $va_items_for_user) {
 						if ($t_user->load($vn_user_id)) {
 							if ($vs_user_email = $t_user->get('email')) {
-								$vs_subject = _t('Notice of reserved available items');
-								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "library_reservation_available.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library reserved item available'])) {
+								if(!($vs_subject = $this->opo_library_services_config->get('reservation_available_subject_template'))) {
+									$vs_subject = _t('[%1] Notice of reserved available items', $vs_app_name);
+								}
+								if (caSendMessageUsingView(null, $vs_user_email, $vs_sender_email, "{$vs_subject}", "library_reservation_available.tpl", ['subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'items' => $va_items_for_user], null, $va_administrative_email_addresses, ['source' => 'Library reserved item available'])) {
 									// mark record
 									foreach($va_items_for_user as $va_item) {
 										if ($t_checkout->load($va_item['checkout_id'])) {
 											$t_checkout->set('last_reservation_available_email', _t('now'));	
 											$t_checkout->update();
 											if ($t_checkout->numErrors()) {
-												$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not mark reserved available message sent time because update failed: %1', join("; ", $t_checkout->getErrors())), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+												caLogEvent('ERR', _t('Could not mark reserved available message sent time because update failed: %1', join("; ", $t_checkout->getErrors())), 'libraryServicesPlugin->hookPeriodicTask()');
 											}
 										} else {
-											$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not mark reserved available message sent time because checkout id %1 was not found', $va_item['checkout_id']), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+											caLogEvent('ERR', _t('Could not mark reserved available message sent time because checkout id %1 was not found', $va_item['checkout_id']), 'libraryServicesPlugin->hookPeriodicTask()');
 										}
 									}
 								} 
 							} else {
 								// no email
-								$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('No email address set for user %1 (%2)', $t_user->get('user_name'), trim($t_user->get('fname').' '.$t_user->get('lname'))), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+								caLogEvent('ERR', _t('No email address set for user %1 (%2)', $t_user->get('user_name'), trim($t_user->get('fname').' '.$t_user->get('lname'))), 'libraryServicesPlugin->hookPeriodicTask()');
 							}
 						} else {
 							// invalid user
-							$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('User id %1 does not exist', $vn_user_id), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));	
+							caLogEvent('ERR', _t('User id %1 does not exist', $vn_user_id), 'libraryServicesPlugin->hookPeriodicTask');
 						}
 					}
 				} catch(Exception $e) {
-					$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Failed to get reserved available list'), 'SOURCE' => 'libraryServicesPlugin->hookPeriodicTask'));
+					caLogEvent('ERR', _t('Failed to get reserved available list'), 'libraryServicesPlugin->hookPeriodicTask()');
 				}
 			}
 		}
-				
+		self::lockRelease();
 		return true;
 	}
 	# -------------------------------------------------------

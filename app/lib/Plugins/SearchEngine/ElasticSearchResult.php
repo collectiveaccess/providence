@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 include_once(__CA_LIB_DIR__.'/Datamodel.php');
 include_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
 include_once(__CA_LIB_DIR__.'/Plugins/IWLPlugSearchEngineResult.php');
@@ -43,7 +42,7 @@ class WLPlugSearchEngineElasticSearchResult extends WLPlug implements IWLPlugSea
 	private $opo_subject_instance;
 	private $ops_subject_table_name;
 	# -------------------------------------------------------
-	public function __construct($pa_hits, $pn_table_num) {
+	public function __construct($pa_hits, $result_desc, $pn_table_num) {
 		parent::__construct();
 
 		$this->opn_subject_tablenum = $pn_table_num;

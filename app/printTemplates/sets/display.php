@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/display.php
+ * app/printTemplates/sets/display.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,86 +26,93 @@
  * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
  * Template configuration:
  *
- * @name PDF display
- * @type omit
+ * @name PDF
+ * @type page
  * @pageSize letter
  * @pageOrientation portrait
- * @tables ca_objects
+ * @tables *
  *
  * @marginTop 0.75in
  * @marginLeft 0.25in
  * @marginBottom 0.5in
  * @marginRight 0.25in
  *
+ * @includeHeaderFooter true
+ *
+ * @param includeLogo {"type": "CHECKBOX",  "label": "Include logo?", "value": "1", "default": true}
+ * @param includePageNumbers {"type": "CHECKBOX",  "label": "Include page numbers?", "value": "1", "default": true}
+ * @param showSearchTermInFooter {"type": "CHECKBOX",  "label": "Show search terms?", "value": "1", "default": false}
+ * @param showSearchResultCountInFooter {"type": "CHECKBOX",  "label": "Show result count?", "value": "1", "default": false}
+ * @param showTimestampInFooter {"type": "CHECKBOX",  "label": "Show current date?", "value": "1", "default": false}
+ *
  * ----------------------------------------------------------------------
  */
-
-	$t_display				= $this->getVar('display');
-	$va_display_list 		= $this->getVar('display_list');
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vn_num_items			= (int)$vo_result->numHits();
-	$t_set					= $this->getVar("t_set");
-	
-	$vn_start 				= 0;
-
-	print $this->render("pdfStart.php");
-	print $this->render("header.php");
-	print $this->render("footer.php");
-	
-
+$t_display			= $this->getVar('display');
+$display_list 		= $this->getVar('display_list');
+$result 			= $this->getVar('result');
+$items_per_page 	= $this->getVar('current_items_per_page');
+$num_items			= (int)$result->numHits();
+$t_set				= $this->getVar("t_set");
 ?>
-		<div id='body'>
-			<div class="row">
-				<table>
-				<tr><td>
-					<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
+<div id='body'>
+	<div class="row">
+		<table>
+			<tr><td>
+				<div class='title'><?php print $t_set->get("ca_sets.preferred_labels.name"); ?></div>
 <?php
-					if($t_set->get("description")){
-						print "<p>".$t_set->get("description")."</p>";
-					}
+				if($t_set->get("description")){
+					print "<p>".$t_set->get("description")."</p>";
+				}
 ?>
-				</td></tr>
-				</table>
-			</div>
+			</td></tr>
+		</table>
+	</div>
 <?php
+$result->seek(0);
 
-		$vo_result->seek(0);
-		
-		$vn_c = 0;
-		while($vo_result->nextHit()) {
-			$vn_c++;
-			$vn_object_id = $vo_result->get('ca_objects.object_id');		
+$start = $c = 0;
+$table = $result->tableName();
+while($result->nextHit()) {
+	$c++;
+	$id = $result->getPrimaryKey();		
 ?>
-			<div class="row">
-			<table>
+	<div class="row">
+		<table>
 			<tr>
-				<td><b><?php print $vn_c; ?></b>&nbsp;&nbsp;</td>
+				<td><b><?php print $c; ?></b>&nbsp;&nbsp;</td>
+<?php
+	if($table === 'ca_objects') {
+?>
 				<td>
 <?php 
-					if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
-						print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
-					} else {
+				if ($path = $result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+					print "<div class=\"imageTiny\"><img src='{$path}'/></div>";
+				} else {
 ?>
-						<div class="imageTinyPlaceholder">&nbsp;</div>
+					<div class="imageTinyPlaceholder">&nbsp;</div>
 <?php					
-					}	
+				}	
 ?>								
 
-				</td><td>
+				</td>
+<?php
+	}
+?>
+				<td>
 					<div class="metaBlock">
 <?php
-						print "<div class='title'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 	
+						print "<div class='title'>".$result->getWithTemplate("^{$table}.preferred_labels.name (^{$table}.idno)")."</div>"; 	
 ?>
 						<table  width="100%"  cellpadding="0" cellspacing="0">
 <?php				
-					
-						foreach($va_display_list as $vn_placement_id => $va_display_item) {	
-							if (!($vs_display_value = trim($t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true))))) { continue; }
+			
+						foreach($display_list as $placement_id => $display_item) {	
+							$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+							if (!($display_value = trim($t_display->getDisplayValue($result, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true])))) { continue; }
 ?>
 							<tr>
-								<td width="30%" style='padding: 4px;'><?php print $va_display_item['display']; ?></td>
-								<td style='padding: 4px;'><?php print $vs_display_value; ?></td>
+								<td width="30%" style='padding: 4px;'><?php print $display_item['display']; ?></td>
+								<td style='padding: 4px;'><?php print $display_value; ?></td>
 							</tr>
 <?php
 						}						
@@ -114,12 +121,9 @@
 					</div>				
 				</td>	
 			</tr>
-			</table>	
-			</div>
+		</table>	
+	</div>
 <?php
-		}
+}
 ?>
-		</div>
-<?php
-	print $this->render("pdfEnd.php");
-?>
+</div>

@@ -86,20 +86,25 @@ class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Imp
 		} else {
 			$vs_lang = 'en';
 		}
-		
-		
-		$vs_content = caQueryExternalWebservice(
-            $vs_url = 'http://iconclass.org/rkd/9/?q='.urlencode($ps_search).'&q_s=1&fmt=json'
-		);
+
+		$vs_url = 'https://iconclass.org/api/search?q='.rawurlencode($ps_search).'&lang='.$vs_lang.'&size=999&page=1&sort=rank&keys=0';
+
+		$vs_content = caQueryExternalWebservice($vs_url);
 
 		$va_content = @json_decode($vs_content, true);
-		if(!isset($va_content['records']) || !is_array($va_content['records'])) { return []; }
+		if(!isset($va_content['result']) || !is_array($va_content['result'])) { return []; }
+
 
 		// the top two levels are 'diagnostic' and 'records'
-		$va_results = $va_content['records'];
+		$va_results = $va_content['result'];
 		$va_return = [];
 
-		foreach($va_results as $va_result) {
+		foreach($va_results as $vs_result) {
+
+			$vs_url = 'https://iconclass.org/'.rawurlencode($vs_result).'.json';
+			$va_result = json_decode(caQueryExternalWebservice($vs_url),true);
+
+
 			$va_return['results'][] = [
 				'label' => isset($va_result['txt'][$vs_lang]) ? $va_result['txt'][$vs_lang] : $va_result['txt']['en'],
 				'url' => 'http://iconclass.org/'.$va_result['n'],

@@ -117,9 +117,9 @@
 				$vs_main_package = array_shift($va_pack_path);
 				
 				$vb_is_theme_specific = false;
-				if (($va_list = $va_packages[$vs_main_package])) {
+				if (($va_list = ($va_packages[$vs_main_package] ?? null))) {
 					// noop
-				} elseif (($va_list = $va_theme_packages[$vs_main_package])) {
+				} elseif (($va_list = ($va_theme_packages[$vs_main_package] ?? null))) {
 					$vb_is_theme_specific = true;
 				}
 				 
@@ -146,8 +146,6 @@
 					
 					if (!$vb_is_theme_specific && isset($va_exclude_packages[$ps_package][$ps_library])) { return true; }
 					
-					$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
-					
 					// inherit from parent themes?
 					if ($o_config->get('allowThemeInheritance')) {
                         $i=0;
@@ -162,7 +160,9 @@
                             if ($i > 10) {break;} // max 10 levels
                         }
                     }
-					
+                    
+					$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
+								
 					return true;
 				}
 				
@@ -232,7 +232,7 @@
 			
 			if (!$g_asset_config) { AssetLoadManager::init(); }
 			$vs_buf = '';
-			if (is_array($g_asset_load_list[$output_target])) {
+			if (is_array($g_asset_load_list[$output_target] ?? null)) {
 				ksort($g_asset_load_list[$output_target]);
 				foreach($g_asset_load_list[$output_target] as $vn_priority => $va_libs) {
 					foreach($va_libs as $vs_lib => $va_types) {

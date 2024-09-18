@@ -51,17 +51,17 @@
 	print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$bundle_name}", $settings);
 ?>
 	<div>
-		<div class="bundleContainer <?php print $is_batch ? "editorBatchBundleContent" : ''; ?>" id="<?php print $id_prefix; ?>">
+		<div class="bundleContainer <?= $is_batch ? "editorBatchBundleContent" : ''; ?>" id="<?= $id_prefix; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
 					if (is_array($errors) && sizeof($errors)) {
 ?>
-						<span class="formLabelError"><?php print join('; ', $errors); ?></span>
+						<span class="formLabelError"><?= join('; ', $errors); ?></span>
 <?php
 					}
 ?>
-					<div class="formLabelPlain"><?php print _t("Available <span id='{$id_prefix}_ca_site_pages_path_app_text' style='display: none;'>at %1</span> in %2", $element, $app_select); ?></div>
+					<div class="formLabelPlain"><?= _t("Available <span id='{$id_prefix}_ca_site_pages_path_app_text' style='display: none;'>at %1</span> in %2", $element, $app_select); ?></div>
 				</div>
 			</div>
 		</div>
@@ -69,15 +69,15 @@
 	
 	<script type="text/javascript">
 	    jQuery(document).ready(function() {
-            jQuery("#<?php print "{$id_prefix}_ca_site_pages_path_app"; ?>").val("<?php print ($t_instance->get('path') !== 'PROVIDENCE_HELP_MENU') ? 'PAWTUCKET' : 'PROVIDENCE_HELP_MENU'; ?>");
-            jQuery("#<?php print "{$id_prefix}_ca_site_pages_path_app_text"; ?>").<?php print ($t_instance->get('path') !== 'PROVIDENCE_HELP_MENU') ? "show()" : "hide()"; ?>;
+            jQuery("#<?= "{$id_prefix}_ca_site_pages_path_app"; ?>").val("<?= ($t_instance->get('path') !== 'PROVIDENCE_HELP_MENU') ? 'PAWTUCKET' : 'PROVIDENCE_HELP_MENU'; ?>");
+            jQuery("#<?= "{$id_prefix}_ca_site_pages_path_app_text"; ?>").<?= ($t_instance->get('path') !== 'PROVIDENCE_HELP_MENU') ? "show()" : "hide()"; ?>;
 
-	        jQuery("#<?php print "{$id_prefix}_ca_site_pages_path_app"; ?>").on('change', function(e) {
+	        jQuery("#<?= "{$id_prefix}_ca_site_pages_path_app"; ?>").on('change', function(e) {
 	            if(jQuery(this).val() == 'PROVIDENCE_HELP_MENU') {
-	                jQuery("#<?php print "{$id_prefix}_ca_site_pages_path_app_text"; ?>").hide();
+	                jQuery("#<?= "{$id_prefix}_ca_site_pages_path_app_text"; ?>").hide();
 	                jQuery("#path_path").val('PROVIDENCE_HELP_MENU');
 	            } else {
-	                jQuery("#<?php print "{$id_prefix}_ca_site_pages_path_app_text"; ?>").show();
+	                jQuery("#<?= "{$id_prefix}_ca_site_pages_path_app_text"; ?>").show();
 	                if (jQuery("#path_path").val() === 'PROVIDENCE_HELP_MENU') {
 	                    jQuery("#path_path").val('');
 	                }

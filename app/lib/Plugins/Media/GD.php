@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2020 Whirl-i-Gig
+ * Copyright 2006-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -525,14 +525,14 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		# get parameters for this operation
-		$sparams = $this->info["TRANSFORMATIONS"][$operation];
+		$sparams = $this->info["TRANSFORMATIONS"][$operation] ?? null;
 		
-		$w = $parameters["width"];
-		$h = $parameters["height"];
+		$w = $parameters["width"] ?? null;
+		$h = $parameters["height"] ?? null;
 		$cw = $this->get("width");
 		$ch = $this->get("height");
 		
-		if((bool)$this->properties['no_upsampling']) {
+		if((bool)($this->properties['no_upsampling'] ?? false)) {
 			$w = min($cw, round($w)); 
 			$h = min($ch, round($h));
 		}
@@ -541,7 +541,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		switch($operation) {
 			# -----------------------
 			case 'SCALE':
-				$aa = $parameters["antialiasing"];
+				$aa = $parameters["antialiasing"] ?? 0;
 				if ($aa <= 0) { $aa = 0; }
 				switch($parameters["mode"]) {
 					# ----------------
@@ -650,7 +650,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			break;
 		# -----------------------
 		case "SET":
-			while(list($k, $v) = each($parameters)) {
+			foreach($parameters as $k => $v){
 				$this->set($k, $v);
 			}
 			break;
@@ -673,13 +673,13 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$tp->useLibrary(LIBRARY_GD);
 				if (!($properties = $tp->encode($this->filepath, $filepath, 
 					array(
-						"tile_width" => $this->properties["tile_width"],
-						"tile_height" => $this->properties["tile_height"],
-						"layer_ratio" => $this->properties["layer_ratio"],
+						"tile_width" => $this->properties["tile_width"] ?? null,
+						"tile_height" => $this->properties["tile_height"] ?? null,
+						"layer_ratio" => $this->properties["layer_ratio"] ?? null,
 						"quality" => $vn_jpeg_quality,
-						"antialiasing" => $this->properties["antialiasing"],
-						"output_mimetype" => $this->properties["tile_mimetype"],
-						"layers" => $this->properties["layers"],
+						"antialiasing" => $this->properties["antialiasing"] ?? null,
+						"output_mimetype" => $this->properties["tile_mimetype"] ?? null,
+						"layers" => $this->properties["layers"] ?? null,
 					)					
 				))) {
 					$this->postError(1610, $tp->error, "WLPlugTilepic->write()");	
@@ -695,7 +695,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return $filepath;
 		} else {
 			# is mimetype valid?
-			if (!($ext = $this->info["EXPORT"][$mimetype])) {
+			if (!($ext = ($this->info["EXPORT"][$mimetype] ?? null))) {
 				# this plugin can't write this mimetype
 				return false;
 			} 
@@ -709,7 +709,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->handle = $h;
 			}
 			
-			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
+			if (($this->properties["colorspace"] ?? null) && ($this->properties["colorspace"] != "default")){ 
 				switch($this->properties["colorspace"]) {
 					case 'greyscale':
 					case 'grey':
@@ -784,12 +784,12 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function mimetype2extension($mimetype) {
-		return $this->info["EXPORT"][$mimetype];
+		return $this->info["EXPORT"][$mimetype] ?? null;
 	}
 	# ------------------------------------------------
 	public function extension2mimetype($extension) {
 		reset($this->info["EXPORT"]);
-		while(list($k, $v) = each($this->info["EXPORT"])) {
+		foreach($this->info["EXPORT"] as $k => $v){
 			if ($v === $extension) {
 				return $k;
 			}

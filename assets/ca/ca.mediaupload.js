@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -150,37 +150,52 @@ var caUI = caUI || {};
 			jQuery('#' + that.fieldNamePrefix + '_center_y_' + that.index).val(center_y);
 		}
 		
-		that.showAnnotationEditor = function() {
+		that.showAnnotationEditor = function(e) {
 			caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix].showPanel(that.annotationEditorURL);
+			if(e) { e.preventDefault(); }
+			return false;
 		}
 		
-		that.showEmbeddedMetadata = function() {
+		that.showEmbeddedMetadata = function(e) {
 			jQuery('#' + that.fieldNamePrefix + '_media_metadata_' + that.index).slideToggle(300);
+			if(e) { e.preventDefault(); }1
+			return false;
 		}
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataEditButton' + that.index).off('click').on('click', function(e) {
 			that.openEditor();
 			e.preventDefault();
+			return false;
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_MediaMetadataSaveButton' + that.index).off('click').on('click', function(e) {
 			that.closeEditor();
+			e.preventDefault();
+			return false;
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_SetAsPrimaryButton' + that.index).off('click').on('click', function(e) {
 			that.setAsPrimary();
+			e.preventDefault();
+			return false;
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_edit_image_center_' + that.index).off('click').on('click', function(e) {
 			that.showImageCenterEditor(that.index);
+			e.preventDefault();
+			return false;
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_edit_annotations_button_' + that.index).off('click').on('click', function(e) {
 			that.showAnnotationEditor();
+			e.preventDefault();
+			return false;
 		});
 		
 		jQuery('#' + that.fieldNamePrefix + '_caObjectRepresentationMetadataButton_' + that.index).off('click').on('click', function(e) {
 			that.showEmbeddedMetadata();
+			e.preventDefault();
+			return false;
 		});
 		
 		

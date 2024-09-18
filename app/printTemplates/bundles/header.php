@@ -1,13 +1,13 @@
 <?php	
 /* ----------------------------------------------------------------------
- * app/templates/header.php : standard PDF report header
+ * app/printTemplates/bundles/header.php : standard PDF report header
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,45 +32,48 @@
  * ----------------------------------------------------------------------
  */
  
-	if($this->request->config->get('report_header_enabled')) {
-		switch($this->getVar('PDFRenderer')) {
-			case 'domPDF':
+switch($this->getVar('PDFRenderer')) {
+	case 'domPDF':
 ?>
 <div id='header'>
-	<?= caGetReportLogo()."<div class='pagingText'>"._t('Page')." </div>"; ?>
+<?php
+	print caGetReportLogo();
+	print "<div class='pagingText'>"._t('Page')." </div>"; ?>
 </div>
 <?php
-				break;			
-			case 'wkhtmltopdf':
+		break;			
+	case 'wkhtmltopdf':
 ?>
 <!--BEGIN HEADER--><!DOCTYPE html>
 <html>
-<head>
-	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
-	<?= caGetReportLogo()."<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>"; ?>
-
+	<head>
+	<link type="text/css" href="<?= $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+		print caGetReportLogo();
+		print "<div class='pagingText' id='pagingText' style='position: absolute; top: 0px; right: 0px;'> </div>";
+?>
 	<script>
 		function dynvar() {
 			var vars = {};
 			var x = document.location.search.substring(1).split('&');
-	
+
 			for (var i in x) {
 				var z = x[i].split('=',2);
-	
+
 				if (!vars[z[0]]) {
 					vars[z[0]] = unescape(z[1]);
 				}
 			}
-	
+
 			document.getElementById('pagingText').innerHTML = 'page ' + vars.page; // + ' of ' + vars.topage
 		}
-  		
+	
 	</script>
-</head>
-<body onload='dynvar();'>
-</body>
+	</head>
+	<body onload='dynvar();'>
+	</body>
 </html>
 <!--END HEADER-->
 <?php
-	}
+		break;
 }

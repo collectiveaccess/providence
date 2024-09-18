@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023  Whirl-i-Gig
+ * Copyright 2009-2024  Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,8 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\OAuth;
+use Greew\OAuth2\Client\Provider\Azure; #Requires composer library "greew/oauth2-azure-provider"
 
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/View.php');
@@ -98,7 +100,7 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 		'auth' => $smtp_auth
 	);
 	
-	if($smtp_auth && in_array(strtoupper($smtp_auth), ['PLAIN', 'LOGIN', 'CRAM-MD5'])){
+	if($smtp_auth && in_array(strtoupper($smtp_auth), ['PLAIN', 'LOGIN', 'CRAM-MD5', 'XOAUTH2'])){
 		$smtp_config['auth'] = strtoupper($smtp_auth);	
 	}
 	if($ssl && in_array(strtoupper($ssl), ['SSL', 'TLS'])){
@@ -106,6 +108,10 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 	}
 	if(($port = (int)$o_config->get('smtp_port')) > 0){
 		$smtp_config['port'] = $port;
+	}
+			
+	if (!is_array($to) && $to) {
+		$to = preg_split('![,;\|]!', $to);
 	}
 	
 	$o_mail = new PHPMailer(true);
@@ -131,9 +137,53 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 		$o_mail->SMTPAutoTLS = (bool)($ssl ?? false);
 		$o_mail->SMTPAuth   = (bool)$smtp_auth;
 		$o_mail->AuthType	= $smtp_auth;
-		$o_mail->Username   = $smtp_config['username'];
-		$o_mail->Password   = $smtp_config['password'];
-		$o_mail->Port       = $smtp_config['port']; 
+		$o_mail->Port       = $smtp_config['port'];
+		$o_mail->CharSet 	= 'UTF-8';
+
+		if($smtp_auth == 'XOAUTH2'){
+			$xoauth2_provider = $o_config->get('smtp_xoauth_provider');
+			$email = $o_config->get('smtp_xoauth_email');
+			$clientId = $o_config->get('smtp_xoauth_clientid');
+			$clientSecret = $o_config->get('smtp_xoauth_clientsecret');
+			$refreshToken = $o_config->get('smtp_xoauth_refresh_token');
+			$provider = ''; #This is the provider instance, set below depending on the $xoauth2_provider set
+
+			if($xoauth2_provider == 'Azure'){
+				$provider = new Azure(
+					[
+						'clientId' => $clientId,
+						'clientSecret' => $clientSecret,
+						'tenantId' => $o_config->get('smtp_xoauth_azure_tenantid'),
+					]
+				);
+			}
+			/** Other provider blocks can be put here
+			 * Remember to add the correct package to the top of file to include them
+			 * EG
+			 * if($xoauth2_provider == 'Google'){
+			 *	
+			 * }
+			 */
+
+			if($provider){
+				$o_mail->setOAuth(
+					new OAuth(
+						[
+							'provider' => $provider,
+							'clientId' => $clientId,
+							'clientSecret' => $clientSecret,
+							'refreshToken' => $refreshToken,
+							'userName' => $email,
+						]
+					)
+				);
+			}
+		}
+		else {
+			# OAUTH doesn't require Username and password.
+			$o_mail->Username   = $smtp_config['username'];
+			$o_mail->Password   = $smtp_config['password'];
+		}
 
 		if (!is_array($from) && $from) {
 			$from = preg_split('![,;\|]!', $from);
@@ -147,10 +197,6 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 				}
 				break;
 			}
-		}
-		
-		if (!is_array($to) && $to) {
-			$to = preg_split('![,;\|]!', $to);
 		}
 		
 		foreach($to as $to_email => $to_name) {
@@ -208,7 +254,6 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 		return true;
 	} catch (Exception $e) {
 		$g_last_email_error = $e->getMessage();
-		
 		if(caGetOption('logSuccess', $options, true)) {
 			$log->logError('['.caGetOption('source', $options, 'Registration').'] '._t(caGetOption('failureMessage', $options, 'Could not send email to %1: %2'), join(';', $to), $e->getMessage()));
 		}

@@ -35,6 +35,7 @@
   */
 define("__CA_ATTRIBUTE_VALUE_WEIGHT__", 9);
 
+
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
@@ -215,7 +216,7 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return mixed Values as string or decimal
 	 */
 	public function getDisplayValue($pa_options=null) {
-		global $g_ui_units_pref;
+		global $g_ui_units_pref, $g_ui_locale;
 		if (caGetOption('returnAsDecimalMetric', $pa_options, false)) {
 			return $this->opn_decimal_value;
 		}
@@ -289,10 +290,10 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 		return caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
 			array(
-				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'], 
-				'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
+				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'] ?? null, 
+				'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'] ?? null, 
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
-				'maxWeight' => $va_settings['maxChars'],
+				'maxWeight' => $va_settings['maxChars'] ?? null,
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				'class' => $vs_class
 			)

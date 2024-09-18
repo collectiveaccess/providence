@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 include_once(__CA_LIB_DIR__."/Search/BaseSearch.php");
 include_once(__CA_LIB_DIR__."/Search/RepresentationAnnotationSearchResult.php");
-include_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class RepresentationAnnotationSearch extends BaseSearch {
 	# ----------------------------------------------------------------------
@@ -52,4 +46,3 @@ class RepresentationAnnotationSearch extends BaseSearch {
 	}
 	# ----------------------------------------------------------------------
 }
-?>

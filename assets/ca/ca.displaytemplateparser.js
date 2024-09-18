@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -170,6 +170,7 @@ var caUI = caUI || {};
                 }
             });
             }
+            
             tagList = template.match(that.tagRegex);
             var t = template;    
             var unitRegex = /([\.]{0,1}[\d]+[ \d\.\,\/]*)([^\d ]+)/g, bAtLeastOneValueIsSet = false;
@@ -470,30 +471,33 @@ var caUI = caUI || {};
 			if (init && !bAtLeastOneValueIsSet) {return; }
 			
             // Process <ifdef> tags
-            var h = jQuery("<div>" + t + "</div>");
+            var h = new DOMParser().parseFromString(t, "text/html");
             
-            if (fullTagList) {
-				jQuery.each(fullTagList, function(k, tag) {
-					var isJoin = false;
-					var originalTag = tag;
-					if (tag.match(/^join_/)) { 
-						tag = values[tag]; 
-						isJoin = true;
-					}
-					var tagBits = tag.split(/\~/);
-					var tagRoot = tagBits[0].replace("^", "");
-					var val = jQuery(values[tagRoot]).val();
-
-					if(val && (val.length > 0)) {
-						jQuery.each(h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]"), function(k, v) {
-							jQuery(v).replaceWith(jQuery(v).html());
-						});
-					} else {
-						h.find("ifdef[code=" + (isJoin ? originalTag : tagRoot) + "]").remove();
-					}
-				});
-			}
-            return h.html().trim();
+            jQuery(h).find('ifdef,ifnotdef').each(function(k,v) {
+            	let tag = jQuery(v);
+            	let ret = that.evaluateCode(tag, values);
+            	
+            	let key = tag.prop('tagName').toLowerCase() + "[code='" + tag.attr('code') + "']";
+            	let tagname = tag.prop('tagName').toLowerCase();
+				switch(tagname) {
+					case 'ifdef':
+					case 'ifnotdef':
+						if(
+							(ret && (tagname == 'ifdef'))
+							||
+							(!ret && (tagname == 'ifnotdef'))
+						) {
+							jQuery(h).find(key).filter(function(i) {
+								return (tag.text() === jQuery(this).text());
+							}).replaceWith(tag.text());
+						} else {
+							jQuery(h).find(key).remove();
+						}
+						break;
+				}
+            });
+            
+            return jQuery(h).find('body').html().trim();
         };
         // --------------------------------------------------------------------------------
         // helpers
@@ -593,6 +597,14 @@ var caUI = caUI || {};
                 if (num < 0) {
                     num *= -1;
                 }
+                for(let f in that.fractionTable) {
+                	if (!that.useUnicodeFractionGlyphsFor || that.useUnicodeFractionGlyphsFor.indexOf(f) === -1) { continue; }
+                	let v = that.fractionTable[f];
+                	
+                	if(v == frac) {
+                		frac = f;
+                	}
+                }
                 return "" + i + " " + frac + (includeUnits ? " in" : "");
             }
 
@@ -684,6 +696,51 @@ var caUI = caUI || {};
             return template.match(that.tagRegex);
         };
         // --------------------------------------------------------------------------------
+        //
+        that.evaluateCode = function(tag, values) {
+        	let code_str = tag.attr('code');
+			let codes = code_str ? code_str.split(/[;,\|\&]+/g) : [];
+			let bools = code_str.match(/[;,\|\&]+/g);
+			let ret = null;
+			for(let x in codes) {
+				let code = codes[x];
+				let fieldVal;
+				if(!values[code]) { continue; }
+				
+				if(values[code].match(/^#/)) {
+					fieldVal = jQuery(values[code]).val();
+				} else {
+					fieldVal = that.processTemplate(values[code], values);
+				}
+				let tagVal = tag.html();
+				let bool = (x > 0) ? that.convertBoolean(bools[x-1]) : null;
+				let bv = fieldVal && (fieldVal.length > 0);
+				
+				if(ret == null) {
+					ret = bv;
+				} else if(bool === 'AND') {
+					ret = ret & bv;
+				} else {
+					ret = ret | bv;
+				}
+			} 
+			return ret;
+        };
+        // --------------------------------------------------------------------------------
+        //
+        that.convertBoolean = function(bool) {
+        	switch(bool) {
+        		case ';':
+        		case ',':
+        		case '&':
+        			return 'AND';
+        			break;
+        		case '|':
+        			return 'OR';
+        	}
+        	return null;
+        }
+        // --------------------------------------------------------------------------------
         // Process generate templates with caret-prefixed values. Eg. template is
         // "^title (^idno)"
         //
@@ -691,7 +748,7 @@ var caUI = caUI || {};
         //
         // { 'title': 'City of Quartz', 'idno': '2004.001' }
         //
-        // Currently the only formatting tag construct support is <ifdef code=''>...</ifdef>
+        // Currently the only formatting tag construct support are <ifdef> and <ifnotdef>. Eg. <ifdef code='...'>...</ifdef>
         //
         that.processTemplate = function(template, values) {
         	var tagList = template.match(that.tagRegex);
@@ -709,6 +766,15 @@ var caUI = caUI || {};
            				
            			} else {
            				tp.find("ifdef[code=" + tagRoot + "]").remove();
+           			}
+           			
+           			if (!values[tagRoot] || (values[tagRoot].length == 0)) {
+           				jQuery.each(tp.find("ifnotdef[code=" + tagRoot + "]"), function(k, v) {
+							jQuery(v).replaceWith(jQuery(v).html());
+						});
+           				
+           			} else {
+           				tp.find("ifnotdef[code=" + tagRoot + "]").remove();
            			}
            		});
            		var str = tp.html();

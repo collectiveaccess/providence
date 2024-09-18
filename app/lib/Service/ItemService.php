@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class ItemService extends BaseJSONService {
+	# -------------------------------------------------------
+	protected $opo_app_plugin_manager = null;
+	
 	# -------------------------------------------------------
 	public function __construct($po_request, $ps_table="") {
 		parent::__construct($po_request, $ps_table);
@@ -920,7 +918,7 @@ class ItemService extends BaseJSONService {
         }
         
         // Set ACL for newly created record
-		if ($t_instance->getAppConfig()->get('perform_item_level_access_checking') && !$t_instance->getAppConfig()->get("{$ps_table}_dont_do_item_level_access_control")) {
+		if (caACLIsEnabled($t_instance)) {
 			$t_instance->setACLUsers(array($this->opo_request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
 			$t_instance->setACLWorldAccess($t_instance->getAppConfig()->get('default_item_access_level'));
 		}
@@ -963,7 +961,7 @@ class ItemService extends BaseJSONService {
 			}
 		} else if ($va_post["remove_all_attributes"]) {
 			$t_instance->removeAttributes();
-		} else if ($pa_data["purge_all_attributes"]) {
+		} else if ($va_post["purge_all_attributes"]) {
 			$t_instance->purgeAttributes();
 		}
 

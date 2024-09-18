@@ -50,7 +50,7 @@ class StatisticsAggregator {
 	static public function fetch(?array $options=null) {
 		$restrict_to_sites = caGetOption('sites', $options, null);
 		if(!is_null($restrict_to_sites) && !is_array($restrict_to_sites)) { $restrict_to_sites = [$restrict_to_sites]; }
-		$sites = self::getSites();
+		$sites = self::getSites(['all' => true]);
 		
 		$stats_data = [];
 		foreach($sites as $k => $site_info) {
@@ -107,7 +107,7 @@ class StatisticsAggregator {
 	 *
 	 * @return array Data or null if site is not found
 	 */
-	static public function getDataForsite($site) {
+	static public function getDataForSite($site) {
 		$data = PersistentCache::fetch('site_statistics', 'statistics');
 		
 		return is_array($data[$site]) ? $data[$site] : null;
@@ -118,10 +118,18 @@ class StatisticsAggregator {
 	 *
 	 * @return array List of sites
 	 */
-	static public function getSites() {
+	static public function getSites(?array $options=null) : array {
 		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
 		if (!is_array($sites = $config->getAssoc('sites'))) {
 			return null;
+		}
+		
+		if(caGetOption('all', $options, false)) { return $sites; }
+		
+		$data = PersistentCache::fetch('site_statistics', 'statistics');
+		
+		foreach($sites as $site => $site_info) {	// filter sites without data
+			if(!isset($data[$site])) { unset($sites[$site]); }
 		}
 		return $sites;
 	}

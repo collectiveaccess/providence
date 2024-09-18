@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2022 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,23 +29,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-  define("__CA_ATTRIBUTE_VALUE_FLOORPLAN__", 31);
+define("__CA_ATTRIBUTE_VALUE_FLOORPLAN__", 31);
   
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
 
- require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
-
- global $_ca_attribute_settings;
+global $_ca_attribute_settings;
  
- $_ca_attribute_settings['FloorPlanAttributeValue'] = array(		// global
+$_ca_attribute_settings['FloorPlanAttributeValue'] = array(		// global
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
@@ -199,7 +192,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		
 		$va_viewer_opts = [
 			'id' => 'caMediaOverlayTileViewer',
-			'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
+			'viewer_width' => caGetOption('viewer_width', $pa_options['display'] ?? null, '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_options['display'] ?? null, '100%'),
 			'viewer_base_url' => $po_request->getBaseUrlPath(),
 			'annotation_load_url' => '#{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 			'annotation_save_url' => '#{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',

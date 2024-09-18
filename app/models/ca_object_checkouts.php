@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 
 /**
@@ -274,9 +269,12 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 
 	protected $FIELDS;
 	
+	/**
+	 * Cached transaction uuid
+	 */
+	protected $ops_transaction_uuid;
 	
 	
-
 	# ------------------------------------------------------
 	/**
 	 * Creates a new ca_object_checkouts instance and initialize with a new group uuid. The returned instance
@@ -392,8 +390,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			// calculate default return date
 			$ps_due_date = isset($va_checkout_config['default_checkout_date']) ? $va_checkout_config['default_checkout_date'] : null;
 		}
-		
-		$this->setMode(ACCESS_WRITE);
+
 		$this->set(array(
 			'group_uuid' => $vs_uuid,
 			'object_id' => $pn_object_id,
@@ -405,7 +402,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['checkout'])) {
 					if ($t_object->hasField($vs_attr)) {
@@ -464,26 +460,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			'return_notes' => $ps_note
 		));	
 		
-		// Do we need to set values?
-		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
-				if (!is_array($va_attr_values_by_event['checkin'])) {
-					if ($t_object->hasField($vs_attr)) {
-						// Intrinsic
-						$t_object->set($vs_attr, $va_attr_values_by_event['checkin']);
-					}
-				} else {
-					$va_attr_values['locale_id'] = $g_ui_locale_id;
-					$t_object->replaceAttribute($va_attr_values_by_event['checkin'], $vs_attr);
-				}
-				$t_object->update();
-				if($t_object->numErrors()) {
-					$this->errors = $t_object->errors;
-					if ($vb_we_set_transaction) { $o_trans->rollback(); }
-					return false;
-				}
-			}
-		} 
 		$vn_rc = $this->update();
 		
 		if ($vb_we_set_transaction) { 
@@ -533,17 +509,15 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			throw new ApplicationException(_t("Configuration for type %1 does not exist", $type_code));
 		}
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set(array(
 			'group_uuid' => $vs_uuid,
 			'object_id' => $pn_object_id,
 			'user_id' => $pn_user_id,
-			'checkout_notes' => $ps_notes
+			'checkout_notes' => $ps_note
 		));	
 		
 		// Do we need to set values?
 		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
-			$t_object->setMode(ACCESS_WRITE);
 			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
 				if (!is_array($va_attr_values_by_event['reserve'])) {
 					if ($t_object->hasField($vs_attr)) {
@@ -581,10 +555,11 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
-		$o_request = caGetOption('request', $pa_options, null);
+		$o_request = caGetOption('request', $options, null);
 		
 		$t_object = new ca_objects($object_id);
 		$t_object->setTransaction($o_trans);
@@ -1203,6 +1178,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		$va_checkouts = array();
 		if ($qr_res) {
 			while ($qr_res->nextHit()) {
+				if(!$qr_res->get('ca_objects.object_id')) { continue; }	// skip if object has been deleted
 				$va_tmp = array(
 					'checkout_id' => $qr_res->get('ca_object_checkouts.checkout_id'),
 					'group_uuid' => $qr_res->get('ca_object_checkouts.group_uuid'),

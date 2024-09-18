@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,10 +39,9 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 
 		$t_user = new ca_users();
-
 		$t_user->load(['user_name' => $ps_username]);
 
-		if($t_user->getPrimaryKey() > 0) {
+		if(($t_user->getPrimaryKey() > 0) && ($t_user->get('active') == 1) && ($t_user->get('userclass') <> 255)) {
 
 			$vs_hash = $t_user->get('password');
 			if(preg_match('/^[a-f0-9]{32}$/', $vs_hash)) { // old-style md5 passwords
@@ -50,7 +49,6 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				//throw new CaUsersException(_t('The stored password for this user seems to be in legacy format. Please update the user account by resetting the password.'));
 
 				if (md5($ps_password) == $vs_hash) { // if the md5 hash matches, authenticate successfully and move the user over to pbkdf2 key
-					$t_user->setMode(ACCESS_WRITE);
 					// ca_users::update takes care of the hashing by calling AuthenticationManager::updatePassword()
 					$t_user->set('password', $ps_password);
 					$t_user->update();

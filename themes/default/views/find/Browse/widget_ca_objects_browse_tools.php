@@ -30,7 +30,7 @@
  	$vo_result					= $this->getVar('result');
 ?>
 <h3 class='searchType' >
-	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
+	<?= _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>
 <?php
 	if($vo_result) {
@@ -40,14 +40,14 @@
 ?>
 			<div class='visualize'>
 				<div id='vizLink'>
-					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
+					<?= "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_ICON_VISUALIZE__, 2)." "._t("Visualize")."</a>"; ?>
 					<div class='clear:both;'></div>
 				</div>
 				<div id='caSearchVizOptsContainer' style="display:none;">
-					<?php print $vs_viz_list; ?>
-					<?php print "<a href='#'  onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, "18px")."</a>"; ?>
+					<?= $vs_viz_list; ?>
+					<?= "<a href='#'  onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, "18px")."</a>"; ?>
 					
-					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
 					<div class='clear'></div>
 				</div>
 

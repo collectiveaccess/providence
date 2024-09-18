@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLPlugPDFRenderer {
+class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugin Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
 	/** 
 	 *
@@ -101,6 +96,8 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 	 * @seealso wkhtmltopdf::renderFile()
 	 */
 	public function render($content, $options=null) {
+		global $file_cleanup_list;
+		
 	    // Force backtrack limit high to allow regex on very large strings
 	    // If we don't do this preg_replace will fail silently on large PDFs
 	    ini_set('pcre.backtrack_limit', '100000000');
@@ -125,7 +122,7 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 		} else {
 			$vs_page_size_arg = "--page-size {$this->ops_page_size}";
 		}
-		caExec($this->ops_wkhtmltopdf_path." --enable-local-file-access  --disable-smart-shrinking --print-media-type --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} {$vs_page_size_arg} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);
+		caExec($this->ops_wkhtmltopdf_path." --log-level none --enable-local-file-access  --disable-smart-shrinking --print-media-type --dpi 96 --encoding UTF-8 --margin-top {$this->ops_margin_top} --margin-bottom {$this->ops_margin_bottom} --margin-left {$this->ops_margin_left} --margin-right {$this->ops_margin_right} {$vs_page_size_arg} --orientation {$this->ops_page_orientation} page ".caEscapeShellArg($vs_content_path)." --header-html {$vs_header_path} --footer-html {$vs_footer_path} {$vs_output_path}", $va_output, $vn_return);
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $options, false)) {
 			header("Cache-Control: private");
@@ -134,14 +131,11 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugIn Implements IWLP
 			print $vs_pdf_content;
 		}
 		
-		@unlink($vs_content_path);
-		@unlink($vs_header_path);
-		@unlink($vs_footer_path);
+		$file_cleanup_list = array_merge($file_cleanup_list, [$vs_content_path, $vs_output_path, $vs_header_path, $vs_footer_path]);
 		
-		if($path = caGetOption('writeFile', $pa_options, false)) {
+		if($path = caGetOption('writeFile', $options, false)) {
 			copy($vs_output_path, $path);
 		}
-		@unlink($vs_output_path);
 		
 		return $vs_pdf_content;
 	}

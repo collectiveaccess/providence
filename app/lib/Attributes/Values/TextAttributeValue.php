@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_TEXT__", 1);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -52,8 +48,8 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 	'maxChars' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
-		'width' => 5, 'height' => 1,
-		'default' => 65535,
+		'width' => 10, 'height' => 1,
+		'default' => 16777216,
 		'label' => _t('Maximum number of characters'),
 		'description' => _t('The maximum number of characters to allow. Input longer than required will be rejected.')
 	),
@@ -274,7 +270,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	}
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
+		$this->ops_text_value = $pa_value_array['value_longtext1'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -373,7 +369,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_height = ((int)$vs_height * 16)."px";
 		}
 		
-		if ($va_settings['usewysiwygeditor']) {
+		if ($va_settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
 			if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 			AssetLoadManager::register("ckeditor");
@@ -413,9 +409,14 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				'height' => $vs_height, 
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
 				'maxlength' => $va_settings['maxChars'],
-				'class' => $vs_class,
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor-element" : '')
+				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".(($va_settings['usewysiwygeditor'] ?? null) ? " ckeditor-element" : '')
 			);
+		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(is_array($attributes)) { 
+			$va_opts = array_merge($attributes, $va_opts);
+		}
+			
 		if (caGetOption('readonly', $pa_options, false)) { 
 			$va_opts['disabled'] = 1;
 		}
@@ -433,7 +434,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			";
 		}
 		
-		if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] || $pa_options['isDependentValue'])) {
+		if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] ?? false || $pa_options['isDependentValue'] ?? false)) {
 			$t_element = new ca_metadata_elements($pa_element_info['element_id']);
 			$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
 			$va_element_dom_ids = array();

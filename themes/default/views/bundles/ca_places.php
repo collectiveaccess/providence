@@ -37,18 +37,20 @@ $settings 		= $this->getVar('settings');
 $add_label 		= $this->getVar('add_label');
 $rel_types		= $this->getVar('relationship_types');
 $placement_code = $this->getVar('placement_code');
-$placement_id	= (int)$settings['placement_id'];
+$placement_id	= (int)($settings['placement_id'] ?? 0);
 $batch			= $this->getVar('batch');
 
 $force_values 	= $this->getVar('forceValues');
 
-$color 			= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-$first_color 	= ((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-$last_color 	= ((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
+$color 			= caGetOption('colorItem', $settings, '');
+$first_color 	= caGetOption('colorFirstItem', $settings, '');
+$last_color 	= caGetOption('colorLastItem', $settings, '');
 
-$sort			= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_places') == __CA_BUNDLE_ACCESS_READONLY__));
-$dont_show_del	= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
+$sort				= caGetOption('sort', $settings, '');
+$allow_drag_sort 	= caGetOption('allowDragSort', $settings, false);
+
+$read_only		= (caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_places') == __CA_BUNDLE_ACCESS_READONLY__));
+$dont_show_del	= caGetOption('dontShowDeleteButton', $settings, false);
 
 $initial_values	= $this->getVar('initialValues');
 
@@ -64,11 +66,12 @@ $hier_browser_height 	= $settings['hierarchicalBrowserHeight'] ?? '200px';
 
 // params to pass during occurrence lookup
 $lookup_params = array(
-	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'types' => caGetOption(['restrict_to_types', 'restrict_to_type'], $settings, ''),
+	'noSubtypes' => caGetOption('dont_include_subtypes_in_type_restriction', $settings, false, ['castTo' => 'bool']),
 	'noInline' => (!$quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
 	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
 );
+
 
 $count = $this->getVar('relationship_count');
 $num_per_page = caGetOption('numPerPage', $settings, 10);
@@ -89,7 +92,7 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 	$errors[] = $o_error->getErrorDescription();
 }
 
-$make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, null));
+$make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null));
 ?>
 <div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -110,7 +113,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, n
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
@@ -166,7 +169,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, n
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
-	if (!(bool)$settings['useHierarchicalBrowser']) {
+	if (!(bool)($settings['useHierarchicalBrowser'] ?? null)) {
 ?>
 			<table class="caListItem">
 				<tr>
@@ -187,7 +190,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, n
 <?php
 } else {
 		$use_as_root_id = 'null';
-		if (is_array($settings['restrict_to_lists']) && (sizeof($settings['restrict_to_lists']) == 1)) {
+		if (is_array($settings['restrict_to_lists'] ?? null) && (sizeof($settings['restrict_to_lists']) == 1)) {
 			$t_item = new ca_list_items();
 			if ($t_item->load(array('list_id' => $settings['restrict_to_lists'][0], 'parent_id' => null))) {
 				$use_as_root_id = $t_item->getPrimaryKey();
@@ -227,7 +230,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, n
 						initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
 						
 						selectOnLoad : true,
-						browserWidth: "<?= $settings['hierarchicalBrowserWidth']; ?>",
+						browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? 0; ?>",
 						
 						dontAllowEditForFirstLevel: false,
 						
@@ -359,6 +362,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, n
 		
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= $id_prefix; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
+			formName: '<?= $this->getVar('id_prefix'); ?>',
 			templateValues: ['label', 'id', 'type_id', 'typename', 'idno', 'label', 'idno_sort'],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
@@ -376,18 +380,18 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $va_settings, n
 			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_places_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'Get', $lookup_params); ?>',
-			types: <?= json_encode($settings['restrict_to_types']); ?>,
-			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point']); ?>,
-			restrictToSearch: <?= json_encode($settings['restrict_to_search']); ?>,
+			types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
+			restrictToAccessPoint: <?= json_encode($settings['restrict_to_access_point'] ?? null); ?>,
+			restrictToSearch: <?= json_encode($settings['restrict_to_search'] ?? null); ?>,
 			bundlePreview: <?= caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			isSortable: <?= ($read_only || $sort) ? "false" : "true"; ?>,
+			isSortable: <?= ($allow_drag_sort ? "true" : "false"); ?>,
 			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel,div.listRel',
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'], 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields']))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

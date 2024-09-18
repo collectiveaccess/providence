@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
  */
 	AssetLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Media import processing status'); ?></h1>
+<h1><?= _t('Media import processing status'); ?></h1>
 
 <div class="batchProcessingTableProgressGroup">
 	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
@@ -44,7 +44,7 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Perform another media import'), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra()); ?>
+	<?= caNavLink($this->request, _t('Perform another media import'), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra()); ?>
 </div>
 	
 <script type="text/javascript">
@@ -125,7 +125,7 @@
 		}
 		print "<script type='text/javascript'>";
 		print "jQuery('#batchProcessingMediaPreview').hide();";
-		print "jQuery('#batchProcessingReport').html('".addslashes($vs_buf)."').fadeIn(300);"; 
+		print "jQuery('#batchProcessingReport').html(".json_encode($vs_buf).").fadeIn(300);"; 
 		print "jQuery('#batchProcessingMore').fadeIn(300);"; 
 		print "</script>";
 		caFlushOutput();

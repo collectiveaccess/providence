@@ -42,13 +42,13 @@ if($vo_result && $this->request->config->get('ca_objects_map_attribute')){
 		if($va_map_stats['items'] < $vn_num_hits){
 ?>
 			<script type="text/javascript">
-				jQuery('div.searchNav').html('<?php print _t("%1 of %2 results have been mapped.  To see all results chose a different display.", $va_map_stats['items'], $vn_num_hits)."</div>"; ?>');
+				jQuery('div.searchNav').html('<?= _t("%1 of %2 results have been mapped.  To see all results chose a different display.", $va_map_stats['items'], $vn_num_hits)."</div>"; ?>');
 			</script>
 <?php
 		} else {
 ?>
 			<script type="text/javascript">
-				jQuery('div.searchNav').html('<?php print _t("Found %1 results.", $va_map_stats['items'])."</div>"; ?>');
+				jQuery('div.searchNav').html('<?= _t("Found %1 results.", $va_map_stats['items'])."</div>"; ?>');
 			</script>
 <?php		
 		}
@@ -56,7 +56,7 @@ if($vo_result && $this->request->config->get('ca_objects_map_attribute')){
 	} else {
 ?>
 	<div>
-		<?php print _t('It is not possible to show a map of the results because none of the items found have map coordinates.'); ?>
+		<?= _t('It is not possible to show a map of the results because none of the items found have map coordinates.'); ?>
 	</div>
 <?php
 	}

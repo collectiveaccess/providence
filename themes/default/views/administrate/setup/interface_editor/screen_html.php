@@ -49,8 +49,8 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='editor_type' value='<?php print $t_subject->get('editor_type'); ?>'/>
-			<input type='hidden' name='ui_id' value='<?php print $vn_subject_id; ?>'/>
+			<input type='hidden' name='editor_type' value='<?= $t_subject->get('editor_type'); ?>'/>
+			<input type='hidden' name='ui_id' value='<?= $vn_subject_id; ?>'/>
 		</form>
 	</div>
 

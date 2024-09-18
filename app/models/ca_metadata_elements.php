@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/ITakesSettings.php');
 require_once(__CA_LIB_DIR__.'/LabelableBaseModelWithAttributes.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata element'),
@@ -240,6 +233,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @var array
 	 */
 	protected $opa_element_settings = array();
+	
+	/**
+	 * ApplicationVars instance
+	 */
+	protected $opo_app_vars;
 
 	# ------------------------------------------------------
 	# --- Constructor
@@ -273,7 +271,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->opa_element_settings = $this->get('settings');
 		
 		// Set data type default values if no setting value is present
-		if ($o_value = Attribute::getValueInstance($this->get('datatype'))) {
+		if ($o_value = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'))) {
 			$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
 		
 			foreach($available_settings as $setting => $setting_info) {
@@ -473,6 +471,24 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	        return false;
 	    }));
 	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Get all field values of the current element. This overrides the default implementation
+	 * in BaseModel to ensure that all element settings - including type-specific settings - are
+	 * present in the returned array.
+	 *
+	 * @see BaseModel::getChangedFieldValuesArray()
+	 * @return array associative array: field name => field value
+	 */
+	public function getFieldValuesArray($include_unset_fields=false) {
+		$field_values = parent::getFieldValuesArray($include_unset_fields);
+		
+		$settings = $this->getSettings();
+		if(is_array($settings)) {
+			$field_values['settings'] = $settings;
+		}
+		return $field_values;
+	}
 	# ------------------------------------------------------
 	# Settings
 	# ------------------------------------------------------
@@ -482,7 +498,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * info about the setting itself (label, description type of value, how to display an entry element for the setting in a form)
 	 */
 	public function getAvailableSettings() {
-		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
+		$t_attr_val = \CA\Attributes\Attribute::getValueInstance((int)$this->get('datatype'));
 		$va_element_info = $this->getFieldValuesArray();
 		$va_element_info['settings'] = $this->getSettings();
 		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
@@ -511,7 +527,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			CompositeCache::delete('available_sorts');
 		}
 
-		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
+		$o_value_instance = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
 		if (!$o_value_instance->validateSetting($this->getFieldValuesArray(), $ps_setting, $pm_value, $vs_error)) {
 			$ps_error = $vs_error;
@@ -1276,6 +1292,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
 			$vm_return = (int)$t_element->get('datatype');
+		} else {
+			return null;
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
@@ -1346,7 +1364,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
 		$types = self::getAttributeTypes();
 	
-		if (isset($types[$datatype]) && ($value = Attribute::getValueInstance($datatype, [], true))) {
+		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true))) {
 			$s = $value->sortField();
 			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
 			return $s;
@@ -1368,7 +1386,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
 		$settings = self::getElementSettingsForId($pm_element_code_or_id);
-		if ($attr_value = Attribute::getValueInstance($datatype, [], true)) {
+		if ($attr_value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true)) {
 			return $attr_value->sortableValue($value, $settings);
 		}
 		return null;
@@ -1569,13 +1587,51 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vm_return = null;
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
 			//$vm_return = (int) $t_element->get('datatype');
-			$default_setting_name = Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
+			$default_setting_name = \CA\Attributes\Attribute::getValueDefaultSettingForDatatype(ca_metadata_elements::getDataTypeForElementCode($pm_element_code_or_id));
 		    $settings = ca_metadata_elements::getElementSettingsForId($pm_element_code_or_id);
 		    $vm_return = isset($settings[$default_setting_name]) ? $settings[$default_setting_name] : null;
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDefaultValues');
 		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string|int $table
+	 * @param string|int $element_code_or_id
+	 * @return bool
+	 */
+	static public function elementIsApplicableToType($table, array $types, $element_code_or_id) : bool {
+		$cache_key = caMakeCacheKeyFromOptions($types, $table.$element_code_or_id);
+		if(CompositeCache::contains($cache_key, 'ElementApplicability')) {
+			return CompositeCache::fetch($cache_key, 'ElementApplicability');
+		}
+		if(!$element_code_or_id) {  return false; }
+		if(!($t_element = self::getInstance($element_code_or_id))) { 
+			CompositeCache::save($cache_key, false, 'ElementApplicability');
+			return false; 
+		}
+		$table_num = Datamodel::getTableNum($table);
+	
+		$type_res_list = $t_element->getTypeRestrictions($table_num);
+		if(is_array($type_res_list)) {
+			foreach($type_res_list as $type_res) {
+				if($type_res['table_num'] != $table_num) { continue; }
+				
+				if(!$type_res['type_id']) { 
+					CompositeCache::save($cache_key, true, 'ElementApplicability');
+					return true; 
+				}
+				if(in_array($type_res['type_id'], $types)) { 
+					CompositeCache::save($cache_key, true, 'ElementApplicability');
+					return true; 
+				}
+			}
+		}
+		CompositeCache::save($cache_key, false, 'ElementApplicability');
+		return false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1636,6 +1692,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$this->errors = $t_restriction->errors();
 			return false;
 		}
+		CompositeCache::flush('ElementApplicability');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1662,6 +1719,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$this->errors = $o_db->errors();
 			return false;
 		}
+		CompositeCache::flush('ElementApplicability');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1685,6 +1743,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$this->errors = $o_db->errors();
 			return false;
 		}
+		CompositeCache::flush('ElementApplicability');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1704,21 +1763,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
 		}
 		
+		$params = [(int)$vn_element_id];
+		
 		$o_db = $this->getDb();
 
 		$vs_table_type_sql = '';
 		if ($pn_table_num > 0) {
-			$vs_table_type_sql .= ' AND table_num = '.intval($pn_table_num);
+			$vs_table_type_sql .= ' AND table_num = ?';
+			$params[] = intval($pn_table_num);
 		}
 		if ($pn_type_id > 0) {
-			$vs_table_type_sql .= ' AND type_id = '.intval($pn_type_id);
+			$vs_table_type_sql .= ' AND (type_id IN (?) OR type_id IS NULL)';
+			$params[] = (is_array($types_ids)) ? $type_ids : [$type_id];
 		}
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_metadata_type_restrictions
 			WHERE
 				element_id = ? {$vs_table_type_sql}
-		", (int)$vn_element_id);
+		", $params);
 
 		if ($o_db->numErrors()) {
 			$this->errors = $o_db->errors();
@@ -1849,6 +1912,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vs_format = str_replace('^EXTRA', '', $vs_format);
 
 			$vs_format = str_replace('^ELEMENT', caHTMLSelect($ps_field, $va_opts, array('id' => $ps_field), array('value' => $this->get('list_id'))), $vs_format);
+			$vs_format = str_replace('^BUNDLECODE', '', $vs_format);
 
 			if (!isset($pa_options['no_tooltips']) || !$pa_options['no_tooltips']) {
 				TooltipManager::add('#list_id', "<h3>{$vs_field_label}</h3>".$this->getFieldInfo('list_id', 'DESCRIPTION'), $pa_options['tooltip_namespace'] ?? null);

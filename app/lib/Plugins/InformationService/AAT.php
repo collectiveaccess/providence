@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php" );
 require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/BaseGettyLODServicePlugin.php" );
 
@@ -46,6 +45,14 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	 */
 	public function __construct() {
 		global $g_information_service_settings_AAT;
+		$g_information_service_settings_AAT['limitToHierarchy'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Limit to hierarchy'),
+			'description' => _t('Limit results to one or more AAT sub-hierarchies. Enter numeric AAT identifiers (Eg. 300111079) for the root of the sub-hierarchy. Separate multiple AAT identifiers with semicolons or commas. Only terms under the specified root AAT terms will be returned.')
+		];
 		$g_information_service_settings_AAT['additionalFilter'] = [
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -152,13 +159,26 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
 		$vs_additional_filter = $pa_options['settings']['additionalFilter'] ?? null;
+		$limit_to_hierarchy = $pa_options['settings']['limitToHierarchy'] ?? null;
 		$lang_select = $lang_filter = null;
 		if($lang = ($pa_options['settings']['language'] ?? null)) {
 			$lang = substr($lang, 0, 2);
 			$lang_select = "?skosLabel";
-			$lang_filter = "skos:prefLabel ?skosLabel . filter(lang(?skosLabel) = '{$lang}')";
+			$lang_filter = "skos:prefLabel ?skosLabel . filter strstarts(lang(?skosLabel), '{$lang}')";
 		}
-		
+		if($limit_to_hierarchy) {
+			$ids = preg_split('/[;,]/', $limit_to_hierarchy);
+			$ids = array_map(function($v) {
+				return 'aat:'.(int)$v;
+			}, array_filter($ids, function($v) {
+				return (int)$v;
+			}));
+			if(sizeof($ids)) {
+				$limit_to_hierarchy = "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (".join(', ', $ids)."))";
+			} else {
+				$limit_to_hierarchy = null;
+			}
+		}
 		if ($vs_additional_filter){
 			$vs_additional_filter = "$vs_additional_filter ;";
 		}
@@ -173,9 +193,9 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 	 ' . $vs_sparql_suffix . '
+	 ' . $limit_to_hierarchy. '
 	} 	ORDER BY ?' . $vs_order_by . '
 		LIMIT ' . $pa_params['limit'] );
-		
 		return $vs_query;
 	}
 

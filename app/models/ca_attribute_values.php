@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
 require_once(__CA_MODELS_DIR__.'/ca_attribute_value_multifiles.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
  	'NAME_SINGULAR' 	=> _t('attribute value'),
@@ -253,14 +247,14 @@ class ca_attribute_values extends BaseModel {
 		$this->clear();
 		
 		$t_element = ca_attributes::getElementInstance($pa_element_info['element_id']);
+		$pa_element_info['settings'] = $t_element->getSettings(); // make sure all element settings arent present in the element info array
 		
 		if ($this->inTransaction()) { $pa_options['transaction'] = $this->getTransaction(); }
 		
-		$this->setMode(ACCESS_WRITE);
 		$this->set('attribute_id', $pn_attribute_id);
 		$this->set('element_id', $pa_element_info['element_id']);
 		
-		$o_attr_value = Attribute::getValueInstance($pa_element_info['datatype']);
+		$o_attr_value = \CA\Attributes\Attribute::getValueInstance($pa_element_info['datatype']);
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
@@ -284,8 +278,7 @@ class ca_attribute_values extends BaseModel {
                     }
                 }
             }
-		
-		
+            
 			$this->useBlobAsFileField(false);
 			if (!$o_attr_value->numErrors()) {
 				foreach($va_values as $vs_key => $vs_val) {
@@ -339,7 +332,8 @@ class ca_attribute_values extends BaseModel {
 		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$pa_element_info = $t_element->getFieldValuesArray();
 		
-		$o_attr_value = Attribute::getValueInstance($t_element->get('datatype'));
+		$o_attr_value = \CA\Attributes\Attribute::getValueInstance($t_element->get('datatype'));
+		
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
 
@@ -429,7 +423,7 @@ class ca_attribute_values extends BaseModel {
 		$this->FIELDS['value_blob']['FIELD_TYPE'] = ($pb_setting) ? FT_FILE : FT_TEXT;
 		// We have to deserialize the FT_FILE info array ourselves since when we loaded the attribute value model
 		// BaseModel didn't know it was an FT_FILE field
-		$this->_FIELD_VALUES['value_blob'] = caUnserializeForDatabase($this->_FIELD_VALUES['value_blob']);
+		$this->_FIELD_VALUES['value_blob'] = caUnserializeForDatabase($this->_FIELD_VALUES['value_blob'] ?? null);
 	}
 	# ------------------------------------------------------
 	/**
@@ -479,7 +473,6 @@ class ca_attribute_values extends BaseModel {
  				return null;
  			}
  		}
- 		$t_multifile->setMode(ACCESS_WRITE);
  		$t_multifile->set('value_id', $this->getPrimaryKey());
  		$t_multifile->set('media', $ps_filepath);
  		$t_multifile->set('resource_path', $ps_resource_path);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2021 Whirl-i-Gig
+ * Copyright 2004-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -205,6 +205,7 @@ class TimecodeParser {
 	 *		COLON_DELIMITED = hh:mm:ss (Ex. 3:30:05); "delimited" and "colon" may also be used to select this format.
 	 *		HOURS_MINUTES_SECONDS = h m s (Ex. 3h 30m 5s); "hms" and "time" may also be used to select this format.
 	 *		HOURS_MINUTES = h m (Ex. 3h 30m); "hm" may also be used to select this format.
+	 *		VTT = timestamp format for VTT subtitle files.
 	 * @param array $pa_options Options include:
 	 *		blankOnZero = Return blank if timecode value is zero seconds. [Default is false]
 	 *		noFractionalSeconds = Return seconds value as whole number, truncating decimals. [Default is false]
@@ -235,13 +236,24 @@ class TimecodeParser {
 				break;
 			case 'raw':
 				$ps_format = 'RAW';
+			case 'vtt':
+				$ps_format = 'VTT';
+				break;
+			case 'hours_minutes_seconds_long':
+				$ps_format = 'HOURS_MINUTES_SECONDS_LONG';
+				break;
+			case 'hours_minutes_long':
+				$ps_format = 'HOURS_MINUTES_LONG';
 				break;
 		}
 		
 		switch($ps_format) {
 			case 'COLON_DELIMITED':
 			case 'HOURS_MINUTES_SECONDS':
+			case 'HOURS_MINUTES_SECONDS_LONG':
 			case 'HOURS_MINUTES':
+			case 'HOURS_MINUTES_LONG':
+			case 'VTT':
 				$vn_time_in_seconds = (float)$this->opn_parsed_value_in_seconds;
 				
 				if (!$vn_time_in_seconds && $pb_blank_on_zero) {
@@ -268,12 +280,24 @@ class TimecodeParser {
 							}
 							return $vn_hours.":".sprintf("%02d", $vn_minutes).($pb_omit_seconds ? '' : ":".$vs_seconds);
 							break;
+						case 'VTT':
+							$vs_seconds = sprintf("%06.3f", $vn_seconds);
+							return sprintf("%02d", $vn_hours).":".sprintf("%02d", $vn_minutes).($pb_omit_seconds ? '' : ":".$vs_seconds);
+							break;
+						case 'HOURS_MINUTES_LONG':
+							return (($vn_hours > 0) ? "{$vn_hours} hr " : '').(($vn_minutes > 0) ? "{$vn_minutes} min " : '');
+							break;
+						case 'HOURS_MINUTES_SECONDS_LONG':
+							$vs_seconds = (((int)$vn_seconds != (float)$vn_seconds) || $pb_no_fractional_seconds) ? sprintf("%02.1f", $vn_seconds) : (int)$vn_seconds;
+							return  trim((($vn_hours > 0) ? "{$vn_hours} hr " : '').(($vn_minutes > 0) ? "{$vn_minutes} min " : '').($pb_omit_seconds ? '' : "{$vs_seconds} sec"));
+							break;
 						case 'HOURS_MINUTES':
 							return (($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '');
 							break;
 						case 'HOURS_MINUTES_SECONDS':
 						default:
-							return  trim((($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '').($pb_omit_seconds ? '' : sprintf("%02.1f", $vn_seconds)."s"));
+							$vs_seconds = (((int)$vn_seconds != (float)$vn_seconds) || $pb_no_fractional_seconds) ? sprintf("%02.1f", $vn_seconds) : (int)$vn_seconds;
+							return  trim((($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '').($pb_omit_seconds ? '' : "{$vs_seconds}s"));
 							break;
 					}
 				}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2016 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,7 +65,6 @@
  			$this->view->setVar('daterange', $ps_daterange);
  			
  			// process user lists
- 			
  			foreach(array(
  				'checkoutUserList' => 'checkout_user_list',
  				'checkinUserList' => 'checkin_user_list',
@@ -83,6 +82,27 @@
 					}
 				}
 				$this->view->setVar($vs_var_name, $va_user_list);
+			}
+			
+			// process item lists
+ 			foreach(array(
+ 				'returnConfirmationList' => 'return_confirmation_list',
+ 			) as $stat_key => $var_name) {
+ 				$item_list = [];
+				$c = 0;
+				$item_ids = array_map(function($v) { return $v['object_id'] ?? null; }, $va_stats[$stat_key]);
+				if(is_array($item_ids) && sizeof($item_ids)) {
+					$qr_items = caMakeSearchResult('ca_objects', $item_ids);
+					while($qr_items->nextHit()) {
+						$item_list[] = caEditorLink($this->request, $qr_items->get('ca_objects.preferred_labels').' ('.$qr_items->get('ca_objects.idno').')', '', 'ca_objects', $qr_items->getPrimaryKey()); //"<a href='#' class='caLibraryUserLink' data-object_id='".caEditorL$va_user['object_id']."'>".trim($va_user['object_id'])."</a>"; 
+						$c++;
+						if ($c >= 100) {
+							$item_list[] = _t(' and %1 more', sizeof($va_stats[$stat_key]) - $c);
+							break;
+						}
+					}
+				}
+				$this->view->setVar($var_name, $item_list);
 			}
 			
 			$this->view->setVar('panels', $va_panels = is_array($va_dashboard_config['panels']) ? $va_dashboard_config['panels'] : array());
@@ -112,6 +132,9 @@
 					case 'reserve':
 						$va_object_ids = ca_object_checkouts::getObjectIDsForReservations();
 						break;
+					case 'return_confirmations':
+						$va_object_ids = ca_object_checkouts::getObjectIDsForReturnConfirmations();
+						break;
 					case 'checkout':
 					default:
 						$va_object_ids = ca_object_checkouts::getObjectIDsForOutstandingCheckouts($ps_daterange);
@@ -136,13 +159,12 @@
 							
 							break;
 						} else {
-							$va_count['?']++;
+							$va_counts['?']++;
 						}
 					}
 				}
 				$this->view->setVar("panel_{$vs_panel}", $va_counts);
 			}
-			
  			
  			$this->render('dashboard/index_html.php');
  		}

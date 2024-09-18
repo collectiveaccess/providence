@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
  /**
   * Methods for relationship models that include an is_primary flag
   */
-  
- 
 trait SearchResultsRepresentableTrait {
 	# -------------------------------------
 	static $s_table_names = [];
@@ -71,9 +68,40 @@ trait SearchResultsRepresentableTrait {
 	}
 	# -------------------------------------
 	/**
+	 * Set if primary representations are filtered from returned results
+	 *
+	 * @param bool $filter If true primary representations will be filtered from returned results
+	 * @return bool Always returns true
+	 */
+	public function filterPrimaryRepresentations($filter) {
+	   if(!($table = $this->_getLinkingTableName())) { return false; }
+		
+		if ($filter) {
+			$criteria = ["{$table}.is_primary = 0", 'ca_object_representations.deleted = 0'];
+		} else {
+			$criteria = ['ca_object_representations.deleted = 0'];
+		}
+		$this->opa_tables['ca_object_representations'] = [
+			'fieldList' => ['ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype', 'ca_object_representations.original_filename'],
+			'joinTables' => [$table],
+			'criteria' => $criteria
+		];
+		
+		if($filter) {
+			$this->opa_tables[$table] = [
+				'fieldList' => ["{$table}.relation_id", "{$table}.is_primary"],
+				'joinTables' => [],
+				'criteria' => ["{$table}.is_primary = 0"]
+			];
+		}
+		
+		return true;
+	}
+	# -------------------------------------
+	/**
 	 * Set if non-primary representations are filtered from returned results
 	 *
-	 * @param bool $filter IF true non primary representations will be filtered from returned results
+	 * @param bool $filter If true non primary representations will be filtered from returned results
 	 * @return bool Always returns true
 	 */
 	public function filterNonPrimaryRepresentations($filter) {
@@ -96,6 +124,8 @@ trait SearchResultsRepresentableTrait {
 				'joinTables' => [],
 				'criteria' => ["{$table}.is_primary = 1"]
 			];
+		} else {
+			unset($this->opa_tables[$table]);
 		}
 		
 		return true;

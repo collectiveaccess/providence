@@ -30,7 +30,7 @@
 	$vn_unmoderated_tag_count = $this->getVar('unmoderated_tag_count');
 	$vn_total_tag_count = $this->getVar('total_tag_count');
 ?>
-	<h3 class='tags'><?php print _t('User tags'); ?>:
+	<h3 class='tags'><?= _t('User tags'); ?>:
 	<div><?php
 			if ($vn_unmoderated_tag_count == 1) {
 				print _t("1 tagging needs moderation");

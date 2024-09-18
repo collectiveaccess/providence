@@ -1,0 +1,36 @@
+Options -Indexes
+Order allow,deny
+Allow from all
+
+<FilesMatch ".*\.[A-Za-z0-9]+">
+	Deny from all
+</FilesMatch>
+<FilesMatch "^(index\.php)?$">
+        Allow from all
+</FilesMatch>
+
+
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	
+	<IfModule mod_env.c>
+		SetEnv HTTP_MOD_REWRITE On
+	</IfModule>
+	
+	RewriteRule "(^|/)\.(?!well-known\/)" - [F]
+	
+	# Pass all requests not referring directly 
+	# to files in the filesystem to index.php.
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_URI} !=/favicon.ico
+	RewriteCond %{REQUEST_URI} !=/server-status
+	RewriteCond %{REQUEST_URI} !=/robots.txt
+	RewriteRule ^ index.php%{REQUEST_URI} [L]	
+
+	# Block all TRACE/TRACK requests
+	RewriteCond %{REQUEST_METHOD} ^TRAC[EK]
+	RewriteRule .* - [F]
+
+
+</IfModule>

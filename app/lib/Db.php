@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2022 Whirl-i-Gig
+ * Copyright 2006-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,12 +28,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
- /**
-  *
-  */
- 
+ */ 
 require_once(__CA_LIB_DIR__."/Db/DbBase.php");
 require_once(__CA_LIB_DIR__."/Db/DbStatement.php");
 require_once(__CA_LIB_DIR__."/Db/DbResult.php");
@@ -45,7 +40,6 @@ require_once(__CA_LIB_DIR__."/Configuration.php");
  * Provides an abstracted interface to SQL databases.
  */
 class Db extends DbBase {
-
 	/**
 	 * Instance of the database driver
 	 *
@@ -94,6 +88,13 @@ class Db extends DbBase {
 				"password" => 	$this->config->get("db_password"),
 				"host" =>	 	$this->config->get("db_host"),
 				"database" =>	$this->config->get("db_database"),
+				"port" =>		$this->config->get("db_port"),
+				"use_ssl" =>	$this->config->get("db_use_ssl"),
+				"ssl_verify_cert" => $this->config->get("db_ssl_verify_cert"),
+				"ssl_key" => $this->config->get("db_ssl_key"),
+				"ssl_certificate" => $this->config->get("db_ssl_certificate"),
+				"ssl_ca_certificate" => $this->config->get("db_ssl_ca_certificate"),
+				"ssl_ca_path" => $this->config->get("db_ssl_ca_path"),
 				"type" =>		$this->config->get("db_type")
 			));
 		}
@@ -115,6 +116,13 @@ class Db extends DbBase {
 				"password" => 	$this->config->get("db_password"),
 				"host" =>	 	$this->config->get("db_host"),
 				"database" =>	$this->config->get("db_database"),
+				"port" =>		$this->config->get("db_port"),
+				"use_ssl" =>	$this->config->get("db_use_ssl"),
+				"ssl_verify_cert" => $this->config->get("db_ssl_verify_cert"),
+				"ssl_key" => $this->config->get("db_ssl_key"),
+				"ssl_certificate" => $this->config->get("db_ssl_certificate"),
+				"ssl_ca_certificate" => $this->config->get("db_ssl_ca_certificate"),
+				"ssl_ca_path" => $this->config->get("db_ssl_ca_path"),
 				"type" =>		$this->config->get("db_type")
 			);
 		}
@@ -146,7 +154,15 @@ class Db extends DbBase {
 			return true;
 		}
 	}
-
+	/**
+	 * Disconnect
+	 *
+	 * @return Bool
+	 */
+	public function disconnect() {
+		return $this->opo_db->disconnect();
+	}
+	
 	/**
 	 * Fetches the Configuration object.
 	 *

@@ -57,7 +57,7 @@
 ?>
 <script type="text/javascript">
 	function caUpdateFacetDisplay(grouping) {
-		caUIBrowsePanel.showBrowsePanel('<?php print $vs_facet_name; ?>', <?php print ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?php print ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
+		caUIBrowsePanel.showBrowsePanel('<?= $vs_facet_name; ?>', <?= ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?= ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
 	}
 </script>
 <div style="float: right;" id='browseFacetGroupingControls'>
@@ -71,7 +71,7 @@
 	}
 ?>
 </div>
-<h2><?php print caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+<h2><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
 
 
 <div class="browseSelectPanelContentArea">

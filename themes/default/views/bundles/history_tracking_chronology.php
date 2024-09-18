@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,60 +25,67 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$subject_table				= $t_subject->tableName();
-	
-	$settings 					= $this->getVar('settings');
+$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 
-	$read_only					= (isset($settings['readonly']) && $settings['readonly']);
-	$bundle_name				= $this->getVar('bundle_name');
-	
-	$history					= $this->getVar('history');
-	$current_value 				= $t_subject->getCurrentValue();
-	
-	$show_return_home_controls = false;
-	if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
-		$show_return_home_controls = true;
-	}
+$t_subject					= $this->getVar('t_subject');
+$subject_table				= $t_subject->tableName();
 
-	$vs_relationship_type		= $this->getVar('location_relationship_type');
-	$vs_change_location_url		= $this->getVar('location_change_url');
-	
-	$occ_types  				= $this->getVar('occurrence_types');
-	$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));
-	
-	$coll_types  				= $this->getVar('collection_types');
-	$coll_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $coll_types));
-	
-	$entity_types  				= $this->getVar('entity_types');
-	$entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $entity_types));
-	
-	$policy  					= $this->getVar('policy');
-	$policy_info  				= $this->getVar('policy_info');
-	
-	$display_mode 				= caGetOption('displayMode', $settings, null);
-	
-	$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
-	$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
-	
-	
-	$home_location_idno = null;
-	if ($t_subject->hasField('home_location_id')) {
-		$t_location = ca_storage_locations::find($t_subject->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
-		$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
-	}
-	
-    if (!$this->request->isAjax()) {
-	    print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
+$settings 					= $this->getVar('settings');
+
+$read_only					= (isset($settings['readonly']) && $settings['readonly']);
+$bundle_name				= $this->getVar('bundle_name');
+
+$history					= $this->getVar('history');
+$current_value 				= $t_subject->getCurrentValue();
+
+$placement_code 			= $this->getVar('placement_code');
+$placement_id				= (int)($settings['placement_id'] ?? null);
+
+$show_return_home_controls = false;
+if($t_subject->hasField('home_location_id') && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($home_location_id = (int)$t_subject->get('home_location_id')) && (($current_value['type'] !== 'ca_storage_locations') || ((int)$current_value['id'] !== $home_location_id))) {
+	$show_return_home_controls = true;
+}
+
+$vs_relationship_type		= $this->getVar('location_relationship_type');
+$vs_change_location_url		= $this->getVar('location_change_url');
+
+$occ_types  				= $this->getVar('occurrence_types');
+$occ_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $occ_types));
+
+$coll_types  				= $this->getVar('collection_types');
+$coll_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $coll_types));
+
+$entity_types  				= $this->getVar('entity_types');
+$entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['item_id']; }, $entity_types));
+
+$policy  					= $this->getVar('policy');
+$policy_info  				= $this->getVar('policy_info');
+
+$display_mode 				= caGetOption('displayMode', $settings, null);
+
+$allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
+$allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
+
+$batch			= $this->getVar('batch');
+
+$home_location_idno = null;
+if ($t_subject->hasField('home_location_id')) {
+	$t_location = ca_storage_locations::find($t_subject->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
+	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get('ca_storage_locations_hierarchy_browser_display_settings')) : null;
+}
+
+if (!$this->request->isAjax()) {
+	if ($batch) {
+		print caBatchEditorRelationshipModeControl($t_subject, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings);
 		print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 	}
-	
-	$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
+}
+
+$show_loan_controls = $show_movement_controls = $show_location_controls = $show_object_controls = $show_occurrence_controls = $show_collection_controls = $show_entity_controls = false;
 ?>
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $vs_id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 	<div class="bundleContainer">
 			<div class="caHistoryTrackingButtonBar labelInfo">
 <?php
@@ -204,11 +211,11 @@ switch($display_mode) {
 						}, [])) && ($current_value = array_shift($current_value))) { 
 							print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($current_value['tracked_table_num']).'-'.$current_value['tracked_row_id']."' class='caHistoryTrackingCurrent' style='background-color:#".$settings['currentValueColor']."'><div class='caHistoryTrackingContent'>{$current_value['icon']} {$current_value['display']}<div class='caHistoryTrackingEntryDate'>{$current_value['date']}</div></div>";
 							
-                                if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request)) {
+                                if (!$read_only && $allow_value_interstitial_edit && ($current_value['tracked_table_num'] !== $current_value['current_table_num']) && ca_editor_uis::loadDefaultUI($current_value['tracked_table_num'], $this->request, $current_value['tracked_type_id'])) {
 ?>
                                     <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($current_value['current_table_num']); ?>" data-primary_id="<?= $current_value['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                 }
-                                if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+                                if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
                                     <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($current_value['tracked_table_num']); ?>" data-relation_id="<?= $current_value['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
                                 }
@@ -240,13 +247,13 @@ switch($display_mode) {
 										    $color = $settings['pastValueColor'];
 											break;	
 									}
-
+									
                                     print "<div id='caHistoryTrackingEntry{$vs_id_prefix}".Datamodel::getTableName($history_entry['tracked_table_num']).'-'.$history_entry['tracked_row_id']."' class='caHistoryTracking' style='background-color:#{$color}'><div class='caHistoryTrackingContent'>".$history_entry['icon'].' '.$history_entry['display']."<div class=\"caHistoryTrackingEntryDate\">{$history_entry['date']}</div></div>";
-                                    if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
+                                    if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request, $history_entry['tracked_type_id'])) {
 ?>
                                         <div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
                                     }
-                                    if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+                                    if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
                                         <div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
                                     }
@@ -286,11 +293,11 @@ switch($display_mode) {
 						<?= $history_entry['icon']; ?>
 						<div><?= $history_entry['display']; ?></div>					
 <?php
-					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request)) {
+					if (!$read_only && $allow_value_interstitial_edit && ($history_entry['tracked_table_num'] !== $history_entry['current_table_num']) && ca_editor_uis::loadDefaultUI($history_entry['tracked_table_num'], $this->request, $history_entry['tracked_type_id'])) {
 ?>
 						<div class="caHistoryTrackingEntryInterstitialEdit"><a href="#" class="caInterstitialEditButton listRelEditButton" data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"  data-primary="<?= Datamodel::getTableName($history_entry['current_table_num']); ?>" data-primary_id="<?= $history_entry['current_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a></div><?php
 					}
-					if (!$read_only && $allow_value_delete && !$vb_dont_show_del) {
+					if (!$read_only && $allow_value_delete && $allow_value_delete) {
 ?>
 						<div class="caHistoryTrackingEntryDelete"><a href="#" class="caDeleteItemButton listRelDeleteButton"  data-table="<?= Datamodel::getTableName($history_entry['tracked_table_num']); ?>" data-relation_id="<?= $history_entry['tracked_row_id']; ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div><?php
 					}
@@ -681,7 +688,7 @@ if($show_entity_controls) {
 				initialValues: [],
 				initialValueOrder: [],
 				itemID: '<?= $vs_id_prefix; ?>_ca_storage_locations_',
-				placementID: '<?= $vn_placement_id; ?>',
+				placementID: '<?= $placement_id; ?>',
 				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetLocationTemplate',
 				initialValueTemplateClassName: null,
 				itemListClassName: '<?= $vs_id_prefix; ?>caLocationList',
@@ -697,7 +704,7 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false))); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				addMode: 'prepend',
@@ -792,7 +799,7 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddLoan').on('click', function(e) {
+				jQuery('<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddLoanButton').on('click', '#<?= $vs_id_prefix; ?>AddLoan', function(e) {
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;
@@ -841,7 +848,7 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddMovement').on('click', function(e) {
+				jQuery("#<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddMovementButton").on('click', '#<?= $vs_id_prefix; ?>AddMovement', function(e) {
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_movements.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;
@@ -898,7 +905,7 @@ if($show_entity_controls) {
 				initialValues: [],
 				initialValueOrder: [],
 				itemID: '<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>_',
-				placementID: '<?= $vn_placement_id; ?>',
+				placementID: '<?= $placement_id; ?>',
 				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetOccurrenceTemplate<?= $vn_type_id; ?>',
 				initialValueTemplateClassName: null,
 				itemListClassName: '<?= $vs_id_prefix; ?>caOccurrenceList<?= $vn_type_id; ?>',
@@ -910,14 +917,14 @@ if($show_entity_controls) {
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_occurrences_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
 				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Occurrence', 'Get', array_merge($occ_lookup_params, ['types' => $vn_type_id])); ?>',
-				types: <?= json_encode($settings['restrict_to_types']); ?>,
+				types: <?= json_encode($settings['restrict_to_types'] ?? null); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
-				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
+				isSortable: false,
 				listSortOrderID: '<?= $vs_id_prefix; ?>OccurrenceBundleList',
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_occurrence_<?= $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? null))); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
@@ -931,7 +938,7 @@ if($show_entity_controls) {
 <?php
 			if(caGetOption('always_create_new_occurrence', $settings, false)) {
 ?>
-				jQuery('#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>').on('click', function(e) { 
+				jQuery('<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddOccurrenceButton<?= $vn_type_id; ?>').on('click', '#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>', function(e) { 
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;

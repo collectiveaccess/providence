@@ -17,7 +17,7 @@
 		if ($vs_widgets = $this->getVar('nav')->getHTMLWidgets()) {
 			print "<div id='widgets'>{$vs_widgets}</div><!-- end widgets -->";
 		}
-		print "<div id='leftNavSidebar'>".$this->getVar('nav')->getHTMLSideNav('sidebar')."<div class='editorBottomPadding'><!-- empty --></div></div>";
+		print "<div id='leftNavSidebar'>".$this->getVar('nav')->getHTMLSideNav('sidebar', ['hideDisabled' => !preg_match("!^editor/!", $this->request->getModulePath())])."<div class='editorBottomPadding'><!-- empty --></div></div>";
 	}
 ?>
 
@@ -26,7 +26,7 @@
 <?php
 	}
 ?>
-<div id="mainContent<?php print (in_array($this->request->getController(), array("Dashboard", "Auth"))) ? "Full" : ""; ?>">
+<div id="mainContent<?= (in_array($this->request->getController(), array("Dashboard", "Auth"))) ? "Full" : ""; ?>">
 
 <?php
 	if ($this->request->isLoggedIn() && ($this->request->user->getPreference('ui_show_breadcrumbs') == 1)) {
@@ -61,4 +61,3 @@
 <?php
 		}
 	}
-?>

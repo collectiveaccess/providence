@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-/**
- * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
- * See https://github.com/openai/whisper
- */
-
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/Media.php");
@@ -41,8 +36,11 @@ include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
-include_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 
+/**
+ * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
+ * See https://github.com/openai/whisper
+ */
 class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
 	
@@ -122,7 +120,7 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 			
 			$locale = __CA_DEFAULT_LOCALE__;
 			if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
-				caExec("{$detect_path} --input={$media_input}", $output, $return);
+				caExec("{$detect_path} --input={$media_input} --tmpdir=".__CA_APP_DIR__."/tmp", $output, $return);
 				$lang = preg_quote(join('', $output ?? []), '/');
 				if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
 					$locale = array_shift($locales);
@@ -130,7 +128,7 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 					$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
 				}
 			}
-			caExec("{$app_path} --input={$media_input} --output={$vtt_output}", $output, $return);
+			caExec("{$app_path} --input={$media_input} --output={$vtt_output} --tmpdir=".__CA_APP_DIR__."/tmp", $output, $return);
 			if($return == 0) {
 				if(!$t->addCaptionFile($vtt_output, $locale)) {
 					$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not add VTT transcription file to %1::%2: %3', $table, $id, join('; ', $t->getErrors())));

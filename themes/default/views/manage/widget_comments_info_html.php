@@ -30,7 +30,7 @@
 	$vn_unmoderated_comment_count = $this->getVar('unmoderated_comment_count');
 	$vn_total_comment_count = $this->getVar('total_comment_count');
 ?>
-	<h3 class='comments'><?php print _t('User comments'); ?>:
+	<h3 class='comments'><?= _t('User comments'); ?>:
 	<div><?php
 			if ($vn_unmoderated_comment_count == 1) {
 				print _t("1 comment needs moderation");

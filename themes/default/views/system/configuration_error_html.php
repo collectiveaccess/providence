@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 		
-if (!is_array($opa_error_messages)) {
+if (!is_array($opa_error_messages ?? null)) {
 	$opa_error_messages = self::$opa_error_messages;
 }
 ?>

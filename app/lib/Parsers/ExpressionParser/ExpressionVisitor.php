@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_APP_DIR__.'/helpers/expressionHelpers.php');
 
 use Hoa\Visitor;
@@ -43,6 +42,7 @@ class ExpressionVisitor implements Visitor\Visit {
 
 	protected $opa_functions = array();
 	protected $opa_variables = array();
+	protected $opo_app_plugin_manager = null;
 
 	public function __construct() {
 		$this->initializeFunctions();
@@ -159,6 +159,9 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * @throws Exception
 	 */
 	public function visit(Visitor\Element $po_element, &$f_handle = null, $f_eldnah  = null) {
+		$_ = null;
+		$a = null;
+		$in = null;
 		$vs_type = $po_element->getId();
 		$va_children = $po_element->getChildren();
 
@@ -392,9 +395,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$va_children[0]->accept($this, $a, $f_eldnah);
 				$parent = $po_element->getParent();
 
-				if (null === $parent ||
-					$type === $parent->getId()
-				) {
+				if (null === $parent || (null === $parent->getId())) {
 					$f_acc = function ($b) use ($a, $f_acc) {
 						if (0 === $b) {
 							throw new \RuntimeException(

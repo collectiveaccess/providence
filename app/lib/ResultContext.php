@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 class ResultContext {
 	# ------------------------------------------------------------------
 	private $opo_request;
@@ -205,7 +200,7 @@ class ResultContext {
 		if ($ps_search_expression) { return $ps_search_expression; }				// return specified search expression if passed and no display expression is available
 		
 		// Try to return display expression for current search expression if no expression has been passed as a parameter
-		if ($vs_display_expression = $va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)]) { 
+		if ($vs_display_expression = ($va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)] ?? null)) { 
 			return $vs_display_expression; 
 		}
 		
@@ -221,7 +216,6 @@ class ResultContext {
 	 */
 	public function isNewSearch($pb_is_new_search=null) {
 		if (!is_null($pb_is_new_search)) { $this->opb_is_new_search = $pb_is_new_search; }
-		if (!$this->cacheIsValid()) { return true; }
 		return $this->opb_is_new_search;
 	}
 	# ------------------------------------------------------------------
@@ -292,6 +286,29 @@ class ResultContext {
 			return sizeof($va_context['result_list'] ?? []);
 		}
 		return 0;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns a description of search results, including which fields caused the item to be included.
+	 *
+	 * @return array
+	 */
+	public function getResultDesc() : ?array {
+		if ($context = $this->getContext()) {
+			return $context['result_desc'] ?? null;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Sets the result description the current context. The result description includes matching
+	 * information from the search engine detailing which fields matched for each item in the resultset.
+	 *
+	 * @param array $result_desc 
+	 * @return array 
+	 */
+	public function setResultDesc(array $result_desc) {
+		return $this->setContextValue('result_desc', $result_desc);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -431,6 +448,7 @@ class ResultContext {
 				return ($va_context['sort'] ?? null) ? $va_context['sort'] : null;
 			}
 		} else {
+			$ps_sort = str_replace("~", "%", $ps_sort);
 			$ps_sort = str_replace("|", "/", $ps_sort);	// convert relationship type "|" separator used in web UI to "/" separator used in BaseFindEngine sort
 			$this->opb_sort_has_changed = true;
 			$this->setContextValue('sort', $ps_sort);
@@ -1341,8 +1359,9 @@ class ResultContextStorage {
 	 *
 	 */
 	static public function setVar($key, $value, $options=null) {
+		$prefix = defined('__CA_APP_TYPE__') ? __CA_APP_TYPE__ : '';
 		if (is_object(self::$storage)) {
-			return self::$storage->setVar($key, $value, $options);
+			return self::$storage->setVar($prefix.$key, $value, $options);
 		} else {
 			$s = self::$storage;
 			if (!($s = self::$storage)) { $s = 'Session'; }
@@ -1354,8 +1373,9 @@ class ResultContextStorage {
 	 *
 	 */
 	static public function getVar($key, $options=null) {
+		$prefix = defined('__CA_APP_TYPE__') ? __CA_APP_TYPE__ : '';
 		if (is_object(self::$storage)) {
-			return self::$storage->getVar($key);
+			return self::$storage->getVar($prefix.$key);
 		} else {
 			if (!($s = self::$storage)) { $s = 'Session'; }
 			return$s::getVar($key, $options);

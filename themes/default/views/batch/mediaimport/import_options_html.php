@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
+AssetLoadManager::register("fileupload");
 
-	AssetLoadManager::register("fileupload");
+$t_instance = $this->getVar('t_instance');
+$o_config = $t_instance->getAppConfig();
+$t_rep = $this->getVar('t_rep');
 
- 	$t_instance = $this->getVar('t_instance');
- 	$o_config = $t_instance->getAppConfig();
- 	$t_rep = $this->getVar('t_rep');
+$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
- 	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
-
-	print $vs_control_box = caFormControlBox(
-		caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
-		'',
-		''
-	);
-
+print $vs_control_box = caFormControlBox(
+	caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+	caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
+	'',
+	''
+);
 ?>
 	<div id="batchProcessingTableProgressGroup" style="display: none;">
 		<div class="batchProcessingStatus"><span id="batchProcessingTableStatus" > </span></div>
@@ -95,7 +93,7 @@
 			allowDragAndDropUpload: <?= (sizeof(array_filter(caGetAvailableMediaUploadPaths(), 'is_writable')) > 0) ? "true" : "false"; ?>,
 			dragAndDropUploadUrl: "<?= caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
-			initItemID: <?= json_encode($va_last_settings['importFromDirectory']); ?>,
+			initItemID: <?= json_encode($va_last_settings['importFromDirectory'] ?? null); ?>,
 			indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 			currentSelectionDisplayID: 'browseCurrentSelection',
@@ -120,7 +118,10 @@
 				}
 				print caHTMLCheckboxInput('include_subdirectories', $va_opts).' '._t('Include all sub-directories');
 				$va_opts['style'] = 'margin-left: 10px';
-				print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import');
+				
+				if($this->getVar('user_can_delete_media_on_import')) {
+					print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import');
+				}
 ?>
 				</div>
 			</div>
@@ -321,7 +322,7 @@
 									if (isset($va_last_settings['labelMode']) && ($va_last_settings['labelMode'] == 'user')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('label_mode', $va_attrs);
 								?></td>
-								<td class='formLabel'><?= _t('Set %1 title to %2', caGetTableDisplayName($t_instance->tableName(), false), caHTMLTextInput('label_text', ['id' => 'caLabelUserModeText', 'value' => $va_last_settings['labelText']], ['width' => '400px'])); ?></td>
+								<td class='formLabel'><?= _t('Set %1 title to %2', caGetTableDisplayName($t_instance->tableName(), false), caHTMLTextInput('label_text', ['id' => 'caLabelUserModeText', 'value' => $va_last_settings['labelText'] ?? null], ['width' => '400px'])); ?></td>
 							</tr>
 							<tr>
 								<td><?php
@@ -547,7 +548,7 @@
 									<tr>
 										<td class='formLabel'>
 	<?php
-				$checked = (is_array($va_last_settings['create_relationship_for']) && in_array($vs_rel_table, $va_last_settings['create_relationship_for'])) ? true : false;
+				$checked = (is_array($va_last_settings['create_relationship_for'] ?? null) && in_array($vs_rel_table, $va_last_settings['create_relationship_for'] ?? null)) ? true : false;
 				$default_rel_type_id = isset($va_last_settings['relationship_type_id_for_'.$vs_rel_table]) ? $va_last_settings['relationship_type_id_for_'.$vs_rel_table] : null;
 				print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'checked' => $checked, 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), ['dontConvertAttributeQuotesToEntities' => true]);
 				print ' '._t("to %1 with relationship type", $t_rel_table->getProperty('NAME_SINGULAR'));
@@ -580,7 +581,7 @@
 							</p>
 							<p>
 	<?php
-				print caHTMLTextInput('skip_file_list', array('value' => $va_last_settings['skipFileList'],  'id' => "caSkipFilesList"), array('width' => '700px', 'height' => '100px'));
+				print caHTMLTextInput('skip_file_list', array('value' => $va_last_settings['skipFileList'] ?? null,  'id' => "caSkipFilesList"), array('width' => '700px', 'height' => '100px'));
 	?>
 							</p>
 						</div>
@@ -596,14 +597,14 @@
 							<p class='formLabel'>
 	<?php
 								print _t('Log level').'<br/>';
-								print caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
+								print caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel'] ?? null));
 	?>
 							</p>
 									</td>
 									<td>
 							<p class='formLabel'>
 	<?php
-				print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia']), []);
+				print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia'] ?? null), []);
 				print " "._t('Allow duplicate media?');
 	?>
 							</p>

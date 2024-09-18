@@ -47,24 +47,24 @@
 			
 			<table id="caTagsList" class="listtable">
 				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
-					<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'tags', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+					<?= _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#tagListForm").attr("action", "<?= caNavUrl($this->request, 'manage', 'Tags', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'><?= _t("Approve"); ?></span></span></a>
+					<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?= caNavUrl($this->request, 'manage', 'tags', 'Delete'); ?>").submit();' class='form-button'><span class='form-button approveDelete'><?= caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'><?= _t("Delete"); ?></span></span></a>
 				</div>
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
-							<?php print _t('Item'); ?>
+							<?= _t('Item'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Tag'); ?>
+							<?= _t('Tag'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Author'); ?>
+							<?= _t('Author'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Date'); ?>
+							<?= _t('Date'); ?>
 						</th>
-						<th class="{sorter: false} list-header-nosort"><?php print _t('Select'); ?></th>
+						<th class="{sorter: false} list-header-nosort"><?= _t('Select'); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -73,10 +73,10 @@
 ?>
 					<tr>
 						<td>
-							<?php print caEditorLink($this->request, $va_tag['item_tagged'], '', $va_tag['table_num'], $va_tag['row_id']); ?>
+							<?= caEditorLink($this->request, $va_tag['item_tagged'], '', $va_tag['table_num'], $va_tag['row_id']); ?>
 						</td>
 						<td>
-							<?php print caNavLink($this->request, $tag = $va_tag['tag'], '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]); ?>
+							<?= caNavLink($this->request, $tag = $va_tag['tag'], '', 'find', 'QuickSearch', 'Index', ['search' => "ca_item_tags.tag:\"{$tag}\""]); ?>
 						</td>
 						<td>
 <?php 
@@ -88,10 +88,10 @@
 ?>
 						</td>
 						<td>
-							<?php print $va_tag['created_on']; ?>
+							<?= $va_tag['created_on']; ?>
 						</td>
 						<td>
-							<input type="checkbox" name="tag_relation_id[]" value="<?php print $va_tag['relation_id']; ?>">
+							<input type="checkbox" name="tag_relation_id[]" value="<?= $va_tag['relation_id']; ?>">
 						</td>
 					</tr>
 <?php

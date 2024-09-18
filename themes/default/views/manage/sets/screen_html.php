@@ -68,7 +68,7 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='set_id' value='<?php print $vn_set_id; ?>'/>
+			<input type='hidden' name='set_id' value='<?= $vn_set_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

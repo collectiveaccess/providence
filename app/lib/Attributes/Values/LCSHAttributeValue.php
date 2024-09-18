@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
 define("__CA_ATTRIBUTE_VALUE_LCSH__", 13);
 
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
 global $_ca_attribute_settings;
@@ -263,26 +258,26 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 			$tmp = explode('|', $value);
 			if (is_array($tmp) && (sizeof($tmp) > 1)) {
 			
-				$url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $tmp[1]);
+				$url = trim(str_replace('info:lc/', 'http://id.loc.gov/authorities/', $tmp[1]));
 			
 				$tmp1 = explode('/', $tmp[1]);
 				$id = array_pop($tmp1);
 				LCSHAttributeValue::$s_term_cache[$value] = array(
-					'value_longtext1' => trim($tmp[0]),						// text
-					'value_longtext2' => trim($url),							// uri
+					'value_longtext1' => trim($tmp[0])." [{$url}]",						// text
+					'value_longtext2' => $url,							// uri
 					'value_decimal1' => is_numeric($id) ? $id : null	// id
 				);
 			} elseif (preg_match('!\[(http://[^\]]+)\]!', $value, $matches)) {
 				// parse <text> [<url>] format
-				$uri = $matches[1];
+				$url = trim($matches[1]);
 				$text = preg_replace('!\[http://([^\]]+)\]!', '', $value);
 				
-				$tmp1 = explode('/', $uri);
+				$tmp1 = explode('/', $url);
 				$id = array_pop($tmp1);
 				
 				LCSHAttributeValue::$s_term_cache[$value] = array(
-					'value_longtext1' => trim($text),						// text
-					'value_longtext2' => trim($uri),							// uri
+					'value_longtext1' => trim($text)." [{$url}]",						// text
+					'value_longtext2' => $url,							// url
 					'value_decimal1' => is_numeric($id) ? $id : null,		// id
 					'value_sortable' => $this->sortableValue($tmp[0])
 				);
@@ -313,7 +308,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 					$headers = $o_response->getHeaders();
 		
 					if ((isset($headers['X-preflabel'])) && $headers['X-preflabel']) {
-						$url = $headers['X-uri'];
+						$url = trim($headers['X-uri']);
 						$url_bits = explode("/", $url);
 						$id = array_pop($url_bits);
 						$label = $headers['X-preflabel'];
@@ -323,7 +318,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 						if ($url) {
 							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => trim($label)." [{$url}]",						// text
-								'value_longtext2' => trim($url),							// uri
+								'value_longtext2' => $url,							// url
 								'value_decimal1' => is_numeric($id) ? $id : null,	// id
 								'value_sortable' => $this->sortableValue($label)
 							);
@@ -332,7 +327,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 							return false;
 						}
 					} else {
-						$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]; status was %3', $value, $service_url, $vn_status), 'LCSHAttributeValue->parseValue()');
+						$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $value, $service_url), 'LCSHAttributeValue->parseValue()');
 						return false;
 					}
 				} else {
@@ -363,7 +358,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 						
 							LCSHAttributeValue::$s_term_cache[$value] = array(
 								'value_longtext1' => "{$title} [{$url}]",			// text
-								'value_longtext2' => $url,							// uri
+								'value_longtext2' => $url,							// url
 								'value_decimal1' => is_numeric($id) ? $id : null,	// id
 								'value_sortable' => $this->sortableValue($title)
 							);

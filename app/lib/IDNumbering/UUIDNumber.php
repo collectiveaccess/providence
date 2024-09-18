@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  */
-
 require_once(__CA_LIB_DIR__ . "/IDNumbering/IDNumber.php");
 require_once(__CA_APP_DIR__ . "/helpers/navigationHelpers.php");
 
@@ -52,7 +51,7 @@ class UUIDNumber extends IDNumber implements IIDNumbering {
 		if(!preg_match("/^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/", $value)) {
 			$elements = $this->getElements();
 			foreach($elements as $ename => $info) {
-				$element_errors[$ename] = _t('%1 is not a valid UUID', $value);
+				$element_errors[$ename] = _t('%1 is not a valid UUID', strlen($value) ? $value : '['.caGetBlankLabelText().']');
 				break;
 			}
 		}
@@ -175,7 +174,7 @@ class UUIDNumber extends IDNumber implements IIDNumbering {
 	 */
 	public function htmlFormValuesAsArray($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false) {
 		if (is_null($value)) {
-			if(isset($_REQUEST[$name]) && $_REQUEST[$name]) { return $_REQUEST[$name]; }
+			if(isset($_REQUEST[$name]) && !is_null($_REQUEST[$name])) { return $_REQUEST[$name]; }
 		}
 		if (!is_array($elements = $this->getElements())) { return null; }
 
@@ -246,6 +245,7 @@ class UUIDNumber extends IDNumber implements IIDNumbering {
 
 		$element_form_name = $name.'_'.$element_name;
 		$width = $this->getElementWidth($element_info, 3);
+		
 		if(caIsGUID($value)) {
 			if ($element_info['editable'] || $generate_for_search_form) {
 				$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="readonly" ' : '').'/>';
@@ -255,7 +255,11 @@ class UUIDNumber extends IDNumber implements IIDNumbering {
 			return $element;
 		}
 		
-		if(!($uuid = caGenerateGUID())){
+		$incoming_value = $this->htmlFormValuesAsArray($element_form_name);
+		
+		if((is_null($incoming_value) || strlen($incoming_value)) && $element_info['dont_overwrite_invalid_guid'] ?? false) {
+			$uuid = $value; 
+		} elseif(!($uuid = caGenerateGUID())){
 			return '[Invalid element type]';
 		}
 		

@@ -81,7 +81,7 @@ abstract class AttributeValue extends BaseObject {
 
 		$this->ops_sort_value = null;
 		if ($vs_sort_field = $this->sortField()) {
-			$this->ops_sort_value = $pa_value_array[$vs_sort_field];
+			$this->ops_sort_value = $pa_value_array[$vs_sort_field] ?? null;
 		}
 	}
 	# ------------------------------------------------------------------
