@@ -689,20 +689,23 @@ class RequestHTTP extends Request {
 	 */
 	function setInternalRedirect(array $components) : bool {
 		$app = AppController::getInstance();
-		
 		$module = $controller = $action = $action_extra = null;
 		foreach($components as $k => $v) {
 			switch(strtolower($k)) {
 				case 'module':
+					if($v === '*') { $v = $this->getModulePath(); }
 					$this->setModulePath($module = $v);
 					break;
 				case 'controller':
+					if($v === '*') { $v = $this->getController(); }
 					$this->setController($controller = $v);
 					break;
 				case 'action':
+					if($v === '*') { $v = $this->getAction(); }
 					$this->setAction($action = $v);
 					break;
 				case 'actionextra':
+					if($v === '*') { $v = $this->getActionExtra(); }
 					$this->setActionExtra($action_extra = $v);
 					break;
 			}
@@ -735,7 +738,15 @@ class RequestHTTP extends Request {
 		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {			
 			$disable_background_processing = $this->getAppConfig()->get(['disable_background_processing']);
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && !$disable_background_processing && $this->getAppConfig()->get('run_search_indexing_queue') ) {
-				if(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0)) {
+				if(
+					!ca_search_indexing_queue::isRunning() 
+					&& 
+					(
+						(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0))
+						||
+						(ca_search_indexing_queue::hasEntries())
+					)
+				) {
 					\CA\Process\Background::run('searchIndexingQueue');
 				}
 			}
@@ -1072,8 +1083,11 @@ class RequestHTTP extends Request {
 	 * @return string
 	 */
 	static public function ip() {
-		if (isset($_SERVER['HTTP_X_REAL_IP']) && $_SERVER['HTTP_X_REAL_IP']) { return $_SERVER['HTTP_X_REAL_IP']; }
-		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) { return $_SERVER['HTTP_X_FORWARDED_FOR']; }
+		if(is_array($headers = Configuration::load()->getList('request_ip_headers'))) {
+			foreach($headers as $h) {
+				if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
+			}
+		}
 		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 	}
 	# ----------------------------------------

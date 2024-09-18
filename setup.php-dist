@@ -8,7 +8,7 @@
 #
 #				Providence: Cataloguing system for CollectiveAccess
 #               Open-source collections management software
-#               Version 1.8
+#               Version 2.0
 #				
 # -------------------------------------------------------------------------------------------
 # 
@@ -30,6 +30,12 @@
 #
 if (!defined("__CA_DB_HOST__")) {
 	define("__CA_DB_HOST__", 'localhost');
+}
+
+# __CA_DB_PORT__ = Database server port. Only change if the default 3306 isn't being used
+# 
+if (!defined("__CA_DB_PORT__")) {
+	define("__CA_DB_PORT__", '3306');
 }
 
 # __CA_DB_USER__ = Database login user name
@@ -86,7 +92,7 @@ if (!defined("__CA_ADMIN_EMAIL__")) {
 # ----------------------------------------------------------------------------------------------
 
 # Set your preferred time zone here. The default is to use US Eastern Standard Time. 
-# A list of valid time zone settings is available at http://us3.php.net/manual/en/timezones.php
+# A list of valid time zone settings is available at https://us3.php.net/manual/en/timezones.php
 #
 date_default_timezone_set('America/New_York');
 
@@ -103,7 +109,7 @@ date_default_timezone_set('America/New_York');
 # 
 # Set this to a non-zero value if you want to use the task queue. Be sure to configure the task 
 # queue processing script to run (usually via CRON) if you set this option. Set up details are 
-# available at http://docs.collectiveaccess.org
+# available at https://docs.collectiveaccess.org
 #
 if (!defined("__CA_QUEUE_ENABLED__")) {
 	define("__CA_QUEUE_ENABLED__", 0);
@@ -164,7 +170,7 @@ if (!defined("__CA_GOOGLE_MAPS_KEY__")) {
 #   |_|\___/ \__,_| |_|  \___|  \__,_|\___/|_| |_|\___|
 #                                                     
 # That's it! The settings here should be enough to get you up and running...
-# If they're not you can find help at http://support.collectiveaccess.org
+# If they're not you can find help at https://support.collectiveaccess.org
 #
 # ***
 
@@ -212,6 +218,43 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 #define('__DEEPL_API_KEY__', '<API KEY>');
 #define('__GOOGLE_TRANSLATE_API_KEY__', '<API KEY>');
 
+
+# __CA_DB_USE_SSL__ = Use SSL encryption for database connections
+#
+if (!defined("__CA_DB_USE_SSL__")) {
+	define("__CA_DB_USE_SSL__", false);
+}
+
+# __CA_DB_SSL_VERIFY_CERT__ = Verify SSL certificate before use?
+#
+if (!defined("__CA_DB_SSL_VERIFY_CERT__")) {
+	define("__CA_DB_SSL_VERIFY_CERT__", true);
+}
+
+# __CA_DB_SSL_KEY__ = The path name to the key file
+#
+if (!defined("__CA_DB_SSL_KEY__")) {
+	define("__CA_DB_SSL_KEY__", null);
+}
+
+# __CA_DB_SSL_CERTIFICATE__ = The path name to the certificate file.
+#
+if (!defined("__CA_DB_SSL_CERTIFICATE__")) {
+	define("__CA_DB_SSL_CERTIFICATE__", null);
+}
+
+# __CA_DB_SSL_CA_CERTIFICATE__ = The path name to the certificate authority file
+#
+if (!defined("__CA_DB_SSL_CA_CERTIFICATE__")) {
+	define("__CA_DB_SSL_CA_CERTIFICATE__", null);
+}
+
+# __CA_DB_SSL_CA_PATH__ = The pathname to a directory that contains trusted SSL CA certificates in PEM format
+#
+if (!defined("__CA_DB_SSL_CA_PATH__")) {
+	define("__CA_DB_SSL_CA_PATH__", null);
+}
+
 # __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__
 #
 # Set this to allow the installer to overwrite an existing installation.
@@ -243,10 +286,10 @@ require(__DIR__."/app/helpers/post-setup.php");
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
- * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2018 Whirl-i-Gig
+ * Software by Whirl-i-Gig (https://www.whirl-i-gig.com)
+ * Copyright 2008-2024 Whirl-i-Gig
  *
- * For more information visit http://www.CollectiveAccess.org
+ * For more information visit https://www.CollectiveAccess.org
  *
  * This program is free software; you may redistribute it and/or modify it under
  * the terms of the provided license as published by Whirl-i-Gig
@@ -256,9 +299,9 @@ require(__DIR__."/app/helpers/post-setup.php");
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
  * This source code is free and modifiable under the terms of 
- * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * GNU General Public License. (https://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
- * http://www.CollectiveAccess.org
+ * https://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
  */

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -131,8 +131,8 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'displayType' => DT_SELECT,
 		'default' => 1,
 		'width' => 40, 'height' => 1,
-		'label' => _t('Render list as'),
-		'description' => _t('Set the presentation of the list to select, checkboxes, radio buttons, look or browser.'),
+		'label' => _t('Render list in editor as'),
+		'description' => _t('Set the presentation of the list when editing to select, checkboxes, radio buttons, type-ahead lookup or browser.'),
 		'options' => array(
 			_t('Drop-down list') => 'select',
 			_t('Yes/no checkbox') => 'yes_no_checkboxes',
@@ -144,6 +144,38 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 			_t('Vertical hierarchy browser (upward)') => 'vert_hierbrowser',
 			_t('Vertical hierarchy browser (downward)') => 'vert_hierbrowser_down',
 		)
+	),
+	'renderInSearchBuilder' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => 1,
+		'width' => 40, 'height' => 1,
+		'label' => _t('Render list in search builder as'),
+		'description' => _t('Set the presentation of the list to a select list or text box.'),
+		'options' => array(
+			_t('Drop-down list') => 'select',
+			_t('Text box') => 'text',
+		)
+	),
+	'useSingular' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => 0,
+		'width' => 40, 'height' => 1,
+		'label' => _t('Display sense'),
+		'description' => _t('Sets whether singular or plural sense of term is displayed.'),
+		'options' => array(
+			_t('Singular') => 1,
+			_t('Plural') => 0,
+		)
+	),
+	'useTextEntryInSearchBuilderWhenListLongerThan' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => 500,
+		'width' => 4, 'height' => 1,
+		'label' => _t('Use text entry for list in search builder when list is longer than'),
+		'description' => _t('Forces use of text entry for list in search builder when the list length exceeds the specified number of items.')
 	),
 	'auto_shrink' => array(
 		'formatType' => FT_NUMBER,
@@ -327,6 +359,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * @return string The value
 	 */
 	public function getDisplayValue($pa_options=null) {
+		$use_singular = caGetOption('useSingular', $pa_options, false);
+		
 		if (isset($pa_options['output'])) {
 			switch(strtolower($pa_options['output'])) {
 				case 'idno':
@@ -357,7 +391,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
                 return caGetListItemIdno($this->opn_item_id, $pa_options);
             }
             if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
-                return caGetListItemByIDForDisplay($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
+                return caGetListItemByIDForDisplay($this->opn_item_id, array_merge($pa_options, ['return' => $use_singular ? 'singular' : 'plural']));
             }
 
             if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
@@ -387,20 +421,18 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				if ($o_trans) { $t_item->setTransaction($o_trans); }
 			}
 
-			$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
-
 			// do we need to get the hierarchy?
 			if ($pa_options['showHierarchy'] ?? false) {
+				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
+
 				if (!$t_item->isLoaded()) { $t_item->load((int)$this->opn_item_id); }
 				
 				if (is_array($pa_options['filterTypes'])) {
 				    return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('filterTypes' => $pa_options['filterTypes'], 'delimiter' => ' ➔ ', $pa_options)));
 				} 
-				
 				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', $pa_options)));
 			}
-
-			return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
+			return $t_list->getItemForDisplayByItemID($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
 		}
 		return $this->ops_text_value;
 	}
@@ -551,6 +583,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		}
 		
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
+		$use_singular = caGetOption('useSingular', $pa_element_info['settings'], false);
 
         $for_search = caGetOption('forSearch', $pa_options, false);
 
@@ -583,6 +616,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					'currentSelectionDisplayFormat' => $current_selection_display_format,
 					'separateDisabledValues' => $separate_disabled_values,
 					'hideDisabledValues' => $hide_disabled_values,
+					'useSingular' => $use_singular,
 					'deferHierarchyLoad' => (bool)($pa_element_info['settings']['deferHierarchyLoad'] ?? false)
 				]
 			)

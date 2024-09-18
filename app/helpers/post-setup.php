@@ -151,6 +151,47 @@ if (!defined("__CA_DB_TYPE__")) {
 	define("__CA_DB_TYPE__", 'mysqli');
 }
 
+# __CA_DB_PORT__ = Database server port. Only change if the default 3306 isn't being used
+#
+if (!defined("__CA_DB_PORT__")) {
+        define("__CA_DB_PORT__", '3306');
+}
+
+if (!defined("__CA_DB_USE_SSL__")) {
+	define("__CA_DB_USE_SSL__", false);
+}
+
+# __CA_DB_SSL_VERIFY_CERT__ = Verify SSL certificate before use?
+#
+if (!defined("__CA_DB_SSL_VERIFY_CERT__")) {
+	define("__CA_DB_SSL_VERIFY_CERT__", true);
+}
+
+# __CA_DB_SSL_KEY__ = The path name to the key file
+#
+if (!defined("__CA_DB_SSL_KEY__")) {
+	define("__CA_DB_SSL_KEY__", null);
+}
+
+# __CA_DB_SSL_CERTIFICATE__ = The path name to the certificate file.
+#
+if (!defined("__CA_DB_SSL_CERTIFICATE__")) {
+	define("__CA_DB_SSL_CERTIFICATE__", null);
+}
+
+# __CA_DB_SSL_CA_CERTIFICATE__ = The path name to the certificate authority file
+#
+if (!defined("__CA_DB_SSL_CA_CERTIFICATE__")) {
+	define("__CA_DB_SSL_CA_CERTIFICATE__", null);
+}
+
+# __CA_DB_SSL_CA_PATH__ = The pathname to a directory that contains trusted SSL CA certificates in PEM format
+#
+if (!defined("__CA_DB_SSL_CA_PATH__")) {
+	define("__CA_DB_SSL_CA_PATH__", null);
+}
+
+
 set_include_path(__CA_LIB_DIR__.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
 
 # The path to the main instance configuration file defined as a constant

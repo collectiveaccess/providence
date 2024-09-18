@@ -362,84 +362,65 @@ div.clear {
     font-size: 9px;
 }
 #leftNav #toolIcons {
-	margin-bottom:10px;
-	padding-top:0px;
-	clear: both;
-	min-height: 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    flex: 1;
+    padding: 0px;
 }
-
-#leftNav .inspectorActionButton   {
-	float: left;
-	margin-right: 5px;
-	width: 28px;
-	text-align: center;
+#leftNav .inspectorActionButton {
+    padding: 0px;
 }
-
 #leftNav .infoIcon {
 	padding-left: unset !important;
 	line-height: unset !important;
 }
-
 #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
 	margin-top:8px;
-	margin-right:8px;
-	width:22px;
-	float:left;
 } 
 #leftNav .button.info {
-	float:left;
-	width:22px;
-	margin-left:2px;
 	padding-bottom:10px;
 }
 #leftNav #inspectorChangeType img {
-	width: 26px;
 	padding-top: 1px;
 }
+#leftNav #inspectorHierarchyMerge {
+	padding-top: 6px;
+}
 #inspectorChangeTypeButton {
-    float: right;
     font-size: 10px;
     margin: 0px;
-    text-align:right;
 }
 #leftNav #caDuplicateItemButton img {
-	width:18px;
 	padding-top:3px;
 }
 #leftNav div.watchThis { 
-	width:14px; 
 	text-align:center; 
-	margin-right:10px; 
 }
 #inspectorLotMediaDownload {
-    width: 190px;
+   
 }
-
 #inspectorLotMediaDownloadButton {
-    float: right;
     font-size: 10px;
     padding: 2px !important;
     margin: 0px;
-    text-align:right;
 }
-
 div.inspectorLotObjectTypeControls {
     padding: 3px;
     margin-top: 8px;
     font-size: 9px;
 }
-
 .inspectorLotObjectTypeControls select {
     width: 80px;
     font-size: 9px;
 }
-
 .inspectorChangeDateList {
     font-size: 10px;
     margin-top: 0px;
     font-family: 'DIN-Regular', helvetica, sans-serif;
 }
-
 .inspectorChangeDateListLine {
     margin-top: 0px;
 }
@@ -458,6 +439,26 @@ div.inspectorLotObjectTypeControls {
 	width:20px;
 	padding-top:5px;
 }
+#leftNav #toolComponentControls {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 100%;
+    flex: 1;
+    padding-top: 5px;
+}
+#leftNav #toolComponentControls div, #leftNav #toolComponentControls div a {
+    padding: 0px;
+    margin: 0px;
+}
+
+#leftNav #toolComponentControls div a i {
+    vertical-align: unset;
+}
+
 a.inspectorOnLoan {
     color: #cc0000;
     font-style: italic;
@@ -2092,6 +2093,14 @@ div.control-box-left-content {
 
 div.control-box-middle-content {
     text-align: center;
+    margin: 3px;
+    float: right;
+    font-size:12px;
+    font-weight: bold;
+}
+
+div.delete-control-box div div.control-box-middle-content {
+    text-align: right;
     margin: 3px;
     float: right;
     font-size:12px;
@@ -3899,7 +3908,12 @@ a.hierarchyBrowserLevelEditButton {
 div.hierarchyBrowseTab {
     width: 712px;
     font-weight: normal;
-    margin-left:-10px;
+    margin-left: -10px;
+}
+
+div.objectCheckoutStatusTab {
+    width: 712px;
+    font-weight: normal;
 }
 
 div.hierarchyBrowserCurrentSelection {
@@ -5162,6 +5176,8 @@ div.bundleDisplayEditorPlacement {
     -webkit-border-radius: 3px;
     background-size:14px 14px;
     font-size:12px;
+    
+    cursor: pointer;
 }
 div.bundleDisplayEditorPlacement .fa {
 	font-size:18px;
@@ -5176,6 +5192,18 @@ div.bundleDisplayEditorPlacementList {
     height: 450px;
     overflow: auto;
     margin-right:10px;
+}
+
+div.bundleDisplayEditorSearchForm {
+    position: relative;
+    float: right; 
+    margin-right: 35px;
+}
+
+div.bundleDisplayEditorSearchForm i.caIcon {
+    position: absolute;
+    right: 5px;
+    top: 5px;
 }
 
 span.bundleDisplayEditorPlacementListItemTitle {
@@ -6049,11 +6077,21 @@ div.preferenceColumnHeader {
     text-align: left;
 }
 
-div.preferencePlacementList {
-    width: 350px;
-    height: 350px;
-    overflow: auto;
-    margin-right:10px;
+div.preferenceCheckBoxList {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: start;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+div.preferenceCheckBoxList input {
+	margin: 0 10px 0 10px;
+}
+
+div.preferenceCheckBoxList div {
+    width: 100px;
 }
 
 .searchReindexHelpText{
@@ -8329,19 +8367,29 @@ span.developerBundleCode, a.developerBundleCode {
     border-radius: 10px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlDownloadMedia {
+.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlTransferItems, .hierarchyToolsControlCreateWithItems, .hierarchyToolsControlAccess, .hierarchyToolsControlMerge {
     display: none;
     float: left;
 }
 
-.hierarchyToolsControlDownloadMedia select {
+.hierarchyToolsControlDownloadMedia {
+    display: none;
+    width: 100%;
+}
+
+.hierarchyToolsControlDownloadMedia select, .hierarchyToolsControlAccess select {
 	width: 40px;
 	font-size: 10px;
 	margin: 0px 0px 0px 4px;
 }
 
-.hierarchyToolsControlSetImage, .hierarchyToolsControlRemoveItems, .hierarchyToolsControlDownloadMedia {
-    margin-top: 5px;
+.hierarchyToolsControlSetImage, .hierarchyToolsControlMerge {
+    margin-top: 0px;
+}
+
+.hierarchyToolsControlRemoveItems {
+     margin: 0 0 0 25px;
+     
 }
 
 .hierarchyToolsMessage {
@@ -8433,3 +8481,5 @@ div.searchResultDesc ul {
 #algebraSetControls {
 	display: none;
 }
+
+

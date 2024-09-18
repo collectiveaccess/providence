@@ -4368,7 +4368,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -6140,7 +6140,7 @@ class BrowseEngine extends BaseFindEngine {
 					} else {
 						$vs_container_sql = '';
 						$va_params = [$vn_element_id];
-						if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+						if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 							$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 							$va_params[] = $va_container_ids[$vs_container_code];
 						}
@@ -6473,7 +6473,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -6662,7 +6662,7 @@ class BrowseEngine extends BaseFindEngine {
 				} else {
 					$vs_container_sql = '';
 					$va_params = [$vn_element_id];
-					if (is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
+					if ($vs_container_code && is_array($va_container_ids[$vs_container_code]) && sizeof($va_container_ids[$vs_container_code])) {
 						$vs_container_sql = " AND ca_attributes.attribute_id IN (?)";
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
@@ -8007,7 +8007,10 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 			$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 		}
 		if (isset($pa_options['restrict_to_relationship_types']) && is_array($pa_options['restrict_to_relationship_types']) && sizeof($pa_options['restrict_to_relationship_types']) && $t_item_rel && $t_item_rel->hasField('type_id')) {
-			$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(",", caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pa_options['restrict_to_relationship_types']))."))";
+			$res_type_ids = caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pa_options['restrict_to_relationship_types']);
+			if(sizeof($res_type_ids ?? [])) {
+				$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(",", $res_type_ids)."))";
+			}
 		}
 
 		return array('joins' => $va_joins, 'wheres' => $va_wheres);

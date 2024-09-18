@@ -210,6 +210,22 @@ var caUI = caUI || {};
 			return that.players;
 		}
 		
+		//
+		that.playAll = function() {
+			let players=  that.getPlayers();
+			for(let p in players) {
+				that.play(p);
+			}
+		}
+		
+		//
+		that.stopAll = function() {
+			let players=  that.getPlayers();
+			for(let p in players) {
+				that.stop(p);
+			}
+		}
+		
 		return that;
 	};	
 	

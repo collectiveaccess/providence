@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,14 +103,20 @@ $vs_rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeN
 					processData: false,
 					cache: false,
 					success: function(resp, textStatus) {
+						let fieldPrefix = <?= json_encode($vs_field_name_prefix); ?>;
 						if (resp.status == 0) {
 							jQuery.jGrowl('<?= addslashes(_t('Saved changes to')); ?> <em>' + resp.display + '</em>', { header: '<?= addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
 							jQuery("#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
-							var displayContent = jQuery('#caRelationEditorPanel<?= substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').template(resp.bundleDisplay);
-						
+							
+							// Type name may be set dynamically during interstitial editing, and needs form prefix set
+							var t = jQuery('#caRelationEditorPanel<?= substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').prop('outerHTML');
+							t = t.replace(/_type_id{n}/, fieldPrefix + 'type_id{n}');
+							
+							let displayContent = jQuery(t).template(resp.bundleDisplay); 
+							
 							let rel_type_select = jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?> .listRelRelationshipTypeEdit").detach(); // Save current relationship type drop-down
 							jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?>").empty().append(displayContent);
-							jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?> .listRelRelationshipTypeEdit").replaceWith(rel_type_select); // replace empty relationship dropdown after template refresh with working vaoue
+							jQuery("#<?= $vs_field_name_prefix; ?>BundleTemplateDisplay<?= $this->getVar('n'); ?> .listRelRelationshipTypeEdit").replaceWith(rel_type_select); // replace empty relationship dropdown after template refresh with working value
 							jQuery("input[name='form_timestamp']").val(resp['time']);
 						} else {
 							// error

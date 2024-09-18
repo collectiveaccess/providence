@@ -1095,7 +1095,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 				
 				if(!$dont_check_access_value) {
-					if((int)$qr_res->get('access') > 0) {
+					if((int)$qr_res->get('access') >= $access) {
 						$ret[$set_id] = true;
 						continue;
 					}
@@ -1703,12 +1703,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
 			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
 				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
-					$t_set_item->set('rank', $vn_rank_inc);
-					$t_set_item->update();
-				
-					if ($t_set_item->numErrors()) {
-						$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
-					}
+					$va_rank_updates[$vn_row_id] = $vn_rank_inc;
 				}
 			} elseif($allow_dupes_in_set || (!$rows_in_set[(int)($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id)])) {
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
@@ -1952,7 +1947,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_rel_field_list = array();
 			foreach($t_rel_table->getFields() as $vs_rel_field) {
 				if($vs_rel_field == $t_rel_table->primaryKey()) {
-					$va_rel_field_list[] = "rel.{$vs_rel_field} as list_{$vs_rel_field}";
+					$va_rel_field_list[] = "rel.{$vs_rel_field} list_{$vs_rel_field}";
 				} else {
 					$va_rel_field_list[] = "rel.{$vs_rel_field}";
 				}
@@ -1964,7 +1959,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$qr_res = $o_db->query("
 			SELECT 
-				casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.vars, casi.representation_id, casi.annotation_id,
+				casi.set_id, casi.item_id set_item_id, casi.row_id, casi.`rank`, casi.vars, casi.representation_id, casi.annotation_id,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
 				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
@@ -2015,7 +2010,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				continue;
 			}
 			if (!$sort && isset($pa_options['returnItemIdsOnly']) && ($pa_options['returnItemIdsOnly'])) {
-				$va_items[$qr_res->get('item_id')] = true;
+				$va_items[$qr_res->get('set_item_id')] = true;
 				continue;
 			}
 			
@@ -2070,12 +2065,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_row['representation_count'] = (int)($va_representation_counts[$qr_res->get('row_id')] ?? 0);
 			}	
 			
-			if (is_array($va_labels[$vn_item_id = $qr_res->get('item_id')])) {
+			if (is_array($va_labels[$vn_item_id = $qr_res->get('set_item_id')])) {
 				$va_row = array_merge($va_row, $va_labels[$vn_item_id]);
 			}
 			if (isset($pa_options['returnItemAttributes']) && is_array($pa_options['returnItemAttributes']) && sizeof($pa_options['returnItemAttributes'])) {
 				// TODO: doing a load for each item is inefficient... must replace with a query
-				$t_item = new ca_set_items($va_row['item_id']);
+				$t_item = new ca_set_items($va_row['set_item_id']);
 				
 				foreach($pa_options['returnItemAttributes'] as $vs_element_code) {
 					$va_row['ca_attribute_'.$vs_element_code] = $t_item->getAttributesForDisplay($vs_element_code);
@@ -2091,7 +2086,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
 			}
 		
-			$va_items[$qr_res->get('item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
+			$va_items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
 		}
 		
 		if ($sort) {
@@ -2111,6 +2106,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_items = $sorted_items;
 		}
 		
+		if(caGetOption('shuffle', $pa_options, false)) {
+			$va_items = caShuffleArray($va_items);
+		}
 		
 		if (caGetOption('idsOnly', $pa_options, false)) {
 			return array_keys($va_items);
@@ -2609,6 +2607,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	*			user_id -> ca_users.user_id that owns or has access to set
 	*			owner - if set, returns only sets owned by the passed user_id
 	*			table - if set, list is restricted to sets that can contain the specified item. You can pass a table name or number. If omitted sets containing any content will be returned.
+	*			tables = 
 	*			setType - Restricts returned sets to those of the specified type. You can pass a type_id or list item code for the set type. If omitted sets are returned regardless of type.
 	*			access - read = 1, write = 2; Restricts returned sets to those with at least the specified access level for the specified user. If "owner" is true then this option has no effect.
 	*			checkAccess - Restricts returned sets to those with an access level of the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
@@ -2616,11 +2615,17 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	*
 	*
 	*/
-	public function getSetsForUser($pa_options){
+	public function getSetsForUser(?array $pa_options = null){
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null;
 		$pm_table_name_or_num = isset($pa_options['table']) ? $pa_options['table'] : null;
 		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
+		
+		$tables = caGetOption('tables', $pa_options, null);
+		if(is_array($tables)) { 
+			$tables = array_map(function($v) { return Datamodel::getTableNum($v); }, array_filter($tables, function($v) { return Datamodel::getInstance($v, true); }));
+		}
+		
 		$pm_type = isset($pa_options['setType']) ? $pa_options['setType'] : null;
 		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
 		$pa_public_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
@@ -2636,7 +2641,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_params = array();
 			$o_db = $this->getDb();
 			
-			if ($vn_table_num) {
+			if(is_array($tables) && sizeof($tables)) {
+				$va_sql_wheres[] = "(cs.table_num IN (?))";
+				$va_sql_params[] = $tables;
+			} elseif ($vn_table_num) {
 				$va_sql_wheres[] = "(cs.table_num = ?)";
 				$va_sql_params[] = (int)$vn_table_num;
 			}

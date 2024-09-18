@@ -56,23 +56,23 @@ class WLPlugTaskQueueHandlerbatchEditor Extends WLPlug Implements IWLPlugTaskQue
 		$params = [];
 		
 		$t_set = new ca_sets($parameters['set_id'] ?? null);
-		$params['importing_from'] = array(
+		$params['importing_from'] = [
 			'label' => _t("Applying batch edits to set"),
 			'value' => $t_set->getLabelForDisplay()
-		);
-		$params['number_of_records'] = array(
+		];
+		$params['number_of_records'] = [
 			'label' => _t("Records to edit"),
 			'value' => $parameters['record_selection']['itemCount'] ?? 0
-		);
+		];
 		
 		$t_ui = new ca_editor_uis($parameters['ui_id']);
 		
 		$t_screen = new ca_editor_ui_screens();
 		if ($t_screen->load(array('ui_id' => $t_ui->getPrimaryKey(), 'screen_id' => str_ireplace("screen", "", $parameters['screen'])))) {
-			$params['ui'] = array(
+			$params['ui'] = [
 				'label' => _t("Using interface"),
 				'value' => $t_ui->getLabelForDisplay()." ➜ ".$t_screen->getLabelForDisplay()
-			);
+			];
 		}
 		
 		return $params;
@@ -83,7 +83,7 @@ class WLPlugTaskQueueHandlerbatchEditor Extends WLPlug Implements IWLPlugTaskQue
 	# Returns 1 on success, 0 on error
 	public function process($parameters) {
 		$o_response = new ResponseHTTP();
-		$o_request = new RequestHTTP($o_response, array('simulateWith' => $x=array(
+		$o_request = new RequestHTTP($o_response, ['simulateWith' => [
 				'POST' => $parameters['values'],
 				'SCRIPT_NAME' => join('/', [__CA_URL_ROOT__, 'index.php']), 'REQUEST_METHOD' => 'POST',
 				'REQUEST_URI' => join('/', [__CA_URL_ROOT__, 'index.php', 'batch', 'Editor', 'Save', $parameters['screen'], 'set_id', $parameters['set_id']]), 
@@ -91,8 +91,8 @@ class WLPlugTaskQueueHandlerbatchEditor Extends WLPlug Implements IWLPlugTaskQue
 				'REMOTE_ADDR' => $parameters['ip_address'],
 				'HTTP_USER_AGENT' => 'batchEditor',
 				'user_id' => $parameters['user_id']
-			)
-		));
+			]
+		]);
 		
 		$o_app = AppController::getInstance($o_request, $o_response);
 	
@@ -102,7 +102,7 @@ class WLPlugTaskQueueHandlerbatchEditor Extends WLPlug Implements IWLPlugTaskQue
 		if (isset($parameters['isBatchTypeChange']) && $parameters['isBatchTypeChange']) {
 			$report = BatchProcessor::changeTypeBatch($o_request, $parameters['new_type_id'], $rs, $t_subject, ['sendMail' => (bool)$parameters['sendMail'], 'sendSMS' => (bool)$parameters['sendSMS']]);
 		} else {
-			$report = BatchProcessor::saveBatchEditorForm($o_request, $rs, $t_subject, ['sendMail' => (bool)$parameters['sendMail'], 'sendSMS' => (bool)$parameters['sendSMS']]);
+			$report = BatchProcessor::saveBatchEditorForm($o_request, $rs, $t_subject, ['screen' => $parameters['screen'] ?? null, 'sendMail' => (bool)$parameters['sendMail'], 'sendSMS' => (bool)$parameters['sendSMS']]);
 		}
 		
 		return $report;

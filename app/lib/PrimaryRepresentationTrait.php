@@ -110,7 +110,8 @@ trait PrimaryRepresentationTrait {
 		
 		if($qr->numRows() == 0) { return true; }
 		while($qr->nextRow()) {
-			if($subject_is_primary && ($relation_id == $qr->get('relation_id'))) { 
+			$row_rel_id = $qr->get('relation_id');
+			if($subject_is_primary && ($relation_id == $row_rel_id)) { 
 				$seen_primary = true;
 				continue;
 			}
@@ -119,10 +120,10 @@ trait PrimaryRepresentationTrait {
 				continue;
 			}
 			if (!$seen_primary && ((int)$qr->get('is_primary') === 0)) {
-				if ($t_rel = $table::findAsInstance($qr->get('relation_id'), ['transaction' => $this->getTransaction()])) {
+				// No primary - set one
+				if ($t_rel = $table::findAsInstance($row_rel_id, ['transaction' => $this->getTransaction()])) {
 					$t_rel->setTransaction($this->getTransaction());
 					$t_rel->set('is_primary', 1);
-					
 					$rc = $t_rel->update(['dontCheckPrimaryValue' => true]);
 					
 					if($t_rel->numErrors() > 0) {
@@ -133,7 +134,12 @@ trait PrimaryRepresentationTrait {
 					continue;
 				}
 			}
-			if ($seen_primary && ((int)$qr->get('is_primary') === 1)) {
+			if (
+				($seen_primary && ((int)$qr->get('is_primary') === 1))
+				||
+				(!$seen_primary && $subject_is_primary && ((int)$qr->get('is_primary') === 1))
+			) {
+				// Already set/found primary so unset this one
 				$t_rel = $table::findAsInstance($qr->get('relation_id'));
 				$t_rel->setTransaction($this->getTransaction());
 				$t_rel->set('is_primary', 0);
@@ -142,6 +148,7 @@ trait PrimaryRepresentationTrait {
 				if($t_rel->numErrors() > 0) {
 					$this->errors = array_merge($this->errors, $t_rel->errors);
 				}
+				continue;
 			}
 		}
 		return $seen_primary;

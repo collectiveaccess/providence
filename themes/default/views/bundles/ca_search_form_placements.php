@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_form 								= $this->getVar('t_form');
-	$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
-	
-	$va_available_display_items 			= $t_form->getAvailableBundles();
-	$settings 								= $this->getVar('settings');
-	
-	foreach($va_available_display_items as $vs_bundle => $va_item) {
-		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
-	}
-	
-	//getTemplatePlaceholderListForBundle
-	$va_to_display_items  					= $t_form->getPlacementsInForm(array('noCache' => true));
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+$t_form 								= $this->getVar('t_form');
+$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
+
+$va_available_display_items 			= $t_form->getAvailableBundles();
+$settings 								= $this->getVar('settings');
+
+foreach($va_available_display_items as $vs_bundle => $va_item) {
+	unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
+}
+
+$va_to_display_items  					= $t_form->getPlacementsInForm(array('noCache' => true));
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?= $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
@@ -48,12 +46,16 @@
 		<table>
 			<tr valign="top">
 				<td>
-					<div><?= _t("Available search items"); ?></div>
+					<div class="bundleDisplayEditorSearchForm">
+						<input type="text" name="available_search" size="15" id="bundleEditorAvailableListSearch" placeholder="<?= _t('Filter'); ?>"/>
+						<i class="caIcon fas fa-search fa-1x"></i>
+					</div>
+					<div class="preferenceColumnHeader"><?= _t("Available search items"); ?></div>
 		
 					<div id="bundleDisplayEditorAvailableList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
 				<td>
-					<div><?= _t("Items to search"); ?></div>
+					<div class="preferenceColumnHeader"><?= _t("Items to search"); ?></div>
 					
 					<div id="bundleDisplayEditorToDisplayList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
@@ -74,6 +76,8 @@
 				availableDisplayList: <?= json_encode($va_available_display_items); ?>,
 				initialDisplayList: 	<?= json_encode($va_to_display_items); ?>,
 				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items)); ?>,
+				
+				availableSearchID: 'bundleEditorAvailableListSearch',
 				
 				displayBundleListID: '<?= $vs_id_prefix; ?>displayBundleList',
 				

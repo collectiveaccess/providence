@@ -75,15 +75,15 @@ class BatchProcessor {
 			//$o_trans = new Transaction($t_subject->getDb());
 		//}
 
-		$o_log = new Batchlog(array(
+		$o_log = new Batchlog([
 			'user_id' => $po_request->getUserID(),
 			'batch_type' => 'BE',
 			'table_num' => (int)$rs->tableNum(),
 			'notes' => '',
-			//'transaction' => $o_trans
-		));
+			//'transaction' => $o_tran
+		]);
 
-		$vs_screen = $po_request->getActionExtra();
+		$vs_screen = caGetOption('screen', $pa_options, $po_request->getActionExtra());
 		$t_screen = new ca_editor_ui_screens(str_replace("Screen", "", $vs_screen));
 		if($t_screen->getPrimaryKey()) {
 			$t_ui = new ca_editor_uis($t_screen->get('ui_id'));

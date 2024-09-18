@@ -504,7 +504,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->numRows() > 0) {
 			$vs_subject_table = Datamodel::getTableName($this->get('table_num'));
-			$t_subject = Datamodel::getInstanceByTableNum($this->get('table_num'), true);
+			if(!$t_subject = Datamodel::getInstanceByTableNum($this->get('table_num'), true)) { return []; }
 			$t_placement = new ca_bundle_display_placements();
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
@@ -579,9 +579,8 @@ if (!$pb_omit_editing_info) {
 									$placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 								}
 							}
-
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
-								case 'DT_SELECT':
+								case DT_SELECT:
 									if ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) {
 										$vb_use_item_values = true;
 									} else {
@@ -2392,7 +2391,10 @@ if (!$pb_omit_editing_info) {
 					// resolve template relative to current record
 					$rtc = null;
 					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
-					if($element_code !== '_generic_bundle_') {
+					if(!in_array($element_code, ['_generic_bundle_', 'history_tracking_current_value'], true)) {
+						// Set container context for all bundles except generic and current value bundles
+						// We skip current value bundles because some extant templates pull in data outside of the current value
+						// container for display, and as current value never repeats the utility of setting context here is limited
 						$dt = ca_metadata_elements::getElementDatatype($element_code);
 						$rtc = ($dt === 0) ? $vs_bundle_name : null;
 					}
@@ -2561,7 +2563,6 @@ if (!$pb_omit_editing_info) {
 	public function savePlacementsFromHTMLForm($request, $ps_form_prefix, $ps_placement_code) {;
 		if ($vs_bundles = $request->getParameter("{$ps_placement_code}{$ps_form_prefix}displayBundleList", pString)) {
 			$va_bundles = explode(';', $vs_bundles);
-			
 			$t_display = new ca_bundle_displays($this->getPrimaryKey());
 			if ($this->inTransaction()) { $t_display->setTransaction($this->getTransaction()); }
 			$placements = $t_display->getPlacements(array('user_id' => $request->getUserID()));
@@ -2607,7 +2608,7 @@ if (!$pb_omit_editing_info) {
 					}
 				}
 				
-				if($placement_id === 0) {
+				if(((int)$placement_id === 0)) {
 					$t_display->addPlacement($vs_bundle, $va_settings[$placement_id] ?? null, $i + 1, array('user_id' => $request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? []));
 					if ($t_display->numErrors()) {
 						$this->errors = $t_display->errors;
@@ -2616,7 +2617,6 @@ if (!$pb_omit_editing_info) {
 				} else {
 					$t_placement = new ca_bundle_display_placements($placement_id, null, $va_available_bundles[$vs_bundle]['settings']);
 					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $i + 1);
 					
 					if (is_array($va_settings[$placement_id] ?? null)) {

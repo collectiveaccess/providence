@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -555,7 +555,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans = $this->getTransaction();
 		} else {	
 			$vb_we_set_transaction = true;
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 		}
 		
 		$o_request = caGetOption('request', $options, null);
@@ -1177,6 +1178,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		$va_checkouts = array();
 		if ($qr_res) {
 			while ($qr_res->nextHit()) {
+				if(!$qr_res->get('ca_objects.object_id')) { continue; }	// skip if object has been deleted
 				$va_tmp = array(
 					'checkout_id' => $qr_res->get('ca_object_checkouts.checkout_id'),
 					'group_uuid' => $qr_res->get('ca_object_checkouts.group_uuid'),

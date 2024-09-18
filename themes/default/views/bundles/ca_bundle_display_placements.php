@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2022 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,12 +46,16 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 		<table>
 			<tr valign="top">
 				<td>
-					<div><?= _t("Available information"); ?></div>
+					<div class="bundleDisplayEditorSearchForm">
+						<input type="text" name="available_search" size="15" id="bundleEditorAvailableListSearch" placeholder="<?= _t('Filter'); ?>"/>
+						<i class="caIcon fas fa-search fa-1x"></i>
+					</div>
+					<div class="preferenceColumnHeader"><?= _t("Available information"); ?></div>
 		
 					<div id="bundleDisplayEditorAvailableList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
 				<td>
-					<div><?= _t("Information to display"); ?></div>
+					<div class="preferenceColumnHeader"><?= _t("Information to display"); ?></div>
 					
 					<div id="bundleDisplayEditorToDisplayList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
@@ -72,6 +76,8 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 				availableDisplayList: <?= json_encode($va_available_display_items); ?>,
 				initialDisplayList: 	<?= json_encode($va_to_display_items); ?>,
 				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items)); ?>,
+				
+				availableSearchID: 'bundleEditorAvailableListSearch',
 				
 				displayBundleListID: '<?= $vs_id_prefix; ?>displayBundleList',
 				

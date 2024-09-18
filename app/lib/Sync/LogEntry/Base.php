@@ -373,7 +373,7 @@ abstract class Base {
 				if(($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) && (intval($va_snapshot[$vs_field]) != 1)) {
 					if(array_key_exists($vs_field . '_guid', $va_snapshot) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
-							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance = \Datamodel::getInstance($this->getModelInstance()->tableNum());
 							$t_instance->setTransaction($this->getTx());
 							if(!$t_instance->loadByGUID($vs_parent_guid) && !(intval($va_snapshot[$vs_field]) == 1)) {
 								throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
@@ -447,7 +447,6 @@ abstract class Base {
 								$item_ids = array_keys(caGetListItems($vs_list));
 								$vn_item_id = array_shift($item_ids);
 							} 
-							\ReplicationService::$s_logger->log("[$vn_item_id] remap $vs_list: ".print_R($item_ids, true));
 							
 							if(!$vn_item_id) {
 								throw new InvalidLogEntryException(
@@ -472,7 +471,7 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, 1);
 					} else {
 						if(array_key_exists($vs_field . '_guid', $va_snapshot) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
-							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance = \Datamodel::getInstance($this->getModelInstance()->tableNum());
 							$t_instance->setTransaction($this->getTx());
 							if($t_instance->loadByGUID($vs_parent_guid)) {
 								$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
@@ -510,7 +509,9 @@ abstract class Base {
 					} else {
 						if (($vs_field === 'user_id') && ($AUTH_CURRENT_USER_ID > 0)) {
 							$vm_val = $AUTH_CURRENT_USER_ID;
-						} elseif (!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id'])) {	// let auto-resolved fields fall through
+						} elseif (
+							!in_array($vs_field, ['type_id', 'locale_id', 'item_id', 'lot_id', 'home_location_id', 'representation_id', 'annotation_id'])
+						) {	// let auto-resolved fields fall through
 							throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot[$vs_field.'_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 						}
 					}

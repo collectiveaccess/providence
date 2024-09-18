@@ -470,7 +470,7 @@ class ca_change_log extends BaseModel {
 						case 'type_id':
 							if(preg_match("!^ca_relationship_type!", $t_instance->tableName())) {
 								goto deflabel;
-							} elseif($t_instance) {
+							} elseif($t_instance && $vm_val) {
 								if($t_instance instanceof BaseRelationshipModel) {
 									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true]; continue(2); }
 								} elseif($t_instance instanceof BaseModel) {

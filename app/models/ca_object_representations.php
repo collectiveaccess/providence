@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -379,7 +379,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_objects" => ["ca_objects_x_object_representations"]
 		)
 	);
 	
@@ -471,6 +471,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['transcription_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of transcriptions'));
 		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
 		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
+		$this->BUNDLES['caption_files'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption files'));
+		$this->BUNDLES['caption_file_locales'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption file locales'));
 		$this->BUNDLES['media_dimensions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media dimensions'));
 		$this->BUNDLES['media_duration'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media duration'));
 		$this->BUNDLES['media_class'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media class'));
@@ -478,6 +480,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['media_colorspace'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media colorspace'));
 		$this->BUNDLES['media_resolution'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media resolution'));
 		$this->BUNDLES['media_bitdepth'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit depth'));
+		$this->BUNDLES['media_bitrate'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit rate'));
+		$this->BUNDLES['media_bitspersample'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media bit per sample'));
+		$this->BUNDLES['media_samplerate'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media sample rate'));
+		
 		$this->BUNDLES['media_filesize'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media filesize'));
 		$this->BUNDLES['media_center_x'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media x-coordinate'));
 		$this->BUNDLES['media_center_y'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media y-coordinate'));
@@ -575,36 +581,44 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$reader = $media_path ? $this->_readEmbeddedMetadata($media_path) : null;
 		
 		if ($vn_rc = parent::update($options)) {
-			if(is_array($va_media_info = $this->getMediaInfo('media'))) {
-				$this->set('md5', $va_media_info['INPUT']['MD5']);
-				$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
-				$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
-				
-				if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
-					foreach($type_defaults as $m => $default_type) {
-						if(caCompareMimetypes($media_mimetype, $m)) {
-							$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
-							if (!($vn_rc = parent::update($options))) {
-								$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+			if((
+				!caGetOption('updateOnlyMediaVersions', $options, null)
+				&&
+				!caGetOption('startAtTime', $options, null)
+				&&
+				!caGetOption('startAtPage', $options, null)
+			)) {
+				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('md5', $va_media_info['INPUT']['MD5']);
+					$this->set('mimetype', $media_mimetype = $va_media_info['INPUT']['MIMETYPE']);
+					$this->set('media_class', caGetMediaClass($va_media_info['INPUT']['MIMETYPE']));
+					
+					if(is_array($type_defaults = $this->getAppConfig()->get('object_representation_media_based_type_defaults')) && sizeof($type_defaults)) {
+						foreach($type_defaults as $m => $default_type) {
+							if(caCompareMimetypes($media_mimetype, $m)) {
+								$this->set('type_id', $default_type, ['allowSettingOfTypeID' => true]);
+								if (!($vn_rc = parent::update($options))) {
+									$this->postError(2710, _t('Could not update representation type using media-based default'), 'ca_object_representations->insert()');
+								}
+								break;
 							}
-							break;
-						}
-					}	
+						}	
+					}
+					
+					if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
+						$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+					}
+				}
+				if ($vb_media_has_changed) {
+					$va_metadata = $this->get('media_metadata', array('binary' => true));
+					caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
+									
+					// Extract metadata mapping with configured mappings
+					$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 				}
 				
-				if (isset($va_media_info['ORIGINAL_FILENAME']) && strlen($va_media_info['ORIGINAL_FILENAME'])) {
-					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
-				}
+				$vn_rc = parent::update($options);
 			}
-			if ($vb_media_has_changed) {
-				$va_metadata = $this->get('media_metadata', array('binary' => true));
-				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
-								
-				// Extract metadata mapping with configured mappings
-				$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
-			}
-			
-			$vn_rc = parent::update($options);
 		}
 		
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
@@ -2469,11 +2483,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 * @param array $options Options include:
 	 *		user_id = Finds transcription with specified user_id. The user_id will also be used to determine if a transcription for the current user already exists. If null, only client IP address will be used to find existing transcriptions. [Default is null]
-	 *
+	 *		returnFirstTranscriptionIfNoUserTranscriptionAvailable = Return the first found transcription if none has been created by the user. [Default is false]
 	 * @return ca_representation_transcriptions instance of transcript, null if no representation is loaded or a transcript could not be located.
 	 */
-	public function getTranscription($options=null) {
+	public function getTranscription(?array $options=null) : ?ca_representation_transcriptions {
 		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		
+		$always_return_something = caGetOption('returnFirstTranscriptionIfNoUserTranscriptionAvailable', $options, false);
 		
 		// Try to find transcript by IP address
 		$ip = RequestHTTP::ip();
@@ -2486,7 +2502,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			&&
 			!($transcript = ca_representation_transcriptions::find(['representation_id' => $rep_id, 'ip_addr' => $ip], ['returnAs' => 'firstModelInstance']))
 		) {
-			$transcript = null;
+			$transcript = $always_return_something ? ca_representation_transcriptions::find(['representation_id' => $rep_id], ['returnAs' => 'firstModelInstance']) : null;
 		}
 		return $transcript;
 	}
@@ -2759,6 +2775,24 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 */
 	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
 		switch($bundle_name) {
+			case 'caption_files':
+				$files = [];
+				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {
+					foreach($file_instances as $file_instance){
+						$files[] = $file_instance->getFileUrl('caption_file');
+					}
+				}
+				return $files;
+				break;
+			case 'caption_file_locales':
+				$file_locales = [];
+				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {
+					foreach($file_instances as $file_instance){
+						$file_locales[] = ca_locales::IDToCode($file_instance->get('locale_id'));
+					}
+				}
+				return $file_locales;
+				break;
 			case 'transcription_count':
 				return $this->numTranscriptions($row_id);
 				break;
@@ -2787,6 +2821,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			case 'media_bitdepth':
 			case 'media_center_x':
 			case 'media_center_y':
+			case 'media_bitrate':
+			case 'media_bitspersample':
+			case 'media_samplerate':
 				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
 					$info = $qr->getMediaInfo('media');
 					$version = caGetOption('version', $options, 'original');
@@ -2840,6 +2877,21 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 						case 'media_bitdepth':
 							if (isset($info[$version]['PROPERTIES']['bitdepth']) && ($depth = $info[$version]['PROPERTIES']['bitdepth'])) {
 								return intval($depth).' bpp';
+							}
+							break;
+						case 'media_bitrate':
+							if (isset($info[$version]['PROPERTIES']['bitrate']) && ($depth = $info[$version]['PROPERTIES']['bitrate'])) {
+								return intval($depth).' bps';
+							}
+							break;
+						case 'media_bitspersample':
+							if (isset($info[$version]['PROPERTIES']['audio']['bits_per_sample']) && ($depth = $info[$version]['PROPERTIES']['audio']['bits_per_sample'])) {
+								return intval($depth).' bps';
+							}
+							break;
+						case 'media_samplerate':
+							if (isset($info[$version]['PROPERTIES']['sample_frequency']) && ($depth = $info[$version]['PROPERTIES']['sample_frequency'])) {
+								return intval($depth).' hz';
 							}
 							break;
 						case 'media_center_x':

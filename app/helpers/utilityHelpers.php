@@ -880,6 +880,33 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Remove stray temporary files from application tmp diectory
+	 *
+	 * Currently deletes:
+	 *		wkhtmltopdf tmp files
+	 */
+	function caCleanTmpDirectory() {
+		$config = Configuration::load();
+		if (($threshold = (int)$config->get('tmp_directory_garbage_collection_threshold')) <= 0) {
+			$threshold = 1800;
+		}
+		
+		$files_to_delete = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, false, false, true, ['notModifiedSince' => time() - $threshold]);
+	
+		$count = 0;
+		foreach($files_to_delete as $file_to_delete) {
+			if(is_writeable($file_to_delete)) {
+				if(preg_match("!^".__CA_APP_DIR__.'/tmp'."/wkhtmltopdf[\d]+!", $file_to_delete)) {
+					@unlink($file_to_delete);
+					$count++;
+				}
+			}
+		}
+		
+		return $count;
+	}
+	# ----------------------------------------
+	/**
 	 *
 	 */
 	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null, $options=null) {
@@ -1063,9 +1090,9 @@ function caFileIsIncludable($ps_file) {
 		if (
 			caGetOption('strict', $pa_options, false)
 			?
-				preg_match("!^(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				preg_match("!^(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#\(\)\[\]]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
 				:
-				preg_match("!(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+				preg_match("!(".join('|', $schemes)."):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#\(\)\[\]]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
 			) {
 			return array(
 				'protocol' => $va_matches[1],
@@ -3489,7 +3516,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		
-		$ps_value = preg_replace("![\-]+!", " ", $ps_value);
+		$ps_value = preg_replace("![\-]+!u", " ", $ps_value);
 
 		$pa_values = array(caConvertFractionalNumberToDecimal(trim($ps_value), $vs_locale));
 
@@ -3834,11 +3861,8 @@ function caFileIsIncludable($ps_file) {
 	        if (sizeof($va_tokens) > 2000) { 
 	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
-	    	if (sizeof($va_tokens) > 2000) { 
-	    		$va_tokens = array_slice($va_tokens, 0, 500, true); // delete last quarter of token buffer if it gets too long
-	    	}
 	    
-	        if (!isset($va_tokens[$vs_token])) { $va_tokens[$vs_token] = time(); }
+	        $va_tokens[$vs_token] = time();
 	        
 	        PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
 	    }
@@ -5060,5 +5084,59 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 		return $vars;
+	}
+	# ----------------------------------------
+	/**
+	 * Randomize order of array while preserving keys
+	 *
+	 * @param array
+	 * @return array
+	 */
+	function caShuffleArray(array $array) : array { 
+		$keys = array_keys($array); 
+		shuffle($keys); 
+		
+		$rarray = []; 
+		foreach ($keys as $key) {
+			$rarray[$key] = $array[$key]; 
+		}
+		return $rarray; 
+	}
+	# ----------------------------------------
+	/**
+	 * Return instance attached to attribute value.
+	 *
+	 * @param int $value_id
+	 *
+	 * @return BaseModel Instance or null if no match
+	 */
+	function caGetInstanceForValueID(int $value_id) : ?BaseModel {
+		$val = ca_attribute_values::find($value_id, ['returnAs' => 'arrays']);
+		if(!is_array($val)) { return null; }
+		
+		$attribute_id = $val[0]['attribute_id'];
+		$attr = ca_attributes::find($attribute_id, ['returnAs' => 'arrays']);
+		if(!is_array($attr)) { return null; }
+		
+		return Datamodel::getInstance($attr[0]['table_num'], true, $attr[0]['row_id']);
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array
+	 * @return array
+	 */
+	function caUrlExists(string $url, ?array $options=null) : bool { 
+		$allow_redirects = caGetOption('allowRedirects', $options, true);
+		
+		if(!is_array($headers = @get_headers($url))) { return false; }
+	
+		if(preg_match("!([\d]{3}) OK$!i", $headers[0], $m)) {
+			$sc = (int)$m[1];
+			if(($sc >= 200) && ($sc <= 299)) { return true; }
+			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }
+		}
+		return false;
 	}
 	# ----------------------------------------

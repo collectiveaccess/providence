@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 trait LockingTrait {
 	# ------------------------------------------------------
 	/**
@@ -78,6 +77,17 @@ trait LockingTrait {
     /**
 	 *
 	 */
+	static public function lockRenew() : bool {
+		if(self::lockExists()) {
+			touch(self::lockPath());
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+    /**
+	 *
+	 */
 	static public function lockRelease() : void {
 		if(is_resource(self::$s_lock_resource)) {
 			@fclose(self::$s_lock_resource);
@@ -118,5 +128,4 @@ trait LockingTrait {
 		return self::$s_lock_timeout;
 	}
 	# ------------------------------------------------------
-
 }

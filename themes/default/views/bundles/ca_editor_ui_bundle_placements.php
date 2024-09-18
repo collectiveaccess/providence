@@ -46,12 +46,16 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'UIEditorBu
 		<table>
 			<tr valign="top">
 				<td>
-					<div><?= _t("Available editor elements"); ?></div>
+					<div class="bundleDisplayEditorSearchForm">
+						<input type="text" name="available_search" size="15" id="bundleEditorAvailableListSearch" placeholder="<?= _t('Filter'); ?>"/>
+						<i class="caIcon fas fa-search fa-1x"></i>
+					</div>
+					<div class="preferenceColumnHeader"><?= _t("Available editor elements"); ?></div>
 		
 					<div id="bundleDisplayEditorAvailableList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
 				<td>
-					<div><?= _t("Elements to display on this screen"); ?></div>
+					<div class="preferenceColumnHeader"><?= _t("Elements to display on this screen"); ?></div>
 					
 					<div id="bundleDisplayEditorToDisplayList" class="bundleDisplayEditorPlacementList"><!-- empty --></div>
 				</td>
@@ -72,6 +76,8 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'UIEditorBu
 				availableDisplayList: <?= json_encode($va_available_display_items); ?>,
 				initialDisplayList: 	<?= json_encode($va_to_display_items); ?>,
 				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items)); ?>,
+				
+				availableSearchID: 'bundleEditorAvailableListSearch',
 				
 				displayBundleListID: '<?= $vs_id_prefix; ?>displayBundleList',
 				

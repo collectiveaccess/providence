@@ -676,11 +676,11 @@ trait ModelSettings {
 					}
 				} else {
 					if(isset($va_properties['showSortableElementsFor']) && ($va_properties['showSortableElementsFor'] > 0)) {
-						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor']);
-						
+						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor'], false);
 						$elements = array_filter($elements, function($e) {
-							return isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort'];
+							return (isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort']);
 						});
+						
 						$va_select_opts = [
 							_t('User defined sort order') => ''
 						];

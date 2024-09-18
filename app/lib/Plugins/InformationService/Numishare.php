@@ -101,7 +101,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 		
 		$s = urldecode($ps_search);
 		if (isURL($s) && ($service = self::isServiceUrl($s)) && preg_match("!^{$service}[/]*id/(.+)$!", $s, $m)) {
-			$ps_search = $m[1];
+			$ps_search = 'recordId:"' . $m[1] . '"';
 		}
 		while($count <= $maxcount) {
 			$vs_data = caQueryExternalWebservice("{$service}/apis/search?format=rss&q=".urlencode($ps_search));

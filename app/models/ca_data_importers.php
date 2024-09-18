@@ -1383,6 +1383,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$this->num_records_skipped = 0;
 		$this->import_error_list = [];
 		
+		// @TODO: make configurable
+		$bulk_insert_mode = true;
+		
 		$o_config = Configuration::load();
 		
 		$this->log = $o_log = caGetImportLogger($pa_options);
@@ -1417,6 +1420,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logError(_t('Import of %1 failed because mapping %2 does not exist.', $ps_source, $ps_mapping));
 			return null;
 		}
+		$setting_skip_duplicate_values = $t_mapping->getSetting('skipDuplicateValues');
 
 		$start 	= caGetOption('start', $pa_options, 0);
 		$limit 	= caGetOption('limit', $pa_options, null);
@@ -2682,7 +2686,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 							
 							$va_conv_vals[ $vn_i ] = $vm_val;
-							if ( $o_reader->valuesCanRepeat() ) {
+							if ( $o_reader->valuesCanRepeat() || (isset($va_item['settings']['delimiter']) && $va_item['settings']['delimiter'])) {
 								if(!is_array($va_row_with_replacements[ $va_item['source'] ?? null] ?? null)) { 
 									$va_row_with_replacements[ $va_item['source']] = $va_row[ $va_item['source']] =  $va_row[mb_strtolower( $va_item['source'])] = []; 
 								}
@@ -3117,103 +3121,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							                   && (int) $va_item['settings']['maxLength'] )
 								? (int) $va_item['settings']['maxLength'] : null;
 
-							// if ( isset( $va_item['settings']['delimiter'] ) && $va_item['settings']['delimiter']
-// 							     && ! $vb_use_as_single_value
-// 							) {
-// 								if ( ! is_array( $va_item['settings']['delimiter'] ) ) {
-// 									$va_item['settings']['delimiter'] = array( $va_item['settings']['delimiter'] );
-// 								}
-// 
-// 								if ( sizeof( $va_item['settings']['delimiter'] ) ) {
-// 									foreach ( $va_item['settings']['delimiter'] as $vn_index => $vs_delim ) {
-// 										$va_item['settings']['delimiter'][ $vn_index ] = preg_quote( $vs_delim, "!" );
-// 									}
-// 									$va_val_list = preg_split( "!(" . join( "|", $va_item['settings']['delimiter'] )
-// 									                           . ")!", $vm_val );
-// 
-// 									// Add delimited values
-// 									$vn_orig_c = $vn_c;
-// 									foreach ( $va_val_list as $vs_list_val ) {
-// 										if($use_constant = ($va_item['settings']['useConstant'] ?? null)) {
-// 											$vs_list_val = $use_constant; 
-// 										}
-// 										$vs_list_val = trim( ca_data_importers::replaceValue( $vs_list_val, $va_item,
-// 											[ 'log' => $o_log, 'logReference' => $vs_idno ] ) );
-// 										if ( $vn_max_length && ( mb_strlen( $vs_list_val ) > $vn_max_length ) ) {
-// 											$vs_list_val = mb_substr( $vs_list_val, 0, $vn_max_length );
-// 										}
-// 										if ( ! is_array( $va_group_buf[ $vn_c ] ) ) {
-// 											$va_group_buf[ $vn_c ] = array();
-// 										}
-// 
-// 
-// 										switch ( $vs_item_terminal ) {
-// 											case 'preferred_labels':
-// 											case 'nonpreferred_labels':
-// 												if ( $t_instance = Datamodel::getInstance( $vs_target_table, true ) ) {
-// 													$va_group_buf[ $vn_c ][ $t_instance->getLabelDisplayField() ]
-// 														= $vs_list_val;
-// 												}
-// 
-// 												if ( ! $vb_item_error_policy_is_default
-// 												     || ! isset( $va_group_buf[ $vn_c ]['_errorPolicy'] )
-// 												) {
-// 													if ( is_array( $va_group_buf[ $vn_c ] ) ) {
-// 														$va_group_buf[ $vn_c ]['_errorPolicy'] = $vs_item_error_policy;
-// 													}
-// 												}
-// 
-// 												if ( $vs_item_terminal == 'preferred_labels' ) {
-// 													$vs_preferred_label_for_log = $vm_val;
-// 												}
-// 												break;
-// 											default:
-// 												$va_group_buf[ $vn_c ] = array_merge( $va_group_buf[ $vn_c ], array(
-// 													$vs_item_terminal => $vs_list_val,
-// 													'_errorPolicy'    => $vs_item_error_policy
-// 												) );
-// 												if ( ! $vb_item_error_policy_is_default
-// 												     || ! isset( $va_group_buf[ $vn_c ]['_errorPolicy'] )
-// 												) {
-// 													if ( is_array( $va_group_buf[ $vn_c ] ) ) {
-// 														$va_group_buf[ $vn_c ]['_errorPolicy'] = $vs_item_error_policy;
-// 													}
-// 												}
-// 												break;
-// 										}
-// 										
-// 										
-// 										if(is_array($va_group_buf[ $vn_c ]) && sizeof($va_group_buf[ $vn_c ])) {
-// 											$va_group_buf[ $vn_c ]['_source'] = self::_setSourceValue($va_group_buf[ $vn_c ], $va_row_with_replacements, $va_item, $default_source_text, $o_reader);
-// 										}
-// 										$vn_c++;
-// 									}
-// 									$vn_c = $vn_orig_c;
-// 
-// 									// Replicate constants as needed: constant is already set for first constant in group, 
-// 									// but will not be set for repeats so we set them here
-// 
-// 									if ( sizeof( $va_group_buf ) > 1 ) {
-// 										foreach ( $va_items_by_group_proc[ $vn_group_id ] as $va_gitem ) {
-// 											if ( preg_match( "!^_CONSTANT_:[\d]+:(.*)!", $va_gitem['source'],
-// 												$va_gmatches )
-// 											) {
-// 
-// 												$va_gitem_dest     = explode( ".", $va_gitem['destination'] );
-// 												$vs_gitem_terminal = $va_gitem_dest[ sizeof( $va_gitem_dest ) - 1 ];
-// 												for ( $vn_gc = 1; $vn_gc < sizeof( $va_group_buf ); $vn_gc ++ ) {
-// 													$va_group_buf[ $vn_gc ][ $vs_gitem_terminal ]
-// 														= $va_gmatches[1];        // Set it and go onto the next item
-// 												}
-// 											}
-// 
-// 										}
-// 									}
-// 
-// 									continue;    // Don't add "regular" value below
-// 								}
-// 							}
-
 							if ( $vn_max_length && ( mb_strlen( $vm_val ) > $vn_max_length ) ) {
 								$vm_val = mb_substr( $vm_val, 0, $vn_max_length );
 							}
@@ -3388,8 +3295,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 			
-				//print_r($va_content_tree);
-			    //die("done\n");
+				// print_r($va_content_tree);
+// 			    die("done\n");
 			
 				if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 	
@@ -3713,18 +3620,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
 												}
 												
-												$t_subject->update(['queueIndexing' => true]);
-												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_element, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
-													if ($vs_item_error_policy == 'stop') {
-														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+												if(!$bulk_insert_mode) {
+													$t_subject->update(['queueIndexing' => true]);
+													if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_element, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+														$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => $vs_element, 'notes' => null]));
+														if ($vs_item_error_policy == 'stop') {
+															$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+														
+															$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 													
-														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-														$stopped_on_error = true;
-														goto stop_on_error;
+															$stopped_on_error = true;
+															goto stop_on_error;
+														}
+														continue(3);
 													}
-													continue(3);
 												}
 												
 												try {
@@ -3789,7 +3698,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 															'idno' => $vs_idno, 
 															'dataset' => $vn_dataset, 
 															'row' => $vn_row,
-															'skipExistingValues' => ($t_mapping->getSetting('skipDuplicateValues') || !ca_metadata_elements::getElementSettingsForId($vs_element, 'allowDuplicateValues')),
+															'skipExistingValues' => ($setting_skip_duplicate_values || !ca_metadata_elements::getElementSettingsForId($vs_element, 'allowDuplicateValues')),
 															'source' => $va_element_data[$vs_element]['_source'] ?? null
 														];
 											if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
@@ -3805,17 +3714,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												$va_opts['matchType'] = $va_element_data[$vs_element]['_matchType']; 
 											}
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
-											$t_subject->update(['queueIndexing' => true]);
 											
-											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, $errored_values = ca_data_importers::formatValuesForLog($va_element_content, $vs_element)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null, 'values' => $errored_values]));
-												if ($vs_item_error_policy == 'stop') {
-													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+											if(!$bulk_insert_mode) {
+												$t_subject->update(['queueIndexing' => true]);
 												
-													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-													$stopped_on_error = true;
-													goto stop_on_error;
+												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, $errored_values = ca_data_importers::formatValuesForLog($va_element_content, $vs_element)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => null, 'notes' => null, 'values' => $errored_values]));
+													if ($vs_item_error_policy == 'stop') {
+														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+													
+														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+													
+														$stopped_on_error = true;
+														goto stop_on_error;
+													}
 												}
 											}
 
@@ -3827,7 +3739,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						} 
 					
-						$t_subject->update(['queueIndexing' => true]);
+						$t_subject->update(['queueIndexing' => true, 'bulkMode' => $bulk_insert_mode]);
 
 						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Update failed: %2", $vs_idno, join('; ', $t_subject->getErrors())), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 							$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' =>  null, 'notes' => null, 'values' => null]));
@@ -4668,7 +4580,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private function _closeLogs() {
 		if(is_array($this->detlog)) {
-			array_map(function($v) { fclose($v); }, $this->detlog);
+			array_map(function($v) { if(is_resource($v)) { fclose($v); } }, $this->detlog);
 		}
 		$this->log = null;
 		$this->detlog = null;

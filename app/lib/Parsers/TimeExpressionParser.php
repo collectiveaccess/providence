@@ -3720,7 +3720,7 @@ class TimeExpressionParser {
 	 * @param array $pa_start_pieces
 	 * @param array $pa_end_pieces
 	 *
-	 * @return string CENTURY|DECADE|YEAR|MONTH|DAY if interval; false is not interval
+	 * @return string CENTURY|DECADE|YEAR|MONTH|DAY|DAY_RANGE if interval; false is not interval
 	 */
 	public function isDMYRange($pa_start_pieces, $pa_end_pieces) {
 		if (
@@ -3771,6 +3771,13 @@ class TimeExpressionParser {
 			return 'DAY';
 		}
 		
+		if (
+			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
+			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
+		) {
+			return 'DAY_RANGE';
+		}
+		
 		return false;
 	}
 	# -------------------------------------------------------------------
@@ -3786,12 +3793,18 @@ class TimeExpressionParser {
 	 * @return string
 	 */
 	public function getISODateRange($pa_start_date, $pa_end_date, $pa_options=null) {
-		$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
-		$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
+		if(($pa_start_date['day'] == 1) && ($pa_start_date['month'] == 1) && ($pa_end_date['day'] == 31) && ($pa_end_date['month'] == 12)) {
+			$start = $this->getISODateTime($pa_start_date, 'START', $pa_options);
+			$end = $this->getISODateTime($pa_end_date, 'END', $pa_options);
+		} else {
+			$start = $this->getISODateTime($pa_start_date, 'FULL', $pa_options);
+			$end = $this->getISODateTime($pa_end_date, 'FULL', $pa_options);
+		}
 		
 		switch($this->isDMYRange($pa_start_date, $pa_end_date)) {
 			case 'DAY':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
+			case 'DAY_RANGE':
 			case 'MONTH':
 				return $this->getISODateTime($pa_start_date, 'FULL', array_merge($pa_options, ['timeOmit' => true])).'/'.$this->getISODateTime($pa_end_date, 'FULL', array_merge($pa_options, ['timeOmit' => true]));
 		}
