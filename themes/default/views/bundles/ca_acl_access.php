@@ -45,28 +45,26 @@ $stats			= $this->getVar('statistics');
 	print caFormTag($this->request, 'SetAccess', 'caAccessControlList');
 ?>	
 	<div class='globalAccess'>
-		<div class='title'><?= _t('Global access'); ?></div>
+		<div class='title'><?= _t('General access'); ?></div>
 <?php 	
 		$global_access = $t_instance->getACLWorldAccess(['returnAsInitialValuesForBundle' => true]);
 		$global_access_status = $global_access['access_display'];
-		print "<p>"._t('All groups and users ')." <b>"; 
-		print "<span class='accessName'>{$global_access_status}</span>";
-		print"</b> "._t('this record, unless you create an exception')."</p>";
+		print "<p>"._t("All groups and users %1 <span class='accessName'>%1</span> this %2, unless you grant specific access below", $global_access_status, mb_strtolower($t_instance->getTypeName()))."</p>";
 
 ?>
 		<div id='editGlobalAccess'>
 <?= $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	?>	
 		</div>
-		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Edit Global Access'); ?></a></div>
+		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Change'); ?></a></div>
 		<div style='width:100%; clear:both; height: 1px;'></div> 
 	</div>
 	<div class='globalAccess'>
-		<div class='title'><?= _t('Exceptions'); ?></div>
+		<div class='title'><?= _t('User &amp; Group Access'); ?></div>
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
 		 	print "<p>"._t('The following groups and users have special access or restrictions for this record').".</p>";
 		} else {
-			print "<p>"._t('No access exceptions exist for this record')."</p>";
+			print "<p>"._t('No specific access specified')."</p>";
 		}
 		$group_access = $t_instance->getACLUserGroups(['returnAsInitialValuesForBundle' => true]);
 		foreach($group_access as $group_access_item) {
@@ -82,23 +80,22 @@ $stats			= $this->getVar('statistics');
 		}
 ?>		
 		<div id='editUserAccess'>
-			<h2><?= _t('Group access'); ?></h2>
-<?php
-			print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');			
-			print caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
-?>	
 			<h2><?= _t('User access'); ?></h2>
 			<?= $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList'); ?>
-
+			
+			<h2><?= _t('Group access'); ?></h2>
+			<?= $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList'); ?>
+			
+			<?= caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]); ?>	
 		</div>
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
 ?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Edit Exceptions'); ?></a></div>
+			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Edit access'); ?></a></div>
 <?php   
 		} else {
 ?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Create an Exception'); ?></a></div>
+			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Add access'); ?></a></div>
 <?php
 		}		
 ?>
@@ -108,7 +105,7 @@ $stats			= $this->getVar('statistics');
 		if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
 			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', '',['forACLAccessScreen' => true], ['request' => $this->request]);
 		}
-		if ($t_instance->hasField('acl_inherit_from_parent')) {
+		if ($t_instance->hasField('acl_inherit_from_parent') && $t_instance->get('parent_id')) {
 			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', '', ['forACLAccessScreen' => true], ['request' => $this->request]);
 		}
 ?>
@@ -201,9 +198,12 @@ if(
 }
 ?>
 	</form>	
-	<div class="editorBottomPadding"><!-- empty --></div>
 </div>
 
+<?= $can_edit ? $vs_control_box : ''; ?>
+
+<div class="editorBottomPadding"><!-- empty --></div>
+	
 <script>
 	jQuery(document).ready(function() {
 		jQuery('#setAllACLInheritFromCollections, #setNoneACLInheritFromCollections').on('change', function(e) {
