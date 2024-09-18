@@ -1297,7 +1297,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// Don't prevent context switches for children of context-switched exporter items. This way you can
 		// build cascades for jobs like exporting objects related to the creator of the record in question.
 		unset($options['ignoreContext']);
+		$item_info = [];
 
+		// Core mapping parameters
+		$source = $t_exporter_item->get('source');
+		$element = $t_exporter_item->get('element');
+		$is_repeat = caGetOption(['repeat_element_for_multiple_values', 'repeatElementForMultipleValues'], $settings, null);
+		$deduplicate = $settings['deduplicate'] ?? false;
+		$template = $settings['template'] ?? null;
+		
 		// BEGIN evaluate skip criteria
 		//
 		if(($skip_if_empty = ($settings['skipIfEmpty'] ?? false)) && (!(strlen($t_instance->get($source)) > 0))) {
@@ -1315,17 +1323,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		//
 		// END evaluate skip criteria
-
-		$item_info = [];
-
-		// Core mapping parameters
-		$source = $t_exporter_item->get('source');
-		$element = $t_exporter_item->get('element');
-		$is_repeat = caGetOption(['repeat_element_for_multiple_values', 'repeatElementForMultipleValues'], $settings, null);
-		$deduplicate = $settings['deduplicate'] ?? false;
+		
+		// Force display default for list items to display text (this is the traditional default)
+		if(!($settings['returnIdno'] ?? false) && !($settings['convertCodesToIdno'] ?? false) && !($settings['convertCodesToDisplayText'] ?? false)) {
+			$settings['convertCodesToDisplayText'] = true;
+		}
 
 		// Derive options to use for get() calls
-		$get_options = $this->itemGetOptions($t_exporter_item, $settings, $options);
+		$get_options = $this->itemGetOptions($t_exporter_item, $t_instance, $settings, $options);
 		
 		$old_ui_locale = null;
 		if(isset($get_options['locale'])) {
@@ -1369,7 +1374,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				} else {					
 					$values = $t_attr->getAttributeValues();
 					$src_tmp = explode('.', $source);
-					
 					if($t_attr->get('table_num') == Datamodel::getTableNum($src_tmp[0])) {
 						array_shift($src_tmp);
 					}
@@ -1487,6 +1491,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					'text' => trim($matches[1]),
 					'element' => $element,
 				];
+			} else if($template) {
+				$proc_template = caProcessTemplateForIDs($template, $table_num, [$record_id], []);
+				$item_info[] = [
+					'text' => $proc_template,
+					'element' => $element,
+				];
 			} else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
 				// Relationship type
 				if(isset($options[$source]) && strlen($options[$source])>0) {							
@@ -1502,7 +1512,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				// Values
-				$values = $t_instance->get($source, array_merge($get_options, ['returnAsArray' => true]));
+				$values = $t_instance->get($source, array_merge(
+					$get_options, 
+					['returnAsArray' => true]
+				));
 				$values_raw = $return_raw_data ? $t_instance->get($source, ['returnAsArray' => true]) : [];
 				
 				// TODO: handle this more centrally?
@@ -1905,7 +1918,7 @@ itemOutput:
 	/**
 	 * 
 	 */
-	private function itemGetOptions(ca_data_exporter_items $t_exporter_item, array $settings, ?array $options=null) {
+	private function itemGetOptions(ca_data_exporter_items $t_exporter_item, BaseModel $t_instance, array $settings, ?array $options=null) {
 		$get_options = ['returnURL' => true];	// always return URL for export, not an HTML tag
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")) {
@@ -1915,7 +1928,8 @@ itemOutput:
 		if($vs_template = ($settings['template'] ?? null)) {
 			$get_options['template'] = $vs_template;
 		}
-		if($filter_non_primary_representations = ($settings['filterNonPrimaryRepresentations'] ?? 1)) {
+		
+		if($filter_non_primary_representations = ($settings['filterNonPrimaryRepresentations'] ?? (($t_instance->tableName() === 'ca_object_representations') ? 0 : 1))) {
 			$get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_representations;
 		}
 		
@@ -1933,7 +1947,7 @@ itemOutput:
 		}
 
 		foreach([
-			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'startAsISO8601', 'end_as_iso8601', 'endAsISO8601', 
+			'convertCodesToIdno', 'returnIdno', 'convertCodesToDisplayText', 'start_as_iso8601', 'startAsISO8601', 'end_as_iso8601', 'endAsISO8601', 
 			'timeOmit', 'stripTags', 'dontReturnValueIfOnSameDayAsStart', 'returnAllLocales'
 		] as $opt) {
 			$get_options[$opt] = (bool)($settings[$opt] ?? null);

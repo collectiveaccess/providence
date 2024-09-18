@@ -504,7 +504,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($qr_res->numRows() > 0) {
 			$vs_subject_table = Datamodel::getTableName($this->get('table_num'));
-			$t_subject = Datamodel::getInstanceByTableNum($this->get('table_num'), true);
+			if(!$t_subject = Datamodel::getInstanceByTableNum($this->get('table_num'), true)) { return []; }
 			$t_placement = new ca_bundle_display_placements();
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
@@ -579,9 +579,8 @@ if (!$pb_omit_editing_info) {
 									$placements[$placement_id]['allowInlineEditing'] = $vb_user_can_edit;
 								}
 							}
-
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
-								case 'DT_SELECT':
+								case DT_SELECT:
 									if ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) {
 										$vb_use_item_values = true;
 									} else {

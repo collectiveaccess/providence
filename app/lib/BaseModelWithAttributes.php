@@ -1772,7 +1772,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		
 		if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
 		if ($va_tmp[1] == $this->getTypeFieldName()) {
-			return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('id' => str_replace('.', '_', $ps_field), 'class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
+			
+			$values = [$pa_options['values'][$ps_field]] ?? [];
+			return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('id' => str_replace('.', '_', $ps_field), 'class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-', 'values' => $values)));
 		}
 		
 		if ($ps_render = caGetOption('render', $pa_options, null)) {
@@ -3522,6 +3524,25 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				
 			", [$va_row_ids]);
 			if($qr_existant->numRows()>0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if any metadata elements have non-empty values on currently loaded record.
+	 *
+	 * @param array $options No options currently supported
+	 * 
+	 * @return bool
+	 */
+	public function metadataIsSet(?array $options=null) : bool {
+		$element_codes = $this->getApplicableElementCodes();
+		$table_name = $this->tableName();
+		
+		foreach($element_codes as $element_code) {
+			if(strlen($z=$this->get("{$table_name}.{$element_code}", ['dontReturnDefault' => true]))){
 				return true;
 			}
 		}

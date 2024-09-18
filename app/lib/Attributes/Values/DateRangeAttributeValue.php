@@ -446,18 +446,19 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		if (isset($pa_options['useDatePicker'])) {
 			$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
 		}
+		$attributes = caGetOption('attributes', $pa_options, null);
 
 		$vn_max_length = 255;
 		$vs_element = caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-			array(
+			array_merge($attributes ?? [], [
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
 				'class' => $vs_class,
 				'placeholder' => $pa_options['placeholder'] ?? null
-			)
+			])
 		);
 		
 		$vs_bundle_name = $vs_lookup_url = null;

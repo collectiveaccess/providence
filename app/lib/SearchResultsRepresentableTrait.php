@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
  /**
   * Methods for relationship models that include an is_primary flag
   */
-  
- 
 trait SearchResultsRepresentableTrait {
 	# -------------------------------------
 	static $s_table_names = [];
@@ -127,6 +124,8 @@ trait SearchResultsRepresentableTrait {
 				'joinTables' => [],
 				'criteria' => ["{$table}.is_primary = 1"]
 			];
+		} else {
+			unset($this->opa_tables[$table]);
 		}
 		
 		return true;

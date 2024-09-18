@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugGeographicMap.php");
 include_once(__CA_LIB_DIR__."/Plugins/GeographicMap/BaseGeographicMapPlugin.php");
 
@@ -68,11 +63,14 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 	 *		pathOpacity = used for paths and circles; default is to use 'leaflet_maps_path_opacity' setting in app.conf
 	 *		fillColor = fill color for circles and polygons; default is to use 'leaflet_maps_fill_color' setting in app.conf
 	 *		fillOpacity = fill opacioty for circles and polygons; default is to use 'leaflet_maps_fill_opacity' setting in app.conf
+	 *		cluster = cluster markers when many markers are close together. [Default is false]
 	 *
 	 * @return string
 	 */
 	public function render($ps_format, $pa_options=null) {
  		AssetLoadManager::register('leaflet');
+ 		
+ 		$cluster = caGetOption('cluster', $pa_options, false);
 		
 		list($vs_width, $vs_height) = $this->getDimensions();
 		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
@@ -216,6 +214,8 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 					$vn_height = $vn_height."px";
 				}
 				
+				$layer_type = $cluster ? 'markerClusterGroup' : 'featureGroup';
+				
 				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='map_{$vs_id}'> </div>\n
 <script type='text/javascript'>
 		var arrowIcon = L.icon({
@@ -237,7 +237,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		for(let group in pointList{$vs_id}) {
 			let points = pointList{$vs_id}[group];
 			if(!itemGroups{$vs_id}[group]) {
-				itemGroups{$vs_id}[group] = new L.featureGroup();
+				itemGroups{$vs_id}[group] = new L.{$layer_type}();
 			}
 			for(let k in points) {
 				let v = points[k];
@@ -268,7 +268,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		for(let group in circleList{$vs_id}) {
 			let circles = circleList{$vs_id}[group];
 			if(!itemGroups{$vs_id}[group]) {
-				itemGroups{$vs_id}[group] = new L.featureGroup();
+				itemGroups{$vs_id}[group] = new L.{$layer_type}();
 			}
 			for(let k in circles) {
 				let v = circles[k];
@@ -300,7 +300,7 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 		for(let group in pathList{$vs_id}) {
 			let paths = pathList{$vs_id}[group];
 			if(!itemGroups{$vs_id}[group]) {
-				itemGroups{$vs_id}[group] = new L.featureGroup();
+				itemGroups{$vs_id}[group] = new L.{$layer_type}();
 			}
 			for(let k in paths) {
 				let v = paths[k];

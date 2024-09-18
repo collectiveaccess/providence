@@ -36,7 +36,7 @@ require_once(__CA_LIB_DIR__."/Db/DbStatement.php");
 /**
  * Cache for prepared statements
  */
-$g_mysql_statement_cache = array();
+$g_mysql_statement_cache = [];
 
 /**
  * Flag indicating if db user has FILE priv; null=undetermined
@@ -78,7 +78,7 @@ class Db_mysqli extends DbDriverBase {
 		'numrows'       => true,
 		'pconnect'      => true,
 		'prepare'       => false,
-		'ssl'           => false,
+		'ssl'           => true,
 		'transactions'  => true,
 		'max_nested_transactions' => 1
 	);
@@ -87,6 +87,13 @@ class Db_mysqli extends DbDriverBase {
 	private $ops_db_user = '';
 	private $ops_db_pass = '';
 	private $ops_db_db = '';
+	private $ops_db_port = 3306;
+	private $use_ssl = false;
+	private $ssl_verify_cert = true;
+	private $ssl_key = null;
+	private $ssl_certificate = null;
+	private $ssl_ca_certificate = null;
+	private $ssl_ca_path = null;
 
 	/**
 	 * Constructor
@@ -94,19 +101,19 @@ class Db_mysqli extends DbDriverBase {
 	 * @see DbDriverBase::DbDriverBase()
 	 */
 	public function __construct() {
-		//print "Construct db driver\n";
+		parent::__construct();
 	}
 
 	/**
 	 * Establishes a connection to the database
 	 *
 	 * @param mixed $po_caller of the caller, usually a Db() object
-	 * @param array $pa_options array containing options like host, username, password
+	 * @param array $pa_options array containing options like host, username, password, port
 	 * @return bool success state
 	 */
 	public function connect($po_caller, $pa_options) {
 		global $g_connect;
-		if (!is_array($g_connect)) { $g_connect = array(); }
+		if (!is_array($g_connect)) { $g_connect = []; }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 
 		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
@@ -114,6 +121,13 @@ class Db_mysqli extends DbDriverBase {
 		$this->ops_db_user = $pa_options["username"];
 		$this->ops_db_pass = $pa_options["password"];
 		$this->ops_db_db = $pa_options["database"];
+		$this->ops_db_port = $pa_options["port"] ?? 3306;
+		$this->use_ssl = $pa_options["use_ssl"] ?? false;
+		$this->ssl_verify_cert = $pa_options["ssl_verify_cert"] ?? true;
+		$this->ssl_key = $pa_options["ssl_key"] ?? null;
+		$this->ssl_certificate = $pa_options["ssl_certificate"] ?? null;
+		$this->ssl_ca_certificate = $pa_options["ssl_ca_certificate"] ?? null;
+		$this->ssl_ca_path = $pa_options["ssl_ca_path"] ?? null;
 
 		if (
 			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) &&
@@ -126,18 +140,21 @@ class Db_mysqli extends DbDriverBase {
 		if (!function_exists("mysqli_connect")) {
 			throw new DatabaseException(_t("Your PHP installation lacks MySQL support. Please add it and retry..."), 200, "Db->mysqli->connect()");
 		}
-
-		$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
-
-		if (!$this->opr_db) {
+		if(!($this->opr_db  = mysqli_init())) {
+			throw new DatabaseException(_t('Could not initialize database connection'), 200, "Db->mysqli->connect()");
+		}
+		
+		$flags = null;
+		if($this->use_ssl) {
+			mysqli_options($this->opr_db, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, (bool)$this->ssl_verify_cert);
+			mysqli_ssl_set($this->opr_db, $this->ssl_key, $this->ssl_certificate, $this->ssl_ca_certificate, $this->ssl_ca_path, null);
+			$flags = MYSQLI_CLIENT_SSL;
+		}
+		if(!mysqli_real_connect($this->opr_db , $this->ops_db_host, $this->ops_db_user, $this->ops_db_pass, $this->ops_db_db, $this->ops_db_port, null, $flags)) {
 			$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");
 			throw new DatabaseException(mysqli_connect_error(), 200, "Db->mysqli->connect()");
 		}
 
-		if (!mysqli_select_db($this->opr_db, $this->ops_db_db)) {
-			$po_caller->postError(201, mysqli_error($this->opr_db), "Db->mysqli->connect()");
-			throw new DatabaseException(mysqli_error($this->opr_db), 201, "Db->mysqli->connect()");
-		}
 		mysqli_query($this->opr_db, 'SET NAMES \'utf8mb4\'');
 		mysqli_query($this->opr_db, 'SET character_set_results = NULL');	
 		
@@ -151,10 +168,10 @@ class Db_mysqli extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function disconnect() {
-		//if (!is_resource($this->opr_db)) { return true; }
-		//if (!@mysql_close($this->opr_db)) {
-		//	return false;
-		//}
+		if (!is_object($this->opr_db)) { return true; }
+		if (!mysqli_close($this->opr_db)) {
+			return false;
+		}
 		return true;
 	}
 
@@ -173,7 +190,7 @@ class Db_mysqli extends DbDriverBase {
 		
 		// are there any placeholders at all?
 		if (strpos($ps_sql, '?') === false) {
-			return new DbStatement($this, $this->ops_sql, array('placeholder_map' => array()));
+			return new DbStatement($this, $this->ops_sql, array('placeholder_map' => []));
 		}
 		
 		global $g_mysql_statement_cache;
@@ -190,7 +207,7 @@ class Db_mysqli extends DbDriverBase {
 		$vn_i = 0;
 		$vn_l = strlen($ps_sql);
 
-		$va_placeholder_map = array();
+		$va_placeholder_map = [];
 		$vb_in_quote = '';
 		$vb_is_escaped = false;
 		
@@ -316,17 +333,29 @@ class Db_mysqli extends DbDriverBase {
 			$logger->logInfo($prefix.json_encode(['query' => $vs_sql, 'params' => $pa_values]));
 		}
 		
+		$is_error = false;
+		$error_num = $error_message = null;
 		try {
 			if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
-				//print "<pre>".caPrintStacktrace()."</pre>\n";
-				$po_statement->postError($this->nativeToDbError($error_num = mysqli_errno($this->opr_db)), $error_message = mysqli_error($this->opr_db), "Db->mysqli->execute()");
-				if($logger) {
-					$logger->logError($prefix.json_encode(['errorNumber' => $error_num, 'errorMessage' => $error_message]));
-				}
-				throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
+				$is_error = true;
+				
+				$error_num = mysqli_errno($this->opr_db);
+				$error_message = mysqli_error($this->opr_db);
 			}
 		} catch(mysqli_sql_exception $e) {
-			throw new DatabaseException(250, $e->getMessage(), "Db->mysqli->execute()");
+			$is_error = true;
+			
+			$error_num = $e->getCode();
+			$error_message = $e->getMessage();
+		}
+		
+		if($is_error) {
+			$po_statement->postError($this->nativeToDbError($error_num), $error_message, "Db->mysqli->execute()");
+				
+			if($err_logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'db_errors'], null)) {
+				$err_logger->logError($prefix.json_encode(['code' => $this->nativeToDbError($error_num), 'errorNumber' => $error_num, 'errorMessage' => $error_message, 'sql' => $vs_sql, 'stacktrace' => caPrintStacktrace()]));
+			}
+			throw new DatabaseException($error_num, $error_message, "Db->mysqli->execute()");
 		}
 
 		if($logger) {
@@ -441,7 +470,7 @@ class Db_mysqli extends DbDriverBase {
 	 * @return array an array of field values (if $pm_field is a single field name) or an array if field names each of which is an array of values (if $pm_field is an array of field names)
 	 */
 	function getAllFieldValues($po_caller, $pr_res, $pa_fields, $pa_options=null) {
-		$va_vals = array();
+		$va_vals = [];
 		
 		$pn_limit = isset($pa_options['limit']) ? (int)$pa_options['limit'] : null;
 		$c = 0;
@@ -469,7 +498,7 @@ class Db_mysqli extends DbDriverBase {
 			}
 		} else {
 			$va_row = @mysqli_fetch_assoc($pr_res);
-			if (!is_array($va_row) || !array_key_exists($pa_fields, $va_row)) { return array(); }
+			if (!is_array($va_row) || !array_key_exists($pa_fields, $va_row)) { return []; }
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = @mysqli_fetch_assoc($pr_res))) {
 				$va_vals[] = $va_row[$pa_fields];
@@ -580,7 +609,7 @@ class Db_mysqli extends DbDriverBase {
 	 */
 	public function &getTables($po_caller) {
 		if ($r_show = mysqli_query($this->opr_db, "SHOW TABLES")) {
-			$va_tables = array();
+			$va_tables = [];
 			while($va_row = mysqli_fetch_row($r_show)) {
 				$va_tables[] = $va_row[0];
 			}

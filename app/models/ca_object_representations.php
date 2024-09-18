@@ -379,7 +379,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_objects" => ["ca_objects_x_object_representations"]
 		)
 	);
 	
@@ -2483,11 +2483,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 *
 	 * @param array $options Options include:
 	 *		user_id = Finds transcription with specified user_id. The user_id will also be used to determine if a transcription for the current user already exists. If null, only client IP address will be used to find existing transcriptions. [Default is null]
-	 *
+	 *		returnFirstTranscriptionIfNoUserTranscriptionAvailable = Return the first found transcription if none has been created by the user. [Default is false]
 	 * @return ca_representation_transcriptions instance of transcript, null if no representation is loaded or a transcript could not be located.
 	 */
-	public function getTranscription($options=null) {
+	public function getTranscription(?array $options=null) : ?ca_representation_transcriptions {
 		if (!($rep_id = $this->getPrimaryKey())) { return null; }
+		
+		$always_return_something = caGetOption('returnFirstTranscriptionIfNoUserTranscriptionAvailable', $options, false);
 		
 		// Try to find transcript by IP address
 		$ip = RequestHTTP::ip();
@@ -2500,7 +2502,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			&&
 			!($transcript = ca_representation_transcriptions::find(['representation_id' => $rep_id, 'ip_addr' => $ip], ['returnAs' => 'firstModelInstance']))
 		) {
-			$transcript = null;
+			$transcript = $always_return_something ? ca_representation_transcriptions::find(['representation_id' => $rep_id], ['returnAs' => 'firstModelInstance']) : null;
 		}
 		return $transcript;
 	}

@@ -1034,7 +1034,7 @@ class BaseFindController extends ActionController {
 				['request' => $this->getRequest(), 'restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $display_id : null]));
 		
 		$this->view->setVar('display_id', $display_id);
-		$this->view->setVar('columns',ca_bundle_displays::getColumnsForResultsEditor($display_list, ['request' => $this->request]));
+		$this->view->setVar('columns', ca_bundle_displays::getColumnsForResultsEditor($display_list, ['request' => $this->request]));
 		$this->view->setVar('num_rows', sizeof($ids));
 		
 		$this->render("Results/results_editable_html.php");
