@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 class HierarchyToolsController extends ActionController {
 	# -------------------------------------------------------
 	/**
@@ -353,6 +353,9 @@ class HierarchyToolsController extends ActionController {
 	 * Remove media from hierarchy and make standlone
 	 */
 	public function merge() {
+		$config = $this->request->config;
+		$table_name = $this->subject->tableName();
+		
 		$id = $this->request->getParameter('id', pInteger);	
 		$confirm = $this->request->getParameter('confirm', pInteger);	
 		if(!$this->subject->load($id)) {
@@ -384,6 +387,15 @@ class HierarchyToolsController extends ActionController {
 			}
 		}
 		$this->notification->addNotification(_t("Merged media from %1 items", $c), __NOTIFICATION_TYPE_INFO__);
+		
+		$component_types = $config->get("{$table_name}_component_types"); 
+		if(!(bool)$config->get("{$table_name}_enforce_strict_type_hierarchy") && sizeof($component_types)) {
+			$ct = array_shift($component_types);
+			$this->subject->set('type_id', $ct, ['allowSettingOfTypeID' => true]);
+			if(!$this->subject->update()) {
+				$this->notification->addNotification(_t("Could not set type for merged item: %1", join('; ', $this->subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+			}
+		}
 		$editor_url = caEditorUrl($this->request, $this->subject->tableName(), $this->subject->getPrimaryKey());
 		$this->response->setRedirect($editor_url);
 		return;
@@ -393,17 +405,32 @@ class HierarchyToolsController extends ActionController {
 	 * Remove media from item and make into component hierarchy
 	 */
 	public function split() {
+		global $g_ui_locale;
+		
+		$config = $this->request->config;
+		$table_name = $this->subject->tableName();
+		
 		$id = $this->request->getParameter('id', pInteger);	
 		$confirm = $this->request->getParameter('confirm', pInteger);	
 		if(!$this->subject->load($id)) {
 			throw new ApplicationException(_t('ID %1 is invalid', $id));
 		}
 		
+		$editor_url = caEditorUrl($this->request, $this->subject->tableName(), $this->subject->getPrimaryKey());
+		
 		$this->view->setVar('id', $id);
 		$this->view->setVar('t_subject', $this->subject);
 		
 		if(!$confirm) {
 			return $this->render('generic/hierarchy_tools_split_confirm_html.php');
+		}
+		
+		$container_types = $config->get("{$table_name}_container_types"); 
+		$component_types = $config->get("{$table_name}_component_types"); 
+		
+		if(!is_array($component_types) || !sizeof($component_types) || !is_array($container_types) || !sizeof($container_types)) {
+			$this->notification->addNotification(_t("Component system is not configured", $c), __NOTIFICATION_TYPE_ERROR__);	
+			$this->response->setRedirect($editor_url);
 		}
 		
 		// Get representations
@@ -414,7 +441,7 @@ class HierarchyToolsController extends ActionController {
 			// Create new components
 			$t_component = new ca_objects();
 			$t_component->set([
-				'type_id' => 'item',
+				'type_id' => $component_types[0],
 				'parent_id' => $this->subject->getPrimaryKey()
 			]);
 			$o_numbering_plugin = $t_component->getIDNoPlugInInstance();
@@ -425,7 +452,11 @@ class HierarchyToolsController extends ActionController {
 			$vs_idno_value = join($vs_sep, $va_idno_values);
 			$t_component->setIdnoWithTemplate($vs_idno_value);
 			$t_component->insert();
-			$t_component->addLabel(['name' => "Item {$c}"], null, 'en_US', true);
+			
+			$filename = $qr_reps->get('ca_object_representations.original_filename');
+			if(!$t_component->addLabel(['name' => $filename ? $filename : "Item {$c}"], $g_ui_locale, null, true)) {
+				$this->notification->addNotification(_t("Could not set file name as label for split item: %1", join('; ', $t_component->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+			}
 			
 			// Link rep to component
 			$ret = $t_component->addRelationship('ca_object_representations', $rep_id = $qr_reps->get('ca_object_representations.representation_id'), null);
@@ -437,8 +468,13 @@ class HierarchyToolsController extends ActionController {
 			$c++;
 		}
 		
+		$ct = array_shift($container_types);
+		$this->subject->set('type_id', $ct, ['allowSettingOfTypeID' => true]);
+		if(!$this->subject->update()) {
+			$this->notification->addNotification(_t("Could not set type for merged item: %1", join('; ', $this->subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+		}
+		
 		$this->notification->addNotification(_t("Split media creating %1 items", $c), __NOTIFICATION_TYPE_INFO__);
-		$editor_url = caEditorUrl($this->request, $this->subject->tableName(), $this->subject->getPrimaryKey());
 		$this->response->setRedirect($editor_url);
 		return;
 	}

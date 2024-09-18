@@ -2099,6 +2099,14 @@ div.control-box-middle-content {
     font-weight: bold;
 }
 
+div.delete-control-box div div.control-box-middle-content {
+    text-align: right;
+    margin: 3px;
+    float: right;
+    font-size:12px;
+    font-weight: bold;
+}
+
 div.control-box-right-content {
     float: right;
     margin-top: 3px;
