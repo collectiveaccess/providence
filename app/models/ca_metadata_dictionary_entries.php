@@ -522,35 +522,43 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 					$vn_entry_id = $vn_id;
 				}
 				
-				if ($vn_entry_id && (sizeof($va_types) || sizeof($va_relationship_types))) {
-					if (sizeof($va_relationship_types)) {
-						if(
-							is_array($va_entry_types = ($va_entry['settings']['restrict_to_relationship_types'] ?? null))
-						) {
-							if(sizeof($va_entry_types = array_filter($va_entry_types, 'strlen'))) {
-								if (sizeof(array_intersect($va_relationship_types, $va_entry_types))) {
-									$vn_entry_id = $vn_id;
-								} else {
-									$vn_entry_id = null;
+				$va_entry_types = array_filter($va_entry['settings']['restrict_to_types'] ?? [], 'strlen');
+				$va_entry_relationship_types = array_filter($va_entry['settings']['restrict_to_relationship_types'] ?? [], 'strlen');
+		
+				if($vn_entry_id) {
+					if ((sizeof($va_types) || sizeof($va_relationship_types))) {
+						if (sizeof($va_relationship_types)) {
+							if(
+								is_array()
+							) {
+								if(sizeof($va_entry_relationship_types)) {
+									if (sizeof(array_intersect($va_relationship_types, $va_entry_relationship_types))) {
+										$vn_entry_id = $vn_id;
+									} else {
+										$vn_entry_id = null;
+									}
 								}
 							}
 						}
-					}
-					if (sizeof($va_types)) {
-						if(
-							is_array($va_entry_types = ($va_entry['settings']['restrict_to_types'] ?? null))
-						) {
-							if(sizeof($va_entry_types = array_filter($va_entry_types, 'strlen'))) {
-								if (sizeof(array_intersect($va_types, $va_entry_types))) {
-									$vn_entry_id = $vn_id;
-								} else {
-									$vn_entry_id = null;
+						if (sizeof($va_types)) {
+							if(
+								is_array($va_entry_types = ($va_entry['settings']['restrict_to_types'] ?? null))
+							) {
+								if(sizeof($va_entry_types)) {
+									if (sizeof(array_intersect($va_types, $va_entry_types))) {
+										$vn_entry_id = $vn_id;
+									} else {
+										$vn_entry_id = null;
+									}
 								}
 							}
 						}
+					} elseif((sizeof($va_types) && !sizeof($va_entry_types)) || (!sizeof($va_types) && sizeof($va_entry_types))) {
+						$vn_entry_id = null;
+					} elseif((sizeof($va_relationship_types) && !sizeof($va_entry_relationship_types)) || (!sizeof($va_relationship_types) && sizeof($va_entry_relationship_types))) {
+						$vn_entry_id = null;
 					}
 				}
-				
 				if ($vn_entry_id) { break; }
 			}
 			
