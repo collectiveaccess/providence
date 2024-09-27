@@ -1298,6 +1298,7 @@ class BaseModel extends BaseObject {
 	 */
 	static public function getIDsForIdnos($idnos, $options=null) {
 	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
+	    if(!is_array($idnos)) { return null; }
 	    
 	    $access_values = caGetOption('checkAccess', $options, null);
 
@@ -1307,7 +1308,7 @@ class BaseModel extends BaseObject {
 		$table_name = get_called_class();
 		
 		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
-			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types, $options);
 		}
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
@@ -12247,8 +12248,13 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_restriction_sql = '';
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
-			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
+			$dont_include_subtypes_in_type_restriction = isset($pa_options['dontIncludeSubtypesInTypeRestriction']) ? (bool)$pa_options['dontIncludeSubtypesInTypeRestriction'] : null;
+			if(!is_null($dont_include_subtypes_in_type_restriction)) {
+				$include_subtypes = $dont_include_subtypes_in_type_restriction;
+			} else {
+				$include_subtypes = isset($pa_options['includeSubtypes']) ? (bool)$pa_options['includeSubtypes'] : true;
+			}
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => !$include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}

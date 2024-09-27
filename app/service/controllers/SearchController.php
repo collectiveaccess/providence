@@ -115,6 +115,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Type restrictions')
 						],
 						[
+							'name' => 'includeSubtypes',
+							'type' => Type::boolean(),
+							'description' => _t('Expand type restriction to include subtypes?'),
+							'defaultValue' => true
+						],
+						[
 							'name' => 'filterNonPrimaryRepresentations',
 							'type' => Type::boolean(),
 							'description' => 'Only return primary representation?'
@@ -170,7 +176,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								$t['restrictToTypes'] = [$t['restrictToTypes']];
 							}
 							if(is_array($t['restrictToTypes']) && sizeof($t['restrictToTypes'])) {
-								$s->setTypeRestrictions($t['restrictToTypes']);
+								$s->setTypeRestrictions($t['restrictToTypes'], ['includeSubtypes' => $args['includeSubtypes'] ?? true]);
 							}
 						
 							$qr = $s->search($search, ['checkAccess' => $t['checkAccess'] ?? null]);
@@ -251,6 +257,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Type restrictions')
 						],
 						[
+							'name' => 'includeSubtypes',
+							'type' => Type::boolean(),
+							'description' => _t('Expand type restriction to include subtypes?'),
+							'defaultValue' => true
+						],
+						[
 							'name' => 'filterNonPrimaryRepresentations',
 							'type' => Type::boolean(),
 							'description' => 'Only return primary representation?'
@@ -272,6 +284,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'start' => $args['start'],
 								'limit' => $args['limit'],
 								'restrictToTypes' => $args['restrictToTypes'],
+								'includeSubtypes' => $args['includeSubtypes'] ?? true,
 								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false
 							]];
 						}
@@ -300,7 +313,13 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								$t['restrictToTypes'] = [$t['restrictToTypes']];
 							}
 						
-							if(!($qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($t['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $t['restrictToTypes'], 'checkAccess' => $check_access]))) {
+							if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($t['criteria'], $table), [
+								'returnAs' => 'searchResult', 
+								'allowWildcards' => true, 
+								'restrictToTypes' => $t['restrictToTypes'], 
+								'includeSubtypes' => $t['includeSubtypes'],
+								'checkAccess' => $check_access
+							]))) {
 								throw new \ServiceException(_t('No results for table: %1', $table));
 							}
 					
@@ -308,7 +327,13 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
 
-							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors'], 'filterNonPrimaryRepresentations' => $t['filterNonPrimaryRepresentations']]), 'count' => sizeof($r)];
+							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, [
+								'checkAccess' => $check_access, 
+								'start' => $t['start'], 
+								'limit' => $t['limit'], 
+								'filterByAncestors' => $t['filterByAncestors'], 
+								'filterNonPrimaryRepresentations' => $t['filterNonPrimaryRepresentations']
+							]), 'count' => sizeof($r)];
 							if(is_null($ftable)) {
 								// Stash details of first find for use in "flat" response
 								$ftable = $table;
@@ -342,6 +367,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'restrictToTypes',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Type restrictions')
+						],
+						[
+							'name' => 'includeSubtypes',
+							'type' => Type::boolean(),
+							'description' => _t('Expand type restriction to include subtypes?'),
+							'defaultValue' => true
 						],
 						[
 							'name' => 'bundle',
@@ -394,8 +425,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$t = \Datamodel::getInstance($table, true);
 						switch($b = $bundle_bits[0]) {
 							case 'idno':
-								$ids = $table::getIDsForIdnos($values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true]);
-							
+								$ids = $table::getIDsForIdnos($values, [
+									'restrictToTypes' => $args['restrictToTypes'] ?? null, 
+									'includeSubtypes' => $args['includeSubtypes'] ?? true,
+									'returnAll' => true
+								]);
+								if(!is_array($ids)) { break; }
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
 								}

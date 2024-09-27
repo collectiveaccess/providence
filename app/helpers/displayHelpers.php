@@ -1533,7 +1533,7 @@ function caEditorInspector($view, $options=null) {
 		// Get component information
 		$object_container_types = $view->request->config->getList('ca_objects_container_types');
 		$object_component_types = $view->request->config->getList('ca_objects_component_types');
-		$takes_components = in_array($t_item->getTypeCode(), $object_container_types);
+		$takes_components = (in_array($t_item->getTypeCode(), $object_container_types) || in_array('*', $object_container_types));
 		
 		$can_add_component = (($table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 

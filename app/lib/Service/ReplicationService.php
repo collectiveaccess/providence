@@ -624,7 +624,7 @@ class ReplicationService {
 		$has_deleted = $t->hasField('deleted');
 		
 		$db = new Db();
-		if($t->hasField('access')) {
+		if($t->hasField('access') && !is_a($t, 'BaseLabel')) {
 			$qr = $db->query("
 				SELECT g.guid 
 				FROM ca_guids g

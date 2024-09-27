@@ -432,8 +432,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if(!$is_blank && !$is_not_blank && (!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options) || in_array('INDEX_AS_IDNO', $indexing_options))) {
 	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
 	 	}
-	 	if(!$words || !sizeof($words)) { return null; }
 	 	
+	 	$words = array_filter($words, 'strlen');
+	 	if(!$words || !sizeof($words)) { return null; }
 	 	
 	 	$word_field = 'sw.word';
 	 	

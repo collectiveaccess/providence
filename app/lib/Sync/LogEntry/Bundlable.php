@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,7 +86,14 @@ class Bundlable extends Base {
 
 	private function applyOutsideIntrinsics($pa_intrinsics) {
 		foreach($pa_intrinsics as $vs_fld => $vm_val) {
-			$this->getModelInstance()->set($vs_fld, $vm_val, ['allowSettingOfTypeID' => true]);
+			if($this->getModelInstance()->hasField($vs_fld)) { 
+				$this->getModelInstance()->set($vs_fld, $vm_val, ['allowSettingOfTypeID' => true]);
+			} elseif(method_exists($this->getModelInstance(), 'hasElement') && $this->getModelInstance()->hasElement($vs_fld)) {
+				// add attribute
+				$this->getModelInstance()->replaceAttribute([
+					$vs_fld => $vm_val
+				], $vs_fld);
+			}
 		}
 	}
 }
