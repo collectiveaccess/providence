@@ -2478,7 +2478,7 @@ itemOutput:
         foreach($settings as $k => $v) {
             $o_sheet->setCellValue($a_to_z[0].$line, "Setting");
             $o_sheet->setCellValue($a_to_z[1].$line, $k);
-            $o_sheet->setCellValue($a_to_z[2].$line, $v);
+            $o_sheet->setCellValue($a_to_z[2].$line, is_array($v) ? join(";",$v) : $v);
             $line++;
         }
         
