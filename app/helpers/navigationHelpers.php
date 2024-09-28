@@ -35,6 +35,7 @@
    */
    
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	
  	# ------------------------------------------------------------------------------------------------
  	/**
@@ -109,7 +110,9 @@
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	define('__CA_NAV_ICON_UPLOAD__', 69);
  	define('__CA_NAV_ICON_COPY__', 70);
- 	define('__CA_NAV_ICON_RANDOM__', 71);
+ 	define('__CA_NAV_ICON_MERGE__', 71);
+ 	define('__CA_NAV_ICON_SPLIT__', 72);
+ 	define('__CA_NAV_ICON_RANDOM__', 73);
  	
  	/**
  	 * Icon position constants
@@ -176,7 +179,7 @@
 					if ($use_query_string) { 
 					    $query_params[$vs_name] = $vs_value;
 					} else {
-					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
+					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : rawurlencode($vs_value));
 				    }
 					$vn_i++;
 				}
@@ -560,6 +563,7 @@
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
 		if($vs_classname = (!$pb_no_background) ? 'form-button' : '') {
+			if(!isset($pa_attributes['class'])) { $pa_attributes['class'] = null; }
 			$pa_attributes['class'] .= " {$vs_classname}";
 		}
 		
@@ -637,7 +641,7 @@
 	function caNavIcon($pn_type, $pm_size=2, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
-		$vs_opt_class = $pa_attributes['class'] ? ' '.$pa_attributes['class'] : '';
+		$vs_opt_class = ($pa_attributes['class'] ?? null) ? ' '.$pa_attributes['class'] : '';
 		unset($pa_attributes['class']);
 		
 		if ($vs_color = caGetOption('color', $pa_options, null)) {
@@ -789,7 +793,7 @@
 				$vs_fa_class = 'fas fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fas fa-sliders';
+				$vs_fa_class = 'fas fa-sliders-h';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fas fa-download';
@@ -858,7 +862,7 @@
  				$vs_fa_class = 'far fa-clock';	
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
- 				$vs_fa_class = 'fas fa-cog far fa-spin';	
+ 				$vs_fa_class = 'fas fa-spinner fa-spin';	
  				break;								
  			case __CA_NAV_ICON_HIER__:
  				$vs_fa_class = 'fas fa-sitemap';
@@ -901,6 +905,12 @@
 				break;							
 			case __CA_NAV_ICON_RANDOM__:
 				$vs_fa_class = 'fa fa-random';
+				break;	
+			case __CA_NAV_ICON_MERGE__:
+				$vs_fa_class = 'fa fa-object-group';
+				break;	
+			case __CA_NAV_ICON_SPLIT__:
+				$vs_fa_class = 'fa fa-object-ungroup';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
@@ -1002,7 +1012,23 @@
 			if (!($t_table = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$pb_quick_add = caGetOption('quick_add', $pa_options, false);
-
+		
+		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
+			// Make sure record link points to exists
+			if (($pn_id > 0) && !$t_table->load($pn_id)) {
+				return null;
+			}
+		}
+		
+		$action_extra = caGetOption('actionExtra', $pa_options, null);
+		if($bundle = caGetOption('bundle', $pa_options, null)) {
+			$t_table->load($pn_id);
+			$type_id = $t_table->getTypeID();
+			if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
+				$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
+			}
+		}
+		
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $t_table->tableName();
 		if ($vs_table == 'ca_list_items') { $vs_table = 'ca_lists'; }
@@ -1112,22 +1138,26 @@
 				return null;
 				break;
 		}
-		
-		$action_extra = caGetOption('actionExtra', $pa_options, null);
-
 		switch($vs_table) {
 			case 'ca_relationship_types':
 				$vs_action = isset($pa_options['action']) ? $pa_options['action'] : (($po_request->isLoggedIn() && $po_request->user->canDoAction('can_configure_relationship_types')) ? 'Edit' : 'Summary'); 
 				break;
 			default:
+				$default_to_summary_view_conf = $po_request->config->getList("{$vs_table}_editor_defaults_to_summary_view");
+				if(is_array($default_to_summary_view_conf) && sizeof($default_to_summary_view_conf)) {
+					$t_ui = ca_editor_uis::loadDefaultUI($vs_table, $po_request, $t_table->getTypeID($pn_id));
+					$default_to_summary_view = $t_ui ? in_array($t_ui->get('editor_code'), $default_to_summary_view_conf, true) : false;
+				} else {
+					$default_to_summary_view = (bool)$po_request->config->get("{$vs_table}_editor_defaults_to_summary_view");
+				}
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
 				} elseif($pb_quick_add) {
 					$vs_action = 'Form';
 				} elseif(
 					$po_request->isLoggedIn() &&
-					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
-					!((bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
+					$po_request->user->canAccess($vs_module, $vs_controller, "Edit", [$vs_pk => $pn_id]) &&
+					!($default_to_summary_view && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
 				) {
 					$vs_action = 'Edit';
 				} else {
@@ -1135,14 +1165,6 @@
 				}
 				break;
 		}
-		
-		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
-			// Make sure record link points to exists
-			if (($pn_id > 0) && !$t_table->load($pn_id)) {
-				return null;
-			}
-		}
-		
 		
 		if ($pb_return_url_as_pieces) {
 			return array(
@@ -1382,14 +1404,15 @@
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Redirect to given url
-	 * @param string $ps_url
+	 * @param string $url
 	 * @return bool success state
 	 */
-	function caSetRedirect($ps_url) {
-		global $g_response;
-		if(!($g_response instanceof ResponseHTTP)) { return false; }
+	function caSetRedirect($url) {
+		$app = AppController::getInstance();
+		$resp = $app->getResponse();
+		if(!($resp instanceof ResponseHTTP)) { return false; }
 
-		$g_response->setRedirect($ps_url);
+		$resp->setRedirect($url);
 		return true;
 	}
 	# ------------------------------------------------------------------------------------------------

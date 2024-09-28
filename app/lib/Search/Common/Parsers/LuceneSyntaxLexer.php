@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,9 +56,9 @@ class LuceneSyntaxLexer extends Zend_Search_Lucene_FSM
     const IN_MUTABLE_CHAR    = 8;
 
     const QUERY_WHITE_SPACE_CHARS      = " \n\r\t";
-    const QUERY_SYNT_CHARS             = ':()[]{}!|&';
+    static $QUERY_SYNT_CHARS             = ':()[]{}!|&';
     const QUERY_MUTABLE_CHARS          = '+-';
-    const QUERY_DOUBLECHARLEXEME_CHARS = '|&';
+    static $QUERY_DOUBLECHARLEXEME_CHARS = '|&';
     const QUERY_LEXEMEMODIFIER_CHARS   = '~^';
     const QUERY_ASCIIDIGITS_CHARS      = '0123456789';
 
@@ -93,6 +93,11 @@ class LuceneSyntaxLexer extends Zend_Search_Lucene_FSM
 
     public function __construct()
     {
+    	$config = caGetSearchConfig();
+    	if($config && $config->get('allow_ampersands_and_pipes')) {    		
+			self::$QUERY_SYNT_CHARS = ':()[]{}!';
+			self::$QUERY_DOUBLECHARLEXEME_CHARS = '';
+    	}
         parent::__construct( array(self::ST_WHITE_SPACE,
                                    self::ST_SYNT_LEXEME,
                                    self::ST_LEXEME,
@@ -306,7 +311,7 @@ class LuceneSyntaxLexer extends Zend_Search_Lucene_FSM
     private function _translateInput($char)
     {
         if        (strpos(self::QUERY_WHITE_SPACE_CHARS,    $char) !== false) { return self::IN_WHITE_SPACE;
-        } else if (strpos(self::QUERY_SYNT_CHARS,           $char) !== false) { return self::IN_SYNT_CHAR;
+        } else if (strpos(self::$QUERY_SYNT_CHARS,           $char) !== false) { return self::IN_SYNT_CHAR;
         } else if (strpos(self::QUERY_MUTABLE_CHARS,        $char) !== false) { return self::IN_MUTABLE_CHAR;
         } else if (strpos(self::QUERY_LEXEMEMODIFIER_CHARS, $char) !== false) { return self::IN_LEXEME_MODIFIER;
         } else if (strpos(self::QUERY_ASCIIDIGITS_CHARS,    $char) !== false) { return self::IN_ASCII_DIGIT;
@@ -380,7 +385,7 @@ class LuceneSyntaxLexer extends Zend_Search_Lucene_FSM
         $lexeme = $this->_queryString[$this->_queryStringPosition];
 
         // Process two char lexemes
-        if (strpos(self::QUERY_DOUBLECHARLEXEME_CHARS, $lexeme) !== false) {
+        if (strpos(self::$QUERY_DOUBLECHARLEXEME_CHARS, $lexeme) !== false) {
             // increase current position in a query string
             $this->_queryStringPosition++;
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/IRelationshipModel.php');
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
-require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
-require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
 class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes implements IRelationshipModel {
 	# ------------------------------------------------------
@@ -60,6 +54,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
 			$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
 			
+			$t_left->setTransaction($this->getTransaction());
+			$t_right->setTransaction($this->getTransaction());
+			
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
 					if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
@@ -78,6 +75,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		if ($vn_rc = parent::update($pa_options)) {
 			$t_left = Datamodel::getInstanceByTableNum($this->getLeftTableNum());
 			$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
+			
+			$t_left->setTransaction($this->getTransaction());
+			$t_right->setTransaction($this->getTransaction());
 			
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
@@ -99,6 +99,9 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vn_right_id = $this->get($this->getRightTableFieldName());
 		
 		$t_right = Datamodel::getInstanceByTableNum($this->getRightTableNum());
+		
+		$t_left->setTransaction($this->getTransaction());
+		$t_right->setTransaction($this->getTransaction());
 		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 				if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
@@ -400,7 +403,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		$vs_right_table_name = $this->getRightTableName();
 		
 		$restrict_to_relationship_types = caGetOption(['restrictToRelationshipTypes', 'restrict_to_relationship_types'], $pa_options, null);
-		$vb_dont_include_subtypes_in_type_restriction = caGetOptions('dont_include_subtypes_in_type_restriction', $pa_options, false);
+		$vb_dont_include_subtypes_in_type_restriction = (bool)caGetOption('dont_include_subtypes_in_type_restriction', $pa_options, false);
 		
 		$o_db = $this->getDb();
 		$t_rel_type = new ca_relationship_types();
@@ -722,7 +725,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				$va_types_by_locale = [];
 				foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
 					foreach($va_types_by_key as $vn_locale_id => $va_t) {
-						if (!is_array($va_types_by_locale[$vn_locale_id])) { $va_types_by_locale[$vn_locale_id] = []; }
+						if (!is_array($va_types_by_locale[$vn_locale_id] ?? null)) { $va_types_by_locale[$vn_locale_id] = []; }
 						$va_types_by_locale[$vn_locale_id] += $va_t;
 					}
 				}
@@ -747,8 +750,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	# ------------------------------------------------------
 	private function _processRelationshipHierarchy($pn_id, $pa_hier, $pa_types, $pn_level) {
 		$va_types_to_return = [];
-		if(!is_array($pa_hier[$pn_id])) { return []; }
-		if (!is_array($pa_types[$pn_id])) { return [];}
+		if(!is_array($pa_hier[$pn_id] ?? null)) { return []; }
+		if (!is_array($pa_types[$pn_id] ?? null) ) { return [];}
 		foreach($pa_types[$pn_id] as $vs_sub_types => $va_list) {	// items in this level
 			ksort($va_list);
 			foreach($va_list as $vs_key => $va_list_by_type_id) {
@@ -756,7 +759,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 					$va_types_to_return[$vs_sub_types][$vs_key][$vn_type_id] = $va_item;		// output item
 				
 					// look for sub items
-					if (is_array($pa_hier[$vn_type_id])) {
+					if (is_array($pa_hier[$vn_type_id] ?? null)) {
 						if (is_array($va_tmp = $this->_processRelationshipHierarchy($vn_type_id, $pa_hier, $pa_types, $pn_level + 1))) {
 							foreach($va_tmp as $x_vs_sub_types => $x_va_list) {
 								foreach($x_va_list as $x_vs_key => $x_va_list_by_type_id) {
@@ -806,7 +809,7 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 	 * 
 	 */
 	public function getTypeID($pn_id = NULL) {
-		if ($pn_id) {
+		if ($pn_id && BaseModel::hasField('type_id')) {
 			$qr_res = $this->getDb()->query("SELECT type_id FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", array((int)$pn_id));
 			if($qr_res->nextRow()) {
 				return $qr_res->get('type_id');
@@ -930,10 +933,6 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		return array_keys($va_ids);
 	}
 	# ------------------------------------------------------
-	public function getHash() {
-		return parent::getHash(); // TODO: Change the autogenerated stub
-	}
-	# ------------------------------------------------------
 	/**
 	 * Updates the ranks for a list of given relation_ids. list/array keys will be the actual rank values.
 	 *
@@ -946,6 +945,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		foreach($pa_ids as $i => $vn_id) {
 			$this->getDb()->query("UPDATE ".$this->tableName() . " SET `rank` = ? WHERE relation_id = ?", $i, $vn_id);
 		}
+		
+		return true;
 	}
 	# ------------------------------------------------------
 	public function getAdditionalChecksumComponents() {

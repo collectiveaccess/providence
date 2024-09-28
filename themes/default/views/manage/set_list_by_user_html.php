@@ -53,11 +53,11 @@ if (!$this->request->isAjax()) {
 		jQuery('#setSearch').autocomplete(
 			{
 				minLength: 3, delay: 800, html: true,
-				source: '<?php print caNavUrl($this->request, 'lookup', 'Set', 'Get', array('noInline' => 1, 'type' => $vn_type_id)); ?>',
+				source: '<?= caNavUrl($this->request, 'lookup', 'Set', 'Get', array('noInline' => 1, 'type' => $vn_type_id)); ?>',
 				select: function(event, ui) {
 					if (parseInt(ui.item.id) > 0) {
 						jQuery('#setSearch').val('');
-						document.location = '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit'); ?>/set_id/' + ui.item.id;
+						document.location = '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit'); ?>/set_id/' + ui.item.id;
 					}
 				}
 			}
@@ -65,7 +65,7 @@ if (!$this->request->isAjax()) {
 	});
 	
 	function _navigateToNewForm(type_id, table_num) {
-		document.location = '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit', array('set_id' => 0)); ?>/type_id/' + type_id + '/table_num/' + table_num;
+		document.location = '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit', array('set_id' => 0)); ?>/type_id/' + type_id + '/table_num/' + table_num;
 	}
 </script>
 <div class="sectionBox">
@@ -93,32 +93,32 @@ if (!$this->request->isAjax()) {
 	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
-				<th class="<?php print (($vs_current_sort == "name") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?php print caNavLink($this->request, _t('Name'), '', 'manage', 'Set', 'ListSets', array('sort' => 'name', 'direction' => ((($vs_current_sort == "name") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="<?= (($vs_current_sort == "name") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('Name'), '', 'manage', 'Set', 'ListSets', array('sort' => 'name', 'direction' => ((($vs_current_sort == "name") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="<?php print (($vs_current_sort == "set_content_type") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?php print caNavLink($this->request, _t('Content type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_content_type', 'direction' => ((($vs_current_sort == "set_content_type") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="<?= (($vs_current_sort == "set_content_type") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('Content type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_content_type', 'direction' => ((($vs_current_sort == "set_content_type") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
 <?php
 				if(!$vn_type_id){
 ?>
-					<th class="<?php print (($vs_current_sort == "set_type") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-						<?php print caNavLink($this->request, _t('Type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_type', 'direction' => ((($vs_current_sort == "set_type") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+					<th class="<?= (($vs_current_sort == "set_type") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+						<?= caNavLink($this->request, _t('Type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_type', 'direction' => ((($vs_current_sort == "set_type") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 					</th>
 <?php
 				}
 ?>
-				<th class="<?php print (($vs_current_sort == "item_count") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?php print caNavLink($this->request, _t('# Items'), '', 'manage', 'Set', 'ListSets', array('sort' => 'item_count', 'direction' => ((($vs_current_sort == "item_count") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="<?= (($vs_current_sort == "item_count") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('# Items'), '', 'manage', 'Set', 'ListSets', array('sort' => 'item_count', 'direction' => ((($vs_current_sort == "item_count") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="<?php print (($vs_current_sort == "lname") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?php print caNavLink($this->request, _t('Owner'), '', 'manage', 'Set', 'ListSets', array('sort' => 'lname', 'direction' => ((($vs_current_sort == "lname") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="<?= (($vs_current_sort == "lname") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('Owner'), '', 'manage', 'Set', 'ListSets', array('sort' => 'lname', 'direction' => ((($vs_current_sort == "lname") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="<?php print (($vs_current_sort == "access") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?php print caNavLink($this->request, _t('Access'), '', 'manage', 'Set', 'ListSets', array('sort' => 'access', 'direction' => ((($vs_current_sort == "access") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="<?= (($vs_current_sort == "access") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('Access'), '', 'manage', 'Set', 'ListSets', array('sort' => 'access', 'direction' => ((($vs_current_sort == "access") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="<?php print (($vs_current_sort == "status") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
-					<?php print caNavLink($this->request, _t('Status'), '', 'manage', 'Set', 'ListSets', array('sort' => 'status', 'direction' => ((($vs_current_sort == "status") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="<?= (($vs_current_sort == "status") ? "list-header-sorted-".$vs_current_sort_direction : ""); ?> list-header-nolink">
+					<?= caNavLink($this->request, _t('Status'), '', 'manage', 'Set', 'ListSets', array('sort' => 'status', 'direction' => ((($vs_current_sort == "status") && ($vs_current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
@@ -131,23 +131,23 @@ if (!$this->request->isAjax()) {
 		    $vn_num_sets_for_user = (int)sizeof($va_user['sets']);
 ?>
             <tr>
-                <td colspan="8"><strong><?php print $va_user['user']['fname']." ".$va_user['user']['lname']." (".$va_user['user']['email'].")</strong> [".(($vn_num_sets_for_user == 1) ? _t("%1 set", $vn_num_sets_for_user) : _t("%1 sets", $vn_num_sets_for_user))."]"; ?></td>
+                <td colspan="8"><strong><?= $va_user['user']['fname']." ".$va_user['user']['lname']." (".$va_user['user']['email'].")</strong> [".(($vn_num_sets_for_user == 1) ? _t("%1 set", $vn_num_sets_for_user) : _t("%1 sets", $vn_num_sets_for_user))."]"; ?></td>
             </tr>
 <?php
             foreach($va_user['sets'] as $va_set) {
 ?>
 			<tr>
 				<td>
-					<div class="caItemListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
+					<div class="caItemListName"><?= $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
 				</td>
 				<td>
-					<div><?php print $va_set['set_content_type']; ?></div>
+					<div><?= $va_set['set_content_type']; ?></div>
 				</td>
 <?php
 				if(!$vn_type_id){
 ?>
 				<td>
-					<div><?php print $va_set['set_type']; ?></div>
+					<div><?= $va_set['set_type']; ?></div>
 				</td>
 <?php
 				}
@@ -165,16 +165,16 @@ if (!$this->request->isAjax()) {
 					</div>
 				</td>
 				<td>
-					<div class="caItemListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
+					<div class="caItemListOwner"><?= $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
 				</td>
 				<td>
-					<div><?php print $t_set->getChoiceListValue('access', $va_set['access']); ?></div>
+					<div><?= $t_set->getChoiceListValue('access', $va_set['access']); ?></div>
 				</td>
 				<td>
-					<div><?php print $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
+					<div><?= $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					<?php ($va_set['can_delete'] == true) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>
@@ -186,7 +186,7 @@ if (!$this->request->isAjax()) {
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?php print _t('No sets have been created'); ?>
+					<?= _t('No sets have been created'); ?>
 				</div>
 			</td>
 		</tr>

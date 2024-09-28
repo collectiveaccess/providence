@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php" );
 require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/BaseGettyLODServicePlugin.php" );
 
@@ -46,6 +45,14 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	 */
 	public function __construct() {
 		global $g_information_service_settings_AAT;
+		$g_information_service_settings_AAT['limitToHierarchy'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Limit to hierarchy'),
+			'description' => _t('Limit results to one or more AAT sub-hierarchies. Enter numeric AAT identifiers (Eg. 300111079) for the root of the sub-hierarchy. Separate multiple AAT identifiers with semicolons or commas. Only terms under the specified root AAT terms will be returned.')
+		];
 		$g_information_service_settings_AAT['additionalFilter'] = [
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -73,7 +80,16 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 				_t("Default") => "Order",
 				_t("Label") => "TermPrefLabel"
 			),
-		];		
+		];	
+		$g_information_service_settings_AAT['language'] = [
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Language'),
+			'useLocaleList' => true,
+			'description' => _t('Language to use for returned AAT terms. The language must be supported by the AAT.')
+		];	
 		WLPlugInformationServiceAAT::$s_settings = $g_information_service_settings_AAT;
 		parent::__construct();
 		$this->info['NAME'] = 'AAT';
@@ -109,6 +125,8 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		if ( ! is_array( $pa_results ) ) {
 			return false;
 		}
+		
+		$key = ($pa_options['settings']['language'] ?? null) ? 'skosLabel' : 'TermPrefLabel';
 
 		if ( $pa_params['isRaw'] ) {
 			return $pa_results;
@@ -123,8 +141,8 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			}
 
 			$vs_label = ( caGetOption( 'format', $pa_options, null, [ 'forceToLowercase' => true ] ) !== 'short' )
-				? $va_values['TermPrefLabel']['value']
-				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values['TermPrefLabel']['value'] . " ["
+				? $va_values[$key]['value']
+				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values[$key]['value'] . " ["
 				  . $va_values['Parents']['value'] . "]";
 			$vs_label = preg_replace( '/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label );
 			$vs_label = preg_replace( '/[\<\>]/', '', $vs_label );
@@ -141,18 +159,41 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 	public function _buildQuery( $ps_search, $pa_options, $pa_params ) {
 		$vs_additional_filter = $pa_options['settings']['additionalFilter'] ?? null;
+		$limit_to_hierarchy = $pa_options['settings']['limitToHierarchy'] ?? null;
+		$lang_select = $lang_filter = null;
+		if($lang = ($pa_options['settings']['language'] ?? null)) {
+			$lang = substr($lang, 0, 2);
+			$lang_select = "?skosLabel";
+			$lang_filter = "skos:prefLabel ?skosLabel . filter strstarts(lang(?skosLabel), '{$lang}')";
+		}
+		if($limit_to_hierarchy) {
+			$ids = preg_split('/[;,]/', $limit_to_hierarchy);
+			$ids = array_map(function($v) {
+				return 'aat:'.(int)$v;
+			}, array_filter($ids, function($v) {
+				return (int)$v;
+			}));
+			if(sizeof($ids)) {
+				$limit_to_hierarchy = "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (".join(', ', $ids)."))";
+			} else {
+				$limit_to_hierarchy = null;
+			}
+		}
 		if ($vs_additional_filter){
 			$vs_additional_filter = "$vs_additional_filter ;";
 		}
 		$vs_sparql_suffix = $pa_options['settings']['sparqlSuffix'] ?? null;
-		$vs_order_by = caGetOption( 'orderBy', $pa_options['settings'], 'Order');
-		$vs_query = urlencode( 'SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
+		if(!strlen($vs_order_by = caGetOption( 'orderBy', $pa_options['settings'], ''))) {
+			$vs_order_by = 'Order';
+		}
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull '.$lang_select.' {
 	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ; ' . $vs_additional_filter . '
-	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel]; '.$lang_filter.'
 	{?ID gvp:parentStringAbbrev ?Parents}
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 	 ' . $vs_sparql_suffix . '
+	 ' . $limit_to_hierarchy. '
 	} 	ORDER BY ?' . $vs_order_by . '
 		LIMIT ' . $pa_params['limit'] );
 		return $vs_query;

@@ -76,7 +76,7 @@
 				print $vs_control_box;
 			}
 ?>
-			<input type='hidden' name='page_id' value='<?php print $vn_page_id; ?>'/>
+			<input type='hidden' name='page_id' value='<?= $vn_page_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

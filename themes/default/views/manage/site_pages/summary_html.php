@@ -29,9 +29,9 @@
 	$vn_item_id 			= $this->getVar('subject_id');
 ?>
 <div id="summary" style="clear: both;">
-	<h1><?php print _t('Page preview'); ?></h1>
+	<h1><?= _t('Page preview'); ?></h1>
 	<div class="divide"></div>
 	
-	<?php print $t_item->render($this->getVar('controller')); ?>
+	<?= $t_item->render($this->getVar('controller')); ?>
 </div><!-- end summary -->
 <?php

@@ -190,6 +190,8 @@ class ProgressBar {
 		$this->opn_position = 0;
 
 		$this->setCache($ps_message);
+		
+		$vs_output = '';
 
 		switch($vs_mode = $this->getMode()) {
 			case 'CLI':
@@ -220,6 +222,7 @@ class ProgressBar {
 
 		$this->setCache($ps_message);
 
+		$vs_output = '';
 		switch($vs_mode = $this->getMode()) {
 			case 'CLI':
 				$vs_output = CLIProgressBar::finish($this->getMessage(), $pa_options);
@@ -248,6 +251,8 @@ class ProgressBar {
 		$this->opn_position++;
 
 		$this->setCache($ps_message);
+		
+		$vs_output = '';
 
 		switch($vs_mode = $this->getMode()) {
 			case 'CLI':
@@ -271,7 +276,7 @@ class ProgressBar {
 	 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
 	 */
 	public function redraw($pa_options=null) {
-
+		$vs_output = '';
 		switch($vs_mode = $this->getMode()) {
 			case 'CLI':
 				$vs_output = CLIProgressBar::next(0, $pa_options);
@@ -317,10 +322,8 @@ class ProgressBar {
 					CLIProgressBar::setTotal($this->opn_total, $pa_options);
 					break;
 				case 'WebUI':
-					// noop
-					break;
 				default:
-					$vs_output = _t("Invalid mode %1", $vs_mode);
+					// noop
 					break;
 			}
 			return true;

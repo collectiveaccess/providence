@@ -52,10 +52,10 @@
 			
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
-			<input type='hidden' name='list_id' value='<?php print $vn_list_id; ?>'/>
+			<input type='hidden' name='list_id' value='<?= $vn_list_id; ?>'/>
 		</form>
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($this->request, $t_list, $va_bundle_list); ?>
+	<?= caEditorFieldList($this->request, $t_list, $va_bundle_list); ?>

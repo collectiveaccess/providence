@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace ElasticSearch;
 
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/Field.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/Intrinsic.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/DateRange.php');
 require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/ElasticSearch/FieldTypes/Numeric.php');
@@ -197,7 +194,7 @@ class Query {
 
 	/**
 	 * @param $o_subquery
-	 * @return string|\Zend_Search_Lucene_Search_Query
+	 * @return null|string|\Zend_Search_Lucene_Search_Query
 	 * @throws \Exception
 	 * @throws \Zend_Search_Lucene_Exception
 	 */
@@ -340,6 +337,7 @@ class Query {
 				throw new \Exception('Encountered unknown Zend subquery type in ElasticSearch\Query: ' . get_class($o_subquery));
 				break;
 		}
+		return null;
 	}
 
 	/**

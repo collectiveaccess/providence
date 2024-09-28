@@ -45,5 +45,5 @@
 	    $config_path = $this->request->getDefaultThemeUrlPath()."/views/mediaViewers/universalviewer.config.json";
 	}
 ?>
-<div class="uv" data-locale="en-GB:English (GB)" data-uri="<?php print $vs_data_url; ?>" data-collectionindex="0" data-manifestindex="0" data-sequenceindex="0" data-canvasindex="0" style="width:<?php print $vs_width; ?>; height:<?php print $vs_height; ?>; background-color: #000;" data-config="<?php print $this->request->getAssetsUrlPath(); ?>/universalviewer/config.json"></div>
-<script type="text/javascript" id="embedUV" src="<?php print $this->request->getAssetsUrlPath(); ?>/universalviewer/dist/uv/lib/embed.js"></script>
+<div class="uv" data-locale="en-GB:English (GB)" data-uri="<?= $vs_data_url; ?>" data-collectionindex="0" data-manifestindex="0" data-sequenceindex="0" data-canvasindex="0" style="width:<?= $vs_width; ?>; height:<?= $vs_height; ?>; background-color: #000;" data-config="<?= $this->request->getAssetsUrlPath(); ?>/universalviewer/config.json"></div>
+<script type="text/javascript" id="embedUV" src="<?= $this->request->getAssetsUrlPath(); ?>/universalviewer/dist/uv/lib/embed.js"></script>

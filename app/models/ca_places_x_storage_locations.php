@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
-
+require_once(__CA_LIB_DIR__.'/LocationRelationshipBaseModel.php');
 
 BaseModel::$s_ca_models_definitions['ca_places_x_storage_locations'] = array(
  	'NAME_SINGULAR' 	=> _t('places ⇔ storage locations relationship'),
@@ -94,7 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_places_x_storage_locations'] = array(
  	)
 );
 
-class ca_places_x_storage_locations extends BaseRelationshipModel {
+class ca_places_x_storage_locations extends LocationRelationshipBaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

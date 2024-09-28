@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@
 	$vs_daterange_proc 		= caGetLocalizedDateRange($va_dates[0], $va_dates[1], array('timeOmit' => true));
 
 ?>
-	<h1><?php print _t('Statistics Dashboard'); ?></h1>
+	<h1><?= _t('Statistics Dashboard'); ?></h1>
 <?php
 
 	print caFormTag($this->request, 'Index', 'libraryDashboardOptions', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
@@ -81,7 +81,7 @@
 		print _t('Reservations: %1', (int)$va_stats['numReservations']);
 ?>
 	</div>
-	<div class="caLibraryDashboardCalloutDate"><?php print _t('Current'); ?></div>
+	<div class="caLibraryDashboardCalloutDate"><?= _t('Current'); ?></div>
 	<div class="caLibraryDashboardUserList">
 <?php
 	print join(", ", $this->getVar('reservation_user_list'));
@@ -104,8 +104,21 @@
 ?>
 	</div>
 </div>
-
 <?php
+	$return_confirmation_list = $this->getVar('return_confirmation_list');
+	if(is_array($return_confirmation_list) && sizeof($return_confirmation_list)) {
+?>
+<div class="caLibraryDashboardPanel">
+	<div class="caLibraryDashboardCallout">
+		<?= _t('Items requiring confirmation of return:'); ?>
+		<div class="caLibraryDashboardUserList">
+			<?= join(", ", $this->getVar('return_confirmation_list')); ?>
+		</div>
+	</div>
+</div>
+<?php
+	}
+	
 	// Output configured panels
 	foreach($va_panels as $vs_panel => $va_panel_info) {
 		$va_panel_data = $this->getVar("panel_{$vs_panel}");
@@ -146,7 +159,7 @@
 		jQuery("#caLibraryDashboardDetailContainer").hide();
 		jQuery(".caLibraryUserLink").bind("click", function(e) {
 			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
-			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', user_id: jQuery(this).data('user_id') },
+			jQuery("#caLibraryDashboardDetailContainer").load('<?= caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { daterange: '<?= addslashes($vs_daterange_proc); ?>', user_id: jQuery(this).data('user_id') },
 			function() {
 				jQuery.scrollTo('#caLibraryDashboardDetailContainer',600);
 			});
@@ -155,7 +168,7 @@
 		});
 		jQuery(".caLibraryGroupLink").bind("click", function(e) {
 			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
-			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getGroupDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', group_by: jQuery(this).data('group_by'), group: jQuery(this).data('group') },
+			jQuery("#caLibraryDashboardDetailContainer").load('<?= caNavUrl($this->request, '*', '*', 'getGroupDetail'); ?>', { daterange: '<?= addslashes($vs_daterange_proc); ?>', group_by: jQuery(this).data('group_by'), group: jQuery(this).data('group') },
 			function() {
 				jQuery.scrollTo('#caLibraryDashboardDetailContainer',600);
 			});

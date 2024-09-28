@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$t_item = $this->getVar('t_item');
- 	
- 	if (!$t_item->getPrimaryKey()) {
- 		$vn_importer_count = ca_data_importers::getImporterCount();
+$t_item = $this->getVar('t_item');
+
+if (!$t_item->getPrimaryKey()) {
+	$vn_importer_count = ca_data_importers::getImporterCount();
 ?>
-<h3 class='importers'><?php print _t('Importers'); ?>:
+<h3 class='importers'><?= _t('Importers'); ?>:
 <div><?php
-	if ($vn_importer_count == 1) {
-		print _t("1 importer is defined");
-	} else {
-		print _t("%1 importers are defined", $vn_importer_count);
-	}
+if ($vn_importer_count == 1) {
+	print _t("1 importer is available");
+} else {
+	print _t("%1 importers are available", $vn_importer_count);
+}
 ?></div>
 </h3><?php
- 	} else {
-	 	print caEditorInspector($this, array('backText' => _t('Back to list')));
-	 }
- ?>
+} else {
+	print caEditorInspector($this, array('backText' => _t('Back to list')));
+ }

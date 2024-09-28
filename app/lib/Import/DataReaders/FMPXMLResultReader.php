@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Import/DataReaders/BaseXMLDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
@@ -118,7 +113,8 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	public function read($ps_source, $pa_options=null) {
 		parent::read($ps_source, $pa_options);
 		try {
-			$this->opo_xml = DOMDocument::load($ps_source);
+			$this->opo_xml = new DOMDocument();
+			$this->opo_xml->load($ps_source);
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
 		} catch (Exception $e) {
 			return null;
@@ -144,7 +140,11 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		}
 		
 		// get rows
-		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath);
+		if(!is_array($this->ops_xpath )) { $this->ops_xpath  = [$this->ops_xpath]; }
+		foreach($this->ops_xpath as $xp) {
+			$this->opo_handle = $this->opo_xpath->query($xp);
+			if($this->opo_handle && ($this->opo_handle->count() > 0)) { break; }
+		}
 
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;

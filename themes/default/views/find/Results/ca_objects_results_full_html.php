@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,56 +25,57 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_display				= $this->getVar('t_display');
-	$va_display_list 		= $this->getVar('display_list');
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar				= $this->getVar('access_restrictions');
+$t_display				= $this->getVar('t_display');
+$display_list 		= $this->getVar('display_list');
+$result 				= $this->getVar('result');
+$items_per_page 		= $this->getVar('current_items_per_page');
+$current_sort 		= $this->getVar('current_sort');
+$ar				= $this->getVar('access_restrictions');
 
-	$vn_item_count = 0;	
+$item_count = 0;	
 ?>
 <form id="caFindResultsForm">
 <?php
-	while(($vn_item_count < $vn_items_per_page) && ($vo_result->nextHit())) {
-		$vn_object_id = $vo_result->get('ca_objects.object_id');
-		if (!$vs_idno = $vo_result->get('ca_objects.idno')) {
-			$vs_idno = "???";
+	while(($item_count < $items_per_page) && ($result->nextHit())) {
+		$object_id = $result->get('ca_objects.object_id');
+		if (!$idno = $result->get('ca_objects.idno')) {
+			$idno = "???";
 		}
 
 		# --- get the height of the image so can calculate padding needed to center vertically
-		$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'small');
-		$vn_padding_top = 0;
-		$vn_padding_top_bottom =  ((250 - $va_media_info["HEIGHT"]) / 2);
+		$tmp = $result->getMediaTags('ca_object_representations.media', 'small');
 		
-		print "<div class='objectFullImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px;'>";
-?>
-			<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />
-<?php
-		$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'small');
-		print caEditorLink($this->request, array_shift($va_tmp), '', 'ca_objects', $vn_object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerFull").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerFull").css("display", "none");'));
-		print "<div class='qlButtonContainerFull' id='ql_".$vn_object_id."' onmouseover='jQuery(\"#ql_".$vn_object_id."\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $vn_object_id))."\"); return false;' >"._t("Quick Look")."</a></div>";
-		
-		print "</div>";
+		if(is_array($tmp) && sizeof($tmp)) {
+			$media_info = $result->getMediaInfo('ca_object_representations.media', 'small');
+			$padding_top = 0;
+			$padding_top_bottom =  is_array($media_info) ? ((250 - $media_info["HEIGHT"]) / 2) : 0;
+			
+			print "<div class='objectFullImageContainer' style='padding: ".$padding_top_bottom."px 0px ".$padding_top_bottom."px 0px;'>";
+	?>
+				<input type='checkbox' name='add_to_set_ids' value='<?= (int)$object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />
+	<?php
+			print caEditorLink($this->request, array_shift($tmp), '', 'ca_objects', $object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerFull").css("display", "none"); jQuery("#ql_'.$object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerFull").css("display", "none");'));
+			print "<div class='qlButtonContainerFull' id='ql_{$object_id}' onmouseover='jQuery(\"#ql_{$object_id}\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $object_id))."\"); return false;' >"._t("Quick Look")."</a></div>";
+			
+			print "</div>";
+		}
 		print "<div class='objectFullText'>";
 		
-		$va_labels = $vo_result->getDisplayLabels($this->request);
-		print "<div class='objectFullTextTitle'>".caEditorLink($this->request, implode("<br/>", $va_labels), '', 'ca_objects', $vn_object_id, array())."</div>";
+		$labels = $result->getDisplayLabels($this->request);
+		print "<div class='objectFullTextTitle'>".caEditorLink($this->request, implode("<br/>", $labels), '', 'ca_objects', $object_id, array())."</div>";
 		
 		// Output configured fields in display
-		foreach($va_display_list as $placement_id => $info) {
-			if (in_array($info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; } 		// skip preferred labels because we always output them above
-			if ($vs_display_text = $t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))) {
-				print "<div class='objectFullTextTextBlock'><span class='formLabel'>".$info['display']."</span>: ".$vs_display_text."</div>\n";
+		foreach($display_list as $placement_id => $info) {
+			if(in_array($info['bundle_name'], ['ca_objects.preferred_labels', 'ca_object_labels.name'])) { continue; }
+			if ($display_text = $t_display->getDisplayValue($result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))) {
+				print "<div class='objectFullTextTextBlock'><span class='formLabel'>".$info['display']."</span>: ".$display_text."</div>\n";
 			}
 		}
-		//print "<div class='objectFullTextTextBlock'>".caNavLink($this->request, ($vs_action == "Edit" ? _t("Edit") : _t("View"))." &rsaquo;", 'button', 'editor/objects', 'ObjectEditor', $vs_action, array('object_id' => $vn_object_id))."</div>";
 		print "</div><!-- END objectFullText -->";
 		
-		$vn_item_count++;
+		$item_count++;
 		
-		if ($vn_item_count < $vn_items_per_page) {
+		if ($item_count < $items_per_page) {
 			print "<br/><div class='divide'><!-- empty --></div>";
 		}
 	}

@@ -49,7 +49,9 @@ var caUI = caUI || {};
 			
 			allowSettings: true,
 			settingsIcon: null,
-			saveSettingsIcon: null
+			saveSettingsIcon: null,
+			
+			availableSearchID: null                                             /* Search input ID */
 		}, options);
 
 		// ------------------------------------------------------------------------------------
@@ -58,8 +60,11 @@ var caUI = caUI || {};
 			var displayListText = '';
 			var usedBundles = {};
 			
+			let tooltipTargets = [];
 			jQuery.each(that.initialDisplayListOrder, function(k, v) {
-				displayListText += that._formatForDisplay(that.initialDisplayList[v]);
+				let e = that._formatForDisplay(that.initialDisplayList[v]);
+				displayListText += e.element;
+				if(e.target) tooltipTargets.push(e.target);
 				usedBundles[v.bundle] = true;
 			});
 			
@@ -68,12 +73,36 @@ var caUI = caUI || {};
 			
 			displayListText = '';
 			jQuery.each(that.availableDisplayList, function(k, v) {
-				displayListText += that._formatForDisplay(v);
+				let e = that._formatForDisplay(v);
+				displayListText += e.element;
+				if(e.target) tooltipTargets.push(e.target);
 			});
 			jQuery('#' + that.availableListID).html(displayListText);
-			
+			if(tooltipTargets.length) {
+			    for(let i in tooltipTargets) {
+			        jQuery('#' + tooltipTargets[i]).tooltip({tooltipClass: 'tooltipFormat', show: 150, hide: 150});
+			    }
+			}
 			that._makeDisplayListsSortable();
 			that._updateBundleListFormElement();
+			
+			if(that.availableSearchID) {
+			    jQuery('#' + that.availableSearchID).on('keyup', function(e) {
+			        let s = jQuery(this).val().toLowerCase();
+			        if(s && (s.length > 1)) {
+                        jQuery('#' + that.availableListID + ' div.bundleDisplayEditorPlacement').each(function(k, v) {
+                            let content = jQuery(v).find('div').text().toLowerCase();
+                            if(content.indexOf(s) !== -1) {
+                                jQuery(v).show();
+                            } else {
+                                jQuery(v).hide();
+                            }
+                        });
+                    } else {
+                         jQuery('#' + that.availableListID + ' div.bundleDisplayEditorPlacement').show();
+                    }
+			    });
+			}
 			
 			if (!that.saveSettingsIcon) { that.saveSettingsIcon = that.settingsIcon; }
 		}
@@ -121,6 +150,7 @@ var caUI = caUI || {};
 			// Store the settings form HTML for lazy insertion.
 			// TODO: Use namespaces to prevent id collisions with multiple of this plugin on a single page.
 			caUI.bundlelisteditor.settingsForms[id] = settingsForm;
+			let tt = placement_info.description;
 
 			output =  "<div id='displayElement_" + id +"' class='" + that.displayItemClass + "'>";
 			if (that.allowSettings) {
@@ -132,7 +162,8 @@ var caUI = caUI || {};
 			if (that.allowSettings) {		
 				output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>" + label + "<div class='settingsFormContainer'></div><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.saveSettingsIcon + "</a></div>";
 			}
-			return output;
+			
+			return { element: output, target: "displayElement_" + id };
 		}
 		// ------------------------------------------------------------------------------------
 		that._updateBundleListFormElement = function() {

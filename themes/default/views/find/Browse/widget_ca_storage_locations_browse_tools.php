@@ -30,7 +30,7 @@
  	$vo_result					= $this->getVar('result');
 ?>
 <h3 class='storage'>
-	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
+	<?= _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>
 <?php 
 	if ($vo_result) {

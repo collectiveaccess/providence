@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,35 +36,36 @@ class StatisticsService extends BaseJSONService {
 	# -------------------------------------------------------
 	/**
 	 * Dispatch service call
-	 * @param string $ps_endpoint
-	 * @param RequestHTTP $po_request
+	 * @param string $endpoint
+	 * @param RequestHTTP $request
 	 * @return array
 	 * @throws Exception
 	 */
-	public static function dispatch($ps_endpoint, $po_request) {
+	public static function dispatch($endpoint, $request) {
+		$cache_key = $request->getHash();
 
-		$vs_cache_key = $po_request->getHash();
-
-		if(!$po_request->getParameter('noCache', pInteger)) {
-			if(ExternalCache::contains($vs_cache_key, "StatisticsAPI_{$ps_endpoint}")) {
-				return ExternalCache::fetch($vs_cache_key, "StatisticsAPI_{$ps_endpoint}");
+		if(!$request->getParameter('noCache', pInteger)) {
+			if(ExternalCache::contains($cache_key, "StatisticsAPI_{$endpoint}")) {
+				return ExternalCache::fetch($cache_key, "StatisticsAPI_{$endpoint}");
 			}
 		}
 
-		$vm_return = self::runStats($po_request);
+		$return = self::runStats($request);
 
-		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
-		ExternalCache::save($vs_cache_key, $vm_return, "StatisticsAPI_{$ps_endpoint}", $vn_ttl);
-		return $vm_return;
+		$ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
+		ExternalCache::save($cache_key, $return, "StatisticsAPI_{$endpoint}", $ttl);
+		return $return;
 	}
 	# -------------------------------------------------------
 	/**
 	 * @param array $pa_config
-	 * @param RequestHTTP $po_request
+	 * @param RequestHTTP $request
 	 * @return array
 	 * @throws Exception
 	 */
-	private static function runStats($po_request) {
+	private static function runStats($request) {
+		set_time_limit(3600*3);	// 3 hours should be enough?
+		$app_config = Configuration::load();
 		$config = Configuration::load(__CA_CONF_DIR__."/services.conf");
 		$ct = time();
 		$db = new Db();
@@ -78,14 +79,16 @@ class StatisticsService extends BaseJSONService {
 			'last year' => ($ti_last_6_months = $ct - (24 * 60 * 60 * 365)),
 		];
 	
-		$access_statues = caGetListItems('access_statuses', ['index' => 'item_value']);
-		$return = ['created_on' => date('c'), 'access_statuses' => array_flip($access_statues)];
+		$primary_tables = ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items'];
+		$access_statuses = caGetListItems('access_statuses', ['index' => 'item_value']);
+		$return = ['created_on' => date('c'), 'access_statuses' => array_flip($access_statuses)];
 		$counts = [];
 		
-		foreach(['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items'] as $t) {
+		foreach($primary_tables as $t) {
+			if($app_config->get("{$t}_disabled")) { continue; }
 			Datamodel::getInstance($t, true);
 			$counts['totals'][$t] = $t::find('*', ['returnAs' => 'count']);
-			foreach($access_statues as $v => $l) {
+			foreach($access_statuses as $v => $l) {
 				$counts['by_status'][$t][$l] = $t::find('*', ['checkAccess' => [$v], 'returnAs' => 'count']);
 			}
 			
@@ -145,15 +148,53 @@ class StatisticsService extends BaseJSONService {
 		}
 		
 		$return['media'] = [
-			'total_size' => $size = caGetDirectoryTotalSize(__CA_BASE_DIR__.'/media'),
+			'total_size' => $size = caGetDirectoryTotalSize(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__),
 			'total_size_display' => caHumanFileSize($size),
-			'file_count' => caGetFileCountForDirectory(__CA_BASE_DIR__.'/media'),
-			'by_format' => []
+			'file_count' => caGetFileCountForDirectory(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__),
+			'by_format' => [],
+			'by_status' => []
 		];
 		
+		$x = 0;
 		if ($qr = $db->query("SELECT count(*) c, mimetype FROM ca_object_representations WHERE deleted = 0 GROUP BY mimetype")) {
 			while($qr->nextRow()) {
-				$return['media']['by_format'][$qr->get('mimetype')] = $qr->get('c');
+				$mimetype = $qr->get('mimetype');
+				$return['media']['by_format'][$mimetype] = ['count' => $qr->get('c')];
+				
+				$filesize_by_mimetype = 0;
+				if($reps = ca_object_representations::findAsSearchResult(['mimetype' => $mimetype])) {
+					while($reps->nextHit()) {
+						$versions = $reps->getMediaVersions('ca_object_representations.media');	
+						$a = $reps->get('ca_object_representations.access');
+						$return['media']['by_status'][$mimetype][$access_statuses[$a]]['count']++;
+						
+						$used_primary_tables = [];
+						foreach($primary_tables as $pt) {
+							$oa = $reps->get("{$pt}.access", ['returnAsArray' => true]);
+							if(is_array($oa) && sizeof($oa)) {
+								foreach($oa as $x) {
+									$return['media']["by_status_{$pt}"][$mimetype][$access_statuses[$x]]['count']++;
+								}
+								$used_primary_tables[$pt] = $oa;
+							}
+						}
+						foreach($versions as $version) {
+							$info = $reps->getMediaInfo('media', $version);
+							$filesize_by_mimetype += $fs = @filesize($reps->getMediaPath('media', $version));
+							
+							$return['media']['by_status'][$mimetype][$access_statuses[$a]]['filesize'] += $fs;
+							
+							foreach($used_primary_tables as $pt => $oa) {
+								foreach($oa as $x) {
+									$return['media']["by_status_{$pt}"][$mimetype][$access_statuses[$x]]['filesize'] += $fs;
+								}
+							}
+						}
+						
+						$return['media']['by_format'][$mimetype]['source_filesize'] += $reps->getMediaInfo('media', 'INPUT', 'FILESIZE'); // used embeddded size in case original is not stored
+					}
+					$return['media']['by_format'][$mimetype]['total_filesize'] = $filesize_by_mimetype;
+				}
 			}
 		}
 		

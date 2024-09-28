@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2020 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportFormat.php");
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugExternalExportTransport.php");
 require_once(__CA_LIB_DIR__."/Plugins/ExternalExport/BaseExternalExportFormatPlugin.php");
@@ -123,8 +119,8 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         
         $media_index = caGetOption('mediaIndex', $options, null);
         
-        $bag = new BagIt("{$staging_dir}/{$name}", true, true, true, []);
-        $bag->setHashEncoding(caGetOption('hash', $output_config, 'md5', ['validValues' => ['md5', 'sha1']]));
+        $bag = Bag::create("{$staging_dir}/{$name}");
+        $bag->addAlgorithm(caGetOption('hash', $output_config, 'sha1', ['validValues' => ['sha512', 'sha1', 'md5']]));
         
         // bag data
         $content_mappings = caGetOption('content', $output_config, []);
@@ -135,18 +131,21 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         $file_list_template = caGetOption('file_list_template', $target_options, '');
         $file_list_delimiter = caGetOption('file_list_delimiter', $target_options, '; ');
         
+        $files_to_delete = [];
         foreach($content_mappings as $path => $content_spec) {
             switch($content_spec['type']) {
                 case 'export':
                 	if (ca_data_exporters::exporterExists($content_spec['exporter'])) {
 						$data = ca_data_exporters::exportRecord($content_spec['exporter'], $t_instance->getPrimaryKey(), []);
-						$bag->createFile($data, $path);
+						$files_to_delete[] = $fpath = caGetTempFileName('bagfile');
+						file_put_contents($fpath, $data);
+						$bag->addFile($fpath, $path);
 					} else {
 						$log->logError(_t('[BagIt] Could not generate data export using exporter %1 for external export %2: exporter does not exist', $content_spec['exporter'], $target_info['target']));
 					}
                     break;
                 case 'file':
-                    $ret = self::_processFiles($t_instance, $content_spec, $options);
+                    $ret = self::_processFiles($t_instance, $content_spec, $target_info, $options);
                     $file_list = array_merge($file_list, $ret['fileList']);
                     $total_filesize += $ret['totalFileSize'];
                     $file_mimetypes = array_unique(array_merge($file_mimetypes, $ret['fileMimeTypes']));
@@ -181,11 +180,15 @@ class WLPlugBagIt Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         foreach($bag_info as $k => $v) {
             $k = caProcessTemplate($k, $special_bag_vals, ['skipTagsWithoutValues' => true]);
             $v = caProcessTemplate($v, $special_bag_vals, ['skipTagsWithoutValues' => true]);
-            $bag->setBagInfoData($t_instance->getWithTemplate($k), $t_instance->getWithTemplate($v));
+            $bag->addBagInfoTag($t_instance->getWithTemplate($k), $t_instance->getWithTemplate($v));
         }
         
         $bag->update();
         $bag->package("{$tmp_dir}/{$name}".(!is_null($media_index) ? '-'.($media_index+1) : ''));
+        
+        foreach($files_to_delete as $f) {
+        	@unlink($f);
+        }
         
         return "{$tmp_dir}/{$name}.tgz";
     }

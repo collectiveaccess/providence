@@ -7,9 +7,12 @@
     "test": "tests"
   },
   "dependencies": {
+    "@apollo/client": "^3.3.20",
+    "@babel/core": "^7.16.7",
     "@babel/plugin-proposal-class-properties": "^7.14.5",
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-react": "^7.14.5",
+    "acorn": "^8.7.0",
     "axios": "^0.23.0",
     "babel": "^6.23.0",
     "babel-loader": "^8.2.3",
@@ -17,12 +20,14 @@
     "css-loader": "^6.4.0",
     "expose-loader": "^3.1.0",
     "filesize": "^8.0.3",
+    "graphql": "^15.5.1",
     "jquery": "^3.6.0",
     "mini-css-extract-plugin": "^2.4.3",
     "postcss-loader": "^6.2.0",
     "precss": "^4.0.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.0.0",
+    "react-confirm-alert": "^2.7.0",
     "react-dom": "^17.0.2",
     "react-dropzone": "^11.4.2",
     "sass": "^1.43.4",
@@ -45,5 +50,8 @@
   "bugs": {
     "url": "https://github.com/CollectiveAccess/providence/issues"
   },
-  "homepage": "https://github.com/CollectiveAccess/providence#readme"
+  "homepage": "https://github.com/CollectiveAccess/providence#readme",
+  "optionalDependencies": {
+    "fsevents": "^2.3.3"
+  }
 }

@@ -49,10 +49,10 @@
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
-							<?php print _t('Item'); ?>
+							<?= _t('Item'); ?>
 						</th>
 						<th class="list-header-unsorted">
-							<?php print _t('Item Type'); ?>
+							<?= _t('Item Type'); ?>
 						</th>
 						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id='watchItemSelectAllControl' class='watchItemControl' onchange="jQuery('.watchItemControl').attr('checked', jQuery('#watchItemSelectAllControl').attr('checked'));"/></th>
 					</tr>
@@ -81,10 +81,10 @@
 ?>
 					</td>
 					<td style="width:15px;">
-						<input type="checkbox" class="watchItemControl" name="watch_id[]" value="<?php print $va_item["watch_id"]; ?>">
+						<input type="checkbox" class="watchItemControl" name="watch_id[]" value="<?= $va_item["watch_id"]; ?>">
 					</td>
 				</tr>			
-				<tr style="display:none;" id="changeLog<?php print $va_item["watch_id"]?>">
+				<tr style="display:none;" id="changeLog<?= $va_item["watch_id"]?>">
 				<td>
 <?php				
 						print $va_item["change_log"];

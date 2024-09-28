@@ -31,7 +31,7 @@
  	$params			= $this->getVar('relatedListParams');
 
 ?>
-<div id="searchToolsBox_<?php print $this->getVar('interstitialPrefix'); ?>" class="relatedListSearchToolsBox">
+<div id="searchToolsBox_<?= $this->getVar('interstitialPrefix'); ?>" class="relatedListSearchToolsBox">
 	<div class="bg">
 <?php
 	if(is_array($va_export_mappings = $this->getVar('exporter_list')) && sizeof($va_export_mappings)>0) {
@@ -40,7 +40,7 @@
 			<?php
 			print _t("Export results with mapping") . ":<br/>";
 			print caFormTag($this->request, 'ExportData'.$vs_url_string, 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'), 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
-			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList', 'class' => 'searchToolsSelect'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm_'.$this->getVar('interstitialPrefix'), null, ['aria-label' => _t('Export')]);
@@ -100,7 +100,7 @@
 <?php
 		print _t("Download media as").":<br/>";
 ?>
-		<form id="caDownloadMediaFromSearchResult_<?php print $this->getVar('interstitialPrefix'); ?>">
+		<form id="caDownloadMediaFromSearchResult_<?= $this->getVar('interstitialPrefix'); ?>">
 <?php
 		$va_options = array(); 
 		
@@ -116,25 +116,25 @@
 		print caHTMLHiddenInput('ids', ['value' => $params['ids']]);
 		print caHTMLSelect('mode', $va_options, array('id' => 'caDownloadRepresentationMode', 'class' => 'searchToolsSelect'), array('value' => null, 'width' => '150px'))."\n";
 ?>
-			<a href='#' onclick="caDownloadRepresentations_<?php print $this->getVar('interstitialPrefix'); ?>(jQuery('#caDownloadRepresentationMode').val());" class="button"><?php print _t('Download'); ?> &rsaquo;</a>
+			<a href='#' onclick="caDownloadRepresentations_<?= $this->getVar('interstitialPrefix'); ?>(jQuery('#caDownloadRepresentationMode').val());" class="button"><?= _t('Download'); ?> &rsaquo;</a>
 		</form>
 	</div>
 <?php
 	}
 ?>
 
-		<a href='#' class='hideTools' id='hideTools_<?php print $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?php print $this->getVar('interstitialPrefix'); ?>("tools", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
+		<a href='#' class='hideTools' id='hideTools_<?= $this->getVar('interstitialPrefix'); ?>' onclick='return caHandleResultsUIBoxes_<?= $this->getVar('interstitialPrefix'); ?>("tools", "hide");'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->
 
 <script type="text/javascript">
-	function caDownloadRepresentations_<?php print $this->getVar('interstitialPrefix'); ?>(mode) {
+	function caDownloadRepresentations_<?= $this->getVar('interstitialPrefix'); ?>(mode) {
 		var tmp = mode.split('_');
 		//if(tmp[0] == 'all') {	// download all search results
-			jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?php print $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1<?php print $vs_url_string; ?>');
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/all/version/' + tmp[1] + '/download/1<?= $vs_url_string; ?>');
 		//} else {
-		//	jQuery(window).attr('location', '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?php print $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
+		//	jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $t_subject->tableName(); ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
 		//}
 	}
 </script>

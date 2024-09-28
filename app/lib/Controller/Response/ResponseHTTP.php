@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2016 Whirl-i-Gig
+ * Copyright 2007-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,15 +138,19 @@ class ResponseHTTP extends Response {
 	}
 	# -------------------------------------------------------
 	public function clearContent() {
-		$this->opa_content = array();
+		$this->opa_content = [];
 	}
 	# -------------------------------------------------------
-	public function getContentSegments($ps_content, $ps_segment=null) {
+	public function getContentSegments(?string $segment=null) {
+		if($segment) {
+			if(isset($this->opa_content[$segment])) { return $this->opa_content[$segment]; }
+			return null;
+		}
 		return $this->opa_content;
 	}
 	# -------------------------------------------------------
 	public function getContent() {
-		return join('',$this->opa_content);
+		return join('', $this->opa_content);
 	}
 	# -------------------------------------------------------
 	# Send it

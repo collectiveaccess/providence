@@ -26,7 +26,7 @@ monthTable = {
 dayListDisplay = [Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο]
 
 rangePreConjunctions = [από, μεταξύ]
-rangeConjunctions = [παρά, -, και, ..]
+rangeConjunctions = [παρά, –, -, και, ..]
 
 dateTimeConjunctions = [περίπου,@]
 

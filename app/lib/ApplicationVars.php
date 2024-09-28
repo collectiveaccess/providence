@@ -87,7 +87,7 @@ class ApplicationVars extends BaseObject {
 	# Get application variable
 	#
 	public function getVar($ps_key) {
-		return $this->opa_app_vars[$ps_key];
+		return $this->opa_app_vars[$ps_key] ?? null;
 	}
 	# ----------------------------------------
 	#
@@ -103,4 +103,4 @@ class ApplicationVars extends BaseObject {
 	}
 	# ----------------------------------------
 }
-?>
+

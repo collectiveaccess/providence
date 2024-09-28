@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2021 Whirl-i-Gig
+ * Copyright 2004-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 # ----------------------------------------------------------------------
 #
 # Based upon :
@@ -119,6 +115,11 @@ class ZipFile {
 	# "finished" flag; if true zip file is done (no more files can be added) and ready for output 
 	#
 	var $finished = 0;
+	
+	/**
+	 * Path to tmp data
+	 */
+	protected $_tmp_data_path;
 	
 	# ----------------------------------------------------------------------
 	# --- Methods

@@ -174,4 +174,3 @@ class ca_editor_ui_screen_labels extends BaseLabel {
 	
 	# ----------------------------------------
 }
-?>

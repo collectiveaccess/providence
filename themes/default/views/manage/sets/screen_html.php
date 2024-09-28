@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,41 +29,44 @@ $t_set = $this->getVar('t_subject');
 $vn_set_id = $this->getVar('subject_id');
 $can_delete = $this->getVar('can_delete');
 
+$forced_values 		= $this->getVar('forced_values') ?? [];
+
 $t_ui = $this->getVar('t_ui');	
 ?>
 <div class="sectionBox">
 <?php
-	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SetEditorForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)), 
-		'', 
-		((intval($vn_set_id) > 0) && ($can_delete)) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteButton form-button', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
-	);
-	
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');
-		
-		$va_bundle_list = array();
-		$va_form_elements = $t_set->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-								'request' => $this->request, 
-								'formName' => 'SetEditorForm'), $va_bundle_list);
-								
-		if (!$vn_set_id) {
-			// For new sets, show mandatory fields...
-			// ... BUT ...
-			// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
-			// This allows us to set the content type for the set from the calling control
-			$va_mandatory_fields = $t_set->getMandatoryFields();
-			if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
-				if (($vn_table_num = $t_set->get('table_num')) > 0) {
-					print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
-					unset($va_form_elements['table_num']);
-					unset($va_mandatory_fields[$vn_index]);
-				}
-			}
+print $vs_control_box = caFormControlBox(
+	caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SetEditorForm').' '.
+	caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)), 
+	'', 
+	((intval($vn_set_id) > 0) && ($can_delete)) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteButton form-button', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
+);
+
+
+print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');
+
+$va_form_elements = $t_set->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+						'request' => $this->request, 
+						'formName' => 'SetEditorForm',
+						'forcedValues' => $forced_values));
+						
+if (!$vn_set_id) {
+	// For new sets, show mandatory fields...
+	// ... BUT ...
+	// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
+	// This allows us to set the content type for the set from the calling control
+	$va_mandatory_fields = $t_set->getMandatoryFields();
+	if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
+		if (($vn_table_num = $t_set->get('table_num')) > 0) {
+			print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
+			unset($va_form_elements['table_num']);
+			unset($va_mandatory_fields[$vn_index]);
 		}
-		
-		print join("\n", $va_form_elements);
-		print $vs_control_box;
+	}
+}
+	
+print join("\n", $va_form_elements);
+print $vs_control_box;
 ?>
 		<input type='hidden' name='set_id' value='<?= $vn_set_id; ?>'/>
 	</form>
@@ -74,3 +77,5 @@ $t_ui = $this->getVar('t_ui');
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <?= caSetupEditorScreenOverlays($this->request, $t_set, $va_bundle_list); ?>
+
+

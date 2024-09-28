@@ -30,7 +30,7 @@
 	$vs_id = $this->getVar('id');
 	$vs_default = $this->getVar('defaultPath');
 ?>
-<div id="<?php print $vs_id; ?>directoryBrowser" class='directoryBrowserSmall'>
+<div id="<?= $vs_id; ?>directoryBrowser" class='directoryBrowserSmall'>
 	<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
 </div><!-- end directoryBrowser -->
 <?php
@@ -39,26 +39,26 @@
 <script type="text/javascript">
 	var oDirBrowser;
 	jQuery(document).ready(function() {
-		oDirBrowser = caUI.initDirectoryBrowser('<?php print $vs_id; ?>directoryBrowser', {
-			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
-			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
+		oDirBrowser = caUI.initDirectoryBrowser('<?= $vs_id; ?>directoryBrowser', {
+			levelDataUrl: '<?= caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
+			initDataUrl: '<?= caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 			
-			openDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
-			disabledDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
+			openDirectoryIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+			disabledDirectoryIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
 			
-			folderIcon: "<?php print caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
-			fileIcon: "<?php print caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
+			folderIcon: "<?= caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
+			fileIcon: "<?= caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
 			
 			displayFiles: true,
 			allowFileSelection: false,
 			
-			initItemID: '<?php print $vs_default; ?>',
-			indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+			initItemID: '<?= $vs_default; ?>',
+			indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 			
 			currentSelectionDisplayID: 'browseCurrentSelection',
 			
 			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#<?php print $vs_id; ?>').val(path); }
+				if (type == 'DIR') { jQuery('#<?= $vs_id; ?>').val(path); }
 			}
 		});
 	});

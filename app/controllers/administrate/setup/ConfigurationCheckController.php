@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,18 @@
  *
  * ----------------------------------------------------------------------
  */
-
 include_once(__CA_LIB_DIR__."/Search/SearchEngine.php");
 include_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
 class ConfigurationCheckController extends ActionController {
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+		
+		if(!$po_request || !$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_view_configuration_check')) {
+			throw new AccessException(_t('Access denied'));
+		}
+	}
 	# ------------------------------------------------
 	public function DoCheck(){
 		define('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__', true);	// Force all plugins to reload their paths

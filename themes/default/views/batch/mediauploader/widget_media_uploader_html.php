@@ -28,6 +28,6 @@
  
  	//print caBatchMediaImportInspector($this, array());
 ?>
-<h3 class='importers'><?php print _t('Media uploader'); ?>
+<h3 class='importers'><?= _t('Media uploader'); ?>
 <div id="mediaUploaderStats"></div>
 </h3>

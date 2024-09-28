@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2020 Whirl-i-Gig
+ * Copyright 2003-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-require_once (__CA_LIB_DIR__."/Configuration.php");
 require_once (__CA_LIB_DIR__."/BaseObject.php");
 
 define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
@@ -100,7 +94,11 @@ class Media extends BaseObject {
 	 *
 	 */
 	 private $tmp_files = [];
-	
+	 
+	 /*
+	  *
+	  */
+	 private $filepath = null;
 	# ----------------------------------------------------------
 	# Methods
 	# ----------------------------------------------------------
@@ -223,7 +221,7 @@ class Media extends BaseObject {
 		$va_plugin_names = $this->getPluginNames();
 
 		// take an educated guess at which plugins to try, and put those at the head of the list
-		if ($vs_plugin_name = Media::$s_file_extension_to_plugin_map[pathinfo($ps_filepath, PATHINFO_EXTENSION)]) {
+		if ($vs_plugin_name = (Media::$s_file_extension_to_plugin_map[pathinfo($ps_filepath, PATHINFO_EXTENSION)] ?? null)) {
 			unset($va_plugin_names[array_search($vs_plugin_name, $va_plugin_names)]);
 			array_unshift($va_plugin_names, $vs_plugin_name);
 		}
@@ -333,7 +331,6 @@ class Media extends BaseObject {
 		if ($this->instance) {
 			$this->instance->init();
 			$vn_res = $this->instance->read($filepath, $mimetype, $options);
-		  if ($this->DEBUG) { print "USING ".$plugin_info["NAME"]."\n"; }
 			if (!$vn_res) {
 				$this->postError(1605, join("; ", $this->instance->getErrors()), "Media->read()");	
 			} 
@@ -366,6 +363,9 @@ class Media extends BaseObject {
 		# by a plugin and convert to an intermediate format supported by a second plugin
 		# in order to allow the second plug-in to write out the file in the desired format.
 		$rc = $this->instance->write($filepath, $mimetype, $options);
+		if(caGetOption('temporary', $options, false)) {
+			$this->tmp_files[] = $rc;
+		}
 		$this->errors = $this->instance->errors;
 		return $rc;
 	}
@@ -725,7 +725,7 @@ class Media extends BaseObject {
 		// Clean up tmp files
 		if(is_array($this->tmp_files)) {
 			foreach($this->tmp_files as $f) {
-				@unlink($f);
+				if(file_exists($f)) { @unlink($f); }
 			}
 		}
 	}

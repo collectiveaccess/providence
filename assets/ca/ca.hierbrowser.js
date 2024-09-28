@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,7 @@ var caUI = caUI || {};
 
 			currentSelectionDisplayID: '',
 			currentSelectionDisplayFormat: '<ifdef code="hierarchy">^hierarchy%delimiter=_➜_ ➜ </ifdef>^current',
+			currentSelectionDisplayPrefix: '',
 			currentSelectionIDID: '',
 			allowSelection: true,
 
@@ -167,8 +168,9 @@ var caUI = caUI || {};
 		// of the hierarchy if set. If it is omitted then the useAsRootID option value will be used.
 		//
 		// @param int item_id The database id of the item to be used as the root of the hierarchy. If omitted the useAsRootID option value is used, or if that is not available whatever root the server decides to use.
+		// @param bool selectOnLoad Select root item on hierarchy load. Sets hierarchy browser selectOnLoad option. If set to null (or omitted) the current value of the selectOnLoad option is used.
 		//
-		that.setUpHierarchy = function(item_id) {
+		that.setUpHierarchy = function(item_id, selectOnLoad=null) {
 			that.isReadOnly(that.readOnly, false);
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
 			that.levelDivs = [];
@@ -176,6 +178,10 @@ var caUI = caUI || {};
 			that.selectedItemIDs = [];
 			that.secondarySelectedItemIDs = that.defaultSecondarySelection;
 			that._foundSelectedForLevel = [];
+			
+			if(selectOnLoad !== null) {
+				that.selectOnLoad = selectOnLoad;
+			}
 
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {	// get ancestors for item_id and load each level
 				if (typeof data === 'object') {
@@ -781,7 +787,7 @@ var caUI = caUI || {};
 				while(l >= 0) {
 					if (that.displayCurrentSelectionOnLoad && (jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).length > 0)) {
 						if (that.currentSelectionDisplayID) {
-							jQuery('#' + that.currentSelectionDisplayID).html(that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
+							jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayPrefix + that._getCurrentSelectionStr(jQuery('#hierBrowser_' + that.name + '_level_' + l + '_item_' + selectedID).data('item'), l));
 						}
 						break;
 					}
@@ -823,7 +829,7 @@ var caUI = caUI || {};
 			var formattedDisplayString = that._getCurrentSelectionStr(item, level);
 
 			if (that.currentSelectionDisplayID) {
-				jQuery('#' + that.currentSelectionDisplayID).html(formattedDisplayString);
+				jQuery('#' + that.currentSelectionDisplayID).html(that.currentSelectionDisplayPrefix + formattedDisplayString);
 			}
 
 			if (that.currentSelectionIDID) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
-require_once(__CA_MODELS_DIR__."/ca_sets.php");
-require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/BatchProcessor.php");
 require_once(__CA_LIB_DIR__."/BatchMetadataExportProgress.php");
-
 
 class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
@@ -78,9 +70,14 @@ class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
 	public function UploadExporters() {
 		$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
+		
 		foreach($_FILES as $va_file) {
+			if(!is_array($va_file['name'])) {
+				$va_file['name'] = [$va_file['name']];
+				$va_file['tmp_name'] = [$va_file['tmp_name']];
+			}
 			foreach($va_file['name'] as $vn_i => $vs_name) {
-				if ($t_importer = ca_data_exporters::loadExporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
+				if ($t_exporter = ca_data_exporters::loadExporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
 					$va_response['copied'][$vs_name] = true;
 				} else {
 					$va_response['skipped'][$vs_name] = true;
@@ -381,13 +378,19 @@ class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
 	# Utilities
 	# -------------------------------------------------------
-	private function getExporterInstance($pb_set_view_vars=true, $pn_exporter_id=null) {
-		if (!($vn_exporter_id = $this->getRequest()->getParameter('exporter_id', pInteger))) {
-			$vn_exporter_id = $pn_exporter_id;
+	private function getExporterInstance($set_view_vars=true, $para_exporter_id=null) {
+		if (!($exporter_id = $this->getRequest()->getParameter('exporter_id', pString))) {
+			$exporter_id = $para_exporter_id;
 		}
-		$t_exporter = new ca_data_exporters($vn_exporter_id);
-		if ($pb_set_view_vars){
-			$this->getView()->setVar('exporter_id', $vn_exporter_id);
+		
+		if(!is_numeric($exporter_id)) {
+			$t_exporter = ca_data_exporters::findAsInstance(['exporter_code' => $exporter_id]);
+		}
+		if(!$t_exporter) {
+			$t_exporter = new ca_data_exporters((int)$exporter_id);
+		}
+		if ($set_view_vars){
+			$this->getView()->setVar('exporter_id', $exporter_id);
 			$this->getView()->setVar('t_exporter', $t_exporter);
 		}
 		return $t_exporter;

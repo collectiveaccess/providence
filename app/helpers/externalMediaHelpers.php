@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -102,15 +102,15 @@ function caGetExternalMediaEmbedCode(string $url, ?array $options=null) {
 	if(!$info) { return null; }
 	
 	$code = $info['code'];
-	$width = caGetOption('width', $options, '640px');
-	$height = caGetOption('height', $options, '480px');
+	$width = caGetOption('width', $options, '100%');
+	$height = caGetOption('height', $options, '100%');
 	$title = addslashes(caGetOption('title', $options, null));
 	
 	switch($info['source']) {
 		case 'YOUTUBE':
-			return "<iframe src=\"https://www.youtube.com/embed/{$code}\" width=\"{$width}}\" height=\"{$height}}\" title=\"{$title}\" frameborder=\"0\" allowfullscreen></iframe>";
+			return "<iframe src=\"https://www.youtube.com/embed/{$code}\" width=\"{$width}\" height=\"{$height}\" title=\"{$title}\" frameborder=\"0\" allowfullscreen></iframe>";
 		case 'VIMEO':
-			return "<div style=\"padding-bottom: 56.25%; position: relative;\"><iframe width=\"{$width}\" height=\"{$height}\" title=\"{$title}\" src=\"https://player.vimeo.com/video/{$code}\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen\"  style=\"position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;\"></iframe></div>";
+			return "<div style=\"padding-bottom: 75%; position: relative;\"><iframe width=\"{$width}\" height=\"{$height}\" title=\"{$title}\" src=\"https://player.vimeo.com/video/{$code}\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen\"  style=\"position: absolute; top: 0px; left: 0px;\"></iframe></div>";
 	}
 	return null;
 }

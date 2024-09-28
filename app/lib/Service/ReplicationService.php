@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
 require_once(__CA_MODELS_DIR__.'/ca_replication_log.php');
 require_once(__CA_LIB_DIR__.'/Sync/LogEntry/Base.php');
@@ -51,7 +50,7 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
-	
+		if(!defined('__CA_IS_REPLICATION__')) { define('__CA_IS_REPLICATION__', true); }
 		if (is_null(ReplicationService::$s_logger)) { 
 			ReplicationService::$s_logger = new Logger('replication');
 		}
@@ -84,11 +83,26 @@ class ReplicationService {
 			case 'hasaccess':
 				$va_return = self::hasAccess($po_request);
 				break;
+			case 'getguidsfortable':
+				$va_return = self::getGUIDsForTable($po_request);
+				break;
 			case 'setlastlogid':	
 				$va_return = self::setLastLogID($po_request);
 				break;
+			case 'getlastlogidsforguids':
+				$va_return = self::getLastLogIDsForGUIDs($po_request);
+				break;
+			case 'getpublicguids':
+				$va_return = self::getPublicGUIDs($po_request);
+				break;
+			case 'getcurrentvalue':
+				$va_return = self::getCurrentValueForBundle($po_request);
+				break;
+			case 'setcurrentvalue':
+				$va_return = self::setCurrentValueForBundle($po_request);
+				break;
 			default:
-				throw new Exception('Unknown endpoint');
+				throw new Exception('Unknown endpoint '.$ps_endpoint);
 
 		}
 		return $va_return;
@@ -100,6 +114,8 @@ class ReplicationService {
 	 */
 	public static function getLog($po_request) {
 		$o_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
+		$max_media_size = $o_replication_conf->get('maximum_media_size');
+		$max_media_size_in_bytes = $max_media_size ? caParseHumanFilesize($max_media_size) : null
 
 		$pn_from = $po_request->getParameter('from', pInteger);
 		if(!$pn_from) { $pn_from = 0; }
@@ -107,11 +123,14 @@ class ReplicationService {
 		$pn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$pn_limit) { $pn_limit = null; }
 		
+		$is_push_missing = $po_request->getParameter('push_missing', pInteger);
+		
 		if(($max_retries = (int)$o_replication_conf->get('max_media_upload_retries')) < 0) {
 			$max_retries = 5;
 		}
 		
 		$abort_sync_on_failed_media_upload = (bool)$o_replication_conf->get('abort_sync_on_failed_media_upload');
+		$telescope = (bool)$o_replication_conf->get('telescope');
 
 		$pa_options = array();
 		if($ps_skip_if_expression = $po_request->getParameter('skipIfExpression', pString, null, array('retainBackslashes' => false))) {
@@ -166,7 +185,7 @@ class ReplicationService {
 
 			$va_media = [];
 			// passing a 4th param here changes the behavior slightly
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['forceValuesForAllAttributeSLots' => true]), $va_media);
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['push_missing' => $is_push_missing, 'telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]), $va_media);
 
 			if(sizeof($va_media) > 0) {
 				$va_push_list = [];
@@ -179,8 +198,11 @@ class ReplicationService {
 					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
 					if (!file_exists(realpath($vs_local_path))) { continue; }
 					
-					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize($vn_filesize = @filesize($vs_local_path))."]");
-					if ($vn_filesize > (1024 * 1024 * 750)) { continue; } // bail if file > 750megs
+					ReplicationService::$s_logger->log("Push media {$vs_url}::{$vs_md5} [".caHumanFilesize($filesize = @filesize($vs_local_path))."]");
+					
+					// Skip media that exceeds maximum media sync filesize
+					if (($max_media_size_in_bytes > 0) && ($filesize > $max_media_size_in_bytes)) { continue; } 
+					
 					// send media to remote service endpoint
 					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
 					$o_file = new CURLFile(realpath($vs_local_path));
@@ -234,7 +256,7 @@ class ReplicationService {
 				}
 			}
 		} else {
-			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['forceValuesForAllAttributeSLots' => true]));
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, array_merge($pa_options, ['push_missing' => $is_push_missing, 'telescope' => $telescope, 'forceValuesForAllAttributeSLots' => true]));
 		}
 
         foreach($va_log as $i => $l) {
@@ -321,8 +343,8 @@ class ReplicationService {
 
 		$vn_last_applied_log_id = null;
 		
-		$va_log = json_decode($c=$po_request->getRawPostData(), true);
-		if(!is_array($va_log)) { throw new \Exception('Log must be array: '.$c); }
+		$va_log = ($post_data = $po_request->getRawPostData()) ? json_decode($post_data, true) : [];
+		if(!is_array($va_log)) { throw new \Exception('Log must be array: '.$post_data); }
 		$o_db = new Db();
 
 		// run
@@ -340,7 +362,7 @@ class ReplicationService {
 				// skip log entry (still counts as "applied")
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id;
-				ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
+				//ReplicationService::$s_logger->log("[IrrelevantLogEntry] Sanity check error: ".$e->getMessage());
 				continue;
 			} catch (CA\Sync\LogEntry\InvalidLogEntryException $e) {
 				// skip log entry (still counts as "applied")
@@ -390,6 +412,7 @@ class ReplicationService {
 			$t_replication_log->insert();
 		} else {
 			$vn_last_applied_log_id = ca_replication_log::getLastReplicatedLogID($vs_source_system_guid);
+			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
 		}
 
 		if($vs_error) {
@@ -531,11 +554,155 @@ class ReplicationService {
 		$va_results = [];
 		if(is_array($va_guids_to_check)) {
 			foreach($va_guids_to_check as $vs_guid) {
-			    $vn_access_for_guid = ca_guids::getAccessForGUID($vs_guid, $va_access);
-			    $va_results[$vs_guid] = is_null($vn_access_for_guid) ? '?' : (in_array($vn_access_for_guid, $va_access) ? 1 : 0);
+			    $access_for_guid = ca_guids::getAccessForGUID($vs_guid, $va_access);
+			    $va_results[$vs_guid] = is_null($access_for_guid) ? '?' : ($access_for_guid ? 1 : 0);
 			}
 		}
 		return $va_results;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get GUIDs for table. Used to get full list of guids from base tables such as ca_locales 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getGUIDsForTable($po_request) {
+		$table = $po_request->getParameter('table', pString);
+		
+		return ca_guids::guidsForTable($table, ['limit' => 500]);
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getLastLogIDsForGUIDs($po_request) {
+		if($po_request->getRequestMethod() === 'POST') { 
+			$guids = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$guids = explode(";", $po_request->getParameter('guids', pString));
+		}
+		if ((!is_array($guids) || !sizeof($guids)) && ($guid = $po_request->getParameter('guid', pString))) {
+			$guids = [$guid];
+		}
+		
+		$db = new Db();
+		$ret = array_map(function($v) use ($db) {
+			$qr = $db->query("SELECT max(log_id) log_id, logged_table_num, logged_row_id FROM ca_change_log WHERE logged_table_num = ? AND logged_row_id = ?", [$v['table_num'], $v['row_id']]);
+			if($qr->nextRow()) {
+				$v['log_id'] = $qr->get('log_id');	
+			} else {
+				$v['log_id'] = null;
+			}
+			return $v;
+		}, ca_guids::getInfoForGUIDs($guids) ?? []);
+		return $ret;
+		
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getPublicGUIDs($po_request) {
+		$table = $po_request->getParameter('table', pString);
+		if(!sizeof($access = explode(";", $po_request->getParameter('access', pString)))) {
+			$access = [1];
+		}
+		
+		if(!($table_num = Datamodel::getTableNum($table))) {
+			return null;
+		}
+		
+		$pk = Datamodel::primaryKey($table);
+		$t = Datamodel::getInstance($table);
+		
+		$has_deleted = $t->hasField('deleted');
+		
+		$db = new Db();
+		if($t->hasField('access') && !is_a($t, 'BaseLabel')) {
+			$qr = $db->query("
+				SELECT g.guid 
+				FROM ca_guids g
+				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+				WHERE t.access IN (?) ".($has_deleted ? 'AND t.deleted = 0' : '')."
+			", [$table_num, $access]);
+		} else {
+			$qr = $db->query("
+				SELECT g.guid 
+				FROM ca_guids g
+				INNER JOIN {$table} AS t ON t.{$pk} = g.row_id AND g.table_num = ? 
+				".($has_deleted ? 'WHERE t.deleted = 0' : '')."
+			", [$table_num]);
+		}
+		
+		
+		return $qr->getAllFieldValues('guid');	
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getCurrentValueForBundle($po_request) {
+		$bundle = $po_request->getParameter('bundle', pString);
+	
+		if($po_request->getRequestMethod() === 'POST') { 
+			$guids = json_decode($po_request->getRawPostData(), true);
+		} else {
+			$guids = explode(";", $po_request->getParameter('guids', pString));
+		}
+		
+		$acc = [];
+		foreach($guids as $guid) {
+			if($t_instance = ca_objects::getInstanceByGUID($guid)) {
+				$v = $t_instance->get($bundle);
+				$acc[$guid] = $v;
+			}
+		}	
+		return $acc;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function setCurrentValueForBundle($po_request) {
+		$bundle = $po_request->getParameter('bundle', pString);
+		$tmp = explode('.', $bundle);
+		$element_code = array_pop($tmp);
+		if($po_request->getRequestMethod() === 'POST') { 
+			$guids = json_decode($po_request->getRawPostData(), true);
+		} else {
+			throw new ApplicationException(_t('No guids set in post'));
+		}
+		
+		$acc = [];
+		foreach($guids as $guid => $values) {
+			if($t_instance = ca_objects::getInstanceByGUID($guid)) {
+				$i = 0;
+				foreach($values as $value) {
+					if($i == 0) {
+						$t_instance->replaceAttribute([$element_code => $value], $element_code);
+					} else {
+						$t_instance->addAttribute([$element_code => $value], $element_code);
+					}
+					$t_instance->update();
+					$i++;
+				}
+			}
+		}	
+		return $acc;
 	}
 	# -------------------------------------------------------
 }

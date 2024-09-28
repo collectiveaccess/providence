@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,6 +188,7 @@ class ca_user_roles extends BaseModel {
 	protected $FIELDS;
 	
 	protected $opo_app_plugin_manager;
+	protected $opo_widget_manager;
 	
 	static $s_action_list;
 	static $s_bundle_list;
@@ -320,10 +321,7 @@ class ca_user_roles extends BaseModel {
 		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;
 		$this->set('vars', $va_vars);
 
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
-		$this->setMode($vn_old_mode);
 
 		if($this->numErrors()>0) {
 			return false;
@@ -341,10 +339,7 @@ class ca_user_roles extends BaseModel {
 
 		$this->set('vars', $va_vars);
 
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
-		$this->setMode($vn_old_mode);
 
 		if($this->numErrors()>0) {
 			return false;
@@ -362,10 +357,7 @@ class ca_user_roles extends BaseModel {
 
 		$this->set('vars', $va_vars);
 
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
-		$this->setMode($vn_old_mode);
 
 		if($this->numErrors()>0) {
 			return false;
@@ -383,10 +375,7 @@ class ca_user_roles extends BaseModel {
 
 		$this->set('vars', $va_vars);
 
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
-		$this->setMode($vn_old_mode);
 
 		if($this->numErrors()>0) {
 			return false;
@@ -444,10 +433,7 @@ class ca_user_roles extends BaseModel {
 
 		$this->set('vars', $va_vars);
 
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
-		$this->setMode($vn_old_mode);
 
 		if($this->numErrors()>0) {
 			return false;
@@ -509,10 +495,7 @@ class ca_user_roles extends BaseModel {
 
 		$this->set('vars', $va_vars);
 
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
 		$this->update();
-		$this->setMode($vn_old_mode);
 
 		if($this->numErrors()>0) {
 			return false;
@@ -534,13 +517,13 @@ class ca_user_roles extends BaseModel {
 			// expand actions that need expanding
 			foreach($va_raw_actions as $vs_group => $va_group_info) {
 				$va_new_actions = array();
-				if(!is_array($va_group_info["actions"])) { $va_group_info["actions"] = array(); }
+				if(!is_array($va_group_info["actions"] ?? null)) { $va_group_info["actions"] = array(); }
 				foreach($va_group_info["actions"] as $vs_action_key => $va_action){
 					if(isset($va_action['requires']) && is_array($va_action['requires']) && !ca_user_roles::_evaluateActionRequirements($va_action['requires'])) {
 						unset($va_raw_actions[$vs_group]["actions"][$vs_action_key]);
 						continue;
 					}
-					if(is_array($va_action["expand_types"]) && strlen($va_action["expand_types"]["table"])>0){
+					if(is_array($va_action["expand_types"] ?? null) && strlen($va_action["expand_types"]["table"])>0){
 						$t_instance = Datamodel::getInstanceByTableName($va_action["expand_types"]["table"], true);
 						if(method_exists($t_instance, "getTypeList")){
 							$va_type_list = $t_instance->getTypeList();
@@ -640,17 +623,15 @@ class ca_user_roles extends BaseModel {
 				role_id IN (".join(',', $pa_role_ids).")
 		");
 		
-		$va_bundles = array();
+		$va_bundles = [];
 		while($qr_res->nextRow()) {
 			$va_role_data = $qr_res->getVars('vars');
 			if (isset($va_role_data['bundle_access_settings']) && is_array($va_role_data['bundle_access_settings'])) {
-				
-				$va_bundles;
-				
+				$va_bundles = array_merge($va_bundles, $va_role_data['bundle_access_settings']);;
 			}
 		}
-		$va_actions = array_flip($va_actions);
-		return array_keys($va_actions);
+		$va_bundles = array_flip($va_bundles);
+		return array_keys($va_bundles);
 	}
 	# -------------------------------------------------------
 	private static function _evaluateActionRequirements($pa_requirements, $pa_options=null) {

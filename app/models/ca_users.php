@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,13 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
-require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
-include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_LIB_DIR__ . '/Auth/AuthenticationManager.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
  	'NAME_SINGULAR' 	=> _t('user'),
@@ -284,8 +278,6 @@ class ca_users extends BaseModel {
 	 * authentication configuration
 	 */
 	protected $opo_auth_config = null;
-
-	private $opo_log = null;
 	
 	
 	/**
@@ -341,7 +333,6 @@ class ca_users extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
-		$this->opo_log = new Eventlog();
 	}
 	# ------------------------------------------------------
 	/**
@@ -436,11 +427,7 @@ class ca_users extends BaseModel {
 			return false;
 		} catch(Exception $e) { // some other error in auth class, e.g. user couldn't be found in directory
 			$this->postError(925, $e->getMessage(), 'ca_users->insert()');
-
-			$this->opo_log->log(array(
-				'CODE' => 'SYS', 'SOURCE' => 'ca_users/insert',
-				'MESSAGE' => _t('Authentication adapter could not create user. Message was: %1', $e->getMessage())
-			));
+			caLogEvent('SYS', _t('Authentication adapter could not create user. Message was: %1', $e->getMessage(), 'ca_users->insert'));
 			return false;
 		}
 		
@@ -624,10 +611,7 @@ class ca_users extends BaseModel {
 			try {
 				AuthenticationManager::deleteUser($this->get('user_name'));
 			} catch (Exception $e) {
-				$this->opo_log->log(array(
-					'CODE' => 'SYS', 'SOURCE' => 'ca_users/delete',
-					'MESSAGE' => _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage())
-				));
+				caLogEvent('SYS', _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage(), 'ca_users->delete'));
 			}
 		}
 
@@ -636,6 +620,7 @@ class ca_users extends BaseModel {
 		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
 			$this->removeGUID($vn_primary_key);
 		}
+		return $vn_rc;
 	}
 	# ----------------------------------------
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
@@ -704,8 +689,6 @@ class ca_users extends BaseModel {
 			} else {
 				$va_vars =& $this->opa_user_vars;
 				$vb_has_changed =& $this->opa_user_vars_have_changed;
-				
-				unset($this->opa_volatile_user_vars_have_changed[$ps_key]);
 			}
 			
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
@@ -724,19 +707,19 @@ class ca_users extends BaseModel {
 			
 			if (
 				(
-					(is_array($vs_proc_val) && !is_array($va_vars[$ps_key]))
+					(is_array($vs_proc_val) && !is_array($va_vars[$ps_key] ?? null))
 					||
-					(!is_array($vs_proc_val) && is_array($va_vars[$ps_key]))
+					(!is_array($vs_proc_val) && is_array($va_vars[$ps_key] ?? null))
 					||
-					(is_array($vs_proc_val) && (is_array($va_vars[$ps_key])) && (sizeof($vs_proc_val) != sizeof($va_vars[$ps_key])))
+					(is_array($vs_proc_val) && (is_array($va_vars[$ps_key] ?? null)) && (sizeof($vs_proc_val) != sizeof($va_vars[$ps_key])))
 					||
-					(md5(print_r($vs_proc_val, true)) != md5(print_r($va_vars[$ps_key], true)))
+					(md5(print_r($vs_proc_val, true)) != md5(print_r($va_vars[$ps_key] ?? null, true)))
 				)
 			) {
 				$vb_has_changed = true;
 				$va_vars[$ps_key] = $vs_proc_val;
 			} else {
-				if ((string)$vs_proc_val != (string)$va_vars[$ps_key]) {
+				if (!is_array($vs_proc_val) && !is_array($va_vars[$ps_key] ?? null) && (string)$vs_proc_val != (string)($va_vars[$ps_key] ?? '')) {
 					$vb_has_changed = true;
 					$va_vars[$ps_key] = $vs_proc_val;
 				}
@@ -863,7 +846,7 @@ class ca_users extends BaseModel {
 			if (is_array($va_volatile_vars = $qr_users->getVars('volatile_vars'))) {
 				$va_vars = array_merge($va_vars, $va_volatile_vars);
 			}
- 			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login']));
+ 			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login'] ?? null));
  		}
 		
 		return $va_users;
@@ -901,6 +884,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -942,13 +926,18 @@ class ca_users extends BaseModel {
 				}
 					
 				$o_db = $this->getDb();
-				$o_db->query("
-					INSERT INTO ca_users_x_roles 
-					(user_id, role_id)
-					VALUES
-					(?, ?)
-				", (int)$pn_user_id, (int)$t_role->getPrimaryKey());
 				
+				try {
+					$o_db->query("
+						INSERT INTO ca_users_x_roles 
+						(user_id, role_id)
+						VALUES
+						(?, ?)
+					", (int)$pn_user_id, (int)$t_role->getPrimaryKey());
+				} catch (Exception $e) {
+					continue;
+				}
+					
 				if ($o_db->numErrors() == 0) {
 					$vn_roles_added++;
 				} else {
@@ -1077,7 +1066,7 @@ class ca_users extends BaseModel {
 	 */
 	public function getUserRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pn_user_id);
 			if (isset(ca_users::$s_user_role_cache[$cache_key])) {
 				return ca_users::$s_user_role_cache[$cache_key];
 			} else {
@@ -1205,6 +1194,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1246,12 +1236,17 @@ class ca_users extends BaseModel {
 				}
 				
 				$o_db = $this->getDb();
+				
+				try {
 				$o_db->query("
-					INSERT INTO ca_users_x_groups 
-					(user_id, group_id)
-					VALUES
-					(?, ?)
-				", (int)$pn_user_id, (int)$t_group->getPrimaryKey());
+						INSERT INTO ca_users_x_groups 
+						(user_id, group_id)
+						VALUES
+						(?, ?)
+					", (int)$pn_user_id, (int)$t_group->getPrimaryKey());
+				} catch (Exception $e) {
+					continue;
+				}
 				
 				if ($o_db->numErrors() == 0) {
 					$vn_groups_added++;
@@ -1383,7 +1378,7 @@ class ca_users extends BaseModel {
 	 */
 	public function getGroupRoles(?array $options=null) {
 		if ($pn_user_id = $this->getPrimaryKey()) {
-			$cache_key = caMakeCacheKeyFromOptions($options, $pn_user_id);
+			$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pn_user_id);
 			if (isset(ca_users::$s_group_role_cache[$cache_key])) {
 				return ca_users::$s_group_role_cache[$cache_key];
 			} else {
@@ -1578,6 +1573,7 @@ class ca_users extends BaseModel {
 		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
 			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
 			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			$vs_format = str_replace("^ERRORS", '', $vs_format);
 			$vs_buf = str_replace("^EXTRA", '', $vs_format);
 		}
@@ -1620,6 +1616,7 @@ class ca_users extends BaseModel {
 	 * @return mixed Type returned varies by preference
 	 */
 	public function getPreferenceDefault($ps_pref, $pa_options=null) {
+		global $_locale;
 		if (!is_array($va_pref_info = $this->getPreferenceInfo($ps_pref))) { return null; }
 		
 		switch($va_pref_info["formatType"]) {
@@ -1657,7 +1654,7 @@ class ca_users extends BaseModel {
 					$va_defaults = array();
 					if(is_array($va_uis)) {
 						foreach($va_uis as $vn_type_id => $va_editor_info) {
-							$type_code = caGetListItemIdno($vn_type_idno);
+							$type_code = caGetListItemIdno($vn_type_id);
 							foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
 								if(preg_match('!^batch_.*_ui$!', $ps_pref)) {
 									if((($dp = $config->get("{$table}_{$type_code}_default_batch_editor")) || ($dp = $config->get("{$table}_default_batch_editor"))) && ($d_ui_id = ca_editor_uis::find(['editor_code' => $dp], ['returnAs' => 'firstId']))) {
@@ -1687,7 +1684,8 @@ class ca_users extends BaseModel {
 				case 'FT_TEXT':
 					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
 						// this respects the global UI locale which is set using Zend_Locale
-						$o_currency = new Zend_Currency();
+						
+						$o_currency = new Zend_Currency($_locale);
 						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
 					}
 					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
@@ -1979,7 +1977,7 @@ class ca_users extends BaseModel {
 	 *		classname = class to assign to form element
 	 * @return string HTML code to generate form widget
 	 */	
-	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
+	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) : ?string {
 		if ($this->isValidPreference($ps_pref)) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$o_db = $this->getDb();
@@ -1987,7 +1985,7 @@ class ca_users extends BaseModel {
 			$va_pref_info = $this->getPreferenceInfo($ps_pref);
 			
 			if (is_null($vs_current_value = $this->getPreference($ps_pref))) { $vs_current_value = $this->getPreferenceDefault($ps_pref); }
-			$vs_output = "";
+			$output = "";
 			$vs_class = "";
 			$vs_classname = "";
 			if(isset($pa_options['classname']) && $pa_options['classname']){
@@ -1997,9 +1995,48 @@ class ca_users extends BaseModel {
 			
 			foreach(array(
 				'displayType', 'displayWidth', 'displayHeight', 'length', 'formatType', 'choiceList',
-				'label', 'description'
+				'label', 'description', 'requires'
 			) as $vs_k) {
 				if (!isset($va_pref_info[$vs_k])) { $va_pref_info[$vs_k] = null; }
+			}
+			
+			if(is_array($va_pref_info['requires']) && sizeof($va_pref_info['requires'])) {
+				$acc = null;
+				foreach($va_pref_info['requires'] as $req => $bool) {
+					$rtmp = explode(':', $req);
+					
+					$eval = null;
+					switch($rtmp[0]) {
+						case 'configuration':
+							switch($rtmp[1]) {
+								case 'search':
+									$sconfig = caGetSearchConfig();
+									$neg = false;
+									if(substr($rtmp[2], 0, 1) === '!') {
+										$neg = true;
+										$rtmp[2] = substr($rtmp[2], 1);
+									}
+									if(($neg && $sconfig->get($rtmp[2])) || (!$neg && !$sconfig->get($rtmp[2]))) {
+										$eval = false;
+									} else {
+										$eval = true;
+									}
+									break;
+							}
+							break;
+					}
+					
+					if(is_null($acc)) {
+						$acc = $eval;
+					} elseif (strtolower($bool) === 'and') {
+						$acc = ($acc && $eval);
+					} elseif (strtolower($bool) === 'or') {
+						$acc = ($acc || $eval);
+					}
+				}
+				if(!$acc) {
+					return null;
+				}
 			}
 			
 			switch($va_pref_info["displayType"]) {
@@ -2019,9 +2056,9 @@ class ca_users extends BaseModel {
 					}
 					
 					if ($vn_display_height > 1) {
-						$vs_output = "<textarea name='pref_$ps_pref' rows='".$vn_display_height."' cols='".$vn_display_width."'>".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."</textarea>\n";
+						$output = "<textarea name='pref_$ps_pref' rows='".$vn_display_height."' cols='".$vn_display_width."'>".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."</textarea>\n";
 					} else {
-						$vs_output = "<input type='text' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
+						$output = "<input type='text' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
 					}
 					break;
 				# ---------------------------------
@@ -2052,7 +2089,9 @@ class ca_users extends BaseModel {
 									$vs_country_name = $vs_code;
 								}
 								$va_opts[($vs_lang_name ? $vs_lang_name : $vs_code).($vs_country_name ? ' ('.$vs_country_name.')':'')] = $vs_code;
+								asort($va_opts);
 							}
+							natcasesort($va_opts);
 							break;
 						case 'FT_LOCALE':
 							$qr_locales = $o_db->query("
@@ -2065,6 +2104,8 @@ class ca_users extends BaseModel {
 							while($qr_locales->nextRow()) {
 								$va_opts[$qr_locales->get('name')] = $qr_locales->get('language').'_'.$qr_locales->get('country');
 							}
+							
+							natcasesort($va_opts);
 							break;
 						case 'FT_THEME':
 							if ($r_dir = opendir($this->_CONFIG->get('themes_directory'))) {
@@ -2109,7 +2150,7 @@ class ca_users extends BaseModel {
 							
 							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName()) && (!isset($pa_options['genericUIList']) || !$pa_options['genericUIList'])) {
 								
-								$vs_output = '';
+								$output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);
 								
 								$va_types = array();
@@ -2124,14 +2165,14 @@ class ca_users extends BaseModel {
 									$va_opts = array();
 									
 									// print out type-specific
-									if (is_array($va_ui_list_by_type[$vn_type_id])) {
+									if (is_array($va_ui_list_by_type[$vn_type_id] ?? null)) {
 										foreach(caExtractValuesByUserLocale($va_ui_list_by_type[$vn_type_id]) as $vn_ui_id => $vs_label) {
 											$va_opts[$vn_ui_id] = $vs_label;
 										}
 									}
 									
 									// print out generic
-									if (is_array($va_ui_list_by_type['__all__'])) {
+									if (is_array($va_ui_list_by_type['__all__'] ?? null)) {
 										foreach(caExtractValuesByUserLocale($va_ui_list_by_type['__all__']) as $vn_ui_id => $vs_label) {
 											$va_opts[$vn_ui_id] = $vs_label;
 										}
@@ -2139,25 +2180,25 @@ class ca_users extends BaseModel {
 									
 									if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { continue; }
 				
-									$vs_output .= "<tr><td>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$va_type['LEVEL']).$va_type['name_singular']."</td><td><select name='pref_{$ps_pref}_{$vn_type_id}'>\n";
+									$output .= "<tr><td>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$va_type['LEVEL']).$va_type['name_singular']."</td><td><select name='pref_{$ps_pref}_{$vn_type_id}'>\n";
 									foreach($va_opts as $vs_val => $vs_opt) {
-										$vs_selected = ($vs_val == $va_values[$vn_type_id]) ? "SELECTED" : "";
-										$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' {$vs_selected}>{$vs_opt}</option>\n";	
+										$vs_selected = ($vs_val == ($va_values[$vn_type_id] ?? null)) ? "SELECTED" : "";
+										$output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' {$vs_selected}>{$vs_opt}</option>\n";	
 									}
-									$vs_output .= "</select></td></tr>\n";
+									$output .= "</select></td></tr>\n";
 								}
 							} else {
 								
 								$va_opts = $this->_getUIList($vn_table_num);
 								
-								if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $vs_output = ''; break(2); }
+								if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $output = ''; break(2); }
 								
-								$vs_output = "<tr><td> </td><td><select name='pref_$ps_pref'>\n";
+								$output = "<tr><td> </td><td><select name='pref_$ps_pref'>\n";
 								foreach($va_opts as $vs_val => $vs_opt) {
 									$vs_selected = ($vs_val == $vs_current_value) ? "SELECTED" : "";
-									$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
+									$output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
 								}
-								$vs_output .= "</select></td></tr>\n";
+								$output .= "</select></td></tr>\n";
 							}
 							
 							break(2);
@@ -2165,63 +2206,113 @@ class ca_users extends BaseModel {
 							$va_opts = $va_pref_info["choiceList"];
 							break;
 					}
-					if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $vs_output = ''; break; }
+					if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $output = ''; break; }
 					
 					
-					$vs_output = "<select name='pref_{$ps_pref}'".$vs_class.">\n";
+					$output = "<select name='pref_{$ps_pref}'".$vs_class.">\n";
 					foreach($va_opts as $vs_opt => $vs_val) {
 						$vs_selected = ($vs_val == $vs_current_value) ? "selected='1'" : "";
-						$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
+						$output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
 					}
-					$vs_output .= "</select>\n";
+					$output .= "</select>\n";
 					break;
 				# ---------------------------------
 				case 'DT_CHECKBOXES':
-					if ($va_pref_info["formatType"] == 'FT_BIT') {
-						$vs_selected = ($vs_current_value) ? "CHECKED" : "";
-						$vs_output .= "<input type='checkbox' name='pref_$ps_pref' value='1'".$vs_class." $vs_selected>\n";	
-					} else {
-						if ($vb_use_table = (isset($pa_options['useTable']) && (bool)$pa_options['useTable'])) {
-							$vs_output .= "<table width='100%'>";
-						}
-						$vn_num_table_columns = (isset($pa_options['numTableColumns']) && ((int)$pa_options['numTableColumns'] > 0)) ? (int)$pa_options['numTableColumns'] : 3;
-						
-						$vn_c = 0;
-						foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
-							if (is_array($vs_current_value)) {
-								$vs_selected = (in_array($vs_val, $vs_current_value)) ? "CHECKED" : "";
-							} else {
-								$vs_selected = '';
+					switch($va_pref_info["formatType"]) {
+						case 'FT_BIT':
+							$vs_selected = ($vs_current_value) ? "CHECKED" : "";
+							$output .= "<input type='checkbox' name='pref_$ps_pref' value='1'".$vs_class." $vs_selected>\n";	
+							break;
+						case 'FT_OBJECTS_FIND_VIEW_LIST':
+							$c = 0;
+							$table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info['formatType']);
+							$t_instance = Datamodel::getInstanceByTableNum($table_num, true);
+							$table = $t_instance->tableName();
+							
+							$values = $this->getPreference($ps_pref);
+						//	print_R($vs_current_value);
+							if (!is_array($values)) { $values = []; }
+							if ($t_instance && method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
+								$output = '';
+								$types = [];
+								if ((bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+									$types['_NONE_'] = ['LEVEL' => 0, 'name_singular' => _t('NONE'),  'name_plural' => _t('NONE')];
+								}
+								$types += $t_instance->getTypeList(['returnHierarchyLevels' => true]);
+								
+								if(!is_array($types) || !sizeof($types)) { $types = [1 => array()]; }	// force ones with no types to get processed for __all__
+							
+								$views = caGetFindViewList('ca_objects');
+								
+								$output .= "<table width='100%'>";
+								foreach($types as $type_id => $type) {
+									$opts = [];
+									
+									foreach($views as $view_text => $view) {
+										$opts[$view] = $view_text;
+									}
+									
+									if (!is_array($opts) || (sizeof($opts) == 0)) { continue; }
+				
+									$output .= "<tr><td width='33%'><div>".str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", (int)$type['LEVEL']).$type['name_singular']."</div></td><td><div class='preferenceCheckBoxList'>\n";
+									
+									foreach($opts as $val => $opt) {
+										if (is_array($vs_current_value[$table][$type_id])) {
+											$selected = (in_array($val, $vs_current_value[$table][$type_id])) ? "CHECKED" : "";
+										} else {
+											$selected = '';
+										}
+										
+										$output .= "<div><input type='checkbox' name='pref_{$ps_pref}_{$type_id}[]' value='".htmlspecialchars($val, ENT_QUOTES, 'UTF-8')."' {$vs_class} {$selected}> {$opt}</div>\n";	
+									}
+									$output .= "</div></td></tr>\n";
+								}
+								$output .= "</table>";
 							}
+							break;
+						default:
+							if ($vb_use_table = (isset($pa_options['useTable']) && (bool)$pa_options['useTable'])) {
+								$output .= "<table width='100%'>";
+							}
+							$vn_num_table_columns = (isset($pa_options['numTableColumns']) && ((int)$pa_options['numTableColumns'] > 0)) ? (int)$pa_options['numTableColumns'] : 3;
 							
-							if ($vb_use_table && ($vn_c == 0)) { $vs_output .= "<tr>"; }
-							if ($vb_use_table) { $vs_output .= "<td width='".(floor(100/$vn_num_table_columns))."%'>"; }
-							$vs_output .= "<input type='checkbox' name='pref_".$ps_pref."[]' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'".$vs_class." $vs_selected> ".$vs_opt." \n";	
-							
-							if ($vb_use_table) { $vs_output .= "</td>"; }
-							$vn_c++;
-							if ($vb_use_table && !($vn_c % $vn_num_table_columns)) { $vs_output .= "</tr>\n"; $vn_c = 0; }
-						}
-						if ($vb_use_table) {
-							$vs_output .= "</table>";
-						}
+							$c = 0;
+							foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
+								if (is_array($vs_current_value)) {
+									$vs_selected = (in_array($vs_val, $vs_current_value)) ? "CHECKED" : "";
+								} else {
+									$vs_selected = '';
+								}
+								
+								if ($vb_use_table && ($c == 0)) { $output .= "<tr>"; }
+								if ($vb_use_table) { $output .= "<td width='".(floor(100/$vn_num_table_columns))."%'>"; }
+								$output .= "<div><input type='checkbox' name='pref_".$ps_pref."[]' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'".$vs_class." $vs_selected> ".$vs_opt."</div>\n";	
+								
+								if ($vb_use_table) { $output .= "</td>"; }
+								$c++;
+								if ($vb_use_table && !($c % $vn_num_table_columns)) { $output .= "</tr>\n"; $c = 0; }
+							}
+							if ($vb_use_table) {
+								$output .= "</table>";
+							}
+							break;		
 					}
 					break;
 				# ---------------------------------
 				case 'DT_STATEPROV_LIST':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select", 'class' => $vs_classname), array('value' => $vs_current_value));
-					$vs_output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value, 'class' => $vs_classname));
+					$output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value, 'class' => $vs_classname));
 					
 					break;
 				# ---------------------------------
 				case 'DT_COUNTRY_LIST':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caGetCountryList(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$output .= caHTMLSelect("pref_{$ps_pref}", caGetCountryList(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
 						
 					if ($va_pref_info['stateProvPref']) {
-						$vs_output .="<script type='text/javascript'>\n";
-						$vs_output .= "var caStatesByCountryList = ".json_encode(caGetStateList()).";\n";
+						$output .="<script type='text/javascript'>\n";
+						$output .= "var caStatesByCountryList = ".json_encode(caGetStateList()).";\n";
 						
-						$vs_output .= "
+						$output .= "
 							jQuery(document).ready(function() {
 								jQuery('#pref_{$ps_pref}').on('change', null, {countryID: 'pref_{$ps_pref}', stateProvID: 'pref_".$va_pref_info['stateProvPref']."', value: '".addslashes($this->getPreference($va_pref_info['stateProvPref']))."', statesByCountryList: caStatesByCountryList}, caUI.utils.updateStateProvinceForCountry);
 							
@@ -2229,18 +2320,18 @@ class ca_users extends BaseModel {
 							});
 						";
 						
-						$vs_output .="</script>\n";
+						$output .="</script>\n";
 					}
 					break;
 				# ---------------------------------
 				case 'DT_CURRENCIES':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
 					break;
 				# ---------------------------------
 				case 'DT_RADIO_BUTTONS':
 					foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
 						$vs_selected = ($vs_val == $vs_current_value) ? "CHECKED" : "";
-						$vs_output .= "<input type='radio' name='pref_$ps_pref'".$vs_class." value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
+						$output .= "<input type='radio' name='pref_$ps_pref'".$vs_class." value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
 					}
 					break;
 				# ---------------------------------
@@ -2255,7 +2346,7 @@ class ca_users extends BaseModel {
 						$vn_max_input_length = $vn_display_width;
 					}
 					
-					$vs_output = "<input type='password' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
+					$output = "<input type='password' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
 					
 					break;
 				# ---------------------------------
@@ -2281,11 +2372,11 @@ class ca_users extends BaseModel {
 					$vs_errors = '';
 				}
 			}
-			if ($ps_format && $vs_output) {
+			if ($ps_format && $output) {
 				$vs_format = $ps_format;
-				$vs_format = str_replace("^ELEMENT", $vs_output, $vs_format);
+				$vs_format = str_replace("^ELEMENT", $output, $vs_format);
 			} else {
-				$vs_format = $vs_output;
+				$vs_format = $output;
 			}
 			
 			$vs_format = str_replace("^EXTRA", '',  $vs_format);
@@ -2299,6 +2390,8 @@ class ca_users extends BaseModel {
 				
 				TooltipManager::add('#'.$vs_field_id, "<h3>".$va_pref_info["label"]."</h3>".$va_pref_info["description"]);
 			}
+				
+			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
 			return $vs_format;
 
 		} else {
@@ -2366,8 +2459,6 @@ class ca_users extends BaseModel {
 			$ui_id = $qr_uis->get('ui_id');
 			$locale_id = $qr_uis->get('locale_id');
 			$name = $qr_uis->get('name');
-			
-			
 			
 			$type_ids = [];
 			if (!($vn_type_id = $qr_uis->get('type_id'))) { 
@@ -2453,6 +2544,7 @@ class ca_users extends BaseModel {
 	private function _editorPrefFormatTypeToTableNum($ps_pref_format_type) {
 		switch($ps_pref_format_type) {
 			case 'FT_OBJECT_EDITOR_UI':
+			case 'FT_OBJECTS_FIND_VIEW_LIST':
 				$vn_table_num = 57;
 				break;
 			case 'FT_OBJECT_LOT_EDITOR_UI':
@@ -2685,7 +2777,7 @@ class ca_users extends BaseModel {
 		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return false; }
 		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = []; }
 	
-		return is_array($va_searches[$vn_table_num][strtolower($ps_type)]) ? array_map(function($v) { 
+		return is_array($va_searches[$vn_table_num][strtolower($ps_type)] ?? null) ? array_map(function($v) { 
 			$v['label'] = html_entity_decode($v['label']);
 			return $v;
 		}, $va_searches[$vn_table_num][strtolower($ps_type)]) : array();
@@ -3024,11 +3116,8 @@ class ca_users extends BaseModel {
 		$this->set('active', 0);
 		$this->update();
 
-		$this->opo_log->log(array(
-			'CODE' => 'SYS', 'SOURCE' => 'ca_users/passwordResetDeactivateAccount',
-			'MESSAGE' => _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name'))
-		));
-
+		caLogEvent('SYS', _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name')), 'ca_users->passwordResetDeactivateAccount');
+			
 		global $g_request;
 		caSendMessageUsingView(
 			$g_request,
@@ -3165,10 +3254,7 @@ class ca_users extends BaseModel {
 				try{
 					$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
 				} catch (Exception $e) {
-					$this->opo_log->log(array(
-						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
-					));
+					caLogEvent('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
 					return false;
 				}
 
@@ -3191,11 +3277,9 @@ class ca_users extends BaseModel {
 				$this->insert();
 				
 				if (!$this->getPrimaryKey()) {
-					$this->opo_log->log(array(
-						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
-					));
-					throw new ApplicationException($err);
+					$msg = _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()));
+					caLogEvent('SYS', $msg, 'ca_users->authenticate()');
+					throw new ApplicationException($msg);
 				}
 
 				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
@@ -3226,26 +3310,20 @@ class ca_users extends BaseModel {
                             ($this->getPrimaryKey() != $this->_CONFIG->get('administrator_user_id')) &&
                             !$this->canDoAction('is_administrator')
                         ) {
-                            $this->opo_log->log(array(
-                                'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-                                'MESSAGE' => _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username)
-                            ));
+                        	$msg = _t('There was an error while trying to authenticate user %1: User is not authorized to log into Pawtucket', $vs_username);
+                            caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                             return false;
                         }
                         return true;
                     } else {
-                        $this->opo_log->log(array(
-                            'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-                            'MESSAGE' => _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username)
-                        ));
+                    	$msg = _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username);
+                        caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                         return false;
                     }
                 }
             }  catch (Exception $e) {
-                $this->opo_log->log(array(
-                    'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
-                    'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
-                ));
+                $msg = _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage());
+                caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                 return false;
             }
         }
@@ -3463,7 +3541,7 @@ class ca_users extends BaseModel {
 		}
 		
 		// is user administrator?
-		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
+		if ($this->getPrimaryKey() == $this->_CONFIG->get('administrator_user_id')) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }	// access restrictions don't apply to user with user_id = admin id
 	
 		// get user roles
 		$roles = $this->getUserRoles();
@@ -3472,22 +3550,22 @@ class ca_users extends BaseModel {
 		}
 		
 		$va_actions = ca_user_roles::getActionsForRoleIDs(array_keys($roles));
-		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$vs_cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
+		if(in_array('is_administrator', $va_actions)) { return ca_users::$s_user_action_access_cache[$cache_key] = true; }		// access restrictions don't apply to users with is_administrator role
 
 		if(in_array($action, $va_actions)) {
-			return ca_users::$s_user_action_access_cache[$vs_cache_key] = in_array($action, $va_actions);
+			return ca_users::$s_user_action_access_cache[$cache_key] = in_array($action, $va_actions);
 		}
 		// is default set in user_action.conf?
 		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
 			foreach($actions as $categories) {
 				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {
-					return ca_users::$s_user_action_access_cache[$vs_cache_key] = (bool)$categories['actions'][$action]['default'];
+					return ca_users::$s_user_action_access_cache[$cache_key] = (bool)$categories['actions'][$action]['default'];
 				}
 			}
 		}
 		
-		return ca_users::$s_user_action_access_cache[$vs_cache_key] = false;
+		return ca_users::$s_user_action_access_cache[$cache_key] = false;
 	}
 	# ----------------------------------------
 	/**
@@ -3502,6 +3580,7 @@ class ca_users extends BaseModel {
 	 * @return int
 	 */
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
+		if(!$ps_bundle_name) { return false; }
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
 
@@ -3511,7 +3590,9 @@ class ca_users extends BaseModel {
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
 				
-				if (is_array($va_vars['bundle_access_settings'])) {
+				if (is_array($va_vars['bundle_access_settings'] ?? null)) {
+					$ps_bundle_name = caConvertBundleNameToCode($ps_bundle_name);
+					if($ps_bundle_name === Datamodel::primaryKey($ps_table_name)) { return true; }	// always allow primary key
 					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
 						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
 						
@@ -3558,6 +3639,7 @@ class ca_users extends BaseModel {
 		$vs_cache_key = $ps_table_name.'/'.$pm_type_code_or_id."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_type_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_access_cache[$vs_cache_key]; }
 
+		$vn_type_id = null;
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // type-level access control only applies to these tables
 			$va_roles = array_merge($this->getUserRoles(['skipVars' => false]), $this->getGroupRoles(['skipVars' => false]));
 			
@@ -3574,7 +3656,7 @@ class ca_users extends BaseModel {
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
 				
-				if (is_array($va_vars['type_access_settings'])) {
+				if (is_array($va_vars['type_access_settings'] ?? null)) {
 					if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id];
 						
@@ -3610,7 +3692,7 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
 	 */
-	public function getTypesWithAccess($ps_table_name, $pn_access) {
+	public function getTypesWithAccess($ps_table_name, $pn_access, ?array $pa_options=null) {
 		$vb_exact = caGetOption('exactAccess', $pa_options, false);
 		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey().(int)$vb_exact;
 		if (isset(ca_users::$s_user_type_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_with_access_cache[$vs_cache_key]; }
@@ -3627,7 +3709,7 @@ class ca_users extends BaseModel {
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
 			
-			if (!is_array($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
+			if (!is_array($va_vars['type_access_settings'] ?? null)) { $va_vars['type_access_settings'] = array(); }
 			
 			if (is_array($va_available_types)) {
 				foreach($va_available_types as $vn_type_id) {
@@ -3659,6 +3741,7 @@ class ca_users extends BaseModel {
 		$vs_cache_key = $ps_table_name.'/'.$pm_source_code_or_id."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_source_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_access_cache[$vs_cache_key]; }
 
+		$vn_source_id = null;
 		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // source-level access control only applies to these tables
 			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 			
@@ -3673,7 +3756,7 @@ class ca_users extends BaseModel {
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
 				
-				if (is_array($va_vars['source_access_settings'])) {
+				if (is_array($va_vars['source_access_settings'] ?? null)) {
 					if (isset($va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id]) && ((int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id];
 						
@@ -3709,7 +3792,7 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
 	 */
-	public function getSourcesWithAccess($ps_table_name, $pn_access, $pa_options=null) {
+	public function getSourcesWithAccess($ps_table_name, $pn_access, ?array $pa_options=null) {
 		$vb_exact = caGetOption('exactAccess', $pa_options, false);
 		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey().(int)$vb_exact;
 		if (isset(ca_users::$s_user_source_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_with_access_cache[$vs_cache_key]; }
@@ -3727,7 +3810,7 @@ class ca_users extends BaseModel {
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
 			
-			if (!is_array($va_vars['source_access_settings'])) { $va_vars['source_access_settings'] = array(); }
+			if (!is_array($va_vars['source_access_settings'] ?? null)) { $va_vars['source_access_settings'] = array(); }
 			
 			if(is_array($va_available_sources)) {
 				foreach($va_available_sources as $vn_source_id) {
@@ -3779,8 +3862,8 @@ class ca_users extends BaseModel {
 		if(!$this->getPrimaryKey()) { return null; }
 		
 		// get user roles
-		$va_roles = $this->getUserRoles(['skipVars' => true]);
-		foreach($this->getGroupRoles(['skipVars' => true]) as $vn_role_id => $va_role_info) {
+		$va_roles = $this->getUserRoles(['skipVars' => false]);
+		foreach($this->getGroupRoles(['skipVars' => false]) as $vn_role_id => $va_role_info) {
 			$va_roles[$vn_role_id] = $va_role_info;
 		}	
 		

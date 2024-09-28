@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,21 +30,52 @@
 	$totals = is_array($data['media']) ? $data['media'] : [];
 
 ?>
-	<h3><?php print _t('Media'); ?></h3>
+	<h3><?= _t('Media'); ?></h3>
 	
-	<div><?php print _t("Size of media: %1", caHumanFilesize($totals['total_size'])); ?></div>
-	<div><?php print _t("Number of files: %1", $totals['file_count']); ?></div>
+	<div><?= _t("Size of media: %1", caHumanFilesize($totals['total_size'])); ?></div>
+	<div><?= _t("Number of files: %1", $totals['file_count']); ?></div>
 <?php
 	if(is_array($totals['by_format'])) { 
 ?>
-	<div><?php print _t("File counts by format:"); ?></div>
+	<div><?= _t("File counts by format:"); ?></div>
 	<ul>
 <?php
-		foreach($totals['by_format'] as $mimetype => $total) {
+		foreach($totals['by_format'] as $mimetype => $info) {
 			if (!($typename = Media::getTypenameForMimetype($mimetype))) { $typename = _t('Unknown'); }
-			print "<li>{$typename}: {$total}</li>\n";
+			print "<li>[{$typename}]: {$info['count']}<br/>("._t('%1 source; %2 total', caHumanFilesize($info['source_filesize'] ?? 0), caHumanFilesize($info['total_filesize'] ?? 0)).")</li>\n";
 		}
 ?>
 	</ul>
 <?php
+	}
+?>
+	<div><?= _t("File counts by representation access:"); ?></div>
+	<ul>
+<?php
+		foreach($totals['by_status'] as $mimetype => $by_access) {
+			foreach($by_access as $access => $info) {
+				if (!($typename = Media::getTypenameForMimetype($mimetype))) { $typename = _t('Unknown'); }
+				print "<li>[{$typename}] {$access}: {$info['count']} "._t('(%1)', caHumanFilesize($info['filesize'] ?? 0))."</li>\n";
+			}
+		}
+?>
+	</ul>
+<?php
+	foreach($totals as $k => $section) {
+		if (preg_match("!^by_status_(ca_[a-z]+)$!", $k, $m)) {
+			if(!($tn = Datamodel::getTableProperty($m[1], 'NAME_SINGULAR'))) { continue; }
+?>	
+			<div><?= _t("File counts by %1 access:", $tn); ?></div>
+			<ul>
+<?php
+				foreach($totals['by_status'] as $mimetype => $by_access) {
+					foreach($by_access as $access => $info) {
+						if (!($typename = Media::getTypenameForMimetype($mimetype))) { $typename = _t('Unknown'); }
+						print "<li>[{$typename}] {$access}: {$info['count']} "._t('(%1)', caHumanFilesize($info['filesize'] ?? 0))."</li>\n";
+					}
+				}
+?>
+			</ul>
+<?php
+		}
 	}

@@ -30,7 +30,7 @@
  	$pn_user_id = $this->getVar('user_id');
  	$t_user = $this->getVar('t_user');
 ?>
-	<h3 class='libraryCheckOut'><?php print _t('Library check out'); ?>:
+	<h3 class='libraryCheckOut'><?= _t('Library check out'); ?>:
 	<div>
 <?php
 	if ($t_user->getPrimaryKey()) {

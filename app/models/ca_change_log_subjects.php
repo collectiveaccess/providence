@@ -153,4 +153,3 @@ class ca_change_log_subjects extends BaseModel {
 
 	# ------------------------------------------------------
 }
-?>

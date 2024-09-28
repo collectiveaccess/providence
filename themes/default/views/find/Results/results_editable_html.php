@@ -36,11 +36,11 @@
 <div id="caResultsEditorWrapper">
 	<div class='caResultsEditorStatusBar'>
 		<div class='caResultsEditorStatus'></div>
-		<div class='close'><a href="#" onclick="caResultsEditorPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__); ?></a></div>
+		<div class='close'><a href="#" onclick="caResultsEditorPanel.hidePanel(); return false;" title="close"><?= caNavIcon(__CA_NAV_ICON_CLOSE__); ?></a></div>
 		<br style='clear'/>
 	</div>
 	<div class="caResultsEditorContainer">
-		<div class="caResultsEditorContent"><div class="caResultsEditorLoading"><?php print _t("Loading... ").caBusyIndicatorIcon($this->request, ['style' => 'width: 30px; height 30px; color: #fff;']); ?></div></div>
+		<div class="caResultsEditorContent"><div class="caResultsEditorLoading"><?= _t("Loading... ").caBusyIndicatorIcon($this->request, ['style' => 'width: 30px; height 30px; color: #fff;']); ?></div></div>
 	</div><!--end scrollingResults -->
 	
 	<div id="caResultsComplexDataEditorPanel" class="caResultsComplexDataEditorPanel"> 

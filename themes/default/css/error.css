@@ -6,6 +6,8 @@ html, body {
     height: 100%;
     color:#333333;
     line-height:1.3em;
+    hyphens: auto;
+    overflow-wrap: break-word;
 }
 
 form {

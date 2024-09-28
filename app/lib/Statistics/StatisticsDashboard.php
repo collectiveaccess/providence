@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
  
- require_once(__CA_LIB_DIR__."/View.php");
+require_once(__CA_LIB_DIR__."/View.php");
  
- class StatisticsDashboard { 
+class StatisticsDashboard { 
     # ------------------------------------------------------------------
     /**
      *
@@ -55,4 +55,4 @@
 		return $o_view->render("{$panel}_html.php");
     }
     # ------------------------------------------------------------------
- }
+}

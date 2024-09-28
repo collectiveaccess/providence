@@ -98,7 +98,7 @@
 		 */
 		static function start($ps_name, $pa_options=null) {
 			Timer::$s_timers_enabled[$ps_name] = true;
-			if (Timer::$s_timers[$ps_name]) { Timer::$s_timers[$ps_name]->start = microtime(true); return Timer::$s_timers[$ps_name]; }
+			if (Timer::$s_timers[$ps_name] ?? false) { Timer::$s_timers[$ps_name]->start = microtime(true); return Timer::$s_timers[$ps_name]; }
 			return Timer::$s_timers[$ps_name] = new Timer();
 		}
 		# ----------------------------------------------------------------------

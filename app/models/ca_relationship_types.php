@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BundlableLabelableBaseModelWithAttributes.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
  	'NAME_SINGULAR' 	=> _t('relationship type'),
@@ -347,13 +341,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return information, including typenames filterd by user locale, for relationship types for the 
+	 * Return information, including typenames filtered by user locale, for relationship types for the 
 	 * specified relationship table (eg. ca_objects_x_entities, ca_entities_x_occurrences).
 	 *
 	 * @params mixed $pm_table_name_or_num
 	 * @params string $ps_type_code
 	 * @params array $options Options include:
 	 *      includeTypeCodesAsKeys = Also set type codes are keys in the returned array. [Default is false]
+	 *		returnAllLocales = 
 	 *
 	 * Returns array keyed on relationship type_id; values are associative arrays keys on ca_relationship_types/ca_relationship_type_labels field names
 	 */
@@ -384,13 +379,12 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$va_relationships = [];
 		while ($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
-			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
 			$va_relationships[$qr_res->get('type_id')][$locale_id = $qr_res->get('locale_id')] = $va_row;
 			if ($include_type_codes_as_keys) {
 			    $va_relationships[$va_row['type_code']][$locale_id] = $va_row;
 			}
 		}
-		return caExtractValuesByUserLocale($va_relationships);
+		return caGetOption('returnAllLocales', $options, false)  ? $va_relationships : caExtractValuesByUserLocale($va_relationships);
 	}
 	# ------------------------------------------------------
 	/**
@@ -406,7 +400,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(!is_array($match_on = caGetOption('matchOn', $pa_options, []))) { $match_on = []; }
 		$match_on = array_filter(array_map('strtolower', $match_on), function ($v) { return in_array($v, ['type_code', 'typecode', 'label', 'labels']); });
-		if(!sizeof($match_on)) { $match_on = ['type_code']; }
+		if(!sizeof($match_on)) { $match_on = ['type_code', 'label']; }
 		
 		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
@@ -709,6 +703,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$vn_type_id = $qr_res->get('type_id');
 			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
+			$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');
 			
 			$qr_children = $o_db->query("
 				SELECT count(*) children
@@ -760,7 +755,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
@@ -795,7 +791,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_trans = new Transaction($this->getDb()));
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
@@ -805,8 +802,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 
 				SET is_default = 0 
-				WHERE table_num = ?
-			", (int)$t_root_rel_type->get('table_num'));
+				WHERE table_num = ? AND type_id <> ?
+			",[(int)$t_root_rel_type->get('table_num'), $this->getPrimaryKey()]);
 		}
 		if (!($vn_rc = parent::update($pa_options))) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }

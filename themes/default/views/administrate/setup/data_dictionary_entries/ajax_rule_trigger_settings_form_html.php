@@ -43,9 +43,9 @@
 <?php
 	}
 ?>
-			<div class="formLabel"><?php print _t('Attach to metadata element'); ?><br/>
+			<div class="formLabel"><?= _t('Attach to metadata element'); ?><br/>
 		
-			<?php print ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
+			<?= ca_metadata_elements::getElementListAsHTMLSelect("{$vs_id_prefix}_element_id", ["id" => "{$vs_id_prefix}_element_id"], [
 				'rootElementsOnly' => false,
 				'noContainers' => true,
 				'tableNum' => $t_rule ? $t_rule->get('table_num') : null,
@@ -56,19 +56,19 @@
 				'addItems' => $t_trigger->getTriggerInstance()->getAdditionalElementList()
 			]); ?>
 			</div>
-			<div class="formLabel" id="<?php print $vs_id_prefix; ?>_filter"></div>
+			<div class="formLabel" id="<?= $vs_id_prefix; ?>_filter"></div>
 		
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-				jQuery("#<?php print $vs_id_prefix.'_element_id'; ?>").off().on('change', function() { 
-					jQuery("#<?php print $vs_id_prefix; ?>_filter").load('<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeFilterForm'); ?>', {
-						'triggerType': jQuery('#<?php print "{$vs_id_prefix}triggerTypeSelect"; ?>').val(),
-						'trigger_id': <?php print (int)$t_trigger->getPrimaryKey(); ?>,
-						'id_prefix': '<?php print $vs_id_prefix; ?>',
-						'element_id': parseInt(jQuery('#<?php print "{$vs_id_prefix}_element_id"; ?>').val())
+				jQuery("#<?= $vs_id_prefix.'_element_id'; ?>").off().on('change', function() { 
+					jQuery("#<?= $vs_id_prefix; ?>_filter").load('<?= caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeFilterForm'); ?>', {
+						'triggerType': jQuery('#<?= "{$vs_id_prefix}triggerTypeSelect"; ?>').val(),
+						'trigger_id': <?= (int)$t_trigger->getPrimaryKey(); ?>,
+						'id_prefix': '<?= $vs_id_prefix; ?>',
+						'element_id': parseInt(jQuery('#<?= "{$vs_id_prefix}_element_id"; ?>').val())
 					});
 				});
-				jQuery("#<?php print $vs_id_prefix.'_element_id'; ?>").trigger('change');
+				jQuery("#<?= $vs_id_prefix.'_element_id'; ?>").trigger('change');
 			});
 		</script>
 <?php

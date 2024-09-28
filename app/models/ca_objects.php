@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
@@ -322,10 +317,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access control settings from parent') => 0,
-				_t('Inherit item-level access control settings from parent') => 1
+				_t('Do not inherit item-level access control settings from parents') => 0,
+				_t('Inherit item-level access control settings from parents') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
+			'LABEL' => _t('Inherit item-level access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set from parent objects are applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -601,6 +596,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+		$this->BUNDLES['hierarchy_tools'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy tools'));
 		
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		
@@ -627,6 +623,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
 		
 		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location display value'), 'displayOnly' => true);
+		$this->BUNDLES['_checkout'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current object checkout data'), 'displayOnly' => true);
 		
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
@@ -748,7 +745,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	public function duplicate($pa_options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_t = new Transaction($this->getDb()));
+			$o_t = new Transaction($this->getDb());
+			$this->setTransaction($o_t);
 			$vb_we_set_transaction = true;
 		} else {
 			$o_t = $this->getTransaction();
@@ -772,14 +770,13 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					$va_reps[$qr_res->get('representation_id')] = $qr_res->getRow();
 				}
 				
-				$t_object_x_rep = new ca_objects_x_object_representations();
-				$t_object_x_rep->setTransaction($o_t);
 				foreach($va_reps as $vn_representation_id => $va_rep) {
-					$t_object_x_rep->setMode(ACCESS_WRITE);
 					$va_rep['object_id'] = $t_dupe->getPrimaryKey();
+					
+					$t_object_x_rep = new ca_objects_x_object_representations();
+					$t_object_x_rep->setTransaction($o_t);
 					$t_object_x_rep->set($va_rep);
 					$t_object_x_rep->insert();
-					
 					if ($t_object_x_rep->numErrors()) {
 						$this->errors = $t_object_x_rep->errors;
 						if ($vb_we_set_transaction) { $o_t->rollback();}
@@ -864,14 +861,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('placement_code', $ps_placement_code);	
+		$o_view->setVar('placement_id', caGetOption('placement_id', $pa_bundle_settings, null));	
 		
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
-		$o_view->setVar('t_subject', $this);
 		
-		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('t_subject', $t_subject = ($this->isComponent() ? $this->getParentInstance() : $this));
+		$o_view->setVar('component_list', $qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult')));
+		$o_view->setVar('component_count', $qr_components ? $qr_components->numHits() : 0);
 		
 		return $o_view->render('ca_objects_components_list.php');
 	}
@@ -892,9 +892,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types, array('returnAs' => 'ids')));
+			$va_ids = ca_objects::find(['parent_id' => $pn_object_id, 'type_id' => ['IN', $va_component_types]], ['returnAs' => 'ids']);
 		} else {
-			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, array('returnAs' => 'ids')));
+			$va_ids = ca_objects::find(['parent_id' => $pn_object_id], ['returnAs' => 'ids']);
 		}
 	
 		if (!is_array($va_ids)) { return 0; }
@@ -927,7 +927,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 		} else {
 			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 		}
@@ -1014,7 +1014,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *
 	 * @param array $pa_options Options include:
 	 *		returnAsText = return status as displayable text [Default=false]
-	 *		returnAsText = return detailed status information in an array [Default=false]
+	 *		returnAsArray = return detailed status information in an array [Default=false]
 	 * @return mixed Will return a numeric status code by default; status text for display if returnAsText option is set; or an array with details on the checkout if the returnAsArray option is set. Will return null if not object is loaded or if the object may not be checked out.
 	 */
 	public function getCheckoutStatus($pa_options=null) {
@@ -1027,6 +1027,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$t_checkout = new ca_object_checkouts();
 		$va_is_out = $t_checkout->objectIsOut($vn_object_id);
+		$vb_awaits_confirmation = $t_checkout->objectNeedsReturnConfirmation($vn_object_id);;
 		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
 		$vn_num_reservations = sizeof($va_reservations);
 		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
@@ -1052,6 +1053,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 			$va_info['checkout_notes'] = $t_checkout->get('checkout_notes');
 			$va_info['due_date'] = $t_checkout->get('due_date', array('timeOmit' => true));
 			$va_info['user_name'] = $t_checkout->get('ca_users.fname').' '.$t_checkout->get('ca_users.lname').(($vs_email = $t_checkout->get('ca_users.email')) ? " ({$vs_email})" : '');
+		} elseif ($vb_awaits_confirmation) {
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RETURNED_PENDING_CONFIRMATION__;
+			$va_info['status_display'] = _t('Unavailable pending confirmation of return');
 		} elseif ($vb_is_reserved) {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
 			$va_info['status_display'] = ($vn_num_reservations == 1) ? _t('Reserved') : _t('%1 reservations', $vn_num_reservations);
@@ -1066,6 +1070,15 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if ($vb_return_as_array) { return $va_info; }
 		if ($vb_return_as_text) { return $va_info['status_display']; }
 		return $va_info['status'];
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function confirmReturn(?array $options=null) {
+		if(!($object_id = $this->getPrimaryKey())) { return null; }
+		$t_checkout = new ca_object_checkouts();
+		return $t_checkout->confirmReturn($object_id);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1120,7 +1133,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *
 	 */
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
-		switch($ps_bundle_name) {
+		$bundle_bits = explode('.', $ps_bundle_name);
+		switch($bundle_bits[0]) {
 			case 'home_location_value':
 				$q = caMakeSearchResult('ca_objects', [$pn_row_id]);
 				if ($q && $q->nextHit()) {
@@ -1131,6 +1145,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 						return $t_loc->getWithTemplate($t);
 					}
 				}
+				break;
+			case '_checkout':
+				$data = $this->getCheckoutStatus(['returnAsArray' => true]);
+				if(!($key = $bundle_bits[1] ?? null)) { $key = 'status'; }
+				return $data[$key] ?? null;
 				break;
 			default:
 				return self::renderHistoryTrackingBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options);

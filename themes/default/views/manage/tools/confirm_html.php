@@ -57,11 +57,11 @@
 	});
 	
 	function caRunTool() {
-		jQuery("#caTool<?php print $vs_tool_identifier; ?>").submit();
+		jQuery("#caTool<?= $vs_tool_identifier; ?>").submit();
 	}
 </script>
 <div id="caConfirmBatchExecutionPanel" class="caConfirmBatchExecutionPanel"> 
-	<div class='dialogHeader'><?php print _t('Run tool'); ?></div>
+	<div class='dialogHeader'><?= _t('Run tool'); ?></div>
 	<div id="caConfirmBatchExecutionPanelContentArea">
 
 			<div class="caConfirmBatchExecutionPanelAlertText" id="caConfirmBatchExecutionPanelAlertText">
@@ -138,8 +138,8 @@
 			<div id="caConfirmBatchExecutionPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Run tool'), 'caConfirmBatchExecutionFormExecuteButton', array('onclick' => 'caRunTool(); return false;'), array()); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caConfirmBatchExecutionFormCancelButton', array('onclick' => 'caConfirmBatchExecutionPanel.hidePanel(); return false;'), array()); ?></td>
+						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Run tool'), 'caConfirmBatchExecutionFormExecuteButton', array('onclick' => 'caRunTool(); return false;'), array()); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caConfirmBatchExecutionFormCancelButton', array('onclick' => 'caConfirmBatchExecutionPanel.hidePanel(); return false;'), array()); ?></td>
 					</tr>
 				</table>
 			</div>

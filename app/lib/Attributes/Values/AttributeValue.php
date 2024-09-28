@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,12 +40,12 @@ require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
 
 abstract class AttributeValue extends BaseObject {
 	# ------------------------------------------------------------------
-	private $opn_element_id;
-	private $ops_element_code;
-	private $opn_datatype;
+	protected $opn_element_id;
+	protected $ops_element_code;
+	protected $opn_datatype;
 	protected $opn_value_id;
-	private $opa_source_info;
-	private $ops_sort_value;
+	protected $opa_source_info;
+	protected $ops_sort_value;
 
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
@@ -81,7 +81,7 @@ abstract class AttributeValue extends BaseObject {
 
 		$this->ops_sort_value = null;
 		if ($vs_sort_field = $this->sortField()) {
-			$this->ops_sort_value = $pa_value_array[$vs_sort_field];
+			$this->ops_sort_value = $pa_value_array[$vs_sort_field] ?? null;
 		}
 	}
 	# ------------------------------------------------------------------
@@ -144,12 +144,32 @@ abstract class AttributeValue extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Returns name of field in ca_attribute_values to use for sort operations
 	 *
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
 		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1'];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -193,7 +213,19 @@ abstract class AttributeValue extends BaseObject {
 	 * @return array
 	 */
 	public function getDataForSearchIndexing() {
-		return array();
+		return [];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of additional values for display. Used by InformationService attribute types (and perhaps others)
+	 * to support additional interface elements on-screen for a value.
+	 *
+	 * Returns an empty array for attribute types that don't support additional values.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalDisplayValues() : array {
+		return [];
 	}
 	# ------------------------------------------------------------------
 }

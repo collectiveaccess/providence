@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,16 +40,23 @@ use \CollectiveAccessService as CAS;
 class StatisticsAggregator {
 	# ------------------------------------------------------------------
 	/**
+	 * Fetch statistics for sites. All sites are fetched unless specified sites are specified in the "sites" option
 	 *
+	 * @param array $options Options include:
+	 *		sites = Array of site codes (as defined in statistics.conf) to limit fetching of statistics to. [Default is null; fetch all sites]
+	 *
+	 * @return array Statstics data
 	 */
-	static public function fetch() {
-		$sites = self::getSites();
+	static public function fetch(?array $options=null) {
+		$restrict_to_sites = caGetOption('sites', $options, null);
+		if(!is_null($restrict_to_sites) && !is_array($restrict_to_sites)) { $restrict_to_sites = [$restrict_to_sites]; }
+		$sites = self::getSites(['all' => true]);
 		
 		$stats_data = [];
 		foreach($sites as $k => $site_info) {
+			if(is_array($restrict_to_sites) && sizeof($restrict_to_sites) && !in_array($k, $restrict_to_sites, true)) { continue; }
 			$client = new CAS\StatisticsService($site_info['url']);
 			$client->setCredentials($site_info['service_user'], $site_info['service_password']);
-			
 			$stats_data_for_site = $client->setEndpoint('runStats')->request()->getRawData();
 			$stats_data_for_site['name'] = $site_info['name'];
 			$stats_data_for_site['description'] = $site_info['description'];
@@ -100,7 +107,7 @@ class StatisticsAggregator {
 	 *
 	 * @return array Data or null if site is not found
 	 */
-	static public function getDataForsite($site) {
+	static public function getDataForSite($site) {
 		$data = PersistentCache::fetch('site_statistics', 'statistics');
 		
 		return is_array($data[$site]) ? $data[$site] : null;
@@ -111,10 +118,18 @@ class StatisticsAggregator {
 	 *
 	 * @return array List of sites
 	 */
-	static public function getSites() {
+	static public function getSites(?array $options=null) : array {
 		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
 		if (!is_array($sites = $config->getAssoc('sites'))) {
 			return null;
+		}
+		
+		if(caGetOption('all', $options, false)) { return $sites; }
+		
+		$data = PersistentCache::fetch('site_statistics', 'statistics');
+		
+		foreach($sites as $site => $site_info) {	// filter sites without data
+			if(!isset($data[$site])) { unset($sites[$site]); }
 		}
 		return $sites;
 	}
@@ -154,7 +169,7 @@ class StatisticsAggregator {
 		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
 		$local_site = $config->get('local_site');
 		$sites = self::getSites();
-		return isset($sites[$local_site]) ? $sites[$local_site] : null;
+		return isset($sites[$local_site]) ? array_merge($sites[$local_site], ['code' => $local_site]) : null;
 	}
 	# ------------------------------------------------------------------
 	/**

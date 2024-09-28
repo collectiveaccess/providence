@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,22 +29,19 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
 class ExcelDataReader extends BaseDataReader {
 	# -------------------------------------------------------
 	private $opo_handle = null;
+	private $sheet_num = 0;
 	private $opo_rows = null;
 	private $opa_row_buf = array();
 	private $opn_current_row = 0;
 	private $opn_max_columns = 512;
 	private $current_timezone = null;
+	private $headers = [];
 	# -------------------------------------------------------
 	/**
 	 *
@@ -75,10 +72,33 @@ class ExcelDataReader extends BaseDataReader {
 		parent::read($ps_source, $pa_options);
 		try {
 			$this->opo_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
-			$this->opo_handle->setActiveSheetIndex(caGetOption('dataset', $pa_options, 0));
+			$this->opo_handle->setActiveSheetIndex($this->sheet_num = caGetOption('dataset', $pa_options, 0));
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
 			$this->opn_current_row = 0;
+			
+			// Extract column headings?
+			if($o_row = $this->opo_rows->current()) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false); 
+			
+				$col = 1;
+				
+				$headers = [];
+				foreach ($o_cells as $o_cell) {
+					$headers[] = str_replace("\\0", '/0', trim((string)self::getCellAsHTML($o_cell)));
+						
+					$col++;
+					if ($col > $this->opn_max_columns) { break; }
+				}
+				$headers = array_map(function($v) { return mb_strtolower($v); }, $headers);
+
+				if(caGetOption('headers', $pa_options, false) || (sizeof(array_filter($headers, function($v) { $v = trim($v); return !(!strlen($v) || preg_match('!^[a-z0-9_\-\.:]+$!', $v)); })) === 0)) {
+					// looks like headers
+					array_unshift($headers, ''); // 1-based
+					$this->headers = $headers;
+				}
+			}
 		} catch (Exception $e) {
 			return false;
 		}
@@ -125,6 +145,10 @@ class ExcelDataReader extends BaseDataReader {
 						// Strip nulls
 						$this->opa_row_buf[] = $vs_val = str_replace("\\0", '/0', trim((string)self::getCellAsHTML($o_cell)));
 					}
+					
+					if(sizeof($this->headers) && isset($this->headers[$vn_col])) {
+						$this->opa_row_buf[$this->headers[$vn_col]] = $this->opa_row_buf['/'.$this->headers[$vn_col]] = $vs_val;	
+					}
 
 					$vn_col++;
 					// max columns; some Excel files have *thousands* of "phantom" columns
@@ -150,8 +174,8 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num-1;
-		$this->opo_rows->seek(($pn_row_num > 0) ? $pn_row_num : 0);
-		return $this->nextRow();
+		$this->opo_rows->seek($seek = ($pn_row_num > 0) ? $pn_row_num : 0);
+		return ($seek <= 1) ? $this->nextRow() : true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -162,9 +186,26 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($pn_col, $pa_options=null) {
+		$return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		
+		switch($pn_col) {
+			case '__sheetname__':
+				$sheet = $this->opo_handle->getActiveSheet();
+				$name = $sheet->getTitle();
+				return $return_as_array ? [$name] : $name;
+				break;
+			case '__sheetnum__':
+				$num = $this->sheet_num + 1;
+				return $return_as_array ? [$num] : $num;
+				break;
+		}
 		if ($vm_ret = parent::get($pn_col, $pa_options)) { return $vm_ret; }
 		
 		if(!is_numeric($pn_col)) {
+			$pn_col = str_replace('/', '', mb_strtolower($pn_col));
+			if(sizeof($this->headers) && isset($this->opa_row_buf[$pn_col])) {
+				return $this->opa_row_buf[$pn_col];
+			}
 		    try {
 			    $pn_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pn_col);
 			} catch(Exception $e) {
@@ -261,7 +302,7 @@ class ExcelDataReader extends BaseDataReader {
 	 *
 	 */
 	public static function getCellAsHTML($po_cell) {
-		$o_value = $po_cell->getValue();
+		$o_value = $po_cell->getCalculatedValue();
 		
 		if ($o_value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
 			$va_elements = $o_value->getRichTextElements();

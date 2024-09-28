@@ -510,7 +510,7 @@ function caGetUserMediaUploadPath() {
 # ---------------------------------------
 /**
  * Return path to private media upload directory for a user. If user's private directory doesn't
- * exist yet, it will be created.
+ * exist yet it will be created.
  *`
  * @param string|int $user User_id, user_name or email of user
  * @param array $options Options include:

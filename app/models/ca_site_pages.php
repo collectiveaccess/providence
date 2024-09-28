@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,9 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_templates.php');
 require_once(__CA_MODELS_DIR__.'/ca_site_page_media.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
  	'NAME_SINGULAR' 	=> _t('site page'),
@@ -79,6 +73,21 @@ BaseModel::$s_ca_models_definitions['ca_site_pages'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Page metadata: URL path'), 'DESCRIPTION' => _t('The unique root-relative URL path used by the public to access this page. For example, if set to <em>/pages/staff</em> this page would be accessible to the public using a URL similiar to this: <em>http://your.domain.com/pages/staff</em>.'),
 				'BOUNDS_LENGTH' => array(2,255)
+		),
+		'locale_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'DISPLAY_FIELD' => array('ca_locales.name', 'ca_locales.language', 'ca_locales.country'),
+				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of page'),
+		),
+		'rank' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
+				'DEFAULT' => '',
+				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -177,7 +186,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = null;
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------
@@ -250,7 +259,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 				break;
 		}
 		
-		$pages = ca_site_pages::find($criteria, ['returnAs' => 'arrays', 'allowWildcards' => true]);
+		$pages = ca_site_pages::find($criteria, ['returnAs' => 'arrays', 'sort' => 'rank', 'allowWildcards' => true]);
 		
 		$templates_by_id = [];
 		foreach(ca_site_templates::find('*', ['returnAs' => 'arrays']) as $template) {
@@ -259,6 +268,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		foreach($pages as $i => $page) {
 			$pages[$i]['template_title'] = $templates_by_id[$pages[$i]['template_id']]; 
+			$pages[$i]['locale'] = ca_locales::IDToCode($pages[$i]['locale_id']); 
 		}
 		
 		return $pages;
@@ -285,11 +295,11 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		$va_form_elements = [];
 		foreach($va_element_defs as $va_element_def) {
 			$va_form_elements[] = [
-				'code' => $va_element_def['code'],
-				'label' => $va_element_def['label'],
-				'element' => $va_element_def['element'],
-				'element_with_label' => $va_element_def['element_with_label'],
-				'value' => $va_page_content[$va_element_def['name']]
+				'code' => $va_element_def['code'] ?? null,
+				'label' => $va_element_def['label'] ?? null,
+				'element' => $va_element_def['element'] ?? null,
+				'element_with_label' => $va_element_def['element_with_label'] ?? null,
+				'value' => $va_page_content[$va_element_def['name'] ?? null] ?? null
 			];
 		}
 		return $va_form_elements;
@@ -322,19 +332,31 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Returns null if page cannot be rendered
 	 */
 	public static function renderPageForPath($po_controller, $ps_path, $options=null) {
+		$locale_id = caGetOption(['locale', 'locale_id'], $options, ca_locales::getDefaultCataloguingLocaleID());
+
+		if(!is_numeric($locale_id)) { $locale_id =  ca_locales::codeToID($locale_id); }
+		
 		$ps_path = preg_replace("!/_default$!", "", $ps_path);	// strip default path component if present
 		if (
 			(
 				is_numeric($ps_path) 
 				&& 
-				($t_page = ca_site_pages::find(['page_id' => (int)$ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) 
+				(
+					($t_page = ca_site_pages::find(array_merge(['page_id' => (int)$ps_path], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)]))
+					||
+					($t_page = ca_site_pages::find(array_merge(['page_id' => (int)$ps_path], ['locale_id' => null]), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) 
+				) 
 				&& 
 				($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 			)
 			||
+			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
+			||
+			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path."/"], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
+			||
 			($t_page = ca_site_pages::find(['path' => $ps_path], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 			||
-			($t_page = ca_site_pages::find(['path' => $ps_path."/"], ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
+			($t_page = ca_site_pages::find(array_merge(['path' => $ps_path."/"], $locale_id ? ['locale_id' => $locale_id] : []), ['returnAs' => 'firstModelInstance', 'checkAccess' => caGetOption('checkAccess', $options, null)])) && ($t_template = ca_site_templates::find(['template_id' => $t_page->get('template_id')], ['returnAs' => 'firstModelInstance']))
 		) {
 			$o_content_view = new View($po_controller->request, $po_controller->request->getViewsDirectoryPath());
 	
@@ -408,7 +430,6 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if (caGetOption('incrementViewCount', $options, false)) {
-				$t_page->setMode(ACCESS_WRITE);
 				$t_page->set('view_count', (int)$t_page->get('view_count') + 1);
 				$t_page->update();
 			}
@@ -683,7 +704,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
                     'type' => $va_m['info']['original']['PROPERTIES']['typename'], 
                     'dimensions' => $va_m['dimensions']['original'], 
                     'filename' => $va_m['info']['ORIGINAL_FILENAME'] ? $va_m['info']['ORIGINAL_FILENAME'] : _t('Unknown'),
-                    'metadata' => $vs_extracted_metadata,
+                    'metadata' => '',
                     'md5' => $va_m['info']['original']['PROPERTIES']['MD5'],
                     'versions' => join("; ", $va_m['versions']),
                     'page_id' => $va_m['page_id'],
@@ -691,7 +712,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 					'fetched_original_url' => $va_m['fetched_original_url'],
 					'fetched_by' => $va_m['fetched_by'],
 					'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
-                    'fetched' => $va_m['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2 uing %3 URL handler", '<a href="'.$va_m['fetched_from'].'" target="_ext" title="'.$va_m['fetched_from'].'">'.$va_m['fetched_from'].'</a>', date('c', $va_m['fetched_on']), caGetOption('fetched_by', $va_rep, 'default')): ""
+                    'fetched' => isset($va_m['fetched_from']) ? _t("<h3>Fetched from:</h3> URL %1 on %2 uing %3 URL handler", '<a href="'.($va_m['fetched_from'] ?? null).'" target="_ext" title="'.($va_m['fetched_from'] ?? null).'">'.$va_m['fetched_from'].'</a>', date('c', ($va_m['fetched_on'] ?? null)), caGetOption('fetched_by', $va_m, 'default')): ""
                 );
         }
         return $va_initial_values;

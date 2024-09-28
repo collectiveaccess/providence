@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2018 Whirl-i-Gig
+ * Copyright 2013-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugGeographicMap.php");
 include_once(__CA_LIB_DIR__."/Plugins/Visualizer/BaseVisualizerPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 
-class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisualizer {
+class WLPlugVisualizerMap Extends BaseVisualizerPlugin Implements IWLPlugVisualizer {
 	
 	# ------------------------------------------------
 	/**

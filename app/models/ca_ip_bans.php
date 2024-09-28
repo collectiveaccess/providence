@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 BaseModel::$s_ca_models_definitions['ca_ip_bans'] = array(
  	'NAME_SINGULAR' 	=> _t('IP-based authentication block'),
  	'NAME_PLURAL' 		=> _t('IP-based authentication blocks'),
@@ -176,14 +171,13 @@ class ca_ip_bans extends BaseModel {
 	/**
 	 *
 	 */
-	static public function ban($request, $ttl=null, $reason=null) {
+	static public function ban(RequestHTTP $request, ?int $ttl=null, ?string $reason=null) {
 		self::init();
 		if (!($ip = RequestHTTP::ip())) { return false; }
 		if (self::isWhitelisted()) { return false; } 
 		
 		if (self::isBanned($request)) { return true; }
 		$ban = new ca_ip_bans();
-		$ban->setMode(ACCESS_WRITE);
 		$ban->set('ip_addr', $ip);
 		$ban->set('reason', $reason);
 		$ban->set('expires_on', $ttl ? date('c', time() + $ttl) : null);
@@ -193,22 +187,29 @@ class ca_ip_bans extends BaseModel {
 	/**
 	 *
 	 */
-	static public function isBanned($request) {
+	static public function isBanned(RequestHTTP $request, ?string $reason=null) {
 		self::init();
 		$ip = RequestHTTP::ip();
-		if(!($entries = self::find(['ip_addr' => $ip, 'expires_on' => null], ['returnAs' => 'count']))) {
-			$entries = self::find(['ip_addr' => $ip, 'expires_on' => ['>', time()]], ['returnAs' => 'count']);
+		if(!($entries = self::find(['ip_addr' => $ip, 'expires_on' => null], ['returnAs' => 'array']))) {
+			$entries = self::find(['ip_addr' => $ip, 'expires_on' => ['>', time()]], ['returnAs' => 'array']);
 		}
-		if($entries > 0) {
+		if(is_array($entries) && (sizeof($entries) > 0)) {
+			if($reason) {
+				return (($entries['reason'] ?? null) === $reason);
+			}
 			return true;
 		}
 		return false;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Clean expired bans. If 'all' option is passed all bans will be removed
+	 * regardless of expiration.
 	 *
+	 * @param array $options Options include:
+	 *		all = Remove all bans. [Default is false]
 	 */
-	static public function clean($options=null) {
+	static public function clean(?array $options=null) {
 		self::init();
 		$db = new Db();
 		if (caGetOption('all', $options, false)) {
@@ -218,21 +219,85 @@ class ca_ip_bans extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Remove existing bans. Options may be used to limit which bans are cleared based upon reason
+	 * and/or creation date/time. If reasons and/or date/time is passed and is not valid
+	 * no bans will be removed and null will be returned. If bans are successfully removed the
+	 * number removed is returned. 
+	 *
+	 * @param array $options Options include:
+	 *		from = Remove all bans created before the specified date. Value is any valid date/time expression. [Default is null]
+	 *		reasons = Clear bans with specific reasons. Value is an array or comma separated list of ban reasons. [Default is null]
+	 *		ip = Clears bans associated with an IP address. [Default is null]
+	 * 
+	 * @return int
+	 */
+	static public function removeBans(?array $options=null) : ?int {
+		self::init();
+		$db = new Db();
+		
+		if($from = caGetOption('from', $options, null)) {
+			if(!($from = caDateToUnixTimestamp($from))) { return null; }
+		}
+		if($reasons = caGetOption('reasons', $options, null)) {
+			if(!is_array($reasons)) { $reasons = preg_split('/[;,]/', $reasons); }
+			$valid_reasons = array_map('strtolower', BanHammer::getPluginNames());
+			$reasons = array_filter($reasons, function($v) use ($valid_reasons) {
+				return in_array(strtolower($v), $valid_reasons, true);
+			});
+			if(!sizeof($reasons)) { return null; }
+		}
+		$ip = caGetOption('ip', $options, null);
+		
+		if (!$reasons && !$from && !$ip) {
+			if($db->query("DELETE FROM ca_ip_bans")) {
+				return $db->affectedRows();
+			}
+			return null;
+		}
+		
+		$wheres = $params = [];
+		if($reasons) {
+			$wheres[] = "(reason IN (?))";
+			$params[] = $reasons;
+		}
+		if($from > 0) {
+			$wheres[] = "(created_on < ?)";
+			$params[] = $from;
+		}
+		if($ip) {
+			$wheres[] = "(ip_addr = ?)";
+			$params[] = $ip;
+		}
+		
+		if($db->query("DELETE FROM ca_ip_bans WHERE ".join(' AND ', $wheres), $params)) {
+			return $db->affectedRows();
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
 	 *
 	 */
-	static public function isWhitelisted($options=null) {
+	static public function isWhitelisted(?array $options=null) {
 		self::init();
-		if (!is_array($whitelist = self::$config->get('ip_whitelist')) || !sizeof($whitelist)) { return false; }
+		if (!is_array($whitelist = self::$config->get('ip_whitelist'))) { $whitelist = []; }
 		
-		$request_ip = RequestHTTP::ip();
-		$request_ip_long = ip2long($request_ip);
+		$ip = RequestHTTP::ip();
+		$ip_long = ip2long($ip);
 		
-		foreach($whitelist as $ip) {
-			$ip_s = ip2long(str_replace("*", "0", $ip));
-			$ip_e = ip2long(str_replace("*", "255", $ip));
-			if (($request_ip_long >= $ip_s) && ($request_ip_long <= $ip_e)) {
+		foreach($whitelist as $wip) {
+			$ip_s = ip2long(str_replace("*", "0", $wip));
+			$ip_e = ip2long(str_replace("*", "255", $wip));
+			if (($ip_long >= $ip_s) && ($ip_long <= $ip_e)) {
 				return true;
 			}
+		}
+		
+		if(!($entries = ca_ip_whitelist::find(['ip_addr' => $ip, 'expires_on' => null], ['returnAs' => 'count']))) {
+			$entries = ca_ip_whitelist::find(['ip_addr' => $ip, 'expires_on' => ['>', time()]], ['returnAs' => 'count']);
+		}
+		if($entries > 0) {
+			return true;
 		}
 		return false;
 	}

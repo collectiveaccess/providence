@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,15 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
-
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_element_labels.php');
-	require_once(__CA_MODELS_DIR__.'/ca_metadata_type_restrictions.php');
-	require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
-	require_once(__CA_LIB_DIR__.'/Datamodel.php');
-	require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
-	require_once(__CA_LIB_DIR__.'/ResultContext.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__.'/BaseEditorController.php');
+require_once(__CA_LIB_DIR__.'/ResultContext.php');
 
 class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
@@ -41,6 +35,10 @@ class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
+		
+		if(!$po_request || !$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_configure_metadata_elements')) {
+			throw new AccessException(_t('Access denied'));
+		}
 	}
 	# -------------------------------------------------------
 	public function Index() {
@@ -48,7 +46,7 @@ class ElementsController extends BaseEditorController {
 	
 		$va_elements = ca_metadata_elements::getRootElementsAsList(null, null, true, true);
 		$this->view->setVar('element_list',$va_elements);
-		$this->view->setVar('attribute_types', Attribute::getAttributeTypes());
+		$this->view->setVar('attribute_types', CA\Attributes\Attribute::getAttributeTypes());
 		
 		$o_result_context = new ResultContext($this->request, $this->ops_table_name, 'basic_search');
 		$o_result_context->setResultList(array_keys($va_elements));
@@ -63,7 +61,7 @@ class ElementsController extends BaseEditorController {
 		
 		
 		$t_element = $this->getElementObject();
-		$t_restriction = new ca_metadata_type_restrictions(null, null, true);
+		$t_restriction = new ca_metadata_type_restrictions(null, null, false);
 		
 		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
 		$this->view->setVar('type_list', $t_restriction->getTypeListsForTables());
@@ -119,13 +117,12 @@ class ElementsController extends BaseEditorController {
 	# -------------------------------------------------------
 	public function Save($pa_values=null) {
 		$t_element = $this->getElementObject(false);
-		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
 		foreach($t_element->getFormFields() as $vs_f => $va_field_info) {
 			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_codes_when_in_use') && $t_element->getPrimaryKey()) { continue; }
 			if ((bool)$t_element->getAppConfig()->get('ca_metadata_elements_dont_allow_editing_of_data_types_when_in_use') && $t_element->getPrimaryKey()) { continue; }
 			
-			$t_element->set($vs_f, $_REQUEST[$vs_f]);
+			$t_element->set($vs_f, $_REQUEST[$vs_f] ?? null);
 			unset($va_request[$vs_f]);
 			
 			if ($t_element->numErrors()) {
@@ -290,7 +287,7 @@ class ElementsController extends BaseEditorController {
 					if (isset($va_request['setting_'.$vs_setting_key.'[]'])) {
 						$vs_val = $va_request['setting_'.$vs_setting_key.'[]'];
 					} else {
-						$vs_val = $va_request['setting_'.$vs_setting_key];
+						$vs_val = $va_request['setting_'.$vs_setting_key] ?? null;
 					}
 					$vs_error = null;
 					if (!($t_element->setSetting($vs_setting_key, $vs_val, $vs_error))) {
@@ -304,7 +301,7 @@ class ElementsController extends BaseEditorController {
 			}
 		
 			/* process type restrictions */
-			$t_restriction = new ca_metadata_type_restrictions(null, null, true);
+			$t_restriction = new ca_metadata_type_restrictions(null, null, false);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
 
 			foreach($_REQUEST as $vs_key => $vs_value) {
@@ -326,7 +323,6 @@ class ElementsController extends BaseEditorController {
 				}
 				if (preg_match('!^type_restrictions_table_num_new_([\d]+)$!', $vs_key, $va_matches)) {
 					// got one to create
-					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('element_id', $t_element->getPrimaryKey());
 					$t_restriction->set('table_num', $this->request->getParameter('type_restrictions_table_num_new_'.$va_matches[1], pInteger));
 					$t_restriction->set('type_id', ($vn_type_id = $this->request->getParameter('type_restrictions_type_id_new_'.$va_matches[1], pInteger)) ? $vn_type_id : null);

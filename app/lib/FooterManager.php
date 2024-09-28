@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,59 +29,55 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
-	class FooterManager {
-		# --------------------------------------------------------------------------------
-		private static $opa_code;
-		# --------------------------------------------------------------------------------
-		/**
-		 * Initialize 
-		 *
-		 * @return void
-		 */
-		static function init() {
-			FooterManager::$opa_code = array();
-		}
-		# --------------------------------------------------------------------------------
-		/**
-		 * Add content to current response footer.
-		 *
-		 * @param string $ps_content HTML content to insert into footer
-		 * @return (bool) - Returns true if content was successfully added, false if not
-		 */
-		static function add($ps_content) {
-			if (!is_array(FooterManager::$opa_code)) { FooterManager::init(); }
-			
-			FooterManager::$opa_code[] = $ps_content;
-		}
-		# --------------------------------------------------------------------------------
-		/**
-		 * Clears all currently set tooltips from response
-		 *
-		 * @return void
-		 */
-		static function clearAll() {
-			FooterManager::$opa_code = array();
-		}
-		# --------------------------------------------------------------------------------
-		/**
-		 * Returns HTML <script> block setting tooltips for response
-		 *
-		 * @param string $ps_namespace  Optional namespace specifier; allows you to group tooltip code and output different tool tips at different times in the request cycle
-		 * @return string HTML <script> block setting up tooltips
-		 */
-		static function getLoadHTML() {
-			$vs_buf = '';
-			if (!is_array(FooterManager::$opa_code)) { FooterManager::init(); }
-			if (isset(FooterManager::$opa_code) && is_array(FooterManager::$opa_code) && sizeof(FooterManager::$opa_code)) {
-				$vs_buf = join("\n", FooterManager::$opa_code);
-			}
-			return $vs_buf;
-		}
-		# --------------------------------------------------------------------------------
+class FooterManager {
+	# --------------------------------------------------------------------------------
+	private static $opa_code;
+	# --------------------------------------------------------------------------------
+	/**
+	 * Initialize 
+	 *
+	 * @return void
+	 */
+	static function init() {
+		FooterManager::$opa_code = array();
 	}
-?>
+	# --------------------------------------------------------------------------------
+	/**
+	 * Add content to current response footer.
+	 *
+	 * @param string $ps_content HTML content to insert into footer
+	 * @return (bool) - Returns true if content was successfully added, false if not
+	 */
+	static function add($ps_content) {
+		if (!is_array(FooterManager::$opa_code)) { FooterManager::init(); }
+		
+		FooterManager::$opa_code[] = $ps_content;
+		
+		return true;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Clears all currently set tooltips from response
+	 *
+	 * @return void
+	 */
+	static function clearAll() {
+		FooterManager::$opa_code = array();
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Returns HTML <script> block setting tooltips for response
+	 *
+	 * @param string $ps_namespace  Optional namespace specifier; allows you to group tooltip code and output different tool tips at different times in the request cycle
+	 * @return string HTML <script> block setting up tooltips
+	 */
+	static function getLoadHTML() {
+		$vs_buf = '';
+		if (!is_array(FooterManager::$opa_code)) { FooterManager::init(); }
+		if (isset(FooterManager::$opa_code) && is_array(FooterManager::$opa_code) && sizeof(FooterManager::$opa_code)) {
+			$vs_buf = join("\n", FooterManager::$opa_code);
+		}
+		return $vs_buf;
+	}
+	# --------------------------------------------------------------------------------
+}

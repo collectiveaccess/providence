@@ -26,7 +26,7 @@ monthTable = {
 dayListDisplay = [Недеља, Понедељак, Уторак, Среда, Четвртак, Петак, Субота]
 
 rangePreConjunctions = [од, између]
-rangeConjunctions = [до, -, и, .., кроз]
+rangeConjunctions = [до, –, -, и, .., кроз]
 
 dateTimeConjunctions = [ет,@]
 

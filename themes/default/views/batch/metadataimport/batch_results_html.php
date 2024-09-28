@@ -30,8 +30,8 @@
 	$t_importer = $this->getVar('t_importer');
 	$t_subject = $this->getVar('t_subject');
 ?>
-<h1><?php print _t('Metadata import processing status'); ?></h1>
-<h2><?php print _t('Importing <em>%1</em> using <em>%2</em>', $t_subject->getProperty('NAME_PLURAL'), $t_importer->get('ca_data_importers.preferred_labels.name').' ('.$t_importer->get('importer_code').')'); ?></h2>
+<h1><?= _t('Metadata import processing status'); ?></h1>
+<h2><?= _t('Importing <em>%1</em> using <em>%2</em>', $t_subject->getProperty('NAME_PLURAL'), $t_importer->get('ca_data_importers.preferred_labels.name').' ('.$t_importer->get('importer_code').')'); ?></h2>
 
 
 
@@ -55,7 +55,7 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Perform another metadata import'), '', 'batch', 'MetadataImport', 'Index/'.$this->request->getActionExtra()); ?>
+	<?= caNavLink($this->request, _t('Perform another metadata import'), '', 'batch', 'MetadataImport', 'Index/'.$this->request->getActionExtra()); ?>
 </div>
 	
 <script type="text/javascript">

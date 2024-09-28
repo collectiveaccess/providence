@@ -30,16 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
-
-	require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
-	
-	// Pull in Guzzle library (web services client)
-	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');
-	use GuzzleHttp\Client;
-
+require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
+use GuzzleHttp\Client;
 
 class CollectiveAccessDataReader extends BaseDataReader {
 	# -------------------------------------------------------
@@ -144,6 +136,8 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 */
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num;
+		
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -457,6 +451,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 					}
 					if (($va_col[1] == 'hierarchy') && ($va_col[2] == 'preferred_labels')) {
 						// figure out what the display field is
+						$t_instance = Datamodel::getInstance($va_col[0], true);
 						$vs_display_field = $t_instance->getLabelDisplayField();
 						if ($t_instance = Datamodel::getInstanceByTableName($va_col[0], true)) {
 							$va_rels = [];

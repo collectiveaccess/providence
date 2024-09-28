@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,7 @@ class EditorController extends ActionController {
 			$this->request->setActionExtra($va_nav['defaultScreen']);
 		}
 		$this->view->setVar('t_ui', $t_ui);
+		$this->view->setVar('recordSet', $rs);
 		
 		$this->render('editor/screen_html.php');
 	}
@@ -251,7 +252,7 @@ class EditorController extends ActionController {
 		}
 		
 		$t_ui = new ca_editor_uis();
-		if (!isset($options['ui']) && !$options['ui']) {
+		if (!isset($options['ui']) || !$options['ui']) {
 			$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
 		}
 		if (!$t_ui->getPrimaryKey() && isset($options['ui']['__all__']) && $options['ui']['__all__']) {

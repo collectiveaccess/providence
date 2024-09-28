@@ -68,7 +68,7 @@
 		print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	}
 ?>
-		<input type="hidden" name="action" value="<?php print $this->request->getAction(); ?>"/>
+		<input type="hidden" name="action" value="<?= $this->request->getAction(); ?>"/>
 	</form>
 <?php
 	print $vs_control_box;

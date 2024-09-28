@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,8 @@
 	$vb_can_edit	 	= $t_item->isSaveable($this->request);
 	$vb_can_delete		= $t_item->isDeletable($this->request);
 	
+	$forced_values 		= $this->getVar('forced_values') ?? [];
+	
 	$vs_context_id 		= $this->getVar('_context_id');	// used to restrict idno uniqueness checking to within the current list
 	
 	
@@ -52,7 +54,7 @@
 ?>
 				<div class='notification-warning-box'>
 					<ul class='notification-warning-box'>
-						<li class='notification-info-box'><?php print ((intval($vn_item_id) == 0) ? _t("You are not allowed to add items to this list") : _t("You are not allowed to edit items in this list") );?></li>
+						<li class='notification-info-box'><?= ((intval($vn_item_id) == 0) ? _t("You are not allowed to add items to this list") : _t("You are not allowed to edit items in this list") );?></li>
 					</ul>
 				</div>
 <?php
@@ -64,19 +66,20 @@
 				print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$vn_item_id, 'ListItemEditorForm', null, 'POST', 'multipart/form-data');
 				
 					$va_form_elements = $t_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-											'request' => $this->request, 
-											'formName' => 'ListItemEditorForm',
-											'context_id' => $vs_context_id
-										), $va_bundle_list);
+									'request' => $this->request, 
+									'formName' => 'ListItemEditorForm',
+									'context_id' => $vs_context_id,
+									'forcedValues' => $forced_values
+								), $va_bundle_list);
 					
 					print join("\n", $va_form_elements);
 					
 					if($vb_can_edit) { print $vs_control_box; }
 ?>
-					<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
-					<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
-					<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
-					<input type='hidden' name='after_id' value='<?php print $vn_after_id; ?>'/>
+					<input type='hidden' name='_context_id' value='<?= $this->getVar('_context_id'); ?>'/>
+					<input type='hidden' name='item_id' value='<?= $vn_item_id; ?>'/>
+					<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
+					<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
 
 				</form>
 <?php
@@ -86,4 +89,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($this->request, $t_item, $va_bundle_list); ?>
+	<?= caEditorFieldList($this->request, $t_item, $va_bundle_list); ?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@ require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Date.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Submission.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/SubmissionError.php');
 require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/SubmissionWarning.php');
+require_once(__CA_LIB_DIR__.'/MetadataAlerts/TriggerTypes/Expression.php');
 
 define('__CA_MD_ALERT_CHECK_TYPE_SAVE__', 0);
 define('__CA_MD_ALERT_CHECK_TYPE_PERIODIC__', 1);
@@ -251,7 +252,7 @@ abstract class Base {
 			_t('Submission') => 'Submission',
 			_t('Submission error') => 'SubmissionError',
 			_t('Submission warning') => 'SubmissionWarning',
-			//_t('Conditions met') => 'Expression',
+			_t('Expression test') => 'Expression',
 		);
 	}
 
@@ -276,7 +277,7 @@ abstract class Base {
 			case 'SubmissionWarning':
 				return new SubmissionWarning($pa_values);
 			case 'Expression':
-				// @todo
+				return new Expression($pa_values);
 			default:
 				throw new \Exception('Invalid trigger type');
 		}

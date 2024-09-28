@@ -260,7 +260,7 @@ class Datamodel {
 		if(is_numeric($ps_table)) { $ps_table = Datamodel::getTableName($ps_table); }
 		if ($t_table = Datamodel::getInstanceByTableName($ps_table, true)) {
 			$va_info = $t_table->getFieldInfo($ps_field);
-			if ($ps_key) { return $va_info[$ps_key]; }
+			if ($ps_key) { return $va_info[$ps_key] ?? null; }
 			return $va_info;
 		} else {
 			return null;

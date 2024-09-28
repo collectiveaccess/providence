@@ -62,9 +62,7 @@ class RelatedListController extends BaseSearchController {
 
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		$this->opa_views = array(
-			'list' => _t('list'),
-		);
+		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), $this->ops_tablename, ['type_id' => $this->opn_type_restriction_id]);
 
 		$this->opo_result_context = new ResultContext($this->getRequest(), $this->ops_tablename, 'related_list_bundle');
 	}
@@ -109,7 +107,21 @@ class RelatedListController extends BaseSearchController {
 			if (!($t_instance->load($vn_primary_id))) { 
 				throw new ApplicationException(_('Invalid id'));
 			}
-			$va_relation_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+			if(Datamodel::getInstance($placement->get('bundle_name'), true)) {
+				$va_relation_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
+			} else {
+				switch($placement->get('bundle_name')) {
+					case 'history_tracking_current_contents':
+						$settings = $placement->getSettings();
+						if($qr = $t_instance->getContents($settings['policy'] ?? null)) {
+							$va_relation_ids = $qr->getAllFieldValues($qr->primaryKey());
+						}
+						break;
+					default:
+						$va_relation_ids = [];
+						break;
+				}
+			}
 		} else {
 			// ... otherwise use old-style giant list of related ID's passed in form
 			$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
@@ -203,7 +215,11 @@ class RelatedListController extends BaseSearchController {
 
 		$va_res = caMakeSearchResult($t_related->tableName(), $va_relation_ids, $va_search_opts);
 		$o_res = $va_res['result'];
-		$va_relation_ids_to_related_ids = $va_res['index'];
+		$va_relation_ids_to_related_ids = [];
+		$x = array_flip($va_relation_ids);
+		foreach($va_res['index'] as $rel_id) {
+			$va_relation_ids_to_related_ids[$x[$rel_id]] = $rel_id;
+		}
 
 		$this->getView()->setVar('relationIDsToRelatedIDs', $va_relation_ids_to_related_ids);
 

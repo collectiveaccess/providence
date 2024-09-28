@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,11 +30,8 @@
  * ----------------------------------------------------------------------
  */
 namespace CA\MediaUrl\Plugins;
- 
- /**
-  *
-  */
-  require_once(__CA_LIB_DIR__.'/Plugins/MediaUrl/BaseMediaUrlPlugin.php');
+
+require_once(__CA_LIB_DIR__.'/Plugins/MediaUrl/BaseMediaUrlPlugin.php');
  
 class YouTubeDL Extends BaseMediaUrlPlugin {	
 	# ------------------------------------------------
@@ -127,8 +124,9 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 				$dest .= '.'.caGetOption('extension', $options, '.bin');
 			}
 			
-			$tmp_file = caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true).'.'.$p['format'];
-			caExec($z=$this->youtube_dl_path.' '.caEscapeShellArg($url).' -f '.$p['format'].' -q -o '.caEscapeShellArg($tmp_file).' '.(caIsPOSIX() ? " 2> /dev/null" : ""));
+			$format = $p['format'] ?? 'bin';
+			$tmp_file = caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true).'.'.$format;
+			caExec($this->youtube_dl_path.' '.caEscapeShellArg($url).' -f '.$format.' -q -o '.caEscapeShellArg($tmp_file).' '.(caIsPOSIX() ? " 2> /dev/null" : ""));
 
 			if(!file_exists($tmp_file) || (filesize($tmp_file) === 0)) {
 				return false;

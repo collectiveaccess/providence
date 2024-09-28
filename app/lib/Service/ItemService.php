@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,15 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/Service/BaseJSONService.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class ItemService extends BaseJSONService {
+	# -------------------------------------------------------
+	protected $opo_app_plugin_manager = null;
+	
 	# -------------------------------------------------------
 	public function __construct($po_request, $ps_table="") {
 		parent::__construct($po_request, $ps_table);
@@ -138,7 +136,7 @@ class ItemService extends BaseJSONService {
 			if(caGetOption('returnWithStructure', $va_options, true)) {	// unroll structured response into flat list
 				$vm_return = array_reduce($vm_return,
 					function($c, $v) { 
-						return array_merge($c, array_values($v));
+						return array_merge($c, is_array($v) ? array_values($v) : [$v]);
 					}, []
 				);
 			}
@@ -920,7 +918,7 @@ class ItemService extends BaseJSONService {
         }
         
         // Set ACL for newly created record
-		if ($t_instance->getAppConfig()->get('perform_item_level_access_checking') && !$t_instance->getAppConfig()->get("{$ps_table}_dont_do_item_level_access_control")) {
+		if (caACLIsEnabled($t_instance)) {
 			$t_instance->setACLUsers(array($this->opo_request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
 			$t_instance->setACLWorldAccess($t_instance->getAppConfig()->get('default_item_access_level'));
 		}
@@ -963,6 +961,8 @@ class ItemService extends BaseJSONService {
 			}
 		} else if ($va_post["remove_all_attributes"]) {
 			$t_instance->removeAttributes();
+		} else if ($va_post["purge_all_attributes"]) {
+			$t_instance->purgeAttributes();
 		}
 
 		if(is_array($va_post["attributes"]) && sizeof($va_post["attributes"])) {
@@ -1107,6 +1107,14 @@ class ItemService extends BaseJSONService {
                 }
             }
         }
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+		$this->opo_app_plugin_manager->hookItemServiceSaveItem(array(
+				'id' => $this->opn_id,
+				'table_num' => $t_instance->tableNum(),
+				'table_name' => $t_instance->tableName(),
+				'instance' => $t_instance,
+				'is_insert' => false)
+		);
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {

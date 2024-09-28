@@ -35,8 +35,8 @@
 	if ($va_filters = $this->getVar('filters')) {
 ?>
 		<div class="formLabel">
-			<?php print _t('Limit to elements with'); ?><br/>
-			<?php print join("<br/>", $va_filters); ?>
+			<?= _t('Limit to elements with'); ?><br/>
+			<?= join("<br/>", $va_filters); ?>
 		</div>
 	
 	

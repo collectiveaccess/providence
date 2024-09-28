@@ -54,20 +54,20 @@
 	});
 </script>
 <div id="caCreateChildPanel" class="caCreateChildPanel"> 
-	<div class='dialogHeader'><?php print _t('Create child record under this %1', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+	<div class='dialogHeader'><?= _t('Create child record under this %1', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 	<div id="caCreateChildPanelContentArea">
 <?php	
 			if ($vs_type_list = $this->getVar('type_list')) {
 ?>
 			<div class="addChild">
-				<div class="addChildMessage"><?php print _t('Select a record type to add a child record under this one'); ?></div>
-					<?php print caFormTag($this->request, 'Edit', 'caNewChildForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
-						<?php print _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput($t_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_item->getPrimaryKey())); ?>
+				<div class="addChildMessage"><?= _t('Select a record type to add a child record under this one'); ?></div>
+					<?= caFormTag($this->request, 'Edit', 'caNewChildForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
+						<?= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput($t_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_item->getPrimaryKey())); ?>
 						<div id="caTypeChangePanelControlButtons">
 							<table>
 								<tr>
-									<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caNewChildForm'); ?></td>
-									<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caCreateChildPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
+									<td align="right"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caNewChildForm'); ?></td>
+									<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caCreateChildPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
 								</tr>
 							</table>
 						</div>
@@ -88,13 +88,13 @@
 					}
 ?>
 					<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; padding-top:10px" class="addChild">
-						<?php print caFormTag($this->request, 'Edit', 'caNewChildObjectForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
-						<?php print _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey())); ?>
+						<?= caFormTag($this->request, 'Edit', 'caNewChildObjectForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
+						<?= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey())); ?>
 						<div id="caTypeChangePanelControlButtons">
 							<table>
 								<tr>
-									<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caNewChildObjectForm'); ?></td>
-									<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caCreateChildPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
+									<td align="right"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caNewChildObjectForm'); ?></td>
+									<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caCreateChildPanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
 								</tr>
 							</table>
 						</div>

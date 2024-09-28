@@ -28,7 +28,7 @@
  
 	$va_bundle_displays = $this->getVar('bundle_displays');
 ?>
-	<h3 class='yourDisplays'><?php print _t('Your displays'); ?>:
+	<h3 class='yourDisplays'><?= _t('Your displays'); ?>:
 	<div><?php
 			if (sizeof($va_bundle_displays) == 1) {
 				print _t("1 display is available");

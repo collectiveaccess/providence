@@ -1,13 +1,15 @@
 /*
-	Date: 23 September 2022
+	Date: 6 October 2022
 	Migration: 179
-	Description:  Add todo list "checked" field for set items
+	Description:  Add date range to history tracking
 */
 
 /*==========================================================================*/
 
-ALTER TABLE ca_set_items ADD COLUMN checked tinyint unsigned not null default 0;
-CREATE INDEX i_checked_id ON ca_set_items(set_id, checked);
+ALTER TABLE ca_history_tracking_current_values ADD COLUMN value_sdatetime DECIMAL(40,20) null;
+ALTER TABLE ca_history_tracking_current_values ADD COLUMN value_edatetime DECIMAL(40,20) null;
+
+CREATE INDEX i_datetime ON ca_history_tracking_current_values(value_sdatetime, value_edatetime, table_num, row_id);
 
 /*==========================================================================*/
 

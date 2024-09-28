@@ -324,7 +324,7 @@ abstract class IDNumber implements IIDNumbering {
 		}
 		$format = mb_strtolower($format);
 		$types = [];
-		if (is_array($this->formats[$format])) {
+		if (is_array($this->formats[$format] ?? null)) {
 			foreach($this->formats[$format] as $type => $info) {
 				$types[$type] = true;
 			}
@@ -361,12 +361,12 @@ abstract class IDNumber implements IIDNumbering {
 		$format = mb_strtolower($format);
 		$type = mb_strtolower($type);
 		if ($format && $type) {
-			if (is_array($this->formats[$format][$type]['elements'])) {
+			if (is_array($this->formats[$format][$type]['elements'] ?? null)) {
 				$is_child = $this->isChild();
 				$elements = [];
 				foreach($this->formats[$format][$type]['elements'] as $k => $element_info) {
-					if (!$is_child && isset($element_info['child_only']) && (bool)$element_info['child_only']) { continue; }
-					if($is_child && $element_info['root_only']) { continue; }
+					if (!$is_child && (bool)($element_info['child_only'] ?? false)) { continue; }
+					if($is_child && ($element_info['root_only'] ?? false)) { continue; }
 					
 					$elements[$k] = $element_info;
 				}
@@ -384,7 +384,7 @@ abstract class IDNumber implements IIDNumbering {
 	 */
 	public function getElementInfo($element_name) {
 		if (($format = $this->getFormat()) && ($type = $this->getType())) {
-			return $this->formats[$format][$type]['elements'][$element_name];
+			return $this->formats[$format][$type]['elements'][$element_name] ?? null;
 		}
 		return null;
 	}

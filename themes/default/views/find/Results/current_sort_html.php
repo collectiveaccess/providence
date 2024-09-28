@@ -35,7 +35,7 @@ $va_current_sort = caGetSortForDisplay($vo_result->getResultTableName(), $vo_res
 
 if(is_array($va_current_sort) && (sizeof($va_current_sort) > 0)) {
 ?>
-	<h3 class='currentSort'><?php print _t("Current sort"); ?>:
+	<h3 class='currentSort'><?= _t("Current sort"); ?>:
 		<div>
 <?php
 		print join(', ', $va_current_sort)

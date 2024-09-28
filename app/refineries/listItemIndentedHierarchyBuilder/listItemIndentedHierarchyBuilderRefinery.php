@@ -32,6 +32,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	# -------------------------------------------------------
 	static $level_values = null;
 	static $level_value_ids = null;
+	static $level_parent_ids = null;
 	
 	# -------------------------------------------------------
 	public function __construct() {

@@ -33,7 +33,7 @@
 		print caEditorInspector($this, array('backText' => _t('Back to list')));
 	} else {
 ?>
-	<h3 class='groupList'><?php print _t('Your project teams'); ?>:
+	<h3 class='groupList'><?= _t('Your project teams'); ?>:
 	<div><?php
 			if ($vn_group_count == 1) {
 				print _t("1 team is available");

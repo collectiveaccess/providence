@@ -32,13 +32,13 @@
 ?>
 <?php if ($this->getVar('hideOverlayControls')) { ?>
 <div class="caMediaOverlayControlsMinimal">
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
+	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?= caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
 </div>
 <?php } else { ?>
 <div class="caMediaOverlayControls">
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
-	<?php print $this->getVar('controls'); ?>
+	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?= caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
+	<?= $this->getVar('controls'); ?>
 </div>
 <?php } ?>
-<div id="caMediaOverlayContent" ><?php print $this->render($this->getVar('viewer').".php"); ?></div>	
+<div id="caMediaOverlayContent" ><?= $this->render($this->getVar('viewer').".php"); ?></div>	
 

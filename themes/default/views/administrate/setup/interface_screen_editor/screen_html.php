@@ -49,7 +49,7 @@
 			
 			print $vs_control_box;
 ?>
-			<input type='hidden' name='screen_id' value='<?php print $vn_subject_id; ?>'/>
+			<input type='hidden' name='screen_id' value='<?= $vn_subject_id; ?>'/>
 		</form>
 	</div>
 

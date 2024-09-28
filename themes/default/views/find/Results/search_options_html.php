@@ -45,21 +45,21 @@ if($vo_result->numHits() > 0) {
 <?php
 	if(($vo_result->numHits() > 0) && $this->request->user->canDoAction('can_use_spreadsheet_editor_'.$vs_table)) {
 ?>
-<a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><?php print caNavIcon(__CA_NAV_ICON_SPREADSHEET__, "24px"); ?></a> 
+<a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?= caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><?= caNavIcon(__CA_NAV_ICON_SPREADSHEET__, "24px"); ?></a> 
 <?php
 	}	
 ?>
-<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px"); ?></a>
+<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?= caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px"); ?></a>
 
 <?php
 	if($vo_result->numHits() > 0) {
 		if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && (!$this->getVar('noRefine') && !$this->getVar('noRefineControls'))) {
 ?>
-			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, "24px"); ?></a>
+			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?= caNavIcon(__CA_NAV_ICON_FILTER__, "24px"); ?></a>
 <?php
 		}
 ?>
-		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print caNavIcon(__CA_NAV_ICON_EXPORT__, "24px"); ?></a>
+		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?= caNavIcon(__CA_NAV_ICON_EXPORT__, "24px"); ?></a>
 <?php
 	}
 ?>
@@ -137,8 +137,8 @@ if($vo_result->numHits() > 0) {
 ?>		
 			<div class="clear"> </div>
 		
-			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide"); return false;'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
-			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit(); return false;'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide"); return false;'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit(); return false;'><?= caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 		</form>
 
 		<div style='clear:both;height:1px;'>&nbsp;</div>
@@ -151,7 +151,7 @@ if($vo_result->numHits() > 0) {
 	TooltipManager::add('#showResultsEditor', _t("Edit in Spreadsheet"));
 ?>
 <script type="text/javascript">
-    var caDisplayShowMap = <?php print json_encode($va_display_show_only_for_views); ?>;
+    var caDisplayShowMap = <?= json_encode($va_display_show_only_for_views); ?>;
     function caUpdateDisplayList() {
         var view = jQuery('#view_select').val();
         var opts = jQuery('#display_select').data('fullOpts');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2021 Whirl-i-Gig
+ * Copyright 2000-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 # ------------------------------------------------------------------------------------
 # --- Field type constants
 # ------------------------------------------------------------------------------------
@@ -240,6 +235,11 @@ class BaseModel extends BaseObject {
 	 * @access protected
 	 */
 	protected $_TRANSACTION = null;
+	
+	/**
+	 * Hierarchy parent_id field name
+	 */
+	protected $HIERARCHY_PARENT_ID_FLD = null;
 
 	/**
 	 * The current locale. Used to determine which set of localized error messages to use. Default is US English ("en_us")
@@ -294,7 +294,10 @@ class BaseModel extends BaseObject {
 	 */
 	private $opb_log_changes = true;
 
-
+	/**
+	 *
+	 */
+	protected $opo_app_plugin_manager;
 	# --------------------------------------------------------------------------------
 	# --- Error handling properties
 	# --------------------------------------------------------------------------------
@@ -384,7 +387,7 @@ class BaseModel extends BaseObject {
 			die("Field definitions not found for {$table_name}");
 		}
 		if (!is_array(self::$field_list_for_load)) { self::$field_list_for_load = []; }
-		if (!self::$field_list_for_load[$table_name]) {
+		if (!isset(self::$field_list_for_load[$table_name]) || !self::$field_list_for_load[$table_name]) {
 			self::$field_list_for_load[$table_name] = [];
 			foreach($this->FIELDS as $f => $info) {
 				if(isset($info['START']) && isset($info['END'])) {
@@ -631,7 +634,7 @@ class BaseModel extends BaseObject {
 		$changed_field_values_array = [];
 		foreach($fieldnames as $fieldname) {
 			if($this->changed($fieldname)) {
-				$changed_field_values_array[$fieldname] = $this->_FIELD_VALUES[$fieldname];
+				$changed_field_values_array[$fieldname] = $this->_FIELD_VALUES[$fieldname] ?? null;
 			}
 		}
 		return $changed_field_values_array;
@@ -644,7 +647,7 @@ class BaseModel extends BaseObject {
 	 * @return mixed original field value
 	 */
 	public function getOriginalValue($ps_field) {
-		return $this->_FIELD_VALUES_OLD[$ps_field];
+		return $this->_FIELD_VALUES_OLD[$ps_field] ?? null;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -883,7 +886,7 @@ class BaseModel extends BaseObject {
 								if (is_array($va_children_ids) && sizeof($va_children_ids)) {
 									$t_instance = Datamodel::getInstanceByTableNum($this->tableNum());
 									
-									if (($va_tmp[1] == $this->primaryKey()) && !$vs_sort) {
+									if (($va_tmp[1] == $this->primaryKey())) {
 										foreach($va_children_ids as $vn_child_id) {
 											$va_data[$vn_child_id] = $vn_child_id;
 										}
@@ -1137,11 +1140,11 @@ class BaseModel extends BaseObject {
 				break;
 			case (FT_MEDIA):
 			case (FT_FILE):
-				if ($vb_return_with_structure || $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+				if ($vb_return_with_structure || ($pa_options["USE_MEDIA_FIELD_VALUES"] ?? false)) {
 					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
-						$vs_prop = $this->_FIELD_VALUES[$ps_field];
+						$vs_prop = $this->_FIELD_VALUES[$ps_field] ?? null;
 					} else {
-						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
+						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && ($this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : ($this->_FIELD_VALUES[$ps_field] ?? null));
 					}
 				} else {
 					$va_versions = $this->getMediaVersions($ps_field);
@@ -1173,7 +1176,7 @@ class BaseModel extends BaseObject {
 			$vs_prop = caEscapeForXML($vs_prop);
 		}
 
-		if (!(isset($pa_options["DONT_STRIP_SLASHES"]) && $pa_options["DONT_STRIP_SLASHES"])) {
+		if (!caGetOption("DONT_STRIP_SLASHES", $pa_options, true)) {
 			if (is_string($vs_prop)) { $vs_prop = stripSlashes($vs_prop); }
 		}
 		
@@ -1295,16 +1298,17 @@ class BaseModel extends BaseObject {
 	 */
 	static public function getIDsForIdnos($idnos, $options=null) {
 	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
+	    if(!is_array($idnos)) { return null; }
 	    
 	    $access_values = caGetOption('checkAccess', $options, null);
 
 		$return_all = caGetOption('returnAll', $options, false);
 		$force_to_lowercase = caGetOption('forceToLowercase', $options, false);
 		
-		$table_name = $table_name ? $table_name : get_called_class();
+		$table_name = get_called_class();
 		
 		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
-			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types, $options);
 		}
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
@@ -1377,6 +1381,25 @@ class BaseModel extends BaseObject {
 	}
 	# ------------------------------------------------------
 	/** 
+	 * Return instance for parent of current row. Returns null if no parent is defined.
+	 *
+	 * @param array $options Options include:
+	 *		transaction = transaction to load parent within. If omitted transaction of current instance is used. [Default is null]
+	 *
+	 * @return BaseModel
+	 */
+	public function getParentInstance(?array $options=null) : ?BaseModel {
+		if($parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+			if(($parent_id = $this->get($parent_id_fld)) > 0) {
+				$o_trans = caGetOption('transaction', $options, $this->getTransaction());
+				$table = $this->tableName();
+				return $table::findAsInstance([$this->primaryKey() => $parent_id], ['transaction' => $o_trans]);
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/** 
 	 * Check is currently loaded row is a hierarchical child of another row
 	 *
 	 * @return bool
@@ -1422,6 +1445,11 @@ class BaseModel extends BaseObject {
 		foreach($pa_fields as $vs_field => $vm_value) {
 			if (strpos($vs_field, '.') !== false) { $va_tmp = explode('.', $vs_field); $vs_field = $va_tmp[1]; }
 			if (array_key_exists($vs_field, $this->FIELDS)) {
+				// Convert locale codes to locale_id values
+				if(($vs_field === 'locale_id') && !is_numeric($vm_value)) {
+					$vm_value = ca_locales::codeToID($vm_value);
+				}
+			
 				$pa_fields_type = $this->getFieldInfo($vs_field,"FIELD_TYPE");
 				$pb_need_reload = false;
 				if (!$this->verifyFieldValue($vs_field, $vm_value, $pb_need_reload)) {
@@ -1474,12 +1502,17 @@ class BaseModel extends BaseObject {
 						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
-									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+									$t_list = new ca_lists();
+									if (($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) || ($vn_id = $t_list->getItemIDFromListByLabel($vs_list_code, $vm_value))) { // 
 										$vm_value = $vn_id;
 									} else {
 										$this->postError(1103, _t('Value %1 is not in list %2', $vm_value, $vs_list_code), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
 										return false;
 									}
+								} elseif (($vs_list_code = $this->getFieldInfo($vs_field, "LIST")) && in_array($vs_field, ['access', 'status'], true) && (!is_numeric($vm_value))) {
+									$t_list = Datamodel::getInstance('ca_lists', true);
+									$item = $t_list->getItemFromListByItemID($vs_list_code, $vn_id);
+									$vm_value = $item['item_value'] ?? null;
 								} else {
 									$vm_orig_value = $vm_value;
 									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
@@ -1502,11 +1535,11 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATETIME):
 					case (FT_DATE):
 					case (FT_HISTORIC_DATE):
-						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
+						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"] ?? false)) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						} else {
-							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
+							if (!$vm_value && ($this->FIELDS[$vs_field]["IS_NULL"] ?? false)) {
 								if ($vs_cur_value) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
@@ -1547,10 +1580,10 @@ class BaseModel extends BaseObject {
 
 						break;
 					case (FT_TIME):
-						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIME"])) {
+						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIME"] ?? false)) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
 						} else {
-							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
+							if (!$vm_value && ($this->FIELDS[$vs_field]["IS_NULL"] ?? false)) {
 								if ($vs_cur_value) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
@@ -1582,7 +1615,7 @@ class BaseModel extends BaseObject {
 						
 						$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 						$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
+						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"] ?? false)) {
 							if (is_array($vm_value) && (sizeof($vm_value) == 2) && ($vm_value[0] <= $vm_value[1])) {
 								if ($vn_start_date != $vm_value[0]) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -1596,7 +1629,7 @@ class BaseModel extends BaseObject {
 								$this->postError(1100,_t("Invalid direct date values"),"BaseModel->set()", $this->tableName().'.'.$vs_field);
 							}
 						} else {
-							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
+							if (!$vm_value && ($this->FIELDS[$vs_field]["IS_NULL"] ?? false)) {
 								if ($vn_start_date || $vn_end_date) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
@@ -1634,7 +1667,7 @@ class BaseModel extends BaseObject {
 						$vs_start_field_name = $this->getFieldInfo($vs_field,"START");
 						$vs_end_field_name = $this->getFieldInfo($vs_field,"END");
 
-						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIMES"])) {
+						if (($this->DIRECT_TIMES) || ($pa_options["SET_DIRECT_TIMES"] ?? false)) {
 							if (is_array($vm_value) && (sizeof($vm_value) == 2) && ($vm_value[0] <= $vm_value[1])) {
 								if ($this->_FIELD_VALUES[$vs_start_field_name] != $vm_value[0]) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -1686,7 +1719,7 @@ class BaseModel extends BaseObject {
 						break;
 					case (FT_TEXT):
 						$vm_value = (string)$vm_value;
-						if (is_string($vm_value)) {
+						if (is_string($vm_value) && isset($pa_options['stripSlashes']) && ($pa_options['stripSlashes'])) {
 							$vm_value = stripSlashes($vm_value);
 						}
 						
@@ -1758,7 +1791,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							$pa_options["original_filename"] = BaseModel::getPurifier()->purify((string)$pa_options["original_filename"]);
+							$pa_options["original_filename"] = BaseModel::getPurifier()->purify((string)($pa_options["original_filename"] ?? null));
     						$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						
@@ -2128,7 +2161,7 @@ class BaseModel extends BaseObject {
 			$this->_FILES_CLEAR = array();
 			
 			if ($vn_id = $this->_FIELD_VALUES[$this->primaryKey()]) {
-				if (is_array(BaseModel::$s_instance_cache[$vs_table_name]) && sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
+				if (is_array(BaseModel::$s_instance_cache[$vs_table_name] ?? null) && sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
@@ -2415,7 +2448,7 @@ class BaseModel extends BaseObject {
 					break;
 			}
 			
-			if ($va_parent_info) {
+			if ($va_parent_info && (!defined('__DONT_DO_HIERARCHICAL_INDEXING__') || !__DONT_DO_HIERARCHICAL_INDEXING__)) {
 				$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 			} else {
 				$va_hier_indexing = array('left' => 1, 'right' => pow(2,32));
@@ -2430,7 +2463,7 @@ class BaseModel extends BaseObject {
 		foreach($this->FIELDS as $vs_field => $va_attr) {
 
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
-			$vs_field_value = $this->get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
+			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
 			if (isset($va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) && (bool)$va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) { continue; }
 			
@@ -2556,6 +2589,9 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 
 						if (
 							!$va_attr["IS_NULL"]
@@ -2594,6 +2630,9 @@ class BaseModel extends BaseObject {
 					case (FT_TIMERANGE):
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
+						
+						if(!isset($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = null; }
+						if(!isset($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = null; }
 						
 						if (
 							!$va_attr["IS_NULL"]
@@ -2779,7 +2818,6 @@ class BaseModel extends BaseObject {
                 if (method_exists($this, "deriveHistoryTrackingCurrentValue")) {
                     $table = $this->tableName();
                     $this->deriveHistoryTrackingCurrentValue();
-                    if ($table::isHistoryTrackingCriterion($table)) { $this->updateDependentHistoryTrackingCurrentValues(); }
                 }
                 
 				#
@@ -2804,7 +2842,7 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
 				$this->_FIELD_VALUE_CHANGED = array();					
 					
-				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
+				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? null) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 					
@@ -2899,7 +2937,7 @@ class BaseModel extends BaseObject {
 					if ($vs_user_desc) { $va_conflict_users[$vs_user_desc] = true; }
 					if(isset($va_conflict['snapshot']) && is_array($va_conflict['snapshot'])) {
 						foreach($va_conflict['snapshot'] as $vs_field => $vs_value) {
-							if ($va_conflict_fields[$vs_field]) { continue; }
+							if ($va_conflict_fields[$vs_field] ?? null) { continue; }
 						
 							$va_conflict_fields[$vs_field] = true;
 						}
@@ -3017,7 +3055,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				
-if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
+if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) && (!defined('__DONT_DO_HIERARCHICAL_INDEXING__') || !__DONT_DO_HIERARCHICAL_INDEXING__)) {							
 					if ($va_parent_info) {
 						$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 					} else {
@@ -3327,7 +3365,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$this->doSearchIndexing(null, false, $va_index_options);
 				}
 													
-				if (is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
+				if ((is_array($va_rebuild_hierarchical_index) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) && (!defined('__DONT_DO_HIERARCHICAL_INDEXING__') || !__DONT_DO_HIERARCHICAL_INDEXING__)) {
 					$t_instance = Datamodel::getInstanceByTableName($this->tableName());
 					if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 					foreach($va_rebuild_hierarchical_index as $vn_child_id) {
@@ -3497,7 +3535,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql = "DELETE FROM ".$this->tableName()." WHERE ";
 
 			$vs_wheres = "";
-			while(list($vs_field, $vm_val) = each($pa_fields)) {
+			foreach($pa_fields as $vs_field => $vm_val){
 				$vn_datatype = $this->_getFieldTypeType($vs_field);
 				switch($vn_datatype) {
 					# -----------------------------
@@ -3575,22 +3613,29 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						WHERE
 							(".$va_relationship["many_table_field"]." = ".$this->getPrimaryKey(1).")
 					");
-					
 					$pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]] = true;
 
 					if ($qr_record_check->numRows() > 0) {
 						if ($pb_delete_related) {
-							while($qr_record_check->nextRow()) {
-								if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
-									$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
-									
-									if ($t_related->numErrors()) {
-										$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
-										if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-										if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
-										return false;
+							if((SearchIndexer::isIndexed($vs_many_table) || $t_related->getProperty('LOG_CHANGES_TO_SELF')) || !in_array($vs_many_table, ['ca_acl']) ) {
+								while($qr_record_check->nextRow()) {
+									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
+										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
+										
+										if ($t_related->numErrors()) {
+											$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
+											if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+											if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+											return false;
+										}
 									}
 								}
+							} else {
+								$o_db->query("
+									DELETE FROM {$vs_many_table}
+									WHERE
+										({$va_relationship['many_table_field']} = ".$this->getPrimaryKey(1).")
+								");
 							}
 						} else {
 							$this->postError(780, _t("Can't delete item because it is in use (%1)", $vs_many_table),"BaseModel->delete()");
@@ -3626,7 +3671,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		
 		# cancel and pending queued tasks against this record
-		$tq = new TaskQueue();
+		$tq = new TaskQueue(['transaction' => $this->getTransaction()]);
 		$tq->cancelPendingTasksForRow(join("/", array($this->tableName(), $vn_id)));
 
 		$this->_FILES_CLEAR = array();
@@ -3722,13 +3767,12 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
-		
 		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($vi)) {
 			return "";
 		}
-		if ($ps_mirror) {
-			return $va_media_info["MIRROR_STATUS"][$ps_mirror];
+		if ($mirror) {
+			return $va_media_info["MIRROR_STATUS"][$mirror];
 		} else {
 			return $va_media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
 		}
@@ -3757,7 +3801,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) { return null; }
 
-		$o_tq = new TaskQueue();
+		$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
 		$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 		$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $ps_version));
 
@@ -3933,7 +3977,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			return null;
 		}
 
-		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
+		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"] ?? null);
 
 		if (!is_array($va_volume_info)) {
 			return "";
@@ -3971,12 +4015,12 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$ps_version = $va_media_info[$ps_version]["REPLACE_WITH_VERSION"];
 		}
 		
-		if (!is_array($va_media_info[$ps_version])) { return null; }
+		if (!is_array($va_media_info[$ps_version] ?? null)) { return null; }
 
-        if ($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) { 
-		    $alt_text = $this->getWithTemplate($alt_text_template);
+        if (($alt_text_template = Configuration::load()->get($this->tableName()."_alt_text_template")) && method_exists($this, 'getWithTemplate')) { 
+		    $alt_text = $this->getWithTemplate($alt_text_template, ['highlighting' => false]);
 		} elseif(is_a($this, "LabelableBaseModelWithAttributes")) {
-		    $alt_text = $this->get($this->tableName().".preferred_labels");
+		    $alt_text = $this->get($this->tableName().".preferred_labels", ['highlighting' => false]);
 		} else {
 		    $alt_text = null;
 		}
@@ -4139,9 +4183,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function getDefaultMediaPreviewVersion($ps_field) {
 		if ($va_media_info = $this->getMediaInfo($ps_field)) {
 			$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
-			$va_type_info = $o_media_proc_settings->getMediaTypeInfo($o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"]));
+			$va_type_info = $o_media_proc_settings->getMediaTypeInfo($o_media_proc_settings->canAccept($va_media_info["INPUT"]["MIMETYPE"] ?? null));
 			
-			return ($va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION']) ? $va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] : array_shift($this->getMediaVersions($ps_field));
+			return ($va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] ?? null) ? $va_type_info['MEDIA_PREVIEW_DEFAULT_VERSION'] : array_shift($this->getMediaVersions($ps_field));
 		} else {
 			return null;
 		}	
@@ -4318,8 +4362,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		
 		# if media is mirrored, delete file off of mirrored server
-		if (is_array($va_volume_info["mirrors"]) && sizeof($va_volume_info["mirrors"]) > 0) {
-			$o_tq = new TaskQueue();
+		if (is_array($va_volume_info["mirrors"] ?? null) && sizeof($va_volume_info["mirrors"]) > 0) {
+			$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
 			$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 			$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $ps_version));
 
@@ -4393,7 +4437,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 	$vn_max_execution_time = ini_get('max_execution_time');
 	 	set_time_limit(7200);
 	 	
-		$o_tq = new TaskQueue();
+		$vb_is_fetched_file = false;
+	 	
+		$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
 		$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 
 		# only set file if something was uploaded
@@ -4418,7 +4464,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		} else {
 			// Don't try to process files when no file is actually set
 			if(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (isUrl($this->_SET_FILES[$ps_field]['tmp_name']) || is_readable($this->_SET_FILES[$ps_field]['tmp_name']))) { 
-				$o_tq = new TaskQueue();
 				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		
 				//
@@ -4432,7 +4477,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				$vn_url_fetched_on = null;
 			
 				$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
-				$vb_is_fetched_file = false;
 
 				$vs_url = $this->_SET_FILES[$ps_field]['tmp_name'];
 				$vs_url_fetched_original_url = $vs_url_fetched_from = $vn_url_fetched_on = $vs_url_fetched_by = null;
@@ -4446,7 +4490,9 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					try {
 						$r = $media_url->fetch($vs_url);
 						if (is_array($r)) {
-							$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							if(!isset($this->_SET_FILES[$ps_field]['original_filename'])) { 
+								$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							}
 							$vs_tmp_file = $r['file'];
 						} else {
 							$this->postError(1600, _t('Could not download media'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);	
@@ -4503,7 +4549,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					}
 
 					// allow adding zip and (gzipped) tape archives
-					$vb_is_archive = false;
 					$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
 					$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
 					$va_matches = [];
@@ -4538,7 +4583,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 						set_time_limit($vn_max_execution_time);
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-						if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 						return false;
 					}
 
@@ -4547,7 +4591,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
 						set_time_limit($vn_max_execution_time);
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-						if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 						return false;
 					}
 
@@ -4596,7 +4639,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					$version_info = $o_media_proc_settings->getMediaTypeVersions($media_type);
 					$va_default_queue_settings = $o_media_proc_settings->getMediaTypeQueueSettings($media_type);
 
-					if (!($va_media_write_options = $this->_FILES[$ps_field]['options'])) {
+					if (!($va_media_write_options = ($this->_FILES[$ps_field]['options'] ?? null))) {
 						$va_media_write_options = $this->_SET_FILES[$ps_field]['options'];
 					}
 				
@@ -4702,13 +4745,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								'VOLUME' => $volume
 							);
 							$media_desc[$v]["QUEUED"] = $queue;						
-							if ($version_info[$v]["QUEUED_MESSAGE"]) {
+							if ($version_info[$v]["QUEUED_MESSAGE"] ?? null) {
 								$media_desc[$v]["QUEUED_MESSAGE"] = $version_info[$v]["QUEUED_MESSAGE"];
 							} else {
-								$media_desc[$v]["QUEUED_MESSAGE"] = ($va_default_queue_settings['QUEUED_MESSAGE']) ? $va_default_queue_settings['QUEUED_MESSAGE'] : _t("Media is being processed and will be available shortly.");
+								$media_desc[$v]["QUEUED_MESSAGE"] = ($va_default_queue_settings['QUEUED_MESSAGE'] ?? null) ? $va_default_queue_settings['QUEUED_MESSAGE'] : _t("Media is being processed and will be available shortly.");
 							}
 						
-							if ($pa_options['delete_old_media']) {
+							if ($pa_options['delete_old_media'] ?? false) {
 								$va_files_to_delete[] = array(
 									'field' => $ps_field,
 									'version' => $v
@@ -4728,14 +4771,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							#
 							# don't process this media, just copy the file
 							#
-							$ext = ($output_mimetype == 'application/octet-stream') ? pathinfo($this->_SET_FILES[$ps_field]['original_filename'], PATHINFO_EXTENSION) : $m->mimetype2extension($output_mimetype);
+							$ext = ($output_mimetype == 'application/octet-stream') ? pathinfo($this->_SET_FILES[$ps_field]['original_filename'], PATHINFO_EXTENSION) : Media::getExtensionForMimetype($output_mimetype);
 
 							if (!$ext) {
 								$this->postError(1600, _t("File could not be copied for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 
@@ -4743,7 +4785,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 
@@ -4767,7 +4808,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$replace_with_version = $replace_with_version_opt ? $replace_with_version_opt : array_pop($alt_version_list);
 								if(!in_array($replace_with_version, $va_versions)) { $replace_with_version = null; }
 								$media_desc[$v]['REPLACE_WITH_VERSION'] = $replace_with_version ? $replace_with_version : $va_versions[0];
-							} else if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
+							} else if ((bool)($version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"] ?? false)) { 
 								$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
 							
 								if ($pa_options['delete_old_media']) {
@@ -4778,7 +4819,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 														
 								$media_desc[$v] = array_merge($media_desc[$v], [
-									"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'],
+									"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'] ?? null,
 									"FILENAME" => null,
 									"HASH" => null,
 									"MAGIC" => null,
@@ -4794,7 +4835,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									$m->cleanup();
 									set_time_limit($vn_max_execution_time);
 									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 									return false;
 								}
 								@touch($filepath, filemtime($this->_SET_FILES[$ps_field]['tmp_name']));
@@ -4804,7 +4844,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									$vs_path_to_queue_media = $filepath;
 								}
 	
-								if ($pa_options['delete_old_media']) {
+								if ($pa_options['delete_old_media'] ?? false) {
 									$va_files_to_delete[] = array(
 										'field' => $ps_field,
 										'version' => $v,
@@ -4813,7 +4853,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 									);
 								}
 	
-								if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
+								if (is_array($vi["mirrors"] ?? null) && sizeof($vi["mirrors"]) > 0) {
 									$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
 									$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 	
@@ -4868,7 +4908,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							}
 						} else {
 							$m->set("version", $v);
-							while(list($operation, $parameters) = each($rules)) {
+							foreach($rules as $operation => $parameters) {	
 								if ($operation === 'SET') {
 									foreach($parameters as $pp => $pv) {
 										if ($pp == 'format') {
@@ -4878,7 +4918,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 										}
 									}
 								} else {
-									if(is_array($this->_FIELD_VALUES[$ps_field]) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
+									if(is_array($this->_FIELD_VALUES[$ps_field] ?? null) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
 										$parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
 										$parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
 								
@@ -4895,12 +4935,11 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 							if (!$output_mimetype) { $output_mimetype = $input_mimetype; }
 
-							if (!($ext = $m->mimetype2extension($output_mimetype))) {
+							if (!($ext = Media::getExtensionForMimetype($output_mimetype))) {
 								$this->postError(1600, _t("File could not be processed for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 
@@ -4908,7 +4947,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 							$magic = rand(0,99999);
@@ -4919,7 +4957,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 								break;
 							} else {
@@ -4952,7 +4989,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 							}
 
-							if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
+							if (is_array($vi["mirrors"] ?? null) && sizeof($vi["mirrors"]) > 0) {
 								$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
 								$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
 
@@ -5138,6 +5175,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
 						}
 					
+						// Index text locations in PDF
 						if(is_array($va_locs = $m->getExtractedTextLocations())) {
 							MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
 							foreach($va_locs as $vs_content => $va_loc_list) {
@@ -5146,6 +5184,21 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 								}
 							}
 							MediaContentLocationIndexer::write();
+						}
+						
+						// Queue transcription task
+						if(caTranscribeAVMedia($input_mimetype)) {	// TODO: check mimetypes
+							$o_tq->addTask(
+								'mediaTranscription',
+								array(
+									"TABLE" => $this->tableName(), "FIELD" => $ps_field,
+									"PK" => $this->primaryKey(), "PK_VAL" => $this->getPrimaryKey(),
+								
+									"INPUT_MIMETYPE" => $input_mimetype,
+								
+									"OPTIONS" => []
+								),
+								["priority" => 200, "entity_key" => md5(join("/", [$this->tableName(), $ps_field, $this->getPrimaryKey()])), "row_key" => join("/", array($this->tableName(), $this->getPrimaryKey())), 'user_id' => $AUTH_CURRENT_USER_ID]);	
 						}
 					} else {
 						# error - invalid media
@@ -5167,7 +5220,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 				$this->_PROCESSED_FILES[$ps_field] = $this->_SET_FILES[$ps_field];
 				$this->_SET_FILES[$ps_field] = null;
-			} elseif(is_array($this->_FIELD_VALUES[$ps_field])) {
+			} elseif(is_array($this->_FIELD_VALUES[$ps_field] ?? null)) {
 				// Just set field values in SQL (usually in-place update of media metadata)
 				$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
 				$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
@@ -5175,7 +5228,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		set_time_limit($vn_max_execution_time);
 		if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-		if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 		
 		return $vs_sql;
 	}
@@ -5630,9 +5682,10 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			$vs_sql =  "$field = ".$this->quote(caSerializeForDatabase($this->_FILES[$field], true)).",";
 		} else {
 			$va_field_info = $this->getFieldInfo($field);
-			if ((file_exists($this->_SET_FILES[$field]['tmp_name']))) {
+			$ffname = $this->_SET_FILES[$field]['tmp_name'] ?? null;
+			if ((file_exists($ffname))) {
 				$ff = new File();
-				$mimetype = $ff->divineFileFormat($this->_SET_FILES[$field]['tmp_name'], $this->_SET_FILES[$field]['original_filename']);
+				$mimetype = $ff->divineFileFormat($ffname, $this->_SET_FILES[$field]['original_filename'] ?? null);
 
 				if (is_array($va_field_info["FILE_FORMATS"]) && sizeof($va_field_info["FILE_FORMATS"]) > 0) {
 					if (!in_array($mimetype, $va_field_info["FILE_FORMATS"])) {
@@ -5656,32 +5709,33 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 
 				if(!is_array($properties = $ff->getProperties())) { $properties = array(); }
 				
-				if ($properties['dangerous'] > 0) { $vn_dangerous = 1; }
+				if (($properties['dangerous'] ?? 0) > 0) { $vn_dangerous = 1; }
 
-				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
+				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"] ?? null, $this->getPrimaryKey())) === false) {
 					$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
 				$magic = rand(0,99999);
 
-				$va_pieces = explode("/", $this->_SET_FILES[$field]['original_filename']);
-				$ext = strtolower(array_pop($va_tmp = explode(".", array_pop($va_pieces))));
-				if ($properties["dangerous"]) { $ext .= ".bin"; }
+				$va_pieces = explode("/", $this->_SET_FILES[$field]['original_filename'] ?? '');
+				$va_tmp = explode(".", array_pop($va_pieces));
+				$ext = strtolower(array_pop($va_tmp));
+				if ($properties["dangerous"] ?? 0) { $ext .= ".bin"; }
 				if (!$ext) $ext = "bin";
 
-				$filestem = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($field);
+				$filestem = ($vi["absolutePath"] ?? null)."/".$dirhash."/".$magic."_".$this->_genMediaName($field);
 				$filepath = $filestem.".".$ext;
 
 
 				$filesize = isset($properties["filesize"]) ? $properties["filesize"] : 0;
 				if (!$filesize) {
-					$properties["filesize"] = filesize($this->_SET_FILES[$field]['tmp_name']);
+					$properties["filesize"] = filesize($ffname);
 				}
 
 				$file_desc = array(
 					"FILE" => 1, # signifies is file
 					"VOLUME" => $va_field_info["FILE_VOLUME"],
-					"ORIGINAL_FILENAME" => $this->_SET_FILES[$field]['original_filename'],
+					"ORIGINAL_FILENAME" => $this->_SET_FILES[$field]['original_filename'] ?? null,
 					"MIMETYPE" => $mimetype,
 					"FILENAME" => $this->_genMediaName($field).".".$ext,
 					"HASH" => $dirhash,
@@ -5689,20 +5743,20 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					"PROPERTIES" => $properties,
 					"DANGEROUS" => $vn_dangerous,
 					"CONVERSIONS" => array(),
-					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name']),
-					"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$field]['tmp_name'])
+					"MD5" => md5_file($ffname),
+					"FILE_LAST_MODIFIED" => filemtime($ffname)
 				);
 
-				if (!is_readable($this->_SET_FILES[$field]['tmp_name']) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+				if (!is_readable($ffname) || !is_writeable(pathinfo($filepath, PATHINFO_DIRNAME)) || !copy($ffname, $filepath)) {
 					$this->postError(1670, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
-				@touch($filepath, filemtime($this->_SET_FILES[$field]['tmp_name']));
+				@touch($filepath, filemtime($ffname));
 
 
 				# -- delete old file if its name is different from the one we just wrote (otherwise, we overwrote it)
-				if ($filepath != $this->getFilePath($field)) {
-					@unlink($this->getFilePath($field));
+				if (($filepath != $this->getFilePath($field)) && file_exists($filepath = $this->getFilePath($field))) {
+					@unlink($filepath);
 				}
 
 
@@ -5823,7 +5877,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function dump () {
 		$this->clearErrors();
 		reset($this->FIELDS);
-		while (list($field, $attr) = each($this->FIELDS)) {
+		foreach($this->FIELDS as $field => $attr){
 			switch($attr['FIELD_TYPE']) {
 				case FT_HISTORIC_DATERANGE:
 					echo "{$field} = ".$this->_FIELD_VALUES[$attr['START']]."/".$this->_FIELD_VALUES[$attr['END']]."<BR>\n";
@@ -5940,9 +5994,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					return $k;
 				}
 			}
-		} else {
-			return;
-		}
+		} 
+		return null;
 	}
 	# --------------------------------------------------------------------------------
 	# --- Field input verification
@@ -5977,13 +6030,13 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			if (isset($va_attr["BOUNDS_VALUE"][0])) { $min_value = $va_attr["BOUNDS_VALUE"][0]; }
 			if (isset($va_attr["BOUNDS_VALUE"][1])) { $max_value = $va_attr["BOUNDS_VALUE"][1];
 			}
-			if (!($va_attr["IS_NULL"] && (!$value))) {
-				if ((isset($min_value)) && ($value < $min_value)) {
-					$this->postError(1101,_t("%1 must not be less than %2", $va_attr["LABEL"], $min_value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
+			if (!($va_attr["IS_NULL"] && (!strlen($value)))) {
+				if ((isset($min_value)) && ((float)$value < $min_value)) {
+					$this->postError(1101,_t("%1 must not be less than %2; value was %3", $va_attr["LABEL"], $min_value, $value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 					return false;
 				}
-				if ((isset($max_value)) && ($value > $max_value)) {
-					$this->postError(1101,_t("%1 must not be greater than %2", $va_attr["LABEL"], $max_value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
+				if ((isset($max_value)) && ((float)$value > $max_value)) {
+					$this->postError(1101,_t("%1 must not be greater than %2; value was %3", $va_attr["LABEL"], $max_value, $value),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 					return false;
 				}
 			}
@@ -6033,7 +6086,16 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				if (!is_array($value)) { $value = explode(":",$value); }
 				if (!isset($va_attr['LIST_MULTIPLE_DELIMITER']) || !($vs_list_multiple_delimiter = $va_attr['LIST_MULTIPLE_DELIMITER'])) { $vs_list_multiple_delimiter = ';'; }
 				foreach($value as $v) {
-					if ((sizeof($value) > 1) && (!$v)) continue;
+					if ((sizeof($value) > 1) && (!strlen($v))) continue;
+					
+					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
+						// transform entries to item values
+						$t_list = Datamodel::getInstance('ca_lists', true);
+						if (isset($va_attr['LIST']) && (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v)))) { // 
+							$item = $t_list->getItemFromListByItemID($va_attr['LIST'], $item_id);
+							$v = $item['item_value'] ?? null;
+						}
+					}
 
 					if ($va_attr['DISPLAY_TYPE'] == DT_LIST_MULTIPLE) {
 						$va_tmp = explode($vs_list_multiple_delimiter, $v);
@@ -6073,7 +6135,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		$err_halt = $this->error->getHaltOnError();
 		$err_report = $this->error->getReportOnError();
 		$this->error->setErrorOutput(0);
-		while(list($field,$attr) = each($fields)) {
+		foreach($fields as $field => $attr){
 			$pb_need_reload = false;
 			$this->verifyFieldValue ($field, $this->get($field), $pb_need_reload);
 			if ($errnum = $this->error->getErrorNumber()) {
@@ -6346,18 +6408,22 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		}
 		$va_tmp = explode('.', $ps_field);
 		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(!is_array($attributes)) { $attributes = []; }
+		
 		if (in_array($va_tmp[0], array('created', 'modified'))) {
 			$value = (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : null);
 			if (is_null($value) && $use_current_row_value) {
 				$value = $this->get($ps_field);
 			}
-			return caHTMLTextInput($ps_field, array(
+			return caHTMLTextInput($ps_field, array_merge($attributes, [
 				'id' => str_replace(".", "_", $ps_field),
 				'class' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 				'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 				'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
-				'value' => $value
-			));
+				'value' => $value,
+				'placeholder' => $pa_options['placeholder'] ?? null
+			]));
 		}
 		
 		if ($va_tmp[0] != $this->tableName()) { return null; }
@@ -6381,11 +6447,14 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					'name' => $n.(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'id' => caGetOption('id', $pa_options, str_replace(".", "_", caGetOption('name', $pa_options, $ps_field))).(caGetOption('autocomplete', $pa_options, false) ? "_autocomplete" : ""),
 					'nullOption' => '-',
+					'force' => true,
 					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => $value,     
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
-					'no_tooltips' => true
+					'no_tooltips' => true,
+					'placeholder' => $pa_options['placeholder'] ?? null,
+					'attributes' => $attributes
 			)));
 		}
 		
@@ -6440,6 +6509,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => $value,
+						'force' => true,
 						'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 						'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 						'no_tooltips' => true,
@@ -6481,165 +6551,173 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * in tables. You cannot log metadata attribute changes manually.
 	 * 
 	 * @access private
-	 * @param string $ps_change_type 'I', 'U' or 'D', meaning INSERT, UPDATE or DELETE
-	 * @param int $pn_user_id user identifier, defaults to null
-	 * @param array $pa_options Options include:
+	 * @param string $change_type 'I', 'U' or 'D', meaning INSERT, UPDATE or DELETE
+	 * @param int $user_id user identifier, defaults to null
+	 * @param array $options Options include:
 	 *		row_id = Force logging for specified row_id. [Default is to use id from currently loaded row]
 	 *		snapshot = Row snapshot array to use for logging. [Default is to use snapshot from currently loaded row]
 	 * 		log_id = Force logging using a specific log_id. [Default is to use next available log_id]
 	 */
-	public function logChange($ps_change_type, $pn_user_id=null, $pa_options=null) {
-		if(defined('__CA_DONT_LOG_CHANGES__')) { return null; }
-		if (!$this->logChanges()) { return null; }
-		$vb_is_metadata = $vb_is_metadata_value = false;
+	public function logChange($change_type, $user_id=null, $options=null) {
+		if (defined('__CA_DONT_LOG_CHANGES__') || !$this->logChanges()) { return null; }
+		
+		global $g_change_log_delegate, $g_change_log_unit_id, $AUTH_CURRENT_USER_ID;
+		global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
+			
+		$is_metadata = $is_metadata_value = false;
 		if ($this->tableName() == 'ca_attributes') {
-			$vb_log_changes_to_self = false;
-			$va_subject_config = null;
-			$vb_is_metadata = true;
+			$log_changes_to_self = false;
+			$subject_config = null;
+			$is_metadata = true;
 		} elseif($this->tableName() == 'ca_attribute_values') {
-			$vb_log_changes_to_self = false;
-			$va_subject_config = null;
-			$vb_is_metadata_value = true;
+			$log_changes_to_self = false;
+			$subject_config = null;
+			$is_metadata_value = true;
 		} else {
-			$vb_log_changes_to_self = 	$this->getProperty('LOG_CHANGES_TO_SELF');
-			$va_subject_config = 		$this->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+			$log_changes_to_self = 	$this->getProperty('LOG_CHANGES_TO_SELF');
+			$subject_config = 		$this->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
 		}
 		
-		$pn_log_id = caGetOption('log_id', $pa_options, null);
+		$log_id = caGetOption('log_id', $options, null);
 
-		global $AUTH_CURRENT_USER_ID;
-		if (!$pn_user_id) { $pn_user_id = $AUTH_CURRENT_USER_ID; }
-		if (!$pn_user_id) { $pn_user_id = null; }
+		if (!$user_id) { $user_id = $AUTH_CURRENT_USER_ID; }
+		if (!$user_id) { $user_id = null; }
 		
-		if (!in_array($ps_change_type, array('I', 'U', 'D'))) { return false; };		// invalid change type (shouldn't happen)
+		if (!in_array($change_type, ['I', 'U', 'D'])) { throw new ApplicationException(_t('Invalid log change type: %1', $change_type)); };		// invalid change type (shouldn't happen)
 
-		if (!($vn_row_id = caGetOption('row_id', $pa_options, null)) && !($vn_row_id = $this->getPrimaryKey())) { return false; }					// no logging without primary key value
+		if (!($row_id = caGetOption('row_id', $options, null)) && !($row_id = $this->getPrimaryKey())) { return false; }					// no logging without primary key value
 
 		// get unit id (if set)
-		global $g_change_log_unit_id;
-		$vn_unit_id = $g_change_log_unit_id;
-		if (!$vn_unit_id) { $vn_unit_id = null; }
+		$unit_id = $g_change_log_unit_id;
+		if (!$unit_id) { $unit_id = null; }
 
 		// get subject ids
-		$va_subjects = array();
-		$vs_subject_tablename = null;
-		if ($vb_is_metadata) {
+		$subjects = [];
+		$subject_tablename = null;
+		if ($is_metadata) {
 			// special case for logging attribute changes
-			if (($vn_id = $this->get('row_id')) > 0) {
-				$va_subjects[$this->get('table_num')][] = $vn_id;
+			if (($id = $this->get('row_id')) > 0) {
+				$subjects[$this->get('table_num')][] = $id;
 				
 				if ($t = Datamodel::getInstance($this->get('table_num'), true)) {
-					$va_subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
-					$vs_subject_tablename = $t->tableName();
+					$subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+					$subject_tablename = $t->tableName();
 				}
 			}
-		} elseif ($vb_is_metadata_value) {
-			if(($ps_change_type !== 'D') && !caGetOption('forceLogChange', $pa_options, false) && !sizeof($this->getChangedFieldValuesArray())) { return null; }	// don't log if nothing has changed
+		} elseif ($is_metadata_value) {
 			// special case for logging metadata changes
+			if(($change_type !== 'D') && !caGetOption('forceLogChange', $options, false) && !sizeof($this->getChangedFieldValuesArray())) { return null; }	// don't log if nothing has changed
 			$t_attr = new ca_attributes($this->get('attribute_id'));
-			if (($vn_id = $t_attr->get('row_id')) > 0) {
-				$va_subjects[$t_attr->get('table_num')][] = $vn_id;
+			if (($id = $t_attr->get('row_id')) > 0) {
+				$subjects[$t_attr->get('table_num')][] = $id;
 			}
 			
 			if ($t = Datamodel::getInstance($t_attr->get('table_num'), true)) {
-				$va_subject_config = null;
-				$vs_subject_tablename = $t->tableName();
+				$subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
+				$subject_tablename = $t->tableName();
 			}
 		} else {
-			$vs_subject_tablename = $this->tableName();
+			$subject_tablename = $this->tableName();
 		}
-		if (is_array($va_subject_config)) {
-				if(is_array($va_subject_config['FOREIGN_KEYS']) && $vs_subject_tablename) {
-					foreach($va_subject_config['FOREIGN_KEYS'] as $vs_field) {
-						$va_relationships = Datamodel::getManyToOneRelations($this->tableName(), $vs_field);
-						if ($va_relationships['one_table']) {
-							$vn_table_num = Datamodel::getTableNum($va_relationships['one_table']);
-							if (!isset($va_subjects[$vn_table_num]) || !is_array($va_subjects[$vn_table_num])) { $va_subjects[$vn_table_num] = array(); }
+		if (is_array($subject_config)) {
+				if(is_array($subject_config['FOREIGN_KEYS']) && $subject_tablename) {
+					foreach($subject_config['FOREIGN_KEYS'] as $field) {
+						$relationships = Datamodel::getManyToOneRelations($this->tableName(), $field);
+						if ($relationships['one_table']) {
+							$table_num = Datamodel::getTableNum($relationships['one_table']);
+							if (!isset($subjects[$table_num]) || !is_array($subjects[$table_num])) { $subjects[$table_num] = []; }
 							
-							if ($vb_is_metadata) {
-								$t->load($this->get('row_id'));
-								$vn_id = $t->get($vs_field);
-							} elseif($vb_is_metadata_value) {
+							if ($is_metadata) {
+								if(!$t->load($this->get('row_id'))) { return false; }
+								$id = $t->get($field);
+							} elseif($is_metadata_value) {
 								$t_attr = new ca_attributes($this->get('attribute_id'));
-								$t->load($t_attr->get('row_id'));
-								$vn_id = $t->get($vs_field);
+								if(!($row_id = $t_attr->get('row_id'))) { return false; }
+								if(!$t->load($row_id)) { return false; }
+								$id = $t->get($field);
 							} else {
-								$vn_id = $this->get($vs_field);
+								$id = $this->get($field);
 							}
 							
-							if ($vn_id > 0) {
-								$va_subjects[$vn_table_num][] = $vn_id;
+							if ($id > 0) {
+								$subjects[$table_num][] = $id;
 							}
 						}
 					}
 				}
 				
-				if(is_array($va_subject_config['RELATED_TABLES']) && !$vb_is_metadata && !$vb_is_metadata_value) {
+				if(is_array($subject_config['RELATED_TABLES'])) {
 					$o_db = $this->getDb();
 					if (!isset($o_db) || !$o_db) {
 						$o_db = new Db();
 						$o_db->dieOnError(false);
 					}
 					
-					foreach($va_subject_config['RELATED_TABLES'] as $vs_dest_table => $va_path_to_dest) {
+					foreach($subject_config['RELATED_TABLES'] as $dest_table => $path_to_dest) {
 
-						$t_dest = Datamodel::getInstance($vs_dest_table);
-						if (!$t_dest) { continue; }
+						if(!($t_dest = Datamodel::getInstance($dest_table))) { continue; }
 
-						$vn_dest_table_num = $t_dest->tableNum();
-						$vs_dest_primary_key = $t_dest->primaryKey();
+						$dest_table_num = $t_dest->tableNum();
+						$dest_primary_key = $t_dest->primaryKey();
 
-						$va_path_to_dest[] = $vs_dest_table;
+						$path_to_dest[] = $dest_table;
 
-						$vs_cur_table = $this->tableName();
-
-						$vs_sql = "SELECT ".$vs_dest_table.".".$vs_dest_primary_key." FROM ".$this->tableName()."\n";
-						foreach($va_path_to_dest as $vs_ltable) {
-							$va_relations = Datamodel::getRelationships($vs_cur_table, $vs_ltable);
-
-							$vs_sql .= "INNER JOIN $vs_ltable ON $vs_cur_table.".$va_relations[$vs_cur_table][$vs_ltable][0][0]." = $vs_ltable.".$va_relations[$vs_cur_table][$vs_ltable][0][1]."\n";
-							$vs_cur_table = $vs_ltable;
+						$cur_table = $primary_table = $this->tableName();
+						$cur_table_pk = $primary_table_pk = $this->primaryKey();
+						
+						if($is_metadata_value && (($id = $this->get('attribute_id')) > 0)) {
+							$t_attr = new ca_attributes($id);
+							$cur_table = $primary_table = Datamodel::getTableName($t_attr->get('table_num'));
+							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($t_attr->get('table_num'));
+							$row_id = $t_attr->get('row_id');
+						} elseif ($is_metadata && (($id = $this->get('row_id')) > 0)) {	// At a minimum always log self as subject
+							$cur_table = $primary_table = Datamodel::getTableName($this->get('table_num'));
+							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($this->get('table_num'));
+							$row_id = $this->get('row_id');
 						}
-						$vs_sql .= "WHERE ".$this->tableName().".".$this->primaryKey()." = ".$vn_row_id;
 
-						if ($qr_subjects = $o_db->query($vs_sql)) {
-							if (!isset($va_subjects[$vn_dest_table_num]) || !is_array($va_subjects[$vn_dest_table_num])) { $va_subjects[$vn_dest_table_num] = array(); }
+						$sql = "SELECT {$dest_table}.{$dest_primary_key} FROM {$cur_table}\n";
+						foreach($path_to_dest as $ltable) {
+							$relations = Datamodel::getRelationships($cur_table, $ltable);
+
+							$sql .= "INNER JOIN $ltable ON $cur_table.".$relations[$cur_table][$ltable][0][0]." = $ltable.".$relations[$cur_table][$ltable][0][1]."\n";
+							$cur_table = $ltable;
+							
+							$cur_table_pk = Datamodel::primaryKey($cur_table);
+						}
+						$sql .= "WHERE {$primary_table}.{$primary_table_pk} = ?";
+
+						if ($qr_subjects = $o_db->query($sql, [$row_id])) {
+							if (!isset($subjects[$dest_table_num]) || !is_array($subjects[$dest_table_num])) { $subjects[$dest_table_num] = []; }
 							while($qr_subjects->nextRow()) {
-								if (($vn_id = $qr_subjects->get($vs_dest_primary_key)) > 0) {
-									$va_subjects[$vn_dest_table_num][] = $vn_id;
+								if (($id = $qr_subjects->get($dest_primary_key)) > 0) {
+									$subjects[$dest_table_num][] = $id;
 								}
 							}
 						} else {
-							print "<hr>Error in subject logging: ";
-							print "<br>$vs_sql<hr>\n";
+							throw new ApplicationException(_t('Error is subject logging: %1', $sql));
 						}
-					}
-				} else {				
-					if (($vn_id = $this->get('row_id')) > 0) {	// At a minimum always log self as subject
-						$va_subjects[$this->get('table_num')][] = $vn_id;
 					}
 				}
 			}
 
 		// log to self
-		if(!$vb_is_metadata && !$vb_is_metadata_value && $vb_log_changes_to_self) {
-			if ($vn_row_id > 0) {
-				$va_subjects[$this->tableNum()][] = $vn_row_id;
-			}
+		if(!$is_metadata && !$is_metadata_value && $log_changes_to_self && ($row_id > 0)) {
+			$subjects[$this->tableNum()][] = $row_id;
 		}
 
-		if (!sizeof($va_subjects) && !$vb_log_changes_to_self) { return true; }
-
+		if (!sizeof($subjects) && !$log_changes_to_self) { return true; }
+		
 		if (!$this->opqs_change_log) {
+			// Initialize queries
 			$o_db = $this->getDb();
 			$o_db->dieOnError(false);
 
-			$vs_change_log_database = '';
-			if ($vs_change_log_database = $this->_CONFIG->get("change_log_database")) {
-				$vs_change_log_database .= ".";
+			if ($change_log_database = $this->_CONFIG->get("change_log_database")) {
+				$change_log_database .= ".";
 			}
 			if (!($this->opqs_change_log = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log
+				INSERT INTO {$change_log_database}ca_change_log
 				(
 					log_id, log_datetime, user_id, unit_id, changetype,
 					logged_table_num, logged_row_id, batch_id
@@ -6648,10 +6726,10 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				(?, ?, ?, ?, ?, ?, ?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
-				return false;
+				throw new ApplicationException(_t('Could not prepare change log insert statement'));
 			}
 			if (!($this->opqs_change_log_snapshot = $o_db->prepare("
-				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_snapshots
+				INSERT IGNORE INTO {$change_log_database}ca_change_log_snapshots
 				(
 					log_id, snapshot
 				)
@@ -6659,10 +6737,10 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				(?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
-				return false;
+				throw new ApplicationException(_t('Could not prepare change log snapshot insert statement'));
 			}
 			if (!($this->opqs_change_log_subjects = $o_db->prepare("
-				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_subjects
+				INSERT IGNORE INTO {$change_log_database}ca_change_log_subjects
 				(
 					log_id, subject_table_num, subject_row_id
 				)
@@ -6670,38 +6748,34 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				(?, ?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
-				return false;
+				throw new ApplicationException(_t('Could not prepare change log subject insert statement'));
 			}
 		}
 
 		// get snapshot of changes made to record
-		if (!($va_snapshot = caGetOption('snapshot', $pa_options, null))) { $va_snapshot = $this->getSnapshot(($ps_change_type === 'U') ? true : false); }
+		if (!($snapshot = caGetOption('snapshot', $options, null))) { 
+			$snapshot = $this->getSnapshot(($change_type === 'U') ? true : false); 
+		}
 
-		$vs_snapshot = caSerializeForDatabase($va_snapshot, true);
-
-		if (!(($ps_change_type == 'U') && (!sizeof($va_snapshot)))) {
+		if (!(($change_type == 'U') && (!sizeof($snapshot)))) {
+			$snapshot = caSerializeForDatabase($snapshot, true);
 			// Create primary log entry
-			
-			global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
 			$this->opqs_change_log->execute(
-				$pn_log_id, time(), $pn_user_id, $vn_unit_id, $ps_change_type,
-				$this->tableNum(), $vn_row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
+				$log_id, time(), $user_id, $unit_id, $change_type,
+				$this->tableNum(), $row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			
-			$vn_log_id = ($pn_log_id > 0) ? $pn_log_id : $this->opqs_change_log->getLastInsertID();
-			$this->opqs_change_log_snapshot->execute(
-				$vn_log_id, $vs_snapshot
-			);
+			$log_id = ($log_id > 0) ? $log_id : $this->opqs_change_log->getLastInsertID();
+			$this->opqs_change_log_snapshot->execute($log_id, $snapshot);
 		
-			global $g_change_log_delegate;
-			if ($g_change_log_delegate && method_exists($g_change_log_delegate, "onLogChange")) {
-				call_user_func( array( $g_change_log_delegate, 'onLogChange'), $this->tableNum(), $vn_row_id, $vn_log_id );
+			if ($g_change_log_delegate && method_exists($g_change_log_delegate, 'onLogChange')) {
+				call_user_func( array( $g_change_log_delegate, 'onLogChange'), $this->tableNum(), $row_id, $log_id );
 			}
 
-			foreach($va_subjects as $vn_subject_table_num => $va_subject_ids) {
-				$va_subject_ids = array_unique($va_subject_ids);
-				foreach($va_subject_ids as $vn_subject_row_id) {
-					$this->opqs_change_log_subjects->execute($vn_log_id, $vn_subject_table_num, $vn_subject_row_id);
+			foreach($subjects as $subject_table_num => $subject_ids) {
+				$subject_ids = array_unique($subject_ids);
+				foreach($subject_ids as $subject_row_id) {
+					$this->opqs_change_log_subjects->execute($log_id, $subject_table_num, $subject_row_id);
 				}
 			}
 		}
@@ -6956,8 +7030,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					(wcls.subject_table_num = ?)
 					AND
 					(wcls.subject_row_id = ?)
-					AND
-					(wcl.changetype IN ('I', 'U'))
 				ORDER BY wcl.log_datetime DESC LIMIT 1",
 		$this->tableNum(), $vn_row_id);
 		
@@ -6985,8 +7057,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 					(wcl.logged_table_num = ?)
 					AND
 					(wcl.logged_row_id = ?)
-					AND
-					(wcl.changetype IN ('I', 'U'))
 				ORDER BY wcl.log_datetime DESC LIMIT 1",
 		$this->tableNum(), $vn_row_id);
 		
@@ -7245,6 +7315,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if (!$this->isHierarchical()) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vs_table_name = $this->tableName();
+		$vn_hierarchy_id = null;
 		
 		$t_instance = (!$pn_id) ? $this : Datamodel::getInstanceByTableNum($this->tableNum(), false);
 		if (!$pn_id && $this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
@@ -7300,7 +7371,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 						$vs_hier_id_sql = " AND ({$vs_table_name}.{$vs_hier_id_fld} = {$vn_hierarchy_id})";
 					}
 					
-					$va_sql_joins = array();
+					$vs_additional_wheres = '';
+					$va_sql_joins = [];
 					if (isset($pa_options['additionalTableToJoin']) && ($pa_options['additionalTableToJoin'])){ 
 						$ps_additional_table_to_join = $pa_options['additionalTableToJoin'];
 						
@@ -7322,7 +7394,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 							$va_additional_table_wheres = $pa_options['additionalTableWheres'];
 						}
 						
-						$vs_additional_wheres = '';
 						if (is_array($va_additional_table_wheres) && (sizeof($va_additional_table_wheres) > 0)) {
 							$vs_additional_wheres = ' AND ('.join(' AND ', $va_additional_table_wheres).') ';
 						}
@@ -7604,6 +7675,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function &getHierarchyChildrenAsQuery($pn_id=null, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$o_db = $this->getDb();
+		
+		$vs_order_by = null;
 			
 		$vs_table_name = $this->tableName();
 		
@@ -8051,7 +8124,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 			while($qr_sort_res->nextHit()) {
 				$va_key = array();
 				foreach($pa_sort as $vs_sort) {
-					$va_key[] = str_pad(substr($qr_sort_res->get($vs_sort), 10), 10, " ", STR_PAD_LEFT);
+					$k = trim(mb_strtolower(mb_substr($qr_sort_res->get($vs_sort), 0, 10)));
+					$va_key[] = str_pad($k, 10, " ", STR_PAD_RIGHT);
 				}
 				$va_sort_keys[$vn_i] = join("", $va_key)."".str_pad("{$vn_i}", 7, " ", STR_PAD_LEFT);
 				$vn_i++;
@@ -8088,7 +8162,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	 * Traverse parent_id indexed array and return flattened list
 	 */
 	private function _getFlattenedHierarchyArray($pa_hierarchy_data, $pn_id, $ps_sort_direction='asc') {
-		if (!is_array($pa_hierarchy_data[$pn_id])) { return array(); }
+		if (!is_array($pa_hierarchy_data[$pn_id] ?? null)) { return []; }
 		
 		$va_data = array();
 		foreach($pa_hierarchy_data[$pn_id] as $vs_sort_key => $va_item) {
@@ -8427,6 +8501,8 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 	public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
 		$o_db = $this->getDb();
 		
+		$va_limit_list = null;
+		
 		// init options
 		if (!is_array($pa_options)) { 
 			$pa_options = array(); 
@@ -8439,7 +8515,7 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force', 'bundleCode'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -8478,9 +8554,6 @@ if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetH
 		if ($va_parsed_height['type'] == 'pixels') {
 			$va_dim_styles[] = "height: ".$va_parsed_height['dimension']."px;";
 		}
-		//if ($vn_max_pixel_width) {
-		//	$va_dim_styles[] = "max-width: {$vn_max_pixel_width}px;";
-		//}
 					
 		$vs_dim_style = trim(join(" ", $va_dim_styles));
 		$vs_field_label = (isset($pa_options['label']) && (strlen($pa_options['label']) > 0)) ? $pa_options['label'] : $va_attr["LABEL"];
@@ -8577,7 +8650,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 
 			# --- Return hidden fields
-			if (($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) || (caGetOption('hidden', $pa_options, false))) {
+			if ((($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) && !$pa_options['force']) || (caGetOption('hidden', $pa_options, false))) {
 				return '<input type="hidden" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value).'"/>';
 			}
 
@@ -8635,7 +8708,7 @@ $pa_options["display_form_field_tips"] = true;
 					
 					if ($va_attr['DISPLAY_TYPE'] == DT_STATEPROV_LIST) {
 						$vs_element = caHTMLSelect($ps_field.'_select', array(), array('id' => $ps_field.'_select'), array('value' => $vm_field_value));
-						$vs_element .= caHTMLTextInput($ps_field.'_name', array('id' => $ps_field.'_text', 'value' => $vm_field_value));
+						$vs_element .= caHTMLTextInput($ps_field.'_name', array('id' => $ps_field.'_text', 'value' => $vm_field_value, 'placeholder' => $pa_options['placeholder'] ?? null));
 						break;
 					}
 
@@ -9000,7 +9073,7 @@ $pa_options["display_form_field_tips"] = true;
 							if ($vn_display_height > 1) {
 								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" disabled="disabled"' : '').' wrap="soft" '.$vs_js.' id=\''.$pa_options["id"]."' style='{$vs_dim_style}' ".$vs_css_class_attr.">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>'."\n";
 							} else {
-								$vs_element = '<input name="'.$pa_options["name"].'" type="text" size="'.($pa_options['size'] ? $pa_options['size'] : $vn_display_width).'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').' value="'.$this->escapeHTML($vm_field_value).'" '.$vs_js.' id=\''.$pa_options["id"]."' {$vs_css_class_attr} style='{$vs_dim_style}'/>\n";
+								$vs_element = '<input name="'.$pa_options["name"].'" type="text" size="'.($pa_options['size'] ? $pa_options['size'] : $vn_display_width).'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').' value="'.$this->escapeHTML($vm_field_value).'" '.$vs_js.' id=\''.$pa_options["id"]."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['placeholder'] ? "placeholder='".htmlentities($pa_options['placeholder'])."'" : "")." />\n";
 							}
 							
 							if (isset($va_attr['UNIQUE_WITHIN']) && is_array($va_attr['UNIQUE_WITHIN'])) {
@@ -9092,7 +9165,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9113,7 +9186,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9132,7 +9205,7 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = $vm_field_value ? $vm_field_value : "[Not set]";
 							break;
 						default:
-							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
+							$vn_max_length = $va_attr["BOUNDS_LENGTH"][1] ?? null;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
@@ -9294,6 +9367,7 @@ $pa_options["display_form_field_tips"] = true;
 					}
 				}
 
+				$ps_formatted_element = str_replace("^BUNDLECODE", isset($pa_options['bundleCode']) ? $pa_options['bundleCode'] : '', $ps_formatted_element);
 				$ps_formatted_element = str_replace("^ERRORS", $vs_errors, $ps_formatted_element);
 				$ps_formatted_element = str_replace("^EXTRA", isset($pa_options['extraLabelText']) ? $pa_options['extraLabelText'] : '', $ps_formatted_element);
 				$vs_element = $ps_formatted_element;
@@ -9355,7 +9429,12 @@ $pa_options["display_form_field_tips"] = true;
 		foreach($va_fields as $vs_field => $va_info) {
 			if (isset($va_info['IDENTITY']) && $va_info['IDENTITY']) { continue;}	
 			
-			if ((isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) && (!isset($va_info['IS_NULL']) || !$va_info['IS_NULL'])) {
+			if (
+				(isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) 
+				&& 
+				(!isset($va_info['IS_NULL']) || !$va_info['IS_NULL'])
+				&& (!isset($va_info['NOT_MANDATORY']) || !(bool)$va_info['NOT_MANDATORY'])
+			) {
 				$va_mandatory_fields[] = $vs_field;
 				continue;
 			}
@@ -9422,6 +9501,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
 		if ($this->inTransaction()) { $o_trans = $this->getTransaction(); $t_item_rel->setTransaction($o_trans); }
+		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -9505,6 +9587,11 @@ $pa_options["display_form_field_tips"] = true;
 					if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 					if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
+					
+					if(!is_null($is_primary = caGetOption('is_primary', $pa_options, null)) && $t_item_rel->hasField('is_primary')) {
+						$t_item_rel->set('is_primary', $is_primary);	
+					}
+					
 					$t_item_rel->insert();
 					
 					if ($t_item_rel->numErrors() > 0) {
@@ -9580,6 +9667,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
+		if($ps_direction) { $ps_direction = strtolower($ps_direction); }
+		if(!in_array($ps_direction, ['ltor', 'rtol'])) { $ps_direction = 'ltor'; }
+		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
@@ -9618,7 +9708,9 @@ $pa_options["display_form_field_tips"] = true;
 				return false;
 			}
 			if ($t_item_rel->load($pn_relation_id)) {
-				
+				if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
+					$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
+				}
 				if ($ps_direction == 'rtol') {
 					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
 					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
@@ -9805,6 +9897,15 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeRelationships($pm_rel_table_name_or_num, $pm_relationship_type_id=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
+		
+		// Is this a many-one? (Eg. ca_objects <= ca_object_lots)
+		if(sizeof($va_rel_info['path']) == 2) {
+			if(isset($va_rel_info['rel_keys']['many_table']) && ($va_rel_info['rel_keys']['many_table'] === $this->tableName()) && ($key = $va_rel_info['rel_keys']['many_table_field'])) {
+				$this->set($key, null);
+				return $this->update();
+			}
+		}
+		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		$va_sql_params = array();
@@ -10046,7 +10147,7 @@ $pa_options["display_form_field_tips"] = true;
 		// Reindex modified relationships
 		$o_indexer = $this->getSearchIndexer();
 		foreach($to_reindex_relations as $relation_id => $row) {
-			$o_indexer->indexRow($rel_table_num, $relation_id, $row, false, null, [$item_pk => true]);
+			$o_indexer->indexRow($rel_table_num, $relation_id, $row, false, null, [$item_pk => true], ['queueIndexing' => caGetOption('queueIndexing', $options, true)]);
 		}
 		
 		return sizeof($to_reindex_relations);
@@ -10211,6 +10312,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
+		$va_path = null;
 		$vs_table = $this->tableName();
 		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
@@ -10489,27 +10591,35 @@ $pa_options["display_form_field_tips"] = true;
                 $params = [$id];
 			    if ($rel_info['left_table'] == $table) {
 			        $sql = "
-						SELECT l.{$rel_pk}
-						FROM {$many_table} l
-						INNER JOIN {$rel_info['left_table']} AS r ON r.{$rel_info['left_table_field']} = l.{$rel_info['linking_table_left_field']}
+						SELECT lnk.{$rel_pk}
+						FROM {$many_table} lnk
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_left_field']}
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
 						WHERE
-							({$rel_info['right_table_field']} = ?)";
+							(r.{$rel_info['right_table_field']} = ?)";
+						
+					if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+						$sql .= " AND l.type_id IN (?)";
+						$params[] = $restrict_to_types;
+					}
 			    } elseif($rel_info['right_table'] == $table) {
 			        $sql = "
-						SELECT l.{$rel_pk}
-						FROM {$many_table} l
-						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = l.{$rel_info['linking_table_right_field']}
+						SELECT lnk.{$rel_pk}
+						FROM {$many_table} lnk
+						INNER JOIN {$rel_info['right_table']} AS r ON r.{$rel_info['right_table_field']} = lnk.{$rel_info['linking_table_right_field']}
+						INNER JOIN {$rel_info['left_table']} AS l ON l.{$rel_info['left_table_field']} = lnk.{$rel_info['linking_table_left_field']}
 						WHERE
-							({$rel_info['left_table_field']} = ?)";
+							(l.{$rel_info['left_table_field']} = ?)";
+						
+					if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
+						$sql .= " AND r.type_id IN (?)";
+						$params[] = $restrict_to_types;
+					}
 			    } else {
 			        continue;
 			    }
-			    if (is_array($restrict_to_types) && sizeof($restrict_to_types)) {
-			        $sql .= " AND r.type_id IN (?)";
-			        $params[] = $restrict_to_types;
-			    }
 			    if (is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types)) {
-			        $sql .= " AND l.type_id IN (?)";
+			        $sql .= " AND lnk.type_id IN (?)";
 			        $params[] = $restrict_to_relationship_types;
 			    }
 			    
@@ -10701,7 +10811,8 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+			$tag_user_id = $t_ixt->get('user_id');
+			if ($tag_user_id && ($tag_user_id != $pn_user_id)) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
 				return false;
 			}
@@ -10734,6 +10845,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool
 	 */
 	public function changeTagRank($pn_relation_id, $pn_rank) {
+		global $g_request;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_ixt = new ca_items_x_tags($pn_relation_id);
@@ -10750,8 +10862,9 @@ $pa_options["display_form_field_tips"] = true;
 			return false;
 		}
 		
-		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+		if ($g_request && $g_request->isLoggedIn() && ($user_id = $g_request->getUserID())) {
+			$tag_user_id = $t_ixt->get('user_id');
+			if ($tag_user_id && ($tag_user_id != $user_id)) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
 				return false;
 			}
@@ -10796,7 +10909,8 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+			$tag_user_id = $t_ixt->get('user_id');
+			if ($tag_user_id && ($tag_user_id != $pn_user_id)) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->removeTag()', 'ca_item_tags');
 				return false;
 			}
@@ -11784,10 +11898,10 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_table_name = $this->tableName();
 		
 		$va_wheres = array();
-		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
+		if (is_array($pa_options['checkAccess'] ?? null) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
 			$va_wheres[] = $vs_table_name.'.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
-		if(is_array($pa_options['restrictByIntrinsic']) && sizeof($pa_options['restrictByIntrinsic'])){
+		if(is_array($pa_options['restrictByIntrinsic'] ?? null) && sizeof($pa_options['restrictByIntrinsic'])){
 			foreach($pa_options['restrictByIntrinsic'] as $vs_intrinsic_field => $vs_intrinsic_value){
 				$va_wheres[] = $vs_table_name.'.'.$vs_intrinsic_field.' = '.$vs_intrinsic_value;
 			}
@@ -11816,25 +11930,14 @@ $pa_options["display_form_field_tips"] = true;
 			$va_wheres[] = "{$vs_table_name}.deleted = 0";
 		}
 		
-		// $vs_sql = "
-// 			SELECT {$vs_table_name}.* 
-// 			FROM (
-// 				SELECT {$vs_table_name}.{$vs_primary_key} FROM {$vs_table_name}
-// 				{$vs_join_sql}
-// 			".(sizeof($va_wheres) ? " WHERE " : "").join(" AND ", $va_wheres)."
-// 				ORDER BY RAND() 
-// 				{$vs_limit_sql}
-// 			) AS random_items 
-// 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
-// 		";
 		$vs_sql = "
 			SELECT {$vs_table_name}.* 
 			FROM {$vs_table_name}
-			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX(object_id) FROM {$vs_table_name})) AS id) AS x 
+			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX({$vs_primary_key}) FROM {$vs_table_name})) AS id) AS x 
 			{$vs_join_sql}
-			WHERE {$vs_table_name}.object_id >= x.id 
+			WHERE {$vs_table_name}.{$vs_primary_key} >= x.id 
 			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
-			ORDER BY {$vs_table_name}.object_id ASC 
+			ORDER BY {$vs_table_name}.{$vs_primary_key} ASC 
 			{$vs_limit_sql}
 		";
 		
@@ -11901,34 +12004,59 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Returns number of records in table, filtering out those marked as deleted or those not meeting the specific access critera
+	 * Returns number of records in table, filtering out those marked as deleted or those not meeting the specific access critera.
 	 *
 	 * @param array $pa_access An option array of record-level access values to filter on. If omitted no filtering on access values is done.
-	 * @return int Number of records, or null if an error occurred.
+	 * @param array $options Options include:
+	 *		byType = Return counts broken out by type, 
+	 * @return mixed Number of record (integer), Array of counts indexed by type if byType option is set, or null if an error occurred.
 	 */
-	public function getCount($pa_access=null) {
+	public function getCount($pa_access=null, ?array $options=null) {
+		$by_type = caGetOption('byType', $options, false);
+		if($by_type && !$this->hasField('type_id')) { 
+			return null;
+		}
 		$o_db = new Db();
 		
 		$va_wheres = array();
 		if (is_array($pa_access) && sizeof($pa_access) && $this->hasField('access')) {
-			$va_wheres[] = "(access IN (".join(',', $pa_access)."))";
+			$va_wheres[] = "(t.access IN (".join(',', $pa_access)."))";
 		}
 		
 		if($this->hasField('deleted')) {
-			$va_wheres[] = '(deleted = 0)';
+			$va_wheres[] = '(t.deleted = 0)';
 		}
 		
 		$vs_where_sql = join(" AND ", $va_wheres);
 		
-		$qr_res = $o_db->query("
-			SELECT count(*) c
-			FROM ".$this->tableName()."
-			".(sizeof($va_wheres) ? ' WHERE ' : '')."
-			{$vs_where_sql}
-		");
+		if($by_type) {
+			$qr_res = $o_db->query("
+				SELECT count(*) c, t.type_id
+				FROM ".$this->tableName()." t
+				".(sizeof($va_wheres) ? ' WHERE ' : '')."
+				{$vs_where_sql}
+				GROUP BY t.type_id
+			");
 		
-		if ($qr_res->nextRow()) {
-			return (int)$qr_res->get('c');
+			$counts = [];
+			while ($qr_res->nextRow()) {
+				$counts[$qr_res->get('type_id')] = [
+					'type_id' => (int)$qr_res->get('type_id'),
+					'count' => (int)$qr_res->get('c')
+				];
+			}
+			return $counts;
+		} else {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ".$this->tableName()." t
+				".(sizeof($va_wheres) ? ' WHERE ' : '')."
+				{$vs_where_sql}
+			");
+		
+			if ($qr_res->nextRow()) {
+				return (int)$qr_res->get('c');
+			}
 		}
 		return null;
 	}
@@ -11994,7 +12122,9 @@ $pa_options["display_form_field_tips"] = true;
 		if (($t_instance = Datamodel::getInstance(static::class, true)) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
 			$o_db = $o_trans ? $o_trans->getDb() : new Db();
 			$vs_pk = $t_instance->primaryKey();
-			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ?", [$ps_idno]);
+			
+			$delete_sql = ($t_instance->hasField('deleted')) ? ' AND deleted = 0' : '';	// filter deleted
+			$qr_res = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_idno_fld} = ? {$delete_sql}", [$ps_idno]);
 			
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			if ($qr_res->nextRow()) {
@@ -12091,6 +12221,9 @@ $pa_options["display_form_field_tips"] = true;
 		$ps_boolean 			= caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans 				= caGetOption('transaction', $pa_options, null);
 		$pa_check_access 		= caGetOption('checkAccess', $pa_options, null);
+		$ps_sort 				= caGetOption('sort', $pa_options, null);
+		$ps_sort_direction 		= caGetOption('sortDirection', $pa_options, 'ASC', ['validValues' => ['ASC', 'DESC']]);
+		
 		
 		$created_ts = $modified_ts = null;
 		if($created = caGetOption('created', $pa_options, null)) {
@@ -12120,8 +12253,13 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_restriction_sql = '';
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
-			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
+			$dont_include_subtypes_in_type_restriction = isset($pa_options['dontIncludeSubtypesInTypeRestriction']) ? (bool)$pa_options['dontIncludeSubtypesInTypeRestriction'] : null;
+			if(!is_null($dont_include_subtypes_in_type_restriction)) {
+				$include_subtypes = $dont_include_subtypes_in_type_restriction;
+			} else {
+				$include_subtypes = isset($pa_options['includeSubtypes']) ? (bool)$pa_options['includeSubtypes'] : true;
+			}
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => !$include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
@@ -12132,7 +12270,8 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		$vs_type_field_name = null;
 		if (method_exists($t_instance, "getTypeFieldName")) {
-			if(is_array($va_field_values = $pa_values[$vs_type_field_name = $t_instance->getTypeFieldName()])) {
+			$vs_type_field_name = $t_instance->getTypeFieldName();
+			if(is_array($va_field_values = ($pa_values[$vs_type_field_name] ?? null))) {
 				
 				foreach($va_field_values as $vn_i => $va_field_value) {
 					$vs_op = strtolower($va_field_value[0]);
@@ -12198,15 +12337,52 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
+		// 
+		// Convert locale id
+		//
+		if($t_instance->hasField('locale_id') && isset($pa_values['locale_id']) && !is_numeric($pa_values['locale_id'])) {
+			$ids = array_reduce($pa_values['locale_id'], function($c, $i) { 
+				if(!is_numeric($i[1]) && strlen($i[1])) {
+					$c[] = $i[1];
+				}
+				return $c;
+			}, []);
+			if((is_array($ids) && sizeof($ids))) {
+				$ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $ids);
+				if(is_array($pa_values['parent_id'] ?? null)) {
+					foreach($pa_values['parent_id'] as $i => $v) {
+						if (isset($ids[$v[1]])) {
+							$pa_values['parent_id'][$i][1] = $ids[$v[1]];
+						}
+					}
+				}
+			}
+		}
+		
+		//
+		// Convert dates
+		//
+		foreach($pa_values as $vs_field => $va_field_values) {
+			if($t_instance->getFieldInfo($vs_field, 'FIELD_TYPE') === FT_HISTORIC_DATERANGE) {
+				$d = $va_field_values[0][1];
+				if($dt = caDateToHistoricTimestamps($d)) {
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'START')] = [['>=', $dt['start']]];
+					$pa_values[$t_instance->getFieldInfo($vs_field, 'END')] = [['<=', $dt['end']]];
+					
+					unset($pa_values[$vs_field]);
+				}
+			}
+		}
+		
 		//
 		// Convert other intrinsic list references
 		//
 		$vb_find_all = false;
-
+		
 		foreach($pa_values as $vs_field => $va_field_values) {
 			foreach($va_field_values as $vn_i => $va_field_value) {
 				if ($vs_field == $vs_type_field_name) { continue; }
-			
+				
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
@@ -12326,20 +12502,19 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_sql = "SELECT {$select_flds} FROM {$vs_table} ".((sizeof($va_sql) > 0) ? " WHERE (".join(" AND ", $va_sql).")" : "");
 
 		$vs_orderby = '';
-		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
-			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
-			$va_tmp = explode(".", $vs_sort);
+		if ($ps_sort) {
+			$va_tmp = explode(".", $ps_sort);
 			if (sizeof($va_tmp) > 0) {
 				switch($va_tmp[0]) {
 					case $vs_table:
 						if ($t_instance->hasField($va_tmp[1])) {
-							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$vs_sort_direction}";
+							$vs_orderby = " ORDER BY `{$va_tmp[1]}` {$ps_sort_direction}";
 						}
 						break;
 					default:
 						if (sizeof($va_tmp) == 1) {
 							if ($t_instance->hasField($va_tmp[0])) {
-								$vs_orderby = " ORDER BY `{$vs_sort}` {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY `{$ps_sort}` {$ps_sort_direction}";
 							}
 						}
 						break;
@@ -12444,7 +12619,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($limit && (sizeof($va_ids) >= $limit)) { break; }
 				}
 				if ($ps_return_as == 'searchresult') {
-					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids));
+					return $t_instance->makeSearchResult($t_instance->tableName(), array_values($va_ids), ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
 				} else {
 					return array_unique(array_values($va_ids));
 				}
@@ -12481,7 +12656,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * Rewrite criteria passed to BaseModel::find() with model-specific value conversions. Called by BaseModel::find();
 	 * This default implementation returns the criteria unchanged. Models may override this to implement their own conversions.
 	 */
-	public function rewriteFindCriteria(array $criteria) : array {
+	static public function rewriteFindCriteria(array $criteria) : array {
 		return $criteria;
 	}
 	# ------------------------------------------------------
@@ -12992,14 +13167,11 @@ $pa_options["display_form_field_tips"] = true;
 			$va_row = $qr_res->getRow();
 			$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
-			$vs_display_label = $va_row[$vs_label_display_field];
-
 			if (!isset($va_rels[$vs_v]) || !$va_rels[$vs_v]) {
 				$va_rels[$vs_v] = $va_row;
 			}
 
 			$va_rels[$vs_v]['_key'] = $vs_key;
-			$va_rels[$vs_v]['direction'] = $vs_direction;
 
 			$vn_c++;
 		}			
@@ -13111,11 +13283,25 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Evaluate expression in the context of the currently loaded row
+	 *
+	 * @param string $expression
+	 *
+	 * @return mixed Return value of expression
+	 */
+	public function evaluateExpression(string $expression) {
+		$tags = caGetTemplateTags($expression);
+		$data = [];
+		foreach($tags as $t) {
+			$data[$t] = $this->get($t);
+		}
+		return ExpressionParser::evaluate($expression, $data);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
-		//print "Destruct ".$this->tableName()."\n";
-		//print (memory_get_usage()/1024)." used in ".$this->tableName()." destructor\n";
 		unset($this->o_db);
 		unset($this->_CONFIG);
 		unset($this->_MEDIA_VOLUMES);

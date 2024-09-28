@@ -174,4 +174,4 @@ class ca_editor_ui_labels extends BaseLabel {
 	
 	# ----------------------------------------
 }
-?>
+

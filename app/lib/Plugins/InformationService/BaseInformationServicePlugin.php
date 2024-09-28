@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-    *
-    */ 
-    
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 include_once(__CA_LIB_DIR__."/Configuration.php");
@@ -188,6 +183,27 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 	 */
 	public function getExtraInfo($pa_settings, $ps_url) {
 		return array();
+	}
+	# ------------------------------------------------
+	/** 
+	 * Can be overridden in implementation to render additional form elements
+	 * in user interface. Returns array of HTML form elements.
+	 *
+	 * @param array $pa_settings element settings
+	 * @return array
+	 */
+	public function getAdditionalFields(array $pa_element_info) : array {
+		return [];
+	}
+	# ------------------------------------------------
+	/** 
+	 * Can be overridden in implementation to return array of values for additiona fields.
+	 *
+	 * @param ca_attribute_values Attribute value
+	 * @return array
+	 */
+	public function getAdditionalFieldValues($attribute_value) : array {
+		return [];
 	}
 	# ------------------------------------------------
 }

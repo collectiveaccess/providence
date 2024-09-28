@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,19 +33,19 @@
   /**
   *
   */
-  define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
+define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
   
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
- require_once(__CA_LIB_DIR__.'/Configuration.php');
- require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Configuration.php');
+require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
- require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
 
- global $_ca_attribute_settings;
+global $_ca_attribute_settings;
  
- $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
+$_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
@@ -540,9 +540,29 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_longtext1', 'value_longtext2'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		return mb_strtolower(substr(trim($value), 0, 100));
+	}
+ 	# ------------------------------------------------------------------
 	/**
 	 * Returns constant for geonames attribute value
 	 * 

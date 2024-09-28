@@ -68,12 +68,12 @@
 			}
 ?>
 			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
-				<div class="objectThumbnailsImageContainer" style="padding: <?php print $vn_padding_top_bottom; ?>px 0px <?php print $vn_padding_top_bottom; ?>px 0px;"> 
-					<input type="checkbox" name="add_to_set_ids" value="<?php print (int)$vn_occurrence_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
-					<?php print caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_occurrences', $vn_occurrence_id, array(), array('data-id' => $vn_occurrence_id)); ?>
-					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_occurrence_id; ?>"><a class='qlButton' data-id="<?php print $vn_occurrence_id; ?>"><?php print _t("Quick Look"); ?></a></div><?php } ?>
+				<div class="objectThumbnailsImageContainer" style="padding: <?= $vn_padding_top_bottom; ?>px 0px <?= $vn_padding_top_bottom; ?>px 0px;"> 
+					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$vn_occurrence_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
+					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_occurrences', $vn_occurrence_id, array(), array('data-id' => $vn_occurrence_id)); ?>
+					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $vn_occurrence_id; ?>"><a class='qlButton' data-id="<?= $vn_occurrence_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
-				<div class="thumbCaption"><?php print $vs_caption; ?><br/><?php print caEditorLink($this->request, $vs_idno, '', 'ca_occurrences', $vn_occurrence_id); ?></div>
+				<div class="thumbCaption"><?= $vs_caption; ?><br/><?= caEditorLink($this->request, $vs_idno, '', 'ca_occurrences', $vn_occurrence_id); ?></div>
 			</td>
 <?php
 			$vn_col++;
@@ -106,7 +106,7 @@
 		jQuery(".qlButton").on("click", function(e) {
 			var id = jQuery(this).data('id');
 			jQuery("#ql_" + id).css("display", "block");
-			caMediaPanel.showPanel("<?php print caNavUrl($this->request, 'find', 'SearchOccurrences', 'QuickLook'); ?>/occurrence_id/" + id);
+			caMediaPanel.showPanel("<?= caNavUrl($this->request, 'find', 'SearchOccurrences', 'QuickLook'); ?>/occurrence_id/" + id);
 		});
 	});
 </script>

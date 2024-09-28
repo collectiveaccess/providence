@@ -48,13 +48,13 @@
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">
-						<?php print _t('Name'); ?>
+						<?= _t('Name'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Code'); ?>
+						<?= _t('Code'); ?>
 					</th>
 					<th class="list-header-unsorted">
-						<?php print _t('Description'); ?>
+						<?= _t('Description'); ?>
 					</th>
 					<th class="{sorter: false} list-header-nosort listtableEditDelete">&nbsp;</th>
 				</tr>
@@ -66,17 +66,17 @@
 ?>
 				<tr>
 					<td>
-						<?php print $va_role['name']; ?>
+						<?= $va_role['name']; ?>
 					</td>
 					<td>
-						<?php print $va_role['code']; ?>
+						<?= $va_role['code']; ?>
 					</td>
 					<td>
-						<?php print $va_role['description']; ?>
+						<?= $va_role['description']; ?>
 					</td>
 					<td class="listtableEditDelete">
-						<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					</td>
 				</tr>
 <?php
@@ -89,7 +89,7 @@
 				<tr>
 					<td colspan='4'>
 						<div align="center">
-							<?php print _t('No roles have been configured'); ?>
+							<?= _t('No roles have been configured'); ?>
 						</div>
 					</td>
 				</tr>

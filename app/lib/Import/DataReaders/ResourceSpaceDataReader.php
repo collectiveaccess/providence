@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017-2018 Whirl-i-Gig
+ * Copyright 2017-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
- 
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 use GuzzleHttp\Client;
@@ -44,6 +39,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 	private $opa_row_buf = array();
 	private $opn_current_row = -1;
     protected $opa_row_ids = null;
+    private $opa_api_credentials;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -65,7 +61,7 @@ class ResourceSpaceDataReader extends BaseDataReader {
 
         $this->opa_api_credentials = array();
         foreach($va_api_credentials as $vs_instance => $va_instance_api){
-            $rs_api = array('rsInstance' => $vs_instance, 'apiURL' => $va_instance_api['resourcespace_base_api_url'], 'apiKey' => $va_instance_api['resourcespace_api_key'], 'user' => $va_instance_api['resourcespace_user']);
+            $rs_api = array('rsInstance' => $vs_instance, 'apiURL' => $va_instance_api['resourcespace_base_api_url'] ?? null, 'apiKey' => $va_instance_api['resourcespace_api_key']?? null, 'user' => $va_instance_api['resourcespace_user']?? null);
             array_push($this->opa_api_credentials, $rs_api);
         }
     }

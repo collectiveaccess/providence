@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/BaseObject.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Attribute.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
@@ -50,6 +45,21 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 *
 	 */
 	protected $opn_id;
+
+	/**
+	 *
+	 */
+	protected $ops_table_name;
+
+	/**
+	 *
+	 */
+	protected $ops_name_singular;
+
+	/**
+	 *
+	 */
+	protected $ops_name_plural;
 
 	# ------------------------------------------------------------------
 	/**
@@ -198,7 +208,8 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 
 		return array(
 			'value_longtext1' => (int)$vn_id,
-			'value_integer1' => (int)$vn_id
+			'value_integer1' => (int)$vn_id,
+			'value_sortable' => $this->sortableValue((string)$vn_id)
 		);
 	}
 	# ------------------------------------------------------------------
@@ -274,7 +285,29 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_longtext1';
+		return 'value_sortable';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns name of field in ca_attribute_values to use for query operations
+	 *
+	 * @return string Name of sort field
+	 */
+	public function queryFields() : ?array {
+		return ['value_integer1', 'value_longtext1'];
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns sortable value for metadata value
+	 *
+	 * @param string $value
+	 * 
+	 * @return string
+	 */
+	public function sortableValue(?string $value) {
+		$name = caProcessTemplateForIDs(join(Configuration::load()->getList($this->ops_table_name.'_lookup_delimiter'), Configuration::load()->getList($this->ops_table_name.'_lookup_settings')), $this->ops_table_name, [(int)$value], []);
+		
+		return mb_strtolower(substr(trim($name), 0, 100));
 	}
 	# ------------------------------------------------------------------
 	/**

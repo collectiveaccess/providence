@@ -41,7 +41,7 @@
 ?>
 		</form>
 		<div id="browse">
-			<div class='subTitle' style='background-color: #eeeeee; padding:5px 0px 5px 5px;'><?php print _t("Place hierarchy"); ?></div>
+			<div class='subTitle' style='background-color: #eeeeee; padding:5px 0px 5px 5px;'><?= _t("Place hierarchy"); ?></div>
 <?php
 	if ($this->getVar('num_types') > 0) {	
 ?>
@@ -79,14 +79,14 @@
 				});	
 				
 				oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
-					levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyLevel'); ?>',
-					initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
+					levelDataUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyLevel'); ?>',
+					initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
 					
-					editUrl: '<?php print caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => '')); ?>',
-					editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+					editUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => '')); ?>',
+					editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 					
-					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-					indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+					initItemID: '<?= $this->getVar('browse_last_id'); ?>',
+					indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 					typeMenuID: 'browseTypeMenu',
 					
 					currentSelectionDisplayID: 'browseCurrentSelection'
@@ -95,7 +95,7 @@
 				jQuery('#browseSearch').autocomplete(
 					{
 						minLength: 3, delay: 800,
-						source: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>',
+						source: '<?= caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>',
 						search: function(event, ui) {
 							if (parseInt(ui.item.id)) {
 								oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
@@ -110,16 +110,16 @@
 				jQuery("#browseToggle").click(function() {
 					jQuery("#browse").slideToggle(350, function() { 
 						stateCookieJar.set('placeBrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 
-						jQuery("#browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'._t('Close hierarchy viewer').'</span>';?>' : '<?php print '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
+						jQuery("#browseToggle").html((this.style.display == 'block') ? '<?= '<span class="form-button">'._t('Close hierarchy viewer').'</span>';?>' : '<?= '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
 					}); 
 					return false;
 				});
 				
-				if (<?php print ($this->getVar('force_hierarchy_browser_open') ? 'true' : "!stateCookieJar.get('placeBrowserIsClosed')"); ?>) {
-					jQuery("#browseToggle").html('<?php print '<span class="form-button">'._t('Close hierarchy viewer').'</span>';?>');
+				if (<?= ($this->getVar('force_hierarchy_browser_open') ? 'true' : "!stateCookieJar.get('placeBrowserIsClosed')"); ?>) {
+					jQuery("#browseToggle").html('<?= '<span class="form-button">'._t('Close hierarchy viewer').'</span>';?>');
 				} else {
 					jQuery("#browse").hide();
-					jQuery("#browseToggle").html('<?php print '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
+					jQuery("#browseToggle").html('<?= '<span class="form-button">'._t('Open hierarchy viewer').'</span>';?>');
 				}
 			});
 			
@@ -136,7 +136,7 @@
 				}
 			}
 			function _navigateToNewForm(type_id) {
-				document.location = '<?php print caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => 0)); ?>/type_id/' + type_id + '/parent_id/' + oHierBrowser.getSelectedItemID();
+				document.location = '<?= caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => 0)); ?>/type_id/' + type_id + '/parent_id/' + oHierBrowser.getSelectedItemID();
 			}
 		</script>
 			<!--- END HIERARCHY BROWSER --->

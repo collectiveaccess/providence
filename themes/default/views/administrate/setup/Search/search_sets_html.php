@@ -30,7 +30,7 @@
  	$o_result_context 	= $this->getVar('result_context');
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon(__CA_NAV_ICON_SETS__, 1)." "._t("Set Tools"); ?></a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?= caNavIcon(__CA_NAV_ICON_SETS__, 1)." "._t("Set Tools"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">
@@ -51,8 +51,8 @@
 		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '140px'));
 		print caBusyIndicatorIcon($this->request, array('id' => 'caAddToSetIDIndicator'))."\n";
 ?>
-			<a href='#' onclick="return caAddItemsToSet();" class="button"><?php print _t('Add'); ?> &rsaquo;</a>
-			<div class="searchSetsToggle"><a href="#" onclick="return caToggleAddToSet();" class="searchSetsToggle"><?php print _t("Toggle checked"); ?></a></div>
+			<a href='#' onclick="return caAddItemsToSet();" class="button"><?= _t('Add'); ?> &rsaquo;</a>
+			<div class="searchSetsToggle"><a href="#" onclick="return caToggleAddToSet();" class="searchSetsToggle"><?= _t("Toggle checked"); ?></a></div>
 		</form>
 	</div>
 	<br class="clear"/>
@@ -77,7 +77,7 @@
 			);
 			print caBusyIndicatorIcon($this->request, array('id' => 'caCreateSetFromResultsIndicator'))."\n";
 ?>
-			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
+			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?= _t('Create'); ?> &rsaquo;</a>
 <?php		
 		if ($this->request->user->canDoAction('can_batch_edit_'.$t_subject->tableName())) {
 			print '<div class="searchSetsBatchEdit">'.caHTMLCheckboxInput('batch_edit', array('id' => 'caCreateSetBatchEdit', 'value' => 1))." "._t('Open set for batch editing')."</div>\n";
@@ -87,7 +87,7 @@
 	</div>
 
 
-		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250); '><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250); '><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
 		<div class="clear">&nbsp;</div>
 </div><!-- end searchSetTools -->
 
@@ -133,7 +133,7 @@
 	function caAddItemsToSet() {
 		jQuery("#caAddToSetIDIndicator").show();
 		jQuery.post(
-			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
+			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
 			{ 
 				set_id: jQuery('#caAddToSetID').val(), 
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
@@ -143,24 +143,24 @@
 				if (res['status'] === 'ok') { 
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
-						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
+						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
 					} else {
-						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
+						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
 					}
-					var msg = '<?php print addslashes(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>';
+					var msg = '<?= addslashes(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>';
 					msg = msg.replace('^num_items', res['num_items_added']);
 					msg = msg.replace('^item_type_name', item_type_name);
 					msg = msg.replace('^set_name', res['set_name']);
 					
 					if (res['num_items_already_in_set'] > 0) { 
-						msg += '<?php print addslashes(_t('<br/>(^num_dupes were already in the set.)')); ?>';
+						msg += '<?= addslashes(_t('<br/>(^num_dupes were already in the set.)')); ?>';
 						msg = msg.replace('^num_dupes', res['num_items_already_in_set']);
 					}
 					
-					jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Add to set')); ?>' }); 
+					jQuery.jGrowl(msg, { header: '<?= addslashes(_t('Add to set')); ?>' }); 
 					jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
 				} else { 
-					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Add to set')); ?>' });
+					jQuery.jGrowl(res['error'], { header: '<?= addslashes(_t('Add to set')); ?>' });
 				};
 			},
 			'json'
@@ -171,7 +171,7 @@
 	function caCreateSetFromResults() {
 		jQuery("#caCreateSetFromResultsIndicator").show();
 		jQuery.post(
-			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createSetFromResult'); ?>', 
+			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createSetFromResult'); ?>', 
 			{ 
 				set_name: jQuery('#caCreateSetFromResultsInput').val(),
 				mode: jQuery('#caCreateSetFromResultsMode').val(),
@@ -183,19 +183,19 @@
 				if (res['status'] === 'ok') { 
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
-						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
+						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
 					} else {
-						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
+						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
 					}
-					var msg = '<?php print addslashes(_t('Created set <i>^set_name</i> with ^num_items ^item_type_name'));?>';
+					var msg = '<?= addslashes(_t('Created set <i>^set_name</i> with ^num_items ^item_type_name'));?>';
 					msg = msg.replace('^num_items', res['num_items_added']);
 					msg = msg.replace('^item_type_name', item_type_name);
 					msg = msg.replace('^set_name', res['set_name']);
 					
 					if (jQuery('#caCreateSetBatchEdit').prop('checked')) {
-						window.location = '<?php print caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/id/ca_sets:' + res['set_id'];
+						window.location = '<?= caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/id/ca_sets:' + res['set_id'];
 					} else {
-						jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Create set')); ?>' }); 
+						jQuery.jGrowl(msg, { header: '<?= addslashes(_t('Create set')); ?>' }); 
 						// add new set to "add to set" list
 						jQuery('#caAddToSetID').append($("<option/>", {
 							value: res['set_id'],
@@ -209,7 +209,7 @@
 						}));
 					}
 				} else { 
-					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Create set')); ?>' });
+					jQuery.jGrowl(res['error'], { header: '<?= addslashes(_t('Create set')); ?>' });
 				};
 			},
 			'json'

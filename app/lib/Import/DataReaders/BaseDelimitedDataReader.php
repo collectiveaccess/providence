@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2021 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 require_once(__CA_LIB_DIR__.'/Parsers/DelimitedDataParser.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
@@ -75,19 +70,16 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 *
 	 */
 	public function __construct($ps_source=null, $pa_options=null){
+		$this->opo_parser = new DelimitedDataParser($this->ops_delimiter);
 		parent::__construct($ps_source, $pa_options);
 		
 		$this->ops_title = _t('Base Delimited data reader');
 		$this->ops_display_name = _t('Base delimited data reader');
 		$this->ops_description = _t('Provides basic functions for all delimited data readers');
 		
-		$this->opa_formats = array();
+		$this->opa_formats = [];
 		
 		$this->opa_properties['delimiter'] = $this->ops_delimiter;
-		
-		$this->opo_parser = new DelimitedDataParser($this->ops_delimiter);
-		
-		
 	}
 	# -------------------------------------------------------
 	/**
@@ -109,7 +101,6 @@ class BaseDelimitedDataReader extends BaseDataReader {
 			return true;
 		}
 		
-		
 		$this->ops_source = null;
 		return false;
 	}
@@ -125,6 +116,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		if (!$this->opo_parser->nextRow()) { return false; }
 		
 		$this->opa_row_buf = $this->opo_parser->getRow();
+		array_unshift($this->opa_row_buf, null);		// make one-based
 		$this->opn_current_row++;
 		return true;
 	}
@@ -139,7 +131,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	public function seek($pn_row_num) {
 		if ($pn_row_num > $this->numRows()) { return false; }
 		
-		if (!$this->read($ps_source)) { return false; }
+		if (!$this->ops_source || !$this->read($this->ops_source)) { return false; }
 		
 		while($pn_row_num > 0) {
 			$this->nextRow();
@@ -176,7 +168,6 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		if (is_array($va_row = $this->opo_parser->getRow())) {
 			// Make returned array 1-based to match delimiter data parser style (column numbers begin with 1)
 			array_unshift($va_row, null);
-			unset($va_row[0]);
 			return $va_row;
 		}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__."/Import/RefineryManager.php");
 
@@ -69,7 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Data source'), 'DESCRIPTION' => _t('Source in external format to map CollectiveAccess path to. The format of the external element is determined by the target. For XML-based formats this will typically be an XPath specification; for delimited targets this will be a column number.'),
-				'BOUNDS_LENGTH' => array(0,1024)
+				'BOUNDS_LENGTH' => array(0,8192)
 		),
 		'destination' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -176,10 +175,6 @@ class ca_data_importer_items extends BaseModel {
 		parent::__construct($id, $options);
 		
 		$this->initSettings();
-	}
-	# ------------------------------------------------------
-	protected function initLabelDefinitions($pa_options=null) {
-		parent::initLabelDefinitions($pa_options);
 	}
 	# ------------------------------------------------------
 	public function initSettings($initial_settings=null) {
@@ -400,14 +395,32 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip row if expression'),
 			'description' => _t('Skip the row if value for the expression is true.')
 		);
+		$settings['skipRowIfParentDoesNotExist'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if parent record does not exist (parent_id mappings only)'),
+			'description' => _t('Skip the row if in a parent_id mapping no parent with the id or identifier exists.')
+		);
 		$settings['skipIfDataPresent'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
-			'label' => _t('Skip row if data already present'),
+			'label' => _t('Skip mapping if data already present'),
 			'description' => _t('Skip mapping if data is already present in CollectiveAccess.')
+		);
+		$settings['skipRowIfDataPresent'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if data already present'),
+			'description' => _t('Skip row if data is already present in CollectiveAccess.')
 		);
 		$settings['skipIfNoReplacementValue'] = array(
 			'formatType' => FT_TEXT,
@@ -435,6 +448,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Delimiter'),
 			'description' => _t('Delimiter to split repeating values on.')
+		);
+		$settings['useConstant'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => null,
+			'label' => _t('Use constant'),
+			'description' => _t('Set value to constant, rather than source value')
 		);
 		$settings['restrictToTypes'] = array(
 			'formatType' => FT_TEXT,
@@ -712,6 +734,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Always replace values?'),
 			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
 		);	
+		$settings['replaceIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Replace if expression'),
+			'description' => _t('Replace existing data with imported data if the expression is true.')
+		);
 		$settings['source'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -736,7 +767,23 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Code of element to use for parent_id lookups when importing hierarchical data. If not set the identifier will be used.'),
-		);	
+		);
+		$settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale of data. If not set the mapping locale default is used.'),
+		);
+		$settings['useAsExistingRecordPolicyIdno'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
+		);
 		
 		$this->setAvailableSettings($settings);
 	}

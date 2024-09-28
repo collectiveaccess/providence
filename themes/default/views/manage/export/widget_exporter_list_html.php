@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,15 +25,14 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_exporter_count 	= $this->getVar('exporter_count');
+$exporter_count = $this->getVar('exporter_count');
 ?>
-<h3 class='export'><?php print _t('Your data exporters'); ?>:
+<h3 class='export'><?= _t('Data exporters'); ?>:
 <div><?php
-	if ($vn_exporter_count == 1) {
-		print "<div>"._t("1 mapping is available for export")."<div>";
+	if ($exporter_count == 1) {
+		print "<div>"._t("1 exporter is available")."<div>";
 	} else {
-		print "<div>"._t("%1 mappings are available for export", $vn_exporter_count)."</div>";
+		print "<div>"._t("%1 exporters are available", $exporter_count)."</div>";
 	}
 ?></div>
 </h3>

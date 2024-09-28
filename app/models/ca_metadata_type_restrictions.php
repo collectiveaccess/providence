@@ -278,13 +278,13 @@ class ca_metadata_type_restrictions extends BaseModel {
 			if (is_a($t_instance, "BaseRelationshipModel")) {
 				$va_rel_types = $t_rel_types->getRelationshipInfo($vn_table_num);
 				foreach($va_rel_types as $vn_type_id => $va_type) {
-					$va_types[$vn_table_num][$vn_type_id] = $va_type['typename'];
+					$va_types[$vn_table_num][$vn_type_id] = $va_type['typename'] ?? null;
 				}
 			} else {
 				if (method_exists($t_instance, 'getTypeList')) {
 					$va_items = $t_instance->getTypeList();
 					foreach($va_items as $vn_item_id => $va_item) {
-						$va_types[$vn_table_num][$vn_item_id] = $va_item['name_plural'];
+						$va_types[$vn_table_num][$vn_item_id] = $va_item['name_plural'] ?? null;
 					}
 				} 
 			}

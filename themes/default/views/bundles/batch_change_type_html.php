@@ -54,11 +54,11 @@
 	});
 </script>
 <div id="caTypeChangePanel" class="caTypeChangePanel"> 
-	<div class='dialogHeader'><?php print _t('Change %1 type', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+	<div class='dialogHeader'><?= _t('Change %1 type', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 	<div id="caTypeChangePanelContentArea">
-		<?php print caFormTag($this->request, 'ChangeType', 'caChangeTypeForm', null, $ps_method='post', 'multipart/form-data', '_top', array()); ?>
-			<p><?php print _t('<strong>Warning:</strong> changing the %1 type will cause information in all fields not applicable to the new type to be discarded. This action cannot be undone.', $t_item->getProperty('NAME_SINGULAR')); ?></p>
-			<p><?php print _t('Change type from <em>%1</em> to %2', $t_item->getTypeName(), $t_item->getTypeListAsHTMLFormElement('new_type_id', array('id' => 'caChangeTypeFormTypeID'), array('childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__))); ?></p>
+		<?= caFormTag($this->request, 'ChangeType', 'caChangeTypeForm', null, $ps_method='post', 'multipart/form-data', '_top', array()); ?>
+			<p><?= _t('<strong>Warning:</strong> changing the %1 type will cause information in all fields not applicable to the new type to be discarded. This action cannot be undone.', $t_item->getProperty('NAME_SINGULAR')); ?></p>
+			<p><?= _t('Change type from <em>%1</em> to %2', $t_item->getTypeName(), $t_item->getTypeListAsHTMLFormElement('new_type_id', array('id' => 'caChangeTypeFormTypeID'), array('childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__))); ?></p>
 	
 <?php
 	if ($vb_queue_enabled) {
@@ -122,8 +122,8 @@
 			<div id="caTypeChangePanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caChangeTypeForm'); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
+						<td align="right"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caChangeTypeForm'); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
 					</tr>
 				</table>
 			</div>

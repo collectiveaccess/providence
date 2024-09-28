@@ -162,4 +162,3 @@ class ca_multipart_idno_sequences extends BaseModel {
 
 	# ------------------------------------------------------
 }
-?>

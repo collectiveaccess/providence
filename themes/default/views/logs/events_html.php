@@ -49,16 +49,16 @@
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
-					<?php print _t('Date/time'); ?>
+					<?= _t('Date/time'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Type'); ?>
+					<?= _t('Type'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Description'); ?>
+					<?= _t('Description'); ?>
 				</th>
 				<th class="list-header-unsorted">
-					<?php print _t('Source'); ?>
+					<?= _t('Source'); ?>
 				</th>
 			</tr>
 		</thead>
@@ -69,16 +69,16 @@
 ?>
 			<tr>
 				<td>
-					<?php print caGetLocalizedDate($va_event['date_time']); ?>
+					<?= caGetLocalizedDate($va_event['date_time']); ?>
 				</td>
 				<td>
-					<?php print $va_event['code']; ?>
+					<?= $va_event['code']; ?>
 				</td>
 				<td>
-					<?php print $va_event['message']; ?>
+					<?= $va_event['message']; ?>
 				</td>
 				<td>
-					<?php print $va_event['source']; ?>
+					<?= $va_event['source']; ?>
 				</td>
 			</tr>
 <?php
@@ -88,7 +88,7 @@
 		<tr>
 			<td colspan='4'>
 				<div align="center">
-					<?php print (trim($this->getVar('events_list_search'))) ? _t('No events found') : _t('Enter a date to display events from above'); ?>
+					<?= (trim($this->getVar('events_list_search'))) ? _t('No events found') : _t('Enter a date to display events from above'); ?>
 				</div>
 			</td>
 		</tr>

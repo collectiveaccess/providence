@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/BaseModel.php");
 
 
@@ -215,7 +210,8 @@ class ca_object_representation_multifiles extends BaseModel {
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+		
+		if (caACLIsEnabled($t_rep)) {
 			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
 				return false;
@@ -253,7 +249,7 @@ class ca_object_representation_multifiles extends BaseModel {
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $t_rep->getPrimaryKey()) {
+		if (caACLIsEnabled($t_rep) && $t_rep->getPrimaryKey()) {
 			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
 				return false;
@@ -293,7 +289,7 @@ class ca_object_representation_multifiles extends BaseModel {
 		}
 		
 		// Check item level restrictions
-		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $t_rep->getPrimaryKey()) {
+		if (caACLIsEnabled($t_rep) && $t_rep->getPrimaryKey()) {
 			$vn_item_access = $t_rep->checkACLAccessForUser($po_request->user);
 			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;

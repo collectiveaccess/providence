@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-
 BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 	'NAME_SINGULAR' 	=> _t('change log entry'),
 	'NAME_PLURAL' 		=> _t('change log entries'),
@@ -242,6 +236,9 @@ class ca_change_log extends BaseModel {
 			$pn_from_datetime = $d;
 		}
 		
+		$telescope = caGetOption('telescope', $pa_options, false);
+		$is_push_missing = caGetOption('push_missing', $pa_options, false);
+		
 		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
 		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
 
@@ -381,11 +378,17 @@ class ca_change_log extends BaseModel {
 		        }
 		        $vb_synth_attr_log_entry = true;
 		    }
+		    
+		    $skipped = [];
+		    $telescoped_snapshots = [];
 			while($qr_results->nextRow()) {
 				$va_row = $qr_results->getRow();
+				$log_id = (int)$qr_results->get('log_id');
+				$logged_table_num = $qr_results->get('logged_table_num');
+				$logged_row_id = $qr_results->get('logged_row_id');
 
 				// skip log entries without GUID -- we don't care about those
-				if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
+				if(!($vs_guid = ca_guids::getForRow($logged_table_num, $logged_row_id))) {
 					continue;
 				}
 				$va_row['guid'] = $vs_guid;
@@ -393,10 +396,10 @@ class ca_change_log extends BaseModel {
 				// don't sync inserts/updates for deleted records, UNLESS they're in a hierarchical table,
 				// in which case other records may have depended on them when they were inserted
 				// (meaning their insert() could fail if a related/parent record is absent)
-				$t_instance = Datamodel::getInstance((int) $qr_results->get('logged_table_num'), true);
-				//if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
-				//	continue;
-				//}
+				$t_instance = Datamodel::getInstance((int)$logged_table_num, true);
+				if(ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
+					continue;
+				}
 
 				// decode snapshot
 				$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
@@ -413,6 +416,13 @@ class ca_change_log extends BaseModel {
 						    }
 						    $va_snapshot['source_info'] = '';       // this field should be blank but in older systems may have a ton of junk data
 						    break;
+						case 'home_location_id':
+							if($is_push_missing) {
+								unset($va_snapshot['home_location_id']);
+								break;
+							} else {
+								goto deflabel;
+							}
 						case 'element_id':
 							if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
 								goto deflabel;
@@ -423,49 +433,53 @@ class ca_change_log extends BaseModel {
 							
 								// Skip elements not in include list, when a list is provided for the current table
 								if (!$vs_table_name || (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code]))) {
-									$va_snapshot = ['SKIP' => true];
+									$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'element_id'];
 									continue(2);
 								}
 							
 								// Skip elements present in the exclude list
 								if (is_array($pa_exclude_metadata[$vs_table_name]) && isset($pa_exclude_metadata[$vs_table_name][$vs_code])) {
-									$va_snapshot = ['SKIP' => true];
+									$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'in_exclude_list'];
+									$skipped[$vs_guid] = true;
 									continue(2);
 								}
 							} else {
-								$va_snapshot = ['SKIP' => true];
+								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'element_does_not_exist'];
 								continue(2);
 							}
 							break;
 						case 'attribute_id':
-							if($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val)) {
+							if(($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val)) && !isset($skipped[$vs_attr_guid])) {
 								$va_snapshot['attribute_guid'] = $vs_attr_guid;
 							} else {
-								$va_snapshot = ['SKIP' => true];
+								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'attribute_id'];
+								if($vs_attr_guid) { $skipped[$vs_attr_guid] = true; }
+								$skipped[$vs_guid] = true;
 								continue(2);
 							}
 							break;
 						case 'value_id':
-							if($vs_val_guid = ca_attribute_values::getGUIDByPrimaryKey($vm_val)) {
+							if(($vs_val_guid = ca_attribute_values::getGUIDByPrimaryKey($vm_val)) && !isset($skipped[$vs_val_guid])) {
 								$va_snapshot['value_guid'] = $vs_val_guid;
 							} else {
-								$va_snapshot = ['SKIP' => true];
+								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'value_id'];
+								if($vs_val_guid) { $skipped[$vs_val_guid] = true; }
 								continue(2);
 							}
 							break;
 						case 'type_id':
 							if(preg_match("!^ca_relationship_type!", $t_instance->tableName())) {
 								goto deflabel;
-							} elseif($t_instance) {
+							} elseif($t_instance && $vm_val) {
 								if($t_instance instanceof BaseRelationshipModel) {
-									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true]; continue(2); }
+									if (!($va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val))) { $va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'bad_rel_type_code']; continue(2); }
 								} elseif($t_instance instanceof BaseModel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} elseif($t_instance instanceof BaseLabel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
-							} else {
-								$va_snapshot = ['SKIP' => true];
+							} elseif($t_instance && !is_a($t_instance, 'BaseLabel')) {	// it's ok for label type to be blank
+								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'type_id'];
 								continue(2);
 							}
 							break;
@@ -473,15 +487,21 @@ class ca_change_log extends BaseModel {
 							if($t_instance) {
 								$va_snapshot['source_code'] = $vm_val ? caGetListItemIdno($vm_val) : null;
 							} else {
-								$va_snapshot = ['SKIP' => true];
+								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'source_id'];
 								continue(2);
 							}
 							break;
 						case 'row_id':
 							if(isset($va_snapshot['table_num']) && ($vn_table_num = $va_snapshot['table_num'])) {
 								$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val);
+								if(!$va_snapshot['row_guid'] || ca_guids::isDeleted($va_snapshot['row_guid'])) {
+									$va_snapshot = ['SKIP' => true];
+									if($va_snapshot['row_guid']) { $skipped[$va_snapshot['row_guid']] = true; }
+									$skipped[$vs_guid] = true;
+									continue(2);	
+								}
 							} else {
-								$va_snapshot = ['SKIP' => true];
+								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'row_id'];
 								continue(2);
 							}
 							break;
@@ -489,11 +509,19 @@ class ca_change_log extends BaseModel {
 						    $va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow(37, $vm_val); // 37 = ca_locales
 						    $va_snapshot['locale_code'] = ca_locales::IDToCode($vm_val);
 							break;
+						case 'is_primary':
+							if(in_array('PrimaryRepresentationTrait', class_uses($t_instance))) {
+								// force to current value if primary, as is_primary changes were not always logged in the past
+								if($t_instance->load($logged_row_id) && ($cur_is_primary = (int)$t_instance->get('is_primary'))) {
+									$va_snapshot['is_primary'] = 1;
+								}
+							}
+							break;
 						default:
 						deflabel:
 							if(
 								// don't break ca_list_items.item_id!!
-								(Datamodel::getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+								(Datamodel::getTableName((int)$logged_table_num) == 'ca_attribute_values')
 								&&
 								($vs_fld == 'item_id')
 							) {
@@ -501,7 +529,7 @@ class ca_change_log extends BaseModel {
 								$va_snapshot['item_label'] = caGetListItemByIDForDisplay($vm_val);
 							}
 
-							$t_instance = Datamodel::getInstance((int) $qr_results->get('logged_table_num'), true);
+							$t_instance = Datamodel::getInstance((int)$logged_table_num, true);
 							if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
 								// handle all other list referencing fields
 								$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
@@ -513,17 +541,27 @@ class ca_change_log extends BaseModel {
 
 								if($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 									// handle monohierarchy (usually parent_id) fields
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
+									if(($f_guid = ca_guids::getForRow($t_instance->tableNum(), $vm_val)) && !ca_guids::isDeleted($f_guid)) {
+										$va_snapshot[$vs_fld . '_guid'] = $f_guid;
+									} else {
+										$va_snapshot[$vs_fld]  = $va_snapshot[$vs_fld . '_guid'] = null;
+										if($f_guid) { $skipped[$f_guid] = true; }
+									}
 								} elseif (isset($va_many_to_one_rels[$vs_fld]) && ($t_rel_item = Datamodel::getInstanceByTableName($va_many_to_one_rels[$vs_fld]['one_table'], true))) {
 									// handle many-one keys
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val);
+									if(($f_guid = ca_guids::getForRow($t_rel_item->tableNum(), $vm_val)) && !ca_guids::isDeleted($f_guid)) {
+										$va_snapshot[$vs_fld . '_guid'] = $f_guid;
+									} else {
+										$va_snapshot[$vs_fld]  = $va_snapshot[$vs_fld . '_guid'] = null;
+										if($f_guid) { $skipped[$f_guid] = true; }
+									}
 								}
 
 								// handle media ...
 								if (($va_fld_info['FIELD_TYPE'] === FT_MEDIA)
 									||
 									(
-										(Datamodel::getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+										(Datamodel::getTableName((int)$logged_table_num) == 'ca_attribute_values')
 										&&
 										($vs_fld == 'value_blob')
 									)
@@ -586,9 +624,10 @@ class ca_change_log extends BaseModel {
 										$va_snapshot[$vs_fld . '_guid'] = $vs_left_guid;
 
 										// don't sync relationships involving deleted records
-										//if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
-										//	continue 3;
-										//}
+										if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
+											$skipped[$vs_guid] = $skipped[$vs_left_guid] = true;
+											continue 3;
+										}
 									}
 
 									if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
@@ -596,9 +635,10 @@ class ca_change_log extends BaseModel {
 										$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
 
 										// don't sync relationships involving deleted records
-										//if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
-										//	continue 3;
-										//}
+										if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+											$skipped[$vs_guid] = $skipped[$vs_right_guid] = true;
+											continue 3;
+										}
 									}
 								}
 								if (!isset($va_snapshot[$vs_fld . '_guid'])) { $va_snapshot[$vs_fld . '_guid'] = null; }
@@ -615,7 +655,17 @@ class ca_change_log extends BaseModel {
 								// handle 1:n foreign keys like ca_representation_annotations.representation_id
 								// @todo: don't use hardcoded field names!? -- another case would be ca_objects.lot_id
 								if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
-									$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
+									$guid = ca_guids::getForRow(Datamodel::getTableNum('ca_object_representations'), $vm_val);
+									$va_snapshot['representation_guid'] = ca_guids::isDeleted($guid) ? null : $guid;
+								}
+								if(($t_instance instanceof \ca_objects) && ($vs_fld == 'lot_id')) {
+									$guid = ca_guids::getForRow(Datamodel::getTableNum('ca_object_lots'), $vm_val);
+									
+									if(ca_guids::isDeleted($guid)) {
+										$va_snapshot['lot_id_guid'] = $va_snapshot['lot_id'] = null;
+									} else {
+										$va_snapshot['lot_id_guid'] = $guid;
+									}
 								}
 							} elseif($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 								$va_snapshot[$vs_fld . '_guid'] = null;
@@ -632,10 +682,26 @@ class ca_change_log extends BaseModel {
                         }
                     }
                 }
-
-
-				if ($va_snapshot['SKIP']) { $va_row['SKIP'] = true; unset($va_snapshot['SKIP']); }	// row skipped because it's invalid, not on the whitelist, etc.
+                
+				if ($va_snapshot['SKIP']) { 
+					$va_row['SKIP'] = true; 
+					$va_row['SKIP_WHY'] = $va_snapshot['SKIP_WHY']; 
+					unset($va_snapshot['SKIP']); 
+					unset($va_snapshot['SKIP_WHY']); 
+				}	// row skipped because it's invalid, not on the whitelist, etc.
 				$va_row['snapshot'] = $va_snapshot;
+				
+				if($telescope && ($va_row['changetype'] != 'D')) {
+					if(!isset($telescoped_snapshots[$vs_guid])) {
+						$telescoped_snapshots[$vs_guid][$log_id] = $va_snapshot;
+					} else {
+						foreach($telescoped_snapshots[$vs_guid] as $log_id => $telescoped_data) {
+							$telescoped_snapshots[$vs_guid][$log_id] = array_merge($telescoped_data, $va_snapshot);
+							$va_ret[$log_id]['snapshot'] = $telescoped_snapshots[$vs_guid][$log_id];
+							continue(2);
+						}
+					}
+				}
 
 				// get subjects
 				if ($vb_synth_attr_log_entry) {
@@ -645,19 +711,50 @@ class ca_change_log extends BaseModel {
 				    $qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
                 }
                 
+                $self_as_subject_set = false;
 				while($qr_subjects->nextRow()) {
 					// skip subjects without GUID -- we don't care about those
-					if(!($vs_subject_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id')))) {
+					$subject_table_num = $qr_subjects->get('subject_table_num');
+					$subject_row_id = $qr_subjects->get('subject_row_id');
+					
+					if(!($vs_subject_guid = ca_guids::getForRow($subject_table_num, $subject_row_id))) {
 						continue;
 					}
+					
+					// For attributes, subjects for interstitials may include references to both the relationship
+					// end points and the relationships itself, so we need to verify that *all* subject tables are in the 
+					// 'synclist' by making sure they're in onlyTables and/or not in excludeTables
+					if(in_array((int)$logged_table_num, [3,4], true)) {
+						if(is_array($va_only_tables) && sizeof($va_only_tables)) {
+							if(
+								Datamodel::isRelationship($subject_table_num) && !in_array($subject_table_num, $va_only_tables)
+								||
+								(!in_array((int)$subject_table_num, [3,4]) && !in_array($subject_table_num, $va_only_tables))
+							) {
+								$va_row['SKIP'] = true;
+								break;
+							} 
+						}
+						if(is_array($va_ignore_tables) && sizeof($va_ignore_tables)) {
+							if(
+								Datamodel::isRelationship($subject_table_num) && in_array($subject_table_num, $va_ignore_tables)
+								||
+								(!in_array((int)$subject_table_num, [3,4]) && in_array($subject_table_num, $va_ignore_tables))
+							) {
+								$va_row['SKIP'] = true;
+								break;
+							} 
+						}
+					}
+			
 
 					// handle skip if expression relative to subjects
-					$vs_subject_table_name = Datamodel::getTableName($qr_subjects->get('subject_table_num'));
+					$vs_subject_table_name = Datamodel::getTableName($subject_table_num);
 					if(isset($pa_skip_if_expression[$vs_subject_table_name])) {
 						$t_subject_instance = Datamodel::getInstance($vs_subject_table_name);
 						$vs_exp = $pa_skip_if_expression[$vs_subject_table_name];
 						// have to load() unfortch.
-						$t_subject_instance->load($qr_subjects->get('subject_row_id'));
+						$t_subject_instance->load($subject_row_id);
 						$va_exp_vars = array();
 						foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
 							$va_exp_vars[$vs_var_name] = $t_subject_instance->get($vs_var_name, array('convertCodesToIdno' => true));
@@ -669,6 +766,8 @@ class ca_change_log extends BaseModel {
 					}
 
 					$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
+					
+					if($vs_guid == $vs_subject_guid) { $self_as_subject_set = true; }
 				}
 				
 				if ($va_row['snapshot']['attribute_guid']) {
@@ -678,12 +777,32 @@ class ca_change_log extends BaseModel {
 				        'guid' => $va_row['snapshot']['attribute_guid']
 				    ];
 				}
+				
+				if(!$self_as_subject_set) {
+					 $va_row['subjects'][] = [
+				        'subject_table_num' => $logged_table_num,
+				        'subject_row_id' => $logged_row_id,
+				        'guid' => $vs_guid
+				    ];
+				}
 
-				$va_ret[(int) $qr_results->get('log_id')] = $va_row;
+				$va_ret[$log_id] = $va_row;
+			}
+		}
+		
+		// remove skipped log items
+		$ret_filtered = array_filter($va_ret, function($v) {
+			return !isset($v['SKIP']);
+		});
+		
+		// if all items are skipped sent the last log_id to force replicator to increment to the next log chunk
+		if(!sizeof($ret_filtered) && sizeof($va_ret)) {
+			if($log_id = array_pop(array_keys($va_ret))) {
+				$ret_filtered[$log_id] = $va_ret[$log_id];
 			}
 		}
 
-		return caSanitizeArray($va_ret, ['removeNonCharacterData' => true]);
+		return caSanitizeArray($ret_filtered, ['removeNonCharacterData' => true]);
 	}
 	# ------------------------------------------------------
 	/**

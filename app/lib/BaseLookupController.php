@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
 class BaseLookupController extends ActionController {
 	# -------------------------------------------------------
@@ -200,7 +196,7 @@ class BaseLookupController extends ActionController {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
 					if((strlen($ps_restrict_to_search) > 0)) {
-						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 						if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
 							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
 							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));
@@ -238,6 +234,8 @@ class BaseLookupController extends ActionController {
 	 */
 	public function GetHierarchyLevel() {
 		header("Content-type: application/json");
+		
+		$qr_children = null;
 
 		$ps_bundle = (string)$this->request->getParameter('bundle', pString);
 		$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
@@ -307,6 +305,7 @@ class BaseLookupController extends ActionController {
 				$va_items = array();
 				
 				$vs_rank_fld = $t_item->getProperty('RANK');
+				$has_is_default_fld = $t_item->hasField('is_default');
 				
 				if (is_array($va_item_ids = $t_item->getHierarchyChildren($t_item->getPrimaryKey(), array('idsOnly' => true))) && sizeof($va_item_ids)) {
 					$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids, ['sort' => $va_sorts, 'sortDirection' => $vs_sort_dir]);
@@ -337,6 +336,10 @@ class BaseLookupController extends ActionController {
 						$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]), array('requireLinkTags' => true));
 						if(!$va_tmp['name']) { $va_tmp['name'] = '??? '.$va_tmp[$vs_pk]; }
 
+						if($has_is_default_fld && $qr_children->get($this->ops_table_name.'.is_default')) {
+							$va_tmp['name'] .= ' ◉';
+						}
+						
 						// Child count is only valid if has_children is not null
 						$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
 

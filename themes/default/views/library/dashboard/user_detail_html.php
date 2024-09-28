@@ -32,7 +32,7 @@
  $va_reservations 		= $this->getVar('reservations');
  
  ?>
- <h2><?php print _t('User activity for %1', $vs_user); ?></h2>
+ <h2><?= _t('User activity for %1', $vs_user); ?></h2>
  
  <?php
  	foreach(array(
@@ -43,7 +43,7 @@
  	) as $vs_heading => $va_list) {
  		if (sizeof($va_list) > 0) {
  ?>
- 	<h3><?php print $vs_heading; ?></h3>
+ 	<h3><?= $vs_heading; ?></h3>
  <ul>
  <?php
 		foreach($va_list as $va_data) {

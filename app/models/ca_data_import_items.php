@@ -220,4 +220,3 @@ class ca_data_import_items extends BaseModel {
 
 	# ------------------------------------------------------
 }
-?>

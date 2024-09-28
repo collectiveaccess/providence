@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2022 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,14 +33,23 @@
 namespace CA\MetadataAlerts\TriggerTypes;
 
 class Modification extends Base {
-
 	/**
 	 * This should return a list of type specific settings in the usual ModelSettings format
 	 *
 	 * @return array
 	 */
 	public function getTypeSpecificSettings() {
-		return [];
+		return [
+			'expression' => [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => '670px', 'height' => 3,
+				'default' => '',
+				'label' => _t('Expression'),
+				'suffix' => _t(''),
+				'description' => _t('Expression to evaluate when record is saved.')
+			]
+		];
 	}
 
 	public function getTriggerType() {
@@ -52,49 +61,73 @@ class Modification extends Base {
 	 * @return bool
 	 */
 	public function check(&$t_instance) {
-		$va_values = $this->getTriggerValues();
-		if(!sizeof($va_values)) { return false; }
-		if (is_array($va_filters = $va_values['element_filters']) && !sizeof($va_filters)) { $va_filters = null; }
-		unset($va_filters['_non_element_filter']);
+		$values = $this->getTriggerValues();
+		if(!sizeof($values)) { return false; }
+		if (is_array($filters = $values['element_filters']) && !sizeof($filters)) { $filters = null; }
+		unset($filters['_non_element_filter']);
 		
-		$vs_non_element_filter = $va_values['element_filters']['_non_element_filter'];
+		$non_element_filter = $values['element_filters']['_non_element_filter'] ?? null;
 		
-		if(!$va_values['element_id'] && !$vs_non_element_filter) {
+		$is_modified = null;
+		if(!$values['element_id'] && !$non_element_filter) {
 			// Trigger on any change
-			return $t_instance->hasChangedSinceLoad();
+			$is_modified = $t_instance->hasChangedSinceLoad();
 		}
 		
-		if ($vs_non_element_filter) {
-			switch($vs_non_element_filter) {
-				case '_intrinsic_idno':
-					return $t_instance->didChange($t_instance->getProperty('ID_NUMBERING_ID_FIELD'));
-					break;
-				case '_preferred_labels':
-					return $t_instance->changed('preferred_labels');
-					break;
-				case '_nonpreferred_labels':
-					return $t_instance->changed('nonpreferred_labels');
-					break;
-				default:
-					return false;
-					break;
-			}
-		} else {
-			// Trigger on specific element
-			$vs_code = \ca_metadata_elements::getElementCodeForId($va_values['element_id']);
-			$vs_parent_code = \ca_metadata_elements::getParentCode($va_values['element_id']);
-			$vs_get_spec = $vs_code;
-			if ($vs_parent_code && $vs_parent_code !== $vs_code){
-				$vs_get_spec = "$vs_parent_code.$vs_get_spec";
-			}
-			if (is_array($va_filter_vals = caGetOption($vs_code, $va_filters, null)) && sizeof($va_filter_vals)) {
-				$va_values = $t_instance->get($t_instance->tableName().".{$vs_get_spec}", ['returnAsArray' => true]);
-				if (! ( array_intersect( $va_values, $va_filter_vals ) ) ) {
-					return false;
+		if(is_null($is_modified)) {
+			if ($non_element_filter) {
+				switch($non_element_filter) {
+					case '_intrinsic_idno':
+						$is_modified = $t_instance->didChange($t_instance->getProperty('ID_NUMBERING_ID_FIELD'));
+						break;
+					case '_preferred_labels':
+						$is_modified = $t_instance->changed('preferred_labels');
+						break;
+					case '_nonpreferred_labels':
+						$is_modified = $t_instance->changed('nonpreferred_labels');
+						break;
+					default:
+						$is_modified = false;
+						break;
+				}
+			} else {
+				// Trigger on specific element
+				$code = \ca_metadata_elements::getElementCodeForId($values['element_id']);
+				$parent_code = \ca_metadata_elements::getParentCode($values['element_id']);
+				$get_spec = $code;
+				if ($parent_code && $parent_code !== $code){
+					$get_spec = "$parent_code.$get_spec";
+				}
+				if (is_array($filter_vals = caGetOption($code, $filters, null)) && sizeof($filter_vals)) {
+					$values = $t_instance->get($t_instance->tableName().".{$get_spec}", ['returnAsArray' => true]);
+					if (! ( array_intersect( $values, $filter_vals ) ) ) {
+						$is_modified = false;
+					}
+				}
+				if($is_modified !== false) {
+					$is_modified = $t_instance->attributeDidChange($code);
 				}
 			}
-			return $t_instance->attributeDidChange($vs_code);
 		}
+		
+		$expression = $values['settings']['expression'] ?? null;
+		if((bool)$is_modified && strlen($expression)) {
+			$tags = caGetTemplateTags($expression) ?? [];
+			$exp_values = [];
+			foreach($tags as $t) {
+				$exp_values[$t] = $t_instance->get($t);
+			}
+		
+			try {
+				if (\ExpressionParser::evaluate($expression, $exp_values)) {
+					return true;
+				}
+			} catch(Exception $e) {
+				// Invalid expression
+				throw new MetadataAlertExpressionException(_t('Invalid expression specified for alert: %1', $e->getMessage()), $expression);
+			}
+		}
+		return (bool)$is_modified;
 	}
 	
 	/**
@@ -102,22 +135,22 @@ class Modification extends Base {
 	 *
 	 * @return string
 	 */
-	public function getElementFilters($pn_element_id, $ps_prefix_id, array $pa_options=[]) {
-		if ($t_element = \ca_metadata_elements::getInstance($pn_element_id)) {
+	public function getElementFilters($element_id, $prefix_id, array $options=[]) {
+		if ($t_element = \ca_metadata_elements::getInstance($element_id)) {
 			// filter on list elements in containers
 			if($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_LIST__) {
-				$va_html = [];
+				$html = [];
 				
-				$va_values = caGetOption('values', $pa_options, []);
-				$vs_element_code = $t_element->get('element_code');
-				if ($vs_list = \ca_lists::getListAsHTMLFormElement(
-					$t_element->get('list_id'), "{$ps_prefix_id}_element_filter_{$vs_element_code}"."[]", 
-					['id' => "{$ps_prefix_id}_element_filter_{$vs_element_code}"], 
-					['maxItemCount' => 100, 'render' => 'multiple', 'values' => caGetOption($vs_element_code, $va_values, null)]
+				$values = caGetOption('values', $options, []);
+				$element_code = $t_element->get('element_code');
+				if ($list = \ca_lists::getListAsHTMLFormElement(
+					$t_element->get('list_id'), "{$prefix_id}_element_filter_{$element_code}"."[]", 
+					['id' => "{$prefix_id}_element_filter_{$element_code}"], 
+					['maxItemCount' => 100, 'render' => 'multiple', 'values' => caGetOption($element_code, $values, null)]
 				)) {
-					$va_html[] = "<span class='formLabelPlain'>".$t_element->get('ca_metadata_elements.preferred_labels.name').':</span><br/>'.$vs_list;
+					$html[] = "<span class='formLabelPlain'>".$t_element->get('ca_metadata_elements.preferred_labels.name').':</span><br/>'.$list;
 				}
-				return $va_html;
+				return $html;
 			}
 		}
 		return null;

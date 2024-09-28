@@ -188,4 +188,3 @@ class ca_data_import_event_log extends BaseModel {
 
 	# ------------------------------------------------------
 }
-?>

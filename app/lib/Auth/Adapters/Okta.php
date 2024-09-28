@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__.'/Auth/BaseAuthAdapter.php');
-require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	/**
@@ -127,7 +126,7 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
                         'lname' => $va_attrs['sub'],
                         'active' => 1,
                         'roles' => $va_default_roles,
-                        'groups' => $va_groups
+                        'groups' => $va_default_roles
                     ];
 			    }
 				if ($user_info['status'] !== 'ACTIVE') {
