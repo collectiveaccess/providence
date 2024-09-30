@@ -32,10 +32,10 @@
 require_once( __CA_LIB_DIR__ . "/Plugins/IWLPlugInformationService.php" );
 require_once( __CA_LIB_DIR__ . "/Plugins/InformationService/BaseGettyLODServicePlugin.php" );
 
-global $g_information_service_settings_AAT;
-$g_information_service_settings_AAT = array();
+global $g_information_service_settings_nomenclature;
+$g_information_service_settings_nomenclature = array();
 
-class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
+class WLPlugInformationServiceNomenclature extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
 	# ------------------------------------------------
 	static $s_settings;
 	# ------------------------------------------------
@@ -44,62 +44,62 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	 *
 	 */
 	public function __construct() {
-		global $g_information_service_settings_AAT;
-		$g_information_service_settings_AAT['limitToHierarchy'] = [
+		global $g_information_service_settings_nomenclature;
+		$g_information_service_settings_nomenclature['limitToHierarchy'] = [
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Limit to hierarchy'),
-			'description' => _t('Limit results to one or more AAT sub-hierarchies. Enter numeric AAT identifiers (Eg. 300111079) for the root of the sub-hierarchy. Separate multiple AAT identifiers with semicolons or commas. Only terms under the specified root AAT terms will be returned.')
+			'description' => _t('Limit results to one or more Nomenclature sub-hierarchies. Enter numeric Nomenclature identifiers (Eg. 300111079) for the root of the sub-hierarchy. Separate multiple Nomenclature identifiers with semicolons or commas. Only terms under the specified root Nomenclature terms will be returned.')
 		];
-		$g_information_service_settings_AAT['additionalFilter'] = [
+		$g_information_service_settings_nomenclature['additionalFilter'] = [
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Additional search filter'),
-			'description' => _t('Additional search filter. For example to limit to children of a particular term enter "gvp:broaderExtended aat:300312238"')
+			'description' => _t('Additional search filter. For example to limit to children of a particular term enter "gvp:broaderExtended Nomenclature:300312238"')
 		];
-		$g_information_service_settings_AAT['sparqlSuffix'] = [
+		$g_information_service_settings_nomenclature['sparqlSuffix'] = [
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Additional sparql suffix'),
-			'description' => _t('Applied after the initial search. Useful to combine filters. For example to limit to children of particular terms enter "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (aat:300261086, aat:300264550))"')
+			'description' => _t('Applied after the initial search. Useful to combine filters. For example to limit to children of particular terms enter "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (Nomenclature:300261086, Nomenclature:300264550))"')
 		];
-		$g_information_service_settings_AAT['orderBy'] = [
+		$g_information_service_settings_nomenclature['orderBy'] = [
 			'formatType' => FT_TEXT,
 			'display_Type' => DT_SELECT,
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t("Order by"),
-			'description' => _t("How the auto complete list will be ordered. Default is how AAT return the results. Label is by the visible label"),
+			'description' => _t("How the auto complete list will be ordered. Default is how Nomenclature return the results. Label is by the visible label"),
 			'options' => array(
 				_t("Default") => "Order",
 				_t("Label") => "TermPrefLabel"
 			),
 		];	
-		$g_information_service_settings_AAT['language'] = [
+		$g_information_service_settings_nomenclature['language'] = [
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
 			'default' => defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Language'),
 			'useLocaleList' => true,
-			'description' => _t('Language to use for returned AAT terms. The language must be supported by the AAT.')
+			'description' => _t('Language to use for returned Nomenclature terms. The language must be supported by the Nomenclature.')
 		];	
-		WLPlugInformationServiceAAT::$s_settings = $g_information_service_settings_AAT;
+		WLPlugInformationServiceNomenclature::$s_settings = $g_information_service_settings_nomenclature;
 		parent::__construct();
-		$this->info['NAME'] = 'AAT';
+		$this->info['NAME'] = 'Nomenclature';
 
-		$this->description = _t( 'Provides access to Getty Linked Open Data AAT service' );
+		$this->description = _t( 'Provides access to Getty Linked Open Data Nomenclature service' );
 	}
 
 	# ------------------------------------------------
 	protected function getConfigName() {
-		return 'aat';
+		return 'Nomenclature';
 	}
 	# ------------------------------------------------
 
@@ -109,7 +109,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	 * @return array
 	 */
 	public function getAvailableSettings() {
-		return WLPlugInformationServiceAAT::$s_settings;
+		return WLPlugInformationServiceNomenclature::$s_settings;
 	}
 
 	/**
@@ -142,7 +142,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 			$vs_label = ( caGetOption( 'format', $pa_options, null, [ 'forceToLowercase' => true ] ) !== 'short' )
 				? $va_values[$key]['value']
-				: '[' . str_replace( 'aat:', '', $vs_id ) . '] ' . $va_values[$key]['value'] . " ["
+				: '[' . str_replace( 'Nomenclature:', '', $vs_id ) . '] ' . $va_values[$key]['value'] . " ["
 				  . $va_values['Parents']['value'] . "]";
 			$vs_label = preg_replace( '/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label );
 			$vs_label = preg_replace( '/[\<\>]/', '', $vs_label );
@@ -169,7 +169,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		if($limit_to_hierarchy) {
 			$ids = preg_split('/[;,]/', $limit_to_hierarchy);
 			$ids = array_map(function($v) {
-				return 'aat:'.(int)$v;
+				return 'Nomenclature:'.(int)$v;
 			}, array_filter($ids, function($v) {
 				return (int)$v;
 			}));
@@ -187,7 +187,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			$vs_order_by = 'Order';
 		}
 		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull '.$lang_select.' {
-	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme aat: ; ' . $vs_additional_filter . '
+	?ID a skos:Concept; ' . $pa_params['search_field'] . ' "' . $ps_search . '"; skos:inScheme Nomenclature: ; ' . $vs_additional_filter . '
 	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel]; '.$lang_filter.'
 	{?ID gvp:parentStringAbbrev ?Parents}
 	{?ID gvp:parentString ?ParentsFull}
