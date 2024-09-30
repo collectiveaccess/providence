@@ -75,7 +75,7 @@ if (!$this->request->isAjax()) {
 		if ($vn_type_id = intval($this->getVar('list_set_type_id'))) {
 			$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
 		}
-		print caFormTag($this->request, 'ListSets', 'SetSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+		print caFormTag($this->request, 'ListSets', 'SetSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="simple-search-box">'._t('Search').': <input type="text" id="setSearch" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="20"/></div>'.$vs_type_id_form_element,
 			'',
@@ -90,7 +90,7 @@ if (!$this->request->isAjax()) {
 <?php
 	print $this->render('sets/paging_controls_html.php');
 ?>
-	<?= caFormTag($this->request, 'Algebra', 'algebraSetForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true, 'submitOnReturn' => false]); ?>
+	<?= caFormTag($this->request, 'Algebra', 'algebraSetForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => false, 'submitOnReturn' => false]); ?>
 		<div id="algebraSetControls">
 			<?= _t("%1 <span id='algebraCreateText'>new set %2 from the %3 of </span>%4 selected sets", caHTMLSelect("algebra_set_mode", [_t("Create") => "CREATE", _t("Delete") => "DELETE"], ['id' => 'algebraModeSelect']), "<input type='text' size='10' name='algebra_set_name' id='algebraSetName'/>", caHTMLSelect("algebra_set_operation", [_t("combination") => "UNION", _t("intersection") => "INTERSECTION", _t("difference") => "DIFFERENCE"]), '<span id="selectedSetCount"></span>');?>  
 			
