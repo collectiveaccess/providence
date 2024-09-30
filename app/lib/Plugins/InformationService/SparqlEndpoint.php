@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -288,7 +288,7 @@
  	 * @return array An array of data from the data server defining the item.
  	 */
  	public function getExtendedInformation($pa_settings, $ps_url) {
- 		$vs_display = "<p><a href='$ps_url' target='_blank'>$ps_url</a></p>";
+ 		$vs_display = "<p><a href='$ps_url' target='_blank' rel='noopener noreferrer'>$ps_url</a></p>";
 
  		$va_info = $this->getExtraInfo($pa_settings, $ps_url);
 
