@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2021 Whirl-i-Gig
+ * Copyright 2000-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- use \Firebase\JWT\JWT;
- 
- /**
-  *
-  */
+use \Firebase\JWT\JWT;
  
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Configuration.php");
@@ -124,10 +119,12 @@ class Session {
 		if (!$pb_dont_create_new_session) {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
 			if (!$session_id) {
-				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+				$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				$secure = (__CA_SITE_PROTOCOL__ === 'https');
 				$_COOKIE[Session::$name] = $session_id =  caGenerateGUID();
-				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__ || (defined('__CA_SET_COOKIE_FOR_SERVICE_REQUEST__') && __CA_SET_COOKIE_FOR_SERVICE_REQUEST__))) { setcookie(Session::$name, $session_id, Session::$lifetime ? time() + Session::$lifetime : null, $vs_cookiepath, null, $secure, true); }
+				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__ || (defined('__CA_SET_COOKIE_FOR_SERVICE_REQUEST__') && __CA_SET_COOKIE_FOR_SERVICE_REQUEST__))) { 
+					setcookie(Session::$name, $session_id, Session::$lifetime ? time() + Session::$lifetime : null, $cookiepath, null, $secure, true); 
+				}
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
@@ -230,13 +227,15 @@ class Session {
 		}
 		self::$s_cache_type::delete($session_id, 'SessionIDToServiceAuthTokens');
 
+		$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+		$secure = (__CA_SITE_PROTOCOL__ === 'https');
 		if (isset($_COOKIE[session_name()])) {
-			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
+			setcookie(session_name(), '', time()- (24 * 60 * 60), $cookiepath, null, $secure, true);
 			@session_destroy();
 		}
 		// Delete session data
 		unset($_COOKIE[Session::$name]);
-		setCookie(Session::$name, "", time()-3600);
+		setCookie(Session::$name, "", time()-3600, $cookiepath, null, $secure, true);
 		self::$s_cache_type::delete($session_id, 'SessionVars');
 	}
 	# ----------------------------------------
