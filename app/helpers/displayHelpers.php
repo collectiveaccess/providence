@@ -584,7 +584,7 @@ jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
 	}
 	$vs_output .= "</script>\n";
 
-	TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+	TooltipManager::add('#caReferenceHandlingToCount', "<div class='tooltipHead'>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</div>\n".join("\n", $va_reference_to_buf));
 
 
 	if (sizeof($va_reference_from_buf)) {
@@ -633,7 +633,7 @@ jQuery('#caReferenceHandlingToRemapToHierBrowserSearch').autocomplete(
 		$vs_output .= "});";
 		$vs_output .= "</script>\n";
 
-		TooltipManager::add('#caReferenceHandlingFromCount', "<h2>"._t('References by this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("<br/>\n", $va_reference_from_buf));
+		TooltipManager::add('#caReferenceHandlingFromCount', "<div class='tooltipHead'>"._t('References by this %1', $t_instance->getProperty('NAME_SINGULAR'))."</div>\n".join("<br/>\n", $va_reference_from_buf));
 	}
 
 	return $vs_output;
@@ -1452,7 +1452,7 @@ function caEditorInspector($view, $options=null) {
 					($vs_name ? _t('<strong>Created</strong><br/>%1 by %2', $vs_interval, $vs_name) : _t('<strong>Created</strong><br/>%1', $vs_interval)).
 					"</div>";
 
-				TooltipManager::add("#caInspectorCreationDate", "<h2>"._t('Created on')."</h2>"._t('Created on %1', caGetLocalizedDate($creation['timestamp'], array('dateFormat' => 'delimited'))));
+				TooltipManager::add("#caInspectorCreationDate", "<div class='tooltipHead'>"._t('Created on')."</div>"._t('Created on %1', caGetLocalizedDate($creation['timestamp'], array('dateFormat' => 'delimited'))));
 			}
 
 			if ($last_change['timestamp'] && ($creation['timestamp'] != $last_change['timestamp'])) {
@@ -1463,7 +1463,7 @@ function caEditorInspector($view, $options=null) {
 					($vs_name ? _t('<strong>Last changed</strong><br/>%1 by %2', $vs_interval, $vs_name) : _t('<strong>Last changed</strong><br/>%1', $vs_interval)).
 					"</div>";
 
-				TooltipManager::add("#caInspectorChangeDate", "<h2>"._t('Last changed on')."</h2>"._t('Last changed on %1', caGetLocalizedDate($last_change['timestamp'], array('dateFormat' => 'delimited'))));
+				TooltipManager::add("#caInspectorChangeDate", "<div class='tooltipHead'>"._t('Last changed on')."</div>"._t('Last changed on %1', caGetLocalizedDate($last_change['timestamp'], array('dateFormat' => 'delimited'))));
 			}
 
 			if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($violations = $t_item->getMetadataDictionaryRuleViolations()) && (($total_num_violations = (sizeof($violations))) > 0)) {
@@ -1509,7 +1509,7 @@ function caEditorInspector($view, $options=null) {
 					$more_info .= "<div id='caInspectorViolationsList'>".caNavIcon(__CA_NAV_ICON_ALERT__, "14px")." ".($num_violations_display = (($total_num_violations > 1) ? _t('%1 problems require attention', $total_num_violations) : _t('%1 problem requires attention', $total_num_violations)))."</div>\n"; 
 				}
 				if($num_violations_display) { 
-					TooltipManager::add("#caInspectorViolationsList", "<h2>{$num_violations_display}</h2><ol>".join("\n", $violation_messages)."</ol>\n");
+					TooltipManager::add("#caInspectorViolationsList", "<div class='tooltipHead'>{$num_violations_display}</div><ol>".join("\n", $violation_messages)."</ol>\n");
 				}
 			}
 
