@@ -83,6 +83,7 @@ try {
 	// Security headers
 	$resp->addHeader("X-XSS-Protection", "1; mode=block");
 	$resp->addHeader("X-Frame-Options", "SAMEORIGIN");
+	$resp->addHeader("X-Content-Type-Options", "nosniff");
 
 	$vt_app_plugin_manager = new ApplicationPluginManager();
 	if($vt_app_plugin_manager->hookAddDomainSecurityPolicy(null) && is_array($vt_app_plugin_manager->hookAddDomainSecurityPolicy(null))) {
