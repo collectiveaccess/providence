@@ -1639,7 +1639,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				if (($vs_label) && ($vs_description)) { 
-					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
+					TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_label_text}</div>{$vs_description}");
 				}
 				
 				$bundle_code = $this->tableName().".{$bundle_code}";
@@ -1756,7 +1756,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				if (($pa_options['label']) && ($vs_description)) {
-					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
+					TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>".$pa_options['label']."</div>{$vs_description}");
 				}
 				
 				if (isset($pa_bundle_settings['forACLAccessScreen']) && $pa_bundle_settings['forACLAccessScreen']) {
@@ -1789,7 +1789,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (sizeof($va_type_restrictions)) {
 						$vs_restriction_list = join("; ", $va_type_restrictions);
 						$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$vs_label_text.'</span> <span class="formLabelSubtext" id="subtext_'.$vs_field_id.'">('.caTruncateStringWithEllipsis($vs_restriction_list, 75).')</span>'; 
-						TooltipManager::add("#subtext_{$vs_field_id}", "<h3>"._t("Restricted to types")."</h3>".join("<br/>", $va_type_restrictions));
+						TooltipManager::add("#subtext_{$vs_field_id}", "<div class='tooltipHead'>"._t("Restricted to types")."</div>".join("<br/>", $va_type_restrictions));
 					} else {
 						$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$vs_label_text.'</span>'; 
 					}
@@ -1811,7 +1811,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
+					TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_label_text}</div>{$vs_description}");
 				}
 		
 				break;
@@ -1901,7 +1901,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				
 				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
+					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<div class='tooltipHead'>{$vs_label}</div>{$vs_description}");
 				}
 				break;
 			# -------------------------------------------------
@@ -2197,7 +2197,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				
 				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
+					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<div class='tooltipHead'>{$vs_label}</div>{$vs_description}");
 				}
 				
 				break;
@@ -7506,7 +7506,7 @@ $pa_options["display_form_field_tips"] = true;
 						$ps_formatted_element = str_replace("^LABEL",'<span id="'.$vs_field_id.'">'.(isset($pa_options['label']) ? $pa_options['label'] : $va_attr["LABEL"]).'</span>', $ps_formatted_element);
 
 						if (!$pa_options['no_tooltips']) {
-							TooltipManager::add('#'.$vs_field_id, "<h3>".(isset($pa_options['label']) ? $pa_options['label'] : $va_attr["LABEL"])."</h3>".$va_attr["DESCRIPTION"]);
+							TooltipManager::add('#'.$vs_field_id, "<div class='tooltopHead'>".(isset($pa_options['label']) ? $pa_options['label'] : $va_attr["LABEL"])."</div>".$va_attr["DESCRIPTION"]);
 						}
 					}
 				} else {

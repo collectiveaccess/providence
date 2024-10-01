@@ -3392,7 +3392,7 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 	}
 
 	if($vb_include_inline_add_message && $ps_inline_create_message) {
-		array_push($va_initial_values, 
+		array_unshift($va_initial_values, 
 				array(
 					'label' => $ps_inline_create_message,
 					'id' => 0,
@@ -3401,7 +3401,7 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 				)
 		);
 	} elseif ($vb_include_inline_add_does_not_exist_message && $ps_inline_create_does_not_exist_message) {
-		array_push($va_initial_values,
+		array_unshift($va_initial_values,
 				array(
 					'label' => $ps_inline_create_does_not_exist_message,
 					'id' => 0,
@@ -3410,7 +3410,7 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 				)
 		);
 	} elseif ($vb_include_empty_result_message) {
-		array_push($va_initial_values,
+		array_unshift($va_initial_values,
 			array(
 				'label' => $ps_empty_result_message,
 				'id' => -1,
