@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-  
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 require_once(__CA_LIB_DIR__.'/GenericVersionUpdater.php');
 
-
- 	define('__CA_SCHEMA_UPDATE_ERROR__', 0);
- 	define('__CA_SCHEMA_UPDATE_WARNING__', 1);
- 	define('__CA_SCHEMA_UPDATE_INFO__', 2);
+define('__CA_SCHEMA_UPDATE_ERROR__', 0);
+define('__CA_SCHEMA_UPDATE_WARNING__', 1);
+define('__CA_SCHEMA_UPDATE_INFO__', 2);
 
 final class ConfigurationCheck {
 	# -------------------------------------------------------
@@ -340,8 +334,8 @@ final class ConfigurationCheck {
 	 * Does the HTMLPurifier DefinitionCache dir exist and is it writable?
 	 */
 	public static function htmlPurifierDirQuickCheck() {
-		$vs_purifier_path = self::$opo_config->get('purify_serializer_path'));
-
+		$vs_purifier_path = self::$opo_config->get('purify_serializer_path');
+		if(!file_exists($vs_purifier_path)) { mkdir($vs_purifier_path); }
 		if(!file_exists($vs_purifier_path) || !is_writable($vs_purifier_path)){
 			self::addError(_t("It looks like the directory for HTML filtering caches is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.", $vs_purifier_path));
 		}
