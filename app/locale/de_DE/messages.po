@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: info@collectiveaccess.org\n"
 "POT-Creation-Date: 2020-12-04 10:37+0100\n"
-"PO-Revision-Date: 2019-04-23 14:21-0400\n"
-"Last-Translator: manders <martin.anders@muenchen.de>\n"
+"PO-Revision-Date: 2024-10-08 19:04+0200\n"
+"Last-Translator: ibu radempa <ibu@multiname.org>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/collectiveaccess/"
 "collectiveaccess-providence/language/de_DE/)\n"
 "Language: de_DE\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -67,8 +67,8 @@ msgstr ""
 msgid ""
 "Use the button above to add a widget to your dashboard.  You can drag and "
 "drop the widgets in the left or right columns in the order you would like "
-"them to appear.  To customize the information in each widget, click the <i>"
-"\"i\"</i> button in the upper right corner of the widget.  To remove the "
+"them to appear.  To customize the information in each widget, click the "
+"<i>\"i\"</i> button in the upper right corner of the widget.  To remove the "
 "widget from your dashboard click the \"X\" button in the upper right corner "
 "of the widget.  Click the \"Clear dashboard\" button above to remove all "
 "widgets from your dashboard.  When you are finished editing your dashboard, "
@@ -1057,7 +1057,7 @@ msgstr "Art der Veröffentlichung"
 #: ../../themes/default/views/administrate/setup/config_check_html.php:68
 #, fuzzy
 msgid "System GUID"
-msgstr "Ist die Systembenutzeroberfläche?"
+msgstr "System GUID"
 
 #: ../../themes/default/views/administrate/setup/config_check_html.php:72
 #, fuzzy
@@ -4915,7 +4915,7 @@ msgstr "Orte"
 
 #: ../../themes/default/views/manage/saved_searches_list_html.php:84
 msgid "Object Lots"
-msgstr "Objektlose"
+msgstr "Objektstapel (Konvolute)"
 
 #: ../../themes/default/views/manage/saved_searches_list_html.php:89
 msgid "Storage Locations"
@@ -6411,13 +6411,13 @@ msgstr "Neue Eingabemaske"
 #: ../../app/helpers/displayHelpers.php:1396
 #: ../../app/helpers/displayHelpers.php:1399
 msgid "Lot contains %1 object"
-msgstr "Das Lot enthält %1 Objekt"
+msgstr "Das Konvolut enthält %1 Objekt"
 
 #: ../../app/helpers/displayHelpers.php:1030
 #: ../../app/helpers/displayHelpers.php:1396
 #: ../../app/helpers/displayHelpers.php:1399
 msgid "Lot contains %1 objects"
-msgstr "Lot enthält %1 Objekte"
+msgstr "Das Konvolut enthält %1 Objekte"
 
 #: ../../app/helpers/displayHelpers.php:1046
 msgid "Creating new %1"
@@ -6466,7 +6466,8 @@ msgstr "%1 duplizieren"
 #: ../../app/helpers/displayHelpers.php:1223
 msgid "Download all media associated with objects in this lot"
 msgstr ""
-"Alle Medien, die mit Objekten in diesem Lot verknüpft sind, herunterladen"
+"Alle Medien, die mit Objekten in diesem Konvolut verknüpft sind, "
+"herunterladen"
 
 #: ../../app/helpers/displayHelpers.php:1231
 msgid "Download all media associated with records in this set"
@@ -6549,11 +6550,11 @@ msgstr "Wird verknüpft mit %1"
 
 #: ../../app/helpers/displayHelpers.php:1356
 msgid "Part of lot"
-msgstr "Teil von Lot"
+msgstr "Teil des Konvoluts"
 
 #: ../../app/helpers/displayHelpers.php:1359
 msgid "Will be part of lot"
-msgstr "Wird Teil von Lot"
+msgstr "Wird Teil des Konvoluts sein"
 
 #: ../../app/helpers/displayHelpers.php:1373
 #: ../../app/helpers/displayHelpers.php:1375
@@ -6571,11 +6572,11 @@ msgstr "Hat"
 
 #: ../../app/helpers/displayHelpers.php:1397
 msgid "Lot contains %1 component"
-msgstr "Menge enthält %1 Komponent"
+msgstr "Das Konvolut enthält %1 Komponente"
 
 #: ../../app/helpers/displayHelpers.php:1397
 msgid "Lot contains %1 components"
-msgstr "Menge enthält %1 Komponenten"
+msgstr "Das Konvolut enthält %1 Komponenten"
 
 #: ../../app/helpers/displayHelpers.php:1404
 msgid "There is %1 object with non-conforming numbering"
@@ -6592,7 +6593,7 @@ msgstr "Objekte neu nummerieren"
 #: ../../app/helpers/displayHelpers.php:1424
 #: ../../app/helpers/displayHelpers.php:1427
 msgid "Add new %1 to lot"
-msgstr "Neue/s %1 zu Lot hinzufügen"
+msgstr "Neue/s %1 zum Konvolut hinzufügen"
 
 #: ../../app/helpers/displayHelpers.php:1450
 #, fuzzy
@@ -8534,19 +8535,19 @@ msgstr ""
 "Ihre Datenbank ist extrem veraltet. Bitte installieren Sie alle "
 "Datenbankmigrationen ab Migration Nr. 1 oder wenden Sie sich an "
 "support@collectiveaccess.org, um Unterstützung zu erhalten. Anweisungen zum "
-"manuellen Anwenden von Datenbankaktualisierungen finden Sie im <a href="
-"\"http://docs.collectiveaccess.org/wiki/Applying_Database_Updates\">Update "
-"HOW-TO</a>."
+"manuellen Anwenden von Datenbankaktualisierungen finden Sie im <a "
+"href=\"http://docs.collectiveaccess.org/wiki/"
+"Applying_Database_Updates\">Update HOW-TO</a>."
 
 #: ../../app/lib/ConfigurationCheck.php:249
 msgid ""
 "Your database is out-of-date. Please install all schema migrations starting "
 "with migration #%1. <a href='index.php?updateSchema=1'><strong>Click here</"
-"strong></a> to automatically apply the required updates, or see the <a href="
-"\"http://docs.collectiveaccess.org/wiki/Applying_Database_Updates\">update "
-"HOW-TO</a> for instructions on applying database updates manually.<br/><br/"
-"><div align='center'><strong>NOTE: you should back-up your database before "
-"applying updates!</strong></div>"
+"strong></a> to automatically apply the required updates, or see the <a "
+"href=\"http://docs.collectiveaccess.org/wiki/"
+"Applying_Database_Updates\">update HOW-TO</a> for instructions on applying "
+"database updates manually.<br/><br/><div align='center'><strong>NOTE: you "
+"should back-up your database before applying updates!</strong></div>"
 msgstr ""
 "Ihre Datenbank ist veraltet. Bitte installieren Sie alle Schemamigrationen "
 "ab Migration Nr. %1. <a href='index.php?updateSchema=1'><strong>Klicken Sie "
@@ -8879,20 +8880,21 @@ msgid ""
 "both values limits the size of the files you can upload to CollectiveAccess. "
 "Your values: upload_max_filesize=%1 and post_max_size=%2."
 msgstr ""
-"Es sieht so aus, als hätten die PHP-Konfigurationsvariablen \"post_max_size"
-"\" und \"upload_max_filesize\" unterschiedliche Werte. Beachten Sie, dass "
-"der niedrigste der beiden Werte die Größe der Dateien einschränkt, die Sie "
-"in CollectiveAccess hochladen können. Ihre Werte: upload_max_filesize=%1 und "
-"post_max_size=%2."
+"Es sieht so aus, als hätten die PHP-Konfigurationsvariablen "
+"\"post_max_size\" und \"upload_max_filesize\" unterschiedliche Werte. "
+"Beachten Sie, dass der niedrigste der beiden Werte die Größe der Dateien "
+"einschränkt, die Sie in CollectiveAccess hochladen können. Ihre Werte: "
+"upload_max_filesize=%1 und post_max_size=%2."
 
 #: ../../app/lib/ConfigurationCheck.php:506
 msgid ""
-"It looks like at least one of the PHP configuration variables \"post_max_size"
-"\" and \"upload_max_filesize\" is set to a very low value. Note that the "
-"lowest of both values limits the size of the files you can upload to "
-"CollectiveAccess. We recommend values greater than \"5M\" but in general you "
-"should set them to values greater than the largest file you will upload to "
-"CollectiveAccess. Your values: upload_max_filesize=%1 and post_max_size=%2."
+"It looks like at least one of the PHP configuration variables "
+"\"post_max_size\" and \"upload_max_filesize\" is set to a very low value. "
+"Note that the lowest of both values limits the size of the files you can "
+"upload to CollectiveAccess. We recommend values greater than \"5M\" but in "
+"general you should set them to values greater than the largest file you will "
+"upload to CollectiveAccess. Your values: upload_max_filesize=%1 and "
+"post_max_size=%2."
 msgstr ""
 "Es scheint, dass mindestens eine der PHP-Konfigurationsvariablen "
 "\"post_max_size\" und \"upload_max_filesize\" auf einen sehr niedrigen Wert "
@@ -8921,9 +8923,9 @@ msgid ""
 "max_name_length\" to 256 or higher to ensure that CA works correctly. Your "
 "value is %1"
 msgstr ""
-"Insbesondere müssen Sie den Konfigurationswert \"suhosin.post.max_name_length"
-"\" auf 256 oder höher festlegen, um sicherzustellen, dass CA ordnungsgemäß "
-"funktioniert. Ihr Wert ist %1"
+"Insbesondere müssen Sie den Konfigurationswert \"suhosin.post."
+"max_name_length\" auf 256 oder höher festlegen, um sicherzustellen, dass CA "
+"ordnungsgemäß funktioniert. Ihr Wert ist %1"
 
 #: ../../app/lib/ConfigurationCheck.php:528
 msgid ""
@@ -9601,7 +9603,7 @@ msgstr "Ungültige _getRelatedRows-Abfrage: %1"
 #: ../../app/conf/user_pref_defs.conf:1113
 #: ../../app/conf/user_pref_defs.conf:1324
 msgid "Object lots"
-msgstr "Konvolute"
+msgstr "Objektstapel (Konvolute)"
 
 #: ../../app/lib/Search/QuickSearch.php:55 ../../app/models/ca_set_items.php:71
 #: ../../app/models/ca_storage_locations.php:401
@@ -12887,8 +12889,8 @@ msgstr ""
 
 #: ../../app/lib/BaseLookupController.php:197
 msgid ""
-"<em>%1</em> matches %2 more record(s) without the current filter. Create <em>"
-"%1</em>?"
+"<em>%1</em> matches %2 more record(s) without the current filter. Create "
+"<em>%1</em>?"
 msgstr ""
 "<em>%1</em> entspricht %2 weiteren Datensätzen ohne dem aktuellen Filter. "
 "<em>%1</em> erstellen?"
@@ -18080,8 +18082,8 @@ msgstr ""
 #: ../../app/lib/Attributes/Values/ObjectLotsAttributeValue.php:48
 msgid "Check this option if you want to require that a lot be selected."
 msgstr ""
-"Aktivieren Sie diese Option, wenn Sie möchten, dass ein Los ausgewählt "
-"werden kann."
+"Aktivieren Sie diese Option, wenn Sie möchten, dass ein Konvolut ausgewählt "
+"werden muss."
 
 #: ../../app/lib/Attributes/Values/CurrencyAttributeValue.php:57
 msgid ""
@@ -18537,7 +18539,6 @@ msgid "Key"
 msgstr "Schlüssel"
 
 #: ../../app/lib/BaseSettings.php:494
-#, fuzzy
 msgid "All lists"
 msgstr "Listen"
 
@@ -20246,9 +20247,8 @@ msgstr "Verwandte Bewegungen"
 #: ../../app/models/ca_objects.php:538
 #: ../../app/models/ca_object_representations.php:383
 #: ../../app/models/ca_collections.php:367
-#, fuzzy
 msgid "Related object lots list"
-msgstr "Zugehörige Objekte"
+msgstr "Zugehörige Objektstapel-Liste"
 
 #: ../../app/models/ca_tour_stops.php:334
 #: ../../app/models/ca_user_representation_annotations.php:295
@@ -20471,11 +20471,11 @@ msgstr "Einschränkungen für Metadatentypen"
 
 #: ../../app/models/ca_object_lots_x_object_representations.php:40
 msgid "object lot ⇔ representation relationship"
-msgstr "Objektlos ⇔ Repräsentationsbeziehung"
+msgstr "Objektstapel ⇔ Repräsentationsbeziehung"
 
 #: ../../app/models/ca_object_lots_x_object_representations.php:41
 msgid "object lot ⇔ representation relationships"
-msgstr "Objektlos ⇔ Repräsentationsbeziehungen"
+msgstr "Objektstapel ⇔ Repräsentationsbeziehungen"
 
 #: ../../app/models/ca_loan_labels.php:40
 msgid "loan title"
@@ -21516,11 +21516,11 @@ msgstr "Object ⇔ Sammlung Beziehungen"
 
 #: ../../app/models/ca_object_lots_x_places.php:40
 msgid "object lot ⇔ place relationship"
-msgstr "Objektlot ⇔ Ort Beziehung"
+msgstr "Objektstapel ⇔ Ort Beziehung"
 
 #: ../../app/models/ca_object_lots_x_places.php:41
 msgid "object lot ⇔ place relationships"
-msgstr "Objektlos ⇔ Stellen Sie Beziehungen auf"
+msgstr "Objektstapel ⇔ Stellen Sie Beziehungen auf"
 
 #: ../../app/models/ca_data_importer_groups.php:42
 msgid "data importer group"
@@ -21676,11 +21676,11 @@ msgstr "Objekt ⇔ Standort Beziehungen"
 
 #: ../../app/models/ca_object_lots_x_vocabulary_terms.php:40
 msgid "object lot ⇔ vocabulary term relationship"
-msgstr "Objektlos ⇔ Wortschatz Begriffsbeziehung"
+msgstr "Objektstapel ⇔ Wortschatz Begriffsbeziehung"
 
 #: ../../app/models/ca_object_lots_x_vocabulary_terms.php:41
 msgid "object lot ⇔ vocabulary term relationships"
-msgstr "Objektlos ⇔ Wortschatz Beziehungen"
+msgstr "Objektstapel ⇔ Wortschatz Beziehungen"
 
 #: ../../app/models/ca_metadata_alert_triggers.php:40
 #: ../../app/models/ca_metadata_alert_triggers.php:41
@@ -21895,7 +21895,7 @@ msgstr "Dateirepräsentation"
 #: ../../app/models/ca_movements.php:311 ../../app/models/ca_places.php:360
 #: ../../app/models/ca_list_items.php:557 ../../app/models/ca_loans.php:339
 msgid "Related lots"
-msgstr "Verwandte Lots"
+msgstr "Verwandte Konvolute"
 
 #: ../../app/models/ca_storage_locations.php:349
 #: ../../app/models/ca_entities.php:356 ../../app/models/ca_object_lots.php:330
@@ -21936,9 +21936,8 @@ msgstr "Verwandte Bewegungen"
 #: ../../app/models/ca_list_items.php:568 ../../app/models/ca_objects.php:552
 #: ../../app/models/ca_object_representations.php:392
 #: ../../app/models/ca_collections.php:375
-#, fuzzy
 msgid "Related sets"
-msgstr "Verwandte Lots"
+msgstr "Verwandte Mengen"
 
 #: ../../app/models/ca_storage_locations.php:356
 #: ../../app/models/ca_entities.php:362 ../../app/models/ca_object_lots.php:338
@@ -22544,11 +22543,11 @@ msgstr "Zugehöriges Konvolut"
 
 #: ../../app/models/ca_movements_x_object_lots.php:40
 msgid "movements ⇔ object lots relationship"
-msgstr "Bewegungen ⇔ Objektlose Beziehung"
+msgstr "Bewegungen ⇔ Objektstapel Beziehung"
 
 #: ../../app/models/ca_movements_x_object_lots.php:41
 msgid "movements ⇔ object lots relationships"
-msgstr "Bewegungen ⇔ Objektlose Beziehungen"
+msgstr "Bewegungen ⇔ Objektstapel Beziehungen"
 
 #: ../../app/models/ca_loans_x_storage_locations.php:40
 msgid "loans ⇔ storage locations relationship"
@@ -23300,7 +23299,7 @@ msgstr ""
 
 #: ../../app/models/ca_editor_ui_screens.php:1098
 msgid "Lot display template"
-msgstr "Objektvorlage anzeigen"
+msgstr "Anzeigevorlage für Konvolut"
 
 #: ../../app/models/ca_editor_ui_screens.php:1099
 msgid ""
@@ -23308,8 +23307,8 @@ msgid ""
 "can be used to represent the value in the template. For example: "
 "<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Layout zum Referenzieren von Losen. Elementcode-Tags, denen das Zeichen ^ "
-"vorangestellt ist, können verwendet werden, um den Wert in der Vorlage "
+"Layout zum Referenzieren von Konvoluten. Elementcode-Tags, denen das Zeichen "
+"^ vorangestellt ist, können verwendet werden, um den Wert in der Vorlage "
 "darzustellen. Zum Beispiel: <i>^a_object_lots.idno_stub</i>."
 
 #: ../../app/models/ca_editor_ui_screens.php:1106
@@ -23616,11 +23615,11 @@ msgstr "Steuerelemente \"Zu Kredit hinzufügen\" ausblenden"
 
 #: ../../app/models/ca_editor_ui_screens.php:1388
 msgid "Show lots"
-msgstr "Lose anzeigen"
+msgstr "Konvolute anzeigen"
 
 #: ../../app/models/ca_editor_ui_screens.php:1404
 msgid "Lot (%1) date"
-msgstr "Los (%1) Datum"
+msgstr "Konvolut (%1) Datum"
 
 #: ../../app/models/ca_editor_ui_screens.php:1413
 #: ../../app/models/ca_editor_ui_screens.php:1478
@@ -23640,7 +23639,7 @@ msgstr "Farbe, die als Highlight %1 verwendet werden soll."
 
 #: ../../app/models/ca_editor_ui_screens.php:1421
 msgid "Lot (%1) display template"
-msgstr "Anzeigevorlage für Los (%1)"
+msgstr "Anzeigevorlage für Konvolut (%1)"
 
 #: ../../app/models/ca_editor_ui_screens.php:1422
 msgid ""
@@ -23649,38 +23648,42 @@ msgid ""
 "the ^ character can be used to represent the value in the template. For "
 "example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Layout für das Los, wenn es in der Verlaufsliste angezeigt wird (kann HTML "
-"enthalten). Die Vorlage wird relativ zum Los bewertet. Elementcode-Tags, "
-"denen das Zeichen ^ vorangestellt ist, können verwendet werden, um den Wert "
-"in der Vorlage darzustellen. Zum Beispiel: <i>^ca_object_lots.idno_stub</i>."
+"Layout für das Konvolut, wenn es in der Verlaufsliste angezeigt wird (kann "
+"HTML enthalten). Die Vorlage wird relativ zum Konvolut ausgewertet. "
+"Elementcode-Tags, denen das Zeichen ^ vorangestellt ist, können verwendet "
+"werden, um den Wert in der Vorlage darzustellen. Zum Beispiel: "
+"<i>^ca_object_lots.idno_stub</i>."
 
 #: ../../app/models/ca_editor_ui_screens.php:1429
 msgid "Include history from lots (%1) related to child objects"
 msgstr ""
+"Inkludiere den Verlauf von Konvoluten (%1), die mit Unterobjekten verknüpft "
+"sind"
 
 #: ../../app/models/ca_editor_ui_screens.php:1430
 msgid ""
 "If checked history from lots that are related to sub-objects (children) is "
 "included."
 msgstr ""
+"Falls ausgewählt, wird der Verlauf von Konvoluten, die mit Unterobjekten "
+"verknüpft sind, inkludiert."
 
 #: ../../app/models/ca_editor_ui_screens.php:1437
-#, fuzzy
 msgid "Lot (%1) display template when related to child objects"
-msgstr "Anzeigevorlage für Los (%1)"
+msgstr "Anzeigevorlage für Konvolut (%1), falls mit Unterobjekten verknüpft"
 
 #: ../../app/models/ca_editor_ui_screens.php:1438
-#, fuzzy
 msgid ""
 "Layout for lot related to child objects, when displayed in history list (can "
 "include HTML). The template is evaluated relative to the lot. Element code "
 "tags prefixed with the ^ character can be used to represent the value in the "
 "template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Layout für das Los, wenn es in der Verlaufsliste angezeigt wird (kann HTML "
-"enthalten). Die Vorlage wird relativ zum Los bewertet. Elementcode-Tags, "
-"denen das Zeichen ^ vorangestellt ist, können verwendet werden, um den Wert "
-"in der Vorlage darzustellen. Zum Beispiel: <i>^ca_object_lots.idno_stub</i>."
+"Layout für das Konvolut, wenn es in der Verlaufsliste angezeigt wird (kann "
+"HTML enthalten). Die Vorlage wird relativ zum Konvolut ausgewertet. "
+"Elementcode-Tags, denen das Zeichen ^ vorangestellt ist, können verwendet "
+"werden, um den Wert in der Vorlage darzustellen. Zum Beispiel: "
+"<i>^ca_object_lots.idno_stub</i>."
 
 #: ../../app/models/ca_editor_ui_screens.php:1455
 msgid "Show occurrences"
@@ -23740,17 +23743,17 @@ msgstr "Vorlage anzeigen, um Abfrageergebnisbeschriftungen mit zu formatieren."
 #: ../../app/models/ca_editor_ui_screens.php:1569
 #: ../../app/models/ca_editor_ui_screens.php:1634
 #: ../../app/models/ca_editor_ui_screens.php:1701
-#, fuzzy
 msgid ""
 "Layout for %1 related to child objects, when displayed in history list (can "
 "include HTML). The template is evaluated relative to the lot. Element code "
 "tags prefixed with the ^ character can be used to represent the value in the "
 "template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
-"Layout für das Los, wenn es in der Verlaufsliste angezeigt wird (kann HTML "
-"enthalten). Die Vorlage wird relativ zum Los bewertet. Elementcode-Tags, "
-"denen das Zeichen ^ vorangestellt ist, können verwendet werden, um den Wert "
-"in der Vorlage darzustellen. Zum Beispiel: <i>^ca_object_lots.idno_stub</i>."
+"Layout für das Konvolut, wenn es in der Verlaufsliste angezeigt wird (kann "
+"HTML enthalten). Die Vorlage wird relativ zum Konvolut ausgewertet. "
+"Elementcode-Tags, denen das Zeichen ^ vorangestellt ist, können verwendet "
+"werden, um den Wert in der Vorlage darzustellen. Zum Beispiel: "
+"<i>^ca_object_lots.idno_stub</i>."
 
 #: ../../app/models/ca_editor_ui_screens.php:1521
 #, fuzzy
@@ -24049,7 +24052,7 @@ msgstr "Leihgaben ⇔ Bokabelbegriffe Beziehungen"
 
 #: ../../app/models/ca_object_lots.php:44
 msgid "object lot"
-msgstr "Konvolut"
+msgstr "Objektstapel"
 
 #: ../../app/models/ca_object_lots.php:45 ../../app/models/ca_editor_uis.php:85
 #: ../../app/models/ca_data_exporters.php:78
@@ -24067,7 +24070,7 @@ msgid ""
 "this lot"
 msgstr ""
 "Eindeutiger numerischer Bezeichner, der von CollectiveAccess intern "
-"verwendet wird, um dieses Los zu identifizieren"
+"verwendet wird, um dieses Konvolut zu identifizieren"
 
 #: ../../app/models/ca_object_lots.php:60
 msgid ""
@@ -24075,8 +24078,8 @@ msgid ""
 "\"instrinsic\" type that determines the set of descriptive and "
 "administrative metadata that can be applied to it."
 msgstr ""
-"Der Typ des Objektstapels. In CollectiveAccess verfügt jedes Los über einen "
-"einzigen \"instrinsic\" -Typ, der den Satz beschreibender und "
+"Der Typ des Objektstapels. In CollectiveAccess verfügt jedes Konvolut über "
+"einen einzigen \"instrinsic\" -Typ, der den Satz beschreibender und "
 "administrativer Metadaten bestimmt, die auf ihn angewendet werden können."
 
 #: ../../app/models/ca_object_lots.php:68 ../../app/models/ca_objects.php:213
@@ -24094,7 +24097,7 @@ msgstr ""
 
 #: ../../app/models/ca_object_lots.php:75
 msgid "Lot identifier"
-msgstr "Konvolutidentifikator"
+msgstr "Konvolut-Identifier"
 
 #: ../../app/models/ca_object_lots.php:75
 msgid "Unique alphanumeric code identifying the lot."
@@ -24125,11 +24128,11 @@ msgstr "Werteinheiten. (zB Stücke, Artikel, Komponenten, Rollen usw.)"
 #: ../../app/models/ca_object_lots.php:111
 msgid "Indicates if object lot is accessible to the public or not. "
 msgstr ""
-"Gibt an, ob das Objektlos für die Öffentlichkeit zugänglich ist oder nicht."
+"Gibt an, ob das Konvolut für die Öffentlichkeit zugänglich ist oder nicht."
 
 #: ../../app/models/ca_object_lots.php:126
 msgid "Indicates the current state of the object lot record."
-msgstr "Zeigt den aktuellen Status des Objektlosdatensatzes an."
+msgstr "Zeigt den aktuellen Status des Objektstapeldatensatzes an."
 
 #: ../../app/models/ca_object_lots.php:135
 msgid ""
@@ -24138,14 +24141,14 @@ msgid ""
 "originates, but can also be re-tasked for use as a simple classification "
 "tool if needed."
 msgstr ""
-"Verwaltungsquelle des Loses. Dieser Wert wird häufig verwendet, um die "
+"Verwaltungsquelle des Konvoluts. Dieser Wert wird häufig verwendet, um die "
 "administrative Unterteilung oder ältere Datenbank anzugeben, aus der das "
 "Objekt stammt, kann aber bei Bedarf auch als einfaches "
 "Klassifizierungswerkzeug erneut verwendet werden."
 
 #: ../../app/models/ca_object_lots.php:149
 msgid "Indicates if the object lot is deleted or not."
-msgstr "Gibt an, ob das Objektlos gelöscht wird oder nicht."
+msgstr "Gibt an, ob der Objektstapel gelöscht wird oder nicht."
 
 #: ../../app/models/ca_entities_x_vocabulary_terms.php:40
 msgid "entity ⇔ vocabulary term relationship"
@@ -24157,11 +24160,11 @@ msgstr "Entität ⇔ Vokabelbegriff Beziehungen"
 
 #: ../../app/models/ca_object_lots_x_entities.php:40
 msgid "object lot ⇔ entity relationship"
-msgstr "Objektlos ⇔ Entity-Beziehung"
+msgstr "Ojektstapel ⇔ Entity-Beziehung"
 
 #: ../../app/models/ca_object_lots_x_entities.php:41
 msgid "object lot ⇔ entity relationships"
-msgstr "Objektlos ⇔ Entitätenbeziehungen"
+msgstr "Objektstapel ⇔ Entitätenbeziehungen"
 
 #: ../../app/models/ca_movements_x_entities.php:40
 msgid "movements ⇔ entities relationship"
@@ -24226,11 +24229,11 @@ msgstr "Event ⇔ Standorte Beziehungen"
 
 #: ../../app/models/ca_object_lots_x_object_lots.php:40
 msgid "object lot ⇔ object lot relationship"
-msgstr "Objektlos ⇔ Objektlosbeziehung"
+msgstr "Objektstapel ⇔ Objektlosbeziehung"
 
 #: ../../app/models/ca_object_lots_x_object_lots.php:41
 msgid "object lot ⇔ object lot relationships"
-msgstr "Objektlos ⇔ Objektlosbeziehungen"
+msgstr "Objektstapel ⇔ Objektlosbeziehungen"
 
 #: ../../app/models/ca_bookmark_folders.php:40
 msgid "bookmark folder"
@@ -24516,7 +24519,7 @@ msgstr "Ui-Typeinschränkungen für den Editor"
 
 #: ../../app/models/ca_object_lots_x_occurrences.php:40
 msgid "object lot ⇔ occurrence relationship"
-msgstr "Objektlos ⇔ Vorkommensbeziehung"
+msgstr "Objektstapel ⇔ Vorkommensbeziehung"
 
 #: ../../app/models/ca_object_lots_x_occurrences.php:41
 msgid "object lot ⇔ occurrence relationships"
@@ -25927,8 +25930,8 @@ msgid ""
 "A list of Perl-compatible regular expressions. Each expression has two "
 "parts, a matching expression and a substitution expression, and is expressed "
 "as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. "
-"[{\"match\": \"([\\d]+)\\.([\\d]+)\", \"replaceWith\": \"\\1:\\2\"}, {\"match"
-"\": \"[^\\d:]+\", \"replaceWith\": \"\"}] "
+"[{\"match\": \"([\\d]+)\\.([\\d]+)\", \"replaceWith\": \"\\1:\\2\"}, "
+"{\"match\": \"[^\\d:]+\", \"replaceWith\": \"\"}] "
 msgstr ""
 "Eine Liste von Perl-kompatiblen regulären Ausdrücken. Jeder Ausdruck besteht "
 "aus zwei Teilen, einem übereinstimmenden Ausdruck und einem "
@@ -26767,8 +26770,8 @@ msgstr "Konvolut"
 #: ../../app/models/ca_objects.php:81
 msgid "Lot this object belongs to; is null if object is not part of a lot."
 msgstr ""
-"Lot, zu dem dieses Objekt gehört; ist null, wenn das Objekt nicht Teil einer "
-"Menge ist."
+"Konvolut, zu dem dieses Objekt gehört; ist null, wenn das Objekt nicht Teil "
+"eines Konvoluts ist."
 
 #: ../../app/models/ca_objects.php:98
 msgid ""
@@ -27661,11 +27664,11 @@ msgstr "Objekt-Repräsentation ⇔ Objekt-Repräsentation Beziehungen"
 
 #: ../../app/models/ca_object_lots_x_collections.php:40
 msgid "object lot ⇔ collection relationship"
-msgstr "Objektlos ⇔ Sammlungsbeziehung"
+msgstr "Objektstapel ⇔ Sammlungsbeziehung"
 
 #: ../../app/models/ca_object_lots_x_collections.php:41
 msgid "object lot ⇔ collection relationships"
-msgstr "Objektlos ⇔ Sammlungsbeziehungen"
+msgstr "Objektstapel ⇔ Sammlungsbeziehungen"
 
 #: ../../app/models/ca_objects_x_occurrences.php:40
 msgid "object ⇔ occurrence relationship"
@@ -27721,15 +27724,15 @@ msgstr "Datum/Uhrzeit, an dem das Lesezeichen erstellt wurde."
 
 #: ../../app/models/ca_object_lot_labels.php:41
 msgid "lot title"
-msgstr "Los-Titel"
+msgstr "Konvolut-Titel"
 
 #: ../../app/models/ca_object_lot_labels.php:42
 msgid "lot titles"
-msgstr "viele titel"
+msgstr "Konvolut-Titel"
 
 #: ../../app/models/ca_object_lot_labels.php:80
 msgid "Name of lot"
-msgstr "Name des Loses"
+msgstr "Name des Konvoluts"
 
 #: ../../app/models/ca_loans_x_places.php:40
 msgid "loans ⇔ places relationship"
@@ -28557,11 +28560,11 @@ msgstr ""
 
 #: ../../app/models/ca_loans_x_object_lots.php:40
 msgid "loans ⇔ object lots relationship"
-msgstr "Darlehen ⇔ Objektlose Beziehung"
+msgstr "Darlehen ⇔ Objektstapel Beziehung"
 
 #: ../../app/models/ca_loans_x_object_lots.php:41
 msgid "loans ⇔ object lots relationships"
-msgstr "Darlehen ⇔ Objektlose Beziehungen"
+msgstr "Darlehen ⇔ Objektstapel Beziehungen"
 
 #: ../../app/models/ca_data_importers.php:54
 msgid "data importer"
@@ -28882,8 +28885,8 @@ msgid ""
 "[loadImporterFromFile:%1] invalid json for refinery options for group %2/"
 "source %3 = %4"
 msgstr ""
-"[loadImporterFromFile: %1] Ungültige Raffinerieoptionen für Gruppe %2/Quelle"
-"%3 = %4"
+"[loadImporterFromFile: %1] Ungültige Raffinerieoptionen für Gruppe %2/"
+"Quelle%3 = %4"
 
 #: ../../app/models/ca_data_importers.php:960
 msgid "Warning: invalid options for environment %1."
@@ -29386,7 +29389,8 @@ msgstr ""
 #: ../../app/models/ca_data_importers.php:2768
 msgid "[%1] Could not add related object lot with relationship %2:"
 msgstr ""
-"[%1] Zugeordnetes Objektlos mit Beziehung %2 konnte nicht hinzugefügt werden:"
+"[%1] Zugeordneter Objektstapel konnte nicht mit Beziehung %2 hinzugefügt "
+"werden:"
 
 #: ../../app/models/ca_data_importers.php:2785
 msgid "[%1] Could not add related entity with relationship %2:"
@@ -29534,10 +29538,10 @@ msgstr "Benutzerklasse"
 
 #: ../../app/models/ca_users.php:71
 msgid ""
-"\"Full\" user accounts may log into all CollectiveAccess interfaces. \"Public"
-"\" user accounts may only log into the publicly accessible front-end system "
-"(if one exists). \"Deleted\" users may not log into any interface – the "
-"account is considered removed."
+"\"Full\" user accounts may log into all CollectiveAccess interfaces. "
+"\"Public\" user accounts may only log into the publicly accessible front-end "
+"system (if one exists). \"Deleted\" users may not log into any interface – "
+"the account is considered removed."
 msgstr ""
 "\"Vollständige\" Benutzerkonten können sich an allen CollectiveAccess-"
 "Schnittstellen anmelden. \"Öffentliche\" Benutzerkonten können sich nur bei "
@@ -30841,7 +30845,7 @@ msgstr "Suchen nach Orten"
 
 #: ../../app/widgets/savedSearches/views/main_html.php:58
 msgid "Object Lot Searches"
-msgstr "Suchen nach Konvoluten"
+msgstr "Suchen nach Konvoluten (Objektstapeln)"
 
 #: ../../app/widgets/savedSearches/views/main_html.php:63
 msgid "Storage Location Searches"
@@ -31277,9 +31281,8 @@ msgstr ""
 "anzeigt, um neue Objektdarstellungen im Dashboard aufzulisten."
 
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:239
-#, fuzzy
 msgid "Recently created: object lots"
-msgstr "Kürzlich erstelltes Widget"
+msgstr "Kürzlich erstellt: Objektstapel"
 
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:240
 msgid ""
@@ -31287,7 +31290,7 @@ msgid ""
 "lots in the dashboard."
 msgstr ""
 "Der Benutzer kann ein Widget verwenden, mit dem kürzlich erstellte Elemente "
-"angezeigt werden, um neue Objektlose im Dashboard aufzulisten."
+"angezeigt werden, um neue Objektstapel im Dashboard aufzulisten."
 
 #: ../../app/widgets/recentlyCreated/recentlyCreatedWidget.php:265
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:246
@@ -31425,9 +31428,8 @@ msgstr ""
 "anzeigt, um neue Objektdarstellungen im Dashboard aufzulisten."
 
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:212
-#, fuzzy
 msgid "Workflow status: object lots"
-msgstr "Objektlots durchsuchen"
+msgstr "Workflow status: Objektstapel"
 
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:213
 msgid ""
@@ -31435,7 +31437,7 @@ msgid ""
 "lots in the dashboard."
 msgstr ""
 "Der Benutzer kann ein Widget verwenden, das Datensätze nach Workflowstatus "
-"anzeigt, um neue Objektlose im Dashboard aufzulisten."
+"anzeigt, um neue Objektstapel im Dashboard aufzulisten."
 
 #: ../../app/widgets/recordsByStatus/recordsByStatusWidget.php:255
 msgid "Display status"
@@ -31448,8 +31450,8 @@ msgstr "Status zum Anzeigen"
 #: ../../app/widgets/recordsByStatus/views/main_html.php:39
 msgid ""
 "Showing %1 <span style='font-weight:bold; text-transform:lowercase;'>%2</"
-"span> with status <span style='font-weight:bold; text-transform:lowercase;'>"
-"\"%3\"</span>"
+"span> with status <span style='font-weight:bold; text-transform:"
+"lowercase;'>\"%3\"</span>"
 msgstr ""
 "%1 <span style='font-weight:bold; text-transform:lowercase;'>%2</span> mit "
 "Status <span style='font-weight:bold; text-transform:lowercase;'>\"%3\"</"
@@ -31874,7 +31876,7 @@ msgstr "Ungültige Erläuterungs_ID"
 
 #: ../../app/controllers/editor/object_lots/ObjectLotEditorController.php:78
 msgid "Renumbered contents of lot"
-msgstr "Die Inhalte dieser Erwerbung wurden neu durchnummeriert"
+msgstr "Neu nummerierter Inhalt des Konvoluts"
 
 #: ../../app/controllers/editor/object_lots/ObjectLotEditorController.php:94
 #: ../../app/controllers/manage/sets/SetEditorController.php:196
@@ -32990,9 +32992,9 @@ msgstr ""
 #, fuzzy
 msgid ""
 "List indicating sequence of checks for an existing record; values of array "
-"can be \"preferred_labels\" (or \"label\"), \"nonpreferred_labels\", \"idno"
-"\" or a metadata element code. Ex. array(\"idno\", \"label\") will first try "
-"to match on idno and then label if the first match fails"
+"can be \"preferred_labels\" (or \"label\"), \"nonpreferred_labels\", "
+"\"idno\" or a metadata element code. Ex. array(\"idno\", \"label\") will "
+"first try to match on idno and then label if the first match fails"
 msgstr ""
 "Liste, die die Reihenfolge der Prüfungen für einen vorhandenen Datensatz "
 "angibt; Array Werte können \"Label\" und \"Idno\" sein. Ex. array (\"idno\", "
@@ -33553,7 +33555,7 @@ msgstr "Standardwerte für zugeordnete Werte."
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:35
 msgid "Object lot splitter"
-msgstr "Objektlotteiler"
+msgstr "Objektstapelteiler"
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:36
 msgid ""
@@ -33561,13 +33563,14 @@ msgid ""
 "a string into individual values, mapping of type and relationship type for "
 "related lots, and merging lot data with lot names."
 msgstr ""
-"Bietet mehrere lot-bezogene Importfunktionen: Aufteilen mehrerer Lots in "
-"einer Zeichenfolge in einzelne Werte, Zuordnen von Typ und Beziehungstyp für "
-"verwandte Lots und Zusammenführen von Losdaten mit Losnamen."
+"Bietet mehrere Konvolut-bezogene Importfunktionen: Aufteilen mehrerer "
+"Konvolute in einer Zeichenfolge in einzelne Werte, Zuordnen von Typ und "
+"Beziehungstyp für verwandte Konvolute und Zusammenführen von Konvoluten über "
+"Konvolutnamen."
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:135
 msgid "Lot type"
-msgstr "Art des Loses"
+msgstr "Konvolut-Typ"
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:136
 msgid ""
@@ -33580,7 +33583,7 @@ msgstr ""
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:144
 msgid "Lot status"
-msgstr "Losstatus"
+msgstr "Konvolutstatus"
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:145
 msgid ""
@@ -33596,13 +33599,13 @@ msgid ""
 "Sets or maps metadata for the lot record by referencing the metadataElement "
 "code and the location in the data source where the data values can be found."
 msgstr ""
-"Legt Metadaten für den Losdatensatz fest oder ordnet diese zu, indem auf den "
-"MetadataElement-Code und den Speicherort in der Datenquelle verwiesen wird, "
-"an dem die Datenwerte gefunden werden können."
+"Legt Metadaten für den Konvolut-Datensatz fest oder ordnet diese zu, indem "
+"auf den MetadataElement-Code und den Speicherort in der Datenquelle "
+"verwiesen wird, an dem die Datenwerte gefunden werden können."
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:171
 msgid "Lot type default"
-msgstr "Losart Standard"
+msgstr "Default Konvolut-Typ"
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:172
 msgid ""
@@ -33616,7 +33619,7 @@ msgstr ""
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:180
 msgid "Lot status default"
-msgstr "Losstatus standardmäßig"
+msgstr "Default Konvolut-Typ"
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:181
 msgid ""
@@ -33634,14 +33637,15 @@ msgid ""
 "by referencing the metadataElement code and the location in the data source "
 "where the data values can be found."
 msgstr ""
-"Legt Metadaten für den Datensatz für die Interstitial-Los-<em>Beziehung</em> "
-"fest oder ordnet diese zu, indem auf den MetadataElement-Code und die "
-"Position in der Datenquelle verwiesen wird, an der die Datenwerte gefunden "
-"werden können."
+"Legt Metadaten für den Datensatz für die <em>Beziehung</em> zwischen "
+"Konvoluten fest oder ordnet diese zu, indem auf den MetadataElement-Code und "
+"die Position in der Datenquelle verwiesen wird, an der die Datenwerte "
+"gefunden werden können."
 
 #: ../../app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:199
 msgid "List of non-preferred labels to apply to lots."
-msgstr "Liste der nicht bevorzugten Etiketten für Lose."
+msgstr ""
+"Liste der nicht bevorzugten Bezeichnungen, die auf Konvolute anzuwenden sind."
 
 #: ../../app/refineries/objectSplitter/objectSplitterRefinery.php:35
 msgid "Object splitter"
@@ -34211,9 +34215,10 @@ msgstr ""
 #, fuzzy
 msgid ""
 "List indicating sequence of checks for an existing record; values of array "
-"can be \"label\", \"idno\" or \"displayname\". Ex. array(\"idno\", \"label"
-"\", \"displayname\") will first try to match on idno and label [forename, "
-"surname] if the first match fails, then finally the displayname field"
+"can be \"label\", \"idno\" or \"displayname\". Ex. array(\"idno\", "
+"\"label\", \"displayname\") will first try to match on idno and label "
+"[forename, surname] if the first match fails, then finally the displayname "
+"field"
 msgstr ""
 "Liste, die die Reihenfolge der Prüfungen für einen vorhandenen Datensatz "
 "angibt; Array Werte können \"Label\" und \"Idno\" sein. Ex. array (\"idno\", "
@@ -34434,8 +34439,8 @@ msgid ""
 "available values are \"null\" (the default) and \"original\""
 msgstr ""
 "Legt fest, was zurückgegeben werden soll, wenn das Eingabedatum nicht "
-"analysiert werden kann und die verfügbaren Werte \"null"
-"\" (Standardeinstellung) und \"original\" sind."
+"analysiert werden kann und die verfügbaren Werte "
+"\"null\" (Standardeinstellung) und \"original\" sind."
 
 #: ../../app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:164
 msgid "Unknown Accuracy Value Return Mode"
@@ -35726,7 +35731,7 @@ msgstr "Darstellungsanmerkungen"
 #: ../../app/conf/navigation.conf:1028 ../../app/conf/navigation.conf:1202
 #: ../../app/conf/navigation.conf:3409
 msgid "Lots"
-msgstr "Viele"
+msgstr "Konvolute"
 
 #: ../../app/conf/navigation.conf:1047 ../../app/conf/navigation.conf:1094
 #: ../../app/conf/navigation.conf:1246 ../../app/conf/navigation.conf:1407
@@ -36762,9 +36767,8 @@ msgstr ""
 "Konvolut dupliziert."
 
 #: ../../app/conf/user_pref_defs.conf:614
-#, fuzzy
 msgid "Duplicate lot metadata?"
-msgstr "Metadaten duplizieren?"
+msgstr "Konvolut-Metadaten duplizieren?"
 
 #: ../../app/conf/user_pref_defs.conf:615
 #, fuzzy
@@ -36774,9 +36778,8 @@ msgstr ""
 "dupliziert."
 
 #: ../../app/conf/user_pref_defs.conf:653
-#, fuzzy
 msgid "Duplicate lot child records?"
-msgstr "Konvolute duplizieren"
+msgstr "Konvolut-Unterobjekte duplizieren?"
 
 #: ../../app/conf/user_pref_defs.conf:654
 #, fuzzy
@@ -38081,21 +38084,21 @@ msgstr ""
 
 #: ../../app/conf/user_actions.conf:416
 msgid "Object lot editing"
-msgstr "Objektlosbearbeitung"
+msgstr "Objektstapelbearbeitung"
 
 #: ../../app/conf/user_actions.conf:417
 msgid "Actions allowing creation, editing and deletion of object lots."
 msgstr ""
-"Aktionen, die das Erstellen, Bearbeiten und Löschen von Objektchargen "
+"Aktionen, die das Erstellen, Bearbeiten und Löschen von Objektstapeln "
 "ermöglichen."
 
 #: ../../app/conf/user_actions.conf:420
 msgid "Create object lot"
-msgstr "Objektlos erstellen"
+msgstr "Objektstapel erstellen"
 
 #: ../../app/conf/user_actions.conf:421
 msgid "Allow user to create new object lots"
-msgstr "Erlauben Sie dem Benutzer, neue Objektlose zu erstellen"
+msgstr "Erlauben Sie dem Benutzer, neue Objektstapel zu erstellen"
 
 #: ../../app/conf/user_actions.conf:424
 msgid "Edit object lot"
@@ -38103,7 +38106,7 @@ msgstr "Objektstapel bearbeiten"
 
 #: ../../app/conf/user_actions.conf:425
 msgid "Allow user to edit existing object lots"
-msgstr "Erlaube dem Benutzer, vorhandene Objektlose zu bearbeiten"
+msgstr "Erlaube dem Benutzer, vorhandene Objektstapel zu bearbeiten"
 
 #: ../../app/conf/user_actions.conf:428
 msgid "Delete object lot"
@@ -38111,24 +38114,23 @@ msgstr "Objektstapel löschen"
 
 #: ../../app/conf/user_actions.conf:429
 msgid "Allow user to delete object lots"
-msgstr "Benutzer dürfen Objektlose löschen"
+msgstr "Benutzer dürfen Objektstapel löschen"
 
 #: ../../app/conf/user_actions.conf:432
 msgid "Search object lots"
-msgstr "Objektlots suchen"
+msgstr "Objektstapel suchen"
 
 #: ../../app/conf/user_actions.conf:433
 msgid "Allow user to search object lots"
-msgstr "Erlauben Sie dem Benutzer, Objektlose zu suchen"
+msgstr "Erlaube dem Benutzer, Objektstapel zu suchen"
 
 #: ../../app/conf/user_actions.conf:436
-#, fuzzy
 msgid "Browse object lots"
-msgstr "Konvolute"
+msgstr "Konvolute durchsehen"
 
 #: ../../app/conf/user_actions.conf:437
 msgid "Allow user to browse object lots"
-msgstr "Benutzer dürfen Objektlose durchsuchen"
+msgstr "Erlaube Benutzern, Objektstapel durchzusehen"
 
 #: ../../app/conf/user_actions.conf:440
 msgid "Duplicate object lots"
@@ -38136,15 +38138,15 @@ msgstr "Konvolute duplizieren"
 
 #: ../../app/conf/user_actions.conf:441
 msgid "Allow user to duplicate object lots"
-msgstr "Erlauben Sie dem Benutzer, Objektlose zu duplizieren"
+msgstr "Erlauben Sie dem Benutzer, Objektstapel zu duplizieren"
 
 #: ../../app/conf/user_actions.conf:444
 msgid "Export object lots"
-msgstr "Objektlose exportieren"
+msgstr "Objektstapel exportieren"
 
 #: ../../app/conf/user_actions.conf:445
 msgid "Allow user to export object lots"
-msgstr "Benutzer dürfen Objektlose exportieren"
+msgstr "ERlaube Benutzer dürfen Objektstapel zu exportieren"
 
 #: ../../app/conf/user_actions.conf:448
 msgid "Quick add object lots"
@@ -38155,25 +38157,25 @@ msgid ""
 "Allow user to add object lots not already present while creating "
 "relationships"
 msgstr ""
-"Benutzer dürfen Objektlose hinzufügen, die beim Erstellen von Beziehungen "
+"Benutzer dürfen Objektstapel hinzufügen, die beim Erstellen von Beziehungen "
 "nicht bereits vorhanden sind"
 
 #: ../../app/conf/user_actions.conf:453
 msgid "Allow user to change types of existing object lots"
 msgstr ""
-"Erlauben Sie dem Benutzer, die Typen der vorhandenen Objektlose zu ändern"
+"Erlauben Sie dem Benutzer, die Typen der vorhandenen Objektstapeln zu ändern"
 
 #: ../../app/conf/user_actions.conf:457
 msgid "Allow user to manage access control lists for object lots"
-msgstr "Benutzer dürfen Zugriffssteuerungslisten für Objektlose verwalten"
+msgstr "Benutzer dürfen Zugriffssteuerungslisten für Objektstapel verwalten"
 
 #: ../../app/conf/user_actions.conf:460
 msgid "Batch edit object lots"
-msgstr "Stapelbearbeitung von Objektchargen"
+msgstr "Stapelbearbeitung von Objektstapeln"
 
 #: ../../app/conf/user_actions.conf:461
 msgid "Allow user to edit batches of object lots"
-msgstr "Benutzer dürfen Stapel von Objektchargen bearbeiten"
+msgstr "Benutzer dürfen Stapel von Objektstapeln bearbeiten"
 
 #: ../../app/conf/user_actions.conf:464
 msgid "Batch delete object lots"
@@ -38181,11 +38183,11 @@ msgstr "Stapelweise Konvolute löschen"
 
 #: ../../app/conf/user_actions.conf:465
 msgid "Allow user to delete batches of object lots"
-msgstr "Benutzer dürfen Stapel von Objektchargen löschen"
+msgstr "Benutzer dürfen Stapel von Objektstapeln löschen"
 
 #: ../../app/conf/user_actions.conf:469
 msgid "Allow user to view lot change logs"
-msgstr "Erlaube dem Benutzer das Anzeigen der Änderungsprotokolle"
+msgstr "Erlaube dem Benutzer das Anzeigen der Konvolut-Änderungsprotokolle"
 
 #: ../../app/conf/user_actions.conf:475
 msgid "Entity authority editing"
