@@ -671,6 +671,27 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Treat value as identifiers for multiple rows'),
 			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
 		);
+		
+		$settings['treatAsIdnosForMultipleRows'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Treat value as identifiers for multiple rows'),
+			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
+		);
+		
+		$settings['treatAsIdsForMultipleRows'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Treat value as CollectiveAccess IDs for multiple rows'),
+			'description' => _t('Explode value on delimiter and use as CollectiveAccess IDs for multiple rows.')
+		);
+		
 		$settings['displaynameFormat'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
