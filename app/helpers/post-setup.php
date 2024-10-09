@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 #
 # __CA_BASE_DIR__ = the absolute server path to the directory containing your CollectiveAccess installation
 #
@@ -59,6 +58,54 @@ if (!defined("__CA_LIB_DIR__")) {
 # Path to CollectiveAccess 'lib' directory containing software libraries CA needs to function
 if (!defined("__CA_CONF_DIR__")) {
 	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
+}
+
+# --------------------------------------------------------------------------------------------
+# Caching configuration
+# The default file-based caching should work fine in most setups
+# but if you want to use memcached or php APC instead, configure them here
+
+# Backend to use. Available options are: 'file', 'memcached', 'redis', and 'apc'
+# Note that memcached, redis and apc require PHP extensions that are not
+# part of the standard CollectiveAccess configuration check. If you do
+# configure them here and your setup doesn't have the extension, you
+# may see critical errors.
+if (!defined('__CA_CACHE_BACKEND__')) { 
+	define('__CA_CACHE_BACKEND__', 'file');
+}
+
+# File path for file-based caching. The default works but in some setups you may want to move this
+# to the fastest available storage (in terms of random access time), like an SSD
+if (!defined('__CA_CACHE_FILEPATH__')) { 
+	define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+}
+
+# Time-to-live for cache items (in seconds)
+if (!defined('__CA_CACHE_TTL__')) { 
+	define('__CA_CACHE_TTL__', 3600);
+}
+
+# Host and port for memcached
+if (!defined('__CA_MEMCACHED_HOST__')) { 
+	define('__CA_MEMCACHED_HOST__', 'localhost');
+}
+if (!defined('__CA_MEMCACHED_PORT__')) { 
+	define('__CA_MEMCACHED_PORT__', 11211);
+}
+
+# Host and port for redis
+if (!defined('__CA_REDIS_HOST__')) { 
+	define('__CA_REDIS_HOST__', 'localhost');
+}
+if (!defined('__CA_REDIS_PORT__')) { 
+	define('__CA_REDIS_PORT__', 6379);
+}
+
+# Redis database index. This is useful if you want to use your Redis instance for several 
+# applications. Redis is usually set up with 16 databases, indexed 0 through 15. 
+# CollectiveAccess will use the first (index 0) unless told otherwise.
+if (!defined('__CA_REDIS_DB__')) { 
+	define('__CA_REDIS_DB__', 0);
 }
 
 #
@@ -327,56 +374,6 @@ if (!defined("__CA_SMTP_XOAUTH_EMAIL__")) {
 if (!defined("__CA_SMTP_XOAUTH_REFRESH_TOKEN__")) {
 	define("__CA_SMTP_XOAUTH_REFRESH_TOKEN__", '');
 }
-
-
-# --------------------------------------------------------------------------------------------
-# Caching configuration
-# The default file-based caching should work fine in most setups
-# but if you want to use memcached or php APC instead, configure them here
-
-# Backend to use. Available options are: 'file', 'memcached', 'redis', and 'apc'
-# Note that memcached, redis and apc require PHP extensions that are not
-# part of the standard CollectiveAccess configuration check. If you do
-# configure them here and your setup doesn't have the extension, you
-# may see critical errors.
-if (!defined('__CA_CACHE_BACKEND__')) { 
-	define('__CA_CACHE_BACKEND__', 'file');
-}
-
-# File path for file-based caching. The default works but in some setups you may want to move this
-# to the fastest available storage (in terms of random access time), like an SSD
-if (!defined('__CA_CACHE_FILEPATH__')) { 
-	define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
-}
-
-# Time-to-live for cache items (in seconds)
-if (!defined('__CA_CACHE_TTL__')) { 
-	define('__CA_CACHE_TTL__', 3600);
-}
-
-# Host and port for memcached
-if (!defined('__CA_MEMCACHED_HOST__')) { 
-	define('__CA_MEMCACHED_HOST__', 'localhost');
-}
-if (!defined('__CA_MEMCACHED_PORT__')) { 
-	define('__CA_MEMCACHED_PORT__', 11211);
-}
-
-# Host and port for redis
-if (!defined('__CA_REDIS_HOST__')) { 
-	define('__CA_REDIS_HOST__', 'localhost');
-}
-if (!defined('__CA_REDIS_PORT__')) { 
-	define('__CA_REDIS_PORT__', 6379);
-}
-
-# Redis database index. This is useful if you want to use your Redis instance for several 
-# applications. Redis is usually set up with 16 databases, indexed 0 through 15. 
-# CollectiveAccess will use the first (index 0) unless told otherwise.
-if (!defined('__CA_REDIS_DB__')) { 
-	define('__CA_REDIS_DB__', 0);
-}
-
 
 #
 # Access control constants - declared here to ensure
