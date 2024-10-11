@@ -1672,7 +1672,6 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	font-size:30px;
 }
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-
 	white-space: nowrap;
 	cursor: pointer;
 	color: #222;
@@ -1693,7 +1692,7 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	border: none;
 	vertical-align: text-top;
 	zoom: 1;
-	padding: 3px 12px 0px 6px;
+	padding: 1px 12px 0px 6px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -7144,7 +7143,7 @@ div.exporterUploadText, div.importerUploadText {
     font-size:13px;
 }
 
-/** Object location tracking **/
+/** History tracking **/
 .caHistoryTrackingCurrent {
     position: relative;
 	padding: 10px;
@@ -7259,6 +7258,36 @@ div.caHistoryTrackingHierarchyBrowser {
 
 table.caHistoryTrackingUpdateLocationMetadata tr td {
 	vertical-align: middle;
+}
+
+/** History tracking current contents */
+.caHistoryTrackingCurrentContentsControls{
+	display:flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-evenly;
+	align-items: flex-start;
+	
+	clear:both;
+	background-color:#fbfbfb;
+	padding:  8px 7px 0px 7px;
+	position:relative;
+	font-weight:normal;
+	font-size:11px;
+	line-height:1em;
+	margin-top: 0px;
+}
+
+.caHistoryTrackingCurrentContentsControls .editorBundlePrintControl {
+	font-size: 11px;
+	font-weight: normal;
+}
+
+.caHistoryTrackingCurrentContentsControls .editorBundlePrintControl a.form-button, .caHistoryTrackingCurrentContentsControls .editorBundleReturnToHomeControl a.form-button, .caHistoryTrackingCurrentContentsControls .editorBundleSortControl a.form-button {
+	height:auto;
+	vertical-align:top;
+	padding:0px;
+	margin: 0px 0px 0px 0px;
 }
 
 /** Metadata dictionary **/
@@ -8481,5 +8510,3 @@ div.searchResultDesc ul {
 #algebraSetControls {
 	display: none;
 }
-
-

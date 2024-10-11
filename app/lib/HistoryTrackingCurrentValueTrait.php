@@ -332,6 +332,22 @@ trait HistoryTrackingCurrentValueTrait {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return list of tables targetted by polcies
+	 *
+	 * @return array List of tables targeted by policies
+	 */
+	static public function getHistoryTrackingCurrentValuePolicyTargets() : array {
+		$tables = [];
+		if (is_array($history_tracking_policies = self::getHistoryTrackingCurrentValuePolicyConfig())) {
+			foreach($history_tracking_policies['policies'] ?? [] as $p) {
+				if(!isset($p['table'])) { continue; }
+				$tables[$p['table']] = true;
+			}
+		}
+		return array_keys($tables);;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Return default policy for table. This is a non-static version of getDefaultHistoryTrackingCurrentValuePolicyForTable()
 	 *
 	 * @return string Policy name
@@ -2218,6 +2234,10 @@ trait HistoryTrackingCurrentValueTrait {
 	 * @param array $options Array of options. Options include:
 	 *		row_id = 
 	 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
+	 *		start = 
+	 *		limit = 
+	 *		sort =
+	 *		sortDirection = 
 	 *
 	 * @return SearchResult 
 	 */
@@ -2236,6 +2256,10 @@ trait HistoryTrackingCurrentValueTrait {
 	 * @param array $options Array of options. Options include:
 	 *		returnHistoryTrackingData = Return arrray with internal history tracking data. [Default is false]
 	 *		idsOnly = 
+	 *		start = 
+	 *		limit = 
+	 *		sort =
+	 *		sortDirection = 
 	 *
 	 * @return SearchResult 
 	 */
@@ -2263,11 +2287,24 @@ trait HistoryTrackingCurrentValueTrait {
 			$ids = $ids_filtered;
 		}
 		
-		if(caGetOption('idsOnly', $options, false)) { return $ids; }
+		$start = caGetOption('start', $options, 0);
+		$limit = caGetOption('limit', $options, null);
+		
+		if(caGetOption('idsOnly', $options, false)) { 
+			if(($start > 0) || ($limit > 0)) {
+				$ids = array_slice($ids, $start, $limit);
+			}
+			return $ids; 
+		}
 		if(!is_array($row = array_shift($values))) { return null; }
 
 		if(!isset($row['table_num']) || !($table_name = Datamodel::getTableName($row['table_num']))) { return null; }
-		return caMakeSearchResult($table_name, $ids, ['transaction' => $this->getTransaction()]);
+		return caMakeSearchResult($table_name, $ids, [
+			'transaction' => $this->getTransaction(), 
+			'sort' => caGetOption('sort', $options, null),
+			'start' => $start, 'limit' => $limit,
+			'sortDirection' => caGetOption('sortDirection', $options, null)
+		]);
 	}
 	# ------------------------------------------------------
 	/**
@@ -2562,33 +2599,76 @@ trait HistoryTrackingCurrentValueTrait {
 	 *
 	 * @return string Rendered HTML bundle
 	 */
-	public function getHistoryTrackingCurrentContentsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+	public function getHistoryTrackingCurrentContentsHTMLFormBundle($request, $form_name, $placement_code, $bundle_settings=null, $options=null) {
 		global $g_ui_locale;
 		
-		if (!($policy = caGetOption('policy', $pa_options, caGetOption('policy', $pa_bundle_settings, null)))) { 
+		if (!($policy = caGetOption('policy', $options, caGetOption('policy', $bundle_settings, null)))) { 
 			return null;
 		}
 		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		$start = caGetOption('start', $options, 0);
+		$limit = caGetOption('limit', $options, caGetOption('numPerPage', $bundle_settings, null));
+		
+		$o_view = new View($request, $request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('policy', $policy);
-		$o_view->setVar('policy_info', self::getHistoryTrackingCurrentValuePolicy($policy));
+		$o_view->setVar('policy_info', $policy_info = self::getHistoryTrackingCurrentValuePolicy($policy));
+		$o_view->setVar('target', $target = ($policy_info['table'] ?? null));
 
-		if(!is_array($pa_options)) { $pa_options = []; }
+		if(!is_array($options)) { $options = []; }
 	
-		$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
+		$o_view->setVar('id_prefix', $form_name);
+		$o_view->setVar('placement_code', $placement_code);		// pass placement code
 	
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$bundle_settings['sort'] = $bundle_settings["sort_{$target}"] ?? null;
+		$bundle_settings['allowedSorts'] = $bundle_settings["allowedSorts_{$target}"] ?? null;
 	
-		$o_view->setVar('settings', $pa_bundle_settings);
+		$o_view->setVar('settings', $bundle_settings);
 	
-		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 		$o_view->setVar('t_subject', $this);
 	
-		$o_view->setVar('qr_result', $this->getContents($policy, $pa_bundle_settings));	
+		if(!($sort = $request->getParameter('sort', pString))) {
+			$sort = $bundle_settings['sort'] ?? null;
+		}
+		if(!($sort_direction = $request->getParameter('sortDirection', pString))) {
+			$sort_direction = $bundle_settings['sortDirection'] ?? null;
+		}
+		$o_view->setVar('sort', $sort);
+		$o_view->setVar('sortDirection', $sort_direction);
+		
+		$values = $this->getHistoryTrackingCurrentContentsValues($request, $policy, array_merge(
+			$bundle_settings,
+			['sort' => $sort, 'sortDirection' => $sort_direction]
+		));
+		$qr_all = $this->getContents($policy, array_merge($bundle_settings, ['start' => 0, 'limit' => null]));
+		$o_view->setVar('total', $qr_all ? $qr_all->numHits() : 0);
+		
+		$o_view->setVar('qr_result', $values['result']);	
+		$o_view->setVar('initialValues', $values['initialValues']);
 	
 		return $o_view->render('history_tracking_current_contents.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getHistoryTrackingCurrentContentsValues($request, $policy, $bundle_settings) {
+		if(!($bundle_settings['sort'] = caGetOption('sort', $bundle_settings, null))) {
+			$bundle_settings['sort'] = $request->getParameter('sort', pString);
+		}
+		
+		if(!($bundle_settings['sortDirection'] = caGetOption('sortDirection', $bundle_settings, null))) {
+			$bundle_settings['sortDirection'] = $request->getParameter('sortDirection', pString);
+		}
+		$start = (int)$request->getParameter('start', pInteger);
+		$limit = $bundle_settings['numPerPage'] ?? $request->getParameter('limit', pInteger) ?? 10;
+		
+		$qr_result = $this->getContents($policy, array_merge($bundle_settings, ['start' => $start, 'limit' => $limit]));	
+	
+		$bundle_settings['template'] = $bundle_settings['displayTemplate'] ?? null;
+		$initial_values = caProcessRelationshipLookupLabel($qr_result, Datamodel::getInstance($qr_result->tableName()), $bundle_settings);
+
+		return ['initialValues' => $initial_values, 'result' => $qr_result];
 	}
 	# ------------------------------------------------------
 	/**
