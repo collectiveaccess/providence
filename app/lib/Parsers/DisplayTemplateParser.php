@@ -2068,6 +2068,15 @@ class DisplayTemplateParser {
 	static private function _setPrimaryRepresentationFiltering($res, $value) {
 		if (!is_a($res, "SearchResult") || !method_exists($res, "filterNonPrimaryRepresentations")) { return null; }
 		
+		// Don't filter non-primary representation when template is written relative to a representation or non-object-object-representation
+		// relationship. Doing filtering in this contexts generates seemingly incomprehensible results.
+		if(in_array($res->tableName(), [
+			'ca_object_representations', 'ca_object_representations_x_entities', 'ca_object_representations_x_occurrences', 'ca_object_representations_x_places', 
+			'ca_object_representations_x_collections', 'ca_object_representations_x_storage_locations', 
+			'ca_object_representations_x_object_representations', 'ca_object_representations_x_vocabulary_terms'
+		])) {
+			$value = false;
+		}
 	 	$filter_opt = $value;
 	 	$filter = true;
         if(!is_null($filter_opt) && (!(bool)$filter_opt || ($filter_opt === '0') || (strtolower($filter_opt) === 'no'))) { $filter = false; }
