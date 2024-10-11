@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_NUMERIC__", 12);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -208,7 +204,7 @@ class NumericAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
 		global $g_ui_locale;
-		$this->ops_text_value = (strlen($pa_value_array['value_longtext1']) && is_numeric($pa_value_array['value_longtext1'])) ? Zend_Locale_Format::toNumber((float)$pa_value_array['value_longtext1'], ['locale' => $g_ui_locale]) : null;
+		$this->ops_text_value = (strlen($pa_value_array['value_longtext1']) && is_numeric($pa_value_array['value_longtext1'])) ? Zend_Locale_Format::toNumber((float)$pa_value_array['value_longtext1'], ['locale' => $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US')]) : null;
 		$this->opn_numeric_value = $pa_value_array['value_decimal1'];
 	}
 	# ------------------------------------------------------------------
