@@ -344,7 +344,7 @@ trait HistoryTrackingCurrentValueTrait {
 				$tables[$p['table']] = true;
 			}
 		}
-		return array_keys($tables);;
+		return array_keys($tables);
 	}
 	# ------------------------------------------------------
 	/**
@@ -2852,15 +2852,16 @@ trait HistoryTrackingCurrentValueTrait {
 				if (method_exists($this, "getContents")) {
 					$policy = caGetOption('policy', $pa_options, null);
 					$p = self::getHistoryTrackingCurrentValuePolicy($policy);
+					$target = $p['table'] ?? null;
 					$contents_config = caGetOption('contents', $p, []);
 					$pa_options['expandHierarchically'] = caGetOption('expandHierarchically', $contents_config, false);
-					if ($qr = $this->getContents($policy, ['row_id' => $pn_row_id], $pa_options)) {
-						$template = caGetOption('template', $contents_config, "<l>$p[table].preferred_labels </l>");
-						$delimiter = caGetOption('delimiter', $contents_config, "; ");
-						while($qr->nextHit()) { 
-							$contents[] = $qr->getWithTemplate($template);
-						}
-						$v =  join($delimiter, $contents);
+					if ($ids = $this->getContents($policy, array_merge($pa_options, ['idsOnly' => true, 'row_id' => $pn_row_id]))) { 
+						$sort = caGetOption('sort', $contents_config, $pa_options["sort_{$target}"] ?? '; '); 
+						$sort_direction = caGetOption('sortDirection', $contents_config, $pa_options['sortDirection'] ?? '; ');
+						$template = caGetOption('template', $contents_config, $this->getAppConfig()->get("{$target}_hierarchy_browser_display_settings")); 
+						$delimiter = caGetOption('delimiter', $contents_config, $pa_options['delimiter'] ?? '; ');
+						$values = caProcessTemplateForIDs($template, $target, $ids, array_merge($pa_options, ['sort' => $sort, 'sortDirection' => $sort_direction, 'returnAsArray' => true]));
+						$v =  join($delimiter, $values);
 						if($for_report) { $v = self::_filterValueForReport($v); }
 						return $v;
 					}

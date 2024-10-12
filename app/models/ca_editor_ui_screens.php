@@ -1123,7 +1123,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									_t('Descending') => 'DESC'
 								),
 								'label' => _t('Initial sort direction'),
-								'description' => _t('Direction of sort, when not in a user-specified order.')
+								'description' => _t('Direction of sort, when sort is specified.')
 							),
 							'disableSorts' => array(
 								'formatType' => FT_TEXT,
@@ -2163,7 +2163,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											_t('Descending') => 'DESC'
 										),
 										'label' => _t('Initial sort direction'),
-										'description' => _t('Direction of sort, when not in a user-specified order.')
+										'description' => _t('Direction of sort, when sort is specified.')
 									),
 								);
 								$policy_tables = ca_objects::getHistoryTrackingCurrentValuePolicyTargets();
@@ -2178,7 +2178,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'label' => _t('Initially sort %1 policies using', $tl),
 										'showSortableBundlesFor' => ['table' => $t],
-										'description' => _t('Method used to sort .')
+										'description' => _t('Default sort for %1 policies.', $tl)
 									];
 								}
 								foreach($policy_tables as $t) {
