@@ -52,7 +52,6 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
- 		AssetLoadManager::register('maps');
  		AssetLoadManager::register('leaflet');
  		AssetLoadManager::register('3dmodels');
 
