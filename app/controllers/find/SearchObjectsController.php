@@ -170,7 +170,7 @@ class SearchObjectsController extends BaseSearchController {
 					'action:can_search_ca_objects' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_objects_no_search_builder_for_types:ca_objects' => 'AND',
-					'configuration:!ca_objects_disable_searchbuilder' => 'AND'
+					'configuration:!ca_objects_disable_search_builder' => 'AND'
 				]
 			],
 			[

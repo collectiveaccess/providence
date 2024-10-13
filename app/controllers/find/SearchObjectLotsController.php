@@ -129,7 +129,7 @@ class SearchObjectLotsController extends BaseSearchController {
 					'action:can_search_ca_object_lots' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_object_lots_no_search_builder_for_types:ca_object_lots' => 'AND',
-					'configuration:!ca_object_lots_disable_searchbuilder' => 'AND'
+					'configuration:!ca_object_lots_disable_search_builder' => 'AND'
 				]
 			],
 			[

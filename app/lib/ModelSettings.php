@@ -692,7 +692,7 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
 					} elseif (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
 						$va_select_opts = array_merge([
-							_t('User defined sort order') => ''
+							_t('-') => ''
 						], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
 						
 						$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });

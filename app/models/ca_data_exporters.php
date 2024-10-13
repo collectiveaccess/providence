@@ -2527,7 +2527,7 @@ itemOutput:
 	 * 
 	 * @return null|string
 	 */
-	public function getTargetTableName() : ?BaseModel {
+	public function getTargetTableName() : ?string {
 		if(!$this->getPrimaryKey()) { return null; }
 
 		return Datamodel::getTableName($this->get('table_num'));
