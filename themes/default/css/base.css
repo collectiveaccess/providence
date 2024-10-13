@@ -5330,7 +5330,9 @@ table.uiScreenItem .fa{
 #dashboardControls {text-align: right; padding:0px 0px 0px 10px;}
 a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none; font-size:11px; color: #777;}
 
-.portlet { margin:.5em 1em .5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
+.portlet { 
+    margin:.5em 1em .5em 1em; 
+}
 .portlet-header {
 	font-family: "DIN-Regular", Arial, Helvetica, sans-serif;
 	font-size: 13px;
@@ -5353,7 +5355,6 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     line-height:1.5em;
 }
 
-.
 .dashboardWelcomeMessage{
 	padding: 20px;
 	margin: 10px;
@@ -5363,7 +5364,9 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
 	background-color: #f7f7f7;
 	color: #333;
 }
-.dashboardLanding {	/* used to style the "drag something here" <div> displayed when a column is empty */
+
+/* used to style the "drag something here" <div> displayed when a column is empty */
+.dashboardLanding {
     border: 2px dashed #ededed;
     color:#c6c6c6;
     margin: 5px 2px 2px 2px;
