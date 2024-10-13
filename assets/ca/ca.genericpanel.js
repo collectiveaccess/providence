@@ -37,8 +37,6 @@ caUI.panelCount = 0;
 			panelID: 'caPanel',							/* id of enclosing panel div */
 			panelContentID: 'caPanelContent',			/* id of div within enclosing panel div that contains content */
 	
-			exposeBackgroundColor: '#000000',
-			exposeBackgroundOpacity: 0.5,
 			panelTransitionSpeed: 200,
 			allowMobileSafariZooming: false,
 			mobileSafariViewportTagID: '_msafari_viewport',
