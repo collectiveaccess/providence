@@ -148,6 +148,10 @@
 		$vb_is_textarea = false;
 		$va_styles = array();
 		
+		if(isset($pa_attributes['style']) && $pa_attributes['style']) {
+			$va_styles[] = $pa_attributes['style'];
+		}
+		
 		$vb_use_wysiwyg_editor = caGetOption('usewysiwygeditor', $pa_options, false);
 		$vn_width = $vn_height = null;
 		

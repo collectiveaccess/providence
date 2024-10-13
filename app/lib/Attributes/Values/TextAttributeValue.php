@@ -369,9 +369,25 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_height = ((int)$vs_height * 16)."px";
 		}
 		
+		$va_opts = array(
+			'size' => $vs_width, 
+			'height' => $vs_height, 
+			'value' => '{{'.$pa_element_info['element_id'].'}}', 
+			'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}",
+		);
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(is_array($attributes)) { 
+			$va_opts = array_merge($attributes, $va_opts);
+		}
+			
+		if (caGetOption('readonly', $pa_options, false)) { 
+			$va_opts['disabled'] = 1;
+		}
+		
 		if ($va_settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
 			if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
+			AssetLoadManager::register("quilljs");
 			
 			$vb_show_media_content_option = false;
 			if (
@@ -382,47 +398,22 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				$va_toolbar_config['misc'][] = 'Media';
 			}
 			
-// 			$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
-// 					var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
-// 					{
-// 						toolbar : ".json_encode(array_values($va_toolbar_config)).", /* this does the magic */
-// 						width: '{$vs_width}',
-// 						height: '{$vs_height}',
-// 						toolbarLocation: 'top',
-// 						enterMode: CKEDITOR.ENTER_BR,
-// 						lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
-// 						contentUrl: ".($vb_show_media_content_option ? "'".caNavUrl($g_request, '*', '*', 'getMediaAttributeList', ['bundle' => $va_settings['referenceMediaIn'], $pa_options['t_subject']->primaryKey() => $pa_options['t_subject']->getPrimaryKey()])."'" : "null").",
-// 						insertMediaRefs: true,
-// 						key: '".$pa_element_info['element_id']."_{n}'
-// 					});
-// 					
-// 					ckEditor.on('instanceReady', function(){ 
-// 						 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
-// 					});
-// });									
-// </script>";
+			$vs_element = "
+<script type='text/javascript'>
+	caUI.newTextEditor(
+		'{fieldNamePrefix}".$pa_element_info['element_id']."_editor_{n}', 
+		'{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
+		'{{".$pa_element_info['element_id']."}}'
+	);
+</script>\n";
+
+			$va_opts['style'] = 'display: none;';
+			$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_editor_{n}' style='width: {$vs_width}; height: {$vs_height}; overflow-y: auto;'></div>";
 		}
 		
-		$va_opts = array(
-				'size' => $vs_width, 
-				'height' => $vs_height, 
-				'value' => '{{'.$pa_element_info['element_id'].'}}', 
-				'maxlength' => $va_settings['maxChars'],
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".(($va_settings['usewysiwygeditor'] ?? null) ? " ckeditor-element" : '')
-			);
-		
-		$attributes = caGetOption('attributes', $pa_options, null);
-		if(is_array($attributes)) { 
-			$va_opts = array_merge($attributes, $va_opts);
-		}
-			
-		if (caGetOption('readonly', $pa_options, false)) { 
-			$va_opts['disabled'] = 1;
-		}
 		$vs_element .= caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
-			$va_opts,
-			['textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)]
+			$va_opts
 		);
 
 		if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {

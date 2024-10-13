@@ -8077,3 +8077,13 @@ div.tooltipHead {
     text-decoration: none !important;
     border: unset !important;
 }
+
+
+div.ql-container {
+    overflow-wrap: unset;
+    font-weight: normal;
+    color: unset;
+    margin: unset;
+    padding: unset;
+    
+}
