@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,66 +24,65 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// set
-	/** @var ca_sets $t_item_rel */
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');
-	$settings 			= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	$vs_placement_code 	= $this->getVar('placement_code');
-	$vn_placement_id	= (int)$settings['placement_id'];
-	$vb_batch			= $this->getVar('batch');
+ */ 
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// set
+/** @var ca_sets $t_item_rel */
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');
+$settings 			= $this->getVar('settings');
+$vs_add_label 		= $this->getVar('add_label');
+$vs_placement_code 	= $this->getVar('placement_code');
+$vn_placement_id	= (int)$settings['placement_id'];
+$vb_batch			= $this->getVar('batch');
 
-	$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-	$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
-	$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
-	
-	$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
-	$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
-	
-	$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
-	
-	// Dyamically loaded sort ordering
-	$loaded_sort 			= $this->getVar('sort');
-	$loaded_sort_direction 	= $this->getVar('sortDirection');
-	
-	// params to pass during object lookup
-	$va_lookup_params = array(
-		'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
-		'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-		'table_num' => $t_subject->tableNum()
-	);
+$vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 
-	$count = $this->getVar('relationship_count');
-	if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
-	$num_per_page = caGetOption('numPerPage', $settings, 10);
+$vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
+$vs_first_color 	= 	((isset($settings['colorFirstItem']) && $settings['colorFirstItem'])) ? $settings['colorFirstItem'] : '';
+$vs_last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem'])) ? $settings['colorLastItem'] : '';
 
-	if ($vb_batch) {
-		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
-	}
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
-	
-	print "<div class='bundleSubLabel'>";	
-	if(sizeof($this->getVar('initialValues'))) {
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
-	}
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_item_rel->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
-	}
-	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
-	
-	$va_errors = array();
-	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
-	}
+$vb_quick_add_enabled = $this->getVar('quickadd_enabled');
+
+// Dyamically loaded sort ordering
+$loaded_sort 			= $this->getVar('sort');
+$loaded_sort_direction 	= $this->getVar('sortDirection');
+
+// params to pass during object lookup
+$va_lookup_params = array(
+	'types' => isset($settings['restrict_to_types']) ? $settings['restrict_to_types'] : (isset($settings['restrict_to_type']) ? $settings['restrict_to_type'] : ''),
+	'noSubtypes' => (int)$settings['dont_include_subtypes_in_type_restriction'],
+	'noInline' => (!$vb_quick_add_enabled || (bool) preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
+	'table_num' => $t_subject->tableNum()
+);
+
+$count = $this->getVar('relationship_count');
+if(caGetOption('showCount', $settings, false)) { print $count ? "({$count})" : ''; }
+$num_per_page = caGetOption('numPerPage', $settings, 10);
+
+if ($vb_batch) {
+	print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+} else {
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $this->getVar('initialValues')));
+}
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+
+print "<div class='bundleSubLabel'>";	
+if(sizeof($this->getVar('initialValues'))) {
+	print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
+}
+if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($settings['list_format'] != 'list')) {
+	print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_item_rel->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+}
+print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
+
+$va_errors = array();
+foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+	$va_errors[] = $o_error->getErrorDescription();
+}
 ?>
 <div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -93,7 +92,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
