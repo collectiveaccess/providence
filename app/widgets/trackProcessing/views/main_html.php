@@ -80,7 +80,7 @@ if(!$is_ajax) {
 		if(sizeof($jobs_processing_data)>0) {
 ?>
 			<div id="running_<?= $widget_id; ?>">			
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= _t("Jobs currently being processed").":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= _t("Jobs currently being processed").":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium">
 					<table class='dashboardWidgetTable'>
 <?php
@@ -109,7 +109,7 @@ if(!$is_ajax) {
 			}
 ?>
 			<div id="queued_<?= $widget_id; ?>">
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= $message.":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium">
 					<table class='dashboardWidgetTable'>
 <?php
@@ -146,7 +146,7 @@ if(!$is_ajax) {
 			}
 ?>
 			<div id="completed_<?= $widget_id; ?>">
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= $message.":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
 <?php
 			foreach($jobs_done_data as $task_id => $job) {
@@ -201,7 +201,7 @@ if(!$is_ajax) {
 			}
 ?>
 			<div id="stuck_<?= $widget_id; ?>">
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= $message.":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
 <?php
 			foreach($jobs_stuck_data as $task_id => $job) {
