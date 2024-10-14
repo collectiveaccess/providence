@@ -39,7 +39,6 @@ var caUI = caUI || {};
 	 */
 	caUI.newTextEditor = function (id, target, content, toolbar=true, options=null) {
 	    if(!options) options = {};
-	    console.log(options);
 	    let config = { toolbar: toolbar };
 	    if(options.viewSource !== false) {
 	        config.htmlEditButton =  {
@@ -62,7 +61,6 @@ var caUI = caUI || {};
         quill.clipboard.dangerouslyPasteHTML(content);
         
         quill.on('text-change', function() {
-            console.log('change');
             jQuery('#' + target).html(quill.getSemanticHTML());
         });
         
