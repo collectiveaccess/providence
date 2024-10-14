@@ -417,7 +417,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	);
 </script>\n";
 			$opts['style'] = 'display: none;';
-			$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height}; overflow-y: auto;'></div>";
+			$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height};' class='ql-ca-editor'></div>";
 		}
 		
 		$element .= caHTMLTextInput(

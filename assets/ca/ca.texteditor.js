@@ -56,7 +56,8 @@ var caUI = caUI || {};
 	    
         const quill = new Quill('#' + id, {
             modules: config,
-            theme: 'snow'
+            theme: 'snow',
+            bounds: '#' + id
         });
         quill.clipboard.dangerouslyPasteHTML(content);
         

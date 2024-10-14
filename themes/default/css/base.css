@@ -8137,10 +8137,12 @@ span.ql-formats button {
     column-gap: 5px;
 }
 
-div.ql-container {
-    overflow: hidden !important;
-}
-
 .ql-editor .ql-code-block-container {
     padding-bottom: 20px !important;
 }
+
+.ql-ca-editor {
+    overflow-y: auto; 
+    padding-bottom: 10px;
+}
+
