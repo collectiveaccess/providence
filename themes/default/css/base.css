@@ -8146,3 +8146,9 @@ span.ql-formats button {
     padding-bottom: 10px;
 }
 
+div.ql-container {
+    overflow: hidden;
+    padding-bottom: 20px;
+    
+}
+
