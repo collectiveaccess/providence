@@ -8119,3 +8119,7 @@ div.ql-container {
     padding: unset;
     
 }
+
+span.ql-formats button {
+    width: 40px !important;   
+}

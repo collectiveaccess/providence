@@ -1,4 +1,4 @@
-<?php
+ <?php
 /** ---------------------------------------------------------------------
  * app/lib/Attributes/Values/TextAttributeValue.php : 
  * ----------------------------------------------------------------------
@@ -265,74 +265,74 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
 	private $ops_text_value;
 	# ------------------------------------------------------------------
-	public function __construct($pa_value_array=null) {
-		parent::__construct($pa_value_array);
+	public function __construct($value_array=null) {
+		parent::__construct($value_array);
 	}
 	# ------------------------------------------------------------------
-	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'] ?? null;
+	public function loadTypeSpecificValueFromRow($value_array) {
+		$this->ops_text_value = $value_array['value_longtext1'] ?? null;
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * @param array $pa_options Options include:
+	 * @param array $options Options include:
 	 *      doRefSubstitution = Parse and replace reference tags (in the form [table idno="X"]...[/table]). [Default is false in Providence; true in Pawtucket].
 	 * @return string
 	 */
-	public function getDisplayValue($pa_options=null) {
+	public function getDisplayValue($options=null) {
 		global $g_request;
 		
 		// process reference tags
-		if ($g_request && caGetOption('doRefSubstitution', $pa_options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
+		if ($g_request && caGetOption('doRefSubstitution', $options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
 			return caProcessReferenceTags($g_request, $this->ops_text_value);
 		}
 	
 		return $this->ops_text_value;
 	}
 	# ------------------------------------------------------------------
-	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-		$va_settings = $this->getSettingValuesFromElementArray(
-			$pa_element_info, 
-			array('minChars', 'maxChars', 'regex', 'mustBeUnique', 'moveArticles')
+	public function parseValue($value, $element_info, $options=null) {
+		$settings = $this->getSettingValuesFromElementArray(
+			$element_info, 
+			['minChars', 'maxChars', 'regex', 'mustBeUnique', 'moveArticles']
 		);
-		$vn_strlen = mb_strlen($ps_value);
-		if ($vn_strlen < $va_settings['minChars']) {
+		$strlen = mb_strlen($value);
+		if ($strlen < $settings['minChars']) {
 			// text is too short
-			$vs_err_msg = ($va_settings['minChars'] == 1) ? _t('%1 must be at least 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be at least %2 characters long', $pa_element_info['displayLabel'], $va_settings['minChars']);
-			$this->postError(1970, $vs_err_msg, 'TextAttributeValue->parseValue()');
+			$err_msg = ($settings['minChars'] == 1) ? _t('%1 must be at least 1 character long', $element_info['displayLabel']) : _t('%1 must be at least %2 characters long', $element_info['displayLabel'], $settings['minChars']);
+			$this->postError(1970, $err_msg, 'TextAttributeValue->parseValue()');
 			return false;
 		}
-		if ($vn_strlen > $va_settings['maxChars']) {
+		if ($strlen > $settings['maxChars']) {
 			// text is too short
-			$vs_err_msg = ($va_settings['maxChars'] == 1) ? _t('%1 must be no more than 1 character long', $pa_element_info['displayLabel']) : _t('%1 must be no more than %2 characters long', $pa_element_info['displayLabel'], $va_settings['maxChars']);
-			$this->postError(1970, $vs_err_msg, 'TextAttributeValue->parseValue()');
+			$err_msg = ($settings['maxChars'] == 1) ? _t('%1 must be no more than 1 character long', $element_info['displayLabel']) : _t('%1 must be no more than %2 characters long', $element_info['displayLabel'], $settings['maxChars']);
+			$this->postError(1970, $err_msg, 'TextAttributeValue->parseValue()');
 			return false;
 		}
 		
-		if ($va_settings['regex'] && !preg_match("!".$va_settings['regex']."!", $ps_value)) {
+		if ($settings['regex'] && !preg_match("!".$settings['regex']."!", $value)) {
 			// regex failed
-			$this->postError(1970, _t('%1 does not conform to required format', $pa_element_info['displayLabel']), 'TextAttributeValue->parseValue()');
+			$this->postError(1970, _t('%1 does not conform to required format', $element_info['displayLabel']), 'TextAttributeValue->parseValue()');
 			return false;
 		}
 
-		if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique'] && ($vn_strlen > 0)) {
+		if(isset($settings['mustBeUnique']) && (bool)$settings['mustBeUnique'] && ($strlen > 0)) {
 			
-			if (BaseModelWithAttributes::valueExistsForElement($pa_element_info['element_id'], $ps_value, ['transaction' => $pa_options['transaction'], 'value_id' => $this->getValueID()])) {
-				$this->postError(1970, _t('%1 must be unique across all values. The value you entered already exists.', $pa_element_info['displayLabel']), 'TextAttributeValue->parseValue()');
+			if (BaseModelWithAttributes::valueExistsForElement($element_info['element_id'], $value, ['transaction' => $options['transaction'], 'value_id' => $this->getValueID()])) {
+				$this->postError(1970, _t('%1 must be unique across all values. The value you entered already exists.', $element_info['displayLabel']), 'TextAttributeValue->parseValue()');
 				return false;
 			}
 		}
 		
-		return array(
-			'value_longtext1' => $ps_value,
-			'value_sortable' => $this->sortableValue($ps_value, $va_settings)
-		);
+		return [
+			'value_longtext1' => $value,
+			'value_sortable' => $this->sortableValue($value, $settings)
+		];
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * Return HTML form element for editing.
 	 *
-	 * @param array $pa_element_info An array of information about the metadata element being edited
-	 * @param array $pa_options array Options include:
+	 * @param array $element_info An array of information about the metadata element being edited
+	 * @param array $options array Options include:
 	 *			usewysiwygeditor = overrides element level setting for visual text editor [Default=false]
 	 *			forSearch = settings and options regarding visual text editor are ignored [Default=false]
 	 *			class = the CSS class to apply to all visible form elements [Default=null]
@@ -344,97 +344,99 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 * @return string
 	 */
-	public function htmlFormElement($pa_element_info, $pa_options=null) {
+	public function htmlFormElement($element_info, $options=null) {
 		global $g_request;
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique', 'referenceMediaIn'));
+		$settings = $this->getSettingValuesFromElementArray($element_info, ['fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique', 'referenceMediaIn']);
 
-		if (isset($pa_options['usewysiwygeditor'])) {
-			$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
+		if (isset($options['usewysiwygeditor'])) {
+			$settings['usewysiwygeditor'] = $options['usewysiwygeditor'];
 		}
 
-		if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
-			unset($va_settings['usewysiwygeditor']);
+		if (isset($options['forSearch']) && $options['forSearch']) {
+			unset($settings['usewysiwygeditor']);
 		}
 		
-		$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
-		$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
-		$vs_element = '';
+		$width = trim((isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth']);
+		$height = trim((isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight']);
+		$class = trim((isset($options['class']) && $options['class']) ? $options['class'] : '');
+		$element = '';
 		
 		
-		if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
-			$vs_width = ((int)$vs_width * 6)."px";
+		if (!preg_match("!^[\d\.]+px$!i", $width)) {
+			$width = ((int)$width * 6)."px";
 		}
-		if (!preg_match("!^[\d\.]+px$!i", $vs_height) && ((int)$vs_height > 1)) {
-			$vs_height = ((int)$vs_height * 16)."px";
+		if (!preg_match("!^[\d\.]+px$!i", $height) && ((int)$height > 1)) {
+			$height = ((int)$height * 16)."px";
 		}
 		
-		$va_opts = array(
-			'size' => $vs_width, 
-			'height' => $vs_height, 
-			'value' => '{{'.$pa_element_info['element_id'].'}}', 
-			'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}",
-		);
-		$attributes = caGetOption('attributes', $pa_options, null);
+		$opts = [
+			'size' => $width, 
+			'height' => $height, 
+			'value' => '{{'.$element_info['element_id'].'}}', 
+			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 'class' => "{$class}",
+		];
+		$attributes = caGetOption('attributes', $options, null);
 		if(is_array($attributes)) { 
-			$va_opts = array_merge($attributes, $va_opts);
+			$opts = array_merge($attributes, $opts);
 		}
 			
-		if (caGetOption('readonly', $pa_options, false)) { 
-			$va_opts['disabled'] = 1;
+		if (caGetOption('readonly', $options, false)) { 
+			$opts['disabled'] = 1;
 		}
 		
-		if ($va_settings['usewysiwygeditor'] ?? null) {
+		if ($settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
-			if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
+			if (!is_array($toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $toolbar_config = array(); }
 			AssetLoadManager::register("quilljs");
 			
-			$vb_show_media_content_option = false;
+			$show_media_content_option = false;
 			if (
-				(isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) 
+				(isset($options['t_subject']) && is_object($options['t_subject'])) 
 				&& 
-				($vb_show_media_content_option = (isset($va_settings['referenceMediaIn']) && (bool)$va_settings['referenceMediaIn']))
+				($show_media_content_option = (isset($settings['referenceMediaIn']) && (bool)$settings['referenceMediaIn']))
 			) {
-				$va_toolbar_config['misc'][] = 'Media';
+				$toolbar_config['misc'][] = 'Media';
 			}
 			
-			$vs_element = "
+			$element = "
 <script type='text/javascript'>
+	let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
 	caUI.newTextEditor(
-		'{fieldNamePrefix}".$pa_element_info['element_id']."_editor_{n}', 
-		'{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
-		'{{".$pa_element_info['element_id']."}}'
+		'{fieldNamePrefix}".$element_info['element_id']."_editor_{n}', 
+		'{fieldNamePrefix}".$element_info['element_id']."_{n}',
+		'{{".$element_info['element_id']."}}',
+		toolbarConfig
 	);
 </script>\n";
 
-			$va_opts['style'] = 'display: none;';
-			$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_editor_{n}' style='width: {$vs_width}; height: {$vs_height}; overflow-y: auto;'></div>";
+			$opts['style'] = 'display: none;';
+			$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height}; overflow-y: auto;'></div>";
 		}
 		
-		$vs_element .= caHTMLTextInput(
-			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
-			$va_opts
+		$element .= caHTMLTextInput(
+			'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
+			$opts
 		);
 
-		if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
-			$vs_element .= "
-				<div id='{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning' class='caDupeAttributeMessageBox' style='display:none'>
+		if (isset($settings['mustBeUnique']) && $settings['mustBeUnique']) {
+			$element .= "
+				<div id='{fieldNamePrefix}{$element_info['element_id']}_{n}_uniquenessWarning' class='caDupeAttributeMessageBox' style='display:none'>
 					"._t("This field value already exists!")."
 				</div>
 			";
 		}
 		
-		if (!caGetOption('forSearch', $pa_options, false) && ($va_settings['isDependentValue'] ?? false || $pa_options['isDependentValue'] ?? false)) {
-			$t_element = new ca_metadata_elements($pa_element_info['element_id']);
-			$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
-			$va_element_dom_ids = array();
-			foreach($va_elements as $vn_i => $va_element) {
-				if ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
-				$va_element_dom_ids[$va_element['element_code']] = "#{fieldNamePrefix}".$va_element['element_id']."_{n}";
+		if (!caGetOption('forSearch', $options, false) && ($settings['isDependentValue'] ?? false || $options['isDependentValue'] ?? false)) {
+			$t_element = new ca_metadata_elements($element_info['element_id']);
+			$elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
+			$element_dom_ids = [];
+			foreach($elements as $i => $element) {
+				if ($element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+				$element_dom_ids[$element['element_code']] = "#{fieldNamePrefix}".$element['element_id']."_{n}";
 			}
 			
 			$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
-			$va_parser_opts = [];
+			$parser_opts = [];
 			
 			foreach([
 					'inch_decimal_precision', 'feet_decimal_precision', 'mile_decimal_precision', 
@@ -446,52 +448,52 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to',
 					'force_meters_for_all_when_dimension_exceeds', 'force_centimeters_for_all_when_dimension_exceeds', 'force_millimeters_for_all_when_dimension_exceeds',
 					'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds'
-				] as $vs_key) {
-				$vs_proc_key = caSnakeToCamel($vs_key);
-				$va_parser_opts[$vs_proc_key] = $o_dimensions_config->get($vs_key);
+				] as $key) {
+				$proc_key = caSnakeToCamel($key);
+				$parser_opts[$proc_key] = $o_dimensions_config->get($key);
 			}
-			$vs_omit_units = ((bool)$o_dimensions_config->get('omit_repeating_units_for_measurements_in_templates')) ? "true" : "false";
-			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-				caDisplayTemplateParser.setOptions(".json_encode($va_parser_opts).");
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
+			$omit_units = ((bool)$o_dimensions_config->get('omit_repeating_units_for_measurements_in_templates')) ? "true" : "false";
+			$element .= "<script type='text/javascript'>jQuery(document).ready(function() {
+				caDisplayTemplateParser.setOptions(".json_encode($parser_opts).");
+				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $settings['dependentValueTemplate']))."', ".json_encode($element_dom_ids, JSON_FORCE_OBJECT).", true, {$omit_units}));
 			";
-			$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').on('keyup change', function(e) { 
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $va_settings['dependentValueTemplate']))."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT).", true, {$vs_omit_units}));
+			$element .= "jQuery('".join(", ", $element_dom_ids)."').on('keyup change', function(e) { 
+				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').val(caDisplayTemplateParser.processDependentTemplate('".addslashes(preg_replace("![\r\n]+!", " ", $settings['dependentValueTemplate']))."', ".json_encode($element_dom_ids, JSON_FORCE_OBJECT).", true, {$omit_units}));
 			});";
 			
-			$vs_element .="});</script>";
+			$element .="});</script>";
 		}
 		
-		$vs_bundle_name = $vs_lookup_url = null;
-		if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
-			$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
+		$bundle_name = $lookup_url = null;
+		if (isset($options['t_subject']) && is_object($options['t_subject'])) {
+			$bundle_name = $options['t_subject']->tableName().'.'.$element_info['element_code'];
 			
-			if ($pa_options['request']) {
-				if (isset($pa_options['lookupUrl']) && $pa_options['lookupUrl']) {
-					$vs_lookup_url = $pa_options['lookupUrl'];
+			if ($options['request']) {
+				if (isset($options['lookupUrl']) && $options['lookupUrl']) {
+					$lookup_url = $options['lookupUrl'];
 				} else {
-					$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('max' => 500, 'bundle' => $vs_bundle_name));
+					$lookup_url	= caNavUrl($options['request'], 'lookup', 'AttributeValue', 'Get', ['max' => 500, 'bundle' => $bundle_name]);
 				}
 			}
 		}
 		
-		if ($va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
-			$vs_element .= "<script type='text/javascript'>
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+		if ($settings['suggestExistingValues'] && $lookup_url && $bundle_name) { 
+			$element .= "<script type='text/javascript'>
+				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').autocomplete( 
 					{ 
-						source: '{$vs_lookup_url}',
+						source: '{$lookup_url}',
 						minLength: 3, delay: 800
 					}
 				);
 			</script>\n";
 		}
 
-		if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
-			$vs_unique_lookup_url = caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'ValueExists', array('bundle' => $vs_bundle_name));
-			$vs_element .= "<script type='text/javascript'>
-				var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').keyup(function() {
-					jQuery.getJSON('{$vs_unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
+		if (isset($settings['mustBeUnique']) && $settings['mustBeUnique']) {
+			$unique_lookup_url = caNavUrl($options['request'], 'lookup', 'AttributeValue', 'ValueExists', ['bundle' => $bundle_name]);
+			$element .= "<script type='text/javascript'>
+				var warnSpan = jQuery('#{fieldNamePrefix}{$element_info['element_id']}_{n}_uniquenessWarning');
+				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').keyup(function() {
+					jQuery.getJSON('{$unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
 						if(data.exists >= 1) {
 							warnSpan.show();
 						} else {
@@ -502,10 +504,10 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			</script>\n";
 		}
 		
-		return $vs_element;
+		return $element;
 	}
 	# ------------------------------------------------------------------
-	public function getAvailableSettings($pa_element_info=null) {
+	public function getAvailableSettings($element_info=null) {
 		global $_ca_attribute_settings;
 		
 		return $_ca_attribute_settings['TextAttributeValue'];

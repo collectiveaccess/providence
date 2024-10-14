@@ -37,9 +37,21 @@ var caUI = caUI || {};
 	/**
 	 * 
 	 */
-	caUI.newTextEditor = function (id, target, content) {
+	caUI.newTextEditor = function (id, target, content, toolbar=true) {
         const quill = new Quill('#' + id, {
-            modules: { toolbar: true },
+            modules: { 
+                toolbar: toolbar, 
+                htmlEditButton: {
+                    msg: " ",
+                    okText: "Ok", 
+                    cancelText: "Cancel", 
+                    buttonHTML: "HTML", 
+                    buttonTitle: "Show HTML source", 
+                    syntax: false, 
+                    prependSelector: 'div#main',
+                    editorModules: {}
+                }
+            },
             theme: 'snow'
         });
         quill.clipboard.dangerouslyPasteHTML(content);
@@ -55,6 +67,7 @@ var caUI = caUI || {};
 	caUI.initTextEditor = function() {
 	   const InlineBlot = Quill.import('blots/inline');
 	   const BlockBlot = Quill.import('blots/block');
+       Quill.register("modules/htmlEditButton", htmlEditButton);
 	   
 	   class ObjectBlot extends InlineBlot {
           static blotName = 'object';

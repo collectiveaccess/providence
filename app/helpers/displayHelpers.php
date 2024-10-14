@@ -5971,54 +5971,69 @@ function caGetFindViewList($table_name_or_num) : ?array {
 /**
  *
  */
-function caGetQuillToolbar(array $options=null) : ?string {
+function caGetQuillToolbar(array $options=null) : ?array {
 	$config = Configuration::load();
 	
 	$map = [
-		'bold' => ['type' => 'button', 'class' => 'ql-bold'],
-		'italic' => ['type' => 'button', 'class' => 'ql-italic'],
-		'underline' => ['type' => 'button', 'class' => 'ql-underline'],
-		'strike' => ['type' => 'button', 'class' => 'ql-strike'],
-		'subscript' => ['type' => 'button', 'class' => 'ql-script', 'value' => 'sub'],
-		'superscript' => ['type' => 'button', 'class' => 'ql-script', 'value' => 'super'],
-		'header' => ['type' => 'select', 'class' => 'ql-header'],
+		'bold' => ['code' => 'bold'],
+		'italic' => ['code' => 'italic'],
+		'underline' => ['code' => 'underline'],
+		'strike' => ['code' => 'strike'],
+		'subscript' => ['code' => 'script', 'value' => 'sub'],
+		'superscript' => ['code' => 'script', 'value' => 'super'],
+		'code' => ['code' => 'code-block'],
+		'header' => ['code' => 'header', 'value' => []],
 		
-		'clean' => ['type' => 'button', 'class' => 'ql-clean'],
-		'removeformat' => ['type' => 'button', 'class' => 'ql-clean'],
+		'clean' => ['code' => 'clean'],
+		'removeformat' => ['code' => 'clean'],
 		
-		'font' => ['type' => 'select', 'class' => 'ql-font'],
-		'fontsize' => ['type' => 'select', 'class' => 'ql-size'],
-		'textcolor' => ['type' => 'select', 'class' => 'ql-color'],
-		'background' => ['type' => 'select', 'class' => 'ql-background'],
+		'font' => ['code' => 'font', 'value' => []],
+		'fontsize' => ['code' => 'size', 'value' => []],
+		'textcolor' => ['code' => 'color', 'value' => []],
+		'background' => ['code' => 'background', 'value' => []],
 		
-		'blockquote' => ['type' => 'button', 'class' => 'ql-blockquote'],
-		'code' => ['type' => 'button', 'class' => 'ql-code-block'],
-		'link' => ['type' => 'button', 'class' => 'ql-blockquote'],
-		'image' => ['type' => 'button', 'class' => 'ql-image'],
-		'video' => ['type' => 'button', 'class' => 'ql-video'],
-		'formula' => ['type' => 'button', 'class' => 'ql-formula'],
-		'align' => ['type' => 'select', 'class' => 'ql-align'],
+		'blockquote' => ['code' => 'blockquote'],
+		'code' => ['code' => 'code', 'class' => 'ql-code-block'],
+		'link' => ['code' => 'link'],
+		'image' => ['code' => 'image'],
+		'video' => ['code' => 'video'],
+		'formula' => ['code' => 'formula'],
+		'align' => ['code' => 'align', 'value' => []],
 		
-		'numberedlist' => ['type' => 'button', 'class' => 'ql-align'],
-		'bulletedlist' => ['type' => 'button', 'class' => 'ql-align'],
-		'outdent' => ['type' => 'button', 'class' => 'ql-indent', 'value' => '+1'],
-		'indent' => ['type' => 'button', 'class' => 'ql-indent', 'value' => '-1'],
+		'numberedlist' => ['code' => 'list', 'value' => 'ordered'],
+		'bulletedlist' => ['code' => 'list', 'value' => 'bullet'],
+		'checkList' => ['code' => 'list', 'value' => 'check'],
+		'outdent' => ['code' => 'indent', 'value' => '+1'],
+		'indent' => ['code' => 'indent', 'value' => '-1'],
 		
-		'direction' => ['type' => 'button', 'class' => 'ql-direction', 'value' => 'rtl'],
-		
-		'formula' => ['type' => 'button', 'class' => 'ql-formula'],
+		'direction' => ['code' => 'direction', 'value' => 'rtl'],
+		//'undo' => ['code' => 'undo'],
+		//'redo' => ['code' => 'redo'],
 	];
 	
 	$toolbar = $config->get(strtolower((caGetOption('type', $options, 'editor') )!== 'content') ? 'wysiwyg_editor_toolbar' : 'wysiwyg_content_editor_toolbar');
 	if(!is_array($toolbar)) { return null; }
 		
 	$groups = [];
+	print_R($toolbar);
 	foreach($toolbar as $group_name => $list) {
 		$group = [];
 		foreach($list as $item) {
-			$group[] = '';
+			$item_case = strtolower($item);
+			print "i=$item ";
+			if(isset($map[$item_case])) {
+				if(isset($map[$item_case]['value'])) {
+					$group[] = [$map[$item_case]['code'] => $map[$item_case]['value']];
+				} else {
+					$group[] = $map[$item_case]['code'];
+				}
+			}
 		}
+		$groups[] = $group;
 	}
+	
+	print_R($groups);
+	return $groups;
 }
 # ------------------------------------------------------------------
 
