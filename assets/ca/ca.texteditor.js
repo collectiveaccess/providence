@@ -39,32 +39,38 @@ var caUI = caUI || {};
 	 */
 	caUI.newTextEditor = function (id, target, content, toolbar=true, options=null) {
 	    if(!options) options = {};
-	    let config = { toolbar: toolbar };
-	    if(options.viewSource !== false) {
-	        config.htmlEditButton =  {
-                msg: " ",
-                okText: options.okText ?? "Ok", 
-                cancelText: options.cancelText ?? "Cancel", 
-                buttonHTML: options.buttonText ?? "HTML", 
-                buttonTitle: options.buttonTitle ?? "Show HTML source", 
-                syntax: false, 
-                prependSelector: 'div#mainContent',
-                editorModules: {}
-            };
-	    }
+	    let use_editor = options.editor ?? 'quilljs';
+	   
+	    if(use_editor === 'ckeditor') {
 	    
-        const quill = new Quill('#' + id, {
-            modules: config,
-            theme: 'snow',
-            bounds: '#' + id
-        });
-        quill.clipboard.dangerouslyPasteHTML(content);
-        
-        quill.on('text-change', function() {
-            jQuery('#' + target).html(quill.getSemanticHTML());
-        });
-        
-        return quill;
+	    } else {
+            let config = { toolbar: toolbar };
+            if(options.viewSource !== false) {
+                config.htmlEditButton =  {
+                    msg: " ",
+                    okText: options.okText ?? "Ok", 
+                    cancelText: options.cancelText ?? "Cancel", 
+                    buttonHTML: options.buttonText ?? "HTML", 
+                    buttonTitle: options.buttonTitle ?? "Show HTML source", 
+                    syntax: false, 
+                    prependSelector: 'div#mainContent',
+                    editorModules: {}
+                };
+            }
+            
+            const quill = new Quill('#' + id, {
+                modules: config,
+                theme: 'snow',
+                bounds: '#' + id
+            });
+            quill.clipboard.dangerouslyPasteHTML(content);
+            
+            quill.on('text-change', function() {
+                jQuery('#' + target).html(quill.getSemanticHTML());
+            });
+            
+            return quill;
+        }
 	};
 	
 	caUI.initTextEditor = function() {

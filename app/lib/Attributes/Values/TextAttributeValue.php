@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -373,7 +373,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			'size' => $width, 
 			'height' => $height, 
 			'value' => '{{'.$element_info['element_id'].'}}', 
-			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 'class' => "{$class}",
+			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
+			'class' => "{$class}",
 		];
 		$attributes = caGetOption('attributes', $options, null);
 		if(is_array($attributes)) { 
@@ -386,44 +387,90 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		if ($settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
-			if (!is_array($toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $toolbar_config = array(); }
-			AssetLoadManager::register("quilljs");
+			//if (!is_array($toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $toolbar_config = []; }
 			
-			$show_media_content_option = false;
-			if (
-				(isset($options['t_subject']) && is_object($options['t_subject'])) 
-				&& 
-				($show_media_content_option = (isset($settings['referenceMediaIn']) && (bool)$settings['referenceMediaIn']))
-			) {
-				$toolbar_config['misc'][] = 'Media';
+			// $show_media_content_option = false;
+// 			if (
+// 				(isset($options['t_subject']) && is_object($options['t_subject'])) 
+// 				&& 
+// 				($show_media_content_option = (isset($settings['referenceMediaIn']) && (bool)$settings['referenceMediaIn']))
+// 			) {
+// 				$toolbar_config['misc'][] = 'Media';
+// 			}
+			
+			$use_editor = $o_config->get('wysiwyg_editor');
+			
+			switch($use_editor) {
+				case 'ckeditor':
+					AssetLoadManager::register("ck5");
+					
+					$element = "
+					<script type=\"module\">
+						import {
+						 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
+						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+						 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, Markdown, MediaEmbed, 
+						 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
+						 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
+						 SpecialCharactersText, Strikethrough, Subscript, Superscript, Table, TableCaption, TableCellProperties, 
+						 TableColumnResize, TableProperties, TableToolbar, TextTransformation, TodoList, Underline, Undo
+						} from 'ckeditor5';
+					
+						ClassicEditor
+							.create( document.querySelector( '#{fieldNamePrefix}{$element_info['element_id']}_{n}' ), {
+								plugins: [ 
+									BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
+									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+									ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, Markdown, MediaEmbed, 
+									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
+									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
+									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
+									Subscript, Superscript, Table, TableCaption, TableCellProperties, TableColumnResize, 
+									TableProperties, TableToolbar, TextTransformation, TodoList, Underline, Undo
+								],
+								toolbar: ".json_encode(caGetCK5Toolbar())."
+							} )
+							.catch((e) => console.log('Error initializing CKEditor: ' + e));
+					</script>\n";
+					
+											
+					$element .= "<div style='width: {$width}; height: {$height}; overflow-y: auto;'>".caHTMLTextInput(
+						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
+						$opts
+					)."</div>";
+					break;
+				case 'quilljs';
+				default:
+					AssetLoadManager::register("quilljs");
+					$quill_opts = [
+						'viewSource' => true,
+						'okText' => _t('OK'),
+						'cancelText' => _t('Cancel'),
+						'buttonHTML' => _t('HTML'),
+						'buttonTitle' => _t('Show HTML source')
+					];
+					$element = "
+						<script type='text/javascript'>
+							let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
+							caUI.newTextEditor(
+								'{fieldNamePrefix}".$element_info['element_id']."_editor_{n}', 
+								'{fieldNamePrefix}".$element_info['element_id']."_{n}',
+								'{{".$element_info['element_id']."}}',
+								toolbarConfig,
+								".json_encode($quill_opts)."
+							);
+						</script>\n";
+					$opts['style'] = 'display: none;';
+					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height};' class='ql-ca-editor'></div>";
+							
+					$element .= caHTMLTextInput(
+						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
+						$opts
+					);
+					break;
 			}
-			
-			$quill_opts = [
-				'viewSource' => true,
-				'okText' => _t('OK'),
-				'cancelText' => _t('Cancel'),
-				'buttonHTML' => _t('HTML'),
-				'buttonTitle' => _t('Show HTML source')
-			];
-			$element = "
-<script type='text/javascript'>
-	let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
-	caUI.newTextEditor(
-		'{fieldNamePrefix}".$element_info['element_id']."_editor_{n}', 
-		'{fieldNamePrefix}".$element_info['element_id']."_{n}',
-		'{{".$element_info['element_id']."}}',
-		toolbarConfig,
-		".json_encode($quill_opts)."
-	);
-</script>\n";
-			$opts['style'] = 'display: none;';
-			$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height};' class='ql-ca-editor'></div>";
 		}
 		
-		$element .= caHTMLTextInput(
-			'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
-			$opts
-		);
 
 		if (isset($settings['mustBeUnique']) && $settings['mustBeUnique']) {
 			$element .= "

@@ -8148,7 +8148,23 @@ span.ql-formats button {
 
 div.ql-container {
     overflow: hidden;
-    padding-bottom: 20px;
-    
+    padding-bottom: 20px;  
 }
 
+div.ck-reset {
+    font-weight: normal;
+}
+
+.ck.ck-editor__top.ck-reset_all {
+  z-index: var(--ck-z-modal);
+  position: sticky;
+  top: 0;
+}
+
+.ck.ck-sticky-panel__placeholder {
+  display : none !important;
+}
+
+.ck.ck-sticky-panel .ck-sticky-panel__content_sticky {
+  position: unset;
+}

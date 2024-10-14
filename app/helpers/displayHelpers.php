@@ -5981,7 +5981,6 @@ function caGetQuillToolbar(array $options=null) : ?array {
 		'strike' => ['code' => 'strike'],
 		'subscript' => ['code' => 'script', 'value' => 'sub'],
 		'superscript' => ['code' => 'script', 'value' => 'super'],
-		'code' => ['code' => 'code-block'],
 		'header' => ['code' => 'header', 'value' => [false, 1, 2, 3, 4, 5, 6]],
 		
 		'clean' => ['code' => 'clean'],
@@ -6030,6 +6029,69 @@ function caGetQuillToolbar(array $options=null) : ?array {
 		$groups[] = $group;
 	}
 	
+	return $groups;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caGetCK5Toolbar(array $options=null) : ?array {
+	$config = Configuration::load();
+	
+	$map = [
+		'bold' => ['code' => 'bold'],
+		'italic' => ['code' => 'italic'],
+		'underline' => ['code' => 'underline'],
+		'strike' => ['code' => 'strikethrough'],
+		'subscript' => ['code' => 'subscript'],
+		'superscript' => ['code' => 'superscript'],
+		'code' => ['code' => 'code'],
+		'header' => ['code' => 'heading'],
+		
+		'clean' => ['code' => 'clean'],
+		'removeformat' => ['code' => 'clean'],	// synonym for "clean"
+		
+		'font' => ['code' => 'fontfamily'],	
+		'fontsize' => ['code' => 'fontsize'],
+		'textcolor' => ['code' => 'fontColor'],
+		'background' => ['code' => 'fontBackgroundColor'],
+		
+		'blockquote' => ['code' => 'blockQuote'],
+		'link' => ['code' => 'link'],
+		'image' => ['code' => 'image'],
+		'video' => ['code' => 'video'],
+		'formula' => ['code' => 'formula'],
+		'align' => ['code' => 'alignment'],
+		
+		'numberedlist' => ['code' => 'numberedList'],
+		'bulletedlist' => ['code' => 'bulletedList'],
+		'checkList' => ['code' => 'todoList'],
+		'outdent' => ['code' => 'outdent'],
+		'indent' => ['code' => 'indent'],
+		
+		//'direction' => ['code' => 'direction', 'value' => 'rtl'],
+		'undo' => ['code' => 'undo'],	
+		'redo' => ['code' => 'redo'], 
+	];
+	
+	$toolbar = $config->get(strtolower((caGetOption('type', $options, 'editor') )!== 'content') ? 'wysiwyg_editor_toolbar' : 'wysiwyg_content_editor_toolbar');
+	if(!is_array($toolbar)) { return null; }
+		
+	$groups = [];
+	foreach($toolbar as $group_name => $list) {
+		$group = [];
+		foreach($list as $item) {
+			$item_case = strtolower($item);
+			if(isset($map[$item_case])) {
+				if(isset($map[$item_case]['value'])) {
+					$group[] = [$map[$item_case]['code'] => $map[$item_case]['value']];
+				} else {
+					$group[] = $map[$item_case]['code'];
+				}
+			}
+		}
+		$groups = array_merge($groups, $group);
+	}
 	return $groups;
 }
 # ------------------------------------------------------------------
