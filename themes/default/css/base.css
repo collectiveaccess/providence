@@ -8120,6 +8120,27 @@ div.ql-container {
     
 }
 
+.ql-toolbar.ql-snow .ql-formats {
+    margin-right:25px;
+    white-space: nowrap;
+
+}
+
 span.ql-formats button {
-    width: 40px !important;   
+    width: 32px !important;   
+}
+
+.ql-html-buttonGroup {
+    bottom: 10px !important;
+    display: flex;
+    flex-direction: row-reverse;
+    column-gap: 5px;
+}
+
+div.ql-container {
+    overflow: hidden !important;
+}
+
+.ql-editor .ql-code-block-container {
+    padding-bottom: 20px !important;
 }

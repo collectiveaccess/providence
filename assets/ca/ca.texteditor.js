@@ -37,21 +37,25 @@ var caUI = caUI || {};
 	/**
 	 * 
 	 */
-	caUI.newTextEditor = function (id, target, content, toolbar=true) {
+	caUI.newTextEditor = function (id, target, content, toolbar=true, options=null) {
+	    if(!options) options = {};
+	    console.log(options);
+	    let config = { toolbar: toolbar };
+	    if(options.viewSource !== false) {
+	        config.htmlEditButton =  {
+                msg: " ",
+                okText: options.okText ?? "Ok", 
+                cancelText: options.cancelText ?? "Cancel", 
+                buttonHTML: options.buttonText ?? "HTML", 
+                buttonTitle: options.buttonTitle ?? "Show HTML source", 
+                syntax: false, 
+                prependSelector: 'div#mainContent',
+                editorModules: {}
+            };
+	    }
+	    
         const quill = new Quill('#' + id, {
-            modules: { 
-                toolbar: toolbar, 
-                htmlEditButton: {
-                    msg: " ",
-                    okText: "Ok", 
-                    cancelText: "Cancel", 
-                    buttonHTML: "HTML", 
-                    buttonTitle: "Show HTML source", 
-                    syntax: false, 
-                    prependSelector: 'div#main',
-                    editorModules: {}
-                }
-            },
+            modules: config,
             theme: 'snow'
         });
         quill.clipboard.dangerouslyPasteHTML(content);

@@ -5982,15 +5982,15 @@ function caGetQuillToolbar(array $options=null) : ?array {
 		'subscript' => ['code' => 'script', 'value' => 'sub'],
 		'superscript' => ['code' => 'script', 'value' => 'super'],
 		'code' => ['code' => 'code-block'],
-		'header' => ['code' => 'header', 'value' => []],
+		'header' => ['code' => 'header', 'value' => [false, 1, 2, 3, 4, 5, 6]],
 		
 		'clean' => ['code' => 'clean'],
-		'removeformat' => ['code' => 'clean'],
+		'removeformat' => ['code' => 'clean'],	// synonym for "clean"
 		
-		'font' => ['code' => 'font', 'value' => []],
-		'fontsize' => ['code' => 'size', 'value' => []],
+		//'font' => ['code' => 'font', 'value' => []],	// Doesn't actually set font - sets Quill-specific class so let's not offer this
+		//'fontsize' => ['code' => 'size', 'value' => []], / Doesn't actually set size - sets Quill-specific class so let's not offer this
 		'textcolor' => ['code' => 'color', 'value' => []],
-		'background' => ['code' => 'background', 'value' => []],
+		//'background' => ['code' => 'background', 'value' => []], // Doesn't appear to render even thought Quill docs reference it
 		
 		'blockquote' => ['code' => 'blockquote'],
 		'code' => ['code' => 'code', 'class' => 'ql-code-block'],
@@ -6007,20 +6007,18 @@ function caGetQuillToolbar(array $options=null) : ?array {
 		'indent' => ['code' => 'indent', 'value' => '-1'],
 		
 		'direction' => ['code' => 'direction', 'value' => 'rtl'],
-		//'undo' => ['code' => 'undo'],
-		//'redo' => ['code' => 'redo'],
+		//'undo' => ['code' => 'undo'],	// Doesn't appear to render even thought Quill docs reference it
+		//'redo' => ['code' => 'redo'], // Doesn't appear to render even thought Quill docs reference it
 	];
 	
 	$toolbar = $config->get(strtolower((caGetOption('type', $options, 'editor') )!== 'content') ? 'wysiwyg_editor_toolbar' : 'wysiwyg_content_editor_toolbar');
 	if(!is_array($toolbar)) { return null; }
 		
 	$groups = [];
-	print_R($toolbar);
 	foreach($toolbar as $group_name => $list) {
 		$group = [];
 		foreach($list as $item) {
 			$item_case = strtolower($item);
-			print "i=$item ";
 			if(isset($map[$item_case])) {
 				if(isset($map[$item_case]['value'])) {
 					$group[] = [$map[$item_case]['code'] => $map[$item_case]['value']];
@@ -6032,7 +6030,6 @@ function caGetQuillToolbar(array $options=null) : ?array {
 		$groups[] = $group;
 	}
 	
-	print_R($groups);
 	return $groups;
 }
 # ------------------------------------------------------------------

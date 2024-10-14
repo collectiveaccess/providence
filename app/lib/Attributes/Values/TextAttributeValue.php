@@ -398,6 +398,13 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				$toolbar_config['misc'][] = 'Media';
 			}
 			
+			$quill_opts = [
+				'viewSource' => true,
+				'okText' => _t('OK'),
+				'cancelText' => _t('Cancel'),
+				'buttonHTML' => _t('HTML'),
+				'buttonTitle' => _t('Show HTML source')
+			];
 			$element = "
 <script type='text/javascript'>
 	let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
@@ -405,10 +412,10 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		'{fieldNamePrefix}".$element_info['element_id']."_editor_{n}', 
 		'{fieldNamePrefix}".$element_info['element_id']."_{n}',
 		'{{".$element_info['element_id']."}}',
-		toolbarConfig
+		toolbarConfig,
+		".json_encode($quill_opts)."
 	);
 </script>\n";
-
 			$opts['style'] = 'display: none;';
 			$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height}; overflow-y: auto;'></div>";
 		}
