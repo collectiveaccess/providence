@@ -78,7 +78,7 @@ var caUI = caUI || {};
         }
 	};
 	
-	caUI.initTextEditor = function(editor) {
+	caUI.initTextEditor = function(use_editor) {
 	    if(use_editor === 'ckeditor') {
 	        // CKEditor5: noop
 	    } else {
