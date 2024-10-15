@@ -404,16 +404,16 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				case 'ckeditor':
 					AssetLoadManager::register("ck5");
 					
+					$toolbar = caGetCK5Toolbar();
 					$element = "
 					<script type=\"module\">
 						import {
 						 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
 						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
-						 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, Markdown, MediaEmbed, 
+						 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 						 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
 						 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
-						 SpecialCharactersText, Strikethrough, Subscript, Superscript, Table, TableCaption, TableCellProperties, 
-						 TableColumnResize, TableProperties, TableToolbar, TextTransformation, TodoList, Underline, Undo
+						 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 						} from 'ckeditor5';
 					
 						ClassicEditor
@@ -421,14 +421,16 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 								plugins: [ 
 									BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
 									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
-									ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, Markdown, MediaEmbed, 
+									ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
 									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
-									Subscript, Superscript, Table, TableCaption, TableCellProperties, TableColumnResize, 
-									TableProperties, TableToolbar, TextTransformation, TodoList, Underline, Undo
+									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 								],
-								toolbar: ".json_encode(caGetCK5Toolbar())."
+								toolbar: {
+									items: ".json_encode($toolbar).",
+									shouldNotGroupWhenFull: true
+								}
 							} )
 							.catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";

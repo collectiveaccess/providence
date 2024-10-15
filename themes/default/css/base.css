@@ -8160,11 +8160,3 @@ div.ck-reset {
   position: sticky;
   top: 0;
 }
-
-.ck.ck-sticky-panel__placeholder {
-  display : none !important;
-}
-
-.ck.ck-sticky-panel .ck-sticky-panel__content_sticky {
-  position: unset;
-}

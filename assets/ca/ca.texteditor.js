@@ -41,9 +41,14 @@ var caUI = caUI || {};
 	    if(!options) options = {};
 	    let use_editor = options.editor ?? 'quilljs';
 	   
+	    if(!caUI._initTextEditor) {
+	        caUI.initTextEditor(use_editor);
+	        caUI._initTextEditor = true;
+	    }
 	    if(use_editor === 'ckeditor') {
-	    
+	        // CKEditor5: noop
 	    } else {
+	        // QuillJS
             let config = { toolbar: toolbar };
             if(options.viewSource !== false) {
                 config.htmlEditButton =  {
@@ -73,73 +78,78 @@ var caUI = caUI || {};
         }
 	};
 	
-	caUI.initTextEditor = function() {
-	   const InlineBlot = Quill.import('blots/inline');
-	   const BlockBlot = Quill.import('blots/block');
-       Quill.register("modules/htmlEditButton", htmlEditButton);
-	   
-	   class ObjectBlot extends InlineBlot {
-          static blotName = 'object';
-          static tagName = 'object';
-        
-          static create(url) {
-            let node = super.create();
-            node.setAttribute('idno', url);
-            node.setAttribute('title', node.textContent);
-            return node;
-          }
-        
-          static formats(domNode) {
-            return domNode.getAttribute('idno') || true;
-          }
-        
-          format(name, value) {
-            if (name === 'link' && value) {
-              this.domNode.setAttribute('idno', value);
-            } else {
-              super.format(name, value);
+	caUI.initTextEditor = function(editor) {
+	    if(use_editor === 'ckeditor') {
+	        // CKEditor5: noop
+	    } else {
+	        // QuillJS
+            const InlineBlot = Quill.import('blots/inline');
+            const BlockBlot = Quill.import('blots/block');
+            Quill.register("modules/htmlEditButton", htmlEditButton);
+            
+            class ObjectBlot extends InlineBlot {
+              static blotName = 'object';
+              static tagName = 'object';
+            
+              static create(url) {
+                let node = super.create();
+                node.setAttribute('idno', url);
+                node.setAttribute('title', node.textContent);
+                return node;
+              }
+            
+              static formats(domNode) {
+                return domNode.getAttribute('idno') || true;
+              }
+            
+              format(name, value) {
+                if (name === 'link' && value) {
+                  this.domNode.setAttribute('idno', value);
+                } else {
+                  super.format(name, value);
+                }
+              }
+            
+              formats() {
+                let formats = super.formats();
+                formats['object'] = ObjectBlot.formats(this.domNode);
+                return formats;
+              }
             }
-          }
-        
-          formats() {
-            let formats = super.formats();
-            formats['object'] = ObjectBlot.formats(this.domNode);
-            return formats;
-          }
-        }
-        Quill.register(ObjectBlot);
-	
-        class AsideBlot extends BlockBlot {
-          static blotName = 'aside';
-          static tagName = 'aside';
-        
-          static create(url) {
-            let node = super.create();
-            node.setAttribute('content', node.textContent);
-            return node;
-          }
-        
-          static formats(domNode) {
-            return true;
-          }
-        
-          format(name, value) {
-            if (name === 'link' && value) {
-              this.domNode.setAttribute('content', value);
-            } else {
-              super.format(name, value);
+            Quill.register(ObjectBlot);
+            
+            class AsideBlot extends BlockBlot {
+              static blotName = 'aside';
+              static tagName = 'aside';
+            
+              static create(url) {
+                let node = super.create();
+                node.setAttribute('content', node.textContent);
+                return node;
+              }
+            
+              static formats(domNode) {
+                return true;
+              }
+            
+              format(name, value) {
+                if (name === 'link' && value) {
+                  this.domNode.setAttribute('content', value);
+                } else {
+                  super.format(name, value);
+                }
+              }
+            
+              formats() {
+                let formats = super.formats();
+                formats['aside'] = AsideBlot.formats(this.domNode);
+                return formats;
+              }
             }
-          }
-        
-          formats() {
-            let formats = super.formats();
-            formats['aside'] = AsideBlot.formats(this.domNode);
-            return formats;
-          }
+            
+            Quill.register(AsideBlot);
         }
         
-        Quill.register(AsideBlot);
+        caUI._initTextEditor = false;
 	};
-	
-	caUI.initTextEditor();
 }());

@@ -6048,8 +6048,8 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		'code' => ['code' => 'code'],
 		'header' => ['code' => 'heading'],
 		
-		'clean' => ['code' => 'clean'],
-		'removeformat' => ['code' => 'clean'],	// synonym for "clean"
+		'clean' => ['code' => 'removeFormat'],
+		'removeformat' => ['code' => 'removeFormat'],	// synonym for "clean"
 		
 		'font' => ['code' => 'fontfamily'],	
 		'fontsize' => ['code' => 'fontsize'],
@@ -6058,8 +6058,8 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		
 		'blockquote' => ['code' => 'blockQuote'],
 		'link' => ['code' => 'link'],
-		'image' => ['code' => 'image'],
-		'video' => ['code' => 'video'],
+		'image' => ['code' => 'linkImage'],
+		'video' => ['code' => 'mediaEmbed'],
 		'formula' => ['code' => 'formula'],
 		'align' => ['code' => 'alignment'],
 		
@@ -6068,10 +6068,10 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		'checkList' => ['code' => 'todoList'],
 		'outdent' => ['code' => 'outdent'],
 		'indent' => ['code' => 'indent'],
-		
-		//'direction' => ['code' => 'direction', 'value' => 'rtl'],
+		'source' => ['code' => 'sourceEditing'],
+	
 		'undo' => ['code' => 'undo'],	
-		'redo' => ['code' => 'redo'], 
+		'redo' => ['code' => 'redo']
 	];
 	
 	$toolbar = $config->get(strtolower((caGetOption('type', $options, 'editor') )!== 'content') ? 'wysiwyg_editor_toolbar' : 'wysiwyg_content_editor_toolbar');
