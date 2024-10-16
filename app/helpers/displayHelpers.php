@@ -1217,8 +1217,12 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 
-
-			$buf .= "<div class='recordTitle {$table_name}' style='width:190px; overflow:hidden;'>{$label}".(($show_idno) ? ($idno ? " ({$idno})" : '') : '')."</div>";
+			$buf .= "<div class='recordTitle {$table_name}' style='width:190px; overflow:hidden;'>{$label}";
+			
+			if($show_idno) {
+				$buf .= " ({$idno}) ";
+			}
+			$buf .= "</div>";
 			if (($table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$buf .= "<div id='inspectorLotMediaDownload'><strong>".((($num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $num_objects) : _t('Lot contains %1 objects', $num_objects))."</strong>\n";
 			}
@@ -1228,7 +1232,7 @@ function caEditorInspector($view, $options=null) {
 					$inspector_view->setVar('t_item', $t_item);
 					$buf .= $inspector_view->render('inspector_info.php');
 				}
-			}
+			}	
 		} else {
 			$parent_name = '';
 			if ($parent_id = $view->request->getParameter('parent_id', pInteger)) {
@@ -1574,6 +1578,23 @@ function caEditorInspector($view, $options=null) {
 
 		if(sizeof($tools) > 0) {
 			$buf .= "<div id='toolIcons'>".join(" ", $tools)."</div><!--End tooIcons-->";
+		}
+		
+		$next_by_idno = $prev_by_idno = null;
+		if($view->request->config->get("{$table_name}_inspector_display_idno_sequence_navigation")) {
+			$next_by_idno = $t_item->getAdjacentByIdno('next');
+			$prev_by_idno = $t_item->getAdjacentByIdno('previous');
+		}					
+		if($prev_by_idno || $next_by_idno) {
+			$buf .= "<div style='text-align: center;'><strong>"._t('Sequence:')."</strong><br>\n";	
+			if($prev_by_idno) {
+				$buf .= caEditorLink($view->request, '&lt; '.$prev_by_idno['idno'], '', $table_name, $prev_by_idno['id']);
+			}
+			if($prev_by_idno && $next_by_idno) { $buf .= ' | '; }
+			if($next_by_idno) {
+				$buf .= caEditorLink($view->request, $next_by_idno['idno'].' &gt;', '', $table_name, $next_by_idno['id']);
+			}	
+			$buf .= "</div>";
 		}
 		
 		if($more_info) {
