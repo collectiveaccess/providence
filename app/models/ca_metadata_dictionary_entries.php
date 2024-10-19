@@ -522,8 +522,14 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 					$vn_entry_id = $vn_id;
 				}
 				
-				$va_entry_types = array_filter($va_entry['settings']['restrict_to_types'] ?? [], 'strlen');
-				$va_entry_relationship_types = array_filter($va_entry['settings']['restrict_to_relationship_types'] ?? [], 'strlen');
+				if(!is_array($res_types = $va_entry['settings']['restrict_to_types'] ?? [])) {
+					$res_types = [$res_types];
+				}
+				$va_entry_types = array_filter($res_types ?? [], 'strlen');
+				if(!is_array($rel_types = $va_entry['settings']['restrict_to_relationship_types'] ?? [])) {
+					$rel_types = [$rel_types];
+				}
+				$va_entry_relationship_types = array_filter($rel_types, 'strlen');
 		
 				if($vn_entry_id) {
 					if ((sizeof($va_types) || sizeof($va_relationship_types))) {

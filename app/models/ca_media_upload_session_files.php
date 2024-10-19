@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 BaseModel::$s_ca_models_definitions['ca_media_upload_session_files'] = array(
  	'NAME_SINGULAR' 	=> _t('Media upload file'),
  	'NAME_PLURAL' 		=> _t('Media upload files'),

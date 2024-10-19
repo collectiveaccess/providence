@@ -632,11 +632,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Set setting values. You must call insert() or update() to write the settings to the database.
 	 *
 	 * @param string $setting
-	 * @param string $value
+	 * @param mixed $value
 	 *
 	 * @return bool
 	 */
-	public function setSetting(string $setting, string $value) {
+	public function setSetting(string $setting, $value) {
 		$current_settings = $this->getAvailableSettings();
 		
 		if(($setting === 'exporter_format') && $value) {
@@ -2527,7 +2527,7 @@ itemOutput:
 	 * 
 	 * @return null|string
 	 */
-	public function getTargetTableName() : ?BaseModel {
+	public function getTargetTableName() : ?string {
 		if(!$this->getPrimaryKey()) { return null; }
 
 		return Datamodel::getTableName($this->get('table_num'));

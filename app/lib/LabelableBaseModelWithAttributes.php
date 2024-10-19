@@ -586,6 +586,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		includeSubtypes = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set to false, no expansion will be performed. [Default is true]
 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]
 	 *		dontFilterByACL = If set don't enforce item-level ACL rules. [Default is false]
+	 *		filterDeaccessionedRecords = Omit deaccessioned records from the result set. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 	 */
@@ -621,6 +622,12 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$vb_purify_with_fallback 	= caGetOption('purifyWithFallback', $pa_options, false);
 		$vb_purify 					= $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
+		
+		$filter_deaccessioned 		= caGetOption('filterDeaccessionedRecords', $pa_options, false);
+		
+		if($filter_deaccessioned && $t_instance->hasField('is_deaccessioned')) {
+			$pa_values['is_deaccessioned'] = 0;
+		}
 		
 		$vn_table_num = $t_instance->tableNum();
 		$vs_table_pk = $t_instance->primaryKey();

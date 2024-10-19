@@ -3898,7 +3898,7 @@ function caEditorBundleBatchEditorControls($request, $placement_id, $t_instance,
 	
 	$buf = '';
 	if(caGetOption('showBatchEditorButton', $options, false)) {
-		$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit all'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+		$buf = '<div class="button batchEdit">'.caNavLink($request, "<span class='form-button'>".caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit')."</span>", 'form-button', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
 	}
 	return $buf;
 }
@@ -3958,7 +3958,7 @@ function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefi
 	$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 
 	$vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>".
-		caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+		caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return home"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 		"</div>";
 
 	$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls_message' class='editorBundleReturnToHomeControlsMessage'></div>\n";
