@@ -2161,7 +2161,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;
 				}
 			}
-			if(!is_array($ids) || !sizeof($ids)) { continue; }
+			if(!is_array($ids) || !sizeof($ids)) { $ids = [null]; }
 			foreach($ids as $id) {	
 				$t_subject->load($id);		
 				if(in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
@@ -2175,7 +2175,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->clear();
 				}
 				
-				$vs_idno = $t_subject->get($vs_idno_fld);
+				if($t_subject->getPrimaryKey()) {
+					$vs_idno = $t_subject->get($vs_idno_fld);
+				}
 				
 				if ($merge_only && !$t_subject->getPrimaryKey()) { 
 					if ($log_erp) { $o_log->logInfo(_t('[%1] Skipping because mergeOnly option is set and could not match existing record by policy %2.', $vs_idno, $vs_existing_record_policy)); }

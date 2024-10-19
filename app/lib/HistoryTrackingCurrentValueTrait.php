@@ -300,7 +300,11 @@ trait HistoryTrackingCurrentValueTrait {
 			}
 			$pa_bundle_settings = $va_bundle_settings;
 		}
-		
+	
+		// Force invalid policy settings to default
+		if(!self::isValidHistoryTrackingCurrentValuePolicy($pa_bundle_settings['policy'] ?? null)) {
+			$pa_bundle_settings['policy'] = $this->getDefaultHistoryTrackingCurrentValuePolicy();
+		}
 		return $pa_bundle_settings;
 	}
 	# ------------------------------------------------------
