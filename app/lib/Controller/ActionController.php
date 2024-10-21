@@ -40,28 +40,40 @@ class ActionController extends BaseObject {
 	 * @var RequestHTTP
 	 */
 	protected $opo_request;
+	
 	/**
 	 * @var ResponseHTTP
 	 */
 	protected $opo_response;
+	
 	/**
 	 * @var View
 	 */
 	protected $opo_view;
+	
+	/**
+	 *
+	 */
 	protected $opa_view_paths;
+	
 	/**
 	 * @var NotificationManager
 	 */
 	protected $opo_notification_manager;
+	
+	/**
+	 *
+	 */
+	protected $view_class = 'View';
 	# -------------------------------------------------------
 	/**
 	 * @param RequestHTTP $po_request
 	 * @param ResponseHTTP $po_response
 	 * @param null|array $pa_view_paths
 	 */
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		$this->opo_request =& $po_request;
-		$this->opo_response =& $po_response;
+	public function __construct($po_request, $po_response, $pa_view_paths=null) {
+		$this->opo_request = $po_request;
+		$this->opo_response = $po_response;
 		
 		if($this->opo_request->isApplicationPlugin()) {
 			if (!is_array($pa_view_paths)) { $pa_view_paths = array(); }
@@ -73,6 +85,9 @@ class ActionController extends BaseObject {
 		$this->opo_notification_manager = new NotificationManager($this->opo_request);
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function setViewPath($pa_view_paths) {
 		$this->opa_view_paths = $pa_view_paths;
 		if($this->opo_view) {
@@ -80,10 +95,16 @@ class ActionController extends BaseObject {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getViewPaths() {
 		return $this->opa_view_paths;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __get($ps_key) {
 		switch($ps_key) {
 			case 'view':
@@ -109,7 +130,7 @@ class ActionController extends BaseObject {
 	 * @return View
 	 */
 	public function initView() {
-		$this->opo_view = new View($this->opo_request, $this->opa_view_paths);
+		$this->opo_view = new $this->view_class($this->opo_request, $this->opa_view_paths);
 		$this->opo_view->setVar('request', $this->getRequest());
 		$this->opo_view->setVar('controller', $this);
 		
@@ -133,11 +154,17 @@ class ActionController extends BaseObject {
 		return $this->opo_view;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function viewExists($ps_path) {
 		if (!$this->opo_view) { $this->initView(); }
 		return $this->opo_view->viewExists($ps_path);
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getTagListForView($ps_path) {
 		if (!$this->opo_view) { $this->initView(); }
 		return $this->opo_view->getTagList($ps_path);
@@ -166,11 +193,53 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Render data as JSON
+	 * 
+	 * @param bool $dont_add_content_to_response
+	 * @param array $options
+	 * @return ?string
+	 */
+	public function renderAsJSON(?bool $dont_add_content_to_response=false, ?array $options=null) : ?string {
+		if (!$this->opo_view) { $this->initView(); }
+		
+		$content = $this->opo_view->renderAsJSON($options);
+		
+		if ($this->opo_view->numErrors() > 0) {
+			$this->errors = $this->opo_view->errors;
+		}
+		if (!$dont_add_content_to_response) {
+			$this->opo_response->addContent($content, 'view');
+		}
+		return $content;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render data as JSON
+	 * 
+	 * @param bool $dont_add_content_to_response
+	 * @param array $options
+	 * @return ?string
+	 */
+	public function renderAsText(?bool $dont_add_content_to_response=false, ?array $options=null) : ?string {
+		if (!$this->opo_view) { $this->initView(); }
+		
+		$content = $this->opo_view->renderAsText($options);
+		
+		if ($this->opo_view->numErrors() > 0) {
+			$this->errors = $this->opo_view->errors;
+		}
+		if (!$dont_add_content_to_response) {
+			$this->opo_response->addContent($content, 'view');
+		}
+		return $content;
+	}
+	# -------------------------------------------------------
+	/**
 	 * Get request object (by reference)
 	 *
 	 * @return RequestHTTP
 	 */
-	public function &getRequest() {
+	public function getRequest() {
 		return $this->opo_request;
 	}
 	# -------------------------------------------------------
@@ -178,20 +247,29 @@ class ActionController extends BaseObject {
 	 * Get response object (by reference)
 	 * @return ResponseHTTP
 	 */
-	public function &getResponse() {
+	public function getResponse() {
 		return $this->opo_response;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function forward($ps_path) {
 		$this->opo_request->setPath($ps_path);
 		$this->opo_request->setIsDispatched(false);
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function redirect($ps_url, $pn_code=302) {
 		$this->opo_response->setRedirect($ps_url, $pn_code);
 	}
 	# -------------------------------------------------------
-	public function __call($ps_methodname, $pa_params) {
+	/**
+	 *
+	 */
+	public function __call(string $method, array $path) {
 		$this->clearErrors();
 		
 		if (file_exists(__CA_APP_DIR__."/controllers/DefaultController.php")) {
@@ -210,7 +288,7 @@ class ActionController extends BaseObject {
 			    return $o_default_controller->{$this->opo_request->getController()}($va_params);
 			}
 		}
-		$this->postError(2310, _t("Action '%1' in class '%2' is invalid", $ps_methodname, get_class($this)), "ActionController->__call()");
+		$this->postError(2310, _t("Action '%1' in class '%2' is invalid", $method, get_class($this)), "ActionController->__call()");
 		return false;
 	}
 	# -------------------------------------------------------
