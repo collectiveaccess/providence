@@ -1204,6 +1204,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_tmp = $this->handle->getimagegeometry();
 			$this->properties["width"] = $va_tmp['width'] ?? null;
 			$this->properties["height"] = $va_tmp['height'] ?? null;
+			$this->_gmagickOrient();
 			
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
@@ -1501,11 +1502,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$rotation = -90;
 					break;
 			}
-			
-			if($rotation) { 
-				$this->handle->rotateImage('#ffffff', $rotation);
-			}
-						
+					
 			if (($rotation) && (abs($rotation) === 90)) {
 				$w = $this->properties["width"]; $h = $this->properties["height"];
 				$this->properties["width"] = $h;
