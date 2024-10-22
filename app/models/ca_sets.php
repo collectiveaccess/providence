@@ -2265,6 +2265,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				'user_id' => $po_request->getUserID(),
 				'template' => $vs_template
 			)), null, null, array());
+			$va_items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $va_items);
 			$o_view->setVar('items', $va_items);
 		} else {
 			$o_view->setVar('items', array());

@@ -2359,7 +2359,7 @@ itemOutput:
 		foreach($mapping as $mapping_id => $info) {
 			$item_settings = [];
 
-			if (is_array($info['options'])) {
+			if (is_array($info) && is_array($info['options'])) {
 				foreach($info['options'] as $k => $v) {
 					switch($k) {
 						case 'replacement_values':

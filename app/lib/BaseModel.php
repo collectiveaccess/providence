@@ -12411,7 +12411,7 @@ $pa_options["display_form_field_tips"] = true;
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
-				if (($vs_op == '=') && ($vm_value == '*')) { $vb_find_all = true; break(2); }
+				if (($vs_op == '=') && ($vm_value == '*') && (sizeof($pa_values) === 1)) { $vb_find_all = true; break(2); }
 				
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
