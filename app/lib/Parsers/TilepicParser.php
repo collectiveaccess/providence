@@ -1304,7 +1304,15 @@ class TilepicParser {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'IFD0', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
-					
+					if($vn_orientation > 0) {
+						// remove all metadata - especially orientation tag
+						$h->stripImage();
+						
+						// restore color profile if present, otherwise image will probabl look awful
+						if($profile = $va_exif['IFD0']['ICC_Profile'] ?? null) {
+							$h->profileimage('icc', $profile);
+						}
+					}
 					switch($vn_orientation) {
 						case 3:
 							$h->rotateimage("#FFFFFF", $rotation = 180);
@@ -1425,7 +1433,6 @@ class TilepicParser {
 					// noop
 				}
 				
-				$slice->rotateimage("#FFFFFF", $rotation * -1);
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];
