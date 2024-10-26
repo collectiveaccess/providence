@@ -405,7 +405,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					AssetLoadManager::register("ck5");
 					
 					$toolbar = caGetCK5Toolbar();
-					$element = "
+					$element .= "
 					<script type=\"module\">
 						import {
 						 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
@@ -451,7 +451,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						'buttonHTML' => _t('HTML'),
 						'buttonTitle' => _t('Show HTML source')
 					];
-					$element = "
+					$element .= "
 						<script type='text/javascript'>
 							let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
 							caUI.newTextEditor(
@@ -471,6 +471,11 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					);
 					break;
 			}
+		} else {
+			$element .= caHTMLTextInput(
+				'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
+				$opts
+			);
 		}
 		
 
