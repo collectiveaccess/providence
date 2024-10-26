@@ -1217,8 +1217,12 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 
-
-			$buf .= "<div class='recordTitle {$table_name}' style='width:190px; overflow:hidden;'>{$label}".(($show_idno) ? ($idno ? " ({$idno})" : '') : '')."</div>";
+			$buf .= "<div class='recordTitle {$table_name}' style='width:190px; overflow:hidden;'>{$label}";
+			
+			if($show_idno) {
+				$buf .= " ({$idno}) ";
+			}
+			$buf .= "</div>";
 			if (($table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$buf .= "<div id='inspectorLotMediaDownload'><strong>".((($num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $num_objects) : _t('Lot contains %1 objects', $num_objects))."</strong>\n";
 			}
@@ -1228,7 +1232,7 @@ function caEditorInspector($view, $options=null) {
 					$inspector_view->setVar('t_item', $t_item);
 					$buf .= $inspector_view->render('inspector_info.php');
 				}
-			}
+			}	
 		} else {
 			$parent_name = '';
 			if ($parent_id = $view->request->getParameter('parent_id', pInteger)) {
@@ -1418,7 +1422,7 @@ function caEditorInspector($view, $options=null) {
 		}
 		
 		// Download media in set
-		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs()) > 0)) {
+		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 			$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
 
 			TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
@@ -1574,6 +1578,23 @@ function caEditorInspector($view, $options=null) {
 
 		if(sizeof($tools) > 0) {
 			$buf .= "<div id='toolIcons'>".join(" ", $tools)."</div><!--End tooIcons-->";
+		}
+		
+		$next_by_idno = $prev_by_idno = null;
+		if($view->request->config->get("{$table_name}_inspector_display_idno_sequence_navigation")) {
+			$next_by_idno = $t_item->getAdjacentByIdno('next');
+			$prev_by_idno = $t_item->getAdjacentByIdno('previous');
+		}					
+		if($prev_by_idno || $next_by_idno) {
+			$buf .= "<div style='text-align: center;'><strong>"._t('Sequence:')."</strong><br>\n";	
+			if($prev_by_idno) {
+				$buf .= caEditorLink($view->request, '&lt; '.$prev_by_idno['idno'], '', $table_name, $prev_by_idno['id']);
+			}
+			if($prev_by_idno && $next_by_idno) { $buf .= ' | '; }
+			if($next_by_idno) {
+				$buf .= caEditorLink($view->request, $next_by_idno['idno'].' &gt;', '', $table_name, $next_by_idno['id']);
+			}	
+			$buf .= "</div>";
 		}
 		
 		if($more_info) {
@@ -2425,13 +2446,19 @@ function caTableIsActive($pm_table) {
   */
 function caFilterTableList($pa_tables, $pa_options=null) {
 	$o_config = Configuration::load();
-
+	
+	// allow ca_object_representations by default as it's always active as object media, even when
+	// disabled as a top-level record type
+	if(!is_array($force_table_nums = caGetOption('alwaysAllowTableNums', $pa_options, [56]))) {
+		$force_table_nums = [];
+	}
+	
 	// assume table display names (*not actual database table names*) are keys and table_nums are values
 	$va_filtered_tables = array();
 	foreach($pa_tables as $vs_display_name => $vn_table_num) {
 		$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 
-		if (!caTableIsActive($vn_table_num)) { continue; }
+		if (!caTableIsActive($vn_table_num) && !in_array($vn_table_num, $force_table_nums, true)) { continue; }
 		$vs_table_name = Datamodel::getTableName($vn_table_num);
 		$va_filtered_tables[$vs_display_name] = $vn_table_num;
 	}

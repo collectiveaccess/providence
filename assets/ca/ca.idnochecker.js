@@ -52,7 +52,6 @@ var caUI = caUI || {};
 			debounce: null
 		}, options);
 		
-		
 		that.checkIDNo = function() { 
 			jQuery('#' + that.idnoStatusID).html((that.processIndicator ? that.processIndicator : ''));
 			var ids = jQuery.makeArray(jQuery(that.idnoFormElementIDs.join(',')));
@@ -97,7 +96,7 @@ var caUI = caUI || {};
                             for(var k in data.sequences) {
                                 for(var j in that.idnoFormElementIDs) {
                                     if((that.idnoFormElementIDs[j] === ('#idno_' + k)) || (that.idnoFormElementIDs[j] === ('#idno_stub_' + k))) {
-                                        jQuery(that.idnoFormElementIDs[j]).html(that.sequenceMessage.replace('%1', data.sequences[k]));
+                                    	jQuery(that.idnoFormElementIDs[j]).html(that.sequenceMessage.replace('%1', data.sequences[k]));
                                     }
                                 }
                             }

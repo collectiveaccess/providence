@@ -1491,6 +1491,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(!self::$whitespace_tokenizer_regex) {
 			self::$whitespace_tokenizer_regex = caGetSearchConfig()->get('whitespace_tokenizer_regex');
 		}
+		$content = html_entity_decode($content, ENT_QUOTES, 'UTF-8');
 		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 
 		switch($alphabet = caIdentifyAlphabet($content)) {
