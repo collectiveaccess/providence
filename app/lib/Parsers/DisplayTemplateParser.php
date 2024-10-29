@@ -757,13 +757,14 @@ class DisplayTemplateParser {
 							$va_tmpl_val = array_slice($va_tmpl_val, 0, $limit);
 						}
 						
-						if (($vn_start > 0) || !is_null($vn_length)) { 
-							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
-						}
-						
 						if ($vs_unit_filter_regex) {
 							$va_tmpl_val = array_filter($va_tmpl_val, function($v) use ($vs_unit_filter_regex) { return preg_match($vs_unit_filter_regex, $v); });
 						}
+						
+						if (($vn_start > 0) || !is_null($vn_length)) { 
+							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
+						}
+						$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);

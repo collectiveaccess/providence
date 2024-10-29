@@ -3382,8 +3382,8 @@ function caFileIsIncludable($ps_file) {
 
 		$vs_content = curl_exec($vo_curl);
 
-		if(curl_getinfo($vo_curl, CURLINFO_HTTP_CODE) !== 200) {
-			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1", $ps_url). " ". print_r(curl_getinfo($vo_curl), true));
+		if(($code = curl_getinfo($vo_curl, CURLINFO_HTTP_CODE)) !== 200) {
+			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1 [HTTP code was %2]", $ps_url, $code). " ". print_r(curl_getinfo($vo_curl), true));
 		}
 		curl_close($vo_curl);
 		return $vs_content;
