@@ -1325,7 +1325,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// END evaluate skip criteria
 		
 		// Force display default for list items to display text (this is the traditional default)
-		if(!($settings['returnIdno'] ?? false) && !($settings['convertCodesToIdno'] ?? false) && !($settings['convertCodesToDisplayText'] ?? false)) {
+		if(!($settings['returnIdno'] ?? false) && !($settings['convertCodesToIdno'] ?? false) && !isset($settings['convertCodesToDisplayText'])) {
 			$settings['convertCodesToDisplayText'] = true;
 		}
 
