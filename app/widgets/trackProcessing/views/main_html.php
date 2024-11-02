@@ -273,13 +273,16 @@ if(!$is_ajax) {
 ?>
 <script type="text/javascript">
 	let trackProcessing<?= $widget_id; ?> = jQuery.cookieJar('trackProcessing<?= $widget_id; ?>');
-	jQuery(document).ready(function() {
+	function trackProcessing<?= $widget_id; ?>SetTabs() {
 		jQuery('#tabContainer_<?= $widget_id; ?>').tabs({ 
 			active: trackProcessing<?= $widget_id; ?>.get('default_tab'),
 			select: function(event, ui) {
 				trackProcessing<?= $widget_id; ?>.set('default_tab', ui.index);
 			}
 		});
+	}
+	
+	jQuery(document).ready(function() {
 		jQuery('#widget_<?= $widget_id; ?>').find('a.widgetTaskRetry').on('click', function(e) {
 			let task_id = jQuery(this).data('job_id');
 			jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'runWidgetFunction'); ?>', { widget_id: <?= json_encode($widget_id); ?>, method: 'RetryJob', options: JSON.stringify({task_id: task_id})}, function(e) {
@@ -288,11 +291,14 @@ if(!$is_ajax) {
 			return false;
 		});
 	});
+	trackProcessing<?= $widget_id; ?>SetTabs();
 <?php
 	if (!$this->request->isAjax()) {
 ?>
 		setInterval(function() {
-			jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>');
+			jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>', function(e) {
+				trackProcessing<?= $widget_id; ?>SetTabs();
+			});
 		}, <?= ($this->getVar('update_frequency') * 1000); ?>);
 <?php
 	}
