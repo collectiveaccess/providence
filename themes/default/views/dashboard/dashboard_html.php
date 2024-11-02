@@ -33,7 +33,7 @@ AssetLoadManager::register('dashboard');			// adds caUI dashboard library
 <!-- Empty DIV uses for the "popup" widget chooser panel -->
 <div id="dashboardWidgetPanel" class="dashboardWidgetPanel">
 	<a href="#" onclick="caDashboardWidgetPanel.hideWidgetPanel();" class="dashboardWidgetPanelHide">&nbsp;</a>
-		<div id="dashboardWidgetPanelTitle"><?= _t('Add a Widget'); ?></div>
+	<div id="dashboardWidgetPanelTitle"><?= _t('Add a Widget'); ?></div>
 	<div id="dashboardWidgetPanelContent">
 		<!-- empty -->
 	</div>
