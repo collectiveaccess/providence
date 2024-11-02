@@ -129,7 +129,7 @@ class SearchObjectRepresentationsController extends BaseSearchController {
 					'action:can_search_ca_object_representationd' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_object_representationd_no_search_builder_for_types:ca_object_representationd' => 'AND',
-					'configuration:!ca_object_representationd_disable_searchbuilder' => 'AND'
+					'configuration:!ca_object_representationd_disable_search_builder' => 'AND'
 				]
 			],
 			[

@@ -1217,8 +1217,12 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 
-
-			$buf .= "<div class='recordTitle {$table_name}' style='width:190px; overflow:hidden;'>{$label}".(($show_idno) ? ($idno ? " ({$idno})" : '') : '')."</div>";
+			$buf .= "<div class='recordTitle {$table_name}' style='width:190px; overflow:hidden;'>{$label}";
+			
+			if($show_idno) {
+				$buf .= " ({$idno}) ";
+			}
+			$buf .= "</div>";
 			if (($table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$buf .= "<div id='inspectorLotMediaDownload'><strong>".((($num_objects = $t_item->numObjects(null, ['excludeChildObjects' => $view->request->config->get("exclude_child_objects_in_inspector_log_count")])) == 1) ? _t('Lot contains %1 object', $num_objects) : _t('Lot contains %1 objects', $num_objects))."</strong>\n";
 			}
@@ -1228,7 +1232,7 @@ function caEditorInspector($view, $options=null) {
 					$inspector_view->setVar('t_item', $t_item);
 					$buf .= $inspector_view->render('inspector_info.php');
 				}
-			}
+			}	
 		} else {
 			$parent_name = '';
 			if ($parent_id = $view->request->getParameter('parent_id', pInteger)) {
@@ -1418,7 +1422,7 @@ function caEditorInspector($view, $options=null) {
 		}
 		
 		// Download media in set
-		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs()) > 0)) {
+		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 			$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
 
 			TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
@@ -1533,11 +1537,11 @@ function caEditorInspector($view, $options=null) {
 		// Get component information
 		$object_container_types = $view->request->config->getList('ca_objects_container_types');
 		$object_component_types = $view->request->config->getList('ca_objects_component_types');
-		$takes_components = (in_array($t_item->getTypeCode(), $object_container_types) || in_array('*', $object_container_types));
+		$takes_components = (method_exists($t_item, "getTypeCode") && (in_array($t_item->getTypeCode(), $object_container_types) || in_array('*', $object_container_types)));
 		
 		$can_add_component = (($table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 
-		if((($takes_components && isset($object_component_types[0])) || in_array($t_item->getTypeCode(), $object_component_types))) {
+		if((($takes_components && isset($object_component_types[0])) || ($takes_components && in_array($t_item->getTypeCode(), $object_component_types)))) {
 			if (method_exists($t_item, 'getComponentCount')) {
 				$component_count = $t_item->getComponentCount();
 				if ($t_ui && ($component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $view->request)) && ($vs_component_list_screen !== $view->request->getActionExtra())) { 
@@ -1574,6 +1578,23 @@ function caEditorInspector($view, $options=null) {
 
 		if(sizeof($tools) > 0) {
 			$buf .= "<div id='toolIcons'>".join(" ", $tools)."</div><!--End tooIcons-->";
+		}
+		
+		$next_by_idno = $prev_by_idno = null;
+		if($view->request->config->get("{$table_name}_inspector_display_idno_sequence_navigation")) {
+			$next_by_idno = $t_item->getAdjacentByIdno('next');
+			$prev_by_idno = $t_item->getAdjacentByIdno('previous');
+		}					
+		if($prev_by_idno || $next_by_idno) {
+			$buf .= "<div style='text-align: center;'><strong>"._t('Sequence:')."</strong><br>\n";	
+			if($prev_by_idno) {
+				$buf .= caEditorLink($view->request, '&lt; '.$prev_by_idno['idno'], '', $table_name, $prev_by_idno['id']);
+			}
+			if($prev_by_idno && $next_by_idno) { $buf .= ' | '; }
+			if($next_by_idno) {
+				$buf .= caEditorLink($view->request, $next_by_idno['idno'].' &gt;', '', $table_name, $next_by_idno['id']);
+			}	
+			$buf .= "</div>";
 		}
 		
 		if($more_info) {
@@ -2425,13 +2446,19 @@ function caTableIsActive($pm_table) {
   */
 function caFilterTableList($pa_tables, $pa_options=null) {
 	$o_config = Configuration::load();
-
+	
+	// allow ca_object_representations by default as it's always active as object media, even when
+	// disabled as a top-level record type
+	if(!is_array($force_table_nums = caGetOption('alwaysAllowTableNums', $pa_options, [56]))) {
+		$force_table_nums = [];
+	}
+	
 	// assume table display names (*not actual database table names*) are keys and table_nums are values
 	$va_filtered_tables = array();
 	foreach($pa_tables as $vs_display_name => $vn_table_num) {
 		$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 
-		if (!caTableIsActive($vn_table_num)) { continue; }
+		if (!caTableIsActive($vn_table_num) && !in_array($vn_table_num, $force_table_nums, true)) { continue; }
 		$vs_table_name = Datamodel::getTableName($vn_table_num);
 		$va_filtered_tables[$vs_display_name] = $vn_table_num;
 	}
@@ -3887,7 +3914,7 @@ function caEditorBundleBatchEditorControls($request, $placement_id, $t_instance,
 	
 	$buf = '';
 	if(caGetOption('showBatchEditorButton', $options, false)) {
-		$buf = '<div class="button batchEdit">'.caNavLink($request, caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit all'), '', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
+		$buf = '<div class="button batchEdit">'.caNavLink($request, "<span class='form-button'>".caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit')."</span>", 'form-button', '*', '*', 'BatchEdit', ['placement_id' => $placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $request->getActionExtra()]).'</div>';
 	}
 	return $buf;
 }
@@ -3947,7 +3974,7 @@ function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefi
 	$interstitials = caGetOption('ca_storage_locations_setInterstitialElementsOnAdd', $settings, null);
 
 	$vs_buf = "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_button' class='editorBundleReturnToHomeControl'>".
-		caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return to home locations"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
+		caJSButton($po_request, __CA_NAV_ICON_HOME__, _t("Return home"), "{$ps_id_prefix}_return_to_home_locations", ['onclick' => "caReturnToHomeLocationToggleForm{$ps_id_prefix}(); return false;"], ['size' => '15px']).
 		"</div>";
 
 	$vs_buf .= "<div id='{$ps_id_prefix}_editor_bundle_return_to_home_controls_message' class='editorBundleReturnToHomeControlsMessage'></div>\n";

@@ -632,11 +632,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Set setting values. You must call insert() or update() to write the settings to the database.
 	 *
 	 * @param string $setting
-	 * @param string $value
+	 * @param mixed $value
 	 *
 	 * @return bool
 	 */
-	public function setSetting(string $setting, string $value) {
+	public function setSetting(string $setting, $value) {
 		$current_settings = $this->getAvailableSettings();
 		
 		if(($setting === 'exporter_format') && $value) {
@@ -1325,7 +1325,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// END evaluate skip criteria
 		
 		// Force display default for list items to display text (this is the traditional default)
-		if(!($settings['returnIdno'] ?? false) && !($settings['convertCodesToIdno'] ?? false) && !($settings['convertCodesToDisplayText'] ?? false)) {
+		if(!($settings['returnIdno'] ?? false) && !($settings['convertCodesToIdno'] ?? false) && !isset($settings['convertCodesToDisplayText'])) {
 			$settings['convertCodesToDisplayText'] = true;
 		}
 
@@ -2359,7 +2359,7 @@ itemOutput:
 		foreach($mapping as $mapping_id => $info) {
 			$item_settings = [];
 
-			if (is_array($info['options'])) {
+			if (is_array($info) && is_array($info['options'])) {
 				foreach($info['options'] as $k => $v) {
 					switch($k) {
 						case 'replacement_values':
@@ -2478,7 +2478,7 @@ itemOutput:
         foreach($settings as $k => $v) {
             $o_sheet->setCellValue($a_to_z[0].$line, "Setting");
             $o_sheet->setCellValue($a_to_z[1].$line, $k);
-            $o_sheet->setCellValue($a_to_z[2].$line, $v);
+            $o_sheet->setCellValue($a_to_z[2].$line, is_array($v) ? join(";",$v) : $v);
             $line++;
         }
         
@@ -2527,7 +2527,7 @@ itemOutput:
 	 * 
 	 * @return null|string
 	 */
-	public function getTargetTableName() : ?BaseModel {
+	public function getTargetTableName() : ?string {
 		if(!$this->getPrimaryKey()) { return null; }
 
 		return Datamodel::getTableName($this->get('table_num'));

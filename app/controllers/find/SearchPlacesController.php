@@ -135,7 +135,7 @@ class SearchPlacesController extends BaseSearchController {
 					'action:can_search_ca_places' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_places_no_search_builder_for_types:ca_places' => 'AND',
-					'configuration:!ca_places_disable_searchbuilder' => 'AND'
+					'configuration:!ca_places_disable_search_builder' => 'AND'
 				]
 			],
 			[

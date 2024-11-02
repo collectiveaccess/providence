@@ -702,7 +702,9 @@ class BaseFindController extends ActionController {
 					$this->view->setVar('error', join("; ", $t_set->getErrors()));
 				}
 		
-				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
+				if(!$t_set->addLabel(['name' => $vs_set_name], $g_ui_locale_id, null, true)) {
+					$this->view->setVar('error', _t('Could not add label to set'));
+				}
 		
 				$vn_added_items_count = $t_set->addItems($va_row_ids, ['user_id' => $this->request->getUserID()]);
 			

@@ -129,7 +129,7 @@ class SearchCollectionsController extends BaseSearchController {
 					'action:can_search_ca_collections' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_collections_no_search_builder_for_types:ca_collections' => 'AND',
-					'configuration:!ca_collections_disable_searchbuilder' => 'AND'
+					'configuration:!ca_collections_disable_search_builder' => 'AND'
 				]
 			],
 			[

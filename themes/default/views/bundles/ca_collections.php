@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,7 +114,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 <?php
-	switch($settings['list_format']) {
+	switch($settings['list_format'] ?? null) {
 		case 'list':
 ?>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">

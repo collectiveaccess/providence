@@ -872,7 +872,7 @@ if (!$for_current_value_reindex) {
 								}
 							}
 						}
-						if($pa_field_data[$vs_field] ?? null)  { $va_content[$pa_field_data[$vs_field]] = true; }
+						if(strlen($pa_field_data[$vs_field] ?? '') > 0)  { $va_content[$pa_field_data[$vs_field]] = true; }
 
 						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, array_keys($va_content), array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
 						$fld_init = true;

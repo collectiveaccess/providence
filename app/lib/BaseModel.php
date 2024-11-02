@@ -12131,6 +12131,36 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return primary key and idno for record with idno following or preceding that of currently loaded record
+	 *
+	 * @param string $mode Either "next" or "previous"
+	 *
+	 * @return array Array with key 'id' with primary key of next or previous record, key 'idno' with idno of next or previous record; null if no record found
+	 */
+	public function getAdjacentByIdno(string $mode) : ?array {
+		if(!$this->getPrimaryKey()) { return null; }
+		$idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
+		if(!$idno_fld || !$this->hasField("{$idno_fld}_sort_num")) { return null; }
+		$pk = $this->primaryKey();
+		$table = $this->tableName();
+		$db = $this->getDb();
+		$n = $this->get("{$idno_fld}_sort_num");
+		$deleted = ($this->hasField('deleted')) ? ' AND deleted = 0' : '';
+		if (strtolower($mode) === 'previous') {
+			$qr = $db->query("SELECT {$pk}, {$idno_fld} FROM {$table} WHERE {$idno_fld}_sort_num < {$n} {$deleted} ORDER BY {$idno_fld}_sort_num DESC LIMIT 1");
+		} else {
+			$qr = $db->query("SELECT {$pk}, {$idno_fld} FROM {$table} WHERE {$idno_fld}_sort_num > {$n} {$deleted} ORDER BY {$idno_fld}_sort_num ASC LIMIT 1");
+		}
+		if($qr && $qr->nextRow()) {
+			return [
+				'id' => $qr->get($pk),
+				'idno' => $qr->get($idno_fld)
+			];
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Find row(s) with fields having values matching specific values. 
 	 * Results can be returned as model instances, numeric ids or search results (when possible).
 	 *
@@ -12381,7 +12411,7 @@ $pa_options["display_form_field_tips"] = true;
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
-				if (($vs_op == '=') && ($vm_value == '*')) { $vb_find_all = true; break(2); }
+				if (($vs_op == '=') && ($vm_value == '*') && (sizeof($pa_values) === 1)) { $vb_find_all = true; break(2); }
 				
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }

@@ -124,6 +124,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'filterNonPrimaryRepresentations',
 							'type' => Type::boolean(),
 							'description' => 'Only return primary representation?'
+						],
+						[
+							'name' => 'filterDeaccessioned',
+							'type' => Type::boolean(),
+							'description' => 'Remove deaccessioned records?',
+							'defaultValue' => false
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -142,7 +148,8 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'start' => $args['start'],
 								'limit' => $args['limit'],
 								'restrictToTypes' => $args['restrictToTypes'],
-								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false
+								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false,
+								'filterDeaccessioned' => $args['filterDeaccessioned'] ?? false
 							]];
 						}
 						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
@@ -179,7 +186,7 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								$s->setTypeRestrictions($t['restrictToTypes'], ['includeSubtypes' => $args['includeSubtypes'] ?? true]);
 							}
 						
-							$qr = $s->search($search, ['checkAccess' => $t['checkAccess'] ?? null]);
+							$qr = $s->search($search, ['checkAccess' => $t['checkAccess'] ?? null, 'filterDeaccessionedRecords' => $t['filterDeaccessioned'] ?? false]);
 							$rec = \Datamodel::getInstance($table, true);
 						
 							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
@@ -266,6 +273,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'filterNonPrimaryRepresentations',
 							'type' => Type::boolean(),
 							'description' => 'Only return primary representation?'
+						],
+						[
+							'name' => 'filterDeaccessioned',
+							'type' => Type::boolean(),
+							'description' => 'Remove deaccessioned records?',
+							'defaultValue' => false
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -285,7 +298,8 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'limit' => $args['limit'],
 								'restrictToTypes' => $args['restrictToTypes'],
 								'includeSubtypes' => $args['includeSubtypes'] ?? true,
-								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false
+								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false,
+								'filterDeaccessioned' => $args['filterDeaccessioned'] ?? false
 							]];
 						}
 						
@@ -318,7 +332,8 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'allowWildcards' => true, 
 								'restrictToTypes' => $t['restrictToTypes'], 
 								'includeSubtypes' => $t['includeSubtypes'],
-								'checkAccess' => $check_access
+								'checkAccess' => $check_access,
+								'filterDeaccessionedRecords' => $filterDeaccessioned
 							]))) {
 								throw new \ServiceException(_t('No results for table: %1', $table));
 							}
