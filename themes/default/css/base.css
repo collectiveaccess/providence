@@ -1069,9 +1069,6 @@ li.sfHover > a > .sf-sub-indicator {
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-   /*  background:	url('../graphics/icons/info.png') no-repeat 10px 15px; */
-   /* background-size:32px 32px; */
-   /*  text-indent: 32px; */
     background-color: #f3f3f3;
     padding: 5px;
     margin-bottom: 10px;
@@ -1086,8 +1083,6 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-   /*  background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px; */
-    text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
@@ -1098,8 +1093,6 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    /* background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px; */
-    text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
