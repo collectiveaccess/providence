@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,27 +25,30 @@
  *
  * ----------------------------------------------------------------------
  */
-
 if (sizeof($this->getVar('notifications'))) {
 	foreach($this->getVar('notifications') as $notification) {
+		$class = "info";
+		$icon_class = "fa fa-info-circle";
+		
 		switch($notification['type']) {
 			case __NOTIFICATION_TYPE_ERROR__:
-				print '<div class="notification-error-box rounded">';
-				print '<ul class="notification-error-box">';
-				print "<li class='notification-error-box'>".$notification['message']."</li>\n";
+				$class = "error";
+				$icon_class = "fa fa-exclamation-triangle";
 				break;
 			case __NOTIFICATION_TYPE_WARNING__:
-				print '<div class="notification-warning-box rounded">';
-				print '<ul class="notification-warning-box">';
-				print "<li class='notification-warning-box'>".$notification['message']."</li>\n";
-				break;
-			default:
-				print '<div class="notification-info-box rounded">';
-				print '<ul class="notification-info-box">';
-				print "<li class='notification-info-box'>".$notification['message']."</li>\n";
+				$class = "warning";
+				$icon_class = "fa fa-exclamation-circle";
 				break;
 		}
 ?>
+		<div class="notification-<?= $class; ?>-box rounded">
+			<ul class="notification-<?= $class; ?>-box">
+				<li class='notification-<?= $class; ?>-box'>
+					<div class="notification-message-container">
+						<div><i class="<?= $icon_class; ?>" aria-hidden="true" style="font-size: 36px;"></i></div>
+						<div><?=$notification['message']; ?></div>
+					</div>
+				</li>
 			</ul>
 		</div>
 <?php
