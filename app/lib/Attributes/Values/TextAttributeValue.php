@@ -387,16 +387,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		if ($settings['usewysiwygeditor'] ?? null) {
 			$o_config = Configuration::load();
-			//if (!is_array($toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $toolbar_config = []; }
-			
-			// $show_media_content_option = false;
-// 			if (
-// 				(isset($options['t_subject']) && is_object($options['t_subject'])) 
-// 				&& 
-// 				($show_media_content_option = (isset($settings['referenceMediaIn']) && (bool)$settings['referenceMediaIn']))
-// 			) {
-// 				$toolbar_config['misc'][] = 'Media';
-// 			}
 			
 			$use_editor = $o_config->get('wysiwyg_editor');
 			
@@ -434,12 +424,15 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							} )
 							.catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";
-					
 											
-					$element .= "<div style='width: {$width}; height: {$height}; overflow-y: auto;'>".caHTMLTextInput(
+					$element .= "<div style='width: {$width}; height: {$height}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n}'>".caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$opts
-					)."</div>";
+					)."</div><style>
+.{fieldNamePrefix}{$element_info['element_id']}_container_{n} .ck-editor__editable_inline {
+    min-height: {$height};
+}
+</style>\n";
 					break;
 				case 'quilljs';
 				default:
@@ -451,6 +444,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						'buttonHTML' => _t('HTML'),
 						'buttonTitle' => _t('Show HTML source')
 					];
+					
+					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_container_{n}' style='width: {$width};'>";
 					$element .= "
 						<script type='text/javascript'>
 							let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
@@ -463,12 +458,13 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							);
 						</script>\n";
 					$opts['style'] = 'display: none;';
-					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='width: {$width}; height: {$height};' class='ql-ca-editor'></div>";
+					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='height: {$height};' class='ql-ca-editor'></div>";
 							
 					$element .= caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$opts
 					);
+					$element .= "</div>\n";
 					break;
 			}
 		} else {

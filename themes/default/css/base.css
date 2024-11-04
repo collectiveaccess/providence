@@ -8120,10 +8120,13 @@ div.ql-container {
     
 }
 
+.ql-toolbar.ql-snow {
+    padding: 0px !important;
+}
+
 .ql-toolbar.ql-snow .ql-formats {
     margin-right:25px;
     white-space: nowrap;
-
 }
 
 span.ql-formats button {
