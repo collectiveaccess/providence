@@ -2209,11 +2209,11 @@ itemOutput:
 							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
 							// in the mapping document.
 
-							$keys_to_lookup = [$mapping_item_to_repeat];
+							$keys_to_lookup = [(string)$mapping_item_to_repeat];
 
 							foreach($mapping as $item_key => $item) {
-								if(in_array($item['parent_id'], $keys_to_lookup, true)) {
-									$keys_to_lookup[] = $item_key;
+								if(in_array((string)$item['parent_id'], $keys_to_lookup, true)) {
+									$keys_to_lookup[] = (string)$item_key;
 									$new_items[$key."_:_".$item_key] = $item;
 									$new_items[$key."_:_".$item_key]['parent_id'] = $key . ($item['parent_id'] ? "_:_".$item['parent_id'] : "");
 									
@@ -2221,7 +2221,6 @@ itemOutput:
 								}
 							}
 						}
-
 						$mapping = $mapping + $new_items;
 					}
 
