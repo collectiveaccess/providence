@@ -6632,8 +6632,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$id = $t->get($field);
 							} elseif($is_metadata_value) {
 								$t_attr = new ca_attributes($this->get('attribute_id'));
-								if(!($row_id = $t_attr->get('row_id'))) { return false; }
-								if(!$t->load($row_id)) { return false; }
+								if(!($xrow_id = $t_attr->get('row_id'))) { return false; }
+								if(!$t->load($xrow_id)) { return false; }
 								$id = $t->get($field);
 							} else {
 								$id = $this->get($field);
@@ -6669,11 +6669,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							$t_attr = new ca_attributes($id);
 							$cur_table = $primary_table = Datamodel::getTableName($t_attr->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($t_attr->get('table_num'));
-							$row_id = $t_attr->get('row_id');
+							$xrow_id = $t_attr->get('row_id');
 						} elseif ($is_metadata && (($id = $this->get('row_id')) > 0)) {	// At a minimum always log self as subject
 							$cur_table = $primary_table = Datamodel::getTableName($this->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($this->get('table_num'));
-							$row_id = $this->get('row_id');
+							$xrow_id = $this->get('row_id');
 						}
 
 						$sql = "SELECT {$dest_table}.{$dest_primary_key} FROM {$cur_table}\n";
@@ -6687,7 +6687,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						}
 						$sql .= "WHERE {$primary_table}.{$primary_table_pk} = ?";
 
-						if ($qr_subjects = $o_db->query($sql, [$row_id])) {
+						if ($qr_subjects = $o_db->query($sql, [$xrow_id])) {
 							if (!isset($subjects[$dest_table_num]) || !is_array($subjects[$dest_table_num])) { $subjects[$dest_table_num] = []; }
 							while($qr_subjects->nextRow()) {
 								if (($id = $qr_subjects->get($dest_primary_key)) > 0) {
