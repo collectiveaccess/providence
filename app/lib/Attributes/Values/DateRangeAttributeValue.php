@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_DATERANGE__", 2);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -373,7 +369,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) {
 				if($locale == self::$locale || !DateRangeAttributeValue::$o_tep->parse($ps_value, ['locale' => self::$locale])) { 
 					// invalid date
-					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel'] ?? null), 'DateRangeAttributeValue->parseValue()');
+					$this->postError(1970, _t('Date %1 is invalid for %2', $ps_value, $pa_element_info['displayLabel'] ?? null), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				}
 			}
