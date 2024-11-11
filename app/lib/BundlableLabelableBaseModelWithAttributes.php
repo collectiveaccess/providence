@@ -7432,7 +7432,7 @@ if (!$vb_batch) {
                     if ($t_parent->load($vn_parent_id)) {
                     	$pidno = $t_parent->get($this->tableName().".{$vs_idno_fld}");
                         $this->opo_idno_plugin_instance->isChild(true, $pidno); 
-                        if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
+                        if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT') && !$this->opo_idno_plugin_instance->formatHas('INHERIT')) {
                             $this->set($vs_idno_fld, 
                                 ($pidno) ? 
                                     $this->opo_idno_plugin_instance->makeTemplateFromValue($pidno, 1, true)

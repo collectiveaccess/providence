@@ -430,6 +430,11 @@ class MultipartIDNumber extends IDNumber {
 						$is_parent = $i;
 						$element_vals[] = $this->getParentValue();
 						break;
+					case 'INHERIT':
+						$pv = $this->getParentValue();
+						$pv_tmp = explode($separator, $pv);
+						$element_vals[] = $pv[$i] ?? null;
+						break;
 					case 'SERIAL':
 						$element_vals[] = '';
 						break;
@@ -447,6 +452,11 @@ class MultipartIDNumber extends IDNumber {
 					case 'PARENT':
 						$is_parent = $i;
 						$element_vals[$i] = $value[$ename] ?? null;
+						break;
+					case 'INHERIT':
+						$pv = $this->getParentValue();
+						$pv_tmp = explode($separator, $pv);
+						$element_vals[$i] = $pv[$i] ?? null;
 						break;
 					case 'CONSTANT':
 						$element_vals[$i] = $element_info['value'];
@@ -468,6 +478,11 @@ class MultipartIDNumber extends IDNumber {
 				switch($element_info['type']) {
 					case 'PARENT':
 						$is_parent = $i;
+						break;
+					case 'INHERIT':
+						$pv = $this->getParentValue();
+						$pv_tmp = explode($separator, $pv);
+						$element_vals[$i] = $pv[$i] ?? null;
 						break;
 					case 'CONSTANT':
 						$element_vals[$i] = $element_info['value'];
@@ -1000,6 +1015,7 @@ class MultipartIDNumber extends IDNumber {
 			if (($info['type'] == 'SERIAL') && (($element_values[$i] ?? null) == '')) {
 				$next_in_seq_is_present = true;
 			}
+			$options['index'] = $i;
 			$tmp = $this->genNumberElement($ename, $name, $element_values[$i] ?? null, $id_prefix, $generate_for_search_form, $options);
 			$element_control_names[] = $name.'_'.$ename;
 
@@ -1443,6 +1459,7 @@ class MultipartIDNumber extends IDNumber {
 
 				break;
 			# ----------------------------------------------------
+				case 'INHERIT':
 				case 'PARENT':
 				$width = $this->getElementWidth($element_info, 3);
 
@@ -1451,6 +1468,10 @@ class MultipartIDNumber extends IDNumber {
 				} else {
 					if ($element_value == '') {
 						$next_num = $this->getParentValue();
+						if($element_info['type'] === 'INHERIT') {
+							$pv = explode($this->getSeparator(), $next_num);
+							$next_num = $pv[1];
+						}
 						$element .= '&lt;'._t('%1', $next_num).'&gt;'.'<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($next_num, ENT_QUOTES, 'UTF-8').'"/>';
 					} else {
 						if ($element_info['editable']) {
