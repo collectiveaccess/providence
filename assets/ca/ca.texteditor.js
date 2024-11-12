@@ -27,11 +27,7 @@
 var caUI = caUI || {};
 
 /**
- * This file defines two functions in the `caUI` namespace, for converting between (one function for each direction of
- * conversion) the CA search query syntax and the jQuery query builder hierarchical rule set structure.
- *
- * The only range filter that is supported here is `between`.  The Lucene / CA search syntax does not readily support
- * `greater_than` or `less_than`.
+ * 
  */
 (function () {
 	/**
