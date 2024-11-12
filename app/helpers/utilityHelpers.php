@@ -765,7 +765,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGetTempDirPath($options=null) {
-		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_APP_DIR__."/tmp"; }
+		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_TEMP_DIR__; }
 	
 		if (!empty($_ENV['TMP'])) {
 			return realpath($_ENV['TMP']);
@@ -906,12 +906,12 @@ function caFileIsIncludable($ps_file) {
 			$threshold = 1800;
 		}
 		
-		$files_to_delete = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, false, false, true, ['notModifiedSince' => time() - $threshold]);
+		$files_to_delete = caGetDirectoryContentsAsList(__CA_TEMP_DIR__, true, false, false, true, ['notModifiedSince' => time() - $threshold]);
 	
 		$count = 0;
 		foreach($files_to_delete as $file_to_delete) {
 			if(is_writeable($file_to_delete)) {
-				if(preg_match("!^".__CA_APP_DIR__.'/tmp'."/wkhtmltopdf[\d]+!", $file_to_delete)) {
+				if(preg_match("!^".__CA_TEMP_DIR__."/wkhtmltopdf[\d]+!", $file_to_delete)) {
 					@unlink($file_to_delete);
 					$count++;
 				}
@@ -1636,7 +1636,7 @@ function caFileIsIncludable($ps_file) {
 	  *
 	  */
 	function caGetCacheObject($ps_prefix, $pn_lifetime=86400, $ps_cache_dir=null, $pn_cleaning_factor=100) {
-		if (!$ps_cache_dir) { $ps_cache_dir = __CA_APP_DIR__.'/tmp'; }
+		if (!$ps_cache_dir) { $ps_cache_dir = __CA_TEMP_DIR__; }
 		$va_frontend_options = array(
 			'cache_id_prefix' => $ps_prefix,
 			'lifetime' => $pn_lifetime,
@@ -4776,7 +4776,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Path to file
 	 */
 	function caFetchFileFromUrl($url, $dest=null, array $options=null) {
-		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
+		$tmp_file = $dest ? $dest : tempnam(__CA_TEMP_DIR__, 'caUrlCopy');
 		
 		$r_outgoing_fp = @fopen($tmp_file, 'w');
 		if(!$r_outgoing_fp) {

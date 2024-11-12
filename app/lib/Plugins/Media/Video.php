@@ -755,7 +755,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 					// we need to be in a directory where we can write (libx264 logfiles)
 					$cwd = getcwd();
-					chdir(__CA_APP_DIR__."/tmp/");
+					chdir(__CA_TEMP_DIR__);
 					
 					$cmd = '';
 					if ($ffmpeg_command) {
