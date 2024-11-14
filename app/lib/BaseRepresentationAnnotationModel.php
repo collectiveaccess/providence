@@ -275,7 +275,7 @@ class BaseRepresentationAnnotationModel extends BundlableLabelableBaseModelWithA
  	}
  	# ------------------------------------------------------
  	public function getPropertyValue($ps_property, $options=null) {
- 		return $this->opo_annotations_properties->getProperty($ps_property, false, $options);
+ 		return $this->opo_annotations_properties ? $this->opo_annotations_properties->getProperty($ps_property, false, $options) : null;
  	}
  	# ------------------------------------------------------
  	public function getPropertyValueForID(int $annotation_id, string $property) {
