@@ -205,7 +205,7 @@
 		
 		// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
 		if ($use_wysiwyg_editor && !isset($attributes['id'])) {
-			$attributes['id'] = "pawtucket_global_{$name}";
+			$attributes['id'] = $name;
 		}
 		
 		
@@ -229,7 +229,7 @@
 						} from 'ckeditor5';
 					
 						ClassicEditor
-							.create( document.querySelector( '#pawtucket_global_{$name}' ), {
+							.create( document.querySelector( '#{$name}' ), {
 								plugins: [ 
 									BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
 									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
@@ -250,7 +250,7 @@
 					
 					$attr_string = _caHTMLMakeAttributeString($attributes, $options);			
 					$element .= "<div id=\"{$name}_container\" style='width: {$width}px; height: {$height}px; overflow-y: auto;'>
-						<textarea name=\"{$name}\" id=\"pawtucket_global_{$name}\">{$attributes['value']}</textarea></div>
+						<textarea name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</textarea></div>
 <style>
 #{$name}_container .ck-editor__editable_inline {
     min-height: calc({$height}px - 100px);
@@ -268,11 +268,11 @@
 						'buttonTitle' => _t('Show HTML source')
 					];
 					$opts['style'] = 'display: none;';
-					$element .= "<div id='{$name}_editor' style='width: {$width}; height: {$height};' class='ql-ca-editor'></div>";
+					$element .= "<div id='{$name}_editor' style='width: {$width}px; height: {$height}px;' class='ql-ca-editor'></div>";
 							
 					$element .= caHTMLTextInput(
 						$name, 
-						['id' => $name]
+						['id' => "{$name}", 'value' => $attributes['value'], 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
 					);
 					
 					$element .= "
@@ -281,7 +281,7 @@
 							caUI.newTextEditor(
 								'{$name}_editor', 
 								'{$name}',
-								'',
+								".json_encode($attributes['value']).",
 								toolbarConfig{$name},
 								".json_encode($quill_opts)."
 							);
