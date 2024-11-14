@@ -138,117 +138,173 @@
 	 * @param array Options include:
 	 *		width = Width of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
 	 *		height = Height of element in pixels (number with "px" suffix) or characters (number with no suffix) [Default is null]
-	 * 		usewysiwygeditor = Use rich text editor (CKEditor) for text element. Only available when the height of the text element is multi-line. [Default is false]
+	 * 		usewysiwygeditor = Use rich text editor (QuillJS or CKEditor5) for text element. Only available when the height of the text element is multi-line. [Default is false]
 	 *      cktoolbar = app.conf directive name to pull CKEditor toolbar spec from. [Default is wysiwyg_editor_toolbar]
 	 *      contentUrl = URL to use to load content when CKEditor is use with CA-specific plugins. [Default is null]
 	 *		textAreaTagName = 
 	 * @return string
 	 */
-	function caHTMLTextInput($ps_name, $pa_attributes=null, $pa_options=null) {
-		$vb_is_textarea = false;
+	function caHTMLTextInput($name, $attributes=null, $options=null) {
+		$is_textarea = false;
 		$va_styles = array();
 		
-		if(isset($pa_attributes['style']) && $pa_attributes['style']) {
-			$va_styles[] = $pa_attributes['style'];
+		if(isset($attributes['style']) && $attributes['style']) {
+			$va_styles[] = $attributes['style'];
 		}
 		
-		$vb_use_wysiwyg_editor = caGetOption('usewysiwygeditor', $pa_options, false);
-		$vn_width = $vn_height = null;
+		$use_wysiwyg_editor = caGetOption(['wysiwygeditor', 'usewysiwygeditor'], $options, false);
+		$width = $height = null;
 		
 		if (is_array($va_dim = caParseFormElementDimension(
-			(isset($pa_options['width']) ? $pa_options['width'] : 
-				(isset($pa_attributes['size']) ? $pa_attributes['size'] : 
-					(isset($pa_attributes['width']) ? $pa_attributes['width'] : null)
+			(isset($options['width']) ? $options['width'] : 
+				(isset($attributes['size']) ? $attributes['size'] : 
+					(isset($attributes['width']) ? $attributes['width'] : null)
 				)
 			)
 		))) {
 			if ($va_dim['type'] == 'pixels') {
-				$va_styles[] = "width: ".($vn_width = $va_dim['dimension'])."px;";
-				unset($pa_attributes['width']);
-				unset($pa_attributes['size']);
-				unset($pa_attributes['cols']);
+				$va_styles[] = "width: ".($width = $va_dim['dimension'])."px;";
+				unset($attributes['width']);
+				unset($attributes['size']);
+				unset($attributes['cols']);
 			} else {
 				// width is in characters
-				$pa_attributes['size'] = $va_dim['dimension'];
-				$vn_width = $va_dim['dimension'] * 6;
+				$attributes['size'] = $va_dim['dimension'];
+				$width = $va_dim['dimension'] * 6;
 			}
 		}	
-		if (!$vn_width) $vn_width = 300; 
+		if (!$width) $width = 300; 
 		
 		if (is_array($va_dim = caParseFormElementDimension(
-			(isset($pa_options['height']) ? $pa_options['height'] : 
-				(isset($pa_attributes['height']) ? $pa_attributes['height'] : null)
+			(isset($options['height']) ? $options['height'] : 
+				(isset($attributes['height']) ? $attributes['height'] : null)
 			)
 		))) {
 			if ($va_dim['type'] == 'pixels') {
-				$va_styles[] = "height: ".($vn_height = $va_dim['dimension'])."px;";
-				unset($pa_attributes['height']);
-				unset($pa_attributes['rows']);
-				$vb_is_textarea = true;
+				$va_styles[] = "height: ".($height = $va_dim['dimension'])."px;";
+				unset($attributes['height']);
+				unset($attributes['rows']);
+				$is_textarea = true;
 			} else {
 				// height is in characters
-				if (($pa_attributes['rows'] = $va_dim['dimension']) > 1) {
-					$vb_is_textarea = true;
+				if (($attributes['rows'] = $va_dim['dimension']) > 1) {
+					$is_textarea = true;
 				}
-				$vn_height = $va_dim['dimension'] * 12;
+				$height = $va_dim['dimension'] * 12;
 			}
 		} else {
-			if (($pa_attributes['rows'] = (isset($pa_attributes['height']) && $pa_attributes['height']) ? $pa_attributes['height'] : 1) > 1) {
-				$vb_is_textarea = true;
+			if (($attributes['rows'] = (isset($attributes['height']) && $attributes['height']) ? $attributes['height'] : 1) > 1) {
+				$is_textarea = true;
 			}
 		}
 		
-		if (!$vn_height) $vn_height = 300; 
+		if (!$height) $height = 300; 
+		$opts = [];
 		
-		$pa_attributes['style'] = join(" ", $va_styles);
+		$attributes['style'] = join(" ", $va_styles);
 		
 		// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
-		if ($vb_use_wysiwyg_editor && !isset($pa_attributes['id'])) {
-			$pa_attributes['id'] = "{$ps_name}_element";
+		if ($use_wysiwyg_editor && !isset($attributes['id'])) {
+			$attributes['id'] = "pawtucket_global_{$name}";
 		}
 		
-		if ($vb_is_textarea) {
-			$tag_name = caGetOption('textAreaTagName', $pa_options, 'textarea');
-			$vs_value = $pa_attributes['value'] ?? null;
-			if ($pa_attributes['size'] ?? null) { $pa_attributes['cols'] = $pa_attributes['size']; }
-			unset($pa_attributes['size']);
-			unset($pa_attributes['value']);
-			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
-			$vs_element = "<{$tag_name} name='{$ps_name}' wrap='soft' {$vs_attr_string}>".$vs_value."</{$tag_name}>\n";
-		} else {
-			$pa_attributes['size'] = ($pa_attributes['size'] ?? false) ? $pa_attributes['size'] : $pa_attributes['width'] ?? null;
-			$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
-			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='text'/>\n";
-		}
 		
-		if ($vb_use_wysiwyg_editor) {
-			AssetLoadManager::register("ckeditor");
-
+		if ($use_wysiwyg_editor) {
 			$o_config = Configuration::load();
-			if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $pa_options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
+			$use_editor = $o_config->get('wysiwyg_editor');
+			switch($use_editor) {
+				case 'ckeditor':
+					AssetLoadManager::register("ck5");
+					
+					$toolbar = caGetCK5Toolbar();
+					$element .= "
+					<script type=\"module\">
+						import {
+						 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
+						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+						 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
+						 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
+						 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
+						 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+						} from 'ckeditor5';
+					
+						ClassicEditor
+							.create( document.querySelector( '#pawtucket_global_{$name}' ), {
+								plugins: [ 
+									BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
+									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+									ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
+									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
+									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
+									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
+									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+								],
+								toolbar: {
+									items: ".json_encode($toolbar).",
+									shouldNotGroupWhenFull: true
+								}
+							} )
+							.catch((e) => console.log('Error initializing CKEditor: ' + e));
+					</script>\n";
+								
+					
+					$attr_string = _caHTMLMakeAttributeString($attributes, $options);			
+					$element .= "<div id=\"{$name}_container\" style='width: {$width}px; height: {$height}px; overflow-y: auto;'>
+						<textarea name=\"{$name}\" id=\"pawtucket_global_{$name}\">{$attributes['value']}</textarea></div>
+<style>
+#{$name}_container .ck-editor__editable_inline {
+    min-height: calc({$height}px - 100px);
+}
+</style>";
+					break;
+				case 'quilljs';
+				default:
+					AssetLoadManager::register("quilljs");
+					$quill_opts = [
+						'viewSource' => true,
+						'okText' => _t('OK'),
+						'cancelText' => _t('Cancel'),
+						'buttonHTML' => _t('HTML'),
+						'buttonTitle' => _t('Show HTML source')
+					];
+					$opts['style'] = 'display: none;';
+					$element .= "<div id='{$name}_editor' style='width: {$width}; height: {$height};' class='ql-ca-editor'></div>";
+							
+					$element .= caHTMLTextInput(
+						$name, 
+						['id' => $name]
+					);
+					
+					$element .= "
+						<script type='text/javascript'>
+							let toolbarConfig{$name} = ".json_encode(caGetQuillToolbar()).";
+							caUI.newTextEditor(
+								'{$name}_editor', 
+								'{$name}',
+								'',
+								toolbarConfig{$name},
+								".json_encode($quill_opts)."
+							);
+						</script>\n";
+					break;
+			}
 			
-			$vs_content_url = caGetOption('contentUrl', $pa_options, '');
-			$va_lookup_urls = caGetOption('lookupUrls', $pa_options, null);
-			
-			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-			var ckEditor = CKEDITOR.replace( '".$pa_attributes['id']."',
-			{
-				toolbar : ".json_encode(array_values($va_toolbar_config)).",
-				width: '{$vn_width}px',
-				height: '{$vn_height}px',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR,
-				contentUrl: '{$vs_content_url}',
-				lookupUrls: ".json_encode($va_lookup_urls)."
-			});
-	
-			ckEditor.on('instanceReady', function(){ 
-				 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
-			});
- 	});									
-</script>";
+			$o_config = Configuration::load();
+			if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
+		} elseif ($is_textarea) {
+			$tag_name = caGetOption('textAreaTagName', $options, 'textarea');
+			$value = $attributes['value'] ?? null;
+			if ($attributes['size'] ?? null) { $attributes['cols'] = $attributes['size']; }
+			unset($attributes['size']);
+			unset($attributes['value']);
+			$attr_string = _caHTMLMakeAttributeString($attributes, $options);
+			$element = "<{$tag_name} name='{$name}' id='{$name}' wrap='soft' {$attr_string}>".$value."</{$tag_name}>\n";
+		} else {
+			$attributes['size'] = ($attributes['size'] ?? false) ? $attributes['size'] : $attributes['width'] ?? null;
+			$attr_string = _caHTMLMakeAttributeString($attributes, $options);
+			$element = "<input name='{$name}' id='{$name}' {$attr_string} type='text'/>\n";
 		}
-		return $vs_element;
+		return $element;
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caHTMLHiddenInput($ps_name, $pa_attributes=null, $pa_options=null) {
