@@ -640,8 +640,8 @@ final class ConfigurationExporter {
 			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
 			$vo_entry->setAttribute('table', Datamodel::getTableName($t_entry->get('table_num')));
 			
-			$vo_labels = $this->opo_dom->createElement("labels");
-			if(is_array($labels = $t_entry->getLabels(null, __CA_LABEL_TYPE_ANY__))) {
+			if(is_array($labels = $t_entry->getLabels(null, __CA_LABEL_TYPE_ANY__)) && sizeof($labels)) {
+				$vo_labels = $this->opo_dom->createElement("labels");
 				foreach($labels as $entry_id => $label_by_locale) {
 					foreach($label_by_locale as $locale_id => $label_list) {
 						foreach($label_list as $label) {
@@ -653,8 +653,8 @@ final class ConfigurationExporter {
 						}
 					}
 				}
+				$vo_entry->appendChild($vo_labels);
 			}
-			$vo_entry->appendChild($vo_labels);
 
 			if(is_array($t_entry->getSettings())) {
 				$va_settings = array();
