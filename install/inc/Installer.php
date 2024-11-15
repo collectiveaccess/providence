@@ -396,6 +396,7 @@ class Installer {
 	 */
 	public function performPreInstallTasks() {
 		self::clearCaches();
+		\ConfigurationCheck::htmlPurifierDirQuickCheck();
 		$o_config = \Configuration::load();
 
 		// create tmp dir
