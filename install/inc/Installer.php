@@ -953,6 +953,10 @@ class Installer {
 				return false;
 			}
 			
+			if($entry['labels'] ?? null) {
+				self::addLabels($t_entry, $entry['labels'], true);
+			}
+			
 			if(is_array($entry['rules'])) {
 				foreach($entry['rules'] as $rule) {
 					if(!($t_rule = \ca_metadata_dictionary_rules::findAsInstance(['entry_id' => $t_entry->getPrimaryKey(), 'rule_code' => $rule['code']]))) {
