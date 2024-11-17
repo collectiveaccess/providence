@@ -5123,10 +5123,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Check HTTP response code for URL. Any code indicating the URL is live (Eg. in the 200 range)
+	 * will result in a return value of true. If the allowRedirects option is set then redirects
+	 * (HTTP response codes in the 300 range) will also result in a true return value.
 	 *
-	 * @param array
-	 * @return array
+	 * @param string $url The url to check
+	 * @param array $options Options include:
+	 *		allowRedirects = If true, redirected URLs are considers to be valid, working urls. [Default is false]
+	 *
+	 * @return bool True if URL appears to be valid, false if not.
 	 */
 	function caUrlExists(string $url, ?array $options=null) : bool { 
 		$allow_redirects = caGetOption('allowRedirects', $options, true);
