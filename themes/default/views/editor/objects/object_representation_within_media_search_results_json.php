@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
+$results 			= $this->getVar('results');
 
-	$pn_object_id 			= $this->getVar('object_id');
-	$pn_representation_id 	= $this->getVar('representation_id');
-	$pa_results 			= $this->getVar('results');
-	
-	header("Content-type: application/json");
-	print json_encode($pa_results);
-?>
+$app = AppController::getInstance();
+$response = $app->getResponse();
+$response->setContentType("application/json");
+
+print json_encode($results);
