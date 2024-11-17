@@ -37,10 +37,8 @@ var caUI = caUI || {};
 	    if(!options) options = {};
 	    let use_editor = options.editor ?? 'quilljs';
 	   
-	    if(!caUI._initTextEditor) {
-	        caUI.initTextEditor(use_editor);
-	        caUI._initTextEditor = true;
-	    }
+	     caUI.initTextEditor(use_editor);
+	     
 	    if(use_editor === 'ckeditor') {
 	        // CKEditor5: noop
 	    } else {
@@ -145,7 +143,5 @@ var caUI = caUI || {};
             
             Quill.register(AsideBlot);
         }
-        
-        caUI._initTextEditor = false;
 	};
 }());
