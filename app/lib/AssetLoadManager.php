@@ -61,6 +61,8 @@ class AssetLoadManager {
 	 * Flag indicating whether to load minified assets or uncompressed
 	 */
 	static $s_use_minified = true;
+	
+	static $s_dont_load_default = false;
 	# --------------------------------------------------------------------------------
 	static function init() {
 		global $g_asset_config, $g_asset_load_list, $g_asset_import_map;
@@ -70,7 +72,8 @@ class AssetLoadManager {
 		
 		$vb_used_minified = !$o_config->get('debug') && $o_config->get('minification') && $g_asset_config->get('minification');
 		AssetLoadManager::useMinified($vb_used_minified);
-		AssetLoadManager::register('_default');
+		
+		if(!self::$s_dont_load_default) { AssetLoadManager::register('_default'); }
 	}
 	# --------------------------------------------------------------------------------
 	/**
