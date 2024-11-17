@@ -421,16 +421,23 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									items: ".json_encode($toolbar).",
 									shouldNotGroupWhenFull: true
 								}
-							} )
-							.catch((e) => console.log('Error initializing CKEditor: ' + e));
+							} ).then(editor => {
+								const body = editor.ui.view.body._bodyCollectionContainer
+								body.remove()
+								editor.ui.view.element.appendChild(body);
+								
+								if(!caUI) { caUI = {}; }
+								if(!caUI.ckEditors) { caUI.ckEditors = []; }
+								caUI.ckEditors.push(editor);
+							}).catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";
 											
-					$element .= "<div style='width: {$width}; height: {$height}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n}'>".caHTMLTextInput(
+					$element .= "<div style='width: {$width}; height: {$height}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$opts
 					)."</div><style>
 .{fieldNamePrefix}{$element_info['element_id']}_container_{n} .ck-editor__editable_inline {
-    min-height: {$height};
+    min-height: calc({$height} - 100px);
 }
 </style>\n";
 					break;
@@ -448,12 +455,11 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_container_{n}' style='width: {$width};'>";
 					$element .= "
 						<script type='text/javascript'>
-							let toolbarConfig = ".json_encode(caGetQuillToolbar()).";
 							caUI.newTextEditor(
 								'{fieldNamePrefix}".$element_info['element_id']."_editor_{n}', 
 								'{fieldNamePrefix}".$element_info['element_id']."_{n}',
 								'{{".$element_info['element_id']."}}',
-								toolbarConfig,
+								".json_encode(caGetQuillToolbar()).",
 								".json_encode($quill_opts)."
 							);
 						</script>\n";

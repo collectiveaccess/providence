@@ -70,6 +70,13 @@ var caUI = caUI || {};
 		// Define methods
 		// --------------------------------------------------------------------------------
 		that.save = function(e) {
+		    // Force CKEditor text into form elements where we can grab it
+			if(caUI.ckEditors) { 
+			    jQuery.each(caUI.ckEditors, function(k, instance) {
+				    instance.updateSourceElement();
+			    });
+			}
+		
 			jQuery("#" + that.formID).find("." + that.progressClassName).html(that.sendingDataText);
 
 			formData = jQuery("#" + that.formID).serializeObject();

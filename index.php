@@ -121,7 +121,13 @@ try {
 	//
 	// PageFormat plug-in generates header/footer shell around page content
 	//
-	$app->registerPlugin(new PageFormat());
+	
+	if($req->isAjax()) { 
+		AssetLoadManager::$s_dont_load_default = true; 
+		$app->registerPlugin(new AjaxFooter());
+	} else {
+		$app->registerPlugin(new PageFormat());
+	}
 
 	//
 	// Dispatch the request
