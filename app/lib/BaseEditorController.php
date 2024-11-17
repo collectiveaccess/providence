@@ -2712,6 +2712,8 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->response->setContentType("application/json");
 
 		if (!($user_id = $this->request->getUserID())) { return null; }
 		caCleanUserMediaDirectory($user_id);
