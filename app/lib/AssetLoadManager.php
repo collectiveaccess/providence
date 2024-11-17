@@ -62,8 +62,14 @@ class AssetLoadManager {
 	 */
 	static $s_use_minified = true;
 	
-	static $s_dont_load_default = false;
+	/**
+	 * Load default packages by default? 
+	 */
+	static $s_load_default_packages = true;
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	static function init() {
 		global $g_asset_config, $g_asset_load_list, $g_asset_import_map;
 		$o_config = Configuration::load();
@@ -73,15 +79,34 @@ class AssetLoadManager {
 		$vb_used_minified = !$o_config->get('debug') && $o_config->get('minification') && $g_asset_config->get('minification');
 		AssetLoadManager::useMinified($vb_used_minified);
 		
-		if(!self::$s_dont_load_default) { AssetLoadManager::register('_default'); }
+		if(self::$s_load_default_packages) { AssetLoadManager::register('_default'); }
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Emit loading tags for default packages when AssetLoadManager::getLoadHTML() is called?
+	 * If false, then only packages specifically registered will be loaded.
 	 *
+	 * @param bool $load_default_packages True to load defaults, false to skip defaults. If set to null then no change is made. [Default is null]
+	 *
+	 * @return bool Current value of setting
 	 */
-	static function useMinified($pb_use_minified=null) {
-		if (!is_null($pb_use_minified)) {
-			AssetLoadManager::$s_use_minified = (bool)$pb_use_minified;
+	static function loadDefaultPackages($load_default_packages=null) : bool {
+		if (!is_null($load_default_packages)) {
+			AssetLoadManager::$s_load_default_packages = (bool)$load_default_packages;
+		}
+		return AssetLoadManager::$s_load_default_packages;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Use minified version of package AssetLoadManager::getLoadHTML() is called?
+	 *
+	 * @param bool $$use_minified True to use minified package if available, false to not used minified bersion. If set to null then no change is made. [Default is null]
+	 *
+	 * @return bool Current value of setting
+	 */
+	static function useMinified($use_minified=null) : bool {
+		if (!is_null($use_minified)) {
+			AssetLoadManager::$s_use_minified = (bool)$use_minified;
 		}
 		return AssetLoadManager::$s_use_minified;
 	}
