@@ -25,9 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-$app = AppController::getInstance();
-$response = $app->getResponse();
-$response->setContentType("application/json");
+caGetHTTPResponse()->setContentType("application/json");
 
 print json_encode(['dupe' => $this->getVar('dupe')]);
 exit;

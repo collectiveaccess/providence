@@ -5141,3 +5141,13 @@ function caFileIsIncludable($ps_file) {
 		return false;
 	}
 	# ----------------------------------------
+	/**
+	 * Return current HTTP response object
+	 *
+	 * @return ResponseHTTP
+	 */
+	function caGetHTTPResponse() : ResponseHTTP { 		
+		$app = AppController::getInstance();
+		return $app->getResponse();
+	}
+	# ----------------------------------------

@@ -25,8 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-$app = AppController::getInstance();
-$response = $app->getResponse();
-if($response->getContentType() === 'text/html') {
+if(caGetHTTPResponse()->getContentType() === 'text/html') {
 	print AssetLoadManager::getLoadHTML($this->request, ['dontLoadDefault' => true, 'outputTarget' => 'header']);
 }

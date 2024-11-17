@@ -27,8 +27,6 @@
  */
 $results 			= $this->getVar('results');
 
-$app = AppController::getInstance();
-$response = $app->getResponse();
-$response->setContentType("application/json");
+caGetHTTPResponse()->setContentType("application/json");
 
 print json_encode($results);
