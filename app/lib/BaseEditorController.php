@@ -1595,6 +1595,7 @@ class BaseEditorController extends ActionController {
 
 		$this->view->setVar('errors', $va_errors);
 
+		$this->response->setContentType('application/json');
 		$this->render('../generic/ajax_toggle_item_watch_json.php');
 	}
 	# -------------------------------------------------------
@@ -1681,6 +1682,7 @@ class BaseEditorController extends ActionController {
 		
 		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
+		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode(['sort' => array_keys($d ?? []), 'data' => $d]));
 	}
 	# ------------------------------------------------------------------
@@ -1696,8 +1698,9 @@ class BaseEditorController extends ActionController {
 		// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
 		$ps_template = $this->request->getParameter("template", pString);
 		$this->view->setVar('processed_template', json_encode(caProcessTemplateForIDs($ps_template, $t_subject->tableNum(), array($vn_subject_id))));
+		
+		$this->response->setContentType('application/json');
 		$this->render("../generic/ajax_process_template.php");
-
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -2342,6 +2345,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
+		
+		$this->response->setContentType('application/json');
 		$this->render('ajax_representation_annotations_json.php');
 	}
 	# -------------------------------------------------------
@@ -2406,6 +2411,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
+		
+		$this->response->setContentType('application/json');
 		$this->render('ajax_representation_annotations_json.php');
 	}
 	# -------------------------------------------------------
@@ -2445,6 +2452,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->view->setVar('response', $va_response);
+		
+		$this->response->setContentType('application/json');
 		$this->render('object_representation_process_media_json.php');
 	}
 	# -------------------------------------------------------
@@ -2467,6 +2476,8 @@ class BaseEditorController extends ActionController {
 			);
 		}
 		$this->view->setVar('response', $va_response);
+		
+		$this->response->setContentType('application/json');
 		$this->render('object_representation_process_media_json.php');
 	}
 	# -------------------------------------------------------
@@ -2794,6 +2805,8 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('../generic/set_home_location_json.php');
 	}
 	# -------------------------------------------------------
@@ -3101,6 +3114,7 @@ class BaseEditorController extends ActionController {
 		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
 		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
 
+		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode($va_sorted_ids));
 	}
 	# -------------------------------------------------------
