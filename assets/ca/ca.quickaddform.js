@@ -193,6 +193,11 @@ var caUI = caUI || {};
 		};
 		
 		that.switchForm = function() {
+		    if(caUI.ckEditors) { 
+			    jQuery.each(caUI.ckEditors, function(k, instance) {
+				    instance.updateSourceElement();
+			    });
+			}
 			jQuery("#" + that.formID + " input[name=type_id]").val(jQuery("#" + that.formTypeSelectID).val());
 			var formData = jQuery("#" + that.formID).serializeObject();
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
