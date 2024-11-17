@@ -79,7 +79,7 @@ var caUI = caUI || {};
 	        // QuillJS
             const InlineBlot = Quill.import('blots/inline');
             const BlockBlot = Quill.import('blots/block');
-            Quill.register("modules/htmlEditButton", htmlEditButton);
+            Quill.register("modules/htmlEditButton", htmlEditButton, true);
             
             class ObjectBlot extends InlineBlot {
               static blotName = 'object';
@@ -110,7 +110,7 @@ var caUI = caUI || {};
                 return formats;
               }
             }
-            Quill.register(ObjectBlot);
+            Quill.register(ObjectBlot, true);
             
             class AsideBlot extends BlockBlot {
               static blotName = 'aside';
@@ -141,7 +141,7 @@ var caUI = caUI || {};
               }
             }
             
-            Quill.register(AsideBlot);
+            Quill.register(AsideBlot, true);
         }
 	};
 }());
