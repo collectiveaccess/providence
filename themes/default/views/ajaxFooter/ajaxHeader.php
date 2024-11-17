@@ -25,6 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
+ // If Ajax-loaded content is HTML then include HTML to Javascript libraries; we don't want 
+ // to emit HTML when returning JSON (or anything else that's not HTML)
 if(caGetHTTPResponse()->getContentType() === 'text/html') {
-	print AssetLoadManager::getLoadHTML($this->request, ['dontLoadDefault' => true, 'outputTarget' => 'header']);
+	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
 }
