@@ -360,15 +360,15 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		$height = trim((isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight']);
 		
 		// Convert width and height settings to integer pixel values (Note: these do not include a "px" suffix) or percentages
-		$width = caParseFormElementDimension($width, ['returnAs' => 'pixels']);
-		$height = caParseFormElementDimension($height, ['returnAs' => 'pixels']);
+		$width = caParseFormElementDimension($width, ['returnAs' => 'pixels', 'characterWidth' => 10]);
+		$height = caParseFormElementDimension($height, ['returnAs' => 'pixels', 'characterWidth' => 14]);
 		
 		$class = trim((isset($options['class']) && $options['class']) ? $options['class'] : '');
 		$element = '';
 		
 		$opts = [
-			'width' => $width, 
-			'height' => $height, 
+			'width' => $width.(is_numeric($width) ? 'px' : ''), 
+			'height' => $height.(is_numeric($height) ? 'px' : ''), 
 			'value' => '{{'.$element_info['element_id'].'}}', 
 			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
 			'class' => "{$class}",
