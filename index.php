@@ -123,7 +123,9 @@ try {
 	//
 	
 	if($req->isAjax()) { 
-		AssetLoadManager::$s_dont_load_default = true; 
+		// Only load specifically registered packages when returning content for an Ajax request;
+		// default packages will have already been loaded.
+		AssetLoadManager::loadDefaultPackages(false); 	
 		$app->registerPlugin(new AjaxFooter());
 	} else {
 		$app->registerPlugin(new PageFormat());
