@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,7 +55,7 @@ class BaseLookupController extends ActionController {
 	# AJAX handlers
 	# -------------------------------------------------------
 	public function Get($pa_additional_query_params=null, $pa_options=null) {
-		header("Content-type: application/json");
+		$this->response->setContentType("application/json");
 		if (!ca_user_roles::isValidAction('can_search_'.$this->ops_table_name) || ($this->request->user->canDoAction('can_search_'.$this->ops_table_name))) { 
 			$o_config = Configuration::load();
 			$o_search_config = caGetSearchConfig();
@@ -233,7 +233,7 @@ class BaseLookupController extends ActionController {
 	 * Returned data is JSON format
 	 */
 	public function GetHierarchyLevel() {
-		header("Content-type: application/json");
+		$this->response->setContentType("application/json");
 		
 		$qr_children = null;
 
@@ -383,7 +383,7 @@ class BaseLookupController extends ActionController {
 	 * Returned data is JSON format
 	 */
 	public function GetHierarchyAncestorList() {
-		header("Content-type: application/json");
+		$this->response->setContentType("application/json");
 		
 		$pn_id = $this->request->getParameter('id', pInteger);
 		$t_item = new $this->ops_table_name($pn_id);
@@ -413,7 +413,7 @@ class BaseLookupController extends ActionController {
 	 *
 	 */
 	public function IDNo() {
-		header("Content-type: application/json");
+		$this->response->setContentType("application/json");
 		
 		$ids = $sequences = [];
 		if ($idno_field = $this->opo_item_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
@@ -464,7 +464,7 @@ class BaseLookupController extends ActionController {
 	 * Can be used to determine if a value that needs to be unique is actually unique.
 	 */
 	public function Intrinsic() {
-		header("Content-type: application/json");
+		$this->response->setContentType("application/json");
 		
 		$pn_table_num 	=  $this->request->getParameter('table_num', pInteger);
 		$ps_field 				=  $this->request->getParameter('field', pString);
