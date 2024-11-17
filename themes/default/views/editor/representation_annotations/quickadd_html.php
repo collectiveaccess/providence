@@ -76,16 +76,7 @@ $notifications 	= $this->getVar('notifications');
 		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
 		
 		<script type="text/javascript">
-			jQuery(document).ready(function() {
-				jQuery.each(CKEDITOR.instances, function(k, instance) {
-					instance.on( 'focus', function( evt ) { evt.editor.focusManager.blur( true ); } );
-				});
-			});
 			function caSaveAnnotation<?= $form_name.$field_name_prefix.$n; ?>(e) {
-				jQuery.each(CKEDITOR.instances, function(k, instance) {
-					instance.updateElement();
-				});
-
 				jQuery.post('<?= caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						
