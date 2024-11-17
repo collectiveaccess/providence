@@ -51,7 +51,7 @@ class AjaxFooter extends AppControllerPlugin {
 	public function postDispatch() {
 		$o_view = new View($this->getRequest(), $this->getRequest()->config->get('views_directory'));
 
-		$this->getResponse()->appendContent($o_view->render('ajaxFooter/ajaxHeader.php'), 'header');
+		$this->getResponse()->prependContent($o_view->render('ajaxFooter/ajaxHeader.php'), 'header');
 		$this->getResponse()->appendContent($o_view->render('ajaxFooter/ajaxFooter.php'), 'footer');
 	}
 	# -------------------------------------------------------
