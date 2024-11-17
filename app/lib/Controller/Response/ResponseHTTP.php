@@ -41,6 +41,9 @@ class ResponseHTTP extends Response {
 	private $opb_content_was_sent = false;
 	private $opb_is_redirect = false;
 	
+	/**
+	 * MIME-type for response content
+	 */
 	private $content_type = 'text/html';
 	
 	# -------------------------------------------------------
@@ -126,16 +129,24 @@ class ResponseHTTP extends Response {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Set MIME-type of response content. 
 	 *
+	 * @param string $mimetype MIME-type of response content
+	 *
+	 * @return bool Always true
 	 */
-	public function setContentType(string $mimetype) {
+	public function setContentType(string $mimetype) : bool {
 		$this->content_type = $mimetype;
+		
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
+	 * Return MIME-type of response content 
 	 *
+	 * @return string The content type
 	 */
-	public function getContentType() {
+	public function getContentType() : string {
 		return $this->content_type;
 	}
 	# -------------------------------------------------------
