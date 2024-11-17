@@ -358,19 +358,16 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		$width = trim((isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth']);
 		$height = trim((isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight']);
+		
+		// Convert width and height settings to integer pixel values (Note: these do not include a "px" suffix) or percentages
+		$width = caParseFormElementDimension($width, ['returnAs' => 'pixels']);
+		$height = caParseFormElementDimension($height, ['returnAs' => 'pixels']);
+		
 		$class = trim((isset($options['class']) && $options['class']) ? $options['class'] : '');
 		$element = '';
 		
-		
-		if (!preg_match("!^[\d\.]+px$!i", $width)) {
-			$width = ((int)$width * 6)."px";
-		}
-		if (!preg_match("!^[\d\.]+px$!i", $height) && ((int)$height > 1)) {
-			$height = ((int)$height * 16)."px";
-		}
-		
 		$opts = [
-			'size' => $width, 
+			'width' => $width, 
 			'height' => $height, 
 			'value' => '{{'.$element_info['element_id'].'}}', 
 			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
@@ -389,6 +386,9 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$o_config = Configuration::load();
 			
 			$use_editor = $o_config->get('wysiwyg_editor');
+			
+			if(is_numeric($width) && ($width < 200)) { $width = 200; } 	// force absolute minimum width	
+			if(is_numeric($height) && ($height < 150)) { $height = 150; } 	// force absolute minimum height	
 			
 			switch($use_editor) {
 				case 'ckeditor':
@@ -422,24 +422,26 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									shouldNotGroupWhenFull: true
 								}
 							} ).then(editor => {
+								// Don't let CKEditor pollute the top-level DOM with editor bits
 								const body = editor.ui.view.body._bodyCollectionContainer
 								body.remove()
 								editor.ui.view.element.appendChild(body);
 								
+								// Add current instance to list of initialized editors
 								if(!caUI) { caUI = {}; }
 								if(!caUI.ckEditors) { caUI.ckEditors = []; }
 								caUI.ckEditors.push(editor);
 							}).catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";
-											
-					$element .= "<div style='width: {$width}; height: {$height}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
+									
+					$element .= "<div style='width: {$width}px; height: {$height}px; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$opts
 					)."</div><style>
-.{fieldNamePrefix}{$element_info['element_id']}_container_{n} .ck-editor__editable_inline {
-    min-height: calc({$height} - 100px);
-}
-</style>\n";
+						.{fieldNamePrefix}{$element_info['element_id']}_container_{n} .ck-editor__editable_inline {
+							min-height: calc({$height}px - 100px);
+						}
+						</style>\n";
 					break;
 				case 'quilljs';
 				default:
@@ -452,7 +454,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						'buttonTitle' => _t('Show HTML source')
 					];
 					
-					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_container_{n}' style='width: {$width};'>";
+					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_container_{n}' style='width: {$width}px;'>";
 					$element .= "
 						<script type='text/javascript'>
 							caUI.newTextEditor(
