@@ -390,6 +390,9 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			if(is_numeric($width) && ($width < 200)) { $width = 200; } 	// force absolute minimum width	
 			if(is_numeric($height) && ($height < 150)) { $height = 150; } 	// force absolute minimum height	
 			
+			$width_w_suffix = is_numeric($width) ? "{$width}px" : $width;
+			$height_w_suffix = is_numeric($height) ? "{$height}px" : $height;
+			
 			switch($use_editor) {
 				case 'ckeditor':
 					AssetLoadManager::register("ck5");
@@ -434,7 +437,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							}).catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";
 									
-					$element .= "<div style='width: {$width}px; height: {$height}px; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
+					$element .= "<div style='width: {$width_w_suffix}; height: {$height_w_suffix}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$opts
 					)."</div><style>
@@ -454,7 +457,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						'buttonTitle' => _t('Show HTML source')
 					];
 					
-					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_container_{n}' style='width: {$width}px;'>";
+					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_container_{n}' class='ql-ca-container' style='width: {$width_w_suffix};'>";
 					$element .= "
 						<script type='text/javascript'>
 							caUI.newTextEditor(
@@ -466,7 +469,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							);
 						</script>\n";
 					$opts['style'] = 'display: none;';
-					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='height: {$height};' class='ql-ca-editor'></div>";
+					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='height: {$height_w_suffix};' class='ql-ca-editor'></div>";
 							
 					$element .= caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
