@@ -656,6 +656,7 @@ class BaseBrowseController extends BaseFindController {
 		
 		$this->view->setVar('facet_list', $va_level_data);
 	
+		$this->response->setContentType('application/json');
 		return $this->render('Browse/facet_hierarchy_level_json.php');
 	}
 	# -------------------------------------------------------
@@ -722,6 +723,8 @@ class BaseBrowseController extends BaseFindController {
 		}
 		
 		$this->view->setVar('ancestors', $va_ancestors);
+		
+		$this->response->setContentType('application/json');
 		return $this->render('Browse/facet_hierarchy_ancestors_json.php');
 	}
 	# -------------------------------------------------------
