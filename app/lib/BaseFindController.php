@@ -655,6 +655,8 @@ class BaseFindController extends ActionController {
 		}
 		$this->view->setVar('num_items_added', (int)$vn_added_items_count);
 		$this->view->setVar('num_items_already_in_set', (int)$vn_dupe_item_count);
+		
+		$this->response->setContentType('application/json');
 		$this->render('Results/ajax_add_to_set_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -722,6 +724,8 @@ class BaseFindController extends ActionController {
 		$this->view->setVar('set_name', $vs_set_name);
 		$this->view->setVar('set_code', $vs_set_code);
 		$this->view->setVar('num_items_added', $vn_added_items_count);
+		
+		$this->response->setContentType('application/json');
 		$this->render('Results/ajax_create_set_from_result_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -749,6 +753,8 @@ class BaseFindController extends ActionController {
 		} else {
 			$this->view->setVar('error', _t('Search could not be saved'));
 		}
+		
+		$this->response->setContentType('application/json');
 		$this->render('Results/ajax_add_saved_search_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -1085,6 +1091,8 @@ class BaseFindController extends ActionController {
 			['restrictToDisplay' => $this->request->config->get('restrict_find_result_sort_options_to_current_display') ? $display_id : null]);
 		
 		$this->view->setVar('data', $data);
+		
+		$this->response->setContentType('application/json');
 		$this->render("Results/ajax_results_editable_data_json.php");
 	}
 	# ------------------------------------------------------------------
@@ -1115,6 +1123,7 @@ class BaseFindController extends ActionController {
 		
 		$this->view->setVar('response', $response);
 		
+		$this->response->setContentType('application/json');
 		$this->render("Results/ajax_save_results_editable_data_json.php");
 	}
 	# ------------------------------------------------------------------
