@@ -334,7 +334,11 @@ class MediaUploadManager {
 		$server = new \TusPhp\Tus\Server((defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'redis')) ? 'redis' : 'file');  
 
 		$server->middleware()->add(MediaUploaderHandler::class);
-		$server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+		if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET')) {
+			$server->setApiPath(__CA_URL_ROOT__.'/Import/tus')->setUploadDir($user_dir_path);
+		} else {
+			$server->setApiPath(__CA_URL_ROOT__.'/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+		}
 
 		$server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
 			$fileMeta = $event->getFile()->details();

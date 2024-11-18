@@ -177,7 +177,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		// readable version of get parameters
 		$va_get_params = array(
 			'action' => 'query',
-			'titles' => self::getPageTitleFromURI($ps_url),
+			'titles' => urlencode(self::getPageTitleFromURI($ps_url)),
 			'prop' => 'pageimages|info|extracts',
 			'inprop' => 'url',
 			'piprop' => 'name|thumbnail',

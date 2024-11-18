@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
-	if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
-	
-	$t_total = new Timer();
-	$va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profile)
+if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
+
+$t_total = new Timer();
+$va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profile)
 ?>
 <div id='box'>
 	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->

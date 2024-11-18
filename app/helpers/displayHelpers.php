@@ -1422,7 +1422,7 @@ function caEditorInspector($view, $options=null) {
 		}
 		
 		// Download media in set
-		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs()) > 0)) {
+		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 			$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
 
 			TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
@@ -1537,11 +1537,11 @@ function caEditorInspector($view, $options=null) {
 		// Get component information
 		$object_container_types = $view->request->config->getList('ca_objects_container_types');
 		$object_component_types = $view->request->config->getList('ca_objects_component_types');
-		$takes_components = (in_array($t_item->getTypeCode(), $object_container_types) || in_array('*', $object_container_types));
+		$takes_components = (method_exists($t_item, "getTypeCode") && (in_array($t_item->getTypeCode(), $object_container_types) || in_array('*', $object_container_types)));
 		
 		$can_add_component = (($table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
 
-		if((($takes_components && isset($object_component_types[0])) || in_array($t_item->getTypeCode(), $object_component_types))) {
+		if((($takes_components && isset($object_component_types[0])) || ($takes_components && in_array($t_item->getTypeCode(), $object_component_types)))) {
 			if (method_exists($t_item, 'getComponentCount')) {
 				$component_count = $t_item->getComponentCount();
 				if ($t_ui && ($component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $view->request)) && ($vs_component_list_screen !== $view->request->getActionExtra())) { 
@@ -2457,13 +2457,19 @@ function caTableIsActive($pm_table) {
   */
 function caFilterTableList($pa_tables, $pa_options=null) {
 	$o_config = Configuration::load();
-
+	
+	// allow ca_object_representations by default as it's always active as object media, even when
+	// disabled as a top-level record type
+	if(!is_array($force_table_nums = caGetOption('alwaysAllowTableNums', $pa_options, [56]))) {
+		$force_table_nums = [];
+	}
+	
 	// assume table display names (*not actual database table names*) are keys and table_nums are values
 	$va_filtered_tables = array();
 	foreach($pa_tables as $vs_display_name => $vn_table_num) {
 		$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 
-		if (!caTableIsActive($vn_table_num)) { continue; }
+		if (!caTableIsActive($vn_table_num) && !in_array($vn_table_num, $force_table_nums, true)) { continue; }
 		$vs_table_name = Datamodel::getTableName($vn_table_num);
 		$va_filtered_tables[$vs_display_name] = $vn_table_num;
 	}
