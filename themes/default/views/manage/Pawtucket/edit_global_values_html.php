@@ -62,7 +62,7 @@ if (sizeof($form_elements) == 0) {
 				<span class="formLabelText"><?= $info['label']; ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList">
-						<div class="ckeditor-wrapper" style="padding: 10px 0px 10px 10px;">
+						<div style="padding: 10px 0px 10px 10px;">
 							<?= $info['element']; ?>
 						</div>
 					</div>
