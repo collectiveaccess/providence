@@ -432,19 +432,19 @@ class ca_change_log extends BaseModel {
 								$vs_table_name = Datamodel::getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
 							
 								// Skip elements not in include list, when a list is provided for the current table
-								if (!$vs_table_name || (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code]))) {
-									$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'element_id'];
+								if ($vs_table_name && is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code])) {
+									$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => "element_id {$vs_code}/{$vm_val} not in white list for {$vs_table_name}"]);
 									continue(2);
 								}
 							
 								// Skip elements present in the exclude list
 								if (is_array($pa_exclude_metadata[$vs_table_name]) && isset($pa_exclude_metadata[$vs_table_name][$vs_code])) {
-									$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'in_exclude_list'];
+									$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'element_id in in_exclude_list']);
 									$skipped[$vs_guid] = true;
 									continue(2);
 								}
 							} else {
-								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'element_does_not_exist'];
+								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'element_does_not_exist']);
 								continue(2);
 							}
 							break;
@@ -452,7 +452,7 @@ class ca_change_log extends BaseModel {
 							if(($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val)) && !isset($skipped[$vs_attr_guid])) {
 								$va_snapshot['attribute_guid'] = $vs_attr_guid;
 							} else {
-								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'attribute_id'];
+								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => "attribute_id for $vm_val :: $vs_attr_guid"]);
 								if($vs_attr_guid) { $skipped[$vs_attr_guid] = true; }
 								$skipped[$vs_guid] = true;
 								continue(2);
@@ -462,7 +462,7 @@ class ca_change_log extends BaseModel {
 							if(($vs_val_guid = ca_attribute_values::getGUIDByPrimaryKey($vm_val)) && !isset($skipped[$vs_val_guid])) {
 								$va_snapshot['value_guid'] = $vs_val_guid;
 							} else {
-								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'value_id'];
+								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'value_id']);
 								if($vs_val_guid) { $skipped[$vs_val_guid] = true; }
 								continue(2);
 							}
@@ -479,7 +479,7 @@ class ca_change_log extends BaseModel {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
 							} elseif($t_instance && !is_a($t_instance, 'BaseLabel')) {	// it's ok for label type to be blank
-								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'type_id'];
+								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'type_id']);
 								continue(2);
 							}
 							break;
@@ -487,7 +487,7 @@ class ca_change_log extends BaseModel {
 							if($t_instance) {
 								$va_snapshot['source_code'] = $vm_val ? caGetListItemIdno($vm_val) : null;
 							} else {
-								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'source_id'];
+								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'source_id']);
 								continue(2);
 							}
 							break;
@@ -495,13 +495,13 @@ class ca_change_log extends BaseModel {
 							if(isset($va_snapshot['table_num']) && ($vn_table_num = $va_snapshot['table_num'])) {
 								$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val);
 								if(!$va_snapshot['row_guid'] || ca_guids::isDeleted($va_snapshot['row_guid'])) {
-									$va_snapshot = ['SKIP' => true];
+									$va_snapshot = array_merge($va_snapshot, ['SKIP' => true]);
 									if($va_snapshot['row_guid']) { $skipped[$va_snapshot['row_guid']] = true; }
 									$skipped[$vs_guid] = true;
 									continue(2);	
 								}
 							} else {
-								$va_snapshot = ['SKIP' => true, 'SKIP_WHY' => 'row_id'];
+								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'row_id']);
 								continue(2);
 							}
 							break;

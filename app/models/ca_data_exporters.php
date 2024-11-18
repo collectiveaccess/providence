@@ -1270,6 +1270,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$ignore_context = caGetOption('ignoreContext', $options);
 		$current_context = caGetOption('currentContext', $options);
 		$attribute_id = caGetOption('attribute_id', $options);
+		$label_id = caGetOption('label_id', $options);
 		$offset = (int)caGetOption('offset', $options, 0); 
 
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $item_id, $table_num, $record_id));
@@ -1343,9 +1344,52 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$skip_if_expr = $settings['skipIfExpression'] ?? null;
 		$expr_tags = caGetTemplateTags($skip_if_expr);
 
-		// BEGIN context is specific attribute (via "attribute_id" option)
-		//
-		if($attribute_id) {
+		if($label_id) {
+			// BEGIN context is specific label (via "label_id" option)
+			//
+			$t_label = $t_instance->getLabelTableInstance();
+			$label_table = $t_label->tableName();
+			$source = preg_replace("!^ca_[A-Za-z0-9_]+\.nonpreferred_labels\.!i", "{$label_table}.", $source);
+			$t_label->load($label_id);
+			$o_log->logInfo(_t("Processing mapping in label mode for label_id = %1.", $label_id));
+			$relative_to = "{$t_instance->tableName()}.nonpreferred_labels";
+			
+			if($template) { // if template is set, run through template engine as <unit>
+				$get_with_template = trim($t_instance->getWithTemplate("
+					<unit relativeTo='{$relative_to}' start='{$offset}' length='1'>
+						{$template}
+					</unit>
+				"));
+
+				if($get_with_template) {
+					$item_info[] = [
+						'text' => $get_with_template,
+						'element' => $element,
+						'template' => $template
+					];
+				}
+			} elseif($source) {
+				if(preg_match("/^_CONSTANT_:(.*)$/", $source, $matches)) {
+					$o_log->logDebug(_t("This is a constant in label mode. Value for this mapping is '%1'", trim($matches[1])));
+					$item_info[] = array(
+						'text' => trim($matches[1]),
+						'element' => $element
+					);
+				} else {						
+					$item_info[] = [
+						'text' => $d = $t_label->get($source),
+						'text_raw' => $d,
+						'element' => $element,
+					];
+				}
+			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
+				$item_info[] = [
+					'element' => $element,
+				];
+			}
+		} elseif($attribute_id) {
+			// BEGIN context is specific attribute (via "attribute_id" option)
+			//
 			$t_attr = ca_attributes::findAsInstance(['attribute_id' => $attribute_id]);
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $attribute_id));
 			$relative_to = "{$t_instance->tableName()}.{$t_attr->getElementCode()}";
@@ -1861,26 +1905,40 @@ itemOutput:
 								if($o_log) { $o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $context)); }
 								return [];
 							}
-							
-							$attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
-
 							$info = [];
-
-							if(is_array($attrs) && sizeof($attrs)>0) {
-								if($o_log) {
-									$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
-									$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($attrs,true)));
-								}
+							if($va_context_tmp[1] === 'nonpreferred_labels') {
+								$np = $t_rel->get($context, ['returnWithStructure' => true]);
+								$np = array_shift($np);
+								
 								$index = 0;
-								foreach($attrs as $vo_attr) {
-									$va_attribute_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
-										array_merge(['currentContext' => $context, 'ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
+								foreach($np as $np_label_id => $np_label) {
+									$np_label_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
+										array_merge(['currentContext' => $context, 'ignoreContext' => true, 'label_id' => $np_label_id, 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
 									);
-									$info = array_merge($info, $va_attribute_export);
+									$info = array_merge($info, $np_label_export);
 									$index++;
 								}
 							} else {
-								$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+								$attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
+	
+								$info = [];
+	
+								if(is_array($attrs) && sizeof($attrs)>0) {
+									if($o_log) {
+										$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
+										$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($attrs,true)));
+									}
+									$index = 0;
+									foreach($attrs as $vo_attr) {
+										$va_attribute_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
+											array_merge(['currentContext' => $context, 'ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
+										);
+										$info = array_merge($info, $va_attribute_export);
+										$index++;
+									}
+								} else {
+									$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+								}
 							}
 							return $info;
 
