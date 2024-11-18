@@ -36,7 +36,6 @@ require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/BatchProcessor.php");
 require_once(__CA_LIB_DIR__."/BatchMetadataImportProgress.php");
 
-
 class MetadataImportController extends ActionController {
 	# -------------------------------------------------------
 	protected $opo_app_plugin_manager;
@@ -116,6 +115,8 @@ class MetadataImportController extends ActionController {
 		}
 		
 		$this->view->setVar('response', $va_response);
+		
+		$this->response->setContentType('application/json');
 		$this->render('mediaimport/file_upload_response_json.php');
 	}
 	# -------------------------------------------------------

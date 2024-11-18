@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2019 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@ require_once(__CA_LIB_DIR__.'/ProgressBar.php');
 require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
-
 
 class ExportController extends ActionController {
 	# -------------------------------------------------------
@@ -245,6 +244,7 @@ class ExportController extends ActionController {
 			'links' => $links
 		));
 		
+		$this->response->setContentType("application/json");
 		$this->render('export_run_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -276,6 +276,8 @@ class ExportController extends ActionController {
 		$data['elapsedTime'] = caFormatInterval(time()-$data['start']);
 		
 		$this->view->setVar('info', $data);
+		
+		$this->response->setContentType("application/json");
 		$this->render('export_run_json.php');
 	}
 	# -------------------------------------------------------		

@@ -2386,7 +2386,7 @@ function caFileIsIncludable($ps_file) {
 	 *		defaultOnEmptyString = Force use of default value when option is set to an empty string). [Default is false]
 	 * @return mixed
 	 */
-	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+	function caGetOption($pm_option, ?array $pa_options, $pm_default=null, ?array $pa_parse_options=null) {
 		if (is_object($pa_options) && is_a($pa_options, 'Zend_Console_Getopt')) {
 			$pa_options = array($pm_option => $pa_options->getOption($pm_option));
 		}
@@ -5123,10 +5123,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Check HTTP response code for URL. Any code indicating the URL is live (Eg. in the 200 range)
+	 * will result in a return value of true. If the allowRedirects option is set then redirects
+	 * (HTTP response codes in the 300 range) will also result in a true return value.
 	 *
-	 * @param array
-	 * @return array
+	 * @param string $url The url to check
+	 * @param array $options Options include:
+	 *		allowRedirects = If true, redirected URLs are considers to be valid, working urls. [Default is false]
+	 *
+	 * @return bool True if URL appears to be valid, false if not.
 	 */
 	function caUrlExists(string $url, ?array $options=null) : bool { 
 		$allow_redirects = caGetOption('allowRedirects', $options, true);
@@ -5139,5 +5144,15 @@ function caFileIsIncludable($ps_file) {
 			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }
 		}
 		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Return current HTTP response object
+	 *
+	 * @return ResponseHTTP
+	 */
+	function caGetHTTPResponse() : ResponseHTTP { 		
+		$app = AppController::getInstance();
+		return $app->getResponse();
 	}
 	# ----------------------------------------

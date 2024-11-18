@@ -191,6 +191,8 @@ class SetEditorController extends BaseEditorController {
 				$this->view->setVar('representation_height', $va_rep['info'][$vs_thumbnail_version]['HEIGHT']);
 			}
 		}
+		
+		$this->response->setContentType('application/json');
 		$this->render('ajax_set_item_info_json.php');
 	}
 	# -------------------------------------------------------

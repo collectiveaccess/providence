@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
 
 // Global panel count; provides for control of mask when nested panels are opened
@@ -38,9 +37,6 @@ caUI.panelCount = 0;
 			panelID: 'caPanel',							/* id of enclosing panel div */
 			panelContentID: 'caPanelContent',			/* id of div within enclosing panel div that contains content */
 	
-			useExpose: true,
-			exposeBackgroundColor: '#000000',
-			exposeBackgroundOpacity: 0.5,
 			panelTransitionSpeed: 200,
 			allowMobileSafariZooming: false,
 			mobileSafariViewportTagID: '_msafari_viewport',
@@ -88,10 +84,6 @@ caUI.panelCount = 0;
 			
 			jQuery('#' + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
-			if (that.useExpose) { 
-				jQuery('#' + that.panelID).expose({api: true, color: that.exposeBackgroundColor , opacity: that.exposeBackgroundOpacity, closeOnClick : false, closeOnEsc: that.closeOnEsc}).load(); 
-			}
-			
 			that.callbackData = callbackData;
 			if (onCloseCallback) {
 				that.onCloseCallback = onCloseCallback;
@@ -124,10 +116,6 @@ caUI.panelCount = 0;
 			that.setZoom(false);
 			that.isChanging = true;
 			jQuery('#' + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
-			
-			if (that.useExpose && (!opts || !opts.dontCloseMask) && (caUI.panelCount < 1)) {
-				jQuery.mask.close();
-			}
 			
 			if (that.clearOnClose) {
 				jQuery('#' + that.panelContentID).empty();

@@ -497,7 +497,7 @@ class MediaImportController extends ActionController {
 		
 		$this->view->setVar('directory_list', caSanitizeArray($va_level_data));
 		
-		
+		$this->response->setContentType("application/json");
 		$this->render('mediaimport/directory_level_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -518,6 +518,7 @@ class MediaImportController extends ActionController {
 		
 		$this->view->setVar("ancestors", $va_ancestors);
 		
+		$this->response->setContentType("application/json");
 		$this->render('mediaimport/directory_ancestors_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -560,6 +561,8 @@ class MediaImportController extends ActionController {
 		}
 
 		$this->view->setVar('response', $response);
+		
+		$this->response->setContentType("application/json");
 		$this->render('mediaimport/file_upload_response_json.php');
 	}
 	# ------------------------------------------------------------------
