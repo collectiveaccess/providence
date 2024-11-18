@@ -5962,7 +5962,7 @@ function caApplyFindViewUserRestrictions(ca_users $t_user, string $table, ?array
 	$allowed_views = $t_user->getPreference("find_{$table}_available_result_views");
 	
 	$type_id = caGetOption('type_id', $options, null);
-	if(is_array($allowed_views[$table][$type_id]) && sizeof($allowed_views[$table][$type_id])) {
+	if(is_array($allowed_views[$table][$type_id] ?? null) && sizeof($allowed_views[$table][$type_id])) {
 		foreach($views as $i => $v) {
 			if(!in_array($v, $allowed_views[$table][$type_id], true)) {
 				unset($views[$i]);

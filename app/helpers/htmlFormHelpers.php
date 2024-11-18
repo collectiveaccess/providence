@@ -203,7 +203,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 		$attributes['id'] = $name;
 	}
 	
-	
+	$element = '';
 	if ($use_wysiwyg_editor) {
 		$o_config = Configuration::load();
 		$use_editor = $o_config->get('wysiwyg_editor');
@@ -267,7 +267,7 @@ min-height: calc({$height}px - 100px);
 						
 				$element .= caHTMLTextInput(
 					$name, 
-					['id' => "{$name}", 'value' => $attributes['value'], 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
+					['id' => "{$name}", 'value' => $attributes['value'] ?? null, 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
 				);
 				
 				$element .= "
@@ -276,7 +276,7 @@ min-height: calc({$height}px - 100px);
 						caUI.newTextEditor(
 							'{$name}_editor', 
 							'{$name}',
-							".json_encode($attributes['value']).",
+							".json_encode($attributes['value'] ?? null).",
 							toolbarConfig{$name},
 							".json_encode($quill_opts)."
 						);
@@ -473,8 +473,8 @@ function caHTMLImage($ps_url, $pa_options=null) {
 
 		$vn_layers = 						(int)$pa_options["layers"];
 		
-		if (!($vs_id_name = (string)$pa_options["idname"])) {
-			$vs_id_name = (string)$pa_options["id"];
+		if (!($vs_id_name = (string)($pa_options["idname"] ?? null))) {
+			$vs_id_name = (string)($pa_options["id"] ?? null);
 		}
 
 		$vn_viewer_width = 				$pa_options["viewer_width"];

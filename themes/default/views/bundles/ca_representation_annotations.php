@@ -100,7 +100,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	$va_media_player_config = caGetMediaDisplayInfo('annotation_editor', $t_subject->getMediaInfo('media', $o_properties->getDisplayMediaVersion(), 'MIMETYPE'));
 ?>
 	<div class="caAnnotationMediaPlayerContainer">
-		<?= $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'caAnnotationMediaPlayer', 'viewer_width' => $va_media_player_config['viewer_width'], 'viewer_height' => $va_media_player_config['viewer_height'], 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
+		<?= $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'caAnnotationMediaPlayer', 'viewer_width' => $va_media_player_config['viewer_width'] ?? null, 'viewer_height' => $va_media_player_config['viewer_height'] ?? null, 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
 	</div>
 </div>
 <!-- END Media Player -->

@@ -209,7 +209,7 @@ if(!$is_ajax) {
 				<tr>
 					<td>
 <?php
-	if ((int)$job["completed_on"] ===  0) {
+	if ((int)($job["completed_on"] ?? 0) ===  0) {
 		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._t('Retry')."</a></div>";
 	}
 ?>
@@ -217,7 +217,7 @@ if(!$is_ajax) {
 						
 						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
 <?php 
-						if ((int)$job["completed_on"] > 0) {
+						if ((int)($job["completed_on"] ?? 0) > 0) {
 							print "<strong>"._t('Completed on')."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['completed_on'])) . "<br/>\n";
 							
 							if ((int)$job["error_code"] > 0) {

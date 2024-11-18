@@ -4106,9 +4106,9 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				return $va_media_info[$ps_version];
 			} else {
 				// Try key as passed, then all UPPER and all lowercase
-				if($vs_v = $va_media_info[$ps_version][$ps_property]) { return $vs_v; }
-				if($vs_v = $va_media_info[$ps_version][strtoupper($ps_property)]) { return $vs_v; }
-				if($vs_v = $va_media_info[$ps_version][strtolower($ps_property)]) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][$ps_property] ?? null)) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][strtoupper($ps_property)] ?? null)) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][strtolower($ps_property)] ?? null)) { return $vs_v; }
 			}
 		} else {
 			return $va_media_info;

@@ -4646,7 +4646,7 @@ if (!$vb_batch) {
 						$va_reps = $this->getRepresentations();
 						
 						if (!$vb_batch && is_array($va_reps)) {
-							if ($va_bundle_settings['uiStyle'] === 'CLASSIC') {
+							if (($va_bundle_settings['uiStyle'] ?? null) === 'CLASSIC') {
 								$bundles_to_save = ['rep_label', 'idno', 'type_id', 'access', 'status', 'is_transcribable'];
 							} else {
 								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, [], ['castTo' => 'array']);
