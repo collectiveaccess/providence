@@ -2338,10 +2338,10 @@ itemOutput:
 				}
 
 				// Look for replacements
-				foreach($mapping as $k => &$v) {
+				foreach($mapping as $k => $v) {
 					if(preg_match("!\_\:\_".$mapping_num."$!", $k)) {
-						$v['options']['original_values'][] = $search;
-						$v['options']['replacement_values'][] = $replace;
+						$mapping[$k]['options']['original_values'][] = $search;
+						$mapping[$k]['options']['replacement_values'][] = $replace;
 					}
 				}
 
