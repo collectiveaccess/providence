@@ -454,7 +454,8 @@ class SetEditorController extends BaseEditorController {
    		
    		$this->view->setVar('ids', $ids);
    		$this->view->setVar('errors', $error ? [$error] : null);
-		
+				
+		$this->response->setContentType('application/json');
 		$this->render('random_set_generation_json.php');
 	}
 	# -------------------------------------------------------
