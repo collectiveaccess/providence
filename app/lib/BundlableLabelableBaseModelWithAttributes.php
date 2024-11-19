@@ -5069,9 +5069,6 @@ if (!$vb_batch) {
 					case 'ca_set_items':
 						if ($vb_batch) { break; } // not supported in batch mode
 						// check for existing labels to delete (no updating supported)
-						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
-						
 						$rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
 						
 						$checked = [];
