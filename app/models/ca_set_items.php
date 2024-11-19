@@ -437,7 +437,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 *		- URL_ENCODE_INPUT = Url encodes variable value; default is  false
 	 * @return bool Returns true on successful save, false if the variable name or value was invalid
 	 */	
-	public function setVar ($ps_key, $pm_val, $pa_options=null) {
+	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (is_object($pm_val)) { return false; }
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
