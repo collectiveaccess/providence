@@ -23,12 +23,10 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
+ */ 
 //
 // Note: requires jQuery UI.Sortable
 //
- 
 var caUI = caUI || {};
 
 (function ($) {
@@ -52,14 +50,12 @@ var caUI = caUI || {};
 			deleteSetItemButton: null,		// html to use for delete set item button
 			
 			initialValues: null,
-			initialValueOrder: null,			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */	
-		
+			initialValueOrder: null			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */		
 		}, options);
 		
 		
 		// ------------------------------------------------------------------------------------
 		that.initSetEditor = function() {
-			
 			// setup autocompleter
 			jQuery('#' + that.setItemAutocompleteID).autocomplete(
 				{
