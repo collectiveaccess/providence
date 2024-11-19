@@ -676,7 +676,7 @@ trait ModelSettings {
 					}
 				} else {
 					if(isset($va_properties['showSortableElementsFor']) && ($va_properties['showSortableElementsFor'] > 0)) {
-						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor'], false);
+						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor'], ['noCache' => true]);
 						$elements = array_filter($elements, function($e) {
 							return (isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort']);
 						});
