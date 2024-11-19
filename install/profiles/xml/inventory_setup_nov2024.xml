@@ -27,6 +27,33 @@
                 </item>
             </items>
         </list>
+        <list code="inventory_dispositions" hierarchical="1" system="0" vocabulary="0">
+            <labels>
+                <label locale="en_US">
+                    <name>Set types</name>
+                </label>
+            </labels>
+            <items>
+                <item idno="found" enabled="1" default="0" access="1" rank="10" type="concept">
+                    <labels>
+                        <label locale="en_US" preferred="1">
+                            <name_singular>Found</name_singular>
+                            <name_plural>Found</name_plural>
+                            <description/>
+                        </label>
+                    </labels>
+                </item>
+                <item idno="not_found" enabled="1" default="0" access="1" rank="20" type="concept">
+                    <labels>
+                        <label locale="en_US" preferred="1">
+                            <name_singular>Not found</name_singular>
+                            <name_plural>Not found</name_plural>
+                            <description/>
+                        </label>
+                    </labels>
+                </item>
+            </items>
+        </list>
     </lists>
     <elementSets>
         <metadataElement code="set_item_description" datatype="Text">
@@ -94,6 +121,27 @@
                 </restriction>
             </typeRestrictions>
         </metadataElement>
+        <metadataElement code="inventory_disposition" datatype="List" list="inventory_dispositions">
+            <labels>
+                <label locale="en_US">
+                    <name>Inventory disposition</name>
+                </label>
+            </labels>
+            <settings>
+                <setting name="fieldWidth">300px</setting>
+                <setting name="fieldHeight">1</setting>
+            </settings>
+            <typeRestrictions>
+                <restriction>
+                    <table>ca_set_items</table>
+                    <settings>
+                        <setting name="minAttributesPerRow"/>
+                        <setting name="maxAttributesPerRow">1</setting>
+                        <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                    </settings>
+                </restriction>
+            </typeRestrictions>
+        </metadataElement>
         <metadataElement code="inventory_agent" datatype="Entities">
             <labels>
                 <label locale="en_US">
@@ -144,6 +192,16 @@
             </placement>
             <placement code="ca_attribute_set_item_description">
               <bundle>ca_set_items.set_item_description</bundle>
+              <settings>
+                <setting name="readonly">0</setting>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+              <placement code="ca_set_items_inventory_disposition">
+              <bundle>ca_set_items.inventory_disposition</bundle>
               <settings>
                 <setting name="readonly">0</setting>
                 <setting name="expand_collapse_value">bubbles</setting>
