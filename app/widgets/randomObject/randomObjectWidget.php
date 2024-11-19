@@ -62,16 +62,17 @@
 			parent::renderWidget($ps_widget_id, $pa_settings);
 			$t_object = new ca_objects();
 			# get a random object for display
-			$va_random_item = $t_object->getRandomItems(1, array('hasRepresentations' => 1));
-			if(sizeof($va_random_item) > 0){
-				foreach($va_random_item as $vn_object_id => $va_object_info) {
-					$t_object->load($vn_object_id);
-					$va_rep = $t_object->getPrimaryRepresentation(array('medium'));
-					$this->opo_view->setVar('object_id', $vn_object_id);
-					$this->opo_view->setVar('image', $va_rep["tags"]["medium"]);
-					$this->opo_view->setVar('label', $t_object->getLabelForDisplay());
-				}
+			$va_random_item = $t_object->getRandomItems();
+
+			if (is_array($va_random_item) && sizeof($va_random_item) > 0) {
+				  $random_object_id = array_rand($va_random_item); 
+				  $t_object->load($random_object_id); 
+				  $va_rep = $t_object->getPrimaryRepresentation(array('medium'));
+				  $this->opo_view->setVar('object_id', $random_object_id);
+				  $this->opo_view->setVar('image', $va_rep["tags"]["medium"] ?? null);
+				  $this->opo_view->setVar('label', $t_object->getLabelForDisplay());
 			}
+
 			$this->opo_view->setVar('request', $this->getRequest());
 			
 			return $this->opo_view->render('main_html.php');
