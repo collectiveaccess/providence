@@ -189,7 +189,7 @@ class ExportController extends ActionController {
 			
 			$row = [];
 			foreach($placements as $placement_id => $placement_info) {
-				$v = preg_replace("![\r\n\t]+!", " ", iconv('UTF-8', 'ISO-8859-1//IGNORE', html_entity_decode(strip_tags($t_display->getDisplayValue($qr, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false, 'timeOmit' => true])), ENT_QUOTES, 'UTF-8')));
+				$v = preg_replace("![\r\n\t]+!", " ", iconv('UTF-8', 'ISO-8859-1//IGNORE', html_entity_decode(strip_tags($t_display->getDisplayValue($qr, $placement_id, ['show_nonprimary' => true, 'convert_codes_to_display_text' => true, 'convertLineBreaks' => false, 'timeOmit' => true])), ENT_QUOTES, 'UTF-8')));
 				$v = preg_replace("!^[ ;]+!", "", $v);
 				$v = preg_replace("![ ;]+$!", "", $v);
 				if (preg_match("![^A-Za-z0-9 .;]+!", $v)) {
