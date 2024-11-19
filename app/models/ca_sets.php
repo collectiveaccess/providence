@@ -1634,14 +1634,19 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $options, false);
 		$checked = caGetOption('checked', $options, null);
 		
+		// Determine which items have changes to "checked"
 		$check_map = null;
 		if(is_array($checked)) {
 			$m = ca_set_items::find(['set_id' => $this->getPrimaryKey()], ['returnAs' => 'arrays']);
 			foreach($m as $n) {
-				$checkmap[$vb_treat_row_ids_as_rids ? $n['item_id'].'_'.$n['row_id'] : $n['row_id']] = $n;
+				$k = $vb_treat_row_ids_as_rids ? $n['row_id'].'_'.$n['item_id'] : $n['row_id'];
+				$is_checked = isset($checked[$k]) ? (bool)$checked[$k] : false;
+				
+				if($is_checked !== (bool)($n['checked'] ?? false)) {
+					$check_map[$k] = $is_checked;
+				}
 			}
 		}
-		
 		// does user have edit access to set?
 		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) {
 			return false;
@@ -1706,25 +1711,25 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$vn_rank_acc++;
 				$vn_rank_inc = $vn_rank_acc;
 			}
-			
 			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
 			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
+				if (($va_row_ranks[$vn_row_id] != $vn_rank_inc) || isset($check_map[$vn_row_id])){
 					$va_rank_updates[$vn_row_id] = $vn_rank_inc;
 				}
 			} elseif($allow_dupes_in_set || (!$rows_in_set[(int)($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id)])) {
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
-			}
+			} 
 		}
 		
 		$va_updated_item_ids = [];
 		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
+			$is_checked = $checked[$vn_row_id] ?? 0;
 			if($vb_treat_row_ids_as_rids) {
 				$va_tmp = explode("_", $vn_row_id);
 				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", [$vn_new_rank, $is_checked ? 1 : 0, $vn_set_id, $va_tmp[0], $va_tmp[1]]);
 				$va_updated_item_ids[$va_tmp[1]] = 1;
 			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ?", [$vn_set_id, $is_checked, $vn_new_rank]);
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ?", [$vn_new_rank, $is_checked, $vn_set_id]);
 			}
 		}
 		
