@@ -434,6 +434,8 @@ div.inspectorLotObjectTypeControls {
 }
 #leftNav #searchSetTools .button, #leftNav #batchTools .button {
 	text-align: right;
+	width: unset;
+	float: unset;
 }
 #leftNav .button.info img{
 	width:20px;
@@ -2513,17 +2515,15 @@ select.searchToolsSelect {
 	font-weight:bold;
 }
 #searchSetTools a, #batchTools a {
-	float: right;
 	clear: left;
 	text-align: right;
 }
 #searchSetTools .searchSetsToggle a {
-	float: left;
-	clear: right;
 	text-align: left;
 	margin-bottom: 15px;
-	margin-top: -14px;
+	margin-top: 0px;
 	font-size: 10px;
+	text-decoration: none;
 }
 
 #caCreateSetFromResultsIndicator, #caAddToSetIDIndicator {
