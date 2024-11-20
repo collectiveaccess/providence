@@ -2228,30 +2228,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
 									);
 								}
-								$va_additional_settings['showBundlesForEditing'] = [
-									'formatType' => FT_TEXT,
-									'displayType' => DT_SELECT,
-									'width' => "475px", 'height' => "100px",
-									'takesLocale' => false,
-									'showMetadataElementsWithDataType' => [__CA_ATTRIBUTE_VALUE_TEXT__,__CA_ATTRIBUTE_VALUE_DATERANGE__,__CA_ATTRIBUTE_VALUE_TIMECODE__,__CA_ATTRIBUTE_VALUE_URL__,__CA_ATTRIBUTE_VALUE_CURRENCY__,__CA_ATTRIBUTE_VALUE_LENGTH__,__CA_ATTRIBUTE_VALUE_WEIGHT__,__CA_ATTRIBUTE_VALUE_LIST__,__CA_ATTRIBUTE_VALUE_INTEGER__,__CA_ATTRIBUTE_VALUE_NUMERIC__],
-									'includePreferredLabels' => true,
-									'table' => 'ca_set_items',
-									'includeIntrinsics' => ['type_id', 'access', 'status', 'idno', 'media', 'original_filename', 'is_transcribable'],
-									'default' => ['idno', 'access'],
-									'multiple' => true,
-									'label' => _t('Show for editing'),
-									'description' => _t('Selected metadata elements to allow editing on.')
-								];
-								
-								$va_additional_settings['showBundlesForEditingOrder'] = [
-									'formatType' => FT_TEXT,
-									'displayType' => DT_FIELD,
-									'width' => "475px", 'height' => "100px",
-									'takesLocale' => false,
-									'default' => '',
-									'label' => _t('Metadata element editing order'),
-									'description' => _t('List metadata element codes separated by commas, semicolons or returns in the order in which they should appear. If omitted the default sort order is used.')
-								];
 								break;
 							case 'ca_metadata_alert_rule_type_restrictions':
 								$va_additional_settings = [];
