@@ -71,6 +71,16 @@
             <typeRestrictions>
                 <restriction>
                     <table>ca_set_items</table>
+                    <type>user</type>
+                    <settings>
+                        <setting name="minAttributesPerRow">1</setting>
+                        <setting name="maxAttributesPerRow">3</setting>
+                        <setting name="minimumAttributeBundlesToDisplay">1</setting>
+                    </settings>
+                </restriction>
+                <restriction>
+                    <table>ca_set_items</table>
+                    <type>public_presentation</type>
                     <settings>
                         <setting name="minAttributesPerRow">1</setting>
                         <setting name="maxAttributesPerRow">3</setting>
@@ -92,8 +102,9 @@
             <typeRestrictions>
                 <restriction>
                     <table>ca_set_items</table>
+                    <type>inventory</type>
                     <settings>
-                        <setting name="minAttributesPerRow"/>
+                        <setting name="minAttributesPerRow">1</setting>
                         <setting name="maxAttributesPerRow">1</setting>
                         <setting name="minimumAttributeBundlesToDisplay">1</setting>
                     </settings>
@@ -113,8 +124,9 @@
             <typeRestrictions>
                 <restriction>
                     <table>ca_set_items</table>
+                    <type>inventory</type>
                     <settings>
-                        <setting name="minAttributesPerRow"/>
+                        <setting name="minAttributesPerRow">1</setting>
                         <setting name="maxAttributesPerRow">1</setting>
                         <setting name="minimumAttributeBundlesToDisplay">1</setting>
                     </settings>
@@ -134,8 +146,9 @@
             <typeRestrictions>
                 <restriction>
                     <table>ca_set_items</table>
+                    <type>inventory</type>
                     <settings>
-                        <setting name="minAttributesPerRow"/>
+                        <setting name="minAttributesPerRow">1</setting>
                         <setting name="maxAttributesPerRow">1</setting>
                         <setting name="minimumAttributeBundlesToDisplay">1</setting>
                     </settings>
@@ -155,8 +168,9 @@
             <typeRestrictions>
                 <restriction>
                     <table>ca_set_items</table>
+                    <type>inventory</type>
                     <settings>
-                        <setting name="minAttributesPerRow"/>
+                        <setting name="minAttributesPerRow">1</setting>
                         <setting name="maxAttributesPerRow">1</setting>
                         <setting name="minimumAttributeBundlesToDisplay">1</setting>
                     </settings>
