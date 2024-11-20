@@ -50,11 +50,6 @@ class BaseEditorController extends ActionController {
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		AssetLoadManager::register('bundleListEditorUI');
-		AssetLoadManager::register('panel');
- 		AssetLoadManager::register('leaflet');
- 		AssetLoadManager::register('3dmodels');
-
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
 	}
@@ -68,7 +63,6 @@ class BaseEditorController extends ActionController {
 	 */
 	public function Edit($pa_values=null, $pa_options=null) {
 		AssetLoadManager::register('panel');
-
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
@@ -1187,8 +1181,6 @@ class BaseEditorController extends ActionController {
 	protected function _initView($pa_options=null) {
 		// load required javascript
 		AssetLoadManager::register('bundleableEditor');
-		AssetLoadManager::register('imageScroller');
-		AssetLoadManager::register('datePickerUI');
 
 		$vn_above_id = $vn_after_id = null;
 		

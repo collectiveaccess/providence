@@ -45,10 +45,11 @@ print $vs_control_box = caFormControlBox(
 
 print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');
 
+$va_bundle_list = [];
 $va_form_elements = $t_set->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 						'request' => $this->request, 
 						'formName' => 'SetEditorForm',
-						'forcedValues' => $forced_values));
+						'forcedValues' => $forced_values), $va_bundle_list);
 						
 if (!$vn_set_id) {
 	// For new sets, show mandatory fields...

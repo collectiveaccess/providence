@@ -5839,7 +5839,7 @@ select.caItemListSortControlTrigger {
     font-size: 11px;
     padding: 0px 5px 5px 0px;
 
-    z-index: 10000;
+    z-index: 10;
 
     max-height: 350px;
     overflow: scroll;
@@ -6216,7 +6216,8 @@ table.caConfirmBatchExecutionPanelAlertControls {
     margin: 0px;
     padding:0px !important;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
-    background-color: #FFFFFF;
+    background-color: #FFF;
+    border: 1px solid #999;
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
@@ -6391,7 +6392,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
 }
 
 /* Quick add */
-.caRelationQuickAddPanel, .caRelationInterstitialEditPanel {
+.caRelationQuickAddPanel, .caRelationInterstitialEditPanel, .caSetItemEditPanel {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -7473,6 +7474,10 @@ div.caResultsComplexDataEditorErrorContainer {
 
 
 /* set items list in set editor */
+.setItem {
+    font-weight: normal;
+}
+
 .setItemCounter{
 	float:left;
 	background-color:#bbb;
@@ -7490,6 +7495,12 @@ div.caResultsComplexDataEditorErrorContainer {
 	position: absolute;
 	bottom: 3px;
 	left: 3px;
+}
+
+.setItemEditDeleteControl {
+	position: absolute;
+	bottom: 3px;
+	right: 3px;
 }
 
 /* Media content dialog in CKEditor */
@@ -8087,6 +8098,10 @@ div.searchResultDesc ul {
 ul.ui-autocomplete {
     max-height: 400px;
     overflow-y: auto;
+}
+
+.ui-autocomplete {
+    z-index: 100000 !important;
 }
 
 li.ui-menu-item {

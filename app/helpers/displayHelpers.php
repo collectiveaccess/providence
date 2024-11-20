@@ -976,7 +976,7 @@ function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, 
  */
 function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_f', function() {
 			caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 			caEditorFieldList.onOpenCallback = function(){
@@ -989,9 +989,8 @@ function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_option
 		jQuery('#editorFieldListContentArea a').click(function() {
 			caEditorFieldList.hidePanel();
 		});
-
 		if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
-		if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($po_request, '*', '*', 'reload')."', screen:'".$po_request->getActionExtra()."', key:'".$pt_subject->primaryKey()."', id: ".(int)$pt_subject->getPrimaryKey()."}); }
+		if (!caBundleUpdateManager) { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($po_request, '*', '*', 'reload')."', screen:'".$po_request->getActionExtra()."', key:'".$pt_subject->primaryKey()."', id: ".(int)$pt_subject->getPrimaryKey()."}); }
 		caBundleUpdateManager.registerBundles(".json_encode($pa_bundle_list).");
 	});
 </script>
@@ -1792,7 +1791,7 @@ jQuery(document).ready(function() {
 				$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
 				if(caGetOption('random_generation_mode', $type_settings, 0) > 0) {
 					$buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
-					$buf .= _t('Add random content')." <a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random content')])."</a>";
+					$buf .= _t('Add random')." <a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random content')])."</a>";
 
 					$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 					$random_set_view->setVar('t_item', $t_item);

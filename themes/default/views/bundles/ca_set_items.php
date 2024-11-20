@@ -84,6 +84,29 @@ if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items))
 		<script type="text/javascript">
 			var setEditorOps = null;
 			jQuery(document).ready(function() {
+				var caSetItemEditPanel<?= $id_prefix; ?>;
+				
+				if (caUI.initPanel) {
+					caSetItemEditPanel<?= $id_prefix; ?> = caUI.initPanel({ 
+						panelID: "caSetItemEditPanel<?= $id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+						panelContentID: "caSetItemEditPanel<?= $id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+						exposeBackgroundColor: "#000000",				
+						exposeBackgroundOpacity: 0.7,					
+						panelTransitionSpeed: 400,						
+						closeButtonSelector: ".close",
+						center: true,
+						onOpenCallback: function() {
+							jQuery("#topNavContainer").hide(250);
+						},
+						onCloseCallback: function() {
+							jQuery("#topNavContainer").show(250);
+							if(caBundleUpdateManager) { 
+								//caBundleUpdateManager.reloadBundle('<?= $bundle_name; ?>'); 
+								caBundleUpdateManager.reloadInspector(); 
+							}
+						}
+					});
+				}
 				setEditorOps = caUI.seteditor({
 					setID: <?= (int)$set_id; ?>,
 					table_num: <?= (int)$t_set->get('table_num'); ?>,
@@ -94,13 +117,20 @@ if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items))
 					rowIDListID: '<?= $id_prefix; ?>setRowIDList',
 					displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
 					
-					editSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
+					editSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, "20px")); ?>',
+					editSetItemToolTip: <?= json_encode(_t('Edit full set item')); ?>,
 					deleteSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>',
+					
+					editSetItemInlineButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
+					editSetItemInlineToolTip: <?= json_encode(_t('Edit set item inline')); ?>,
 					
 					lookupURL: '<?= $lookup_urls['search']; ?>',
 					itemInfoURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
 					editSetItemsURL: '<?= caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit', array('set_id' => $set_id)); ?>',
-					editSetItemToolTip: '<?= _t("Edit set item metadata"); ?>'
+					editSetItemToolTip: '<?= _t("Edit set item metadata"); ?>',
+					
+					setItemEditorPanel: caSetItemEditPanel<?= $id_prefix; ?>,
+					setItemEditorBaseUrl: <?= json_encode(caNavUrl($this->request, '*', 'SetItem', 'Form')); ?>
 				});
 			});
 		</script>
@@ -108,4 +138,9 @@ if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items))
 <?php
 	}
 ?>
+</div>
+<div id="caSetItemEditPanel<?= $id_prefix; ?>" class="caSetItemEditPanel"> 
+	<div id="caSetItemEditPanel<?= $id_prefix; ?>ContentArea">
+	    <div class='dialogHeader'><?= _t('Edit'); ?></div>
+	</div>
 </div>

@@ -82,7 +82,6 @@ var caBundleUpdateManager = null;
 					console.log("load", loadURL, data);
 					if (options) { 
 						for(var k in options) {
-							//loadURL += "/" + k + "/" + options[k];
 							data[k] = options[k];
 						}
 					}

@@ -55,7 +55,7 @@ if ($vb_can_edit) {
 <?php
 		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$vn_object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data');
 	
-		$va_bundle_list = array();
+		$va_bundle_list = [];
 		$va_form_elements = $t_object->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 								'request' => $this->request, 
 								'formName' => 'ObjectEditorForm',

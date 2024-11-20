@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,26 +25,25 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	AssetLoadManager::register("panel");
-	$t_item = $this->getVar('t_item');
-	$t_content = $t_item->getItemTypeInstance();
-	$t_type = $t_item->getTypeInstance();
-	$settings = $t_type->getSettings();
-	$default_count = caGetOption('random_generation_size', $settings, 5);
+ AssetLoadManager::register("panel");
+$t_item = $this->getVar('t_item');
+$t_content = $t_item->getItemTypeInstance();
+$t_type = $t_item->getTypeInstance();
+$settings = $t_type->getSettings();
+$default_count = caGetOption('random_generation_size', $settings, 5);
 ?>
 <div id="caRandomSetGenerationPanel" class="caRandomSetGenerationPanel"> 
-	<div class='dialogHeader'><?= _t('Add random content to set'); ?></div>
+	<div class='dialogHeader'><?= _t('Add random to set'); ?></div>
 	<div id="caRandomSetGenerationPanelContentArea">
 		<?= caFormTag($this->request, 'randomSetGeneration', 'caRandomSetGenetationForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]); ?>
 			<p><?= _t('Add %1 random %2 to this set', caHTMLTextInput('count', ['value' => $default_count], ['width' => '22px']), $t_content->getProperty('NAME_PLURAL')); ?></p>
-			<p><?= _t('Limit selection to %1<br/>', $t_content->getTypeListAsHTMLFormElement('type_id[]', ['multiple' => true, 'height' => 10, 'id' => 'caRandomSetGenetationFormTypeID', 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true]));
+			<p><?= _t('Limit selection to<br/>%1', $t_content->getTypeListAsHTMLFormElement('type_id[]', ['multiple' => true, 'height' => 10, 'id' => 'caRandomSetGenetationFormTypeID', 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true]));
 			?></p>
 	
 			<div id="caRandomSetGenerationPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_ADD__, _t('Add'), 'caRandomSetGenetationForm', ['onclick' => 'caAddRandomItems(); return false;']); ?></td>
+						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_ADD__, _t('Add'), 'caRandomSetGenetationForm', ['onclick' => 'caAddRandomItems(); return false;'], ['size' => '30px']); ?></td>
 						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caRandomSetGenetationFormCancelButton', ['onclick' => 'caRandomSetGenerationPanel.hidePanel(); return false;'], ['size' => '30px']); ?></td>
 					</tr>
 				</table>
