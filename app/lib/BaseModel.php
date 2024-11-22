@@ -11934,15 +11934,17 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_sql = "
-			SELECT {$vs_table_name}.* 
-			FROM {$vs_table_name}
-			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX({$vs_primary_key}) FROM {$vs_table_name})) AS id) AS x 
-			{$vs_join_sql}
-			WHERE {$vs_table_name}.{$vs_primary_key} >= x.id 
-			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
-			ORDER BY {$vs_table_name}.{$vs_primary_key} ASC 
-			{$vs_limit_sql}
-		";
+		    SELECT {$vs_table_name}.*
+		    FROM (
+		    SELECT {$vs_table_name}.{$vs_primary_key}
+	    	FROM {$vs_table_name}
+	    	{$vs_join_sql}
+	    	".(sizeof($va_wheres) ? " WHERE " : "").join(" AND ", $va_wheres)."
+	    	ORDER BY RAND()
+		    {$vs_limit_sql}
+		    ) AS random_items
+		    INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
+        ";
 		
 		$qr_res = $o_db->query($vs_sql);
 		
