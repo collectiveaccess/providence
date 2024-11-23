@@ -3371,7 +3371,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_template = caGetBundleDisplayTemplate($this, 'ca_sets', $pa_bundle_settings);
 			if(is_array($va_items) && sizeof($va_items)) {
 				foreach($va_items as $vn_id => $va_item) {
-					$va_item['_display'] = caProcessTemplateForIDs($vs_template, 'ca_sets', array($vn_id));
+					$va_item['_display'] = caProcessTemplateForIDs($vs_template, 'ca_set_items', array($va_item['item_id']));
 					$va_vals[$vn_id] = $va_item;
 				}
 			}
@@ -3438,7 +3438,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					break;
 				default:
 					if($ps_related_table == 'ca_sets') {
-						$t_item_rel = new ca_sets();
+						$t_item_rel = new ca_set_items();
+						$vb_is_many_many = true;
 					} else {
 						$t_item_rel = null;
 					}

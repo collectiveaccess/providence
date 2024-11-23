@@ -93,7 +93,7 @@ $can_edit = true;
 						let msg = resp.display;
 						if(resp.duplication_status) { msg += "<br/>" + resp.duplication_status; }
 						
-						jQuery.jGrowl(<?= json_encode(_t('Created %1 ', $t_subject->getTypeName())); ?> + ' <em>' + msg + '</em>', { header: '<?= addslashes(_t('Component add %1', $t_subject->getTypeName())); ?>' }); 
+						jQuery.jGrowl(<?= json_encode(_t('Saved %1 ', $t_subject->getTypeName())); ?> + ' <em>' + msg + '</em>', { header: '<?= addslashes(_t('Component add %1', $t_subject->getTypeName())); ?>' }); 
 						jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").parent().data('panel').hidePanel();
 					} else {
 						// error
