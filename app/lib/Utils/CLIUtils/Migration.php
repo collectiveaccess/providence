@@ -38,14 +38,22 @@ trait CLIUtilsMigration {
 		// Check version
 		
 		// Apply database updates
+		self::update_database_schema(['progressBar' => true]);
 		
-		// Reindex
+		// Update history tracking values
+		CLIUtils::reload_current_values_for_history_tracking_policies();
 		
 		// Update attribute sort values
+		CLIUtils::reload_attribute_sortable_values();
 		
 		// Update sortable values
+		CLIUtils::rebuild_sort_values();
+		
+		// Reindex
+		CLIUtils::rebuild_search_index();
 		
 		// DONE!
+		return true
 	}
 	# -------------------------------------------------------
 	/**
@@ -78,6 +86,65 @@ trait CLIUtilsMigration {
 	public static function update_from_1_7Help() {
 		return _t("Help text to come.");
 	}
+	# -------------------------------------------------------
+	/**
+	 * Update database schema
+	 */
+	public static function update_database_schema($po_opts=null) {
+		require_once(__CA_LIB_DIR__."/system/Updater.php");
+		$config_check = new ConfigurationCheck();
+		if (($current_revision = ConfigurationCheck::getSchemaVersion()) <= __CollectiveAccess_Schema_Rev__) {
+			CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $current_revision, __CollectiveAccess_Schema_Rev__));
+			flush();
+			ob_flush();
+			$confirmation  =  trim( fgets( STDIN ) );
+			if ( $confirmation !== 'y' ) {
+				// The user did not say 'y'.
+				return false;
+			}
+			$messages = \System\Updater::performDatabaseSchemaUpdate();
+
+			print CLIProgressBar::start(sizeof($messages), _t('Updating database'));
+			foreach($messages as $message) {
+				print CLIProgressBar::next(1, $message);
+			}
+			print CLIProgressBar::finish();
+		} else {
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__));
+		}
+
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function update_database_schemaParamList() {
+		return array();
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function update_database_schemaUtilityClass() {
+		return _t('Migration');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function update_database_schemaShortHelp() {
+		return _t("Update database schema to the current version.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function update_database_schemaHelp() {
+		return _t("Updates database schema to current version.");
+	}
+	
 	# -------------------------------------------------------
 }
 
