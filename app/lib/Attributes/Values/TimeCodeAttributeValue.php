@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_TIMECODE__", 10);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -154,7 +150,32 @@ $_ca_attribute_settings['TimeCodeAttributeValue'] = array(		// global
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values when used in a display.')
-	)
+	),
+	'format' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => 'COLON_DELIMITED',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Time code format'),
+		'description' => _t('Selects display format for timecode value.'),
+		'options' => array(
+			_t('Hours/minutes/seconds') => 'HOURS_MINUTES_SECONDS',
+			_t('Hours/minute/second (long suffixes)') => 'HOURS_MINUTES_SECONDS_LONG',
+			_t('Colon delimited') => 'COLON_DELIMITED',
+			_t('VTT timestamp') => 'VTT',
+			_t('12 hour time') => 'TIME_12_HOUR',
+			_t('Seconds') => 'SECONDS',
+			_t('Raw integer value') => 'RAW',
+		)
+	),
+	'omitSeconds' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Omit seconds from value?'),
+		'description' => _t('Check this option to omit display of seconds in timecode values.')
+	),
 );
 
 class TimeCodeAttributeValue extends AttributeValue implements IAttributeValue {
@@ -191,8 +212,12 @@ class TimeCodeAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		$o_config = Configuration::load();
 		
-		if(!($ps_format = caGetOption('format', $pa_options, $o_config->get('timecode_output_format')))) {
+		$va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID());
+		if(!($ps_format = caGetOption('format', $va_settings, caGetOption('format', $pa_options, $o_config->get('timecode_output_format'))))) {
 			$ps_format = 'HOURS_MINUTES_SECONDS';
+		}
+		if(caGetOption('omitSeconds', $va_settings, false)) {
+			$pa_options['omitSeconds'] = true;
 		}
 		return $o_tcp->getText($ps_format, $pa_options); 
 	}

@@ -44,15 +44,23 @@ final class ConfigurationCheck {
 	private static $opo_db;
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public static function init() {
+		if(!self::$opo_config) {
+			self::$opa_error_messages = [];
+			self::$opo_db = new Db();
+			self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * Invokes all "QuickCheck" methods. Note that this is usually invoked
 	 * in index.php and that any errors set here cause the application
 	 * to die and display a nasty configuration error screen.
 	 */
 	public static function performQuick($options=null) {
-		self::$opa_error_messages = array();
-		self::$opo_db = new Db();
-		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
-
+		self::init();
 		/* execute checks */
 		$vo_reflection = new ReflectionClass("ConfigurationCheck");
 		$va_methods = $vo_reflection->getMethods();
@@ -73,6 +81,7 @@ final class ConfigurationCheck {
 	 * although certain features may not function properly.
 	 */
 	public static function performExpensive() {
+		self::init();
 		self::$opa_error_messages = array();
 		self::$opo_db = new Db();
 		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
@@ -94,9 +103,7 @@ final class ConfigurationCheck {
 	 * CollectiveAccess installation
 	 */
 	public static function performInstall() {
-		self::$opa_error_messages = array();
-		self::$opo_db = new Db();
-		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
+		self::init();
 
 		self::PHPVersionQuickCheck();
 		self::PHPModuleRequirementQuickCheck();
@@ -152,7 +159,7 @@ final class ConfigurationCheck {
 		// Check media
 		//
 		$vs_media_root = self::$opo_config->get('ca_media_root_dir');
-                $vs_base_dir = self::$opo_config->get('ca_base_dir');
+    	$vs_base_dir = self::$opo_config->get('ca_base_dir');
 		$va_tmp = explode('/', $vs_media_root);
 		$vb_perm_media_error = false;
 		$vs_perm_media_path = null;
@@ -334,6 +341,7 @@ final class ConfigurationCheck {
 	 * Does the HTMLPurifier DefinitionCache dir exist and is it writable?
 	 */
 	public static function htmlPurifierDirQuickCheck() {
+		self::init();
 		$vs_purifier_path = self::$opo_config->get('purify_serializer_path');
 		if(!file_exists($vs_purifier_path)) { mkdir($vs_purifier_path); }
 		if(!file_exists($vs_purifier_path) || !is_writable($vs_purifier_path)){

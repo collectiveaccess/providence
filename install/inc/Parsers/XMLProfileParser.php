@@ -746,12 +746,14 @@ class XMLProfileParser extends BaseProfileParser {
 		$this->data['metadataDictionary'] = [];
 		foreach($dict_list as $dict) {
 			foreach($dict as $entry) {
+				$labels = self::getLabelsFromXML($entry->labels);
 				$bundle = self::getAttribute($entry, "bundle");
 				$table = self::getAttribute($entry, "table");
 				
 				$settings = $entry->settings ? $this->getSettingsFromXML($entry->settings) : [];
 			
 				$data = [
+					'labels' => $labels,
 					'bundle' => $bundle,
 					'table' => $table,
 					'settings' => $settings,

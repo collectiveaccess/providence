@@ -539,6 +539,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 									$vn_entry_id = $vn_id;
 								} else {
 									$vn_entry_id = null;
+									continue;
 								}
 							}
 						}
@@ -548,6 +549,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 									$vn_entry_id = $vn_id;
 								} else {
 									$vn_entry_id = null;
+									continue;
 								}
 							}
 						}

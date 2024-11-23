@@ -236,7 +236,6 @@ class MultipartIDNumber extends IDNumber {
 	 * @return array List of validation errors for value when applied to current format. Empty array if no error.
 	 */
 	public function validateValue($value) {
-		//if (!$value) { return []; }
 		$elements = $this->getElements();
 		if (!is_array($elements)) { return []; }
 
@@ -255,8 +254,9 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'SERIAL':
 					if ($v) {
+						$allow_prefix = (bool)($info['prefix'] ?? null);
 						$prefix = $info['prefix'] ?? '';
-						if (!preg_match("/^{$prefix}[0-9]+$/", $v)) {
+						if (!preg_match($allow_prefix ? "/^{$prefix}[0-9]+[A-Za-z\.\- ]+$/" : "/^{$prefix}[0-9]+$/", $v)) {
 							$element_errors[$ename] = _t("'%1' is not valid for %2; only numbers are allowed", $v, $info['description']);
 						}
 					}
@@ -430,6 +430,11 @@ class MultipartIDNumber extends IDNumber {
 						$is_parent = $i;
 						$element_vals[] = $this->getParentValue();
 						break;
+					case 'INHERIT':
+						$pv = $this->getParentValue();
+						$pv_tmp = explode($separator, $pv);
+						$element_vals[] = $pv[$i] ?? null;
+						break;
 					case 'SERIAL':
 						$element_vals[] = '';
 						break;
@@ -447,6 +452,11 @@ class MultipartIDNumber extends IDNumber {
 					case 'PARENT':
 						$is_parent = $i;
 						$element_vals[$i] = $value[$ename] ?? null;
+						break;
+					case 'INHERIT':
+						$pv = $this->getParentValue();
+						$pv_tmp = explode($separator, $pv);
+						$element_vals[$i] = $pv[$i] ?? null;
 						break;
 					case 'CONSTANT':
 						$element_vals[$i] = $element_info['value'];
@@ -468,6 +478,11 @@ class MultipartIDNumber extends IDNumber {
 				switch($element_info['type']) {
 					case 'PARENT':
 						$is_parent = $i;
+						break;
+					case 'INHERIT':
+						$pv = $this->getParentValue();
+						$pv_tmp = explode($separator, $pv);
+						$element_vals[$i] = $pv[$i] ?? null;
 						break;
 					case 'CONSTANT':
 						$element_vals[$i] = $element_info['value'];
@@ -634,7 +649,8 @@ class MultipartIDNumber extends IDNumber {
 				$extra_elements = array_splice($element_values, $i + 1);
 				$v .= $separator.join($separator, $extra_elements);
 			}
-
+			
+			$prefix = $element_info['prefix'] ?? null;
 			switch($element_info['type']) {
 				case 'LIST':
 					$w = $padding - mb_strlen($v);
@@ -680,6 +696,15 @@ class MultipartIDNumber extends IDNumber {
 				case 'NUMERIC':
 					if ($padding < $element_info['width']) { $padding = $element_info['width']; }
 					
+					if($allow_prefix = (bool)($element_info['prefix'] ?? null)) {
+						$v = preg_replace("![^0-9]+$!", "", $v);
+					}
+					if($prefix) {
+						$tmp = mb_substr($v, mb_strlen($prefix));
+						if(is_numeric($tmp)) {
+							$v = $prefix.str_pad($tmp, $padding - mb_strlen($prefix), "0", STR_PAD_LEFT);
+						};
+					}
 					if ($zeropad_to_length = caGetOption('zeropad_to_length', $element_info, null, ['castTo' => 'int'])) {
 						$v = str_pad($v, $zeropad_to_length, "0", STR_PAD_LEFT);
 					}
@@ -703,8 +728,11 @@ class MultipartIDNumber extends IDNumber {
 					$tmp = explode($separator, $v);
 					
 					foreach($tmp as $t) {
+						if(preg_match("!^([A-Z]+)([\d]+)$!i", $t, $m)) {
+							$t = $m[1].str_pad($m[2], $padding - strlen($m[1]), "0", STR_PAD_LEFT);
+						}
 						$n = $padding - mb_strlen($t);
-						$output[] = (($n >= 0) ? str_repeat(' ', $n) : '').$t;
+						$output[] = ((($n >= 0) ? str_repeat(' ', $n) : '').$t);
 					}
 					break;
 				default:
@@ -987,6 +1015,7 @@ class MultipartIDNumber extends IDNumber {
 			if (($info['type'] == 'SERIAL') && (($element_values[$i] ?? null) == '')) {
 				$next_in_seq_is_present = true;
 			}
+			$options['index'] = $i;
 			$tmp = $this->genNumberElement($ename, $name, $element_values[$i] ?? null, $id_prefix, $generate_for_search_form, $options);
 			$element_control_names[] = $name.'_'.$ename;
 
@@ -1430,6 +1459,7 @@ class MultipartIDNumber extends IDNumber {
 
 				break;
 			# ----------------------------------------------------
+				case 'INHERIT':
 				case 'PARENT':
 				$width = $this->getElementWidth($element_info, 3);
 
@@ -1438,6 +1468,10 @@ class MultipartIDNumber extends IDNumber {
 				} else {
 					if ($element_value == '') {
 						$next_num = $this->getParentValue();
+						if($element_info['type'] === 'INHERIT') {
+							$pv = explode($this->getSeparator(), $next_num);
+							$next_num = $pv[1];
+						}
 						$element .= '&lt;'._t('%1', $next_num).'&gt;'.'<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($next_num, ENT_QUOTES, 'UTF-8').'"/>';
 					} else {
 						if ($element_info['editable']) {
