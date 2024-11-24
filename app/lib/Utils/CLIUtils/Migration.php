@@ -29,6 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
+require_once(__CA_LIB_DIR__."/system/Updater.php");
+
 trait CLIUtilsMigration { 
 	# -------------------------------------------------------
 	/**
@@ -36,34 +38,54 @@ trait CLIUtilsMigration {
 	 */
 	public static function update_from_1_7($po_opts=null) {
 		// Check version
+		if (($current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
+			CLIUtils::addMessage(_t("Database already at current revision (%1). No update is required.", $current_revision));
+			return true;
+		}
+		
+		if(!CLIUtils::confirm(_t("Are you sure you want to update your version 1.7 system (database revision %1)?\nNOTE: you MUST backup your database before applying this update!\n\nType 'y' to proceed or 'n' to cancel, then hit return", $current_revision),['confirmationCode' => 'y', 'color' => 'yellow'])) {
+			return false;
+		}
+		
+		$num_steps = 5;
 		
 		// Apply database updates
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating database schema", 1, $num_steps), ['color' => 'yellow']);
 		self::update_database_schema(['progressBar' => true]);
 		
 		// Update history tracking values
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", 2, $num_steps), ['color' => 'yellow']);
 		CLIUtils::reload_current_values_for_history_tracking_policies();
 		
 		// Update attribute sort values
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", 3, $num_steps), ['color' => 'yellow']);
 		CLIUtils::reload_attribute_sortable_values();
 		
 		// Update sortable values
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", 4, $num_steps), ['color' => 'yellow']);
 		CLIUtils::rebuild_sort_values();
 		
 		// Reindex
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Rebuilding search index", 5, $num_steps), ['color' => 'yellow']);
 		CLIUtils::rebuild_search_index();
 		
 		// DONE!
-		return true
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("Update complete!", 5, $num_steps, ['color' => 'yellow']));
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function update_from_1_7ParamList() {
-		return array(
-			"xxx|r" => _t("xxx"),
-
-		);
+		return [];
 	}
 	# -------------------------------------------------------
 	/**
@@ -77,31 +99,26 @@ trait CLIUtilsMigration {
 	 *
 	 */
 	public static function update_from_1_7ShortHelp() {
-		return _t("Migration a version 1.7.x system to 2.0.");
+		return _t("Migrate a version 1.7.x system to version 2.0");
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function update_from_1_7Help() {
-		return _t("Help text to come.");
+		return _t("Performs a multi-step process to update a 1.7.x database for use with CollectiveAccess version 2.0, including update of database schema, regeneration of sortable values and full rebuild of the search index. For larger systems this process may take significant time, up to several hours. The migration process is generally safe, and will not damage systems that are already updated. However it is strongly recommended that a full backup of the database be made before running this update.");
 	}
 	# -------------------------------------------------------
 	/**
 	 * Update database schema
 	 */
 	public static function update_database_schema($po_opts=null) {
-		require_once(__CA_LIB_DIR__."/system/Updater.php");
 		$config_check = new ConfigurationCheck();
 		if (($current_revision = ConfigurationCheck::getSchemaVersion()) <= __CollectiveAccess_Schema_Rev__) {
-			CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $current_revision, __CollectiveAccess_Schema_Rev__));
-			flush();
-			ob_flush();
-			$confirmation  =  trim( fgets( STDIN ) );
-			if ( $confirmation !== 'y' ) {
-				// The user did not say 'y'.
+			if(!CLIUtils::confirm(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you MUST backup your database before applying updates!\n\nType 'y' to proceed or 'n' to cancel, then hit return ", $current_revision + 1, __CollectiveAccess_Schema_Rev__), ['confirmationCode' => 'y', 'color' => 'yellow'])) {
 				return false;
 			}
+			
 			$messages = \System\Updater::performDatabaseSchemaUpdate();
 
 			print CLIProgressBar::start(sizeof($messages), _t('Updating database'));
@@ -111,7 +128,7 @@ trait CLIUtilsMigration {
 			print CLIProgressBar::finish();
 		} else {
 			print CLIProgressBar::finish();
-			CLIUtils::addMessage(_t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__));
+			CLIUtils::addMessage(_t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__), ['color' => 'red']);
 		}
 
 		return true;
@@ -147,4 +164,3 @@ trait CLIUtilsMigration {
 	
 	# -------------------------------------------------------
 }
-
