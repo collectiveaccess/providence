@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/BaseObject.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 
@@ -405,7 +401,7 @@ class BaseFindEngine extends BaseObject {
 						array_splice($sorted_page_hits, $index, $lr, array_slice($row_ids, 0, $lr));
 					} else {
 						// first result is at start of page, so we need to figure out if the sequence begins on a previous page
-						$start = null;
+						$start = 0;
 						if ($page_start > 0) {
 							$c = 0;
 							do {			// loop back through pages until we find the beginning
@@ -428,8 +424,6 @@ class BaseFindEngine extends BaseObject {
 								$start = $l * ($c-1);
 								break;
 							} while($s > 0);
-						} else {
-							$start = $map_index;
 						}
 					
 						if(!is_null($start)) {
