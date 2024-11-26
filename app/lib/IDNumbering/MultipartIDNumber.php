@@ -239,7 +239,14 @@ class MultipartIDNumber extends IDNumber {
 		$elements = $this->getElements();
 		if (!is_array($elements)) { return []; }
 
-		$element_vals = $this->explodeValue($value);
+		$pv = $this->getParentValue();
+		if(preg_match('!^'.preg_quote($pv, '!').'!u', $v)) {
+			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $v);
+			$element_vals = $this->explodeValue($npv);
+			array_unshift($element_vals, $npv);
+		} else {
+			$element_vals = $this->explodeValue($value);
+		}
 		$i = 0;
 		$element_errors = [];
 		foreach($elements as $ename => $info) {
@@ -254,9 +261,9 @@ class MultipartIDNumber extends IDNumber {
 					break;
 				case 'SERIAL':
 					if ($v) {
-						$allow_prefix = (bool)($info['prefix'] ?? null);
+						$allow_suffix = (bool)($info['allowsuffix'] ?? null);
 						$prefix = $info['prefix'] ?? '';
-						if (!preg_match($allow_prefix ? "/^{$prefix}[0-9]+[A-Za-z\.\- ]+$/" : "/^{$prefix}[0-9]+$/", $v)) {
+						if (!preg_match($allow_suffix ? "/^{$prefix}([0-9]+[^0-9]+.*|[0-9]+)$/" : "/^{$prefix}[0-9]+$/", $v)) {
 							$element_errors[$ename] = _t("'%1' is not valid for %2; only numbers are allowed", $v, $info['description']);
 						}
 					}

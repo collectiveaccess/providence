@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,8 @@
  	define('__CA_NAV_ICON_COPY__', 70);
  	define('__CA_NAV_ICON_MERGE__', 71);
  	define('__CA_NAV_ICON_SPLIT__', 72);
+ 	define('__CA_NAV_ICON_TOGGLE__', 73);
+ 	define('__CA_NAV_ICON_CHECKBOX__', 74);
  	
  	/**
  	 * Icon position constants
@@ -910,6 +912,12 @@
 				break;	
 			case __CA_NAV_ICON_SPLIT__:
 				$vs_fa_class = 'fa fa-object-ungroup';
+				break;		
+			case __CA_NAV_ICON_TOGGLE__:
+				$vs_fa_class = 'fa fa-toggle-on';
+				break;
+			case __CA_NAV_ICON_CHECKBOX__:
+				$vs_fa_class = 'fa fa-check-square';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
