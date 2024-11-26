@@ -459,10 +459,15 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 							} else {
 								$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
 							}
-							if (caGISisDMS($va_tmp[1])) {
-								$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+							
+							if(isset($va_tmp[1]) && strlen($va_tmp[1])) {
+								if (caGISisDMS($va_tmp[1])) {
+									$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+								} else {
+									$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+								}
 							} else {
-								$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+								$va_tmp[1] = '';
 							}
 						
 							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1].(($vn_radius > 0) ? "~{$vn_radius}" : "").(($vn_angle > 0) ? "*{$vn_angle}" : "");
