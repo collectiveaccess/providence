@@ -144,7 +144,7 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 	
 			$va_info_fields = [];
 			
-			$vs_display = "<b>"._t('Link')."</b>: <a href='{$ps_url}' target='_blank'>{$ps_url}</a><br/>\n";
+			$vs_display = "<b>"._t('Link')."</b>: <a href='{$ps_url}' target='_blank' rel='noopener noreferrer'>{$ps_url}</a><br/>\n";
 			
 			if(isset($va_data['identifier'])) { $va_info_fields[_t('EOL Identifier')] = $va_data['identifier']; }
 			

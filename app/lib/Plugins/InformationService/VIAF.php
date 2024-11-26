@@ -113,7 +113,7 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     }
 
     public function getExtendedInformation($pa_settings, $ps_url) {
-        return ['display' => "<p><a href='{$ps_url}' target='_blank'>{$ps_url}</a></p>"];
+        return ['display' => "<p><a href='{$ps_url}' target='_blank' rel='noopener noreferrer'>{$ps_url}</a></p>"];
     }
 
     /**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
+$fields = $this->getVar('available_sort_fields');
 
-$va_fields = $this->getVar('available_sort_fields');
-header("Content-type: application/json");
-print json_encode($va_fields);
+$app = AppController::getInstance();
+$response = $app->getResponse();
+$response->setContextType("application/json");
+
+print json_encode($fields);

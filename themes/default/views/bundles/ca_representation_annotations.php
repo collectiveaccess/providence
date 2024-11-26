@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,18 +30,6 @@ $settings			= $this->getVar('settings');
 
 $va_media_props		= $t_subject->getMediaInfo('media', 'original');
 $vn_timecode_offset	= isset($va_media_props['PROPERTIES']['timecode_offset']) ? (float)$va_media_props['PROPERTIES']['timecode_offset'] : 0;
-
-if (	// don't show bundle if this representation doesn't use bundles to edit annotations
-	!method_exists($t_subject, "getAnnotationType") || 
-	!$t_subject->getAnnotationType() ||
-	!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
-	!$t_subject->useBundleBasedAnnotationEditor()
-) { 	
-?>
-	<span class='heading'><?= _t('Annotations are not supported for this type of media'); ?></span>
-<?php
-		return; 
-}
 	
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_item 			= $this->getVar('t_item');				// object representation annotation
@@ -94,8 +82,17 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 		!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
 		!$t_subject->useBundleBasedAnnotationEditor()
 	) { 	
+	
+		if(!$t_subject->useBundleBasedAnnotationEditor()) {
 ?>
-		<span class='heading'><?= _t('Annotations are not supported for this type of media'); ?></span>
+			<span class='heading'><?= _t('Annotations are not editable here for this type of media'); ?></span>
+<?php
+		} else {
+?>
+			<span class='heading'><?= _t('Annotations are not supported for this type of media'); ?></span>
+<?php
+		}
+?>
 	</div>
 <?php
 			return; 
@@ -103,7 +100,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	$va_media_player_config = caGetMediaDisplayInfo('annotation_editor', $t_subject->getMediaInfo('media', $o_properties->getDisplayMediaVersion(), 'MIMETYPE'));
 ?>
 	<div class="caAnnotationMediaPlayerContainer">
-		<?= $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'caAnnotationMediaPlayer', 'viewer_width' => $va_media_player_config['viewer_width'], 'viewer_height' => $va_media_player_config['viewer_height'], 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
+		<?= $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'caAnnotationMediaPlayer', 'viewer_width' => $va_media_player_config['viewer_width'] ?? null, 'viewer_height' => $va_media_player_config['viewer_height'] ?? null, 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
 	</div>
 </div>
 <!-- END Media Player -->
@@ -137,7 +134,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 			print "</tr></table></td>";
 		}
 ?>
-					<td><?= $t_item_label->htmlFormElement('name', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}label_{n}", 'name' => "{fieldNamePrefix}label_{n}", "value" => "{{label}}", 'no_tooltips' => false, 'width' => 35,'textAreaTagName' => 'textentry')); ?></td>
+					<td><?= $t_item_label->htmlFormElement('name', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}label_{n}", 'name' => "{fieldNamePrefix}label_{n}", "value" => "{{label}}", 'no_tooltips' => true, 'width' => 35,'textAreaTagName' => 'textentry')); ?></td>
 					<td><a href="#" onclick="jQuery('#{fieldNamePrefix}moreOptions_{n}').slideToggle(250); return false;" class="button"><?= _t('More'); ?> &rsaquo;</a></td>
 					
 					<td>
@@ -148,9 +145,9 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 			<div style="display:none;" id="{fieldNamePrefix}moreOptions_{n}">
 				<table class="representationAnnotationListItem">
 					<tr>
-						<td><?= $t_item_label->htmlFormElement('locale_id', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "", 'no_tooltips' => false, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?></td>
-						<td><?= $t_item->htmlFormElement('status', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
-						<td><?= $t_item->htmlFormElement('access', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
+						<td><?= $t_item_label->htmlFormElement('locale_id', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "", 'no_tooltips' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?></td>
+						<td><?= $t_item->htmlFormElement('status', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => true)); ?></td>
+						<td><?= $t_item->htmlFormElement('access', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => true)); ?></td>
 						<td><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
 					</tr>
 				</table>
@@ -189,3 +186,4 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	});
 </script>
 <!-- END Annotation List -->
+

@@ -505,7 +505,7 @@ final class ConfigurationCheck {
 			self::addError(_t(
 				'The memory limit for your PHP installation may not be sufficient to run CollectiveAccess correctly. '.
 				'Please consider adjusting the "memory_limit" variable in your PHP configuration (usually a file named) '.
-				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank">http://us.php.net/manual/en/ini.core.php</a> '.
+				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank" rel="noopener noreferrer">http://us.php.net/manual/en/ini.core.php</a> '.
 				'for more details. The value in your config is &quot;%1&quot;, the recommended value is &quot;128M&quot; or higher.'
 			,$vs_memory_limit));
 		}

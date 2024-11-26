@@ -156,6 +156,8 @@ class BaseRepresentationAnnotationModel extends BundlableLabelableBaseModelWithA
 			$this->errors = $this->opo_annotations_properties->errors;
 			return false;
 		}
+		$vs_file = null;
+		
 		$this->set('props', $this->opo_annotations_properties->getPropertyValues());
 		
 		if (!$this->getAppConfig()->get('dont_generate_annotation_previews') && $this->getPrimaryKey() && ($this->changed('props') || (isset($pa_options['forcePreviewGeneration']) && $pa_options['forcePreviewGeneration']))) {

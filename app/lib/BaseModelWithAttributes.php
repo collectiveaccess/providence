@@ -262,8 +262,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if ($po_trans) { $t_attr->setTransaction($po_trans); } else { $t_attr->setTransaction($this->getTransaction()); }
 		$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 		if ($t_attr->numErrors()) {
+			$error_set_for_source = [];
 			foreach($t_attr->errors as $o_error) {
+				if($error_set_for_source[$pa_info['error_source']] ?? null) { continue; }
 				$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
+				$error_set_for_source[$pa_info['error_source']] = true;
 			}
 			return false;
 		}
@@ -523,8 +526,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
+			$error_set_for_source = [];
 			foreach($t_attr->errors as $o_error) {
+				if($error_set_for_source[$pa_info['error_source']] ?? null) { continue; }
 				$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
+				$error_set_for_source[$pa_info['error_source']] = true;
 			}
 			return false;
 		}

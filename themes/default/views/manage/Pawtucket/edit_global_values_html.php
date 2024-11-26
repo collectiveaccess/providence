@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,41 +29,49 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$va_form_elements = $this->getVar('form_elements');
+$form_elements = $this->getVar('form_elements');
 ?>
-	<div>
-		<h1><?= _t('Global value editor'); ?></h1>
-	</div>
-	<div class="searchReindexHelpText">
-		<?= _t('Global values are editable text values that may be displayed in any view template in your Pawtucket theme. They are especially useful for managing semi-static text embedded in a web site, such as upcoming holiday hours or planned maintenance. You may edit globals using the form below. Configure additional global values by adding them to your theme app.conf configuration file.'); ?>
+<div>
+	<h1><?= _t('Global value editor'); ?></h1>
+</div>
+<div class="searchReindexHelpText">
+	<?= _t('Global values are editable text values that may be displayed in any view template in your Pawtucket theme. They are especially useful for managing semi-static text embedded in a web site, such as upcoming holiday hours or planned maintenance. You may edit globals using the form below. Configure additional global values by adding them to your theme app.conf configuration file.'); ?>
 <?php
-	if (sizeof($va_form_elements) == 0) {
+if (sizeof($form_elements) == 0) {
 ?>
-		<div style="text-align: center;">
-			<h2><?= _t('No global values for Pawtucket are configured'); ?></h2>
-		</div>
-<?php
-	}
-?>
+	<div style="text-align: center;">
+		<h2><?= _t('No global values for Pawtucket are configured'); ?></h2>
 	</div>
-	<div style="clear:both; height:1px;"><!-- empty --></div>
+<?php
+}
+?>
+</div>
+<div style="clear:both; height:1px;"><!-- empty --></div>
 <?php	
 	print caFormTag($this->request, 'saveGlobalValues', 'globalValuesForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]);
-	
-	if (sizeof($va_form_elements) > 0) {
-		foreach($va_form_elements as $vs_name => $va_info) {
+
+	if (sizeof($form_elements) > 0) {
+		print $control_box = caFormControlBox(
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'globalValuesForm').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'editGlobalValues'),
+			null, null
+		);
+		foreach($form_elements as $name => $info) {
 ?>
-			<div>
-				<div class="formLabel">
-					<?= $va_info['label']; ?><br/>
-					<?= $va_info['element']; ?>
+			<div class="bundleLabel">
+				<span class="formLabelText"><?= $info['label']; ?></span>
+				<div class="bundleContainer">
+					<div class="caLabelList">
+						<div style="padding: 10px 0px 10px 10px;">
+							<?= $info['element']; ?>
+						</div>
+					</div>
 				</div>
 			</div>
 <?php
 		}
-		print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'globalValuesForm', array())."</div>";	
+		print $control_box;
 	}
 ?>
 </form>
-	<div class="editorBottomPadding"><!-- empty --></div>
+<div class="editorBottomPadding"><!-- empty --></div>

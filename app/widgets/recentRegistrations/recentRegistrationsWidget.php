@@ -27,7 +27,6 @@
  */
 require_once(__CA_LIB_DIR__.'/BaseWidget.php');
 require_once(__CA_LIB_DIR__.'/IWidget.php');
-require_once(__CA_LIB_DIR__.'/Db.php');
 
 class recentRegistrationsWidget extends BaseWidget implements IWidget {
 	# -------------------------------------------------------

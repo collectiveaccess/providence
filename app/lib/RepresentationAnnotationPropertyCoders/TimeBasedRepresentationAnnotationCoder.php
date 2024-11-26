@@ -56,7 +56,7 @@
 			$vs_element = $vs_label = '';
 			$pa_attributes['class'] = 'timecodeBg';
 			
-			if (!($vs_format = $pa_attributes['format'])) {
+			if (!($vs_format = ($pa_attributes['format'] ?? null))) {
 				$vs_format = $this->opo_config->get('form_element_display_format');
 			}
 			if ($va_property_info = $this->getPropertyInfo($ps_property)) {
@@ -123,7 +123,7 @@
 					$o_timecode_parser = new TimecodeParser();
 					$o_timecode_parser->setParsedValueInSeconds($this->opa_property_values[$ps_property]);
 					
-					return $o_timecode_parser->getText(caGetOption($options, 'vtt', false) ? 'VTT' : 'COLON_DELIMITED');
+					return $o_timecode_parser->getText(caGetOption('vtt', $options, false) ? 'VTT' : 'COLON_DELIMITED');
 					break;
 				default:
 					// unsupported property?
@@ -137,7 +137,7 @@
 		 * This function checks whether the values make sense
 		 */
 		public function validate() {
-			if ($this->opa_property_values['startTimecode'] > $this->opa_property_values['endTimecode']) {
+			if (($this->opa_property_values['startTimecode'] ?? 0) > ($this->opa_property_values['endTimecode'] ?? 0)) {
 				$this->postError(1500, _t("Start must be less than end"), "TimeBasedRepresentationAnnotationCoder->validate()");
 				return false;
 			} else {
