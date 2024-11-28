@@ -29,7 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/system/Updater.php");
+require_once(__CA_LIB_DIR__."/System/Updater.php");
 
 trait CLIUtilsMigration { 
 	# -------------------------------------------------------
