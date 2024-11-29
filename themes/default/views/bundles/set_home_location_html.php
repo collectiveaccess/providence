@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2021 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,17 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	AssetLoadManager::register("panel");
-	$t_item = $this->getVar('t_item');
-	
-	$t_location = ca_storage_locations::find($t_item->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
-	$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get(['inspector_home_location_display_template', 'ca_storage_locations_hierarchy_browser_display_settings'])) : null;
-	$home_location_message = _t('Home location is <em>%</em>');
-	
-	
-	$va_lookup_urls 			= caJSONLookupServiceUrl($this->request, 'ca_storage_locations', []);
-	$vs_edit_url = caEditorUrl($this->request, $t_item->tableName());
+AssetLoadManager::register("panel");
+$t_item = $this->getVar('t_item');
+
+$t_location = ca_storage_locations::find($t_item->get('home_location_id'), ['returnAs' => 'firstModelInstance']);
+$home_location_idno = $t_location ? $t_location->getWithTemplate($this->request->config->get(['inspector_home_location_display_template', 'ca_storage_locations_hierarchy_browser_display_settings'])) : null;
+$home_location_message = _t('Home location is <em>%</em>');
+
+
+$lookup_urls = caJSONLookupServiceUrl($this->request, 'ca_storage_locations', []);
+$edit_url = caEditorUrl($this->request, $t_item->tableName());
 ?>
 <script type="text/javascript">
 	var caSetHomeLocationPanel;
@@ -66,8 +65,8 @@
 		caSetHomeLocationPanel.showPanel();
 		if (!oSetHomeLocationHierarchyBrowser) {
 			oSetHomeLocationHierarchyBrowser = caUI.initHierBrowser('SetHomeLocationHierarchyBrowser', {
-				levelDataUrl: '<?= $va_lookup_urls['levelList']; ?>',
-				initDataUrl: '<?= $va_lookup_urls['ancestorList']; ?>',
+				levelDataUrl: '<?= $lookup_urls['levelList']; ?>',
+				initDataUrl: '<?= $lookup_urls['ancestorList']; ?>',
 			
 				dontAllowEditForFirstLevel: true,
 			
@@ -101,7 +100,7 @@
 			// Set up hierarchy browse search
 			jQuery('#SetHomeLocationHierarchyBrowserSearch').autocomplete(
 				{
-					source: '<?= $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+					source: '<?= $lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
 					select: function( event, ui ) {
 						if (ui.item.id) {
 							jQuery("#SetHomeLocationHierarchyBrowser").slideDown(350);
@@ -122,7 +121,7 @@
 		var new_home_location_id = jQuery("#new_home_location_id").val();
 		jQuery.post(
 			'<?= caNavUrl($this->request, '*', '*', 'SetHomeLocation'); ?>',
-			{ 'location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?= $t_item->getPrimaryKey(); ?>, 'csrfToken': <?= json_encode(caGenerateCSRFToken($this->request)); ?> },
+			{ 'home_location_id': new_home_location_id, '<?= $t_item->primaryKey(); ?>': <?= $t_item->getPrimaryKey(); ?>, 'csrfToken': <?= json_encode(caGenerateCSRFToken($this->request)); ?> },
 			function(data, textStatus, jqXHR) {
 				if(data && data['ok'] && (parseInt(data['ok']) == 1)) {
 					var home_location_message = <?= json_encode($home_location_message); ?>;
@@ -136,6 +135,7 @@
 						caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
 						caBundleUpdateManager.reloadBundle('ca_objects_history'); 
 						caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+						caBundleUpdateManager.reloadBundle('hierarchy_location'); 
 						caBundleUpdateManager.reloadInspector(); 
 					}
 					jQuery("input[name='form_timestamp']").val(data.timestamp);
