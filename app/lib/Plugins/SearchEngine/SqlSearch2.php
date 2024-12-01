@@ -421,12 +421,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	$words = [$term->text];
 	 	
-	 	$is_exact_search = false;
-	 	if(mb_substr($words[0], 0, 1) === '=') {
-	 		$words[0] = mb_substr($words[0], 1);
-	 		$is_exact_search = true;
-	 	}	
-	 	
 	 	if($field && !is_array($ap)) {
 	 		$words[0] = $field.':'.$words[0];
 	 		$field = null;
@@ -451,8 +445,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		$ret = $this->_processMetadataDataType($subject_tablenum, $ap, $query);
 	 		if(is_array($ret)) { return $ret; }
 	 	}
+	 	
+	 	if(!is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
+			$words[0] = mb_substr($words[0], 1);
+		}
+		
 	 	$results = [];
-	 	foreach($words as $i => $text) {
+	 	$wc = sizeof($words);
+	 	foreach($words as $w => $text) {
 			// Don't stem if:
 			//	1. Stemming is disabled
 			//	2. Search for is blank values
@@ -549,6 +549,19 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		
 			$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
+				
+			$anchor_sql = '';
+			switch($anchor_mode) {
+				case 'EXACT':
+					$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+					break;
+				case 'START':
+					$anchor_sql = " AND swi.word_index = {$w}";
+					break;
+				case 'END':
+					$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
+					break;
+			}
 		
 			if ($is_bare_wildcard) {
 				$t = Datamodel::getInstance($subject_tablenum, true);
@@ -559,31 +572,30 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					SELECT 0 index_id, {$pk} row_id, 100 boost
 					FROM {$table}".($t->hasField('deleted') ? " WHERE deleted = 0" : "")."
 				", []);
-			//} elseif($is_exact_search) {
-				// @TODO:
 			} elseif($use_boost) {
 				$qr_res = $this->db->query("
-					SELECT swi.index_id, swi.row_id, swi.boost
+					SELECT swi.index_id, swi.row_id, swi.boost, swi.field_index
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 					WHERE
 						swi.table_num = ? AND {$word_field} {$word_op} ?
 						{$field_sql}
-						{$private_sql}
+						{$private_sql} {$anchor_sql}
 				", $params);
 			} else {
 				$qr_res = $this->db->query("
-					SELECT swi.index_id, swi.row_id, 100 boost
+					SELECT swi.index_id, swi.row_id, 100 boost, swi.field_index
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 					WHERE
 						swi.table_num = ? AND {$word_field} {$word_op} ?
 						{$field_sql}
-						{$private_sql}
+						{$private_sql} {$anchor_sql}
 				", $params);
 			}
 			$results[$i] = $this->_arrayFromDbResult($qr_res);
 		}
+		
 		$ret = array_shift($results);
 		foreach($results as $r) {
 			if(!is_array($r)) { continue; }
@@ -623,6 +635,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		
 			if (!sizeof($words)) { return []; }
+						
+			if(!is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
+				$words[0] = mb_substr($words[0], 1);
+			}
 		
 			$ap_tmp = explode(".", $ap_spec);
 			$fld_table = $fld_num = null;
@@ -654,6 +670,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				return strlen($v);
 			});
 			if(!sizeof($words)) { return []; }
+			$wc = sizeof($words);
 	 		foreach($words as $w => $word) {
 	 			$word_op = '=';
 	 			if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
@@ -665,7 +682,21 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$temp_table = 'ca_sql_search_phrase_'.md5("{$subject_tablenum}/{$word}/{$w}");
 				$this->_createTempTable($temp_table);
 			
+				$anchor_sql = '';
+				switch($anchor_mode) {
+					case 'EXACT':
+						$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+						break;
+					case 'START':
+						$anchor_sql = " AND swi.word_index = {$w}";
+						break;
+					case 'END':
+						$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
+						break;
+				}
+				
 				$tc = sizeof($temp_tables);
+				
 				$qr_res = $this->db->query("
 					INSERT INTO {$temp_table}
 					SELECT swi.index_id + 1, 1, null
@@ -674,8 +705,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
 					WHERE 
 						sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
-						{$private_sql}
-				", $word, (int)$subject_tablenum);
+						{$private_sql} {$anchor_sql}
+				", (string)$word, (int)$subject_tablenum);
 				$qr_count = $this->db->query("SELECT count(*) c FROM {$temp_table}");
 			
 				$temp_tables[] = $temp_table;	
@@ -1122,6 +1153,25 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		}
 		return ['restrict' => $restrict_to_fields, 'exclude' => $exclude_fields_from_search];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getAnchorMode(string $word) : ?string {
+		$anchor_mode = null;
+		switch(mb_substr($word, 0, 1)) {
+			case '=':
+				$anchor_mode = 'EXACT';
+				break;
+			case '^':
+				$anchor_mode = 'START';
+				break;
+			case '$':
+				$anchor_mode = 'END';
+				break;
+		}
+		return $anchor_mode;
 	}
 	# -------------------------------------------------------
 	# Indexing
