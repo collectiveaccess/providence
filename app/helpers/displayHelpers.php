@@ -1119,7 +1119,7 @@ function caEditorInspector($view, $options=null) {
 				$buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
 				if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 			} else {
-				if ($view->request->user->canDoAction('can_see_current_location_in_inspector_'.$table_name)) {
+				if (($table_name === 'ca_storage_locations') || $view->request->user->canDoAction('can_see_current_location_in_inspector_'.$table_name)) {
 					$is_home = $t_item->isInHomeLocation();
 					$inspector_current_value = null;
 					if (method_exists($t_item, "getHistory") && ($inspector_current_value_label = $t_item->getInspectorHistoryTrackingDisplayPolicy('label'))) {
@@ -3928,7 +3928,7 @@ function caEditorBundleBatchEditorControls($request, $placement_id, $t_instance,
  * @return bool
  */
 function caHomeLocationsEnabled(string $table, $type=null, array $options=null) {
-	if(!in_array($table, ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_collections'], true)) { return false; }
+	if(!in_array($table, ['ca_objects', 'ca_object_lots', 'ca_object_representations', 'ca_collections', 'ca_storage_locations'], true)) { return false; }
 	$o_config = Configuration::load();
 	if($type && (bool)$o_config->get("{$table}_{$type}_enable_home_location")) { return true; }
 	if($type && is_numeric($type) && ($t_instance = Datamodel::getInstance($table, true))) {	

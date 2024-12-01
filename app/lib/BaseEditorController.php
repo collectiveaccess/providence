@@ -1656,7 +1656,7 @@ class BaseEditorController extends ActionController {
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
 				$bundle_label = null;
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
 				break;
 		}
 	}
@@ -2784,7 +2784,7 @@ class BaseEditorController extends ActionController {
 		if(!$this->verifyAccess($t_subject)) { return; }
 		
 		$table = $t_subject->tableName();
-		$location_id = $this->request->getParameter('location_id', pInteger);
+		$location_id = $this->request->getParameter('home_location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
 			$resp = ['ok' => 0, 'errors' => _t('No location set')];
 		} else {

@@ -3998,17 +3998,29 @@ a.exploreSelected {
     font-weight:normal;
     float:right;
     
-    padding-left:5px;
+    padding: 5px 0 5px 5px;
 }
 .hierarchyBrowserMessageContainer{    /*** message above browser on editor pages ***/
-    padding: 0px 8px 0px 8px;
+    padding: 5px 8px 5px 16px;
     color:#333;
     font-weight: normal;
 }
+
 .hierarchyBrowserNewLocationMessage{ /*** message above browser on editor pages dispaying new location to move record to ***/
     color: #EB0000;
-    padding:0px 5px 15px 0px;
+    padding:2px 5px 5px 0px;
     height:1em;
+    display: none;
+}
+
+.hierarchyReturnToHomeContainer {
+	padding:6px 5px 2px 0px;
+	font-weight: normal;
+}
+
+.hierarchyReturnToHomeButton {
+	text-decoration: none;
+    cursor: pointer;
 }
 
 /*** scrolling header styles ***/
