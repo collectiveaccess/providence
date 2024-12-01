@@ -32,6 +32,7 @@
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 require_once(__CA_LIB_DIR__.'/GenericVersionUpdater.php');
+require_once(__CA_LIB_DIR__.'/System/Updater.php');
 
 define('__CA_SCHEMA_UPDATE_ERROR__', 0);
 define('__CA_SCHEMA_UPDATE_WARNING__', 1);
@@ -252,7 +253,7 @@ final class ConfigurationCheck {
 				self::addError(_t("Your database is out-of-date. Please install all schema migrations starting with migration #%1.<br/><br/><div align='center'><strong>NOTE: you should back-up your database before applying updates!</strong></div>",($vn_schema_revision + 1)));
 			}
 			for($vn_i = ($vn_schema_revision + 1); $vn_i <= __CollectiveAccess_Schema_Rev__; $vn_i++) {
-				if ($o_instance = ConfigurationCheck::getVersionUpdateInstance($vn_i)) {
+				if ($o_instance = \System\Updater::getVersionUpdateInstance($vn_i)) {
 					if ($vs_preupdate_message = $o_instance->getPreupdateMessage()) {
 						self::addError(_t("For migration %1", $vn_i).": {$vs_preupdate_message}");		
 					}

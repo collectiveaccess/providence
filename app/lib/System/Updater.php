@@ -96,7 +96,7 @@ final class Updater {
 	/**
 	 *
 	 */
-	private static function getVersionUpdateInstance($pn_version) {
+	public static function getVersionUpdateInstance($pn_version) {
 		$classname = "VersionUpdate{$pn_version}";
 		if (file_exists(__CA_BASE_DIR__."/support/sql/migrations/{$classname}.php")) {
 			require_once(__CA_BASE_DIR__."/support/sql/migrations/{$classname}.php");
