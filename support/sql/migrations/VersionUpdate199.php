@@ -31,7 +31,7 @@
  */
 require_once(__CA_LIB_DIR__ . '/BaseVersionUpdater.php');
 
-class VersionUpdate189 extends BaseVersionUpdater {
+class VersionUpdate199 extends BaseVersionUpdater {
 	# -------------------------------------------------------
 	protected $opn_schema_update_to_version_number = 199;
 	protected $messages = [];
