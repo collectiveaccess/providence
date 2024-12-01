@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
 
 (function ($) {
@@ -209,8 +208,6 @@ var caUI = caUI || {};
 			caUI.mediaUploadAnnotationEditorPanels[that.fieldNamePrefix] = caUI.initPanel({ 
 				panelID: 'caAnnoEditor' + that.fieldNamePrefix,								/* DOM ID of the <div> enclosing the panel */
 				panelContentID: 'caAnnoEditor' + that.fieldNamePrefix + 'ContentArea',		/* DOM ID of the content area <div> in the panel */
-				exposeBackgroundColor: '#000000',				
-				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
 				closeButtonSelector: '.close',
 				centerHorizontal: true,
@@ -229,8 +226,6 @@ var caUI = caUI || {};
 			caUI.mediaUploadSetCenterPanels[that.fieldNamePrefix] = caUI.initPanel({ 
 				panelID: 'caImageCenterEditor' + that.fieldNamePrefix,								/* DOM ID of the <div> enclosing the panel */
 				panelContentID: 'caImageCenterEditor' + that.fieldNamePrefix + 'ContentArea',		/* DOM ID of the content area <div> in the panel */
-				exposeBackgroundColor: '#000000',				
-				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
 				closeButtonSelector: '.close',
 				centerHorizontal: true,

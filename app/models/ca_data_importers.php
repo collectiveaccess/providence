@@ -2066,7 +2066,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'skip_on_idno':
 						if (!$vb_idno_is_template) {
 							$ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, [$erp_idno_fld => in_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($ids) && (sizeof($ids) > 0)) {
@@ -2079,7 +2079,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'skip_on_no_idno':
 						if (!$vb_idno_is_template) {
 							$ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, [$erp_idno_fld => in_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 						}

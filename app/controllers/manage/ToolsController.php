@@ -33,7 +33,6 @@ require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
 require_once(__CA_LIB_DIR__."/ToolsManager.php");
 
-
 class ToolsController extends ActionController {
 	# -------------------------------------------------------
 	protected $opo_tools_manager;
@@ -214,6 +213,7 @@ class ToolsController extends ActionController {
 			'message' => $data['message']
 		));
 		
+		$this->response->setContentType('application/json');
 		$this->render('tools/tool_runjob_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -232,6 +232,8 @@ class ToolsController extends ActionController {
 		$va_data['elapsedTime'] = caFormatInterval(time()-$va_data['start']);
 		
 		$this->view->setVar('jobinfo', $va_data);
+		
+		$this->response->setContentType('application/json');
 		$this->render('tools/tool_runjob_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -301,7 +303,7 @@ class ToolsController extends ActionController {
 		
 		$this->view->setVar('directory_list', $va_level_data);
 		
-		
+		$this->response->setContentType('application/json');
 		$this->render('tools/directory_level_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -330,6 +332,7 @@ class ToolsController extends ActionController {
 		
 		$this->view->setVar("ancestors", $va_ancestors);
 		
+		$this->response->setContentType('application/json');
 		$this->render('tools/directory_ancestors_json.php');
 	}
 	# ------------------------------------------------------------------

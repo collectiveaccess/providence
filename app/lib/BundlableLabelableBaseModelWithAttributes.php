@@ -1644,7 +1644,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				if (($vs_label) && ($vs_description)) { 
-					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
+					TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_label_text}</div>{$vs_description}");
 				}
 				
 				$bundle_code = $this->tableName().".{$bundle_code}";
@@ -1761,7 +1761,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				if (($pa_options['label']) && ($vs_description)) {
-					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
+					TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>".$pa_options['label']."</div>{$vs_description}");
 				}
 				
 				if (isset($pa_bundle_settings['forACLAccessScreen']) && $pa_bundle_settings['forACLAccessScreen']) {
@@ -1794,7 +1794,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (sizeof($va_type_restrictions)) {
 						$vs_restriction_list = join("; ", $va_type_restrictions);
 						$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$vs_label_text.'</span> <span class="formLabelSubtext" id="subtext_'.$vs_field_id.'">('.caTruncateStringWithEllipsis($vs_restriction_list, 75).')</span>'; 
-						TooltipManager::add("#subtext_{$vs_field_id}", "<h3>"._t("Restricted to types")."</h3>".join("<br/>", $va_type_restrictions));
+						TooltipManager::add("#subtext_{$vs_field_id}", "<div class='tooltipHead'>"._t("Restricted to types")."</div>".join("<br/>", $va_type_restrictions));
 					} else {
 						$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$vs_label_text.'</span>'; 
 					}
@@ -1816,7 +1816,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
+					TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_label_text}</div>{$vs_description}");
 				}
 		
 				break;
@@ -1863,9 +1863,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					case 'ca_representation_annotations':
-						//if (!method_exists($this, "getAnnotationType") || !$this->getAnnotationType()) { continue; }	// don't show bundle if this representation doesn't support annotations
-						//if (!method_exists($this, "useBundleBasedAnnotationEditor") || !$this->useBundleBasedAnnotationEditor()) { continue; }	// don't show bundle if this representation doesn't use bundles to edit annotations
-						
 						$pa_options['fields'] = array('ca_representation_annotations.status', 'ca_representation_annotations.access', 'ca_representation_annotations.props', 'ca_representation_annotations.representation_id');
 						
 						$vs_element = $this->getRepresentationAnnotationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);	
@@ -1906,7 +1903,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				
 				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
+					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<div class='tooltipHead'>{$vs_label}</div>{$vs_description}");
 				}
 				break;
 			# -------------------------------------------------
@@ -2202,7 +2199,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_description = caExtractSettingValueByLocale($pa_bundle_settings, 'description', $g_ui_locale);
 				
 				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
+					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<div class='tooltipHead'>{$vs_label}</div>{$vs_description}");
 				}
 				
 				break;
@@ -2218,7 +2215,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if(preg_match("!^[a-z]!",$vs_documentation_url) && !preg_match("!^http[s]?://!",$vs_documentation_url)) {
 				$vs_documentation_url = "http://".$vs_documentation_url;
 			}
-			$vs_documentation_link = "<a class='bundleDocumentationLink' href='$vs_documentation_url' target='_blank' >".caNavIcon(__CA_NAV_ICON_INFO__, '15px')."</a>";
+			$vs_documentation_link = "<a class='bundleDocumentationLink' href='$vs_documentation_url' target='_blank' rel='noopener noreferrer'>".caNavIcon(__CA_NAV_ICON_INFO__, '15px')."</a>";
 		}
 		
 		
@@ -3381,18 +3378,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 			return $va_vals;
 		} else {
-			// if (($policy) && is_array($h = $this->getContents($policy, ['returnHistoryTrackingData' => true]))) {	
-// 				$rel_table_num = (int)$t_rel->tableNum(); 
-// 				$rel_pk = $t_rel->primaryKey();
-// 				
-// 				$va_items = array_map(function($v) use ($rel_pk) { 
-// 					return ['relation_id' => $v['tracked_row_id'], $rel_pk => $v['row_id']];	// Convert history list to item list format required below
-// 				}, array_filter($h, function($v) use ($rel_table_num) {
-// 					return ((int)$v['table_num'] === $rel_table_num);		// Filter out any current values thar aren't for the the related table
-// 				}));
-// 			} else {
-				$va_items = $this->getRelatedItems($ps_related_table, array_merge($va_get_related_opts, ['returnAs' => 'data', 'sort' => $sort, 'sortDirection' => $sort_direction, 'start' => $start, 'limit' => $limit]));
-			//}
+			$va_items = $this->getRelatedItems($ps_related_table, array_merge($va_get_related_opts, ['returnAs' => 'data', 'sort' => $sort, 'sortDirection' => $sort_direction, 'start' => $start, 'limit' => $limit]));
 			
 			if ($vb_is_many_many) {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
@@ -4194,7 +4180,7 @@ if (!$vb_batch) {
 			
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
-			$parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
+			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
 			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
 				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
 				return false;
@@ -4202,7 +4188,6 @@ if (!$vb_batch) {
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
 			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
-			
 			$target_table = $this->tableName();
 			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
 			
@@ -4660,7 +4645,7 @@ if (!$vb_batch) {
 						$va_reps = $this->getRepresentations();
 						
 						if (!$vb_batch && is_array($va_reps)) {
-							if ($va_bundle_settings['uiStyle'] === 'CLASSIC') {
+							if (($va_bundle_settings['uiStyle'] ?? null) === 'CLASSIC') {
 								$bundles_to_save = ['rep_label', 'idno', 'type_id', 'access', 'status', 'is_transcribable'];
 							} else {
 								$bundles_to_save = caGetOption('showBundlesForEditing', $va_bundle_settings, [], ['castTo' => 'array']);
@@ -7511,7 +7496,7 @@ $pa_options["display_form_field_tips"] = true;
 						$ps_formatted_element = str_replace("^LABEL",'<span id="'.$vs_field_id.'">'.(isset($pa_options['label']) ? $pa_options['label'] : $va_attr["LABEL"]).'</span>', $ps_formatted_element);
 
 						if (!$pa_options['no_tooltips']) {
-							TooltipManager::add('#'.$vs_field_id, "<h3>".(isset($pa_options['label']) ? $pa_options['label'] : $va_attr["LABEL"])."</h3>".$va_attr["DESCRIPTION"]);
+							TooltipManager::add('#'.$vs_field_id, "<div class='tooltopHead'>".(isset($pa_options['label']) ? $pa_options['label'] : $va_attr["LABEL"])."</div>".$va_attr["DESCRIPTION"]);
 						}
 					}
 				} else {

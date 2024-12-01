@@ -94,6 +94,8 @@ class MetadataExportController extends ActionController {
 		$va_response['errors'] = $va_errors;
 
 		$this->getView()->setVar('response', $va_response);
+		
+		$this->response->setContentType('application/json');
 		$this->render('export/file_upload_response_json.php');
 	}
 	# -------------------------------------------------------

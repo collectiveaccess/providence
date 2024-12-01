@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -143,7 +143,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if ( ! $vs_display_url ) {
 			$vs_display_url = $ps_url;
 		}
-		$vs_display = '<div style="margin-top:10px; margin-bottom: 10px;"><a target="_blank" href="' . $vs_display_url
+		$vs_display = '<div style="margin-top:10px; margin-bottom: 10px;"><a target="_blank" rel="noopener noreferrer" href="' . $vs_display_url
 		              . '">' . $vs_display_url . '</a></div>';
 		foreach ( $va_service_conf['detail_view_info'] as $va_node ) {
 			if ( ! isset( $va_node['literal'] ) ) {
@@ -309,7 +309,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 				// make links click-able
 				if ( isURL( $vs_string_to_add ) ) {
-					$vs_string_to_add = "<a href='{$vs_string_to_add}' target='_blank'>{$vs_string_to_add}</a>";
+					$vs_string_to_add = "<a href=\"{$vs_string_to_add}\" target=\"_blank\" rel=\"noopener noreferrer\">{$vs_string_to_add}</a>";
 				}
 
 				$va_return[] = $vs_string_to_add;

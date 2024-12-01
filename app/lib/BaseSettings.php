@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -343,38 +343,6 @@ class BaseSettings {
 						$vs_text_value = $vs_value;
 					}
 					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"], 'height' => $va_properties["height"], 'value' => $vs_text_value, 'class' => $input_class, 'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
-					
-					if($va_properties['usewysiwygeditor']) {
-						AssetLoadManager::register("ckeditor");
-						
-						$config = Configuration::load();
-						if(!is_array($va_toolbar_config = $config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = []; }
-								
-						$vs_width = $va_properties['width'];					
-						if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
-							$vs_width = ((int)$vs_width * 6)."px";
-						}
-						$vs_height = $va_properties['height'];
-						if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
-							$vs_height = ((int)$vs_height * 16)."px";
-						}
-						
-						$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() {
-						var ckEditor = CKEDITOR.replace( '{$vs_input_id}{$vs_input_name_suffix}',
-						{
-							toolbar : ".json_encode(array_values($va_toolbar_config)).",
-							width: '{$vs_width}',
-							height: '{$vs_height}',
-							toolbarLocation: 'top',
-							enterMode: CKEDITOR.ENTER_BR
-						});
-				
-						ckEditor.on('instanceReady', function(){ 
-							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
-						});
-  });									
-</script>";
-					}
 				}
 				break;
 			# --------------------------------------------

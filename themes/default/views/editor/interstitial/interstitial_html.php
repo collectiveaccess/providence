@@ -88,11 +88,7 @@ $vs_rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeN
 		<input type='hidden' name='n' value='<?= $this->getVar('n'); ?>'/>
 		
 		<script type="text/javascript">
-			function caSave<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
-				jQuery.each(CKEDITOR.instances, function(k, instance) {
-					instance.updateElement();
-				});
-				
+			function caSave<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {	
 				var fdata = new FormData(jQuery('#<?= $vs_form_name.$vs_field_name_prefix.$vs_n; ?>')[0]);   
 				$.ajax({
 					type: 'POST',
