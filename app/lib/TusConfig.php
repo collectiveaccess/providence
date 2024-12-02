@@ -37,7 +37,7 @@ return [
         'database' => getenv('REDIS_DB') !== false ? getenv('REDIS_DB') : (defined('__CA_REDIS_DB__') ? __CA_REDIS_DB__ : 0),
     ],
     'file' => [
-        'dir' => \TusPhp\Config::getCacheHome() . DIRECTORY_SEPARATOR . '.cache' . DIRECTORY_SEPARATOR,
+        'dir' => __CA_APP_DIR__ .'/tmp/tuscache/',
         'name' => 'tus_php.server.cache',
     ],
 ];
