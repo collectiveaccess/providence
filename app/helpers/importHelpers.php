@@ -441,7 +441,7 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 					
 					$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 
-					if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
+					if (is_array($va_vals) && (sizeof($va_vals) > 1)) { $vb_is_repeating = true; }
 					
 					if ($vb_is_repeating) {
 						if (is_null($vn_num_repeats)) { $vn_num_repeats = sizeof($va_vals); }
