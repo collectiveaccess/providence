@@ -328,14 +328,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 					// TODO: Try to optimize this case by moving it from first position when possible?
 	 					// 		 Without anything to diff this with we have to invert the result set, which can potentially 
 	 					//		 return a very large result set
-	 					$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 AND ' : '';
-	 					if (!sizeof($hits)) { $acc = []; break; }
-	 					$qr_res = $this->db->query("
-	 						SELECT {$pk} 
-	 						FROM {$subject_table} 
-	 						WHERE {$deleted_sql} {$pk} NOT IN (?)
-	 					", [array_keys($hits)]);
-	 					$vals = $qr_res->getAllFieldValues($pk);
+	 					if (!sizeof($hits)) { 
+	 						$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 ' : '';
+							$qr_res = $this->db->query("
+								SELECT {$pk} 
+								FROM {$subject_table} 
+								WHERE {$deleted_sql}
+							");
+	 					} else {
+	 						$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 AND ' : '';
+							$qr_res = $this->db->query("
+								SELECT {$pk} 
+								FROM {$subject_table} 
+								WHERE {$deleted_sql} {$pk} NOT IN (?)
+							", [array_keys($hits)]);
+						}
+						$vals = $qr_res->getAllFieldValues($pk);
 	 					
 	 					$acc = [];
 	 					foreach($vals as $row_id) {
@@ -699,17 +707,20 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				
 				$qr_res = $this->db->query("
 					INSERT INTO {$temp_table}
-					SELECT swi.index_id + 1, 1, null
+					SELECT swi.index_id + 1, 1, swi.field_index
 					FROM ca_sql_search_words sw 
 					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
-					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
+					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id AND swi.field_index = tt.field_container_id" : "")."
 					WHERE 
 						sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
 						{$private_sql} {$anchor_sql}
 				", (string)$word, (int)$subject_tablenum);
-				$qr_count = $this->db->query("SELECT count(*) c FROM {$temp_table}");
 			
 				$temp_tables[] = $temp_table;	
+				while(sizeof($temp_tables) > 2) {
+					$t = array_shift($temp_tables);
+					$this->_dropTempTable($t);	
+				}
 			}
 			$results_temp_table = array_pop($temp_tables);
 							
@@ -1577,8 +1588,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					break;
 				}
 			default:
-				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
-				
+				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags(br2nl($content)));
 				$words = array_map(function($v) {
 					$w = preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
 					$w = preg_replace('!^'.self::$separator_tokenizer_regex.'!u', '', $w);
