@@ -459,7 +459,7 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 							} else {
 								$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
 							}
-							if(isset($va_tmp[1]) && strleh($va_tmp[1])) {
+							if(isset($va_tmp[1]) && strlen($va_tmp[1])) {
 								if (caGISisDMS($va_tmp[1])) {
 									$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
 								} else {
