@@ -170,6 +170,15 @@ BaseRefinery::$s_refinery_settings['movementSplitter'] = array(
 		'label' => _t('Attributes'),
 		'description' => _t('Sets or maps metadata for the movement record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 	),
+	'movementSplitter_attributeDelimiters' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Attribute delimiters'),
+		'description' => _t('Delimiters to use for each mapped attribute.')
+	),
 	'movementSplitter_parents' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
