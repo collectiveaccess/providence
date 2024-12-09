@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -192,6 +192,15 @@ BaseRefinery::$s_refinery_settings['placeSplitter'] = array(
 		'default' => '',
 		'label' => _t('Attributes'),
 		'description' => _t('Sets or maps metadata for the place record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+	),
+	'placeSplitter_attributeDelimiters' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Attribute delimiters'),
+		'description' => _t('Delimiters to use for each mapped attribute.')
 	),
 	'placeSplitter_parents' => array(
 		'formatType' => FT_TEXT,

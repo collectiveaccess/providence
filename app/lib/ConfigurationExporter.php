@@ -640,8 +640,9 @@ final class ConfigurationExporter {
 			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
 			$vo_entry->setAttribute('table', Datamodel::getTableName($t_entry->get('table_num')));
 			
+			$label_count = 0;
+			$vo_labels = $this->opo_dom->createElement("labels");
 			if(is_array($labels = $t_entry->getLabels(null, __CA_LABEL_TYPE_ANY__)) && sizeof($labels)) {
-				$vo_labels = $this->opo_dom->createElement("labels");
 				foreach($labels as $entry_id => $label_by_locale) {
 					foreach($label_by_locale as $locale_id => $label_list) {
 						foreach($label_list as $label) {
@@ -650,11 +651,20 @@ final class ConfigurationExporter {
 							$vo_name = $this->opo_dom->createElement("name", $label['name'] ?? null);
 							$vo_label->appendChild($vo_name);
 							$vo_labels->appendChild($vo_label);
+							$label_count++;
 						}
 					}
 				}
-				$vo_entry->appendChild($vo_labels);
 			}
+				
+			if($label_count === 0) {
+				$vo_label = $this->opo_dom->createElement("label");
+				$vo_label->setAttribute('locale', defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US');
+				$vo_name = $this->opo_dom->createElement("name", '['.caGetBlankLabelText('ca_metadata_dictionary_entries').']');
+				$vo_label->appendChild($vo_name);
+				$vo_labels->appendChild($vo_label);
+			} 
+			$vo_entry->appendChild($vo_labels);
 
 			if(is_array($t_entry->getSettings())) {
 				$va_settings = array();
