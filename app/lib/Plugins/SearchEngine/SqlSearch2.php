@@ -1522,8 +1522,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$seq++;
 				}
 			
-				$wc = sizeof($va_literal_content);
 				if (is_array($va_literal_content)) {
+					$wc = sizeof($va_literal_content);
 					foreach($va_literal_content as $i => $vs_literal) {
 						if (!($vn_word_id = $this->getWordID($vs_literal))) { continue; }
 						$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$i}, {$wc}, {$fi})";
