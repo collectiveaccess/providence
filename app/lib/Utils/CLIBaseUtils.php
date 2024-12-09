@@ -94,7 +94,7 @@ class CLIBaseUtils {
 		return (!in_array($ps_function_name, array(
 			'isCommand', 'textWithColor', 'textWithBackgroundColor',
 			'clearErrors', 'numErrors', 'getErrors', 'addError',
-			'clearMessages', 'numMessages', 'getMessages', 'addMessage'
+			'clearMessages', 'numMessages', 'getMessages', 'addMessage', 'confirm'
 		)));
 	}
 	# -------------------------------------------------------
