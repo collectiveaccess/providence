@@ -2288,7 +2288,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 				case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 				case __CA_ATTRIBUTE_VALUE_LENGTH__:
 				case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-					$va_result['type'] = 'string';
+					$va_result['type'] = 'date';
 					break;
 				case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 					$va_result['type'] = 'double';

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 var caUI = caUI || {};
 
 /**
@@ -62,7 +61,7 @@ var caUI = caUI || {};
 		if(prefix) value = prefix + value;
 		if(suffix) value = value + suffix;
 		
-		if(autoquote && value.match(/[ \-\+]/)) {
+		if(autoquote) { // && value.match(/[ \-\+]/)) {
 		    value = '"' + value + '"';
 		}
 		return value;
@@ -122,17 +121,17 @@ var caUI = caUI || {};
 			}
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
-					return prefix + '"' + escapeValue(ruleSet.value, false) + '"';
+					return prefix + escapeValue('=' + ruleSet.value, true);
 				case 'in':
 					return prefix + '(' + escapeValue(ruleSet.value) + ')';
 				case 'between':
 					return prefix + '[' + escapeValue(ruleSet.value[0]) + ' TO ' + escapeValue(ruleSet.value[1]) + ']';
 				case 'begins_with':
-					return prefix + escapeValue(ruleSet.value, true, '', '*');
+					return prefix + escapeValue('^' + ruleSet.value, true);
 				case 'contains':
-					return prefix + escapeValue(ruleSet.value, true, '*', '*');
+					return prefix + escapeValue(ruleSet.value, true);
 				case 'ends_with':
-					return prefix + escapeValue(ruleSet.value, true, '*', null);
+					return prefix + escapeValue('$' + ruleSet.value, true);
 				case 'less':
 					return prefix + escapeValue(ruleSet.value, true, '#lt#');
 				case 'less_or_equal':
@@ -401,12 +400,14 @@ var caUI = caUI || {};
 				rule.operator = negation ? 'not_contains' : 'contains';
 			} else if (wildcardPrefix && wildcardSuffix) {
 				rule.operator = negation ? 'not_contains' : 'contains';
-			} else if (wildcardPrefix) {
-				rule.operator = negation ? 'not_ends_with' : 'ends_with';
-			} else if (wildcardSuffix) {
-				rule.operator = negation ? 'not_begins_with' : 'begins_with';
-			} else {
+			} else if (queryValue.match(/^=/)) {
 				rule.operator = negation ? 'not_equal' : 'equal';
+			} else if (queryValue.match(/^\^/)) {
+				rule.operator = negation ? 'not_begins_with' : 'begins_with';
+			} else if (queryValue.match(/^\$/)) {
+				rule.operator = negation ? 'not_ends_with' : 'ends_with';
+			} else {
+				rule.operator = negation ? 'not_contains' : 'contains';
 			}
 		}
 	};
@@ -511,6 +512,7 @@ var caUI = caUI || {};
 							wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
 						
 							assignOperatorAndValue(rule, acc.length > 0 ? acc.reduce((a, v) => a + (a ? ' ' : '') + v.value, '') : undefined, negation, wildcardPrefix, wildcardSuffix);
+							rule.value = rule.value.replaceAll(/^[=\^\$]{1}/g, '');
 						}
 					}
 					skipWhitespace(tokens);
