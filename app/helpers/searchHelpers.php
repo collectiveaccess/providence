@@ -1038,7 +1038,7 @@ function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 				break;
 		}
 	}
-	return join(" ", $va_query);
+	return join(caGetOption('delimiter', $pa_options, ' '), $va_query);
 }
 # ---------------------------------------
 /**
@@ -1057,6 +1057,10 @@ function caGetSubQueries($po_parsed_query) {
 		case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 			$va_items = $po_parsed_query->getTerms();
 			$va_signs = $po_parsed_query->getSigns();
+			break;
+		case 'Zend_Search_Lucene_Search_Query_Term':
+			$va_items = [$po_parsed_query];
+			$va_signs = null;
 			break;
 		case 'Zend_Search_Lucene_Search_Query_Phrase':
 		case 'Zend_Search_Lucene_Search_Query_Range':
@@ -1133,6 +1137,21 @@ function caGetLabelForBundle($ps_bundle) {
 	if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 		return $t_instance->getDisplayLabel($ps_bundle);
 	}
+	
+	// Maybe it's an access point?
+	if($indexing_config = Configuration::load(__CA_CONF_DIR__."/search_indexing.conf")) {
+		$keys = $indexing_config->getAssocKeys();
+		
+		foreach($keys as $k) {
+			$c = $indexing_config->getAssoc($k);
+			if(is_array($c['_access_points'])) {
+				if(isset($c['_access_points'][$ps_bundle]) && isset($c['_access_points'][$ps_bundle]['label'])) {
+					return $c['_access_points'][$ps_bundle]['label'];
+				}
+			}
+		}
+	}
+	
 	return $ps_bundle;
 }
 # ---------------------------------------
@@ -1942,7 +1961,6 @@ function caSearchIsForSets($ps_search, $pa_options=null) {
 		}
 	}
 	if(sizeof($va_sets) == 0) { return false; }
-	
 	$t_set = new ca_sets();
 	return $t_set->getPreferredDisplayLabelsForIDs(array_keys($va_sets));
 }
@@ -2108,7 +2126,16 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_b
 	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
 	
 	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? [], $t_user ? $t_user->getUserID() : '');
-	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
+	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { 
+		// Values come out of the cache as arrays, but QueryBuilder wants them to be objects in the encoded JSON
+		// so we cast them to objects here
+		foreach($cached_data as $k => $v) {
+			if(isset($v['values']) && is_array($v['values'])) {
+				$cached_data[$k]['values'] = (object)$cached_data[$k]['values'];
+			}
+		}
+		return $cached_data; 
+	}
 	
 	$table = $t_subject->tableName();
 	$t_search_form = new ca_search_forms();
@@ -2261,7 +2288,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 				case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 				case __CA_ATTRIBUTE_VALUE_LENGTH__:
 				case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-					$va_result['type'] = 'string';
+					$va_result['type'] = 'date';
 					break;
 				case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 					$va_result['type'] = 'double';

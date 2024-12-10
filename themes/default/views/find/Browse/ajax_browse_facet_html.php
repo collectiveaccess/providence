@@ -259,11 +259,6 @@
 	function loadFacetGroup(g) {
 		jQuery('#browseSelectPanelContentArea').parent().load("<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $vs_facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
 	}
-	
-	
-	
-	
-	
 <?php
 if($vb_multiple_selection_facet){
 ?>	

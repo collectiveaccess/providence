@@ -1649,7 +1649,8 @@ function caGetBrowseLinks($t_instance, string $bundle, ?array $options=null) : ?
 						
 			switch($bundle_type) {
 				case 'attribute':
-					if(($facet_info['type'] === 'attribute') && ($facet_info['element_code'] === $b)) {
+					$tmp = array_pop(explode('.', $facet_info['element_code']));
+					if(($facet_info['type'] === 'attribute') && ($tmp === $b)) {
 						$facet = $k;
 						$fld = $bundle;
 						break(2);

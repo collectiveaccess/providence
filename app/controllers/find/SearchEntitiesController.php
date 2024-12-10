@@ -129,7 +129,7 @@ class SearchEntitiesController extends BaseSearchController {
 					'action:can_search_ca_entities' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_entities_no_search_builder_for_types:ca_entities' => 'AND',
-					'configuration:!ca_entities_disable_searchbuilder' => 'AND'
+					'configuration:!ca_entities_disable_search_builder' => 'AND'
 				]
 			],
 			[

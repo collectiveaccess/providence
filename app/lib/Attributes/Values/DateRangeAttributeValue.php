@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_DATERANGE__", 2);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -373,7 +369,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) {
 				if($locale == self::$locale || !DateRangeAttributeValue::$o_tep->parse($ps_value, ['locale' => self::$locale])) { 
 					// invalid date
-					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel'] ?? null), 'DateRangeAttributeValue->parseValue()');
+					$this->postError(1970, _t('Date %1 is invalid for %2', $ps_value, $pa_element_info['displayLabel'] ?? null), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				}
 			}
@@ -446,18 +442,19 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		if (isset($pa_options['useDatePicker'])) {
 			$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
 		}
+		$attributes = caGetOption('attributes', $pa_options, null);
 
 		$vn_max_length = 255;
 		$vs_element = caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-			array(
+			array_merge($attributes ?? [], [
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
 				'class' => $vs_class,
 				'placeholder' => $pa_options['placeholder'] ?? null
-			)
+			])
 		);
 		
 		$vs_bundle_name = $vs_lookup_url = null;

@@ -75,6 +75,7 @@ function extractBundleNames($rec, array $args) : array {
  *		start = 
  *		limit = 
  *		filterByAncestors = 
+ *		filterNonPrimaryRepresentations = 
  *
  * @return array
  */
@@ -108,6 +109,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 			// out of bounds; return empty set
 			return [];
 		}
+		
+		$sresult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $options, false));
 		while($sresult->nextHit()) {
 			// ladder up hierarchy looking for matches
 			if(is_array($ancestor_filters) && (sizeof($ancestor_filters) > 0)) {
@@ -136,8 +139,8 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 			$row = [];
 			foreach($bundles as $f) {
 				$pt = caParseTagOptions($f);
-				$f = $pt['tag'];
-				
+				$f = $pt['tag'] ?? null;
+				$use_code = $pt['options']['useCode'] ?? null;
 				$is_template = (strpos($f, '^') !== false);	 // is display template if it has at least one caret
 				
 				$p = \SearchResult::parseFieldPathComponents($table, $f);
@@ -151,12 +154,12 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				if($is_template) {
 					$row[] = [
 							'name' => $f, 
-							'code' => $f,
+							'code' => $use_code ? $use_code : $f,
 							'locale' => null,
 							'dataType' => "Text",
 							'values' => [
 								[
-									'value' => $sresult->getWithTemplate($f, ['checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)]),
+									'value' => $sresult->getWithTemplate($f, array_merge($pt['options'] ?? [], ['checkAccess' => $check_access, 'primaryIDs' => caGetOption('primaryIDs', $options, null)])),
 									'locale' => null,
 									'subvalues' => null,
 									'id' => null,
@@ -169,7 +172,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 					if(strlen($v = $sresult->get($f, array_merge(['convertCodesToIdno' => true, 'checkAccess' => $check_access], $pt['options'])))) {
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
-							'code' => $f,
+							'code' => $use_code ? $use_code : $f,
 							'locale' => null,
 							'dataType' => $table::intrinsicTypeToString((int)$sresult->getFieldInfo($p['field_name'], 'FIELD_TYPE')),
 							'values' => [
@@ -223,7 +226,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 					if(sizeof($values) > 0) {
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
-							'code' => $f,
+							'code' => $use_code ? $use_code : $f,
 							'dataType' => $p['subfield_name'] ? $table::intrinsicTypeToString((int)$label->getFieldInfo($p['subfield_name'], 'FIELD_TYPE')) : 'Container',
 							'values' => $values
 						];
@@ -269,7 +272,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 						// Relationship list level
 						$row[] = [
 							'name' => $rec->getDisplayLabel($f), 
-							'code' => $f,
+							'code' => $use_code ? $use_code : $f,
 							'dataType' => "Container",
 							'values' => $values,
 							'id' => $id
@@ -316,7 +319,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 								if($is_set) {
 									// Attribute level
 									$values[] = [
-										'id' => $id,	// attribute_id
+										'id' => is_numeric($id) ? $id : $c,	// attribute_id
 										'value_id' => $sub_field_values[$sf.'_value_id'],
 										'locale' => $locale,
 										'value' => $v,
@@ -330,7 +333,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 						// Metadata element level
 						$row[] = [
 							'name' => $rec->getDisplayLabel("{$p['table_name']}.{$p['field_name']}.{$p['subfield_name']}"), 
-							'code' => $f,
+							'code' => $use_code ? $use_code : $f,
 							'dataType' => \ca_metadata_elements::getElementDatatype("{$p['field_name']}", ['returnAsString' => true]),
 							'values' => $values,
 							'id' => $id

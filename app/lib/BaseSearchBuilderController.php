@@ -85,7 +85,7 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 		
 		// Get elements of result context
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
-		$vs_search 				= html_entity_decode(stripslashes($this->opo_result_context->getSearchExpression()));	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
+		$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
 		$vb_is_new_search		= $this->opo_result_context->isNewSearch();
 		
 		if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {

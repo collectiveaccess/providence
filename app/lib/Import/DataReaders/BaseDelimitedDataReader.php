@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 *
 	 */
 	public function __construct($ps_source=null, $pa_options=null){
+		$this->opo_parser = new DelimitedDataParser($this->ops_delimiter);
 		parent::__construct($ps_source, $pa_options);
 		
 		$this->ops_title = _t('Base Delimited data reader');
@@ -79,10 +80,6 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		$this->opa_formats = [];
 		
 		$this->opa_properties['delimiter'] = $this->ops_delimiter;
-		
-		$this->opo_parser = new DelimitedDataParser($this->ops_delimiter);
-		
-		
 	}
 	# -------------------------------------------------------
 	/**
@@ -103,7 +100,6 @@ class BaseDelimitedDataReader extends BaseDataReader {
 			$this->ops_source = $ps_source;
 			return true;
 		}
-		
 		
 		$this->ops_source = null;
 		return false;

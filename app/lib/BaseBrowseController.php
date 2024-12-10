@@ -114,6 +114,9 @@ class BaseBrowseController extends BaseFindController {
 			$this->opo_result_context->setSearchExpression($this->opo_browse->getBrowseID());
 		}
 		
+		$o_browse_config = caGetBrowseConfig();
+		$browse_config = $o_browse_config->getAssoc($this->ops_tablename);
+		
 		if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
 			$vn_items_per_page = $this->opn_items_per_page_default; 
 			$this->opo_result_context->setItemsPerPage($vn_items_per_page);
@@ -186,7 +189,8 @@ class BaseBrowseController extends BaseFindController {
 		$this->opo_browse->execute([
 			'checkAccess' => $va_access_values, 
 			'no_cache' => !$this->opo_result_context->cacheIsValid(), 
-			'rootRecordsOnly' => $this->view->getVar('hide_children'), 
+			'rootRecordsOnly' => $this->view->getVar('hide_children'),
+			'expandResultsHierarchically' => $browse_config['expandResultsHierarchically'] ?? false,
 			'filterDeaccessionedRecords' => $this->view->getVar('hide_deaccession')]);
 		$this->opo_result_context->validateCache();
 		

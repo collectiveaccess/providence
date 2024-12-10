@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -110,6 +110,10 @@
  	define('__CA_NAV_ICON_CROSSHAIRS__', 68);
  	define('__CA_NAV_ICON_UPLOAD__', 69);
  	define('__CA_NAV_ICON_COPY__', 70);
+ 	define('__CA_NAV_ICON_MERGE__', 71);
+ 	define('__CA_NAV_ICON_SPLIT__', 72);
+ 	define('__CA_NAV_ICON_TOGGLE__', 73);
+ 	define('__CA_NAV_ICON_CHECKBOX__', 74);
  	
  	/**
  	 * Icon position constants
@@ -138,10 +142,9 @@
 
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
-			$vs_url = preg_replace("!service\.php!i", "index.php", $vs_url);
 		} else {
-			$s = preg_replace("!service\.php!i", "index.php", $po_request->getScriptName());
-			$vs_url = $po_request->getBaseUrlPath().'/'.$s;
+			$s = $po_request->getScriptName();
+			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
 		}
 		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
 		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
@@ -177,7 +180,7 @@
 					if ($use_query_string) { 
 					    $query_params[$vs_name] = $vs_value;
 					} else {
-					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
+					    $vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : rawurlencode($vs_value));
 				    }
 					$vn_i++;
 				}
@@ -547,7 +550,6 @@
 	/**
 	 * @param array $pa_options Options are:
 	 *		icon_position =
-	 *		class = 
 	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
@@ -556,7 +558,6 @@
 	 */
 	function caJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes=null, $pa_options=null) {
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
-		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
@@ -576,12 +577,12 @@
 			$vs_button .= "<span class='form-button'>"; 
 			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
-			$vn_padding = 0;
+			$vn_padding = 5;
 		}	
 		
 		$va_img_attr = array(
 			'border' => '0',
-			'alt=' => $ps_content,
+			'alt' => htmlentities($ps_content),
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
@@ -791,7 +792,7 @@
 				$vs_fa_class = 'fas fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fas fa-sliders';
+				$vs_fa_class = 'fas fa-sliders-h';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fas fa-download';
@@ -860,7 +861,7 @@
  				$vs_fa_class = 'far fa-clock';	
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
- 				$vs_fa_class = 'fas fa-cog far fa-spin';	
+ 				$vs_fa_class = 'fas fa-spinner fa-spin';	
  				break;								
  			case __CA_NAV_ICON_HIER__:
  				$vs_fa_class = 'fas fa-sitemap';
@@ -900,6 +901,18 @@
 				break;	
 			case __CA_NAV_ICON_COPY__:
 				$vs_fa_class = 'fa fa-clipboard';
+				break;	
+			case __CA_NAV_ICON_MERGE__:
+				$vs_fa_class = 'fa fa-object-group';
+				break;	
+			case __CA_NAV_ICON_SPLIT__:
+				$vs_fa_class = 'fa fa-object-ungroup';
+				break;		
+			case __CA_NAV_ICON_TOGGLE__:
+				$vs_fa_class = 'fa fa-toggle-on';
+				break;
+			case __CA_NAV_ICON_CHECKBOX__:
+				$vs_fa_class = 'fa fa-check-square';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
@@ -1004,29 +1017,17 @@
 		
 		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
 			// Make sure record link points to exists
-			$ck = md5($ps_table.$pn_id);
-			if(MemoryCache::contains($ck, 'editorUrlLinkVerifications')) {
-				if(!MemoryCache::fetch($ck, 'editorUrlLinkVerifications')) { return null; }
-			}
 			if (($pn_id > 0) && !$t_table->load($pn_id)) {
-				MemoryCache::save($ck, null, 'editorUrlLinkVerifications');
 				return null;
 			}
-			MemoryCache::save($ck, true, 'editorUrlLinkVerifications');
 		}
 		
 		$action_extra = caGetOption('actionExtra', $pa_options, null);
 		if($bundle = caGetOption('bundle', $pa_options, null)) {
-			$ck = md5($ps_table.$bundle.$type_id);
-			if(MemoryCache::contains($ck, 'editorUrlActionExtras')) {
-				$action_extra = MemoryCache::fetch($ck, 'editorUrlActionExtras');
-			} else {
-				$t_table->load($pn_id);
-				$type_id = $t_table->getTypeID();
-				if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
-					$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
-				}
-				MemoryCache::save($ck, $action_extra, 'editorUrlActionExtras');
+			$t_table->load($pn_id);
+			$type_id = $t_table->getTypeID();
+			if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
+				$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
 			}
 		}
 		
@@ -1405,14 +1406,15 @@
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Redirect to given url
-	 * @param string $ps_url
+	 * @param string $url
 	 * @return bool success state
 	 */
-	function caSetRedirect($ps_url) {
-		global $g_response;
-		if(!($g_response instanceof ResponseHTTP)) { return false; }
+	function caSetRedirect($url) {
+		$app = AppController::getInstance();
+		$resp = $app->getResponse();
+		if(!($resp instanceof ResponseHTTP)) { return false; }
 
-		$g_response->setRedirect($ps_url);
+		$resp->setRedirect($url);
 		return true;
 	}
 	# ------------------------------------------------------------------------------------------------

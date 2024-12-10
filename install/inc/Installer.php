@@ -396,6 +396,7 @@ class Installer {
 	 */
 	public function performPreInstallTasks() {
 		self::clearCaches();
+		\ConfigurationCheck::htmlPurifierDirQuickCheck();
 		$o_config = \Configuration::load();
 
 		// create tmp dir
@@ -951,6 +952,10 @@ class Installer {
 			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
 				$this->addError('processMetadataDictionary', _t("There were errors while adding dictionary entry: %1", join(';', $t_entry->getErrors())));
 				return false;
+			}
+			
+			if($entry['labels'] ?? null) {
+				self::addLabels($t_entry, $entry['labels'], true);
 			}
 			
 			if(is_array($entry['rules'])) {

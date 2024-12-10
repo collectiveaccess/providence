@@ -129,7 +129,7 @@ class SearchMovementsController extends BaseSearchController {
 					'action:can_search_ca_movements' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_movements_no_search_builder_for_types:ca_movements' => 'AND',
-					'configuration:!ca_movements_disable_searchbuilder' => 'AND'
+					'configuration:!ca_movements_disable_search_builder' => 'AND'
 				]
 			],
 			[

@@ -407,11 +407,11 @@ function caExportGetDefaultDisplay(string $table) : ?array {
  */
 function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
 	caIncrementExportCount();
-	
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
+	$template_file = null;
 	
 	// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
 	$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
@@ -471,17 +471,20 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		}
 		$template_info = caGetPrintTemplateDetails($template_type, 'display');
 		$format = 'pdf';
-	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_!', $template, $m)) {
+	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_(.*)!', $template, $m)) {
 		switch($m[1]) {
 			case 'csv':
 			case 'tab':
-				$format = $m[1];
-				if(is_numeric(substr($template, 5))) { $display_id = substr($template, 5); }
-				break;
 			case 'xlsx':
 			case 'docx':
 				$format = $m[1];
-				if(is_numeric(substr($template, 6))) { $display_id = substr($template, 6); }
+				$template_file = preg_replace('![^A-Za-z0-9_]+!', '', $m[2] ?? null);
+				if(is_numeric($template_file)) { 
+					$display_id = (int)$template_file; 
+					$template_file = null;
+				} elseif($template_file) { 
+					$display_id = null; 
+				}
 				break;
 			}
 	} 
@@ -552,15 +555,15 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			];
 		}
 		$view->setVar('display_list', $display_list);
-	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx'])) {
-		// custom non-PDF display
+	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx']) || !is_null($template_file)) {
+		// custom non-PDF/delimited data display
 		$template_info = caGetPrintTemplateDetails($template_type, $template);
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
-		$content = $view->render("{$template_dir}/{$display_id}.php");
+		$content = $view->render($template_file ? "{$template_dir}/{$template_file}.php" : "{$template_dir}/{$display_id}.php");
 		
 		print $content;
 		return $content;
-	} elseif((!$display_id || !is_numeric($display_id)) && !sizeof($display_list)) {
+	} elseif((!$display_id || !is_numeric($display_id)) && (!is_array($display_list) || !sizeof($display_list))) {
 		// Generate default display list when no display is specified
 		$display_list = $placements = caExportGetDefaultDisplay($table);
 		$view->setVar('display_list', $display_list);
@@ -607,10 +610,10 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					$b = $display_item['bundle_name'] ?? null;
 					if($t) {
 						$value = $result->getWithTemplate($t);
+					} elseif($t_display) {
+						$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['forReport' => true, 'convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
 					} elseif($b) {
 						$value = $result->get($b, ['convertCodesToDisplayText' => true, 'delimiter' => '; ']);
-					} elseif($t_display) {
-						$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
 					} else {
 						$value = '';
 					}
@@ -831,13 +834,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1,1);
 		
 				if($request && $config->get('excel_report_header_enabled')){
-					if(file_exists($request->getThemeDirectoryPath()."/graphics/logos/".$request->config->get('report_img'))){
-						$logo_path = $request->getThemeDirectoryPath().'/graphics/logos/'.$request->config->get('report_img');
-					}
-					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
-					$objDrawing->setName('Image');
-					$objDrawing->setHeight(36);
-					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
 					$criteria_summary = (strlen($criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
 					$criteria_summary = wordwrap($criteria_summary, 50, "\n", true);

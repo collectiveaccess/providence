@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -148,12 +148,15 @@ class ULANDataReader extends BaseXMLDataReader {
 
 			$this->opo_handle_xpath = new DOMXPath($this->opo_handle_xml);
 		
-		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
-			$this->opo_handle_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
-		}
+			if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
+				$this->opo_handle_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
+			}
+			$this->opo_handle_xpath->registerNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+			$this->opo_handle_xpath->registerNamespace('gvp', 'http://vocab.getty.edu/ontology#');
+			$this->opo_handle_xpath->registerNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
 		
-		$this->opn_current_row++;
-		if ($this->opn_current_row > $this->numRows()) { return false; }
+			$this->opn_current_row++;
+			if ($this->opn_current_row > $this->numRows()) { return false; }
 			return true;
 		}
 		return false;

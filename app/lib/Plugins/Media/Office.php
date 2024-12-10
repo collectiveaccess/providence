@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -283,8 +283,9 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 * @return string WORD if the document is a Word doc, EXCEL if the document is an Excel doc, PPT if it is a PowerPoint doc or boolean false if it's not a valid Word or Excel XML (OpenOffice) file
 	 */
 	private function isWordExcelorPPTdoc($filepath) {
+		$is_download = preg_match("!caUrlCopy!", $filepath);
 		// Check Powerpoint
-		if (in_array(pathinfo(strtolower($filepath), PATHINFO_EXTENSION), ['ppt', 'pptx'])) {
+		if (in_array(pathinfo(strtolower($filepath), PATHINFO_EXTENSION), ['ppt', 'pptx']) || $is_download) {
 			$va_ppt_types = ['PowerPoint2007' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'PowerPoint97' => 'application/vnd.ms-powerpoint'];
 		
 			foreach ($va_ppt_types as $vs_type => $vs_mimetype) {
@@ -295,12 +296,14 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 				} catch(\PhpOffice\PhpPresentation\Reader\Exception $e) {
 					// noop
+				} catch(\PhpOffice\PhpPresentation\Exception\FileNotFoundException $e) {
+					// noop
 				}
 			}
 		}
 		
 		// 2007+ .docx files
-		if (in_array(pathinfo(strtolower($filepath), PATHINFO_EXTENSION), ['doc', 'docx'])) {	// PhpWord often will identify Excel docs as Word (and \PhpOffice\PhpSpreadsheet\Spreadsheet will identify Word docs as Excel...) so we test file extensions here			
+		if (in_array(pathinfo(strtolower($filepath), PATHINFO_EXTENSION), ['doc', 'docx']) || $is_download) {	// PhpWord often will identify Excel docs as Word (and \PhpOffice\PhpSpreadsheet\Spreadsheet will identify Word docs as Excel...) so we test file extensions here			
 			// Check Word
 			if ($this->isWord972000doc($filepath)) {		// old-style .doc files
 				return 'application/msword';
@@ -322,7 +325,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		
 		// Check Excel
-		if (in_array(pathinfo(strtolower($filepath), PATHINFO_EXTENSION), ['xls', 'xlsx'])) {
+		if (in_array(pathinfo(strtolower($filepath), PATHINFO_EXTENSION), ['xls', 'xlsx']) || $is_download) {
 			$va_excel_types = ['Excel2007' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel5' => 'application/vnd.ms-excel', 'Excel2003XML' => 'application/vnd.ms-excel'];
 			foreach ($va_excel_types as $vs_type => $vs_mimetype) {
 				try {

@@ -48,8 +48,8 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 	'maxChars' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
-		'width' => 5, 'height' => 1,
-		'default' => 65535,
+		'width' => 10, 'height' => 1,
+		'default' => 16777216,
 		'label' => _t('Maximum number of characters'),
 		'description' => _t('The maximum number of characters to allow. Input longer than required will be rejected.')
 	),
@@ -411,6 +411,12 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				'maxlength' => $va_settings['maxChars'],
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".(($va_settings['usewysiwygeditor'] ?? null) ? " ckeditor-element" : '')
 			);
+		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(is_array($attributes)) { 
+			$va_opts = array_merge($attributes, $va_opts);
+		}
+			
 		if (caGetOption('readonly', $pa_options, false)) { 
 			$va_opts['disabled'] = 1;
 		}

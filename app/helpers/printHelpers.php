@@ -212,6 +212,10 @@ function caGetPrintTemplateDetails($ps_type, $ps_template, $pa_options=null) {
 			$vs_template_path = "{$vs_template_path}/local/{$ps_template}.php";
 		} elseif(file_exists("{$vs_template_path}/{$ps_template}.php")) {
 			$vs_template_path = "{$vs_template_path}/{$ps_template}.php";
+		} elseif(is_numeric($ps_template) && file_exists("{$vs_template_path}/display.php")) {
+			$vs_template_path = "{$vs_template_path}/display.php";
+		} elseif(is_numeric($ps_template) && file_exists("{$vs_template_path}/local/display.php")) {
+			$vs_template_path = "{$vs_template_path}/local/display.php";
 		} else {
 			continue;
 		}
@@ -523,6 +527,7 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 	$va_options = [];
 	if (sizeof($va_formats) > 0) {
 		foreach($va_formats as $vn_ => $va_form_info) {
+			if($va_form_info['type'] === 'omit') { continue; }
 			$va_options[$va_form_info['name']] = $va_form_info['code'];
 		}
 	}
@@ -540,7 +545,8 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 			|| 
 			(is_array($va_display_info['settings']['show_only_in'] ?? null) && !in_array('editor_relationship_bundle', $va_display_info['settings']['show_only_in']))
 		) { continue; }        
-		$va_options[$va_display_info['name']] = '_pdf__display_'.$va_display_info['display_id'];
+		$n = !isset($va_options[$va_display_info['name']]) ? $va_display_info['name'] : $va_display_info['name'].' (display)';
+		$va_options[$n] = '_display_'.$va_display_info['display_id']; 
 	}
 	
 	if (sizeof($va_options) == 0) { return ''; }
@@ -548,7 +554,7 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 	uksort($va_options, 'strnatcasecmp');
 	
 	$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-	$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => Session::getVar("P{$placement_id}_last_export_format"), 'width' => '150px'))."\n";
+	$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'), array('value' => Session::getVar("P{$placement_id}_last_export_format"), 'width' => '150px'))."\n";
 	
 	$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 	
@@ -600,7 +606,7 @@ function caGetPrintFormatsListAsHTMLForSetItemBundles($ps_id_prefix, $po_request
 				($va_display_info['settings']['show_only_in'] ?? null) && 
 				($va_display_info['settings']['show_only_in'] != 'set_item_bundle'))
 			) { continue; }
-			$va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id'];
+			if(!isset($va_options[$va_display_info['name']])) { $va_options[$va_display_info['name']] = '_display_'.$va_display_info['display_id']; }
 		}
 	}
 	
@@ -820,27 +826,47 @@ function caEditorPrintParametersForm(string $type, string $template, ?array $val
 	if(!is_array($info['params']) || (sizeof($info['params']) === 0)) { return []; }
 	
 	$form_elements = [];
-	
 	foreach($info['params'] as $n => $p) {
 		$default = $p['default'] ?? null;
+		
+		$label = $p['label'];
+		
+		if(is_array($label)) {
+			// Label is localized in the form:
+			// "label": {"en": "Include logo?", "de_DE": "Logo entschließen?" }
+			$label = caExtractSettingsValueByUserLocale('label', $p);
+		}
+		
 		switch(strtolower($p['type'] ?? null)) {
 			case 'list':
 				$attr = ['class' => 'dontTriggerUnsavedChangeWarning'];
 				if($p['multiple'] ?? false) { $attr['multiple'] = 1; }
-				
+			
+				$list_options = null;
+				if(caIsAssociativeArray($p['options'])) {
+					$list_options = $p['options'];
+					foreach($list_options as $k => $v) {
+						if(is_array($v)) {
+							// Options are localized in form:
+							// "options": { "en": {"One": 1, "Two": 2, "Thress": 3 },  "de": {"Eins": 1, "Zwei": 2, "Drei": 3 }
+							$list_options = caExtractSettingsValueByUserLocale('options', $p);
+							break;
+						}
+					}
+				}
 				$dv = $values[$n] ?? $default;
 				if(!is_array($dv)) { $dv = [$dv]; }
 				
-				$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $p['options'], $attr, ['values' => $dv, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
-				$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+				$e = caHTMLSelect($n.((isset($attr['multiple']) && $attr['multiple']) ? '[]' : '') , $list_options, $attr, ['values' => $dv, 'width' => caGetOption('width', $p, null), 'height' => caGetOption('height', $p, null)]);
+				$form_elements[$n] = ['label' => $label, 'element' => $e];
 				break;
 			case 'checkbox':
 				$e = caHTMLCheckboxInput($n, ['value' => $p['value'] ?? 1, 'checked' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning']);
-				$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+				$form_elements[$n] = ['label' => $label, 'element' => $e];
 				break;
 			case 'text':
 				$e = caHTMLTextInput($n, ['placeholder' => caGetOption('placeholder', $p, ''), 'value' => $values[$n] ?? $default, 'class' => 'dontTriggerUnsavedChangeWarning'], ['width' => caGetOption('width', $p, '200px'), 'height' => caGetOption('height', $p, '200px')]);
-				$form_elements[$n] = ['label' => $p['label'], 'element' => $e];
+				$form_elements[$n] = ['label' => $label, 'element' => $e];
 				break;
 		}
 	}

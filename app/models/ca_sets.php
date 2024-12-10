@@ -1346,26 +1346,24 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if(sizeof($va_item_values)) {
 			// Quickly create set item links
-			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()
-			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id, vars) VALUES ".join(",", $va_item_values));
-			if ($this->getDb()->numErrors()) {
-				$this->errors = $this->getDb()->errors;
-				return false;
+			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()	
+			$item_ids = [];
+			foreach($va_item_values as $s) {
+				$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id, vars) VALUES {$s}");
+				if ($this->getDb()->numErrors()) {
+					$this->errors = $this->getDb()->errors;
+					return false;
+				}
+				$item_ids[] = $this->getDb()->getLastInsertID();
 			}
-			
-			// Get the item_ids for the newly created links
-			$qr_res = $this->getDb()->query("SELECT item_id FROM ca_set_items WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
-				(int)$vn_set_id, (int)$vn_table_num, (int)$vn_type_id, $va_row_ids
-			));
-			$va_item_ids = $qr_res->getAllFieldValues('item_id');
-			
+				
 			// Set the ranks of the newly created links
 			$this->getDb()->query("UPDATE ca_set_items SET `rank` = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
 				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
 			));
 
 			// Add empty labels to newly created items
-			foreach($va_item_ids as $vn_item_id) {
+			foreach($item_ids as $vn_item_id) {
 				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'["._t("BLANK")."]')";
 			}
 			$this->getDb()->query("INSERT INTO ca_set_item_labels (item_id, locale_id, caption) VALUES ".join(",", $va_label_values));
@@ -1375,11 +1373,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 			// Index the links
-			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => (bool) caGetOption('queueIndexing', $pa_options, true)));
+			$this->getSearchIndexer()->reindexRows('ca_set_items', $item_ids, array('queueIndexing' => (bool) caGetOption('queueIndexing', $pa_options, true)));
 		
 			// Create change log entries
-			if(sizeof($va_item_ids)) {
-				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($va_item_ids));
+			if(sizeof($item_ids)) {
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($item_ids));
 			
 				$t_set_item = new ca_set_items();
 				
@@ -1391,7 +1389,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			
 				$t_set_item_label = new ca_set_item_labels();
-				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($va_item_ids));
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($item_ids));
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
 					$t_set_item_label->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_item_labels.label_id'), 'snapshot' => $va_snapshot]);
@@ -1703,12 +1701,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
 			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
 				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
-					$t_set_item->set('rank', $vn_rank_inc);
-					$t_set_item->update();
-				
-					if ($t_set_item->numErrors()) {
-						$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
-					}
+					$va_rank_updates[$vn_row_id] = $vn_rank_inc;
 				}
 			} elseif($allow_dupes_in_set || (!$rows_in_set[(int)($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id)])) {
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
@@ -1735,7 +1728,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			while($qr_res->nextRow()) {
 				$va_snapshot = $qr_res->getRow();
 				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
-				$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+				$t_set_item->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
 			}
 			
 			if (sizeof($va_set_ids)) {
@@ -2270,6 +2263,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				'user_id' => $po_request->getUserID(),
 				'template' => $vs_template
 			)), null, null, array());
+			$va_items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $va_items);
 			$o_view->setVar('items', $va_items);
 		} else {
 			$o_view->setVar('items', array());
