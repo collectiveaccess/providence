@@ -55,7 +55,7 @@ $stats			= $this->getVar('statistics');
 		<div id='editGlobalAccess'>
 <?= $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	?>	
 		</div>
-		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Change'); ?></a></div>
+		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").slideDown(250); jQuery("#editGlobalAccessLink").slideUp()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Change'); ?></a></div>
 		<div style='width:100%; clear:both; height: 1px;'></div> 
 	</div>
 	<div class='globalAccess'>
@@ -91,11 +91,11 @@ $stats			= $this->getVar('statistics');
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
 ?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Edit access'); ?></a></div>
+			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").slideDown(250); jQuery("#editUserAccessLink").slideUp()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Edit access'); ?></a></div>
 <?php   
 		} else {
 ?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Add access'); ?></a></div>
+			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").slideDown(250); jQuery("#editUserAccessLink").slideUp()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Add access'); ?></a></div>
 <?php
 		}		
 ?>
