@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-  
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 require_once(__CA_LIB_DIR__.'/GenericVersionUpdater.php');
 
-
- 	define('__CA_SCHEMA_UPDATE_ERROR__', 0);
- 	define('__CA_SCHEMA_UPDATE_WARNING__', 1);
- 	define('__CA_SCHEMA_UPDATE_INFO__', 2);
+define('__CA_SCHEMA_UPDATE_ERROR__', 0);
+define('__CA_SCHEMA_UPDATE_WARNING__', 1);
+define('__CA_SCHEMA_UPDATE_INFO__', 2);
 
 final class ConfigurationCheck {
 	# -------------------------------------------------------
@@ -50,15 +44,23 @@ final class ConfigurationCheck {
 	private static $opo_db;
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public static function init() {
+		if(!self::$opo_config) {
+			self::$opa_error_messages = [];
+			self::$opo_db = new Db();
+			self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * Invokes all "QuickCheck" methods. Note that this is usually invoked
 	 * in index.php and that any errors set here cause the application
 	 * to die and display a nasty configuration error screen.
 	 */
 	public static function performQuick($options=null) {
-		self::$opa_error_messages = array();
-		self::$opo_db = new Db();
-		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
-
+		self::init();
 		/* execute checks */
 		$vo_reflection = new ReflectionClass("ConfigurationCheck");
 		$va_methods = $vo_reflection->getMethods();
@@ -79,6 +81,7 @@ final class ConfigurationCheck {
 	 * although certain features may not function properly.
 	 */
 	public static function performExpensive() {
+		self::init();
 		self::$opa_error_messages = array();
 		self::$opo_db = new Db();
 		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
@@ -100,9 +103,7 @@ final class ConfigurationCheck {
 	 * CollectiveAccess installation
 	 */
 	public static function performInstall() {
-		self::$opa_error_messages = array();
-		self::$opo_db = new Db();
-		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
+		self::init();
 
 		self::PHPVersionQuickCheck();
 		self::PHPModuleRequirementQuickCheck();
@@ -158,7 +159,7 @@ final class ConfigurationCheck {
 		// Check media
 		//
 		$vs_media_root = self::$opo_config->get('ca_media_root_dir');
-                $vs_base_dir = self::$opo_config->get('ca_base_dir');
+    	$vs_base_dir = self::$opo_config->get('ca_base_dir');
 		$va_tmp = explode('/', $vs_media_root);
 		$vb_perm_media_error = false;
 		$vs_perm_media_path = null;
@@ -340,8 +341,9 @@ final class ConfigurationCheck {
 	 * Does the HTMLPurifier DefinitionCache dir exist and is it writable?
 	 */
 	public static function htmlPurifierDirQuickCheck() {
-		$vs_purifier_path = __CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer';
-
+		self::init();
+		$vs_purifier_path = self::$opo_config->get('purify_serializer_path');
+		if(!file_exists($vs_purifier_path)) { mkdir($vs_purifier_path); }
 		if(!file_exists($vs_purifier_path) || !is_writable($vs_purifier_path)){
 			self::addError(_t("It looks like the directory for HTML filtering caches is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.", $vs_purifier_path));
 		}

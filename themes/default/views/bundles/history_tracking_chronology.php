@@ -125,7 +125,7 @@ $show_loan_controls = $show_movement_controls = $show_location_controls = $show_
 				foreach($occ_types as $vn_type_id => $va_type_info) {
 					if (!$subject_table::historyTrackingPolicyUses($policy, 'ca_occurrences', $va_type_info['idno'])) { continue; }
 ?>
-					<div style='float: left;' class='button caAddOccurrenceButton <?= $vs_id_prefix; ?>caAddOccurrenceButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('occurrence_control_label', $settings, _t('Add to %1', caGetOption('name_singular', $va_type_info, 'occurrence')), ['defaultOnEmptyString' => true]); ?></a></div>
+					<div style='float: left;' class='button caAddOccurrenceButton caAddOccurrenceButton<?= $vn_type_id; ?> <?= $vs_id_prefix; ?>caAddOccurrenceButton<?= $vn_type_id; ?>'><a href="#" id="<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('occurrence_control_label', $settings, _t('Add to %1', caGetOption('name_singular', $va_type_info, 'occurrence')), ['defaultOnEmptyString' => true]); ?></a></div>
 <?php					
 				}
 			}
@@ -799,7 +799,7 @@ if($show_entity_controls) {
 <?php	
 			if(caGetOption('always_create_new_loan', $settings, false)) {
 ?>
-				jQuery('<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddLoanButton').on('click', '#<?= $vs_id_prefix; ?>AddLoan', function(e) {
+				jQuery('#<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddLoanButton').on('click', '#<?= $vs_id_prefix; ?>AddLoan', function(e) {
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;
@@ -938,7 +938,7 @@ if($show_entity_controls) {
 <?php
 			if(caGetOption('always_create_new_occurrence', $settings, false)) {
 ?>
-				jQuery('<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddOccurrenceButton<?= $vn_type_id; ?>').on('click', '#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>', function(e) { 
+				jQuery('#<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddOccurrenceButton<?= $vn_type_id; ?>').on('click', '#<?= $vs_id_prefix; ?>AddOcc<?= $vn_type_id; ?>', function(e) { 
 					caRelationBundle<?= $vs_id_prefix; ?>_ca_occurrences_<?= $vn_type_id; ?>.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
 					e.preventDefault();
 					return false;

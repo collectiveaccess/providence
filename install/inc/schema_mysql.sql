@@ -555,6 +555,7 @@ create table ca_storage_locations
    hier_right                     decimal(30,20)                 not null,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
+   home_location_id               int unsigned null,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
    is_enabled                     tinyint unsigned               not null default 1,
@@ -584,7 +585,10 @@ create table ca_storage_locations
       references ca_list_items (item_id) on delete restrict on update restrict,
 
    constraint fk_ca_storage_locations_submission_session_id foreign key (submission_session_id)
-      references ca_media_upload_sessions(session_id) on delete restrict on update restrict
+      references ca_media_upload_sessions(session_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_storage_locations_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 create index i_parent_id on ca_storage_locations(parent_id);
@@ -593,6 +597,7 @@ create index i_idno on ca_storage_locations(idno);
 create index i_idno_sort on ca_storage_locations(idno_sort);
 create index i_idno_sort_num on ca_storage_locations(idno_sort_num);
 create index i_type_id on ca_storage_locations(type_id);
+create index i_home_location_id on ca_storage_locations(home_location_id);
 create index i_hier_left on ca_storage_locations(hier_left);
 create index i_hier_right on ca_storage_locations(hier_right);
 create index i_view_count on ca_storage_locations(view_count);
@@ -6966,6 +6971,9 @@ create table ca_sql_search_word_index (
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
   access tinyint unsigned not null default 1,
+  word_index tinyint unsigned not null default 0,
+  word_count tinyint unsigned not null default 0,
+  field_index tinyint unsigned not null default 0,
   primary key (index_id)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -7899,4 +7907,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (197, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (199, unix_timestamp());

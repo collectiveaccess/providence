@@ -569,8 +569,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			{$vs_sql_wheres}
 		", $va_sql_params);
 	
-		$va_importers = array();
-		$va_ids = array();
+		$va_importers = $ids = [];
 		
 		if (isset($pa_options['countOnly']) && $pa_options['countOnly']) {
 			return (int)$qr_res->numRows();
@@ -1870,6 +1869,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
             }
             if (!$vs_type) { $vs_type = $vs_type_mapping_setting; }		// fallback to mapping default if necessary
 			
+
+			// Primary key mapping
+			$vn_mapped_primary_key_value = $va_ids_for_row = null; 
+			if ($vn_primary_key_mapping_item_id) {
+				$vn_mapped_primary_key_value = ca_data_importers::getValueFromSource($va_mapping_items[$vn_primary_key_mapping_item_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment));
+				$vn_mapped_primary_key_value = self::_applyConditionalOptions($vn_mapped_primary_key_value, $va_mapping_items, $vn_primary_key_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements,
+					['skip' => []]
+				);
+				if ($va_mapping_items[$vn_primary_key_mapping_item_id]['settings']['delimiter'] && $va_mapping_items[$vn_primary_key_mapping_item_id]['settings']['treatAsIdsForMultipleRows']) {
+					$va_ids_for_row = explode($va_mapping_items[$vn_primary_key_mapping_item_id]['settings']['delimiter'], $vn_mapped_primary_key_value);
+				} else {
+					$va_ids_for_row = [$vn_mapped_primary_key_value];
+				}
+			}
+			
 			// Get idno
 			$vs_idno = $va_idnos_for_row = null;
 			if ($vn_idno_mapping_item_id) {
@@ -1878,14 +1892,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_idno = self::_applyConditionalOptions($vs_idno, $va_mapping_items, $vn_idno_mapping_item_id, $o_reader, $va_row, $va_row_with_replacements,
 					['skip' => []]
 				);
-				if ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'] && $va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdentifiersForMultipleRows']) {
+				if ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'] && ($va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdentifiersForMultipleRows'] || $va_mapping_items[$vn_idno_mapping_item_id]['settings']['treatAsIdnosForMultipleRows'])) {
 					$va_idnos_for_row = explode($va_mapping_items[$vn_idno_mapping_item_id]['settings']['delimiter'], $vs_idno);
 				}
 				
 			} else {
 				$vs_idno = "%";
 			}
-			
 			
 			// Get alt existing record policy idno, if configured
 			$erp_alt_idno = $erp_idno_fld = null;
@@ -1899,12 +1912,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$erp_idno_fld = array_pop(explode('.', $va_mapping_items[$vn_erp_alt_idno_mapping_item_id]['destination'] ?? null));
 			}
 			
-			// Primary key mapping
-			$vn_mapped_primary_key_value = null;
-			if ($vn_primary_key_mapping_item_id) {
-				$vn_mapped_primary_key_value = ca_data_importers::getValueFromSource($va_mapping_items[$vn_primary_key_mapping_item_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment));
-			}
-			
 			$vb_idno_is_template = (bool)preg_match('![%]+!', $vs_idno);
 			
 			if (!$vb_idno_is_template) {
@@ -1913,273 +1920,263 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_idnos_for_row = array($vs_idno);
 			}
 			
-			foreach($va_idnos_for_row as $vs_idno) {
-				$va_log_import_error_opts['idno'] = $vs_idno;
-				$t_subject = Datamodel::getInstanceByTableNum($vn_table_num);
-				if ($o_trans) { $t_subject->setTransaction($o_trans); }
-			
-			
-				// get preferred labels
-				$va_pref_label_values = array();
-				$vs_display_label = null;
-				foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_preferred_label_mapping_fld) {
-					$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, ['otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logReference' => $vs_idno]);
-					
-					$vs_label_val = self::_applyConditionalOptions($vs_label_val, $va_mapping_items, $vn_preferred_label_mapping_id, $o_reader, $va_row, $va_row_with_replacements,
-						['skip' => [], 'log' => $o_log]
-					);
-					
-					if(!self::_applyComparisonOptions($vs_label_val, $va_mapping_items, $vn_preferred_label_mapping_id, $o_reader, $va_row, $va_row_with_replacements, 
-						['skip' => [], 'log' => $o_log, 'useRaw' => $va_raw_row]
-					)) {
-						continue;
-					}
-					
-					$destbits = explode('.', $va_mapping_items[$vn_preferred_label_mapping_id]['destination']);
-					if (
-						(array_pop($destbits) === 'displayname')
-						&&
-						($displayname_format = caGetOption('displaynameFormat', $va_mapping_items[$vn_preferred_label_mapping_id]['settings'], $default_displayname_format))
-					) {
-						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
-						$vs_label_val = $va_label_val['displayname'];
-					}
-					
-					if($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'] ?? null) {
-						$vs_label_val = self::_processAppliedRegexes( $o_reader, $va_mapping_items[$vn_preferred_label_mapping_id], 0,
-										$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'], $vs_label_val, $va_row,
-										$va_row_with_replacements );
-					}
-					
-					if (!strlen($vs_label_val) && isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default'])) {
-						$vs_label_val = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default'];
-					}
+			$va_log_import_error_opts['idno'] = $vs_idno;
+			$t_subject = Datamodel::getInstanceByTableNum($vn_table_num);
+			if ($o_trans) { $t_subject->setTransaction($o_trans); }
+		
+		
+			// get preferred labels
+			$va_pref_label_values = array();
+			$vs_display_label = null;
+			foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_preferred_label_mapping_fld) {
+				$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader, ['otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logReference' => $vs_idno]);
 				
-					$vs_label_val = self::_applyCaseTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
-					$vs_label_val = self::_applyDataTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
+				$vs_label_val = self::_applyConditionalOptions($vs_label_val, $va_mapping_items, $vn_preferred_label_mapping_id, $o_reader, $va_row, $va_row_with_replacements,
+					['skip' => [], 'log' => $o_log]
+				);
 				
-					$va_pref_label_values[$vn_preferred_label_mapping_id][$vs_preferred_label_mapping_fld] = $vs_display_label = $vs_label_val;
+				if(!self::_applyComparisonOptions($vs_label_val, $va_mapping_items, $vn_preferred_label_mapping_id, $o_reader, $va_row, $va_row_with_replacements, 
+					['skip' => [], 'log' => $o_log, 'useRaw' => $va_raw_row]
+				)) {
+					continue;
 				}
-				if(!$vs_display_label) { $vs_display_label = $vs_idno; }
-			
-				//
-				// Look for existing record?
-				//
 				
-				$vb_was_preferred_label_match = false;
-				
-				$va_base_criteria = ($vs_type && !(bool)$t_mapping->getSetting('ignoreTypeForExistingRecordPolicy')) ? ['type_id' => $vs_type] : [];
-				if($vn_list_mapping_list_id !== null ) {
-				    $va_base_criteria['list_id'] = caGetListID(ca_data_importers::getValueFromSource($va_mapping_items[$vn_list_mapping_list_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logReference' => $vs_idno)));
-				}  
-				
-				if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
-					$vn_id = array_shift($pa_force_import_for_primary_keys);
-					if (!$t_subject->load($vn_id)) { 
-						if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because forced primary key \'%1\' does not exist', $vn_id)); }
-						$this->num_records_skipped++;
-						continue;	// skip because primary key does not exist
-					}
-					
-					// Make sure we're using a relevant ERP when ID is forced
-					$vn_mapped_primary_key_value = $vn_id;
-					if(!in_array($vs_existing_record_policy, ['none', 'merge_on_id', 'merge_on_id_with_replace', 'merge_on_id_with_skip', 'overwrite_on_id'])) {
-					    $vs_existing_record_policy = 'merge_on_id_with_replace';
-					}
+				$destbits = explode('.', $va_mapping_items[$vn_preferred_label_mapping_id]['destination']);
+				if (
+					(array_pop($destbits) === 'displayname')
+					&&
+					($displayname_format = caGetOption('displaynameFormat', $va_mapping_items[$vn_preferred_label_mapping_id]['settings'], $default_displayname_format))
+				) {
+					$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
+					$vs_label_val = $va_label_val['displayname'];
 				}
-				if ($vs_existing_record_policy != 'none') {
-					$label_table = $t_subject->getLabelTableName();
+				
+				if($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'] ?? null) {
+					$vs_label_val = self::_processAppliedRegexes( $o_reader, $va_mapping_items[$vn_preferred_label_mapping_id], 0,
+									$va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'], $vs_label_val, $va_row,
+									$va_row_with_replacements );
+				}
+				
+				if (!strlen($vs_label_val) && isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default'])) {
+					$vs_label_val = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['default'];
+				}
+			
+				$vs_label_val = self::_applyCaseTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
+				$vs_label_val = self::_applyDataTransforms($vs_label_val, $va_mapping_items[$vn_preferred_label_mapping_id]);
+			
+				$va_pref_label_values[$vn_preferred_label_mapping_id][$vs_preferred_label_mapping_fld] = $vs_display_label = $vs_label_val;
+			}
+			if(!$vs_display_label) { $vs_display_label = $vs_idno; }
+		
+			//
+			// Look for existing record?
+			//
+			
+			$vb_was_preferred_label_match = false;
+			
+			$va_base_criteria = ($vs_type && !(bool)$t_mapping->getSetting('ignoreTypeForExistingRecordPolicy')) ? ['type_id' => $vs_type] : [];
+			if($vn_list_mapping_list_id !== null ) {
+				$va_base_criteria['list_id'] = caGetListID(ca_data_importers::getValueFromSource($va_mapping_items[$vn_list_mapping_list_id], $o_reader, array('otherValues' => $va_rule_set_values, 'environment' => $va_environment, 'log' => $o_log, 'logReference' => $vs_idno)));
+			}  
+			
+			if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
+				$vn_id = array_shift($pa_force_import_for_primary_keys);
+				if (!$t_subject->load($vn_id)) { 
+					if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because forced primary key \'%1\' does not exist', $vn_id)); }
+					$this->num_records_skipped++;
+					continue;	// skip because primary key does not exist
+				}
+				
+				// Make sure we're using a relevant ERP when ID is forced
+				$vn_mapped_primary_key_value = $vn_id;
+				$va_ids_for_row = [$vn_id];
+				if(!in_array($vs_existing_record_policy, ['none', 'merge_on_id', 'merge_on_id_with_replace', 'merge_on_id_with_skip', 'overwrite_on_id'])) {
+					$vs_existing_record_policy = 'merge_on_id_with_replace';
+				}
+			}
+			if ($vs_existing_record_policy != 'none') {
+				$label_table = $t_subject->getLabelTableName();
+				
+				$pref_label_lookup_values = [];
+				foreach($va_pref_label_values as $i => $pl_values) {
+					$pref_label_lookup_values = array_merge($pref_label_lookup_values, $pl_values);
 					
-					$pref_label_lookup_values = [];
-					foreach($va_pref_label_values as $i => $pl_values) {
-						$pref_label_lookup_values = array_merge($pref_label_lookup_values, $pl_values);
-						
-						if(is_array($pref_label_lookup_fields_to_omit)) {
-							foreach($pref_label_lookup_fields_to_omit as $f2o) {
-								unset($pref_label_lookup_values[$i][trim($f2o)]);
-							}
+					if(is_array($pref_label_lookup_fields_to_omit)) {
+						foreach($pref_label_lookup_fields_to_omit as $f2o) {
+							unset($pref_label_lookup_values[$i][trim($f2o)]);
 						}
 					}
-					$pref_label_lookup_values = $label_table::normalizeLabel($pref_label_lookup_values, ['type' => $vs_type]);	// complex labels need to be standardized (eg. ca_entity_labels)
-					
-					$erp_idno = ($vn_erp_alt_idno_mapping_item_id) ? $erp_alt_idno : $vs_idno;
-					$erp_idno_fld = ($vn_erp_alt_idno_mapping_item_id) ? $erp_idno_fld : $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
+				}
+				$pref_label_lookup_values = $label_table::normalizeLabel($pref_label_lookup_values, ['type' => $vs_type]);	// complex labels need to be standardized (eg. ca_entity_labels)
 				
-					switch($vs_existing_record_policy) {
-						case 'merge_on_id':
-						case 'merge_on_id_with_replace':
-						case 'merge_on_id_with_skip':
-							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
-								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
-								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
-							);
-							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								$t_subject->load($va_ids[0]);
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
-								break;
-							} else {
-								if($vs_existing_record_policy === 'merge_on_id_with_skip') {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
-									$this->num_records_skipped++;
-									continue(2);	// skip 
-								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
-								}
-							}
+				$erp_idno = ($vn_erp_alt_idno_mapping_item_id) ? $erp_alt_idno : $va_idnos_for_row;
+				$erp_idno_fld = ($vn_erp_alt_idno_mapping_item_id) ? $erp_idno_fld : $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
+		
+				switch($vs_existing_record_policy) {
+					case 'merge_on_id':
+					case 'merge_on_id_with_replace':
+					case 'merge_on_id_with_skip':
+						$ids = call_user_func_array($t_subject->tableName()."::find", 
+							[[$t_subject->primaryKey() => ['IN', $va_ids_for_row]],
+							['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+						);
+						if (is_array($ids) && (sizeof($ids) > 0)) {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
 							break;
-						case 'skip_on_id':
-							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
-								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
-								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
-							);
-							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+						} else {
+							if($vs_existing_record_policy === 'merge_on_id_with_skip') {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
 								$this->num_records_skipped++;
-								continue(2);	// skip because idno matched
-							}
-							break;
-						case 'overwrite_on_id':
-							$va_ids = call_user_func_array($t_subject->tableName()."::find", 
-								[[$t_subject->primaryKey() => $vn_mapped_primary_key_value],
-								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
-							);
-							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								$t_subject->load($va_ids[0]);
-								$t_subject->delete(true, array('hard' => true));
-								if ($t_subject->numErrors()) {
-									$this->logImportError(_t('[%1] Could not delete existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy), $va_log_import_error_opts);
-									// Don't stop?
-								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
-									$t_subject->clear();
-									break;
-								}
+								continue(2);	// skip 
 							} else {
 								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
 							}
-							break;
-						case 'skip_on_idno':
-							if (!$vb_idno_is_template) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array($erp_idno_fld => $erp_idno)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy)); }
-									$this->num_records_skipped++;
-									continue(2);	// skip because idno matched
-								}
+						}
+						break;
+					case 'skip_on_id':
+						$ids = call_user_func_array($t_subject->tableName()."::find", 
+							[[$t_subject->primaryKey() => ['IN', $va_ids_for_row]],
+							['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+						);
+						if (is_array($ids) && (sizeof($ids) > 0)) {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+							$this->num_records_skipped++;
+							continue(2);	// skip because idno matched
+						}
+						break;
+					case 'overwrite_on_id':
+						$ids = call_user_func_array($t_subject->tableName()."::find", 
+							[[$t_subject->primaryKey() => ['IN', $va_ids_for_row]],
+							['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+						);
+						if (is_array($ids) && (sizeof($ids) > 0)) {
+							$t_subject->delete(true, array('hard' => true));
+							if ($t_subject->numErrors()) {
+								$this->logImportError(_t('[%1] Could not delete existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy), $va_log_import_error_opts);
+								// Don't stop?
+							} else {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+								$t_subject->clear();
+								break;
 							}
-							break;
-						case 'skip_on_no_idno':
-							if (!$vb_idno_is_template) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array($erp_idno_fld => $erp_idno)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-							}
-							if (empty($va_ids)) {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because could not find existing record matched on identifier %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy)); }
-								$this->num_records_skipped++;
-								continue(2);	// skip because idno not matched
-							}
-							break;
-						case 'skip_on_preferred_labels':
-							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
+						} else {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
+						}
+						break;
+					case 'skip_on_idno':
+						if (!$vb_idno_is_template) {
+							$ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
-							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
+							if (is_array($ids) && (sizeof($ids) > 0)) {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier %2 by policy %3', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy)); }
 								$this->num_records_skipped++;
-								continue(3);	// skip because label matched
+								continue(2);	// skip because idno matched
 							}
-							break;
-						case 'merge_on_idno_and_preferred_labels':
-						case 'merge_on_idno':
-						case 'merge_on_idno_and_preferred_labels_with_replace':
-						case 'merge_on_idno_with_replace':
-						case 'merge_on_idno_with_skip':
-							if (!$vb_idno_is_template || $erp_alt_idno) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									$z=array_merge($va_base_criteria, array($erp_idno_fld => $erp_idno)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									$t_subject->load($va_ids[0]);
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifer %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy)); }
-									break;
-								} else {
-									if($vs_existing_record_policy === 'merge_on_idno_with_skip') {
-										if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on identifier %2 by policy %3 using base criteria %3', $vs_idno, $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
-										$this->num_records_skipped++;
-										continue(2);	// skip 
-									} else {
-										if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer %2 by policy %4 using base criteria %4', $vs_idno, $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
-									}
-								}
-							}
-							if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace', 'merge_on_idno_with_skip'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
-						case 'merge_on_preferred_labels':
-						case 'merge_on_preferred_labels_with_replace':
-							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $pl_values)),
+						}
+						break;
+					case 'skip_on_no_idno':
+						if (!$vb_idno_is_template) {
+							$ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
-							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								$t_subject->load($va_ids[0]);
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
-								$vb_was_preferred_label_match = true;
+						}
+						if (empty($ids)) {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because could not find existing record matched on identifier %2 by policy %3', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy)); }
+							$this->num_records_skipped++;
+							continue(2);	// skip because idno not matched
+						}
+						break;
+					case 'skip_on_preferred_labels':
+						$ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
+							array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+						));
+						if (is_array($ids) && (sizeof($ids) > 0)) {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
+							$this->num_records_skipped++;
+							continue(3);	// skip because label matched
+						}
+						break;
+					case 'merge_on_idno_and_preferred_labels':
+					case 'merge_on_idno':
+					case 'merge_on_idno_and_preferred_labels_with_replace':
+					case 'merge_on_idno_with_replace':
+					case 'merge_on_idno_with_skip':
+						if (!$vb_idno_is_template || $erp_alt_idno) {
+							$ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+							));
+							if (is_array($ids) && (sizeof($ids) > 0)) {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifer %2 by policy %3', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy)); }
 								break;
 							} else {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
-							}
-							break;	
-						case 'overwrite_on_idno_and_preferred_labels':
-						case 'overwrite_on_idno':
-							if (!$vb_idno_is_template && ($vs_idno || $erp_alt_idno)) {
-								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-									array_merge($va_base_criteria, array($erp_idno_fld => $erp_idno)),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
-								));
-								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-									$t_subject->load($va_ids[0]);
-									$t_subject->delete(true, array('hard' => true));
-									if ($t_subject->numErrors()) {
-										$this->logImportError(_t('[%1] Could not delete existing record matched on identifier %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy), $va_log_import_error_opts);
-										// Don't stop?
-									} else {
-										if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier %2 by policy %3', $vs_idno, $erp_idno, $vs_existing_record_policy)); }
-										$t_subject->clear();
-										break;
-									}
+								if($vs_existing_record_policy === 'merge_on_idno_with_skip') {
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Skipped import because existing record could not be matched on identifier %2 by policy %3 using base criteria %3', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									$this->num_records_skipped++;
+									continue(2);	// skip 
 								} else {
-								    if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer %2 by policy %3 using base criteria %4', $vs_idno, $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer %2 by policy %4 using base criteria %4', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
 								}
 							}
-							if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
-						case 'overwrite_on_preferred_labels':
-							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
+						}
+						if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace', 'merge_on_idno_with_skip'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
+					case 'merge_on_preferred_labels':
+					case 'merge_on_preferred_labels_with_replace':
+						$ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array_merge($va_base_criteria, array('preferred_labels' => $pl_values)),
+							array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+						));
+						if (is_array($ids) && (sizeof($ids) > 0)) {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
+							$vb_was_preferred_label_match = true;
+							break;
+						} else {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
+						}
+						break;	
+					case 'overwrite_on_idno_and_preferred_labels':
+					case 'overwrite_on_idno':
+						if (!$vb_idno_is_template && ($vs_idno || $erp_alt_idno)) {
+							$ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array_merge([$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
-							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-								$t_subject->load($va_ids[0]);
-								$t_subject->delete(true, array('hard' => true));
-						
-								if ($t_subject->numErrors()) {
-									$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
-									// Don't stop?
-								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
-									break(2);
-								}
-								$t_subject->clear();
-							} else {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
+							if (!is_array($ids) || (sizeof($ids) === 0)) {
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer %2 by policy %3 using base criteria %4', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
 							}
-							break;
+						}
+						if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
+					case 'overwrite_on_preferred_labels':
+						$ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array_merge($va_base_criteria, array('preferred_labels' => $pref_label_lookup_values)),
+							array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
+						));
+						if (!is_array($ids)|| (sizeof($ids) === 0)) {
+							if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on label values %3 by policy %2 using base criteria %4', $vs_idno, $vs_existing_record_policy, print_r($pl_values, true), print_r($va_base_criteria, true))); }
+						}
+						break;
+				}
+			}
+			if(!is_array($ids) || !sizeof($ids)) { $ids = [null]; }
+			foreach($ids as $id) {	
+				$t_subject->load($id);		
+				if(in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
+					$t_subject->delete(true, ['hard' => true]);
+					if ($t_subject->numErrors()) {
+						$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
+						// Don't stop?
+					} else {
+						if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
 					}
+					$t_subject->clear();
+				}
+				
+				if($t_subject->getPrimaryKey()) {
+					$vs_idno = $t_subject->get($vs_idno_fld);
 				}
 				
 				if ($merge_only && !$t_subject->getPrimaryKey()) { 

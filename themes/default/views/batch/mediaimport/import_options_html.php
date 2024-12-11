@@ -251,8 +251,11 @@ print $vs_control_box = caFormControlBox(
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
 								?></td>
-								<td class='formLabel' id='caIdnoFormModeForm'><?= _t('Set %1 identifier to %2', caGetTableDisplayName($t_instance->tableName(), false),  $t_instance->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
+								<td class='formLabel' id='caIdnoFormModeForm'><?= _t('Set %1 identifier to ', caGetTableDisplayName($t_instance->tableName(), false)).$t_instance->htmlFormElement('idno', '^ELEMENT', ['request' => $this->request]); ?></td>
 							</tr>
+<?php
+	if(!$this->getVar('target_idno_is_serial')) {
+?>
 							<tr>
 								<td><?php
 									$va_attrs = array('value' => 'filename', 'id' => 'caIdnoFilenameMode');
@@ -277,6 +280,9 @@ print $vs_control_box = caFormControlBox(
 								?></td>
 								<td class='formLabel'><?= _t('Set %1 identifier to directory and file name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
 							</tr>
+<?php
+	}
+?>
 						</table>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
@@ -476,8 +482,11 @@ print $vs_control_box = caFormControlBox(
 										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
 										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
 										?></td>
-									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?= _t('Set %1 identifier to %2', caGetTableDisplayName('ca_object_representations', false) , $t_rep->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
+									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?= _t('Set %1 identifier to ', caGetTableDisplayName('ca_object_representations', false)).$t_rep->htmlFormElement('idno', '^ELEMENT', ['request' => $this->request]); ?></td>
 								</tr>
+<?php
+	if(!$this->getVar('representation_idno_is_serial')) {
+?>
 								<tr>
 									<td><?php
 										$va_attrs = array('value' => 'filename', 'id' => 'caRepresentationIdnoFilenameMode');
@@ -502,6 +511,9 @@ print $vs_control_box = caFormControlBox(
 										?></td>
 									<td class='formLabel'><?= _t('Set %1 identifier to directory and file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
 								</tr>
+<?php
+	}
+?>
 							</table>
 							<script type="text/javascript">
 								jQuery(document).ready(function() {

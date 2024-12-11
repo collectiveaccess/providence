@@ -133,7 +133,7 @@ class SearchOccurrencesController extends BaseSearchController {
 					'action:can_search_ca_occurrences' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_occurrences_no_search_builder_for_types:ca_occurrences' => 'AND',
-					'configuration:!ca_occurrences_disable_searchbuilder' => 'AND'
+					'configuration:!ca_occurrences_disable_search_builder' => 'AND'
 				]
 			],
 			[

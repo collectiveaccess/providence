@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2023 Whirl-i-Gig
+ * Copyright 2004-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,17 +29,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 /**
  * Class to convert timecode notations. Supported notations are
  *
  *	- Simple seconds: 	ex. "8410" 			= 8410 seconds (2 hours, 20 minutes and 10 seconds)
  *	- hms notation: 	ex. 2h 20m 10s 		= 8410 seconds (2 hours, 20 minutes and 10 seconds)
- *	- colon nation: 	ex. 2:20:10 		= 8410 seconds (2 hours, 20 minutes and 10 seconds)
+ *	- colon notation: 	ex. 2:20:10 		= 8410 seconds (2 hours, 20 minutes and 10 seconds)
  *
  * You can also specify the number of frames (for video and film time code). The timebase 
  * determines how frames notation is converted to seconds. The default timebase is 29.97 frames per 
@@ -206,6 +201,7 @@ class TimecodeParser {
 	 *		HOURS_MINUTES_SECONDS = h m s (Ex. 3h 30m 5s); "hms" and "time" may also be used to select this format.
 	 *		HOURS_MINUTES = h m (Ex. 3h 30m); "hm" may also be used to select this format.
 	 *		VTT = timestamp format for VTT subtitle files.
+	 *		TIME_12_HOUR = 12 hour time notation with seconds.
 	 * @param array $pa_options Options include:
 	 *		blankOnZero = Return blank if timecode value is zero seconds. [Default is false]
 	 *		noFractionalSeconds = Return seconds value as whole number, truncating decimals. [Default is false]
@@ -254,6 +250,7 @@ class TimecodeParser {
 			case 'HOURS_MINUTES':
 			case 'HOURS_MINUTES_LONG':
 			case 'VTT':
+			case 'TIME_12_HOUR':
 				$vn_time_in_seconds = (float)$this->opn_parsed_value_in_seconds;
 				
 				if (!$vn_time_in_seconds && $pb_blank_on_zero) {
@@ -267,7 +264,30 @@ class TimecodeParser {
 					
 					$vn_seconds = $vn_time_in_seconds;
 					
+					if(($ps_format === 'TIME_12_HOUR') && ($vn_hours > 23)) {
+						$ps_format = 'COLON_DELIMITED';
+					}
+					
 					switch($ps_format) {
+						case 'TIME_12_HOUR':
+							global $g_ui_locale;
+							$lang = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$g_ui_locale}.lang");
+							if (!($meridian_table = $lang->getAssoc('meridianTable'))) {
+								$meridian_table = ['a.m.' => 'am', 'p.m.' => 'pm'];
+							} 
+							if ((float)$vn_seconds != intval($vn_seconds)) {
+								if ($pb_no_fractional_seconds) {
+									$vs_seconds = sprintf("%02.0f", round($vn_seconds));
+								} else {
+									$vs_seconds = sprintf("%04.1f", $vn_seconds);
+								}
+							} else {
+								$vs_seconds = sprintf("%02.0f", $vn_seconds);
+							}
+							$meridian = ($vn_hours >= 12) ? $meridian_table['p.m.'] : $meridian_table['a.m.'];
+							if($vn_hours > 12) { $vn_hours -= 12; }
+							return $vn_hours.":".sprintf("%02d", $vn_minutes).($pb_omit_seconds ? '' : ":".$vs_seconds)." {$meridian}";
+							break;
 						case 'COLON_DELIMITED':
 							if ((float)$vn_seconds != intval($vn_seconds)) {
 								if ($pb_no_fractional_seconds) {

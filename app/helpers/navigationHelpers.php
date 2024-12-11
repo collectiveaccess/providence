@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,8 @@
  	define('__CA_NAV_ICON_COPY__', 70);
  	define('__CA_NAV_ICON_MERGE__', 71);
  	define('__CA_NAV_ICON_SPLIT__', 72);
+ 	define('__CA_NAV_ICON_TOGGLE__', 73);
+ 	define('__CA_NAV_ICON_CHECKBOX__', 74);
  	
  	/**
  	 * Icon position constants
@@ -548,7 +550,6 @@
 	/**
 	 * @param array $pa_options Options are:
 	 *		icon_position =
-	 *		class = 
 	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
@@ -557,7 +558,6 @@
 	 */
 	function caJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes=null, $pa_options=null) {
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
-		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
@@ -577,12 +577,12 @@
 			$vs_button .= "<span class='form-button'>"; 
 			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
-			$vn_padding = 0;
+			$vn_padding = 5;
 		}	
 		
 		$va_img_attr = array(
 			'border' => '0',
-			'alt=' => $ps_content,
+			'alt' => htmlentities($ps_content),
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
@@ -907,6 +907,12 @@
 				break;	
 			case __CA_NAV_ICON_SPLIT__:
 				$vs_fa_class = 'fa fa-object-ungroup';
+				break;		
+			case __CA_NAV_ICON_TOGGLE__:
+				$vs_fa_class = 'fa fa-toggle-on';
+				break;
+			case __CA_NAV_ICON_CHECKBOX__:
+				$vs_fa_class = 'fa fa-check-square';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";

@@ -1477,6 +1477,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				    case 'ca_site_page_media':
 				        return parent::getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 				        break;
+				    case 'ca_storage_locations_current_contents':		// objects in storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+					case 'history_tracking_current_contents':
+						$values = $this->getHistoryTrackingCurrentContentsValues($pa_options['request'], caGetOption('policy', $pa_bundle_settings, null), $pa_bundle_settings);
+						return $values['initialValues'] ?? [];
+						break;
 				}
 				break;
 			# -------------------------------------------------
@@ -4189,7 +4194,7 @@ if (!$vb_batch) {
 			
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
 			
-			$parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
+			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
 			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
 				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
 				return false;
@@ -4197,7 +4202,6 @@ if (!$vb_batch) {
 		
 			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
 			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
-			
 			$target_table = $this->tableName();
 			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
 			
@@ -7427,7 +7431,7 @@ if (!$vb_batch) {
                     if ($t_parent->load($vn_parent_id)) {
                     	$pidno = $t_parent->get($this->tableName().".{$vs_idno_fld}");
                         $this->opo_idno_plugin_instance->isChild(true, $pidno); 
-                        if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT')) {
+                        if (!$this->getPrimaryKey() && !$this->opo_idno_plugin_instance->formatHas('PARENT') && !$this->opo_idno_plugin_instance->formatHas('INHERIT')) {
                             $this->set($vs_idno_fld, 
                                 ($pidno) ? 
                                     $this->opo_idno_plugin_instance->makeTemplateFromValue($pidno, 1, true)
@@ -7550,7 +7554,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($this->_CONFIG->get('require_valid_id_number_for_'.$this->tableName()) && sizeof($va_admin_idno_errors = $this->opo_idno_plugin_instance->isValidValue($ps_admin_idno))) {
 			$va_errors[] = join('; ', $va_admin_idno_errors);
 		} elseif (!$this->_CONFIG->get('allow_duplicate_id_number_for_'.$this->tableName()) && sizeof($this->checkForDupeAdminIdnos($ps_admin_idno))) {
-			$va_errors[] = _t("Identifier <em>%1</em> already exists and duplicates are not permitted", $ps_admin_idno);
+			$va_errors[] = _t("Identifier <em>%1</em> already exists and duplicates are not permitted", strlen($ps_admin_idno) ? $ps_admin_idno : caGetBlankLabelText());
 		}
 		
 		return $va_errors;
@@ -7592,7 +7596,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *		instance = An instance of the model for $pm_rel_table_name_or_num; if passed makeSearchResult can use it to directly extract model information potentially saving time [Default is null]
 	 *		returnIndex = Return array with result instance (key "result") and list of sorted primary key values (key "index"). [Default is false]
 	 *		primaryTable = When search result is for a relationship, the related table to consider as context. Paths to related tables will be generated as if they were relative to the primary. Mostly useful when sorting on related records from a relationship, to ensure that the path to the sort record is. [Default is null]
-	 *
+	 *		start = Zero-based index to begin returned items at. [Default is 0]
+ 	 *		limit = Maximum number of items to return. [Default is null; no limit]
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
@@ -7613,7 +7618,14 @@ $pa_options["display_form_field_tips"] = true;
 			
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
+		} else {
+			$start = caGetOption('start', $pa_options, 0);
+			$limit = caGetOption('limit', $pa_options, null);
+			if(($start > 0) || ($limit > 0)) {
+				$va_ids = array_slice($va_ids, $start, $limit);
+			}
 		}
+		
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, [], $t_instance->tableNum());
 		/** @var BaseSearchResult $o_res */

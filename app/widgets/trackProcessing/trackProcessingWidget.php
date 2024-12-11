@@ -84,13 +84,14 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 		
 		$vo_tq = new TaskQueue();
 		$qr_completed = $this->db->query("
-			SELECT tq.*, u.fname, u.lname 
+			SELECT tq.task_id, tq.user_id, tq.row_key, tq.created_on, tq.started_on, tq.completed_on,
+			tq.priority, tq.handler, tq.error_code, tq.parameters, tq.notes, u.fname, u.lname 
 			FROM ca_task_queue tq 
 			LEFT JOIN ca_users u ON u.user_id = tq.user_id 
 			WHERE tq.completed_on > ? 
 			ORDER BY tq.completed_on desc
 		", time() - (60*60*$pa_settings['hours']));
-		
+
 		$completed = [];
 		$vn_reported = 0;
 		while($qr_completed->nextRow() && $vn_reported < $this->limit){
@@ -109,7 +110,6 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 				$row["error_message"] = '';
 			}
 			$completed[$row["task_id"]]["error_message"] = $row["error_message"];
-			
 			if (is_array($report = caUnserializeForDatabase($row["notes"]))) {
 				$completed[$row["task_id"]]["processing_time"] = (float)$report['processing_time'];
 			}
@@ -123,7 +123,8 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 		$this->opo_view->setVar('data_jobs_done', $completed);
 
 		$qr_qd = $this->db->query("
-			SELECT * 
+			SELECT tq.task_id, tq.user_id, tq.row_key, tq.created_on, tq.started_on, tq.completed_on,
+			tq.priority, tq.handler, tq.error_code, tq.parameters, tq.notes, u.fname, u.lname 
 			FROM ca_task_queue tq
 			LEFT JOIN ca_users AS u ON tq.user_id = u.user_id
 			WHERE tq.completed_on is NULL

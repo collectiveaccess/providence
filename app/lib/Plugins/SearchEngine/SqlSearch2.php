@@ -40,6 +40,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	# -------------------------------------------------------
 	private $indexing_subject_tablenum=null;
 	private $indexing_subject_row_id=null;
+	private $indexing_field_index = 0;
 	
 	private $delete_sql;	// sql DELETE statement (for unindexing)
 	private $q_delete;		// prepared statement for delete (subject_tablenum and subject_row_id only specified)
@@ -327,14 +328,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 					// TODO: Try to optimize this case by moving it from first position when possible?
 	 					// 		 Without anything to diff this with we have to invert the result set, which can potentially 
 	 					//		 return a very large result set
-	 					$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 AND ' : '';
-	 					if (!sizeof($hits)) { $acc = []; break; }
-	 					$qr_res = $this->db->query("
-	 						SELECT {$pk} 
-	 						FROM {$subject_table} 
-	 						WHERE {$deleted_sql} {$pk} NOT IN (?)
-	 					", [array_keys($hits)]);
-	 					$vals = $qr_res->getAllFieldValues($pk);
+	 					if (!sizeof($hits)) { 
+	 						$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 ' : '';
+							$qr_res = $this->db->query("
+								SELECT {$pk} 
+								FROM {$subject_table} 
+								WHERE {$deleted_sql}
+							");
+	 					} else {
+	 						$deleted_sql = Datamodel::getFieldNum($subject_tablenum, 'deleted') ? 'deleted = 0 AND ' : '';
+							$qr_res = $this->db->query("
+								SELECT {$pk} 
+								FROM {$subject_table} 
+								WHERE {$deleted_sql} {$pk} NOT IN (?)
+							", [array_keys($hits)]);
+						}
+						$vals = $qr_res->getAllFieldValues($pk);
 	 					
 	 					$acc = [];
 	 					foreach($vals as $row_id) {
@@ -419,6 +428,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	}
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
 	 	$words = [$term->text];
+	 	
 	 	if($field && !is_array($ap)) {
 	 		$words[0] = $field.':'.$words[0];
 	 		$field = null;
@@ -432,8 +442,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	if(!$is_blank && !$is_not_blank && (!is_array($indexing_options) || !in_array('DONT_TOKENIZE', $indexing_options) || in_array('INDEX_AS_IDNO', $indexing_options))) {
 	 		$words = self::filterStopWords(self::tokenize(join(' ', $words), true));
 	 	}
-	 	if(!$words || !sizeof($words)) { return null; }
 	 	
+	 	$words = array_filter($words, 'strlen');
+	 	if(!$words || !sizeof($words)) { return null; }
 	 	
 	 	$word_field = 'sw.word';
 	 	
@@ -443,8 +454,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		if(is_array($ret)) { return $ret; }
 	 	}
 	 	
+	 	if(!is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
+			$words[0] = mb_substr($words[0], 1);
+		}
+		
 	 	$results = [];
-	 	foreach($words as $i => $text) {
+	 	$wc = sizeof($words);
+	 	foreach($words as $w => $text) {
 			// Don't stem if:
 			//	1. Stemming is disabled
 			//	2. Search for is blank values
@@ -541,6 +557,19 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		
 			$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
+				
+			$anchor_sql = '';
+			switch($anchor_mode) {
+				case 'EXACT':
+					$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+					break;
+				case 'START':
+					$anchor_sql = " AND swi.word_index = {$w}";
+					break;
+				case 'END':
+					$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
+					break;
+			}
 		
 			if ($is_bare_wildcard) {
 				$t = Datamodel::getInstance($subject_tablenum, true);
@@ -553,27 +582,28 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				", []);
 			} elseif($use_boost) {
 				$qr_res = $this->db->query("
-					SELECT swi.index_id, swi.row_id, swi.boost
+					SELECT swi.index_id, swi.row_id, swi.boost, swi.field_index
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 					WHERE
 						swi.table_num = ? AND {$word_field} {$word_op} ?
 						{$field_sql}
-						{$private_sql}
+						{$private_sql} {$anchor_sql}
 				", $params);
 			} else {
 				$qr_res = $this->db->query("
-					SELECT swi.index_id, swi.row_id, 100 boost
+					SELECT swi.index_id, swi.row_id, 100 boost, swi.field_index
 					FROM ca_sql_search_word_index swi
 					".(!$is_blank ? 'INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id' : '')."
 					WHERE
 						swi.table_num = ? AND {$word_field} {$word_op} ?
 						{$field_sql}
-						{$private_sql}
+						{$private_sql} {$anchor_sql}
 				", $params);
 			}
 			$results[$i] = $this->_arrayFromDbResult($qr_res);
 		}
+		
 		$ret = array_shift($results);
 		foreach($results as $r) {
 			if(!is_array($r)) { continue; }
@@ -613,6 +643,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 		
 			if (!sizeof($words)) { return []; }
+						
+			if(!is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
+				$words[0] = mb_substr($words[0], 1);
+			}
 		
 			$ap_tmp = explode(".", $ap_spec);
 			$fld_table = $fld_num = null;
@@ -644,6 +678,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				return strlen($v);
 			});
 			if(!sizeof($words)) { return []; }
+			$wc = sizeof($words);
 	 		foreach($words as $w => $word) {
 	 			$word_op = '=';
 	 			if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
@@ -655,20 +690,37 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$temp_table = 'ca_sql_search_phrase_'.md5("{$subject_tablenum}/{$word}/{$w}");
 				$this->_createTempTable($temp_table);
 			
+				$anchor_sql = '';
+				switch($anchor_mode) {
+					case 'EXACT':
+						$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+						break;
+					case 'START':
+						$anchor_sql = " AND swi.word_index = {$w}";
+						break;
+					case 'END':
+						$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
+						break;
+				}
+				
 				$tc = sizeof($temp_tables);
+				
 				$qr_res = $this->db->query("
 					INSERT INTO {$temp_table}
-					SELECT swi.index_id + 1, 1, null
+					SELECT swi.index_id + 1, 1, swi.field_index
 					FROM ca_sql_search_words sw 
 					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
-					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
+					".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id AND swi.field_index = tt.field_container_id" : "")."
 					WHERE 
 						sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
-						{$private_sql}
-				", $word, (int)$subject_tablenum);
-				$qr_count = $this->db->query("SELECT count(*) c FROM {$temp_table}");
+						{$private_sql} {$anchor_sql}
+				", (string)$word, (int)$subject_tablenum);
 			
 				$temp_tables[] = $temp_table;	
+				while(sizeof($temp_tables) > 2) {
+					$t = array_shift($temp_tables);
+					$this->_dropTempTable($t);	
+				}
 			}
 			$results_temp_table = array_pop($temp_tables);
 							
@@ -1114,6 +1166,25 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		return ['restrict' => $restrict_to_fields, 'exclude' => $exclude_fields_from_search];
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getAnchorMode(string $word) : ?string {
+		$anchor_mode = null;
+		switch(mb_substr($word, 0, 1)) {
+			case '=':
+				$anchor_mode = 'EXACT';
+				break;
+			case '^':
+				$anchor_mode = 'START';
+				break;
+			case '$':
+				$anchor_mode = 'END';
+				break;
+		}
+		return $anchor_mode;
+	}
+	# -------------------------------------------------------
 	# Indexing
 	# -------------------------------------------------------
 	/**
@@ -1124,6 +1195,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 
 		$this->indexing_subject_tablenum = $subject_tablenum;
 		$this->indexing_subject_row_id = $subject_row_id;
+		$this->indexing_field_index = 0;
 	}
 	# -------------------------------------------------------
 	/**
@@ -1131,6 +1203,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 */
 	public function indexField(int $content_tablenum, string $content_fieldname, int $content_row_id, $content, ?array $options=null) {
 		if (!is_array($options)) { $options = []; }
+		
+		$fi = $this->indexing_field_index;
+		$this->indexing_field_index++;
 		
 		if (!is_array($content)) {
 			$content = [$content];
@@ -1200,7 +1275,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$this->removeRowIndexing($this->indexing_subject_tablenum, $this->indexing_subject_row_id, $content_tablenum, array($content_fieldname), $content_row_id, $rel_type_id);
 		}
 		if (!$words) {
-			$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.')';
+			$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.',0,0,'.$fi.')';
 		} else {
 			if((bool)$this->search_config->get('group_index_for_repeating_terms_in_field')) {
 				$u = array_unique($words);
@@ -1208,11 +1283,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$words = $u;
 				}
 			}
-			foreach($words as $vs_word) {
+			$wc = sizeof($words);
+			foreach($words as $i => $vs_word) {
 				if(!strlen($vs_word)) { continue; }
 				if (!($word_id = (int)$this->getWordID($vs_word))) { continue; }
 			
-				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.')';
+				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.$i.','.$wc.','.$fi.')';
 			}
 		}
 	}
@@ -1381,6 +1457,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$this->removeRowIndexing($subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, array($ps_content_fieldnum), $pn_content_row_id, caGetOption('relationship_type_id', $pa_options, null));
 		}
 		
+		$fi = 1;
+		
 		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options, true)) {
 			$va_words = array($ps_content);
 		} else {
@@ -1427,32 +1505,37 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$vn_boost = (int)$vn_boost;
 
 		
+		$fi = 0;
 		foreach($pa_subject_row_ids as $vn_row_id) {
 			if (!$vn_row_id) { 
 				if ($this->debug) { Debug::msg("[SqlSearchDebug] Cannot index row because row id is missing!"); }
 				continue; 
 			}
-			$vn_seq = 0;
+			$seq = 0;
 			
 			if($va_words) {
-				foreach($va_words as $vs_word) {
+				$wc = sizeof($va_words);
+				foreach($va_words as $i => $vs_word) {
 					if(is_null($vs_word))  { continue; }
 					if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
-					$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
-					$vn_seq++;
+					$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$i}, {$wc}, {$fi})";
+					$seq++;
 				}
 			
 				if (is_array($va_literal_content)) {
-					foreach($va_literal_content as $vs_literal) {
+					$wc = sizeof($va_literal_content);
+					foreach($va_literal_content as $i => $vs_literal) {
 						if (!($vn_word_id = $this->getWordID($vs_literal))) { continue; }
-						$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
-						$vn_seq++;
+						$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$i}, {$wc}, {$fi})";
+						$seq++;
 					}
 				}
 			} else {
-				$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, 0, 0, {$vn_private}, {$vn_rel_type_id})";
-				$vn_seq++;
+				$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, 0, 0, {$vn_private}, {$vn_rel_type_id}, 0, 0, {$fi})";
+				$seq++;
 			}
+			
+			$fi++;
 		}
 		
 		// do insert
@@ -1490,6 +1573,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(!self::$whitespace_tokenizer_regex) {
 			self::$whitespace_tokenizer_regex = caGetSearchConfig()->get('whitespace_tokenizer_regex');
 		}
+		$content = html_entity_decode($content, ENT_QUOTES, 'UTF-8');
 		$content = preg_replace('![\']+!u', '', $content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
 
 		switch($alphabet = caIdentifyAlphabet($content)) {
@@ -1504,8 +1588,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					break;
 				}
 			default:
-				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags($content));
-				
+				$words = preg_split('!'.self::$whitespace_tokenizer_regex.'!u', strip_tags(br2nl($content)));
 				$words = array_map(function($v) {
 					$w = preg_replace('!'.self::$punctuation_tokenizer_regex.'!u', '', html_entity_decode($v, null, 'UTF-8'));
 					$w = preg_replace('!^'.self::$separator_tokenizer_regex.'!u', '', $w);
@@ -1626,7 +1709,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$this->insert_word_index_sql = "
 			INSERT INTO ca_sql_search_word_index
-			(table_num, row_id, field_table_num, field_num, field_container_id, field_row_id, word_id, boost, access, rel_type_id)
+			(table_num, row_id, field_table_num, field_num, field_container_id, field_row_id, word_id, boost, access, rel_type_id, word_index, word_count, field_index)
 			VALUES
 		";
 		

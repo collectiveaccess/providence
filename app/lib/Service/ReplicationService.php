@@ -115,7 +115,7 @@ class ReplicationService {
 	public static function getLog($po_request) {
 		$o_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
 		$max_media_size = $o_replication_conf->get('maximum_media_size');
-		$max_media_size_in_bytes = $max_media_size ? caParseHumanFilesize($max_media_size) : null
+		$max_media_size_in_bytes = $max_media_size ? caParseHumanFilesize($max_media_size) : null;
 
 		$pn_from = $po_request->getParameter('from', pInteger);
 		if(!$pn_from) { $pn_from = 0; }
@@ -624,7 +624,7 @@ class ReplicationService {
 		$has_deleted = $t->hasField('deleted');
 		
 		$db = new Db();
-		if($t->hasField('access')) {
+		if($t->hasField('access') && !is_a($t, 'BaseLabel')) {
 			$qr = $db->query("
 				SELECT g.guid 
 				FROM ca_guids g

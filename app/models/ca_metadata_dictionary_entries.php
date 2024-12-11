@@ -522,35 +522,43 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 					$vn_entry_id = $vn_id;
 				}
 				
-				if ($vn_entry_id && (sizeof($va_types) || sizeof($va_relationship_types))) {
-					if (sizeof($va_relationship_types)) {
-						if(
-							is_array($va_entry_types = ($va_entry['settings']['restrict_to_relationship_types'] ?? null))
-						) {
-							if(sizeof($va_entry_types = array_filter($va_entry_types, 'strlen'))) {
-								if (sizeof(array_intersect($va_relationship_types, $va_entry_types))) {
+				if(!is_array($res_types = $va_entry['settings']['restrict_to_types'] ?? [])) {
+					$res_types = [$res_types];
+				}
+				$va_entry_types = array_filter($res_types ?? [], 'strlen');
+				if(!is_array($rel_types = $va_entry['settings']['restrict_to_relationship_types'] ?? [])) {
+					$rel_types = [$rel_types];
+				}
+				$va_entry_relationship_types = array_filter($rel_types, 'strlen');
+		
+				if($vn_entry_id) {
+					if ((sizeof($va_types) || sizeof($va_relationship_types))) {
+						if (sizeof($va_relationship_types)) {
+							if(is_array($va_entry_relationship_types) && sizeof($va_entry_relationship_types)) {
+								if (sizeof(array_intersect($va_relationship_types, $va_entry_relationship_types))) {
 									$vn_entry_id = $vn_id;
 								} else {
 									$vn_entry_id = null;
+									continue;
 								}
 							}
 						}
-					}
-					if (sizeof($va_types)) {
-						if(
-							is_array($va_entry_types = ($va_entry['settings']['restrict_to_types'] ?? null))
-						) {
-							if(sizeof($va_entry_types = array_filter($va_entry_types, 'strlen'))) {
+						if (sizeof($va_types)) {
+							if(is_array($va_entry_types) && sizeof($va_entry_types)) {
 								if (sizeof(array_intersect($va_types, $va_entry_types))) {
 									$vn_entry_id = $vn_id;
 								} else {
 									$vn_entry_id = null;
+									continue;
 								}
 							}
 						}
+					} elseif((sizeof($va_types) && !sizeof($va_entry_types)) || (!sizeof($va_types) && sizeof($va_entry_types))) {
+						$vn_entry_id = null;
+					} elseif((sizeof($va_relationship_types) && !sizeof($va_entry_relationship_types)) || (!sizeof($va_relationship_types) && sizeof($va_entry_relationship_types))) {
+						$vn_entry_id = null;
 					}
 				}
-				
 				if ($vn_entry_id) { break; }
 			}
 			

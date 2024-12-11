@@ -980,7 +980,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-			return CompositeCache::fetch($cache_key);
+			//return CompositeCache::fetch($cache_key);
 		}
 		
 		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
@@ -1445,7 +1445,7 @@ if (!$pb_omit_editing_info) {
 					'default' => '',
 					'label' => _t('Display format'),
 					'description' => _t('Template used to format output.')
-				),
+				),		
 				'policy' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_SELECT,
@@ -1508,6 +1508,15 @@ if (!$pb_omit_editing_info) {
 					'default' => '',
 					'label' => _t('Display format'),
 					'description' => _t('Template used to format output.')
+				),			
+				'delimiter' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '; ',
+					'label' => _t('Delimiter'),
+					'description' => _t('Text to place in-between repeating values.')
 				),
 				'policy' => array(
 					'formatType' => FT_TEXT,
@@ -1517,8 +1526,35 @@ if (!$pb_omit_editing_info) {
 					'useHistoryTrackingReferringPolicyList' => true,
 					'label' => _t('Use history tracking policy'),
 					'description' => ''
-				)
+				),
+				'sortDirection' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => "200px", 'height' => "1",
+					'takesLocale' => false,
+					'default' => 'ASC',
+					'options' => array(
+						_t('Ascending') => 'ASC',
+						_t('Descending') => 'DESC'
+					),
+					'label' => _t('Initial sort direction'),
+					'description' => _t('Direction of sort, when sort is specified.')
+				),
 			);
+			$policy_tables = ca_objects::getHistoryTrackingCurrentValuePolicyTargets();								
+			foreach($policy_tables as $t) {
+				$tl = Datamodel::getTableProperty($t, 'NAME_SINGULAR');
+				$va_additional_settings["sort_{$t}"] = [
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => "475px", 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Initially sort %1 policies using', $tl),
+					'showSortableBundlesFor' => ['table' => $t],
+					'description' => _t('Default sort for %1 policies.', $tl)
+				];
+			}
 			$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
@@ -2335,6 +2371,7 @@ if (!$pb_omit_editing_info) {
 					$va_bundle_bits_proc[] = $t_instance->primaryKey();
 				}
 				
+				$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
 				if ($vb_is_related) {
 					$vs_restrict_to_types = (is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes'])) ? "restrictToTypes=\"".join("|", $options['restrictToTypes'])."\"" : "";
 					$vs_restrict_to_relationship_types = (is_array($options['restrictToRelationshipTypes']) && sizeof($options['restrictToRelationshipTypes'])) ? "restrictToRelationshipTypes=\"".join("|", $options['restrictToRelationshipTypes'])."\"" : "";
@@ -2387,10 +2424,19 @@ if (!$pb_omit_editing_info) {
 								break;
 						}
 					}
+				} elseif(($element_code === 'history_tracking_current_contents') && ($policy = $va_settings['policy'] ?? null) && ($policy_info = ca_objects::getHistoryTrackingCurrentValuePolicy($policy))) {
+					// resolve template relative to target of history tracking policy
+					if($target = $policy_info['table'] ?? null) {
+						$t_instance = is_a($po_result, 'SearchResult') ? $po_result->getInstance() : $po_result;
+						
+						if ($ids = $t_instance->getContents($policy, ['idsOnly' => true])) {
+							$values = caProcessTemplateForIDs($vs_template, $target, $ids, ['returnAsArray' => true, 'sort' => $va_settings["sort_{$target}"] ?? null, 'sortDirection' => $va_settings["sortDirection"] ?? null]);
+							$vs_val = join($options['delimiter'] ?? "; ", $values);
+						}
+					}
 				} else {
 					// resolve template relative to current record
 					$rtc = null;
-					$element_code = $va_bundle_bits[sizeof($va_bundle_bits)-1];
 					if(!in_array($element_code, ['_generic_bundle_', 'history_tracking_current_value'], true)) {
 						// Set container context for all bundles except generic and current value bundles
 						// We skip current value bundles because some extant templates pull in data outside of the current value
@@ -2401,7 +2447,7 @@ if (!$pb_omit_editing_info) {
 					$vs_val = $po_result->getWithTemplate($vs_template, [
 							'relativeToContainer' => $rtc, 
 							'filters'=> $options['filters'] ?? null, 
-							'delimiter' => $options['delimiter'] ?? null, 
+							'delimiter' => $options['delimiter'] ?? "; ", 
 							'policy' => $va_settings['policy'] ?? null
 						]		// passed for history tracking current value
 					);

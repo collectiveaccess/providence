@@ -135,7 +135,7 @@ class SearchStorageLocationsController extends BaseSearchController {
 					'action:can_search_ca_storage_locations' => 'AND',
 					'action:can_use_searchbuilder' => 'AND',
 					'checktypelimitinconfig:!ca_storage_locations_no_search_builder_for_types:ca_storage_locations' => 'AND',
-					'configuration:!ca_storage_locations_disable_searchbuilder' => 'AND'
+					'configuration:!ca_storage_locations_disable_search_builder' => 'AND'
 				]
 			],
 			[

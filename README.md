@@ -39,17 +39,17 @@ The search engine and system for sorting data are new in version 2.0. After upda
 
 ### Updating from Providence version 1.6 or earlier
 
-To update from a version 1.6.x or older installation, you must first update to version 1.7, the follow the 1.7 update instructions.
+To update from a version 1.6.x or older installation, you must first update to version 1.7, then follow the 1.7 update instructions.
 
 ### Installing development versions
 
-The latest development version is always available in the `develop` branch (https://github.com/collectiveaccess/providence/tree/develop). Other feature-specific development versions are in branches prefixed with `dev/`. To install a development branch follow these steps:
+The latest development versions are available on GitHub in branches prefixed with `dev/`. If you are not sure what to run, use a release. If you are looking to work with an in-development feature, you can install a development branch using these steps:
 
-1. clone this repository into the location where you wish it to run using `git clone https://github.com/collectiveaccess/providence`.
-2. by default, the newly cloned repository will use the main branch, which contains code for the current release. Choose the `develop` branch by running from within the cloned repository `git checkout develop`.
-3. install the PHP package manager [Composer](https://getcomposer.org) if you do not already have it installed on your server.
-4. run `composer` from the root of the cloned repository with `composer.phar install`. This will download and install all required 3rd party software libraries. 
-5. follow the release version installation instructions to complete the installation.
+1. Clone this repository into the location where you wish it to run using `git clone https://github.com/collectiveaccess/providence`.
+2. By default, the newly cloned repository will use the main branch, which contains code for the current release. Choose the `develop` branch by running from within the cloned repository `git checkout develop`.
+3. Install the PHP package manager [Composer](https://getcomposer.org) if you do not already have it installed on your server.
+4. Run `composer` from the root of the cloned repository with `composer.phar install`. This will download and install all required 3rd party software libraries. 
+5. Follow the release version installation instructions to complete the installation.
 
 ### Useful Links
 

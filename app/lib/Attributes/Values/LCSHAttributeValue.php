@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 define("__CA_ATTRIBUTE_VALUE_LCSH__", 13);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -158,6 +157,7 @@ $_ca_attribute_settings['LCSHAttributeValue'] = array(		// global
 			_t('LC Name Authority File') => 'cs:http://id.loc.gov/authorities/names',
 			_t('LC Subject Headings for Children') => 'cs:http://id.loc.gov/authorities/childrensSubjects',
 			_t('LC Genre/Forms File') => 'cs:http://id.loc.gov/authorities/genreForms',
+			_t('LC Classifications') => 'cs:http://id.loc.gov/authorities/classification',
 			_t('Thesaurus of Graphic Materials') => 'cs:http://id.loc.gov/vocabulary/graphicMaterials',
 			_t('Preservation Events') => 'cs:http://id.loc.gov/vocabulary/preservationEvents',
 			_t('Preservation Level Role') => 'cs:http://id.loc.gov/vocabulary/preservationLevelRole',

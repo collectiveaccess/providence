@@ -3382,8 +3382,8 @@ function caFileIsIncludable($ps_file) {
 
 		$vs_content = curl_exec($vo_curl);
 
-		if(curl_getinfo($vo_curl, CURLINFO_HTTP_CODE) !== 200) {
-			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1", $ps_url). " ". print_r(curl_getinfo($vo_curl), true));
+		if(($code = curl_getinfo($vo_curl, CURLINFO_HTTP_CODE)) !== 200) {
+			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1 [HTTP code was %2]", $ps_url, $code). " ". print_r(curl_getinfo($vo_curl), true));
 		}
 		curl_close($vo_curl);
 		return $vs_content;
@@ -4203,7 +4203,7 @@ function caFileIsIncludable($ps_file) {
 		$move_articles = caGetOption('moveArticles', $options, true);
 
 		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
-		$display_value = preg_replace('![ ]+!', ' ', $display_value);
+		$display_value = preg_replace('![ ]+!u', ' ', $display_value);
 		
 		if($locale && $move_articles) {
 			// Move articles to end of string
@@ -4219,13 +4219,13 @@ function caFileIsIncludable($ps_file) {
 
 		// Left-pad numbers
 		$padded = [];
-		foreach(preg_split("![ \t]+!", $display_value) as $t) {
+		foreach(preg_split("![ \t]+!u", $display_value) as $t) {
 			if(is_numeric($t)) {
 				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
-			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!", $t, $m)) {
-				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $t, $m)) {
+				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
 			} else {
-				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
+				$padded[] = str_pad(mb_substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
 		}
 		$display_value = join(' ', $padded);
@@ -4910,6 +4910,7 @@ function caFileIsIncludable($ps_file) {
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
 		$config = HTMLPurifier_Config::createDefault();
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
 		return new HTMLPurifier($config); 
 	}
 	# ----------------------------------------

@@ -1298,6 +1298,7 @@ class BaseModel extends BaseObject {
 	 */
 	static public function getIDsForIdnos($idnos, $options=null) {
 	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
+	    if(!is_array($idnos)) { return null; }
 	    
 	    $access_values = caGetOption('checkAccess', $options, null);
 
@@ -1307,7 +1308,7 @@ class BaseModel extends BaseObject {
 		$table_name = get_called_class();
 		
 		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
-			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types, $options);
 		}
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
@@ -4424,6 +4425,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
 	 *		dont_allow_duplicate_media = if set to true, and the model has a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
 	 *		skipWhen = skip processing of specific versions of media when file size exceeds threshold and use an existing version in its place. An array should be set, indexed by version name. Each skipped version should have an array with two keys, "threshold" (size in bytes) and "replaceWithVersion" (the version to use). [Default is null]
+	 *		skipUrlIfMediaExistsAsRepresentation = When media is a URL, check if downloaded media already exists as an object representation before processing. [Default is false]
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -4505,6 +4507,13 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$vn_url_fetched_on = time();
 						
 						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
+						if((bool)$this->_CONFIG->get('skip_remote_url_if_media_exists_as_representation')) {
+							if(ca_object_representations::mediaExists($vs_tmp_file)) {
+								$this->postError(1600, _t('Media already exists as representation'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);								
+								set_time_limit($vn_max_execution_time);
+								return false;
+							}
+						}
 						$vb_is_fetched_file = true;
 					} catch(Exception $e) {
 						$this->postError(1600, $e->getMessage(), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
@@ -6631,8 +6640,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$id = $t->get($field);
 							} elseif($is_metadata_value) {
 								$t_attr = new ca_attributes($this->get('attribute_id'));
-								if(!($row_id = $t_attr->get('row_id'))) { return false; }
-								if(!$t->load($row_id)) { return false; }
+								if(!($xrow_id = $t_attr->get('row_id'))) { return false; }
+								if(!$t->load($xrow_id)) { return false; }
 								$id = $t->get($field);
 							} else {
 								$id = $this->get($field);
@@ -6668,11 +6677,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							$t_attr = new ca_attributes($id);
 							$cur_table = $primary_table = Datamodel::getTableName($t_attr->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($t_attr->get('table_num'));
-							$row_id = $t_attr->get('row_id');
+							$xrow_id = $t_attr->get('row_id');
 						} elseif ($is_metadata && (($id = $this->get('row_id')) > 0)) {	// At a minimum always log self as subject
 							$cur_table = $primary_table = Datamodel::getTableName($this->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($this->get('table_num'));
-							$row_id = $this->get('row_id');
+							$xrow_id = $this->get('row_id');
 						}
 
 						$sql = "SELECT {$dest_table}.{$dest_primary_key} FROM {$cur_table}\n";
@@ -6686,7 +6695,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						}
 						$sql .= "WHERE {$primary_table}.{$primary_table_pk} = ?";
 
-						if ($qr_subjects = $o_db->query($sql, [$row_id])) {
+						if ($qr_subjects = $o_db->query($sql, [$xrow_id])) {
 							if (!isset($subjects[$dest_table_num]) || !is_array($subjects[$dest_table_num])) { $subjects[$dest_table_num] = []; }
 							while($qr_subjects->nextRow()) {
 								if (($id = $qr_subjects->get($dest_primary_key)) > 0) {
@@ -12139,6 +12148,36 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return primary key and idno for record with idno following or preceding that of currently loaded record
+	 *
+	 * @param string $mode Either "next" or "previous"
+	 *
+	 * @return array Array with key 'id' with primary key of next or previous record, key 'idno' with idno of next or previous record; null if no record found
+	 */
+	public function getAdjacentByIdno(string $mode) : ?array {
+		if(!$this->getPrimaryKey()) { return null; }
+		$idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
+		if(!$idno_fld || !$this->hasField("{$idno_fld}_sort_num")) { return null; }
+		$pk = $this->primaryKey();
+		$table = $this->tableName();
+		$db = $this->getDb();
+		$n = $this->get("{$idno_fld}_sort_num");
+		$deleted = ($this->hasField('deleted')) ? ' AND deleted = 0' : '';
+		if (strtolower($mode) === 'previous') {
+			$qr = $db->query("SELECT {$pk}, {$idno_fld} FROM {$table} WHERE {$idno_fld}_sort_num < {$n} {$deleted} ORDER BY {$idno_fld}_sort_num DESC LIMIT 1");
+		} else {
+			$qr = $db->query("SELECT {$pk}, {$idno_fld} FROM {$table} WHERE {$idno_fld}_sort_num > {$n} {$deleted} ORDER BY {$idno_fld}_sort_num ASC LIMIT 1");
+		}
+		if($qr && $qr->nextRow()) {
+			return [
+				'id' => $qr->get($pk),
+				'idno' => $qr->get($idno_fld)
+			];
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Find row(s) with fields having values matching specific values. 
 	 * Results can be returned as model instances, numeric ids or search results (when possible).
 	 *
@@ -12256,8 +12295,13 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_restriction_sql = '';
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
-			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
+			$dont_include_subtypes_in_type_restriction = isset($pa_options['dontIncludeSubtypesInTypeRestriction']) ? (bool)$pa_options['dontIncludeSubtypesInTypeRestriction'] : null;
+			if(!is_null($dont_include_subtypes_in_type_restriction)) {
+				$include_subtypes = $dont_include_subtypes_in_type_restriction;
+			} else {
+				$include_subtypes = isset($pa_options['includeSubtypes']) ? (bool)$pa_options['includeSubtypes'] : true;
+			}
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => !$include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
@@ -12384,7 +12428,7 @@ $pa_options["display_form_field_tips"] = true;
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
-				if (($vs_op == '=') && ($vm_value == '*')) { $vb_find_all = true; break(2); }
+				if (($vs_op == '=') && ($vm_value == '*') && (sizeof($pa_values) === 1)) { $vb_find_all = true; break(2); }
 				
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }
