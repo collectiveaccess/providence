@@ -203,8 +203,23 @@ class ca_acl extends BaseModel {
 	static $s_acl_access_value_cache = [];
 	
 	static $temporary_tables = [];
-	
 
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct($id=null, ?array $options=null) {	
+		$config = Configuration::load();
+		if(is_array($available_item_access_levels = $config->get('available_item_access_levels') ?? null) && (sizeof($available_item_access_levels) > 0)) {
+			$bcl = BaseModel::$s_ca_models_definitions['ca_acl']['FIELDS']['access']['BOUNDS_CHOICE_LIST'];
+			$available_item_access_levels = array_map(function($v) { return intval($v); }, $available_item_access_levels);
+			$bcl = array_filter($bcl, function($v) use ($available_item_access_levels) {
+				return in_array((int)$v, $available_item_access_levels, true);
+			});
+			BaseModel::$s_ca_models_definitions['ca_acl']['FIELDS']['access']['BOUNDS_CHOICE_LIST'] = $bcl;
+		}
+		parent::__construct($id, $options);
+	}
 	# ------------------------------------------------------
 	/**
 	 * Checks access control list for the specified row and user and returns an access value. Values are:

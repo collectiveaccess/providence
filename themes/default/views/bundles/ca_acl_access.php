@@ -49,7 +49,7 @@ $stats			= $this->getVar('statistics');
 <?php 	
 		$global_access = $t_instance->getACLWorldAccess(['returnAsInitialValuesForBundle' => true]);
 		$global_access_status = $global_access['access_display'];
-		print "<p>"._t("All groups and users %1 <span class='accessName'>%1</span> this %2, unless you grant specific access below", $global_access_status, mb_strtolower($t_instance->getTypeName()))."</p>";
+		print "<p>"._t("All users and groups <span class='accessName'>%1</span> this %2 unless you grant specific access below", $global_access_status, mb_strtolower($t_instance->getTypeName()))."</p>";
 
 ?>
 		<div id='editGlobalAccess'>
@@ -62,7 +62,7 @@ $stats			= $this->getVar('statistics');
 		<div class='title'><?= _t('User &amp; Group Access'); ?></div>
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
-		 	print "<p>"._t('The following groups and users have special access or restrictions for this record').".</p>";
+		 	print "<p>"._t('The following users and groups have special access or restrictions for this record').".</p>";
 		} else {
 			print "<p>"._t('No specific access specified')."</p>";
 		}

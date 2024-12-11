@@ -8504,17 +8504,18 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		
 		// init options
 		if (!is_array($pa_options)) { 
-			$pa_options = array(); 
+			$pa_options = []; 
 		}
 		foreach (array(
 				'display_form_field_tips', 'classname', 'maxOptionLength', 'textAreaTagName', 'display_use_count',
-				'display_omit_items__with_zero_count', 'display_use_count_filters', 'display_use_count_filters',
+				'display_omit_items_with_zero_count', 'display_use_count_filters', 'display_use_count_filters',
 				'selection', 'name', 'value', 'dont_show_null_value', 'size', 'multiple', 'show_text_field_for_vars',
 				'nullOption', 'empty_message', 'displayMessageForFieldValues', 'DISPLAY_FIELD', 'WHERE',
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force', 'bundleCode'
+				'readonly', 'description', 'hidden', 'checkAccess', 'usewysiwygeditor', 'placeholder', 'force', 'bundleCode',
+				'omit_from_bounds_choice_list'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -8589,8 +8590,8 @@ $pa_options["display_form_field_tips"] = true;
 		if (!isset($va_attr["DISPLAY_SHOW_COUNT"]) || !($vb_display_show_count = (boolean)$va_attr["DISPLAY_SHOW_COUNT"])) {
 			$vb_display_show_count = isset($pa_options["display_show_count"]) ? (boolean)$pa_options["display_show_count"] : null;
 		}
-		if (!isset($va_attr["DISPLAY_OMIT_ITEMS_WITH_ZERO_COUNT"]) || !($vb_display_omit_items__with_zero_count = (boolean)$va_attr["DISPLAY_OMIT_ITEMS_WITH_ZERO_COUNT"])) {
-			$vb_display_omit_items__with_zero_count = isset($pa_options["display_omit_items__with_zero_count"]) ? (boolean)$pa_options["display_omit_items__with_zero_count"] : null;
+		if (!isset($va_attr["DISPLAY_OMIT_ITEMS_WITH_ZERO_COUNT"]) || !($vb_display_omit_items_with_zero_count = (boolean)$va_attr["DISPLAY_OMIT_ITEMS_WITH_ZERO_COUNT"])) {
+			$vb_display_omit_items_with_zero_count = isset($pa_options["display_omit_items_with_zero_count"]) ? (boolean)$pa_options["display_omit_items_with_zero_count"] : null;
 		}
 		if (!isset($va_attr["DISPLAY_OMIT_ITEMS_WITH_ZERO_COUNT"]) || !($va_display_use_count_filters = $va_attr["DISPLAY_USE_COUNT_FILTERS"])) {
 			$va_display_use_count_filters = isset($pa_options["display_use_count_filters"]) ? $pa_options["display_use_count_filters"] : null;
@@ -8787,7 +8788,7 @@ $pa_options["display_form_field_tips"] = true;
 									#
 									# Hierarchical <select>
 									#
-									$va_hier = $o_one_table->getHierarchyAsList(0, $vs_display_use_count, $va_display_use_count_filters, $vb_display_omit_items__with_zero_count);
+									$va_hier = $o_one_table->getHierarchyAsList(0, $vs_display_use_count, $va_display_use_count_filters, $vb_display_omit_items_with_zero_count);
 									if (!is_array($va_hier)) { return ''; }
 									$va_display_fields = $va_attr["DISPLAY_FIELD"];
 									if (!in_array($vs_one_table_primary_key, $va_display_fields)) {
@@ -9015,29 +9016,37 @@ $pa_options["display_form_field_tips"] = true;
 									if (sizeof($va_attr["BOUNDS_CHOICE_LIST"]) == 0) {
 										$vs_element = isset($pa_options['empty_message']) ? $pa_options['empty_message'] : 'No options available';
 									} else {
-										$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options['id'].$vs_multiple_name_extension."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '').">\n";
-	
+										$options = $values = [];
 										if ($pa_options["select_item_text"]) {
-											$vs_element.= "<option value=''>".$this->escapeHTML($pa_options["select_item_text"])."</option>\n";
+											$options[] = "<option value=''>".$this->escapeHTML($pa_options["select_item_text"])."</option>\n";
 										}
 										if (!$pa_options["nullOption"] && $vb_is_null) {
-											$vs_element .= "<option value=''>"._t('- NONE -')."</option>\n";
-										} else {
-											if ($pa_options["nullOption"]) {
-												$vs_element .= "<option value=''>".$pa_options["nullOption"]."</option>\n";
-											}
+											$options[] = "<option value=''>"._t('- NONE -')."</option>\n";
+										} elseif ($pa_options["nullOption"]) {
+											$options[] = "<option value=''>".$pa_options["nullOption"]."</option>\n";
 										}
-										foreach($va_attr["BOUNDS_CHOICE_LIST"] as $vs_option => $vs_value) {
-	
+										
+										foreach($va_attr["BOUNDS_CHOICE_LIST"] as $option_text => $vs_value) {
+											if(is_array($pa_options['omit_from_bounds_choice_list']) && in_array($vs_value, $pa_options['omit_from_bounds_choice_list'], true)) { continue; }
 											$vs_selected = ((strval($vs_value) === strval($vm_field_value)) || in_array($vs_value, $va_selection)) ? "selected='selected'" : "";
 	
-											if (($pa_options["maxOptionLength"]) && (strlen($vs_option) > $pa_options["maxOptionLength"]))  {
-												$vs_option = mb_substr($vs_option, 0, $pa_options["maxOptionLength"] - 3)."...";
+											if (($pa_options["maxOptionLength"]) && (strlen($option_text) > $pa_options["maxOptionLength"]))  {
+												$option_text = mb_substr($option_text, 0, $pa_options["maxOptionLength"] - 3)."...";
 											}
-	
-											$vs_element.= "<option value='$vs_value' $vs_selected>".$this->escapeHTML($vs_option)."</option>\n";
+											$values[] = $vs_value;
+											$options[] = "<option value='$vs_value' $vs_selected>".$this->escapeHTML($option_text)."</option>\n";
 										}
-										$vs_element .= "</select>\n";
+										
+										if(sizeof($options) > 0) {
+											if((sizeof($options) === 1) && ($pa_options['hide_select_if_only_one_option'] ?? false)) {
+												$vs_element = "<input type='hidden' name='".$pa_options["name"]."' value='".$values[0]."'>";
+											} else {
+												$vs_element = "<select name='".$pa_options["name"].
+													$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".
+													$ps_size." id='".$pa_options['id'].$vs_multiple_name_extension."' {$vs_css_class_attr} style='{$vs_dim_style}'".
+													($pa_options['readonly'] ? ' disabled="disabled" ' : '').">".join("\n", $options)."</select>\n";
+											}
+										}
 									}
 								} 
 							}

@@ -25,27 +25,27 @@
  *
  * ----------------------------------------------------------------------
  */ 
-$vs_id_prefix 		= $this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
-$t_item 			= $this->getVar('t_user');				// user
-$t_subject 			= $this->getVar('t_subject');		
-$settings 			= $this->getVar('settings');
-$vs_add_label 		= $this->getVar('add_label');
+$id_prefix 		= $this->getVar('id_prefix');
+$t_instance 	= $this->getVar('t_instance');
+$t_item 		= $this->getVar('t_user');				// user
+$t_subject 		= $this->getVar('t_subject');		
+$settings 		= $this->getVar('settings');
+$add_label 		= $this->getVar('add_label');
 $t_acl = new ca_acl();
 
-$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 
 $t_acl->set('access', (int)$this->getVar('initialValue'));
 ?>
-<div id="<?= $vs_id_prefix.'_world'; ?>">
+<div id="<?= $id_prefix.'_world'; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
-			<div id="<?= $vs_id_prefix; ?>_World" class="labelInfo">
+			<div id="<?= $id_prefix; ?>_World" class="labelInfo">
 				<table class="caListItem">
 					<tr>
 						<td class="formLabel">
 							<?= _t('Everyone'); ?>
-							<?= $t_acl->htmlFormElement('access', '^ELEMENT', array('name' => $vs_id_prefix.'_access_world', 'id' => $vs_id_prefix.'_access_world')); ?>
+							<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => $id_prefix.'_access_world', 'id' => $id_prefix.'_access_world']); ?>
 						</td>
 					</tr>
 				</table>
