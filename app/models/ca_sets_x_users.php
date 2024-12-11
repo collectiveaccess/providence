@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2022 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 
@@ -68,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'DEFAULT' => __CA_SET_READ_ACCESS__,
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('has no access') => __CA_SET_NO_ACCESS__,
-				_t('can read') => __CA_SET_READ_ACCESS__,
+				_t('can view') => __CA_SET_READ_ACCESS__,
 				_t('can edit') => __CA_SET_EDIT_ACCESS__
 			),
 			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the set. ')
@@ -80,7 +76,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'DEFAULT' => __CA_SET_NO_ACCESS__,
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('has no access') => __CA_SET_NO_ACCESS__,
-				_t('can read') => __CA_SET_READ_ACCESS__,
+				_t('can view') => __CA_SET_READ_ACCESS__,
 				_t('can edit') => __CA_SET_EDIT_ACCESS__
 			),
 			'LABEL' => _t('Pending access'), 'DESCRIPTION' => _t('Level to grant user on activation of access.')

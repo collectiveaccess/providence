@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_editor_uis_x_user_groups'] = array(
  	'NAME_SINGULAR' 	=> _t('editor UIs ⇔ group association'),
@@ -67,7 +62,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis_x_user_groups'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => 1,
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
+					_t('can view') => __CA_BUNDLE_ACCESS_READONLY__,
 					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__
 				),
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the display. ')

@@ -82,7 +82,7 @@ if(!defined('__CA_ACL_EDIT_DELETE_ACCESS__')) { define('__CA_ACL_EDIT_DELETE_ACC
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Access'),
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('no access') => __CA_ACL_NO_ACCESS__,
-					_t('can read') => __CA_ACL_READONLY_ACCESS__,
+					_t('can view') => __CA_ACL_READONLY_ACCESS__,
 					_t('can edit') => __CA_ACL_EDIT_ACCESS__,
 					_t('can edit + delete') => __CA_ACL_EDIT_DELETE_ACCESS__
 				)
