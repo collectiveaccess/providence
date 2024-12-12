@@ -920,22 +920,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$num_processed = 0;
 
-
 		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
 			$header = $header_sources = [];
 			$mapping_items = $t_mapping->getItems();
 			foreach($mapping_items as $i => $mapping_item) {
 				$settings = caUnserializeForDatabase($mapping_item['settings']);
-				$header_sources[(int)$mapping_item['element']] = $settings['_id'] ? $settings['_id'] : $mapping_item['source'];
+				$header_sources[(int)$mapping_item['element']] = $mapping_item['source'] ?? $settings['_id'] ?? '???';
 			}
-			ksort($header_sources);
 			foreach($header_sources as $element => $source) {
-				$tmp = explode(".", $source);
-				$label = null;
-				if ($t_table = Datamodel::getInstanceByTableName($tmp[0], true)) {
-					$label = $t_table->getDisplayLabel($source);
-				}
-				if (!$label) {
+				if (!($label = caGetLabelForBundle($source))) {
 					$label = $source;
 				}
 				$header[] = $label;
@@ -1848,10 +1841,12 @@ itemOutput:
 						$parents = $t_rel->get("{$new_table_name}.hierarchy.{$key}", ['returnAsArray' => true, 'restrictToTypes' => $filter_types]);
 
 						$related = [];
-						foreach(array_unique($parents) as $vn_pk) {
-							$related[] = [
-								$key => intval($vn_pk)
-							];
+						if(is_array($parents)) {
+							foreach(array_unique($parents) as $vn_pk) {
+								$related[] = [
+									$key => intval($vn_pk)
+								];
+							}
 						}
 						break;
 					case 'ca_sets':
