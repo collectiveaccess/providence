@@ -1729,7 +1729,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 			if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 				$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
-				return $this->getAttributeLabel($va_tmp[1], $options);	
+				return $this->getAttributeLabel((sizeof($va_tmp) > 2) ? $va_tmp[2] : $va_tmp[1], $options);	
 			}
 		}
 		return parent::getDisplayLabel($ps_field, $options);
