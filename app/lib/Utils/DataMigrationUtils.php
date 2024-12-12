@@ -152,6 +152,10 @@ class DataMigrationUtils {
 		
 		$vs_plural_label 			= (isset($pa_values['preferred_labels']['name_plural']) && $pa_values['preferred_labels']['name_plural']) ? $pa_values['preferred_labels']['name_plural'] : '';
 		if (!$vs_plural_label) { $vs_plural_label = (isset($pa_values['name_plural']) && $pa_values['name_plural']) ? $pa_values['name_plural'] : str_replace("_", " ", $ps_item_idno); }
+		
+		
+		$description 			= (isset($pa_values['preferred_labels']['description']) && $pa_values['preferred_labels']['description']) ? $pa_values['preferred_labels']['description'] : '';
+		if (!$description) { $description = (isset($pa_values['description']) && $pa_values['description']) ? $pa_values['description'] : ''; }
 
 		if (!$vs_singular_label) { $vs_singular_label = $vs_plural_label; }
 		if (!$vs_plural_label) { $vs_plural_label = $vs_singular_label; }
@@ -327,7 +331,8 @@ class DataMigrationUtils {
 			$t_item->addLabel(
 				array(
 					'name_singular' => $vs_singular_label,
-					'name_plural' => $vs_plural_label
+					'name_plural' => $vs_plural_label,
+					'description' => $description
 				), $locale_id, null, true
 			);
 
