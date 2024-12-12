@@ -981,14 +981,15 @@ class BaseFindEngine extends BaseObject {
 			}
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
- 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
- 				$sort_key_values[] = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
+ 			if ($t_rel_table && $t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$values = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
  			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
- 				$sort_key_values[] = $this->_getRelatedSortValuesForLabel($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
+ 				$values = $this->_getRelatedSortValuesForLabel($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
  			} elseif($is_attribute) {							// sort key is metadata attribute
- 				$sort_key_values[] = $this->_getRelatedSortValuesForAttribute($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);		
+ 				$values = $this->_getRelatedSortValuesForAttribute($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);		
  			} else {
-				throw new ApplicationException(_t('Unhandled secondary sort'));
+				//throw new ApplicationException(_t('Unhandled secondary sort'));
+				$values = $hits;
 			}
 		}
 		return $values;
@@ -1224,14 +1225,15 @@ class BaseFindEngine extends BaseObject {
 			
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
- 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
- 				$sort_key_values[] = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
+ 			if ($t_rel_table && $t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$row_ids = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
  			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
- 				$sort_key_values[] = $this->_getRelatedRowIDsForLabel($values, $t_table, $t_rel_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+ 				$row_ids = $this->_getRelatedRowIDsForLabel($values, $t_table, $t_rel_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
  			} elseif($is_attribute) {							// sort key is metadata attribute
- 				$sort_key_values[] = $this->_getRelatedRowIDsForAttribute($values, $t_table, $t_rel_table, $hit_table, $sort_field);		
+ 				$row_ids = $this->_getRelatedRowIDsForAttribute($values, $t_table, $t_rel_table, $hit_table, $sort_field);		
  			} else {
-				throw new ApplicationException(_t('Unhandled secondary sort'));
+				//throw new ApplicationException(_t('Unhandled secondary sort'));
+				$row_ids = $values;
 			}
 		}
 		return $row_ids;
