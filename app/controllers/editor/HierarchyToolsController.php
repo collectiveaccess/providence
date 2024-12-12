@@ -82,6 +82,8 @@ class HierarchyToolsController extends ActionController {
 		}
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
@@ -121,6 +123,8 @@ class HierarchyToolsController extends ActionController {
 		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'message' => _t('Removed %1 items', $c)];
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
@@ -175,6 +179,8 @@ class HierarchyToolsController extends ActionController {
 		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'count' => $c, 'message' => _t('Moved %1 items', $c)];
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
@@ -245,6 +251,8 @@ class HierarchyToolsController extends ActionController {
 		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'name' => $name, 'count' => $c, 'message' => _t('Added %1 items into new album', $c)];
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------
@@ -346,6 +354,8 @@ class HierarchyToolsController extends ActionController {
 		$resp = ['ok' => ($c > 0), 'errors' => $errors, 'message' => _t('Set access for %1 items', $c)];
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('generic/hierarchy_tools_json.php');
 	}
 	# -------------------------------------------------------

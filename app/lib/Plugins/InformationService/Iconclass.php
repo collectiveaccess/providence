@@ -9,7 +9,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2018 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,12 +31,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
-    
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -123,7 +117,7 @@ class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Imp
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		$vs_display = "<p><a href='{$ps_url}' target='_blank'>{$ps_url}</a></p>";
+		$vs_display = "<p><a href='{$ps_url}' target='_blank' rel='noopener noreferrer'>{$ps_url}</a></p>";
 
 		return ['display' => $vs_display];
 	}

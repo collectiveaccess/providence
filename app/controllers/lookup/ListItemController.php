@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,6 @@ class ListItemController extends BaseLookupController {
 	protected $ops_table_name = 'ca_list_items';		// name of "subject" table (what we're editing)
 	protected $ops_name_singular = 'list_item';
 	protected $ops_search_class = 'ListItemSearch';
-	
 	
 	# -------------------------------------------------------
 	/**
@@ -200,6 +199,7 @@ class ListItemController extends BaseLookupController {
 		$this->view->setVar('dontShowSymbols', (bool)$this->request->getParameter('noSymbols', pString));
 		$this->view->setVar('list_item_list', $va_level_data);
 		
+		$this->response->setContentType('application/json');
 		return $this->render('list_item_hierarchy_level_json.php');
 	}
 	# -------------------------------------------------------

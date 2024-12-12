@@ -30,7 +30,6 @@ require_once(__CA_LIB_DIR__.'/Parsers/ZipFile.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 
-
 class ExportController extends ActionController {
 	# -------------------------------------------------------
 	/**
@@ -245,6 +244,7 @@ class ExportController extends ActionController {
 			'links' => $links
 		));
 		
+		$this->response->setContentType("application/json");
 		$this->render('export_run_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -276,6 +276,8 @@ class ExportController extends ActionController {
 		$data['elapsedTime'] = caFormatInterval(time()-$data['start']);
 		
 		$this->view->setVar('info', $data);
+		
+		$this->response->setContentType("application/json");
 		$this->render('export_run_json.php');
 	}
 	# -------------------------------------------------------		

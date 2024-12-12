@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__.'/Utils/CLIProgressBar.php');
 require_once(__CA_APP_DIR__.'/helpers/CLIHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
@@ -99,7 +94,7 @@ class CLIBaseUtils {
 		return (!in_array($ps_function_name, array(
 			'isCommand', 'textWithColor', 'textWithBackgroundColor',
 			'clearErrors', 'numErrors', 'getErrors', 'addError',
-			'clearMessages', 'numMessages', 'getMessages', 'addMessage'
+			'clearMessages', 'numMessages', 'getMessages', 'addMessage', 'confirm'
 		)));
 	}
 	# -------------------------------------------------------
@@ -232,6 +227,27 @@ class CLIBaseUtils {
 			return $text;
 		}
 		return "\033[".self::$ansiBackgroundColors[$color].'m'.$text."\033[0m";
+	}
+	# -------------------------------------------------------
+	/**
+	 * Display prompt for user confirmation
+	 *
+	 * @param string $message Message to display for confirmation
+	 * @param array $options Options include:
+	 *		confirmationCode = Text used (case-insensitively) for confirmation. [Default is "y"]
+	 * @return bool True if user confirmed, false if not
+	 */
+	public static function confirm(string $message, ?array $options=null) : bool {
+		$confirmation_code = caGetOption('confirmationCode', $options, 'y');
+		
+		CLIUtils::addMessage($message, $options);
+		flush();
+		ob_flush();
+		$confirmation  =  trim(strtolower(fgets(STDIN)) );
+		if ($confirmation !== $confirmation_code) {
+			return false;
+		}
+		return true;
 	}
 	# -------------------------------------------------------
 }

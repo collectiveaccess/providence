@@ -505,7 +505,7 @@ final class ConfigurationCheck {
 			self::addError(_t(
 				'The memory limit for your PHP installation may not be sufficient to run CollectiveAccess correctly. '.
 				'Please consider adjusting the "memory_limit" variable in your PHP configuration (usually a file named) '.
-				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank">http://us.php.net/manual/en/ini.core.php</a> '.
+				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank" rel="noopener noreferrer">http://us.php.net/manual/en/ini.core.php</a> '.
 				'for more details. The value in your config is &quot;%1&quot;, the recommended value is &quot;128M&quot; or higher.'
 			,$vs_memory_limit));
 		}
@@ -598,66 +598,6 @@ final class ConfigurationCheck {
 		');
 		if ($qr_res->nextRow()) {
 			return $qr_res->get('n');
-		}
-		return null;
-	}
-	# -------------------------------------------------------
-	public static function performDatabaseSchemaUpdate() {
-		$va_messages = array();
-		if (($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {			
-			
-			for($vn_i = ($vn_schema_revision + 1); $vn_i <= __CollectiveAccess_Schema_Rev__; $vn_i++) {
-				if (!($o_updater = ConfigurationCheck::getVersionUpdateInstance($vn_i))) {
-					$o_updater = new GenericVersionUpdater($vn_i);
-				}
-				
-				
-				$va_methods_that_errored = array();
-				
-				// pre-update tasks
-				foreach($o_updater->getPreupdateTasks() as $vs_preupdate_method) {
-					if (!$o_updater->$vs_preupdate_method()) {
-						//$va_messages["error_{$vn_i}_{$vs_preupdate_method}_preupdate"] = _t("Pre-update task '{$vs_preupdate_method}' failed");
-						$va_methods_that_errored[] = $vs_preupdate_method;
-					}
-				}
-				
-				if (is_array($va_new_messages = $o_updater->applyDatabaseUpdate())) {
-					$va_messages = $va_messages + $va_new_messages;
-				} else {
-					$va_messages["error_{$vn_i}_sql_fail"] = _t('Could not apply database update for migration %1', $vn_i);
-				}
-				// post-update tasks
-				foreach($o_updater->getPostupdateTasks() as $vs_postupdate_method) {
-					if (!$o_updater->$vs_postupdate_method()) {
-						//$va_messages["error_{$vn_i}_{$vs_postupdate_method}_postupdate"] = _t("Post-update task '{$vs_postupdate_method}' failed");
-						$va_methods_that_errored[] = $vs_postupdate_method;
-					}
-				}
-				
-				if ($vs_message = $o_updater->getPostupdateMessage()) {
-					$va_messages[(sizeof($va_methods_that_errored) ? "error" : "info")."_{$vn_i}_{$vs_postupdate_method}_postupdate_message"] = _t("For migration %1", $vn_i).": {$vs_message}";
-				} else {
-					if (sizeof($va_methods_that_errored)) {
-						$va_messages["error_{$vn_i}_{$vs_postupdate_method}_postupdate_message"] = _t("For migration %1", $vn_i).": "._t("The following tasks did not complete: %1", join(', ', $va_methods_that_errored));
-					} else {
-						$va_messages["info_{$vn_i}_postupdate"] = _t("Applied migration %1", $vn_i);
-					}
-				}
-			}
-		}
-		
-		// Clean cache
-		caRemoveDirectory(__CA_APP_DIR__.'/tmp', false);
-		
-		return $va_messages;
-	}
-	# -------------------------------------------------------
-	private static function getVersionUpdateInstance($pn_version) {
-		$vs_classname = "VersionUpdate{$pn_version}";
-		if (file_exists(__CA_BASE_DIR__."/support/sql/migrations/{$vs_classname}.php")) {
-			require_once(__CA_BASE_DIR__."/support/sql/migrations/{$vs_classname}.php");
-			return new $vs_classname();
 		}
 		return null;
 	}

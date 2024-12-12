@@ -97,7 +97,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 			);
 		}
 		
-		if (is_array($va_parameters["RULES"]) && sizeof($va_parameters["RULES"]) > 0) {
+		if (is_array($va_parameters["RULES"] ?? null) && sizeof($va_parameters["RULES"]) > 0) {
 			$vs_rules = '';
 		
 			foreach($va_parameters["RULES"] as $vs_rule => $va_rule_info) {

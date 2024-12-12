@@ -1066,60 +1066,11 @@ li.sfHover > a > .sf-sub-indicator {
     color:			#4b4a4a;
     font-weight:bold;
 }
-.ui-widget-header {
-	background-color: #ccc !important;
-	background-image:none !important;
-	border:0px !important;
-	font-family: "din-regular", arial, sans-serif !important;
-	font-size:14px !important;
-}
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
-	background-color: #eee !important;
-	background-image:none !important;
-}
-.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active {
-	background-color: #fff !important;
-	background-image:none !important;
-}
-.ui-widget-content {
-	border-top: 1px solid #eee !important;
-	border-bottom:0px !important;
-	border-right:0px !important;
-	border-left:0px !important;
-}
-.ui-autocomplete.ui-widget-content {
-	border-top: 0px solid #eee !important;
-	border-bottom:1px solid #ccc !important;
-	border-right:1px solid #ccc !important;
-	border-left:1px solid #ccc !important;
-	margin-top:2px;
-}
-.ui-autocomplete { 
-	position: absolute; cursor: default;z-index:100010 !important;
-} 
-.ui-menu-item a:hover {
-	background-image:none;
-	background-color:#eee;
-	border: 1px solid #ddd;
-}
-.hierarchyBrowseTab {
-	border-top: 0px !important;
-}
-.ui-widget {
-	font-family: "helvetica neue", arial, sans-serif !important;
-	font-size:1em !important;
-	font-weight:regular !important;
-}
-.ui-tabs .ui-tabs-nav li {
-	font-size:13px !important;
-}
+
 
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-    background:	url('../graphics/icons/info.png') no-repeat 10px 15px;
-    background-size:32px 32px;
-    text-indent: 32px;
     background-color: #f3f3f3;
     padding: 5px;
     margin-bottom: 10px;
@@ -1134,8 +1085,6 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
-    text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
@@ -1146,8 +1095,6 @@ div.notification-error-box {
 }
 
 div.notification-warning-box {
-    background:	url('../graphics/icons/warning_sign.png') no-repeat 10px 15px;
-    text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
@@ -1161,11 +1108,12 @@ div.notification-warning-box {
 
 ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box {
     list-style-type: none;
+    padding-inline-start: 0px;
 }
 
 li.notification-info-box {
     font-weight: bold;
-    color: #138290;
+    color: #333;
     font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
@@ -1178,14 +1126,16 @@ li.notification-warning-box {
     font-size: 13px;
     text-indent: 10px;
     font-family: 'din-regular';
+	padding-top: 2px;
 }
 
 li.notification-error-box {
     font-weight: normal;
     color: #EB0000;
     font-size: 13px;
-    text-indent: 0px;
+    text-indent: 10px;
     font-family: 'din-regular';
+	padding-top: 2px;
 }
 
 li.notification-error-box .heading {
@@ -1196,7 +1146,11 @@ li.notification-error-box ul.errorList {
     margin-top: 8px;
 }
 
-
+div.notification-message-container {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+}
 
 div.hint {
     color: black;
@@ -1606,7 +1560,7 @@ div.button img{
 	margin-top: -1px;
 }
 a.button{
-    color: #138290;
+    color: #333333;
     text-decoration: none;
     font-size: 11px;
     font-weight:normal;
@@ -2456,8 +2410,8 @@ a#hideRefine img {
 #searchRefineParameters{
     float:left;
     color: #666666;
-	border-top: 2px solid #138290;
-	border-bottom: 2px solid #138290;
+	border-top: 2px solid #333333;
+	border-bottom: 2px solid #333333;
 	padding: 10px 0px 10px 0px;
 	width: 100%;
 	margin-bottom: 5px;
@@ -4020,7 +3974,7 @@ a.exploreSelected {
     line-height:1.5em;
 }
 .hierNav a {
-    color: #138290;
+    color: #333333;
     font-weight:normal;
     text-decoration:none;
 
@@ -4038,9 +3992,7 @@ a.exploreSelected {
 .editorHierarchyBrowserContainer{
     background-color:#fafafa;
 }
-.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active {
-	border:0px !important;
-}
+
 .hierarchyBrowserFind{    /*** find box on editor pages ***/
     color:#666666;
     font-weight:normal;
@@ -4101,7 +4053,7 @@ a.exploreSelected {
 .hierarchyPanelHeader a { /*  used in browse and details with browse */
     text-decoration:none;
     font-size:14px;
-    color:#138290;
+    color:#333333;
     font-weight:normal;
     padding-right:4px;
 }
@@ -4495,20 +4447,7 @@ div.quickSearchNoResults {
     font-size:12px;
     line-height: 27px;
 }
-/*#browseCriteria a.close{
-    text-transform:uppercase;
-    color: #FFFFFF;
-    font-size:9px;
-    text-decoration:none;
-    padding: 2px 4px 2px 4px;
-    margin:0px 5px 0px 3px;
-    background-color:#828282;
-    line-height:1em;
-    font-weight:bold;
-    -webkit-border-radius: 7px;
-	-moz-border-radius: 7px;
-	border-radius: 7px;
-} */
+
 #browseCriteria a.startOver, #searchRefineParameters a.startOver{
     color: #aaa;
     text-decoration:none;
@@ -5221,14 +5160,7 @@ div.bundleDisplayEditorSearchForm i.caIcon {
 span.bundleDisplayEditorPlacementListItemTitle {
     color: #666;
 }
-.ui-tooltip-content h2 {
-	margin:0px;
-	padding:0px 0px 5px 0px;
-	color:#fff;
-	font-weight:normal;
-	font-size:14px;
-	text-align:left;
-}
+
 .elementSettingsUI {
 	position: absolute;
 	top: 20px;
@@ -5411,7 +5343,9 @@ table.uiScreenItem .fa{
 #dashboardControls {text-align: right; padding:0px 0px 0px 10px;}
 a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none; font-size:11px; color: #777;}
 
-.portlet { margin:.5em 1em .5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
+.portlet { 
+    margin:.5em 1em .5em 1em; 
+}
 .portlet-header {
 	font-family: "DIN-Regular", Arial, Helvetica, sans-serif;
 	font-size: 13px;
@@ -5434,13 +5368,6 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     line-height:1.5em;
 }
 
-.ui-tabs-panel {
-	padding: 0px !important;
-}
-
-.ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
-.ui-sortable-placeholder * { visibility: hidden; }
-
 .dashboardWelcomeMessage{
 	padding: 20px;
 	margin: 10px;
@@ -5450,7 +5377,9 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
 	background-color: #f7f7f7;
 	color: #333;
 }
-.dashboardLanding {	/* used to style the "drag something here" <div> displayed when a column is empty */
+
+/* used to style the "drag something here" <div> displayed when a column is empty */
+.dashboardLanding {
     border: 2px dashed #ededed;
     color:#c6c6c6;
     margin: 5px 2px 2px 2px;
@@ -5535,7 +5464,7 @@ a.dashboardRemoveWidget {
     line-height:1.3em;
 }
 .dashboardWidgetClock{
-	color: #138290;
+	color: #333333;
 	font-size: 48px;
 	font-weight: bold;
 	text-align: center;
@@ -5650,7 +5579,7 @@ input.addItemToSetControlInThumbnails {
 
 .objectRepresentationMediaDisplayDerivativeOptions {
     display: none;
-    margin: 10px;
+    margin: 10px 10px 0 10px;
     padding: 5px;
     background-color: #eeeeee;
     font-weight: normal;
@@ -5815,94 +5744,12 @@ div.jGrowl div.jGrowl-closer {
 
 
 
-/*
- * jQuery UI Datepicker 1.8.11
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Datepicker#theming
- */
-.ui-datepicker { width: 17em; padding: .2em .2em 0; display: none; }
-.ui-datepicker .ui-datepicker-header { position:relative; padding:.2em 0; }
-.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next { position:absolute; top: 2px; width: 1.8em; height: 1.8em; }
-.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover { top: 1px; }
-.ui-datepicker .ui-datepicker-prev { left:2px; }
-.ui-datepicker .ui-datepicker-next { right:2px; }
-.ui-datepicker .ui-datepicker-prev-hover { left:1px; }
-.ui-datepicker .ui-datepicker-next-hover { right:1px; }
-.ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next span { display: block; position: absolute; left: 50%; margin-left: -8px; top: 50%; margin-top: -8px;  }
-.ui-datepicker .ui-datepicker-title { margin: 0 2.3em; line-height: 1.8em; text-align: center; }
-.ui-datepicker .ui-datepicker-title select { font-size:1em; margin:1px 0; }
-.ui-datepicker select.ui-datepicker-month-year {width: 100%;}
-.ui-datepicker select.ui-datepicker-month,
-.ui-datepicker select.ui-datepicker-year { width: 49%;}
-.ui-datepicker table {width: 100%; font-size: .9em; border-collapse: collapse; margin:0 0 .4em; }
-.ui-datepicker th { padding: .7em .3em; text-align: center; font-weight: bold; border: 0;  }
-.ui-datepicker td { border: 0; padding: 1px; }
-.ui-datepicker td span, .ui-datepicker td a { display: block; padding: .2em; text-align: right; text-decoration: none; }
-.ui-datepicker .ui-datepicker-buttonpane { background-image: none; margin: .7em 0 0 0; padding:0 .2em; border-left: 0; border-right: 0; border-bottom: 0; }
-.ui-datepicker .ui-datepicker-buttonpane button { float: right; margin: .5em .2em .4em; cursor: pointer; padding: .2em .6em .3em .6em; width:auto; overflow:visible; }
-.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current { float:left; }
-
-/* with multiple calendars */
-.ui-datepicker.ui-datepicker-multi { width:auto; }
-.ui-datepicker-multi .ui-datepicker-group { float:left; }
-.ui-datepicker-multi .ui-datepicker-group table { width:95%; margin:0 auto .4em; }
-.ui-datepicker-multi-2 .ui-datepicker-group { width:50%; }
-.ui-datepicker-multi-3 .ui-datepicker-group { width:33.3%; }
-.ui-datepicker-multi-4 .ui-datepicker-group { width:25%; }
-.ui-datepicker-multi .ui-datepicker-group-last .ui-datepicker-header { border-left-width:0; }
-.ui-datepicker-multi .ui-datepicker-group-middle .ui-datepicker-header { border-left-width:0; }
-.ui-datepicker-multi .ui-datepicker-buttonpane { clear:left; }
-.ui-datepicker-row-break { clear:both; width:100%; }
-
-/* RTL support */
-.ui-datepicker-rtl { direction: rtl; }
-.ui-datepicker-rtl .ui-datepicker-prev { right: 2px; left: auto; }
-.ui-datepicker-rtl .ui-datepicker-next { left: 2px; right: auto; }
-.ui-datepicker-rtl .ui-datepicker-prev:hover { right: 1px; left: auto; }
-.ui-datepicker-rtl .ui-datepicker-next:hover { left: 1px; right: auto; }
-.ui-datepicker-rtl .ui-datepicker-buttonpane { clear:right; }
-.ui-datepicker-rtl .ui-datepicker-buttonpane button { float: left; }
-.ui-datepicker-rtl .ui-datepicker-buttonpane button.ui-datepicker-current { float:right; }
-.ui-datepicker-rtl .ui-datepicker-group { float:right; }
-.ui-datepicker-rtl .ui-datepicker-group-last .ui-datepicker-header { border-right-width:0; border-left-width:1px; }
-.ui-datepicker-rtl .ui-datepicker-group-middle .ui-datepicker-header { border-right-width:0; border-left-width:1px; }
-
-/* IE6 IFRAME FIX (taken from datepicker 1.5.3 */
-.ui-datepicker-cover {
-    display: none; /*sorry for IE5*/
-    display/**/: block; /*sorry for IE5*/
-    position: absolute; /*must have*/
-    z-index: -1; /*must have*/
-    filter: mask(); /*must have*/
-    top: -4px; /*must have*/
-    left: -4px; /*must have*/
-    width: 200px; /*must have*/
-    height: 200px; /*must have*/
-}/*
- * jQuery UI Progressbar 1.8.11
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Progressbar#theming
- */
-
-.ui-widget-content { background: #ffffff; }
-
-.ui-progressbar { height:2em; text-align: left; }
-.ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
-
 /* Relationship display */
 
 li.quickaddMenuItem {
-	background-color: #eee;
-	border-top: 2px solid #aaa;
-	margin-top: 15px;
+	background-color: #ddd;
+	border-bottom: 1px dashed #aaa;
+	margin-bottom: 15px;
 }
 
 a.quickaddMenuItem {
@@ -6305,57 +6152,7 @@ div.inheritName {
     font-size: 9px; 
     font-style: italic;
 }
-/* -------------------------------------------------*/
-/* "Searchlight" autocomplete search results styles */
-/* -------------------------------------------------*/
-div.searchlight-header{
-    size:12px;
-    font-weight:bold;
-    text-transform:uppercase;
-    color:#333333;
-    background-color:#E4E4E4;
-    padding:3px;
-}
-div.searchlight-item{
-    size:12px;
-    color:#333333;
-    padding:3px 3px 8px 3px;
-    background-color:#FFFFFF;
-}
-div.searchlight-item a{
-    size:12px;
-    color:#333333;
-    text-decoration:none;
-}
-div.searchlight-item a:hover{
-    text-decoration:underline;
-}
-div.searchlight-results-wrapper {
-    color: #333333;
-    border: 1px solid #cccccc;
-    margin: 0px -1px -1px 6px;
-    overflow: hidden;
-    width: 180px;
-    margin: 16px 0px 0px 0px;
-    position: fixed;
-}
-div.searchlight-results div.searchlight-selected {
-    background: #333;
-    color: #fff;
-}
-#caClientOrderOverview .loanTitle {
-    font-size: 13px;
-    font-weight: bold;
-    color: #333;
-    padding: 0px 5px 0px 5px;
-}
-#caClientOrderOverview td {
-    border-bottom: 1px solid #ccc;
-    padding: 5px 10px 5px 10px;
-}
-#caClientOrderOverview table {
-    width: 100%;
-}
+
 .titleTd td{
     border-left: 1px solid #333;
 }
@@ -6368,132 +6165,6 @@ div.searchlight-results div.searchlight-selected {
 }
 .overdue {
     color: #EB0000;
-}
-
-/* OpenLayers */
-
-.olMap {
-    background-color: #999999;
-    clear:left;
-}
-
-.olControlDelete {
-    position: absolute;
-    background-image: url(../graphics/icons/map_delete.png);
-    top: 0;
-    right: 0;
-    width: 24px;
-    height: 22px;
-}
-.olControlDelete:hover {
-    position: absolute;
-    background-image: url(../graphics/icons/map_delete_selected.png);
-    top: 0;
-    right: 0;
-    width: 24px;
-    height: 22px;
-}
-
-.olControlDeleteItemActive {
-    position: absolute;
-    background-image: url(../graphics/icons/map_delete.png);
-    top: 0;
-    right: 0;
-    width: 24px;
-    height: 22px;
-}
-.olControlDeleteItemActive:hover {
-    position: absolute;
-    background-image: url(../graphics/icons/map_delete_selected.png);
-    top: 0;
-    right: 0;
-    width: 24px;
-    height: 22px;
-}
-
-.olControlDeletePanel {
-    border: 0px solid black;
-    bottom: 5px;
-    right: 5px;
-    width: 24px;
-    height: 22px;
-    position: absolute;
-    cursor: pointer;
-}
-
-.olMapKmlControl {
-    float: left;
-    position: relative;
-    width: 150px;
-    height:30px;
-    margin: 5px 0 5px 0;
-    padding: 0px;
-}
-
-.olMapSearchBox {
-    float: right;
-    position: relative;
-    background:	url(../graphics/backgrounds/searchbox.png) no-repeat bottom right;
-    width: 150px;
-    height:30px;
-    margin: 5px 0 5px 0;
-    padding: 0px;
-}
-
-.olMapSearchBoxIcon {
-    margin: 12px 8px 0 0;
-}
-
-.olMapSearchBox input {
-    outline-style:none;
-    border: none;
-}
-
-.olMapSearchContainer {
-    float:			right;
-    margin:			0;
-    padding-right:	0;
-    list-style:		none;
-    line-height:	1.0;
-}
-
-.olMapSearchText {
-    font-size:12px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    padding:1px 3px 3px 3px;
-    font-weight:normal;
-    border: 0px;
-    width: 100px;
-    height:12px;
-    float:left;
-    margin:9px 0px 0px 23px;
-    outline-style:none;
-}
-
-.olMapKMLInput {
-    display: none;
-    margin-top: 18px !important;
-}
-.olMap {
-    clear:left;
-}
-
-.olPopup {
-    border: 1px solid #000000 !important;
-    border-radius:8px !important;
-    box-shadow: 4px 4px 10px rgba(75, 75, 75, 0.75) !important;
-}
-
-.olPopupCloseBox {
-    width:15px  !important;
-    height:16px  !important;
-    margin:0px !important;
-}
-
-.olPopupContent {
-    margin-left: 10px !important;
-    margin-top: 0px !important;
-    padding: 0px 5px 5px 5px !important;
 }
 
 /* Batch confirmation change */
@@ -6943,10 +6614,6 @@ div.exporterUploadText, div.importerUploadText {
 
 #caAddImportersButton, #caCloseImportersButton, #caAddExportersButton, #caCloseExportersButton {
     display: none;
-}
-
-.ui-progressbar {
-	border:1px solid #eeeeee !important;
 }
 
 /** 
@@ -7831,30 +7498,6 @@ div.caResultsComplexDataEditorErrorContainer {
 	text-align:bottom;
 }
 
-/* Media content dialog in CKEditor */
-.camediacontentMediaList {
-    width: 200px; 
-    height: 300px; 
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-div.camediacontentMediaList ul li.mediaItem {
-    padding: 3px;
-}
-
-div.camediacontentMediaList ul li.mediaItem div img {
-    margin: 0px 5px 0px 0px;
-}
-
-li.mediaItem-selected {
-    background-color: #dfdfdf !important;
-}
-
-/* Force CKEditor full screen overlay to top of window */
-.cke_maximized {
-    top: 0px !important;
-}
 
 div.changeLogSearchResultsPagination {
 	float: right;
@@ -7911,7 +7554,7 @@ a.currentSet {
 
 .dashboardWidgetContentContainer a.link {
     text-decoration: underline;
-    color: #138290;
+    color: #333333;
 }
 
 /* "New" ca_object_representations_bundle */
@@ -8421,4 +8064,99 @@ div.searchResultDesc ul {
 
 #algebraSetControls {
 	display: none;
+}
+
+ul.ui-autocomplete {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+li.ui-menu-item {
+    padding: 10px;
+}
+
+li.ui-menu-item:hover {
+    padding: 10px;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+div.tooltipHead {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.ui-menu-item-wrapper {
+    font-weight: normal !important;
+    text-decoration: none !important;
+    border: unset !important;
+}
+
+.ui-menu-item-wrapper:hover {
+    font-weight: normal !important;
+    text-decoration: none !important;
+    border: unset !important;
+}
+
+
+div.ql-container {
+    overflow-wrap: unset;
+    font-weight: normal;
+    color: unset;
+    margin: unset;
+    padding: unset;
+    
+}
+
+.ql-toolbar.ql-snow {
+    padding: 0px !important;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+    margin-right:25px;
+    white-space: nowrap;
+}
+
+span.ql-formats button {
+    width: 32px !important;   
+}
+
+.ql-html-buttonGroup {
+    bottom: 10px !important;
+    display: flex;
+    flex-direction: row-reverse;
+    column-gap: 5px;
+}
+
+.ql-editor .ql-code-block-container {
+    padding-bottom: 20px !important;
+}
+
+.ql-ca-editor {
+    overflow-y: auto; 
+    padding-bottom: 10px;
+}
+
+.ql-ca-container {
+    overflow: hidden;
+    padding-bottom: 20px;  
+}
+
+div.ql-container {
+    overflow: hidden;
+    padding-bottom: 20px;  
+}
+
+div.ck-reset {
+    font-weight: normal;
+}
+
+.ck.ck-editor__top.ck-reset_all {
+  z-index: var(--ck-z-modal);
+  position: sticky;
+  top: 0;
+}
+
+.ckeditor-wrapper {
+    font: 14px "Helvetica Neue", Arial, Helvetica, Sans-serif;
 }

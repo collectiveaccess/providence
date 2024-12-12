@@ -394,6 +394,7 @@
 	 *  noCSRFToken = if true CSRF token is omitted. [Default is false]
 	 *	disableSubmit = don't allow form to be submitted. [Default is false]
 	 *	submitOnReturn = submit form if user hits return in any form element. [Default is false]
+	 *	autocomplete = enable autocomplete for elements in form. [Default is false]
 	 */
 	function caFormTag($po_request, $ps_action, $ps_id, $ps_module_and_controller_path=null, $ps_method='post', $ps_enctype='multipart/form-data', $ps_target='_top', $pa_options=null) {
 		if ($ps_target) {
@@ -422,7 +423,9 @@
 				$po_request->getControllerUrl().'/'.$ps_action;
 		}
 		
-		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."'>\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
+		$autocomplete = caGetOption('autocomplete', $pa_options, false);
+		
+		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."' ".($autocomplete ? '' : 'autocomplete="off"').">\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
 		
 		if (!caGetOption('noTimestamp', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,18 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$t_page				= $this->getVar('t_page');
-	$va_page_list 		= $this->getVar('page_list');
-	
-	$vs_page_select     = ca_site_templates::getTemplateListAsHTMLSelect(['id' => 'templateList']);
+$t_page				= $this->getVar('t_page');
+$page_list 		= $this->getVar('page_list');
 
-	$vs_site_page_template_menu = $vs_page_select ? '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
-						'<div class="caNavHeaderIcon">'.
-							'<a href="#" onclick="_navigateToNewForm(jQuery(\'#templateList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
-						'</div>'.
-					'<form action="#">'._t('New %1 page', $vs_page_select).'</form>'.
-					'</div>' : '';
+$page_select     = ca_site_templates::getTemplateListAsHTMLSelect(['id' => 'templateList']);
+
+$site_page_template_menu = $page_select ? '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
+					'<div class="caNavHeaderIcon">'.
+						'<a href="#" onclick="_navigateToNewForm(jQuery(\'#templateList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
+					'</div>'.
+				'<form action="#">'._t('New %1 page', $page_select).'</form>'.
+				'</div>' : '';
 ?>
 <script type="text/javascript">
 	jQuery(document).ready(function(){
@@ -52,7 +51,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			$vs_site_page_template_menu
+			$site_page_template_menu
 		); 
 	?>
 	
@@ -85,34 +84,34 @@
 		</thead>
 		<tbody>
 <?php
-	if (sizeof($va_page_list)) {
-		foreach($va_page_list as $va_page) {
+	if (sizeof($page_list)) {
+		foreach($page_list as $page) {
 ?>
 			<tr>
 				<td>
-					<div><?= $va_page['rank']; ?></div>
+					<div><?= $page['rank']; ?></div>
 				</td>
 				<td>
-					<div class="caPageListName"><?= $va_page['title']; ?></div>
+					<div class="caPageListName"><?= $page['title']; ?></div>
 				</td>
 				<td>
-					<div><?= ($va_page['path'] === 'PROVIDENCE_HELP_MENU') ? _t('<em>Providence help menu</em>') : $va_page['path']; ?></div>
+					<div><?= ($page['path'] === 'PROVIDENCE_HELP_MENU') ? _t('<em>Providence help menu</em>') : $page['path']; ?></div>
 				</td>
 				<td>
-					<div><?= $va_page['template_title']; ?></div>
+					<div><?= $page['template_title']; ?></div>
 				</td>
 				<td>
-					<div><?= $va_page['locale']; ?></div>
+					<div><?= $page['locale']; ?></div>
 				</td>
 				<td>
-					<div><?= $t_page->getChoiceListValue('access', $va_page['access']); ?></div>
+					<div><?= $t_page->getChoiceListValue('access', $page['access']); ?></div>
 				</td>
 				<td>
-					<div><?= $va_page['view_count']; ?></div>
+					<div><?= $page['view_count']; ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => $va_page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/site_pages', 'SitePageEditor', 'Delete', array('page_id' => $va_page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => $page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/site_pages', 'SitePageEditor', 'Delete', array('page_id' => $page['page_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
@@ -122,7 +121,7 @@
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?= $vs_page_select ? _t('No pages have been created') : _t('No page templates are been defined'); ?>
+					<?= $page_select ? _t('No pages have been created') : _t('No page templates have been defined'); ?>
 				</div>
 			</td>
 		</tr>
@@ -135,4 +134,4 @@
 	</table>
 </div>
 
-	<div class="editorBottomPadding"><!-- empty --></div>
+<div class="editorBottomPadding"><!-- empty --></div>

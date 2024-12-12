@@ -257,9 +257,12 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
     public function deauthenticate($options=null) {
     	if(caIsRunFromCLI()) { return false; }
-        setcookie("SimpleSAML", "", time()-3600, '/');
-        setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
-        setcookie($this->auth_config->get('shibboleth_token_cookie'), '', time()-3600, __CA_URL_ROOT__);
+    	
+		$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+		$secure = (__CA_SITE_PROTOCOL__ === 'https');
+        setcookie("SimpleSAML", "", time()-3600, $cookiepath, null, $secure, true);
+        setcookie("SimpleSAMLAuthToken", "", time()-3600, $cookiepath, null, $secure, true);
+        setcookie($this->auth_config->get('shibboleth_token_cookie'), '', time()-3600, $cookiepath, null, $secure, true);
         return true;
     }
 	# --------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/ApplicationVars.php");
 require_once(__CA_LIB_DIR__."/ResultContext.php");
@@ -38,7 +37,7 @@ class PawtucketController extends ActionController {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		
 		if(!$this->request->isLoggedIn() || (!$this->request->getUser()->canDoAction('can_edit_theme_global_values') && !$this->request->getUser()->canDoAction('can_edit_theme_page_content'))) {
-		//	throw new ApplicationException("No access");
+			throw new ApplicationException("No access");
 		}
 	}
 	# -------------------------------------------------------
@@ -73,45 +72,38 @@ class PawtucketController extends ActionController {
 		
 		$o_appvars = new ApplicationVars();
 		
-		if (!is_array($va_toolbar_config = $this->request->config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
+		if (!is_array($toolbar_config = $this->request->config->getAssoc('wysiwyg_editor_toolbar'))) { $toolbar_config = array(); }
 			
-		$va_form_elements = [];
-		$va_wysiwyg_elements = [];
-		if(is_array($va_template_values = $this->request->config->getAssoc('global_template_values'))) {
-			foreach($va_template_values as $vs_name => $va_info) {
-				$vn_width = caGetOption('width', $va_info, '300px');
-				$vn_height = caGetOption('height', $va_info, '120px');
+		$form_elements = [];
+		$wysiwyg_elements = [];
+		if(is_array($template_values = $this->request->config->getAssoc('global_template_values'))) {
+			foreach($template_values as $name => $info) {
+				$width = caGetOption('width', $info, '300px');
+				$height = caGetOption('height', $info, '120px');
 				
-				$vs_element = caHTMLTextInput($vs_name, ['value' => $o_appvars->getVar("pawtucket_global_{$vs_name}"), "width" => $vn_width, "height" => $vn_height, 'class' => 'form-control', 'id' => "pawtucket_global_{$vs_name}"]);
+				$wysiwyg = caGetOption('usewysiwygeditor', $info, false);
+			
+				$element = caHTMLTextInput($name, 
+						['value' => $o_appvars->getVar("pawtucket_global_{$name}"), "width" => $width, "height" => $height, 'class' => 'form-control', 'id' => "pawtucket_global_{$name}"],
+						['usewysiwygeditor' => $wysiwyg]
+					);
 				
-				if (caGetOption('usewysiwygeditor', $va_info, false)) {
-					$va_wysiwyg_elements[] = $vs_name;
-					$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-					var ckEditor = CKEDITOR.replace( 'pawtucket_global_{$vs_name}',
-					{
-						toolbar : ".json_encode(array_values($va_toolbar_config)).",
-						width: '{$vn_width}',
-						height: '{$vn_height}',
-						toolbarLocation: 'top',
-						enterMode: CKEDITOR.ENTER_BR
-					});
-});									
-</script>";
+				if ($wysiwyg) {
+					$wysiwyg_elements[] = $name;
 				}
 				
-				$va_form_elements[$vs_name] = [
-					'label' => $va_info['name'],
-					'tooltip' => $va_info['description'],
-					'element' => $vs_element
+				$form_elements[$name] = [
+					'label' => $info['name'],
+					'tooltip' => $info['description'],
+					'element' => $element
 				];
 			}
 		}
-		$this->view->setVar('form_elements', $va_form_elements);
+		$this->view->setVar('form_elements', $form_elements);
 		
-		if (sizeof($va_wysiwyg_elements) > 0) {
+		if (sizeof($wysiwyg_elements) > 0) {
 			AssetLoadManager::register("ckeditor");
 		}
-		
 		
 		$this->render("Pawtucket/edit_global_values_html.php");
 	}
@@ -132,7 +124,7 @@ class PawtucketController extends ActionController {
 		// Save globals
 		if(is_array($va_template_values = $this->request->config->getAssoc('global_template_values'))) {
 			foreach($va_template_values as $vs_name => $va_info) {
-				$o_appvars->setVar("pawtucket_global_{$vs_name}", $this->request->getParameter($vs_name, pString));
+				$o_appvars->setVar("pawtucket_global_{$vs_name}", $v=$this->request->getParameter($vs_name, pString));
 			}
 		}
 		$o_appvars->save();

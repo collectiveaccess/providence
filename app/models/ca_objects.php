@@ -31,17 +31,9 @@
  */
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
-require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
-require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
-require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
-require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
-require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
  	'NAME_SINGULAR' 	=> _t('object'),
