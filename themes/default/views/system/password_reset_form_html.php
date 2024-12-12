@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
 AppController::getInstance()->removeAllPlugins();
-$vb_render = $this->getVar('renderForm');
-$vs_token = $this->getVar('token');
-$vs_username = $this->getVar('username');
+$render = $this->getVar('renderForm');
+$token = $this->getVar('token');
+$username = $this->getVar('username');
 ?>
 <html>
 <head>
@@ -40,7 +40,10 @@ $vs_username = $this->getVar('username');
 
 	<script type="text/javascript">
 		// initialize CA Utils
-		jQuery(document).ready(function() { caUI.utils.disableUnsavedChangesWarning(true); });
+		jQuery(document).ready(function() { 
+			caUI.initUtils({});
+			caUI.utils.disableUnsavedChangesWarning(true); 
+		});
 	</script>
 </head>
 <body>
@@ -53,7 +56,7 @@ $vs_username = $this->getVar('username');
 
 			<p class="content">
 <?php
-				if($vb_render) {
+				if($render) {
 					print _t("Please enter a new password");
 				} else {
 					print _t("Invalid user or token");
@@ -62,16 +65,16 @@ $vs_username = $this->getVar('username');
 			</p>
 
 			<?php
-			if ($va_notifications = $this->getVar('notifications')) {
+			if ($notifications = $this->getVar('notifications')) {
 				?>
-				<p class="notificationContent"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
+				<p class="notificationContent"><?php foreach($notifications as $notification) { print $notification['message']."<br/>\n"; }; ?></p>
 			<?php
 			}
 			?>
 
 		</div><!-- end  systemTitle -->
 		<div id="loginForm">
-<?php if($vb_render) { ?>
+<?php if($render) { ?>
 			<?= caFormTag($this->request, 'DoReset', 'reset'); ?>
 			<div class="loginFormElement"><?= _t("Password"); ?>:<br/>
 				<input type="password" name="password" size="25"/>
@@ -79,15 +82,17 @@ $vs_username = $this->getVar('username');
 			<div class="loginFormElement"><?= _t("Re-type password"); ?>:<br/>
 				<input type="password" name="password2" size="25"/>
 			</div>
-<?php 	if(strlen($vs_token)>0){ ?>
-			<input type="hidden" name="token" value="<?= $vs_token; ?>"/>
-			<input type="hidden" name="username" value="<?= $vs_username; ?>"/>
+<?php 	if(strlen($token)>0){ ?>
+			<input type="hidden" name="token" value="<?= $token; ?>"/>
+			<input type="hidden" name="username" value="<?= $username; ?>"/>
 <?php 	} ?>
 
-			<div class="loginSubmitButton"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Submit"),"reset", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
+			<div class="loginSubmitButton">
+				<?= caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Submit"), "reset", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?>
+				<?= caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'system', 'auth', 'login', [], [], []); ?>
+			</div>
 			</form>
 <?php } ?>
-			<?= caNavLink($this->request, _t("Back to login"), 'loginLink', 'system/auth', 'login', ''); ?>
 		</div><!-- end loginForm -->
 	</div><!-- end loginBox -->
 </div><!-- end center -->

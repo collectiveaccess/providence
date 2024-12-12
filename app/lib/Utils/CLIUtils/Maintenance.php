@@ -38,7 +38,7 @@ trait CLIUtilsMaintenance {
 		$o_db = new Db();
 		ini_set('memory_limit', '4000m');
 		
-		$tables = trim((string)$po_opts->getOption('table'));
+		$tables = $po_opts ? trim((string)$po_opts->getOption('table')) : null;
 		
 		if($tables) {
 			$tables = preg_split('![,;]+!', $tables);
@@ -407,65 +407,6 @@ trait CLIUtilsMaintenance {
 	
 	# -------------------------------------------------------
 	/**
-	 * Update database schema
-	 */
-	public static function update_database_schema($po_opts=null) {
-		$config_check = new ConfigurationCheck();
-		if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
-			CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
-			flush();
-			ob_flush();
-			$confirmation  =  trim( fgets( STDIN ) );
-			if ( $confirmation !== 'y' ) {
-				// The user did not say 'y'.
-				return false;
-			}
-			$va_messages = ConfigurationCheck::performDatabaseSchemaUpdate();
-
-			print CLIProgressBar::start(sizeof($va_messages), _t('Updating database'));
-			foreach($va_messages as $vs_message) {
-				print CLIProgressBar::next(1, $vs_message);
-			}
-			print CLIProgressBar::finish();
-		} else {
-			print CLIProgressBar::finish();
-			CLIUtils::addMessage(_t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__));
-		}
-
-		return true;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaParamList() {
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaUtilityClass() {
-		return _t('Maintenance');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaShortHelp() {
-		return _t("Update database schema to the current version.");
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaHelp() {
-		return _t("Updates database schema to current version.");
-	}
-	
-	
-	# -------------------------------------------------------
-	/**
 	 * @param Zend_Console_Getopt|null $po_opts
 	 * @return bool
 	 */
@@ -508,7 +449,6 @@ trait CLIUtilsMaintenance {
 	public static function clear_search_indexing_queue_lock_fileHelp() {
 		return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
 	}
-	
 	# -------------------------------------------------------
 	/**
 	 * Fix file permissions
