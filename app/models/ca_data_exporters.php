@@ -921,18 +921,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$num_processed = 0;
 
 		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
-			$header = $header_sources = [];
+			$use_ids_as_headers = (bool)$t_mapping->getSetting('CSV_use_ids_as_field_names');
+			
+			$header = [];
 			$mapping_items = $t_mapping->getItems();
 			foreach($mapping_items as $i => $mapping_item) {
 				$settings = caUnserializeForDatabase($mapping_item['settings']);
-				$header_sources[(int)$mapping_item['element']] = $mapping_item['source'] ?? $settings['_id'] ?? '???';
-			}
-			foreach($header_sources as $element => $source) {
-				if (!($label = caGetLabelForBundle($source))) {
-					$label = $source;
+				if(!($label = ($settings['fieldName'] ?? null))) {
+					if($use_ids_as_headers && isset($settings['_id'])) {
+						$label = $settings['_id'];
+					} elseif (!($label = caGetLabelForBundle($mapping_item['source']))) {
+						$label = $mapping_item['source'] ?? null;
+					}
 				}
+				if(!strlen($label)) { $label = '???'; }
 				$header[] = $label;
-
 			}
 			$delimiter = $t_mapping->getSetting('CSV_delimiter') ?: ",";
 			$enclosure = $t_mapping->getSetting('CSV_enclosure') ?: '"';

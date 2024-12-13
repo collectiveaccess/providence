@@ -1136,7 +1136,7 @@ function caGetLabelForBundle($ps_bundle) {
 	$va_tmp = explode(".", $ps_bundle);
 	
 	if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
-		return $t_instance->getDisplayLabel($ps_bundle);
+		return $t_instance->getDisplayLabel($ps_bundle, ['useDisambiguationLabels' => true]);
 	}
 	
 	// Maybe it's an access point?
