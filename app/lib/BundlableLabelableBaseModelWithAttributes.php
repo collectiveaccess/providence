@@ -479,6 +479,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vb_we_set_transaction = false;
 		
+		$parent_id = $this->get($vs_parent_id_fld);
+		
 		$o_t = null;
 		if (!$this->inTransaction()) {
 			$o_t = new Transaction($this->getDb());
@@ -536,15 +538,33 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vs_idno_fld && (!isset($va_duplicate_element_settings[$vs_idno_fld]) || (isset($va_duplicate_element_settings[$vs_idno_fld]) && ($va_duplicate_element_settings[$vs_idno_fld] == 1)))) {
 			$vb_needs_suffix_generated = false;
 			$vs_sep = null;
-			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $this->getIDNoPlugInInstance())) {
+			
+			$is_parent_format = $is_serial_format = false;
+			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $t_dupe->getIDNoPlugInInstance())) {
 				$vs_sep = $o_numbering_plugin->getSeparator();
 				
-				$vs_idno_template = $o_numbering_plugin->makeTemplateFromValue($this->get($vs_idno_fld), 1);	// make template out of original idno by replacing last SERIAL element with "%"
-				if (!preg_match("!%$!", $vs_idno_template)) { $vb_needs_suffix_generated = true; }
-				
-				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $vs_idno_template, false, false, false))) { $va_idno_values = []; }
-
-				$t_dupe->set($vs_idno_fld, $vs_idno = join($vs_sep, $va_idno_values));	
+				$is_serial_format = $o_numbering_plugin->isSerialFormat();
+				if($is_parent_format = $o_numbering_plugin->formatHas('PARENT', 0)) {
+					if (!$parent_id && ($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance')) {
+						// Collection inheritance?
+						$obj_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type');
+						$coll_ids = $this->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => [$obj_coll_rel_type], 'idsOnly' => true]);
+						
+						if(is_array($coll_ids) && sizeof($coll_ids)) {
+							$o_numbering_plugin->isChild(true, $p = ca_collections::getIdnoForID($coll_ids[0]));	
+						}
+					} elseif($parent_id) {
+						$o_numbering_plugin->isChild(true, $p = parent::getIdnoForID($parent_id));	
+					}
+					$t_dupe->setIdnoWithTemplate($o_numbering_plugin->makeTemplateFromValue($p));	
+				} else {
+					$vs_idno_template = $o_numbering_plugin->makeTemplateFromValue($this->get($vs_idno_fld), 1);	// make template out of original idno by replacing last SERIAL element with "%"
+					if (!preg_match("!%$!", $vs_idno_template)) { $vb_needs_suffix_generated = true; }
+					
+					if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $vs_idno_template, false, false, false))) { $va_idno_values = []; }
+	
+					$t_dupe->set($vs_idno_fld, $vs_idno = join($vs_sep, $va_idno_values));	
+				}
 			} 
 			
 			if (!($vs_idno_stub = trim($t_dupe->get($vs_idno_fld)))) {
@@ -573,7 +593,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			} else {
 				$vs_idno = "???";
 			}
-			if ($vs_idno == $this->get($vs_idno_fld)) { $vs_idno .= " ["._t('DUP')."]"; }
+			if (!$is_parent_format && !$is_serial_format && ($vs_idno == $this->get($vs_idno_fld))) { $vs_idno .= " ["._t('DUP')."]"; }
 			$t_dupe->set($vs_idno_fld, $vs_idno);
 		}
 		
@@ -8316,7 +8336,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 			$this->opo_idno_plugin_instance->setDb($this->getDb());
 			$vs_gen_idno = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field, $ps_template_value);
-			
 			if (!$pb_dont_set_value) {
 				$this->set($vs_idno_field, $vs_gen_idno);
 			}

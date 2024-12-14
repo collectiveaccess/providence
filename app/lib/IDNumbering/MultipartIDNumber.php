@@ -154,11 +154,9 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	protected function explodeValue($value) {
 		$separator = $this->getSeparator();
-		
 		if ($separator && $this->formatHas('PARENT', 0)) {
 			// starts with PARENT element so explode in reverse since parent value may include separators
 			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "_PARENT_", $value);
-		
 			$element_vals = explode($separator, $v_proc);
 
 			$i = 0;
@@ -1150,6 +1148,9 @@ class MultipartIDNumber extends IDNumber {
 		
 		foreach ($elements as $element_info) {
 			switch($element_info['type']) {
+				case 'PARENT':
+					$values[$i] = $this->getParentValue();
+					break;
 				case 'SERIAL':
 					$num_serial_elements_seen++;
 
@@ -1219,7 +1220,6 @@ class MultipartIDNumber extends IDNumber {
 			return (isset($_REQUEST["{$name}_extra_0"])) ? [$_REQUEST["{$name}_extra_0"]] : null; 
 		}
 		$return_template = caGetOption('returnTemplate', $options, false);
-
 		$element_names = array_keys($elements);
 		$separator = $this->getSeparator();
 		$element_values = [];
