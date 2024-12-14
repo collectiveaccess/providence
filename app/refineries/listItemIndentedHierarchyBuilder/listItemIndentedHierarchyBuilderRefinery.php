@@ -155,14 +155,14 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 					if ($item_id = DataMigrationUtils::getListItemID($list_code, strlen($idno) ? $idno : preg_replace("![^A-Za-z0-9_]+!", "_", $level_value), $type, $locale_id, 
 							['is_enabled' => 1, 'parent_id' => $parent_id, 'preferred_labels' => array('name_singular' => $level_value, 'name_plural' => $level_value, 'description' => $description)], 
 							['matchOnIdno' => true, 'log' => $o_log, 'transaction' => caGetOption('transaction', $options, null), 'importEvent' => caGetOption('event', $options, null), 'importEventSource' => 'listItemIndentedHierarchyBuilder']
-						),
+						)
 					) {
 						$level_parent_ids[$i] = $parent_id;
 						$level_parent_ids[$i+1] = $item_id;
 						
 						$parent_id = $item_id;
 						$level_values[$i] = $level_value;
-						$level_value_ids[$i] = $item_id;
+						$level_value_ids[$i] = $item_ids;
 						$max_level = $i;
 					
 					}	
