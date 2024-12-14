@@ -1207,13 +1207,13 @@ class BaseFindEngine extends BaseObject {
 			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
 				$row_ids = $this->_getRowIDsForAttribute($values, $t_table, $hit_table, $sort_field);
 			} elseif($sort_field === 'preferred_labels') {
-				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field, true);	
 			} else {
 				throw new ApplicationException(_t('Unhandled secondary sort'));
 			}
 		} elseif($t_table->getLabelTableName() == $sort_table) {
 			// is label?
-			$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_field);	
+			$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_field, true);	
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
@@ -1299,7 +1299,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
+	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field, ?bool $is_preferred=true) {
 		if (!is_array($values) || !sizeof($values)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -1309,12 +1309,16 @@ class BaseFindEngine extends BaseObject {
 		$t_label = $t_table->getLabelTableInstance();
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
+		$pref_sql = '';
+		if($t_label->hasField('is_preferred')) {
+			$pref_sql = $is_preferred ? ' AND l.is_preferred = 1' : ' AND l.is_preferred = 0';
+		}
 		$sql = "
 			SELECT l.{$table_pk}, l.{$label_field} val
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
 			WHERE
-				l.{$label_field} IN (?)
+				l.{$label_field} IN (?) {$pref_sql}
 		";
 		$qr_sort = $this->db->query($sql, [$values]);
 		$values = [];
