@@ -1051,7 +1051,7 @@ trait CLIUtilsMaintenance {
 	public static function clear_caches($po_opts=null) {
 		$config = Configuration::load();
 
-		$ps_cache = strtolower((string)$po_opts->getOption('cache'));
+		$ps_cache = strtolower($po_opts ? (string)$po_opts->getOption('cache') : 'all');
 		if (!in_array($ps_cache, array('all', 'app', 'usermedia'))) { $ps_cache = 'all'; }
 
 		if (in_array($ps_cache, array('all', 'app'))) {

@@ -47,39 +47,57 @@ trait CLIUtilsMigration {
 			return false;
 		}
 		
-		$num_steps = 6;
+		$num_steps = 8;
+		// Clear all caches
+		$c = 1;
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Clearing caches", $c, $num_steps), ['color' => 'yellow']);
+		CLIUtils::clear_caches();
+		$c++;
 		
 		// Truncate existing search index
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Removing old search index", 1, $num_steps), ['color' => 'yellow']);
+		CLIUtils::addMessage(_t("[Step %1/%2] Removing old search index", $c, $num_steps), ['color' => 'yellow']);
 		$db = new Db();
 		$db->query("TRUNCATE TABLE ca_sql_search_word_index");
 		$db->query("TRUNCATE TABLE ca_sql_search_words");
+		$c++;
 		
 		// Apply database updates
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating database schema", 2, $num_steps), ['color' => 'yellow']);
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating database schema", $c, $num_steps), ['color' => 'yellow']);
 		self::update_database_schema(null, ['progressBar' => true, 'dontConfirm' => true]);
+		$c++;
+		
+		// Clear all caches
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Clearing caches", $c, $num_steps), ['color' => 'yellow']);
+		CLIUtils::clear_caches();
+		$c++;
 		
 		// Update history tracking values
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", 3, $num_steps), ['color' => 'yellow']);
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", $c, $num_steps), ['color' => 'yellow']);
 		CLIUtils::reload_current_values_for_history_tracking_policies();
+		$c++;
 		
 		// Update attribute sort values
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", 4, $num_steps), ['color' => 'yellow']);
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", $c, $num_steps), ['color' => 'yellow']);
 		CLIUtils::reload_attribute_sortable_values();
+		$c++;
 		
 		// Update sortable values
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", 5, $num_steps), ['color' => 'yellow']);
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", $c, $num_steps), ['color' => 'yellow']);
 		CLIUtils::rebuild_sort_values();
+		$c++;
 		
 		// Reindex
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Rebuilding search index", 6, $num_steps), ['color' => 'yellow']);
+		CLIUtils::addMessage(_t("[Step %1/%2] Rebuilding search index", $c, $num_steps), ['color' => 'yellow']);
 		CLIUtils::rebuild_search_index();
+		$c++;
 		
 		// DONE!
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
