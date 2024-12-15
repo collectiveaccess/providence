@@ -925,6 +925,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			
 			$header = [];
 			$mapping_items = $t_mapping->getItems();
+			ksort($mapping_items);
 			foreach($mapping_items as $i => $mapping_item) {
 				$settings = caUnserializeForDatabase($mapping_item['settings']);
 				if(!($label = ($settings['fieldName'] ?? null))) {
