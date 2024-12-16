@@ -46,7 +46,7 @@ trait CLIUtilsSearch {
 		if ($vs_tables = ($po_opts ? (string)$po_opts->getOption('tables') : null)) {
 			$va_tables = preg_split("![;,]+!", $vs_tables);
 		}
-		$o_si->reindex($va_tables, array('showProgress' => true, 'interactiveProgressDisplay' => true));
+		$o_si->reindex($va_tables, ['showProgress' => true, 'interactiveProgressDisplay' => true]);
 
 		return true;
 	}

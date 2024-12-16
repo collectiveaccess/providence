@@ -2510,6 +2510,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_as_array_element = (bool)caGetOption('asArrayElement', $pa_options, false);
 		$va_tmp = explode('.', $ps_field);
 		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(!is_array($attributes)) { $attributes = []; }
+		
 		switch($va_tmp[0]) {
 			case '_fulltext':
 				if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
@@ -2517,10 +2520,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!isset($pa_options['values'])) { $pa_options['values'] = []; }
 				if (!isset($pa_options['id'])) { $pa_options['id'] = str_replace('.', '_', $ps_field); }
 				if (!isset($pa_options['values']['_fulltext'])) { $pa_options['values'][$ps_field] = ''; }
-				return caHTMLTextInput("_fulltext".($vb_as_array_element ? "[]" : ""), array(
+				return caHTMLTextInput("_fulltext".($vb_as_array_element ? "[]" : ""), array_merge([
 								'value' => $pa_options['values']['_fulltext'], 'placeholder' => $pa_options['placeholder'] ?? null,
 								'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => $pa_options['id']
-							), $pa_options);
+							], $attributes), $pa_options);
 				break;
 			case '_fieldlist':
 				if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
@@ -2607,7 +2610,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!isset($pa_options['values'])) { $pa_options['values'] = []; }
 						if (!isset($pa_options['values'][$ps_field])) { $pa_options['values'][$ps_field] = ''; }
 					
-						return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'placeholder' => $pa_options['placeholder'] ?? null, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+						return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array_merge($attributes, ['value' => $pa_options['values'][$ps_field], 'placeholder' => $pa_options['placeholder'] ?? null, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)]));
 					}
 					break;
 				# -------------------------------------
@@ -2619,16 +2622,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (($va_tmp[0] != $this->tableName()) || ($va_tmp[1] == 'related')) {
 						switch(sizeof($va_tmp)) {
 							case 1:
-								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'placeholder' => $pa_options['placeholder'] ?? null, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => $pa_options['id']));
+								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array_merge($attributes, ['value' => $pa_options['values'][$ps_field], 'placeholder' => $pa_options['placeholder'] ?? null, 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => $pa_options['id']]));
 							case 2:
 							case 3:
 								if ($ps_render = caGetOption('render', $pa_options, null)) {
 									switch($ps_render) {
 										case 'is_set':
-											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '['._t('SET').']'));
+											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array_merge($attributes, ['value' => '['._t('SET').']']));
 											break;
 										case 'is':
-											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => caGetOption('value', $pa_options, null)));
+											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array_merge($attributes, ['value' => caGetOption('value', $pa_options, null)]));
 											break;
 									}
 								}
@@ -2697,7 +2700,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									}
 									
 									if (!isset($pa_options['sort'])) { uksort($va_opts, "strnatcasecmp"); }
-									return caHTMLSelect($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => $pa_options['id']));
+									return caHTMLSelect($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), $va_opts, array_merge($attributes, ['value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => $pa_options['id']]));
 								} else {
 									return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 								}

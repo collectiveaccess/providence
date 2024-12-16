@@ -40,7 +40,7 @@ trait CLIUtilsMigration {
 		// Check version
 		if (($current_revision = ConfigurationCheck::getSchemaVersion()) >= __CollectiveAccess_Schema_Rev__) {
 			CLIUtils::addMessage(_t("Database already at current revision (%1). No update is required.", $current_revision));
-			return true;
+		//d	return true;
 		}
 		
 		if(!CLIUtils::confirm(_t("Are you sure you want to update your version 1.7 system (database revision %1)?\nNOTE: you MUST backup your database before applying this update!\n\nType 'y' to proceed or 'n' to cancel, then hit return", $current_revision),['confirmationCode' => 'y', 'color' => 'yellow'])) {
@@ -76,22 +76,22 @@ trait CLIUtilsMigration {
 		$c++;
 		
 		// Update history tracking values
-		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", $c, $num_steps), ['color' => 'yellow']);
-		CLIUtils::reload_current_values_for_history_tracking_policies();
-		$c++;
-		
-		// Update attribute sort values
-		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", $c, $num_steps), ['color' => 'yellow']);
-		CLIUtils::reload_attribute_sortable_values();
-		$c++;
-		
-		// Update sortable values
-		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", $c, $num_steps), ['color' => 'yellow']);
-		CLIUtils::rebuild_sort_values();
-		$c++;
+		// CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+// 		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", $c, $num_steps), ['color' => 'yellow']);
+// 		CLIUtils::reload_current_values_for_history_tracking_policies();
+// 		$c++;
+// 		
+// 		// Update attribute sort values
+// 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+// 		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", $c, $num_steps), ['color' => 'yellow']);
+// 		CLIUtils::reload_attribute_sortable_values();
+// 		$c++;
+// 		
+// 		// Update sortable values
+// 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+// 		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", $c, $num_steps), ['color' => 'yellow']);
+// 		CLIUtils::rebuild_sort_values();
+// 		$c++;
 		
 		// Reindex
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));

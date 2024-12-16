@@ -235,7 +235,7 @@ class BaseFindController extends ActionController {
 					// Sort on related tables
 					if (method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
 						$display_list[$i]['is_sortable'] = true; 
-						$types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
+						$types = array_merge(caGetOption('restrict_to_relationship_types', is_array($va_display_item['settings']) ? $va_display_item['settings'] : [], [], ['castTo' => 'array']), caGetOption('restrict_to_types', is_array($va_display_item['settings']) ? $va_display_item['settings'] : [], [], ['castTo' => 'array']));
 						$display_list[$i]['bundle_sort'] = "{$tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
 					}
 					continue; 

@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
-  /**
-   *
-   */
-   
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	
@@ -135,13 +130,17 @@
 	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
 	 *		absolute = return absolute URL. [Default is to return relative URL]
 	 *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
+	 *		isServiceUrl = assume URL is a web-services call (Eg. use service.php rather than index.php) [Default is false]
 	 *
 	 * @return string
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
-
+		$is_service_url = caGetOption('isServiceUrl', $pa_options, false, ['castTo' => 'boolean']);
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
+			if($is_service_url) { $vs_url .= '/service.php'; }
+		} elseif($is_service_url) {
+			$vs_url = $po_request->getBaseUrlPath().'/service.php';
 		} else {
 			$s = $po_request->getScriptName();
 			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
@@ -553,6 +552,7 @@
 	/**
 	 * @param array $pa_options Options are:
 	 *		icon_position =
+	 *		class = 
 	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
@@ -561,6 +561,7 @@
 	 */
 	function caJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes=null, $pa_options=null) {
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
+		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
@@ -580,7 +581,7 @@
 			$vs_button .= "<span class='form-button'>"; 
 			$vn_padding = ($ps_content) ? 5 : 0;
 		} else {
-			$vn_padding = 5;
+			$vn_padding = 0;
 		}	
 		
 		$va_img_attr = array(

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,14 @@ class Newspaper extends BaseIIIFManifest {
 	/**
 	 *
 	 */
+	public function __construct() {
+		parent::__construct();
+		$this->manifest_name = 'Newspaper';
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function manifest(array $identifiers, ?array $options=null) : array {
 		global $g_request;
 		if(!$g_request) { return null; }
@@ -60,6 +68,12 @@ class Newspaper extends BaseIIIFManifest {
 					]
 				]
 			],
+			"service" => [
+				[
+				  "id" => "{$this->base_url}/service.php/IIIF/search/{$identifiers[0]}",
+				  "type" => "SearchService2"
+				]
+		  ],
 			
 			//'requiredStatement' => ['label' => ['none' => ['TODO']]],
 			//'rights' => 'TODO',
@@ -76,7 +90,7 @@ class Newspaper extends BaseIIIFManifest {
 				throw new \IIIFAccessException(_t('Unknown error'), 400);
 			}
 			
-			$json['label']['en'] = $media['instance']->get('preferred_labels');
+			$json['label']['en'] = $media['instance']->getWithTemplate('^ca_objects.preferred_labels');
 			$json['navDate'] = $media['instance']->get('ca_objects.date.date_value', ['dateFormat' => 'iso8601']);
 			
 			$json['thumbnail'] = [
@@ -89,9 +103,9 @@ class Newspaper extends BaseIIIFManifest {
 			
 			$mwidth = $mheight = null;
 			
-			$pversion = 'full';
+			$pversion = 'original';
 			$ptversion = 'preview';
-			$reps = $media['instance']->getRepresentations(['original', 'thumbnail', 'preview170', 'medium', 'h264_hi', 'mp3'], null, ['includeAnnotations' => true]);
+			$reps = $media['instance']->getRepresentations(['original', 'page_preview', 'thumbnail', 'preview170', 'medium', 'h264_hi', 'mp3'], null, ['includeAnnotations' => true]);
 			
 			$replist = [];
 			
@@ -101,6 +115,7 @@ class Newspaper extends BaseIIIFManifest {
 				}
 				
 				$page_data = $t_rep->getFileList(null, null, null, ['versions' => [$pversion, $ptversion]]);
+
 				$mwidth = $mheight = null;
 				
 				$pages = [];
@@ -126,9 +141,9 @@ class Newspaper extends BaseIIIFManifest {
 				
 					$base_iiif_id = $this->manifest_url.'-'.$rep['representation_id'];
 				
-					
-					$pages[] = [
-						'id' => "page-{$pagenum}",
+					$media_url = $service_url.'/full/max/0/default.jpg';
+					$page =  [
+						'id' => "page-{$rep['representation_id']}-{$pagenum}",
 						'type' => 'Canvas',
 						'label' => [
 							'en' => ["Page {$pagenum}"]
@@ -138,29 +153,51 @@ class Newspaper extends BaseIIIFManifest {
 						//'rendering' => [],
 						'items' => [
 							[
-								'id' => "annotation-page-{$pagenum}",
+								'id' => "{$base_iiif_id}-annotation-page-{$pagenum}",
 								'type' => 'AnnotationPage',
 								'items' => [
 									[
-										'id' => "annotation-page-painting-{$pagenum}",
-										'target' => "page-{$pagenum}",
+										'id' => "{$base_iiif_id}-annotation-page-painting-{$pagenum}",
+										'target' => "{$base_iiif_id}-page-{$pagenum}",
 										'motivation' => 'painting',
+										'type' => 'Annotation',
 										'body' => [
-											'id' => "{$page_url}",
+											'id' => $media_url,
+
 											'type' => 'Image',
 											'format' => 'image/jpeg',
 											'service' => [
 												'id' => "{$service_url}",
 												'type' => 'ImageService3',
-												'profile' => 'level1'
+												'profile' => 'http://iiif.io/api/image/3/level1.json"',
 											]
 										]
 									]
 								]
 							]
 						],
-						//'annotations' => []
+						// 'annotations' => [
+// 							[
+// 								'id' => "{$base_iiif_id}-annotation-page-{$pagenum}-anno",
+// 								'type' => 'AnnotationPage',
+// 								'items' => [
+// 									[
+// 										'id' => "{$base_iiif_id}-annotation-page-painting-{$pagenum}-anno-1",
+// 										'type' => 'Annotation',
+// 										'motivation' => 'highlighting',
+// 										'body' => [
+// 											'type' => 'TextualBody',
+// 											'value' => 'testing',
+// 											'format' => 'text/plain'
+// 										],
+// 										'target' => "page-{$rep['representation_id']}-{$pagenum}#xywh=50,50,50,50"
+// 									]
+// 								]
+// 							]
+// 						]
 					];
+					
+					$pages[] = $page;
 				}
 			}
 			

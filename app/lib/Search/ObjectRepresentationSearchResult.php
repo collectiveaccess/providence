@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2017 Whirl-i-Gig
+ * Copyright 2011-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
-include_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
+require_once(__CA_LIB_DIR__."/Search/BaseSearchResult.php");
 
 class ObjectRepresentationSearchResult extends BaseSearchResult {
 	# -------------------------------------
@@ -44,7 +44,6 @@ class ObjectRepresentationSearchResult extends BaseSearchResult {
 	public function __construct() {
 		parent::__construct();
 	}
-	
  	# ------------------------------------------------------
  	/**
  	 * 
@@ -159,7 +158,6 @@ class ObjectRepresentationSearchResult extends BaseSearchResult {
  		}
  		return 0;
  	}
- 	
 	# ------------------------------------------------------------------
 	/**
 	 * Checks if currently loaded representation is of specified media class. Valid media classes are 'image', 'audio', 'video' and 'document'
