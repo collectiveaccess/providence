@@ -2901,7 +2901,7 @@ class BaseModel extends BaseObject {
 	 *		force = if set field values are not verified prior to performing the update
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 *      dontUpdateHistoryCurrentValueTracking = Skip updating current value tracking caches. Used internally when deleting rows. [Default is false]
-	 *		dontDoSearchIndexing = if set to true then no search indexing on the inserted record is performed. [Default is false]
+	 *		dontDoSearchIndexing = if set to true then no search indexing on the updated record is performed. [Default is false]
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
