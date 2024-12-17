@@ -36,7 +36,7 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function rebuild_sort_values($po_opts=null) {
 		$o_db = new Db();
-		ini_set('memory_limit', '4000m');
+		ini_set('memory_limit', '4096m');
 		
 		$tables = $po_opts ? trim((string)$po_opts->getOption('table')) : null;
 		
@@ -71,7 +71,7 @@ trait CLIUtilsMaintenance {
 					print CLIProgressBar::next();
 					if ($t_label->load($vn_label_pk_val)) {
 						$t_table->logChanges(false);
-						$t_label->update();
+						$t_label->update(['dontDoSearchIndexing' => true]);
 					}
 				}
 				print CLIProgressBar::finish();
@@ -85,7 +85,7 @@ trait CLIUtilsMaintenance {
 				print CLIProgressBar::next();
 				if ($t_table->load($vn_pk_val)) {
 					$t_table->logChanges(false);
-					$t_table->update();
+					$t_table->update(['dontDoSearchIndexing' => true]);
 				}
 			}
 			print CLIProgressBar::finish();
@@ -1052,9 +1052,9 @@ trait CLIUtilsMaintenance {
 		$config = Configuration::load();
 
 		$ps_cache = strtolower($po_opts ? (string)$po_opts->getOption('cache') : 'all');
-		if (!in_array($ps_cache, array('all', 'app', 'usermedia'))) { $ps_cache = 'all'; }
+		if (!in_array($ps_cache, ['all', 'app', 'usermedia'])) { $ps_cache = 'all'; }
 
-		if (in_array($ps_cache, array('all', 'app'))) {
+		if (in_array($ps_cache, ['all', 'app'])) {
 			CLIUtils::addMessage(_t('Clearing application caches...'));
 			if (is_writable($config->get('taskqueue_tmp_directory'))) {
 				caRemoveDirectory($config->get('taskqueue_tmp_directory'), false);
@@ -1062,8 +1062,10 @@ trait CLIUtilsMaintenance {
 				CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 			}
 			PersistentCache::flush();
+			ExternalCache::flush();
+			MemoryCache::flush();
 		}
-		if (in_array($ps_cache, array('all', 'usermedia'))) {
+		if (in_array($ps_cache, ['all', 'usermedia'])) {
 			if (($vs_tmp_directory = $config->get('media_uploader_root_directory')) && (file_exists($vs_tmp_directory))) {
 				if (is_writable($vs_tmp_directory)) {
 					CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));

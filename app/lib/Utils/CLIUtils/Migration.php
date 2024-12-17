@@ -40,14 +40,20 @@ trait CLIUtilsMigration {
 		// Check version
 		if (($current_revision = ConfigurationCheck::getSchemaVersion()) >= __CollectiveAccess_Schema_Rev__) {
 			CLIUtils::addMessage(_t("Database already at current revision (%1). No update is required.", $current_revision));
-		//d	return true;
+			return true;
+		}
+		
+		if(!ConfigurationCheck::performQuick(['forMigration' => true])) {
+			CLIUtils::addError(_t("Pre-flight checks failed:\n %1", strip_tags(join("\n", array_map(function($v) { return "• {$v}\n"; }, ConfigurationCheck::getErrors())))));
+			return false;
 		}
 		
 		if(!CLIUtils::confirm(_t("Are you sure you want to update your version 1.7 system (database revision %1)?\nNOTE: you MUST backup your database before applying this update!\n\nType 'y' to proceed or 'n' to cancel, then hit return", $current_revision),['confirmationCode' => 'y', 'color' => 'yellow'])) {
 			return false;
 		}
 		
-		$num_steps = 8;
+		
+		$num_steps = 9;
 		// Clear all caches
 		$c = 1;
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
@@ -61,6 +67,7 @@ trait CLIUtilsMigration {
 		$db = new Db();
 		$db->query("TRUNCATE TABLE ca_sql_search_word_index");
 		$db->query("TRUNCATE TABLE ca_sql_search_words");
+		$db->query("TRUNCATE TABLE ca_search_indexing_queue");
 		$c++;
 		
 		// Apply database updates
@@ -76,26 +83,35 @@ trait CLIUtilsMigration {
 		$c++;
 		
 		// Update history tracking values
-		// CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-// 		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", $c, $num_steps), ['color' => 'yellow']);
-// 		CLIUtils::reload_current_values_for_history_tracking_policies();
-// 		$c++;
-// 		
-// 		// Update attribute sort values
-// 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-// 		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", $c, $num_steps), ['color' => 'yellow']);
-// 		CLIUtils::reload_attribute_sortable_values();
-// 		$c++;
-// 		
-// 		// Update sortable values
-// 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
-// 		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", $c, $num_steps), ['color' => 'yellow']);
-// 		CLIUtils::rebuild_sort_values();
-// 		$c++;
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating current history tracking values", $c, $num_steps), ['color' => 'yellow']);
+		CLIUtils::reload_current_values_for_history_tracking_policies();
+		$c++;
+		
+		// Update attribute sort values
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating attribute sort values", $c, $num_steps), ['color' => 'yellow']);
+		CLIUtils::reload_attribute_sortable_values();
+		$c++;
+		
+		// Update sortable values
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Updating label and identifier sort values", $c, $num_steps), ['color' => 'yellow']);
+		CLIUtils::rebuild_sort_values();
+		$c++;
+		
+		// Clear all caches
+		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
+		CLIUtils::addMessage(_t("[Step %1/%2] Clearing caches", $c, $num_steps), ['color' => 'yellow']);
+		CLIUtils::clear_caches();
+		$c++;
 		
 		// Reindex
 		CLIUtils::addMessage(_t("\n\n------------------------------------------------------------------------------"));
 		CLIUtils::addMessage(_t("[Step %1/%2] Rebuilding search index", $c, $num_steps), ['color' => 'yellow']);
+		$db->query("TRUNCATE TABLE ca_sql_search_word_index");
+		$db->query("TRUNCATE TABLE ca_sql_search_words");
+		$db->query("TRUNCATE TABLE ca_search_indexing_queue");
 		CLIUtils::rebuild_search_index();
 		$c++;
 		

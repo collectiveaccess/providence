@@ -60,7 +60,7 @@ final class ConfigurationCheck {
 	 * in index.php and that any errors set here cause the application
 	 * to die and display a nasty configuration error screen.
 	 */
-	public static function performQuick($options=null) {
+	public static function performQuick(?array $options=null) : bool {
 		self::init();
 		/* execute checks */
 		$vo_reflection = new ReflectionClass("ConfigurationCheck");
@@ -68,11 +68,12 @@ final class ConfigurationCheck {
 		foreach($va_methods as $vo_method){
 			if(strpos($vo_method->name,"QuickCheck")!==false){
 			    if (caGetOption('skipPathChecks', $options, false) && in_array($vo_method->name, ['caUrlRootQuickCheck', 'caBaseDirQuickCheck'])) { continue; }
-				if (!$vo_method->invoke(null, "ConfigurationCheck")) {
-					return;
+				if (!$vo_method->invoke(null, $options)) {
+					return false;
 				}
 			}
 		}
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -81,9 +82,9 @@ final class ConfigurationCheck {
 	 * errors set here are "non-lethal", i.e. the application still works
 	 * although certain features may not function properly.
 	 */
-	public static function performExpensive() {
+	public static function performExpensive(?array $options=null) : bool {
 		self::init();
-		self::$opa_error_messages = array();
+		self::$opa_error_messages = [];
 		self::$opo_db = new Db();
 		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
 
@@ -92,11 +93,13 @@ final class ConfigurationCheck {
 		$va_methods = $vo_reflection->getMethods();
 		foreach($va_methods as $vo_method){
 			if(strpos($vo_method->name,"ExpensiveCheck")!==false){
-				if (!$vo_method->invoke(null, "ConfigurationCheck")) {	// true means keep on doing checks; false means stop performing checks
-					return;
+				if (!$vo_method->invoke(null, $options)) {	// true means keep on doing checks; false means stop performing checks
+					return false;
 				}
 			}
 		}
+		
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -113,6 +116,7 @@ final class ConfigurationCheck {
 		self::permissionInstallCheck();
 		self::DBLoginQuickCheck();
 		self::tmpDirQuickCheck();
+		self::htmlPurifierDirQuickCheck();
 	}
 	# -------------------------------------------------------
 	private static function addError($ps_error) {
@@ -243,10 +247,10 @@ final class ConfigurationCheck {
 	/**
 	 * Is the DB schema up-to-date?
 	 */
-	public static function DBOutOfDateQuickCheck() {
+	public static function DBOutOfDateQuickCheck(?array $options=null) {
 		if (!in_array('ca_schema_updates', self::$opo_db->getTables())) {
 			self::addError(_t("Your database is extremely out-of-date. Please install all database migrations starting with migration #1 or contact support@collectiveaccess.org for assistance."));
-		} else if (($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
+		} else if (!caGetOption('forMigration', $options, false) && ($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
 			if($vn_schema_revision <= 158) { 
 				self::addError(_t("You appear to be upgrading a CollectiveAccess 1.7.x system. Upgrading is a multi-step process. Learn more about it at <a href='https://github.com/collectiveaccess/providence/tree/master?tab=readme-ov-file#updating-from-providence-version-17-or-later'>here</a>.</div>"));
 			} elseif (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__) {
@@ -371,7 +375,8 @@ final class ConfigurationCheck {
 	/**
 	 * I suspect that the application would die before we even reach this check if the base dir is messed up?
 	 */
-	public static function caBaseDirQuickCheck() {
+	public static function caBaseDirQuickCheck(?array $options=null) {
+		if(caGetOption('forMigration', $options, false)) { return true; }
 		$possible_bases = self::_baseGuesses();
 
 		if (caGetOSFamily() === OS_WIN32) {	// Windows paths are case insensitive
