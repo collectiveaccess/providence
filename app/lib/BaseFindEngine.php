@@ -1342,7 +1342,7 @@ class BaseFindEngine extends BaseObject {
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		if(!($t_label = $t_table->getLabelTableInstance())) { return []; }
+		if(!($t_label = $t_rel_table->getLabelTableInstance())) { return []; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
 		$rel_label_table = $t_rel_table->getLabelTableName();
@@ -1351,7 +1351,7 @@ class BaseFindEngine extends BaseObject {
 		$join_sql = join("\n", $joins);
 		
 		$sql = "
-			SELECT rl.{$table_pk}, rl.{$label_field} val
+			SELECT rl.{$rel_table_pk}, rl.{$label_field} val
 			FROM {$label_table} t
 			{$join_sql}
 			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}
