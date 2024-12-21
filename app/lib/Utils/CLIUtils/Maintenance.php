@@ -1061,7 +1061,11 @@ trait CLIUtilsMaintenance {
 			} else {
 				CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 			}
-			PersistentCache::flush();
+			try {
+				PersistentCache::flush();
+			} catch(Exception $e) {
+				// noop
+			}
 			ExternalCache::flush();
 			MemoryCache::flush();
 		}
