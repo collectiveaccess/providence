@@ -1183,7 +1183,7 @@ function caGetDisplayValueForBundle(?string $bundle, string $value) {
 			}
 		}
 	}
-	return "???";
+	return $value;
 }
 # ---------------------------------------
 /**
