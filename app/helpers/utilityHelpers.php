@@ -4277,6 +4277,10 @@ function caFileIsIncludable($ps_file) {
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
 				$va_ret[$vn_table_num] = $va_rel_table_info['table'];
 			}
+			if(isset($va_ret[56])) {
+				$t_instance = Datamodel::getInstanceByTableName('ca_objects_x_object_representations', true);
+				$va_ret[$t_instance->tableNum()] = $t_instance->tableName();
+			}
 		}
 
 		return $va_ret;
