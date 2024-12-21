@@ -187,6 +187,8 @@ class BaseFindController extends ActionController {
 			$vs_label_display_field = $t_label->getDisplayField();
 			foreach($display_list as $i => $va_display_item) {
 				$tmp = explode('.', $va_display_item['bundle_name']);
+				
+				if(!is_array($va_display_item['settings'])) { $va_display_item['settings'] = []; }
 
 				if(!isset($tmp[1])){ 
 					$tmp[1] = null;
@@ -235,7 +237,7 @@ class BaseFindController extends ActionController {
 					// Sort on related tables
 					if (method_exists($t_rel, "getLabelTableInstance") && ($t_rel_label = $t_rel->getLabelTableInstance())) {
 						$display_list[$i]['is_sortable'] = true; 
-						$types = array_merge(caGetOption('restrict_to_relationship_types', is_array($va_display_item['settings']) ? $va_display_item['settings'] : [], [], ['castTo' => 'array']), caGetOption('restrict_to_types', is_array($va_display_item['settings']) ? $va_display_item['settings'] : [], [], ['castTo' => 'array']));
+						$types = array_merge(caGetOption('restrict_to_relationship_types', $va_display_item['settings'], [], ['castTo' => 'array']), caGetOption('restrict_to_types', $va_display_item['settings'], [], ['castTo' => 'array']));
 						$display_list[$i]['bundle_sort'] = "{$tmp[0]}.preferred_labels.".$t_rel->getLabelSortField().((is_array($types) && sizeof($types)) ? "|".join(",", $types) : "");
 					}
 					continue; 
@@ -261,7 +263,7 @@ class BaseFindController extends ActionController {
 					$display_list[$i]['bundle_sort'] = $va_display_item['bundle_name'];
 					if(ca_metadata_elements::getElementDatatype($tmp[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
 						// Try to sort on tag in display template, if template is set
-						if(!($template = caGetOption('format', is_array($va_display_item['settings']) ? $va_display_item['settings'] : [], null))) {					// template set in display
+						if(!($template = caGetOption('format', $va_display_item['settings'], null))) {					// template set in display
 							$settings = ca_metadata_elements::getElementSettingsForId($va_attribute_list[$tmp[1]]);		// template set in metadata element
 							$template = caGetOption('displayTemplate', $settings, null);
 						}
