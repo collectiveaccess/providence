@@ -41,7 +41,7 @@ trait CLIUtilsSearch {
 		set_time_limit(24 * 60 * 60 * 7); /* maximum indexing time: 7 days :-) */
 
 		$o_si = new SearchIndexer();
-
+		$o_si->clearCaches();
 		$va_tables = null;
 		if ($vs_tables = ($po_opts ? (string)$po_opts->getOption('tables') : null)) {
 			$va_tables = preg_split("![;,]+!", $vs_tables);
