@@ -139,6 +139,16 @@ class BatchProcessor {
 						'label' => $t_subject->getLabelForDisplay(),
 						'status' => 'SUCCESS'
 					);
+
+					$opo_app_plugin_manager = new ApplicationPluginManager() ;
+					$opo_app_plugin_manager->hookSaveItem(
+						array(
+							'id' => $vn_row_id,
+							'table_num' => $t_subject->tableNum(),
+							'table_name' => $t_subject->tableName(),
+							'instance' => $t_subject
+						)
+					);
 				}
 
 				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
