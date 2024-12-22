@@ -198,6 +198,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	}
 	# -------------------------------------------------------
 	/**
+	 * Clear internal engine caches
+	 */
+	public function clearCaches() : void {
+		WLPlugSearchEngineSqlSearch2::$fieldnum_cache = [];
+		WLPlugSearchEngineSqlSearch2::$metadata_elements = [];
+		WLPlugSearchEngineSqlSearch2::$word_cache = []; 
+	}
+	# -------------------------------------------------------
+	/**
 	 * Set database connection
 	 *
 	 * @param Db $db A database connection to use in place of current one

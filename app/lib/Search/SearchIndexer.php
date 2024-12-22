@@ -111,6 +111,15 @@ class SearchIndexer extends SearchBase {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Clear internal indexer caches
+	 */
+	public function clearCaches() : void {
+		if($this->opo_engine && method_exists($this->opo_engine, 'clearCaches')) {
+			$this->opo_engine->clearCaches();
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 *
 	 */
 	public function setDb($po_db) {
