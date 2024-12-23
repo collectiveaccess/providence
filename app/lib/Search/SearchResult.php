@@ -3342,7 +3342,7 @@ class SearchResult extends BaseObject {
 		if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field] ?? [])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3353,7 +3353,7 @@ class SearchResult extends BaseObject {
 	    if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field] ?? [])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3383,7 +3383,7 @@ class SearchResult extends BaseObject {
 	    if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field] ?? [])]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3423,7 +3423,7 @@ class SearchResult extends BaseObject {
 		} else {
 		    $alt_text = null;
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($this->opa_field_media_info[$ps_field])]));
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($this->opa_field_media_info[$ps_field] ?? [])]));
 	}
 	# ------------------------------------------------------------------
 	/**
