@@ -493,7 +493,7 @@ class ca_acl extends BaseModel {
 			if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
 				while($qr_sub_records->nextRow()) {
 					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
-					if($qr_rel = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult'])) {
+					if($qr_rel = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult', 'limit' => 50000])) {
 						$statistics['relatedObjectCount'] += $qr_rel->numHits();
 						
 						$c = 0;
@@ -569,7 +569,7 @@ class ca_acl extends BaseModel {
 			$ids_to_set = [];
 			while($qr_sub_records->nextRow()) {
 				if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
-				if($qr_res = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult'])) {
+				if($qr_res = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult', 'limit' => 50000])) {
 					
 					while($qr_res->nextHit()) {
 						$cv = $qr_res->get('acl_inherit_from_ca_collections');
@@ -811,6 +811,62 @@ class ca_acl extends BaseModel {
 				");
 			}
 		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function applyAccessInheritanceToRelatedObjectsFromCollection($subject, ?array $options=null) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		
+		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
+		if(!($rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) { return null; }
+		if($subject->tableName() !== 'ca_collections') { return false; }
+		$db = $subject->getDb() ?? new Db();
+		
+		$access = (int)$subject->get('access');
+		
+		if ($t_link = $subject->getRelationshipInstance('ca_objects')) {
+			if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
+				if(is_array($ids = $subject->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
+					$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?)", [$access, $ids]);
+					foreach($ids as $id) {
+						$t_rel_item->logChange('U', $AUTH_CURRENT_USER_ID, ['row_id' => $id, 'snapshot' => ['access' => $access]]);
+					}
+				}
+				
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function applyAccessInheritanceSettingToRelatedObjectsFromCollection($subject, ?array $options=null) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		
+		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
+		if(!($rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) { return null; }
+		if($subject->tableName() !== 'ca_collections') { return false; }
+		$db = $subject->getDb() ?? new Db();
+		
+		$inherit = (int)$subject->get('access_inherit_from_parent');
+		
+		if ($t_link = $subject->getRelationshipInstance('ca_objects')) {
+			if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
+				if(is_array($ids = $subject->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
+					$db->query("UPDATE ca_objects SET access_inherit_from_parent = ? WHERE object_id IN (?)", [$inherit, $ids]);
+					foreach($ids as $id) {
+						$t_rel_item->logChange('U', $AUTH_CURRENT_USER_ID, ['row_id' => $id, 'snapshot' => ['access_inherit_from_parent' => $inherit]]);
+					}
+				}
+				
+			}
+		}
+		
 		return true;
 	}
 	# ------------------------------------------------------
