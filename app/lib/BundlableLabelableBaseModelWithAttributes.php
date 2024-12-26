@@ -7105,7 +7105,7 @@ if (!$vb_batch) {
 			}
 			
 			$vs_sql = "
-				SELECT DISTINCT ".join(', ', $va_selects)."
+				SELECT ".(($ps_return_as === 'count') ? 'count(*) c' : "DISTINCT ".join(', ', $va_selects))."
 				FROM {$vs_subject_table_name}
 				".join("\n", array_merge($va_joins, $va_joins_post_add))."
 				WHERE
@@ -7114,6 +7114,11 @@ if (!$vb_batch) {
 			";
 			
 			$qr_res = $o_db->query($vs_sql);
+			
+			if($ps_return_as === 'count') {
+				$qr_res->nextRow();
+				return $qr_res->get('c');
+			}
 			
 			if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 			
