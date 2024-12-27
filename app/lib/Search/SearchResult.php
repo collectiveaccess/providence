@@ -3426,7 +3426,9 @@ class SearchResult extends BaseObject {
 		} else {
 		    $alt_text = null;
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($this->opa_field_media_info[$ps_field] ?? [])]));
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($d)]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3472,7 +3474,9 @@ class SearchResult extends BaseObject {
 	    if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3492,7 +3496,9 @@ class SearchResult extends BaseObject {
 		if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3503,7 +3509,8 @@ class SearchResult extends BaseObject {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
 
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(['data' => reset($this->opa_field_media_info[$ps_field])]);	
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(['data' => reset($d)]);	
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3513,7 +3520,9 @@ class SearchResult extends BaseObject {
 	    if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($ps_version, ['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($ps_version, ['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3523,7 +3532,9 @@ class SearchResult extends BaseObject {
 		if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($ps_version, $ps_mirror, ['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($ps_version, $ps_mirror, ['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
