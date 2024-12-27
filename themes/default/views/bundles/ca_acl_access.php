@@ -111,6 +111,9 @@ $stats			= $this->getVar('statistics');
 		if ($t_instance->hasField('acl_inherit_from_parent')) {
 			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', '', ['forACLAccessScreen' => true], ['request' => $this->request]);
 		}
+		if ((bool)$t_instance->getAppConfig()->get($t_instance->tableName().'_allow_access_inheritance') && $t_instance->hasField('access_inherit_from_parent')) {
+			print $t_instance->getBundleFormHTML('access_inherit_from_parent', '', ['forACLAccessScreen' => true], ['request' => $this->request]);
+		}
 ?>
 <?php
 if(
@@ -166,9 +169,9 @@ if(
 ?>
 		<p>
 			<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount']) 
+				_t('%1 %2 (out of %4 total) will inherit item-level access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount']) 
 				: 
-				_t(' %1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount'])  
+				_t(' %1 %2 (out of %4 total) will inherit item-level access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount'])  
 			?>
 <?php
 			if(
@@ -197,6 +200,42 @@ if(
 ?>			
 		</p>
 <?php
+		if((bool)$t_instance->getAppConfig()->get('ca_objects_allow_access_inheritance')) {
+?>
+		<p>
+			<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
+				_t('%1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount']) 
+				: 
+				_t(' %1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount'])  
+			?>
+<?php
+			if(
+					($stats['relatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount'])
+					||
+					($stats['inheritingAccessRelatedObjectCount'] > 0)
+			) {
+?>
+				<div style="margin-left: 10px;">
+<?php
+				if($stats['relatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount']) {
+?>
+					<?= caHTMLCheckboxInput('set_all_access_inherit_from_parent', ['id' => 'setAllAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+<?php
+				}
+				
+				if($stats['inheritingAccessRelatedObjectCount'] > 0) {
+?>
+					<?= caHTMLCheckboxInput('set_none_access_inherit_from_parent', ['id' => 'setNoneAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?>
+<?php
+				}
+?>
+				</div>
+<?php
+			}
+?>			
+		</p>
+<?php
+		}
 	}
 }
 ?>

@@ -1382,17 +1382,31 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$t_set_item = new ca_set_items();
 				
 				$va_set_ids = [];
+				$log_entries = [];
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
 					$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
-					$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+					$log_entries[] = [
+						'table' => 'ca_set_items',
+						'row_id' => $qr_res->get('ca_set_items.item_id'),
+						'user_id' => $pn_user_id,
+						'type' => 'I',
+						'snapshot' => $va_snapshot
+					];
 				}
 			
 				$t_set_item_label = new ca_set_item_labels();
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($item_ids));
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-					$t_set_item_label->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_item_labels.label_id'), 'snapshot' => $va_snapshot]);
+					
+					$log_entries[] = [
+						'table' => 'ca_set_item_labels',
+						'row_id' => $qr_res->get('ca_set_item_labels.ca_set_item_labels'),
+						'user_id' => $pn_user_id,
+						'type' => 'I',
+						'snapshot' => $va_snapshot
+					];
 				}
 				
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
@@ -1400,7 +1414,28 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$t_set = new ca_sets();
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
+					$log_entries[] = [
+						'table' => 'ca_sets',
+						'row_id' => $qr_res->get('ca_sets.set_id'),
+						'user_id' => $pn_user_id,
+						'type' => 'U',
+						'snapshot' => $va_snapshot
+					];
+				}
+				
+				if(sizeof($log_entries) > 0) {
+					$k = "ca_sets::{$vn_set_id}";
+					$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
+					if (!$o_tq->addTask(
+						'bulkLogger',
+						[
+							"logEntries" => $log_entries,
+						],
+						["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $pn_user_id]))
+					{
+						// Error adding queue item
+						throw new ApplicationException(_t('Could not add logging tasks to queue'));
+					}
 				}
 			}
 			
@@ -1725,10 +1760,21 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_set_item = new ca_set_items();
 			
 			$va_set_ids = [];
+			
+			$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
+			
+			$log_entries = [];
 			while($qr_res->nextRow()) {
 				$va_snapshot = $qr_res->getRow();
 				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
-				$t_set_item->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+				$log_entries[] = [
+					'table' => 'ca_set_items',
+					'row_id' => $qr_res->get('ca_set_items.item_id'),
+					'user_id' => $pn_user_id,
+					'type' => 'U',
+					'snapshot' => $va_snapshot
+				];
+				
 			}
 			
 			if (sizeof($va_set_ids)) {
@@ -1737,11 +1783,29 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$t_set = new ca_sets();
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
+					$log_entries[] = [
+						'table' => 'ca_sets',
+						'row_id' => $qr_res->get('ca_sets.set_id'),
+						'user_id' => $pn_user_id,
+						'type' => 'U',
+						'snapshot' => $va_snapshot
+					];
+				}
+			}
+			
+			if(sizeof($log_entries)) {
+				if (!$o_tq->addTask(
+					'bulkLogger',
+					[
+						"logEntries" => $log_entries,
+					],
+					["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $pn_user_id]))
+				{
+					// Error adding queue item
+					throw new ApplicationException(_t('Could not add logging tasks to queue'));
 				}
 			}
 		}
-		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }

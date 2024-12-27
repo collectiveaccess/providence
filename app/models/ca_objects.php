@@ -300,7 +300,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				_t('Do not inherit access settings from related collections') => 0,
 				_t('Inherit access settings from related collections') => 1
 			),
-			'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
+			'LABEL' => _t('Inherit item-level access control settings from collections?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for related collections are applied to this object.')
 		),
 		'acl_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -322,10 +322,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'DONT_ALLOW_IN_UI' => true,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit access settings from parent') => 0,
-				_t('Inherit access settings from parent') => 1
+				_t('Do not inherit public access settings from parent') => 0,
+				_t('Inherit public access settings from parent') => 1
 			),
-			'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
+			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),
 		'view_count' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

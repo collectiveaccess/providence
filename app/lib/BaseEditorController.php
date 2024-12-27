@@ -265,6 +265,8 @@ class BaseEditorController extends ActionController {
 		
 		if(!$this->verifyAccess($t_subject)) { return; }
 		
+		$orig_access = $t_subject->get('access');
+		
 		if($vn_above_id) {
 			// Convert "above" id (the id of the record we're going to make the newly created record parent of
 			if (($t_instance = Datamodel::getInstanceByTableName($this->ops_table_name)) && $t_instance->load($vn_above_id)) {
@@ -496,6 +498,10 @@ class BaseEditorController extends ActionController {
 
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
+
+		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
+		}
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
@@ -1039,7 +1045,7 @@ class BaseEditorController extends ActionController {
 		
 		// Force all?
 		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-			if(!ca_acl::setInheritanceForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 				$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
@@ -1049,8 +1055,18 @@ class BaseEditorController extends ActionController {
 			&&
 			($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
 		) {
-			if(!ca_acl::setInheritanceForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 				$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
+		if(
+			($subject_table === 'ca_collections')
+			&&
+			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
+		) {
+			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
@@ -1085,12 +1101,15 @@ class BaseEditorController extends ActionController {
 		$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
 
 		// Set ACL-related intrinsic fields
-		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
+		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent') || $t_subject->hasField('access_inherit_from_parent')) {
 			if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
 				$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
 			}
 			if ($t_subject->hasField('acl_inherit_from_parent')) {
 				$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pInteger));
+			}
+			if ($t_subject->hasField('access_inherit_from_parent')) {
+				$t_subject->set('access_inherit_from_parent', $this->request->getParameter('access_inherit_from_parent', pInteger));
 			}
 			$t_subject->update();
 
