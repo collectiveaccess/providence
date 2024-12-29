@@ -10,5 +10,5 @@ jobs:
         uses: php-actions/composer@v6
         with:
           php_version: "8.2"
-          php_extensions: gd zip
+          php_extensions: gd zip intl
           version: 2.x
