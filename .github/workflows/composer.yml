@@ -5,6 +5,7 @@ jobs:
   composer-install:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Install dependencies
         uses: php-actions/composer@v6
         with:
