@@ -6,7 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
-        uses: actions/checkout@v3 php-actions/composer@v6
+        uses: actions/checkout@v3
+        uses: php-actions/composer@v6
         with:
           php_version: "8.2"
           php_extensions: gd zip
