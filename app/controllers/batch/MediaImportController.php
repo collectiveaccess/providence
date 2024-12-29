@@ -123,6 +123,11 @@ class MediaImportController extends ActionController {
 		$t_rep->set('status', $va_last_settings['ca_object_representations_status'] ?? null);
 		$t_rep->set('access', $va_last_settings['ca_object_representations_access'] ?? null);
 		
+		$target_idno_instance = $t_instance->getIDNoPlugInInstance();
+		$rep_idno_instance = $t_rep->getIDNoPlugInInstance();
+		$this->getView()->setVar('target_idno_is_serial', method_exists($target_idno_instance, 'isSerialFormat') ? $target_idno_instance->isSerialFormat() : false);
+		$this->getView()->setVar('representation_idno_is_serial', method_exists($rep_idno_instance, 'isSerialFormat') ? $rep_idno_instance->isSerialFormat() : false);
+		
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 			[],
 			[]
@@ -492,7 +497,7 @@ class MediaImportController extends ActionController {
 		
 		$this->view->setVar('directory_list', caSanitizeArray($va_level_data));
 		
-		
+		$this->response->setContentType("application/json");
 		$this->render('mediaimport/directory_level_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -513,6 +518,7 @@ class MediaImportController extends ActionController {
 		
 		$this->view->setVar("ancestors", $va_ancestors);
 		
+		$this->response->setContentType("application/json");
 		$this->render('mediaimport/directory_ancestors_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -555,6 +561,8 @@ class MediaImportController extends ActionController {
 		}
 
 		$this->view->setVar('response', $response);
+		
+		$this->response->setContentType("application/json");
 		$this->render('mediaimport/file_upload_response_json.php');
 	}
 	# ------------------------------------------------------------------

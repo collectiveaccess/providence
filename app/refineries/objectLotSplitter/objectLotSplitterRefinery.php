@@ -171,6 +171,15 @@ BaseRefinery::$s_refinery_settings['objectLotSplitter'] = array(
 		'label' => _t('Attributes'),
 		'description' => _t('Sets or maps metadata for the lot record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 	),
+	'objectLotSplitter_attributeDelimiters' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Attribute delimiters'),
+		'description' => _t('Delimiters to use for each mapped attribute.')
+	),
 	'objectLotSplitter_relationshipTypeDefault' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,

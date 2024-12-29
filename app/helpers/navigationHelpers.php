@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
-  /**
-   *
-   */
-   
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/themeHelpers.php');
  	
@@ -112,6 +107,8 @@
  	define('__CA_NAV_ICON_COPY__', 70);
  	define('__CA_NAV_ICON_MERGE__', 71);
  	define('__CA_NAV_ICON_SPLIT__', 72);
+ 	define('__CA_NAV_ICON_TOGGLE__', 73);
+ 	define('__CA_NAV_ICON_CHECKBOX__', 74);
  	
  	/**
  	 * Icon position constants
@@ -133,13 +130,17 @@
 	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
 	 *		absolute = return absolute URL. [Default is to return relative URL]
 	 *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
+	 *		isServiceUrl = assume URL is a web-services call (Eg. use service.php rather than index.php) [Default is false]
 	 *
 	 * @return string
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
-
+		$is_service_url = caGetOption('isServiceUrl', $pa_options, false, ['castTo' => 'boolean']);
 		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
+			if($is_service_url) { $vs_url .= '/service.php'; }
+		} elseif($is_service_url) {
+			$vs_url = $po_request->getBaseUrlPath().'/service.php';
 		} else {
 			$s = $po_request->getScriptName();
 			$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
@@ -392,6 +393,7 @@
 	 *  noCSRFToken = if true CSRF token is omitted. [Default is false]
 	 *	disableSubmit = don't allow form to be submitted. [Default is false]
 	 *	submitOnReturn = submit form if user hits return in any form element. [Default is false]
+	 *	autocomplete = enable autocomplete for elements in form. [Default is false]
 	 */
 	function caFormTag($po_request, $ps_action, $ps_id, $ps_module_and_controller_path=null, $ps_method='post', $ps_enctype='multipart/form-data', $ps_target='_top', $pa_options=null) {
 		if ($ps_target) {
@@ -420,7 +422,9 @@
 				$po_request->getControllerUrl().'/'.$ps_action;
 		}
 		
-		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."'>\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
+		$autocomplete = caGetOption('autocomplete', $pa_options, false);
+		
+		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."' ".($autocomplete ? '' : 'autocomplete="off"').">\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
 		
 		if (!caGetOption('noTimestamp', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
@@ -582,7 +586,7 @@
 		
 		$va_img_attr = array(
 			'border' => '0',
-			'alt=' => $ps_content,
+			'alt' => htmlentities($ps_content),
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
@@ -907,6 +911,12 @@
 				break;	
 			case __CA_NAV_ICON_SPLIT__:
 				$vs_fa_class = 'fa fa-object-ungroup';
+				break;		
+			case __CA_NAV_ICON_TOGGLE__:
+				$vs_fa_class = 'fa fa-toggle-on';
+				break;
+			case __CA_NAV_ICON_CHECKBOX__:
+				$vs_fa_class = 'fa fa-check-square';
 				break;																					
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";

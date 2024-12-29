@@ -770,7 +770,7 @@ class ca_media_upload_sessions extends BaseModel {
 					}
 				}
 			}
-		}	
+		}
 		return $errors;
 	}
 	# ------------------------------------------------------

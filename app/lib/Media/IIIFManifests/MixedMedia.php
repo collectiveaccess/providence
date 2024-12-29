@@ -36,6 +36,14 @@ class MixedMedia extends BaseIIIFManifest {
 	/**
 	 *
 	 */
+	public function __construct() {
+		parent::__construct();
+		$this->manifest_name = 'MixedMedia';
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function manifest(array $identifiers, ?array $options=null) : array {
 		global $g_request;
 		if(!$g_request) { return null; }
@@ -47,20 +55,18 @@ class MixedMedia extends BaseIIIFManifest {
 			'type' => 'Manifest',
 			'label' => ['none' => []],
 			'metadata' => [],
-			//'requiredStatement' => ['label' => ['none' => ['TODO']]],
-			//'rights' => 'TODO',
-			//'thumbnail' => null,
-			//'seeAlso' => null,
-			//'homepage' => null,
-			//'partOf' => null,
 			'items' => []
 		];
+		
+		$first_instance = \IIIFService::getMediaInstance($identifiers[0], $g_request);
+		$json = array_merge($json, $this->generateMetadata($first_instance['instance']) ?? []);
 	
 		foreach($identifiers as $identifier) {
 			if(!is_array($media = \IIIFService::getMediaInstance($identifier, $g_request))) {
 				throw new \IIIFAccessException(_t('Unknown error'), 400);
 			}
 			
+			$item_md = $this->generateMetadata($media['instance'], null, ['itemLevel' => true]);
 			// $item = [
 // 				'id' => $this->base_url.$identifier,
 // 				'type' => 'Canvas',
@@ -230,7 +236,7 @@ class MixedMedia extends BaseIIIFManifest {
 						}
 						
 						if($rep['label'] === '[BLANK]') { $rep['label'] = ''; }
-						$repinfo = [
+						$repinfo = array_merge([
 							'id' => $base_iiif_id,
 							'type' => 'Canvas',
 							'label' => ['none' => [$rep['label']]],
@@ -295,7 +301,7 @@ class MixedMedia extends BaseIIIFManifest {
 									]
 								]
 							]
-						];
+						], $item_md);
 						
 						if(!$services) {
 							unset($repinfo['items'][0]['items'][0]['body']['service']);

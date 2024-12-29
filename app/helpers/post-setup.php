@@ -238,7 +238,6 @@ if (!defined("__CA_DB_SSL_CA_PATH__")) {
 	define("__CA_DB_SSL_CA_PATH__", null);
 }
 
-
 set_include_path(__CA_LIB_DIR__.PATH_SEPARATOR.__CA_MODELS_DIR__.PATH_SEPARATOR.get_include_path());
 
 # The path to the main instance configuration file defined as a constant

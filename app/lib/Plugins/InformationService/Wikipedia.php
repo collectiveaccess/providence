@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
-    
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -161,7 +155,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		$vs_display = "<p><a href='$ps_url' target='_blank'>$ps_url</a></p>";
+		$vs_display = "<p><a href='$ps_url' target='_blank' rel='noopener noreferrer'>$ps_url</a></p>";
 
 		$va_info = $this->getExtraInfo($pa_settings, $ps_url);
 
@@ -177,7 +171,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		// readable version of get parameters
 		$va_get_params = array(
 			'action' => 'query',
-			'titles' => self::getPageTitleFromURI($ps_url),
+			'titles' => urlencode(self::getPageTitleFromURI($ps_url)),
 			'prop' => 'pageimages|info|extracts',
 			'inprop' => 'url',
 			'piprop' => 'name|thumbnail',

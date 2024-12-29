@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,17 +39,13 @@ var caUI = caUI || {};
 			panelContentID: 'splashBrowsePanelContent',
 			
 			facetSelectID: "browseFacetSelect",
-			
-			useExpose: true,
+
 			useStaticDiv: false,									/* set if you want to use a visible <div> for the browse panel rather than a show/hide overlay <div> */
 			
 			isChanging: false,
 			browseID: null,
 			
 			singleFacetValues: {},
-			
-			exposeBackgroundColor: '#000000',						/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
-			exposeBackgroundOpacity: 0.5,							/* opacity of background color masking out page content; 1.0 is opaque */
 			panelTransitionSpeed: 200
 		}, options);
 		
@@ -69,10 +65,6 @@ var caUI = caUI || {};
 			
 			if (!that.useStaticDiv) {
 				jQuery("#" + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
-			
-				if (that.useExpose) { 
-					jQuery("#" + that.panelID).expose({api: true, color: that.exposeBackgroundColor, opacity: that.exposeBackgroundOpacity, zIndex: 99999}).load(); 
-				}
 			} else {
 				jQuery("#" + that.panelID).show();
 			}
@@ -89,10 +81,6 @@ var caUI = caUI || {};
 			var panelContentID = (options && options.panelContentID) ? options.panelContentID : that.panelContentID;
 			if (!that.useStaticDiv) {
 				jQuery("#" + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
-			
-				if (that.useExpose) {
-					jQuery.mask.close();
-				}
 			} else {
 				jQuery("#" + that.panelID).hide();
 			}

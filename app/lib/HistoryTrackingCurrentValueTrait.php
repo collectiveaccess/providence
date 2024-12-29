@@ -300,7 +300,11 @@ trait HistoryTrackingCurrentValueTrait {
 			}
 			$pa_bundle_settings = $va_bundle_settings;
 		}
-		
+	
+		// Force invalid policy settings to default
+		if(!self::isValidHistoryTrackingCurrentValuePolicy($pa_bundle_settings['policy'] ?? null)) {
+			$pa_bundle_settings['policy'] = $this->getDefaultHistoryTrackingCurrentValuePolicy();
+		}
 		return $pa_bundle_settings;
 	}
 	# ------------------------------------------------------
@@ -2665,9 +2669,12 @@ trait HistoryTrackingCurrentValueTrait {
 		
 		$qr_result = $this->getContents($policy, array_merge($bundle_settings, ['start' => $start, 'limit' => $limit]));	
 	
-		$bundle_settings['template'] = $bundle_settings['displayTemplate'] ?? null;
-		$initial_values = caProcessRelationshipLookupLabel($qr_result, Datamodel::getInstance($qr_result->tableName()), $bundle_settings);
-
+		if($qr_result) {
+			$bundle_settings['template'] = $bundle_settings['displayTemplate'] ?? null;
+			$initial_values = caProcessRelationshipLookupLabel($qr_result, Datamodel::getInstance($qr_result->tableName()), $bundle_settings);
+		} else {
+			$initial_values = []; 
+		}
 		return ['initialValues' => $initial_values, 'result' => $qr_result];
 	}
 	# ------------------------------------------------------

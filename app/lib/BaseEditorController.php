@@ -52,7 +52,6 @@ class BaseEditorController extends ActionController {
 
 		AssetLoadManager::register('bundleListEditorUI');
 		AssetLoadManager::register('panel');
- 		AssetLoadManager::register('maps');
  		AssetLoadManager::register('leaflet');
  		AssetLoadManager::register('3dmodels');
 
@@ -265,6 +264,8 @@ class BaseEditorController extends ActionController {
 		
 		
 		if(!$this->verifyAccess($t_subject)) { return; }
+		
+		$orig_access = $t_subject->get('access');
 		
 		if($vn_above_id) {
 			// Convert "above" id (the id of the record we're going to make the newly created record parent of
@@ -497,6 +498,10 @@ class BaseEditorController extends ActionController {
 
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
+
+		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
+		}
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
@@ -1040,7 +1045,7 @@ class BaseEditorController extends ActionController {
 		
 		// Force all?
 		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-			if(!ca_acl::setInheritanceForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 				$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
@@ -1050,8 +1055,18 @@ class BaseEditorController extends ActionController {
 			&&
 			($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
 		) {
-			if(!ca_acl::setInheritanceForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 				$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
+		if(
+			($subject_table === 'ca_collections')
+			&&
+			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
+		) {
+			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
@@ -1086,12 +1101,15 @@ class BaseEditorController extends ActionController {
 		$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
 
 		// Set ACL-related intrinsic fields
-		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
+		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent') || $t_subject->hasField('access_inherit_from_parent')) {
 			if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
 				$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
 			}
 			if ($t_subject->hasField('acl_inherit_from_parent')) {
 				$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pInteger));
+			}
+			if ($t_subject->hasField('access_inherit_from_parent')) {
+				$t_subject->set('access_inherit_from_parent', $this->request->getParameter('access_inherit_from_parent', pInteger));
 			}
 			$t_subject->update();
 
@@ -1596,6 +1614,7 @@ class BaseEditorController extends ActionController {
 
 		$this->view->setVar('errors', $va_errors);
 
+		$this->response->setContentType('application/json');
 		$this->render('../generic/ajax_toggle_item_watch_json.php');
 	}
 	# -------------------------------------------------------
@@ -1656,7 +1675,7 @@ class BaseEditorController extends ActionController {
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
 				$bundle_label = null;
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings'), ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
+				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
 				break;
 		}
 	}
@@ -1682,6 +1701,7 @@ class BaseEditorController extends ActionController {
 		
 		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
+		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode(['sort' => array_keys($d ?? []), 'data' => $d]));
 	}
 	# ------------------------------------------------------------------
@@ -1697,8 +1717,9 @@ class BaseEditorController extends ActionController {
 		// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
 		$ps_template = $this->request->getParameter("template", pString);
 		$this->view->setVar('processed_template', json_encode(caProcessTemplateForIDs($ps_template, $t_subject->tableNum(), array($vn_subject_id))));
+		
+		$this->response->setContentType('application/json');
 		$this->render("../generic/ajax_process_template.php");
-
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -2343,6 +2364,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
+		
+		$this->response->setContentType('application/json');
 		$this->render('ajax_representation_annotations_json.php');
 	}
 	# -------------------------------------------------------
@@ -2407,6 +2430,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
+		
+		$this->response->setContentType('application/json');
 		$this->render('ajax_representation_annotations_json.php');
 	}
 	# -------------------------------------------------------
@@ -2446,6 +2471,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		$this->view->setVar('response', $va_response);
+		
+		$this->response->setContentType('application/json');
 		$this->render('object_representation_process_media_json.php');
 	}
 	# -------------------------------------------------------
@@ -2468,6 +2495,8 @@ class BaseEditorController extends ActionController {
 			);
 		}
 		$this->view->setVar('response', $va_response);
+		
+		$this->response->setContentType('application/json');
 		$this->render('object_representation_process_media_json.php');
 	}
 	# -------------------------------------------------------
@@ -2713,6 +2742,8 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->response->setContentType("application/json");
 
 		if (!($user_id = $this->request->getUserID())) { return null; }
 		caCleanUserMediaDirectory($user_id);
@@ -2772,7 +2803,7 @@ class BaseEditorController extends ActionController {
 		if(!$this->verifyAccess($t_subject)) { return; }
 		
 		$table = $t_subject->tableName();
-		$location_id = $this->request->getParameter('location_id', pInteger);
+		$location_id = $this->request->getParameter('home_location_id', pInteger);
 		if (!($t_location = ca_storage_locations::find($location_id, ['returnAs' => 'firstModelInstance']))) { 
 			$resp = ['ok' => 0, 'errors' => _t('No location set')];
 		} else {
@@ -2793,6 +2824,8 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
 		$this->render('../generic/set_home_location_json.php');
 	}
 	# -------------------------------------------------------
@@ -3100,6 +3133,7 @@ class BaseEditorController extends ActionController {
 		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
 		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
 
+		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode($va_sorted_ids));
 	}
 	# -------------------------------------------------------

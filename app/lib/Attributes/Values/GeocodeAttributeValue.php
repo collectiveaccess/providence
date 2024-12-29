@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_GEOCODE__", 4);
 
 require_once(__CA_LIB_DIR__.'/Configuration.php');
@@ -456,21 +452,27 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 					} else {
 						$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
 					
-						// convert from degrees minutes seconds to decimal format
-						if (caGISisDMS($va_tmp[0])) {
-							$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
-						} else {
-							$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+						if(sizeof($va_tmp) && strlen($va_tmp[0])) {
+							// convert from degrees minutes seconds to decimal format
+							if (caGISisDMS($va_tmp[0])) {
+								$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+							} else {
+								$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+							}
+							if(isset($va_tmp[1]) && strlen($va_tmp[1])) {
+								if (caGISisDMS($va_tmp[1])) {
+									$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+								} else {
+									$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+								}
+							} else {
+								$va_tmp[1] = '';
+							}
+						
+							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1].(($vn_radius > 0) ? "~{$vn_radius}" : "").(($vn_angle > 0) ? "*{$vn_angle}" : "");
+							if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
+							if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
 						}
-						if (caGISisDMS($va_tmp[1])) {
-							$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
-						} else {
-							$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
-						}
-					
-						$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1].(($vn_radius > 0) ? "~{$vn_radius}" : "").(($vn_angle > 0) ? "*{$vn_angle}" : "");
-						if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
-						if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
 					}
 				}
 				$va_feature_list_proc[] = join(';', $va_parsed_points);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2023 Whirl-i-Gig
+ * Copyright 2019-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,7 +80,8 @@ class WLPlugBanHammerRequestFrequency Extends BaseBanHammerPlugin  {
 	 *
 	 */
 	static public function banTTL() {
-		return null;	// forever
+		$config = self::$config ? self::$config->get('plugins.RequestFrequency') : [];
+		return self::getTTLFromConfig($config);
 	}
 	# ------------------------------------------------------
 }

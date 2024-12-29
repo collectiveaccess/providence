@@ -980,7 +980,7 @@ if (!$pb_omit_editing_info) {
 		if (!$pm_table_name_or_num) { return null; }
 		$cache_key = caMakeCacheKeyFromOptions($options ?? [], $pm_table_name_or_num.'|'.(($g_request && $g_request->user) ? 'USER:'.$g_request->user->getPrimaryKey() : ''));
 		if(CompositeCache::contains($cache_key)) {
-			//return CompositeCache::fetch($cache_key);
+			return CompositeCache::fetch($cache_key);
 		}
 		
 		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
@@ -1445,7 +1445,7 @@ if (!$pb_omit_editing_info) {
 					'default' => '',
 					'label' => _t('Display format'),
 					'description' => _t('Template used to format output.')
-				),		
+				),
 				'policy' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_SELECT,

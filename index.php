@@ -83,6 +83,7 @@ try {
 	// Security headers
 	$resp->addHeader("X-XSS-Protection", "1; mode=block");
 	$resp->addHeader("X-Frame-Options", "SAMEORIGIN");
+	$resp->addHeader("X-Content-Type-Options", "nosniff");
 
 	$vt_app_plugin_manager = new ApplicationPluginManager();
 	if($vt_app_plugin_manager->hookAddDomainSecurityPolicy(null) && is_array($vt_app_plugin_manager->hookAddDomainSecurityPolicy(null))) {
@@ -120,7 +121,15 @@ try {
 	//
 	// PageFormat plug-in generates header/footer shell around page content
 	//
-	$app->registerPlugin(new PageFormat());
+	
+	if($req->isAjax()) { 
+		// Only load specifically registered packages when returning content for an Ajax request;
+		// default packages will have already been loaded.
+		AssetLoadManager::loadDefaultPackages(false); 	
+		$app->registerPlugin(new AjaxFooter());
+	} else {
+		$app->registerPlugin(new PageFormat());
+	}
 
 	//
 	// Dispatch the request

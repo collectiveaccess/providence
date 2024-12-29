@@ -2901,7 +2901,7 @@ class BaseModel extends BaseObject {
 	 *		force = if set field values are not verified prior to performing the update
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 *      dontUpdateHistoryCurrentValueTracking = Skip updating current value tracking caches. Used internally when deleting rows. [Default is false]
-	 *		dontDoSearchIndexing = if set to true then no search indexing on the inserted record is performed. [Default is false]
+	 *		dontDoSearchIndexing = if set to true then no search indexing on the updated record is performed. [Default is false]
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
@@ -4106,9 +4106,9 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				return $va_media_info[$ps_version];
 			} else {
 				// Try key as passed, then all UPPER and all lowercase
-				if($vs_v = $va_media_info[$ps_version][$ps_property]) { return $vs_v; }
-				if($vs_v = $va_media_info[$ps_version][strtoupper($ps_property)]) { return $vs_v; }
-				if($vs_v = $va_media_info[$ps_version][strtolower($ps_property)]) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][$ps_property] ?? null)) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][strtoupper($ps_property)] ?? null)) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][strtolower($ps_property)] ?? null)) { return $vs_v; }
 			}
 		} else {
 			return $va_media_info;
@@ -4425,6 +4425,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
 	 *		dont_allow_duplicate_media = if set to true, and the model has a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
 	 *		skipWhen = skip processing of specific versions of media when file size exceeds threshold and use an existing version in its place. An array should be set, indexed by version name. Each skipped version should have an array with two keys, "threshold" (size in bytes) and "replaceWithVersion" (the version to use). [Default is null]
+	 *		skipUrlIfMediaExistsAsRepresentation = When media is a URL, check if downloaded media already exists as an object representation before processing. [Default is false]
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -4506,6 +4507,13 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$vn_url_fetched_on = time();
 						
 						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
+						if((bool)$this->_CONFIG->get('skip_remote_url_if_media_exists_as_representation')) {
+							if(ca_object_representations::mediaExists($vs_tmp_file)) {
+								$this->postError(1600, _t('Media already exists as representation'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);								
+								set_time_limit($vn_max_execution_time);
+								return false;
+							}
+						}
 						$vb_is_fetched_file = true;
 					} catch(Exception $e) {
 						$this->postError(1600, $e->getMessage(), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
@@ -6632,8 +6640,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$id = $t->get($field);
 							} elseif($is_metadata_value) {
 								$t_attr = new ca_attributes($this->get('attribute_id'));
-								if(!($row_id = $t_attr->get('row_id'))) { return false; }
-								if(!$t->load($row_id)) { return false; }
+								if(!($xrow_id = $t_attr->get('row_id'))) { return false; }
+								if(!$t->load($xrow_id)) { return false; }
 								$id = $t->get($field);
 							} else {
 								$id = $this->get($field);
@@ -6669,11 +6677,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							$t_attr = new ca_attributes($id);
 							$cur_table = $primary_table = Datamodel::getTableName($t_attr->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($t_attr->get('table_num'));
-							$row_id = $t_attr->get('row_id');
+							$xrow_id = $t_attr->get('row_id');
 						} elseif ($is_metadata && (($id = $this->get('row_id')) > 0)) {	// At a minimum always log self as subject
 							$cur_table = $primary_table = Datamodel::getTableName($this->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($this->get('table_num'));
-							$row_id = $this->get('row_id');
+							$xrow_id = $this->get('row_id');
 						}
 
 						$sql = "SELECT {$dest_table}.{$dest_primary_key} FROM {$cur_table}\n";
@@ -6687,7 +6695,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						}
 						$sql .= "WHERE {$primary_table}.{$primary_table_pk} = ?";
 
-						if ($qr_subjects = $o_db->query($sql, [$row_id])) {
+						if ($qr_subjects = $o_db->query($sql, [$xrow_id])) {
 							if (!isset($subjects[$dest_table_num]) || !is_array($subjects[$dest_table_num])) { $subjects[$dest_table_num] = []; }
 							while($qr_subjects->nextRow()) {
 								if (($id = $qr_subjects->get($dest_primary_key)) > 0) {
@@ -9123,23 +9131,7 @@ $pa_options["display_form_field_tips"] = true;
 								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 								
 								
-								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
-								{
-									toolbar : ".json_encode(array_values($va_toolbar_config)).",
-									width: '{$vs_width}',
-									height: '{$vs_height}',
-									toolbarLocation: 'top',
-									enterMode: CKEDITOR.ENTER_BR,
-                                    lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
-                                    key: '".$pa_options['id']."_lookup'
-								});
-						
-								ckEditor.on('instanceReady', function(){ 
-									 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
-								});
- 	});									
-</script>";
+								
 							}
 						}
 					}
@@ -9256,7 +9248,7 @@ $pa_options["display_form_field_tips"] = true;
 					$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
 					$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
 
-					$vs_element = '<div class="formLabelUploadSizeNote"><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/>'._t("Maximum upload size is %1", $post_max_size) . '</div>';
+					$vs_element = '<div class="formLabelUploadSizeNote"><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/><br/>'._t("Maximum upload size: %1", $post_max_size) . '</div>';
 
 					// show current media icon
 					if ($vs_version = (array_key_exists('displayMediaVersion', $pa_options)) ? $pa_options['displayMediaVersion'] : 'icon') {
@@ -12411,7 +12403,7 @@ $pa_options["display_form_field_tips"] = true;
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
-				if (($vs_op == '=') && ($vm_value == '*')) { $vb_find_all = true; break(2); }
+				if (($vs_op == '=') && ($vm_value == '*') && (sizeof($pa_values) === 1)) { $vb_find_all = true; break(2); }
 				
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }

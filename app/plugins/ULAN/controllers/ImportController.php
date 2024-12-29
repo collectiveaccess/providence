@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Plugins/InformationService/ULAN.php');
 require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
 require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
-
 
 class ImportController extends ActionController {
 	# -------------------------------------------------------
@@ -134,6 +132,7 @@ class ImportController extends ActionController {
 			'ulan_ids' => $pa_ulan_ids
 		));
 
+		$this->response->setContentType("application/json");
 		$this->render('import_run_json.php');
 	}
 	# ------------------------------------------------------------------
@@ -150,6 +149,8 @@ class ImportController extends ActionController {
 		$va_data['elapsedTime'] = caFormatInterval(time()-$va_data['start']);
 
 		$this->view->setVar('info', $va_data);
+		
+		$this->response->setContentType("application/json");
 		$this->render('import_run_json.php');
 	}
 	# -------------------------------------------------------
@@ -172,6 +173,7 @@ class ImportController extends ActionController {
 			)
 		));
 
+		$this->response->setContentType("application/json");
 		$this->render("ajax_ulan_lookup_json.php");
 	}
 	# -------------------------------------------------------
@@ -185,6 +187,7 @@ class ImportController extends ActionController {
 
 		$this->view->setVar('detail', $o_wc->getExtendedInformation(array(), $this->request->getParameter('url', pString)));
 
+		$this->response->setContentType("application/json");
 		$this->render("ajax_ulan_detail_json.php");
 	}
 	# -------------------------------------------------------

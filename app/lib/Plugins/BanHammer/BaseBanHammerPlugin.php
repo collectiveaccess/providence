@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2023 Whirl-i-Gig
+ * Copyright 2019-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,16 @@ class BaseBanHammerPlugin {
 	 */
 	static public function isPartial() {
 		return false;	// default is to ban globally
+	}
+	# ------------------------------------------------------
+	/**
+	 * Ban is partial or global?
+	 */
+	static protected function getTTLFromConfig(array $config) : int {
+		$ttl = $config['ttl'] ?? 24 * 60 * 60;	// default is 24 hours
+		$ttl = (int)$ttl;
+		if($ttl <= 0) { $ttl = 24 * 60 * 60; }
+		return $ttl;
 	}
 	# ------------------------------------------------------
 }

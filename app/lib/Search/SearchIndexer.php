@@ -111,6 +111,15 @@ class SearchIndexer extends SearchBase {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Clear internal indexer caches
+	 */
+	public function clearCaches() : void {
+		if($this->opo_engine && method_exists($this->opo_engine, 'clearCaches')) {
+			$this->opo_engine->clearCaches();
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 *
 	 */
 	public function setDb($po_db) {
@@ -610,6 +619,7 @@ class SearchIndexer extends SearchBase {
 		$vb_initial_reindex_mode = $pb_reindex_mode;
 		$for_current_value_reindex = caGetOption('forCurrentValueReindex', $pa_options, false);
 		$force = caGetOption('force', $pa_options, false);
+		$vb_reindex_children = false;
 		
 		$can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 		
@@ -633,7 +643,7 @@ class SearchIndexer extends SearchBase {
 		if(!$pb_reindex_mode && caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$field_data_proc = [];
 			foreach(array_keys($pa_changed_fields) as $k) {
-				$field_data_proc[$k] = $pa_field_data[$k];
+				$field_data_proc[$k] = $pa_field_data[$k] ?? null;
 			}
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_table_num,
@@ -647,7 +657,6 @@ class SearchIndexer extends SearchBase {
 		}
 		
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
-		$vb_reindex_children = false;
 
 		$vs_subject_pk = $t_subject->primaryKey();
 		$vs_subject_type_code = method_exists($t_subject, 'getTypeCode') ? $t_subject->getTypeCode() : null;
@@ -750,7 +759,9 @@ if (!$for_current_value_reindex) {
 						if ($t_subject && $t_subject->isHierarchical()) {
 							$vn_fld_num = $t_subject->fieldNum($vs_field);
 							if ($va_hier_values = $this->_genHierarchicalPath($pn_subject_row_id, $vs_field, $t_subject, $va_data)) {
-								$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_hier_values['values'], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+								foreach($va_hier_values['values'] as $v) {
+									$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$v], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+								}
 								$fld_init = true;
 								
 								$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_hier_values['values'], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
@@ -780,21 +791,24 @@ if (!$for_current_value_reindex) {
 					if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data, true)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
 						if ((is_array($va_data['IDNO_DELIMITERS'] ?? null) && count($va_data['IDNO_DELIMITERS'])) || strlen($va_data['IDNO_DELIMITERS'] ?? null)) {
 							if (!is_array($va_data['IDNO_DELIMITERS'])) { $va_data['IDNO_DELIMITERS'] = [$va_data['IDNO_DELIMITERS']]; }
-							$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_data['IDNO_DELIMITERS']).')!', $pa_field_data[$vs_field]));
+							$values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_data['IDNO_DELIMITERS']).')!', $pa_field_data[$vs_field]));
 						} else {
-							$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field], $va_data);
+							$values = $o_idno->getIndexValues($pa_field_data[$vs_field], $va_data);
 						}
 						$vn_fld_num = $t_subject->fieldNum($vs_field);
-						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						
+						foreach($values as $v) {
+							$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$v], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						}
 						$fld_init = true;
-						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
 					}
 					
 					// specialized mimetype processing
 					if (((isset($va_data['INDEX_AS_MIMETYPE']) && $va_data['INDEX_AS_MIMETYPE']) || in_array('INDEX_AS_MIMETYPE', $va_data, true))) {
-						$va_values = [];
+						$values = [];
 						if ($vs_typename = Media::getTypenameForMimetype($pa_field_data[$vs_field])) {
-							$va_values[] = $vs_typename;
+							$values[] = $vs_typename;
 						}
 						$vn_fld_num = $t_subject->fieldNum($vs_field);
 						
@@ -802,8 +816,8 @@ if (!$for_current_value_reindex) {
 						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$pa_field_data[$vs_field]], array_merge($va_data, ['DONT_TOKENIZE' => true, 'dontRemoveExistingIndexing' => $fld_init]));
 						$fld_init = true;
 						
-						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $va_values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
-						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $va_values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, $values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
 						continue;
 					}
 
@@ -872,9 +886,11 @@ if (!$for_current_value_reindex) {
 								}
 							}
 						}
-						if($pa_field_data[$vs_field] ?? null)  { $va_content[$pa_field_data[$vs_field]] = true; }
+						if(strlen($pa_field_data[$vs_field] ?? '') > 0)  { $va_content[$pa_field_data[$vs_field]] = true; }
 
-						$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, array_keys($va_content), array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						foreach(array_keys($va_content) as $v) {
+							$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$v], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+						}
 						$fld_init = true;
 						
 						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, array_keys($va_content), array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
@@ -1137,25 +1153,25 @@ if (!$for_current_value_reindex) {
 														
 															if (strlen($va_rel_field_info['IDNO_DELIMITERS']) || (is_array($va_rel_field_info['IDNO_DELIMITERS']) && count($va_rel_field_info['IDNO_DELIMITERS']))) {
 																if (!is_array($va_rel_field_info['IDNO_DELIMITERS'])) { $va_rel_field_info['IDNO_DELIMITERS'] = [$va_rel_field_info['IDNO_DELIMITERS']]; }
-																$va_values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_rel_field_info['IDNO_DELIMITERS']).')!', $vs_fld_data));
+																$values = array_map(function($v) { return trim($v); }, preg_split('!('.join('|', $va_rel_field_info['IDNO_DELIMITERS']).')!', $vs_fld_data));
 															} else {
-																$va_values = $o_idno->getIndexValues($vs_fld_data, $va_rel_field_info);
+																$values = $o_idno->getIndexValues($vs_fld_data, $va_rel_field_info);
 															}
-															$this->opo_engine->indexField($is_generic ? $pn_subject_table_num : $vn_related_table_num, $field_num, $vn_id = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
-															$this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
+															$this->opo_engine->indexField($is_generic ? $pn_subject_table_num : $vn_related_table_num, $field_num, $vn_id = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), $values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+															$this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
 														}
 														if (((isset($va_rel_field_info['INDEX_AS_MIMETYPE']) && $va_rel_field_info['INDEX_AS_MIMETYPE']) || in_array('INDEX_AS_MIMETYPE', $va_rel_field_info, true))) {
 															// specialized mimetype processing
-															$va_values = [];
+															$values = [];
 															if ($vs_typename = Media::getTypenameForMimetype($vs_fld_data)) {
-																$va_values[] = $vs_typename;
+																$values[] = $vs_typename;
 															}
 															// Index mimetype as-is
 															$this->opo_engine->indexField($is_generic ? $pn_subject_table_num : $vn_related_table_num, $field_num, $vn_id = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'DONT_TOKENIZE' => true)));
 											
 															// Index typename
-															$this->opo_engine->indexField($is_generic ? $pn_subject_table_num : $vn_related_table_num, $field_num, $vn_id = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
-															$this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
+															$this->opo_engine->indexField($is_generic ? $pn_subject_table_num : $vn_related_table_num, $field_num, $vn_id = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), $values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
+															$this->_genIndexInheritance($t_subject, $t_rel, $field_num, $pn_subject_row_id, $vn_id, $values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private, 'isGeneric' => $is_generic)));
 														} else {
 															// regular intrinsic
 															$this->opo_engine->indexField(($is_generic ? $pn_subject_table_num : $vn_related_table_num), $field_num, $vn_rid = $is_generic ? $pn_subject_row_id : $qr_res->get($vs_related_pk), [$vs_fld_data], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id, 'PRIVATE' => $vn_private)));
@@ -2781,7 +2797,7 @@ related_indexing:
 		
 		$cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, ['subject' => $vs_subject_tablename, 'related' => $vs_related_table]));
 		
-		if(!self::$s_query_cache[$cache_key]) {
+		if(!(self::$s_query_cache[$cache_key] ?? null)) {
 			$pb_force_related = caGetOption('forceRelated', $pa_options, false);
 			$pa_restrict_to_types = caGetOption('restrictToTypes', $pa_options, false);
 			

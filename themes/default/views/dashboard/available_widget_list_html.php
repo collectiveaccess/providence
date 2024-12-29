@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,21 +24,28 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$o_widget_manager = $this->getVar('widget_manager');
-	$va_widget_list = $o_widget_manager->getWidgetNames();
-	
-	print caFormTag($this->request, 'addWidget', 'caWidgetManagerForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+ */ 
+$o_widget_manager = $this->getVar('widget_manager');
+$va_widget_list = $o_widget_manager->getWidgetNames();
+
+print caFormTag($this->request, 'addWidget', 'caWidgetManagerForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 ?>
 		<input type="hidden" name="widget" value="" id='caWidgetManagerFormWidgetValue'/>
 <?php
+	$widgets = [];
 	foreach($va_widget_list as $vs_widget_name) {
 		$va_status = WidgetManager::checkWidgetStatus($vs_widget_name);
 		if(!$va_status["available"]) continue;
 		
-		print "<a href='#' onclick='jQuery(\"#caWidgetManagerFormWidgetValue\").val(\"{$vs_widget_name}\"); jQuery(\"#caWidgetManagerForm\").submit();'>".caNavIcon(__CA_NAV_ICON_ADD_WIDGET__, 1)."  ".$o_widget_manager->getWidgetTitle($vs_widget_name)."</a><br/>\n";
-		print "<div id='widgetDescription'>".$o_widget_manager->getWidgetDescription($vs_widget_name)."</div>";
+		$name = $o_widget_manager->getWidgetTitle($vs_widget_name);
+		$desc = $o_widget_manager->getWidgetDescription($vs_widget_name);
+		
+		$buf = "<a href='#' onclick='jQuery(\"#caWidgetManagerFormWidgetValue\").val(\"{$vs_widget_name}\"); jQuery(\"#caWidgetManagerForm\").submit();'>".caNavIcon(__CA_NAV_ICON_ADD_WIDGET__, 1)." {$name}</a><br/>\n";
+		$buf .= "<div id='widgetDescription'>{$desc}</div>";
+		
+		$widgets[mb_strtolower($name)] = $buf;
 	}
+	ksort($widgets);
+	print join("", $widgets);
 ?>
 	</form>
