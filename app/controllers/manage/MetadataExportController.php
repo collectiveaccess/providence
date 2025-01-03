@@ -193,7 +193,7 @@ class MetadataExportController extends ActionController {
 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
 			$this->getView()->setVar("export", $vs_export);
 
-			$vs_tmp_file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'dataExport');
+			$vs_tmp_file = tempnam(__CA_TEMP_DIR__, 'dataExport');
 			file_put_contents($vs_tmp_file, $vs_export);
 
 			// Store file name and exporter data in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
@@ -403,7 +403,7 @@ class MetadataExportController extends ActionController {
 	 * By then everybody should have gotten everything they need from the export dest screen
 	 */
 	private function cleanOldExportFilesFromTmpDir() {
-		$va_tmp_dir_contents = caGetDirectoryContentsAsList(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', false);
+		$va_tmp_dir_contents = caGetDirectoryContentsAsList(__CA_TEMP_DIR__, false);
 		foreach($va_tmp_dir_contents as $vs_file) {
 			if(preg_match("/^dataExport/", basename($vs_file))) {
 				if((time() - filemtime($vs_file)) > 60*60) {

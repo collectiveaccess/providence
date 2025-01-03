@@ -147,10 +147,10 @@ final class ConfigurationCheck {
 	# -------------------------------------------------------
 	public static function permissionInstallCheck(){
 		//
-		// Check app/tmp
+		// Check __CA_TEMP_DIR__ (app/tmp by default)
 		//
-		if (!is_writeable(__CA_APP_DIR__.'/tmp')) {
-			self::addError(_t('The CollectiveAccess <i>app/tmp</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_APP_DIR__.'/tmp'));
+		if (!is_writeable(__CA_TEMP_DIR__)) {
+			self::addError(_t('The CollectiveAccess <i>tmp</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_TEMP_DIR__));
 		}
 		
 		//
@@ -292,11 +292,11 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Does the app/tmp dir exist and is it writable?
+	 * Does the __CA_TEMP_DIR__ dir (app/tmp by default) exist and is it writable?
 	 */
 	public static function tmpDirQuickCheck() {
-		if(!file_exists(__CA_APP_DIR__."/tmp") || !is_writable(__CA_APP_DIR__."/tmp")){
-			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",__CA_APP_DIR__."/tmp"));
+		if(!file_exists(__CA_TEMP_DIR__) || !is_writable(__CA_TEMP_DIR__)){
+			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",__CA_TEMP_DIR__));
 		}
 
 		if(!defined('__CA_CACHE_BACKEND__')) {
@@ -304,7 +304,7 @@ final class ConfigurationCheck {
 		}
 
 		if(!defined('__CA_CACHE_FILEPATH__')) {
-			define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+			define('__CA_CACHE_FILEPATH__', __CA_TEMP_DIR__);
 		}
 
 
