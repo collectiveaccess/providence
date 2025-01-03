@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
   
 require_once(__CA_LIB_DIR__.'/Configuration.php');
@@ -461,7 +457,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter)));
 		}
 
- 		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
+ 		$vs_element = '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_input{n}">'.
  			caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
 				array(
@@ -469,7 +465,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => 512,
-					'id' => "geonames_".$pa_element_info['element_id']."_autocomplete{n}",
+					'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}",
 					'class' => $vs_class ? $vs_class : 'lookupBg'
 				)
 			).
@@ -488,7 +484,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
 						{ 
 							source: '{$vs_url}',
 							minLength: 3, delay: 800,
