@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,11 +93,7 @@ $o_config = Configuration::load();
 ?>
 					<div class='profileNotes'>
 <?php
-						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="https://manual.collectiveaccess.org/dataModelling/Profiles.html" target="_blank">manual</a>.');
-?>
-						<br/><br/>
-<?php
-						_p('Don\'t see a suitable profile? Browse our <a href="https://manual.collectiveaccess.org/dataModelling/profiles/ConfigurationLibrary.html" target="_blank">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles/xml</i> directory on your server and reload the installer in your web browser.');
+						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="https://docs.collectiveaccess.org" target="_blank">manual</a>.');
 ?>
 					</div>
 				</div>

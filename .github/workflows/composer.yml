@@ -1,0 +1,29 @@
+name: Composer-release
+on: 
+  push:
+    tags:
+    - '*'
+    
+jobs:
+  composer-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: "8.2"
+          php_extensions: gd zip intl bcmath
+          version: 2.x
+      - name: Archive release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          filename: '${{ github.event.repository.name }}.zip'
+          exclusions: '*.git* .editorconfig'
+
+      - name: Upload Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "${{ github.event.repository.name }}.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
