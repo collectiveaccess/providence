@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,24 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_labels 			= $this->getVar('labels');
-	$t_label 			= $this->getVar('t_label');
-	$va_initial_values 	= $this->getVar('label_initial_values');
-	if (!$va_force_new_labels = $this->getVar('new_labels')) { $va_force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
+$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$labels 			= $this->getVar('labels');
+$t_label 			= $this->getVar('t_label');
+$initial_values 	= $this->getVar('label_initial_values');
+if (!$force_new_labels = $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
-	$settings 			= $this->getVar('settings');
-	$vs_add_label 		= $this->getVar('add_label');
-	
-	$locale_list		= $this->getVar('locale_list');
-	
-	$vb_read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_relationship_types', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+$settings 			= $this->getVar('settings');
+$add_label 		= $this->getVar('add_label');
 
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels', $settings, caInitialValuesArrayHasValue($vs_id_prefix.'Labels', $va_initial_values));	
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $settings);
+$locale_list		= $this->getVar('locale_list');
+
+$read_only		= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_relationship_types', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+
+print caEditorBundleShowHideControl($this->request, $id_prefix.'Labels', $settings, caInitialValuesArrayHasValue($id_prefix.'Labels', $initial_values));	
+print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $settings);
 ?>
-<div id="<?= $vs_id_prefix; ?>Labels">
+<div id="<?= $id_prefix; ?>Labels">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -59,22 +58,22 @@
 						<table>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('typename', null, array('name' => "{fieldNamePrefix}typename_{n}", 'id' => "{fieldNamePrefix}typename_{n}", "value" => "{{typename}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+									<?= $t_label->htmlFormElement('typename', null, array('name' => "{fieldNamePrefix}typename_{n}", 'id' => "{fieldNamePrefix}typename_{n}", "value" => "{{typename}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('description', null, array('name' => "{fieldNamePrefix}description_{n}", 'id' => "{fieldNamePrefix}description_{n}", "value" => "{{description}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+									<?= $t_label->htmlFormElement('description', null, array('name' => "{fieldNamePrefix}description_{n}", 'id' => "{fieldNamePrefix}description_{n}", "value" => "{{description}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('typename_reverse', null, array('name' => "{fieldNamePrefix}typename_reverse_{n}", 'id' => "{fieldNamePrefix}typename_reverse{n}", "value" => "{{typename_reverse}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+									<?= $t_label->htmlFormElement('typename_reverse', null, array('name' => "{fieldNamePrefix}typename_reverse_{n}", 'id' => "{fieldNamePrefix}typename_reverse{n}", "value" => "{{typename_reverse}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?= $t_label->htmlFormElement('description_reverse', null, array('name' => "{fieldNamePrefix}description_reverse_{n}", 'id' => "{fieldNamePrefix}description_reverse{n}", "value" => "{{description_reverse}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?><br/>
+									<?= $t_label->htmlFormElement('description_reverse', null, array('name' => "{fieldNamePrefix}description_reverse_{n}", 'id' => "{fieldNamePrefix}description_reverse{n}", "value" => "{{description_reverse}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?><br/>
 									
 									<?php print '<div class="formLabel">'.$locale_list.'</div>'; ?>
 								</td>
@@ -90,26 +89,26 @@
 		<div class="caLabelList">
 		
 		</div>
-		<div class="button labelInfo caAddLabelButton"><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
+		<div class="button labelInfo caAddLabelButton"><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add label"); ?></a></div>
 	</div>
 			
 	
 </div>
 <script type="text/javascript">
-	caUI.initLabelBundle('#<?= $vs_id_prefix; ?>Labels', {
+	caUI.initLabelBundle('#<?= $id_prefix; ?>Labels', {
 		mode: 'preferred',
-		fieldNamePrefix: '<?= $vs_id_prefix; ?>',
+		fieldNamePrefix: '<?= $id_prefix; ?>',
 		templateValues: ['typename', 'description', 'typename_reverse', 'description_reverse', 'locale_id'],
-		initialValues: <?= json_encode($va_initial_values); ?>,
-		forceNewValues: <?= json_encode($va_force_new_labels); ?>,
+		initialValues: <?= json_encode($initial_values); ?>,
+		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		labelID: 'Label_',
 		localeClassName: 'labelLocale',
 		templateClassName: 'caLabelTemplate',
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		readonly: <?= $vb_read_only ? "1" : "0"; ?>,
-		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['typename']); ?>,
+		readonly: <?= $read_only ? "1" : "0"; ?>,
+		bundlePreview: <?php $cur = current($initial_values); print caEscapeForBundlePreview($cur['typename']); ?>,
 		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

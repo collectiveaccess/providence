@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,17 +27,17 @@
  */
 AssetLoadManager::register('sortableUI');
 
-$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object representation
 $t_item_label		= $t_item->getLabelTableInstance();
 $t_item_rel 		= $this->getVar('t_item_rel');
 $t_subject 			= $this->getVar('t_subject');		// object
-$vs_add_label 		= $this->getVar('add_label');
+$add_label 		= $this->getVar('add_label');
 $settings 			= $this->getVar('settings');
 
-$vb_read_only		=	(isset($settings['readonly']) && $settings['readonly']);
-$vb_batch			=	$this->getVar('batch');
+$read_only		=	(isset($settings['readonly']) && $settings['readonly']);
+$batch			=	$this->getVar('batch');
 
 $dont_show_preferred_label = caGetOption('dontShowPreferredLabel', $settings, false);
 $dont_show_idno = caGetOption('dontShowIdno', $settings, false);
@@ -51,77 +51,82 @@ $loaded_sort 			= $this->getVar('sort');
 $loaded_sort_direction 	= $this->getVar('sortDirection');
 
 
-$vs_rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
-$vn_left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-$vn_right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-$rel_types          = $t_item_rel->getRelationshipTypes($vn_left_sub_type_id, $vn_right_sub_type_id);
+$rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
+$left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+$right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+$rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id);
 
 $embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
 
 // don't allow editing if user doesn't have access to any of the representation types
 if(sizeof(caGetTypeListForUser('ca_object_representations', array('access' => __CA_BUNDLE_ACCESS_EDIT__)))  < 1) {
-	$vb_read_only = true;
+	$read_only = true;
 }
 
-if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
-	$vs_default_upload_type = 'upload';
+if (!in_array($default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
+	$default_upload_type = 'upload';
 }
 
-$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+$allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 
 // Paging
-$vn_start = 0;
-$vn_num_per_page = 20;
-$vn_primary_id = 0;
+$start = 0;
+$num_per_page = 20;
+$primary_id = 0;
 
 // generate list of inital form values; the bundle Javascript call will
 // use the template to generate the initial form
-$va_rep_type_list = $t_item->getTypeList();
-$va_errors = array();
+$rep_type_list = $t_item->getTypeList();
+$errors = array();
 
-$vn_rep_count = $t_subject->getRepresentationCount($settings);
-$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
+$rep_count = $t_subject->getRepresentationCount($settings);
+$initial_values = caSanitizeArray($t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $settings, array('start' => 0, 'limit' => $num_per_page, 'request' => $this->request)), ['removeNonCharacterData' => false]);
 
-foreach($va_initial_values as $vn_representation_id => $va_rep) {
-	if(is_array($va_action_errors = $this->request->getActionErrors('ca_object_representations', $vn_representation_id))) {
-		foreach($va_action_errors as $o_error) {
-			$va_errors[$vn_representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
+foreach($initial_values as $representation_id => $rep) {
+	if(is_array($action_errors = $this->request->getActionErrors('ca_object_representations', $representation_id))) {
+		foreach($action_errors as $o_error) {
+			$errors[$representation_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 		}
 	}
-	if ($va_rep['is_primary']) {
-		$vn_primary_id = $va_rep['representation_id'];
+	if ($rep['is_primary']) {
+		$primary_id = $rep['representation_id'];
 	}
 }
 
-$va_failed_inserts = array();
-foreach($this->request->getActionErrorSubSources('ca_object_representations') as $vs_error_subsource) {
-	if (substr($vs_error_subsource, 0, 4) === 'new_') {
-		$va_action_errors = $this->request->getActionErrors('ca_object_representations', $vs_error_subsource);
-		foreach($va_action_errors as $o_error) {
-			$va_failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
+$failed_inserts = array();
+foreach($this->request->getActionErrorSubSources('ca_object_representations') as $error_subsource) {
+	if (substr($error_subsource, 0, 4) === 'new_') {
+		$action_errors = $this->request->getActionErrors('ca_object_representations', $error_subsource);
+		foreach($action_errors as $o_error) {
+			$failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
 		}
 	}
 }
 
-if ($vb_batch) {
-	print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+if ($batch) {
+	print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
 } else {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, (sizeof($va_initial_values) > 0), _t("Number of representations: %1", sizeof($va_initial_values)));
+	print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, (sizeof($initial_values) > 0), _t("Number of representations: %1", sizeof($initial_values)));
 }
-print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 ?>
-<div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?= $id_prefix; ?>" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
+	if ($batch) {
+		print caBatchEditorConditionalUITrigger($id_prefix);
+		print caBatchEditorConditionalUI($id_prefix, []);
+	}
+
 	//
 	// Template to generate display for existing items
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 
 			<span class="formLabelError">{error}</span>
 <?php 
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>
 			<div style="float: right;">
 				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
@@ -143,7 +148,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 								<a title="{filename}">{rep_label}</a>
 <?php
     }
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>
 								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?= caNavIcon(__CA_NAV_ICON_UPDATE__, 1).'</a>'; ?></span>
 <?php
@@ -163,7 +168,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 ?>
 								<h3><?= _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
 <?php
-	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_object_representations');
+	TooltipManager::add("#{$id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_object_representations');
 ?>
 								</div>
 								<div class='caObjectRepresentationListInfoSubDisplay'>
@@ -198,7 +203,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 								<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
 							</div>		
 <?php
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>
 							<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
 <?php
@@ -252,14 +257,14 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 								<div class="caObjectRepresentationDetailEditorHeading"><?= _t('Update media'); ?></div>
 								<table id="{fieldNamePrefix}upload_options{n}">
 									<tr>
-										<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
+										<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
 										<td class='formLabel'><?= $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
 									</tr>
 <?php
-							if ($vb_allow_fetching_from_urls) {
+							if ($allow_fetching_from_urls) {
 ?>
 									<tr>
-										<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
+										<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
 										<td class='formLabel'><?= caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '235px')); ?></td>
 									</tr>
 <?php
@@ -313,10 +318,10 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 							}
 ?>
 							<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?= $vs_id_prefix; ?>.showPanel('<?= urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{representation_id}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><?= caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?= _t('Annotations'); ?></a></span>
+								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?= $id_prefix; ?>.showPanel('<?= urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{representation_id}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><?= caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?= _t('Annotations'); ?></a></span>
 							</div>
 							<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" onclick="caImageCenterEditor<?= $vs_id_prefix; ?>.showPanel('<?= urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', array('representation_id' => '{representation_id}'))); ?>', caSetImageCenterForSave<?= $vs_id_prefix; ?>, true, {}, {'id': '{n}'}); return false;" id="{fieldNamePrefix}edit_image_center_{n}"><?= caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?= _t('Set center'); ?></a></span>
+								<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" onclick="caImageCenterEditor<?= $id_prefix; ?>.showPanel('<?= urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', array('representation_id' => '{representation_id}'))); ?>', caSetImageCenterForSave<?= $id_prefix; ?>, true, {}, {'id': '{n}'}); return false;" id="{fieldNamePrefix}edit_image_center_{n}"><?= caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?= _t('Set center'); ?></a></span>
 							</div>
 						</div>	
 					</div>
@@ -343,8 +348,8 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 			print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
 			<!-- image center coordinates -->
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_center_x_{n}" id="<?= $vs_id_prefix; ?>_center_x_{n}" value="{center_x}"/>
-			<input type="hidden" name="<?= $vs_id_prefix; ?>_center_y_{n}" id="<?= $vs_id_prefix; ?>_center_y_{n}" value="{center_y}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_center_x_{n}" id="<?= $id_prefix; ?>_center_x_{n}" value="{center_x}"/>
+			<input type="hidden" name="<?= $id_prefix; ?>_center_y_{n}" id="<?= $id_prefix; ?>_center_y_{n}" value="{center_y}"/>
 		</textarea>
 <?php
 	//
@@ -352,9 +357,9 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 	//
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>	
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 <?php
-    if ($vb_batch) {
+    if ($batch) {
 ?>
 			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationBatchDetailEditorContainer">
 <?php
@@ -388,7 +393,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 			<script type='text/javascript'>
 			    jQuery(document).ready(function() {
 			        jQuery('input.caObjectRepresentationDetailEditorElement, select.caObjectRepresentationDetailEditorElement, textarea.caObjectRepresentationDetailEditorElement').prop('disabled', true);
-			        jQuery('#<?= $vs_id_prefix; ?>').on('click', '.caObjectRepresentationBatchDetailEditorElementEnable', function(e) {
+			        jQuery('#<?= $id_prefix; ?>').on('click', '.caObjectRepresentationBatchDetailEditorElementEnable', function(e) {
 			            var n = jQuery(this).attr('name').replace("_enabled", "");
 			            jQuery('#' + n).attr('disabled', !jQuery(this).prop('checked'));
 			        }); 
@@ -398,7 +403,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
     } else {
         if(sizeof($rel_types) > 1) {
 ?>
-			<h2><?= ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
+			<h2><?= ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($rel_dir, $left_sub_type_id, $right_sub_type_id, array('name' => '{fieldNamePrefix}rel_type_id_{n}'), $settings)) : _t('Add representation'); ?></h2>
 <?php
     } else {
         // Embed type when only a single type is available
@@ -456,14 +461,14 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 			
 			<table id="{fieldNamePrefix}upload_options{n}">
 				<tr>
-					<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
+					<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
 					<td class='formLabel'><?= $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
 				</tr>
 <?php
-		if ($vb_allow_fetching_from_urls) {
+		if ($allow_fetching_from_urls) {
 ?>
 				<tr>
-					<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
+					<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
 					<td class='formLabel'><?= caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '410px')); ?></td>
 				</tr>
 <?php
@@ -472,17 +477,17 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 		if ((bool)$this->request->getAppConfig()->get($t_subject->tableName().'_allow_relationships_to_existing_representations')) {
 ?>
 				<tr>
-					<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_search{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'search'), array('checked' => ($vs_default_upload_type == 'search') ? 1 : 0)).' '._t('using existing'); ?></td>
+					<td class='formLabel'><?= caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_search{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'search'), array('checked' => ($default_upload_type == 'search') ? 1 : 0)).' '._t('using existing'); ?></td>
 					<td class='formLabel'>
 						<?= caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
 <?php
 	if ($t_item_rel && $t_item_rel->hasField('type_id')) {
 ?>
-						<select name="<?= $vs_id_prefix; ?>_type_id{n}" id="<?= $vs_id_prefix; ?>_type_id{n}" style="display: none; width: 72px;"></select>
+						<select name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" style="display: none; width: 72px;"></select>
 <?php
 	}
 ?>
-						<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
+						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 				</tr>
 <?php
@@ -528,9 +533,9 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
-		    if (($vn_rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
+		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
             }
 ?>
@@ -540,16 +545,16 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 			
 		</div>
 <?php 
-	if (!$vb_read_only) {
+	if (!$read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>
 	</div>
 </div>
 
-<input type="hidden" id="<?= $vs_id_prefix; ?>_ObjectRepresentationBundleList" name="<?= $vs_id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
+<input type="hidden" id="<?= $id_prefix; ?>_ObjectRepresentationBundleList" name="<?= $id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
 <?php
 	// order element
 	TooltipManager::add('.updateIcon', _t("Update Media"));
@@ -562,69 +567,69 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 	}
 	
 	function caOpenRepresentationDetailEditor(id) {
-		jQuery('#<?= $vs_id_prefix; ?>_detail_editor_' + id).slideDown(250);
-		jQuery('#<?= $vs_id_prefix; ?>_rep_info_ro' + id).slideUp(250);
+		jQuery('#<?= $id_prefix; ?>_detail_editor_' + id).slideDown(250);
+		jQuery('#<?= $id_prefix; ?>_rep_info_ro' + id).slideUp(250);
 	}
 	
 	function caCloseRepresentationDetailEditor(id) {
-		jQuery('#<?= $vs_id_prefix; ?>_detail_editor_' + id).slideUp(250);
-		jQuery('#<?= $vs_id_prefix; ?>_rep_info_ro' + id).slideDown(250);
-		jQuery('#<?= $vs_id_prefix; ?>_change_indicator_' + id).show();
+		jQuery('#<?= $id_prefix; ?>_detail_editor_' + id).slideUp(250);
+		jQuery('#<?= $id_prefix; ?>_rep_info_ro' + id).slideDown(250);
+		jQuery('#<?= $id_prefix; ?>_change_indicator_' + id).show();
 	}
 	
 	function caSetRepresentationAsPrimary(id) {
-		jQuery('.<?= $vs_id_prefix; ?>_is_primary').val('');
-		jQuery('#<?= $vs_id_prefix; ?>_is_primary_' + id).val('1');
+		jQuery('.<?= $id_prefix; ?>_is_primary').val('');
+		jQuery('#<?= $id_prefix; ?>_is_primary_' + id).val('1');
 		jQuery('.caObjectRepresentationPrimaryIndicator').hide();
-		if (id != <?= (int)$vn_primary_id; ?>) {
-			jQuery('#<?= $vs_id_prefix; ?>_is_primary_indicator_' + id).show();
+		if (id != <?= (int)$primary_id; ?>) {
+			jQuery('#<?= $id_prefix; ?>_is_primary_indicator_' + id).show();
 		}
 	}
 	
-	var caAnnoEditor<?= $vs_id_prefix; ?>;
-	var caImageCenterEditor<?= $vs_id_prefix; ?>;
-	var caRelationBundle<?= $vs_id_prefix; ?>;
+	var caAnnoEditor<?= $id_prefix; ?>;
+	var caImageCenterEditor<?= $id_prefix; ?>;
+	var caRelationBundle<?= $id_prefix; ?>;
 	
 	jQuery(document).ready(function() {
-		caRelationBundle<?= $vs_id_prefix; ?> = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
-			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= $id_prefix; ?>', {
+			fieldNamePrefix: '<?= $id_prefix; ?>_',
 			templateValues: ['_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_transcribable', 'is_transcribable_display', 'num_transcriptions', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'idno', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
 
-			initialValues: <?= json_encode($va_initial_values, JSON_INVALID_UTF8_IGNORE); ?>,
-			initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
-			errors: <?= json_encode($va_errors); ?>,
-			forceNewValues: <?= json_encode($va_failed_inserts); ?>,
-			itemID: '<?= $vs_id_prefix; ?>Item_',
+			initialValues: <?= json_encode($initial_values, JSON_INVALID_UTF8_IGNORE); ?>,
+			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
+			errors: <?= json_encode($errors); ?>,
+			forceNewValues: <?= json_encode($failed_inserts); ?>,
+			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			itemClassName: 'labelInfo',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			showOnNewIDList: ['<?= $vs_id_prefix; ?>_media_'],
-			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_','<?= $vs_id_prefix; ?>_download_', '<?= $vs_id_prefix; ?>_media_metadata_container_', '<?= $vs_id_prefix; ?>_edit_annotations_', '<?= $vs_id_prefix; ?>_edit_image_center_'],
+			showOnNewIDList: ['<?= $id_prefix; ?>_media_'],
+			hideOnNewIDList: ['<?= $id_prefix; ?>_edit_','<?= $id_prefix; ?>_download_', '<?= $id_prefix; ?>_media_metadata_container_', '<?= $id_prefix; ?>_edit_annotations_', '<?= $id_prefix; ?>_edit_image_center_'],
 			enableOnNewIDList: [],
 			showEmptyFormsOnLoad: 1,
-			readonly: <?= $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?= !$vb_read_only &&!$vb_batch ? "true" : "false"; ?>,
-			listSortOrderID: '<?= $vs_id_prefix; ?>_ObjectRepresentationBundleList',
+			readonly: <?= $read_only ? "true" : "false"; ?>,
+			isSortable: <?= !$read_only &&!$batch ? "true" : "false"; ?>,
+			listSortOrderID: '<?= $id_prefix; ?>_ObjectRepresentationBundleList',
 			defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 			
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $va_lookup_params); ?>',
-			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $lookup_params); ?>',
+			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 			
 			extraParams: { exact: 1 },
 
-			minRepeats: <?= $vb_batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
-			maxRepeats: <?= $vb_batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
+			minRepeats: <?= $batch ? 1 : caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
+			maxRepeats: <?= $batch ? 1 : caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
-			totalValueCount: <?= (int)$vn_rep_count; ?>,
+			totalValueCount: <?= (int)$rep_count; ?>,
 
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
-			loadSize: <?= $vn_num_per_page; ?>,
+			loadSize: <?= $num_per_page; ?>,
 			partialLoadMessage: '<?= addslashes(_t('Load next %num of %total')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			onPartialLoad: function(d) {				
@@ -635,9 +640,9 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 		
 		});
 		if (caUI.initPanel) {
-			caAnnoEditor<?= $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caAnnoEditor<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caAnnoEditor<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caAnnoEditor<?= $id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caAnnoEditor<?= $id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caAnnoEditor<?= $id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -651,9 +656,9 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 				}
 			});
 			
-			caImageCenterEditor<?= $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caImageCenterEditor<?= $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caImageCenterEditor<?= $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caImageCenterEditor<?= $id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caImageCenterEditor<?= $id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caImageCenterEditor<?= $id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -668,8 +673,8 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 			});
 		}
 		
-		jQuery("body").append('<div id="caAnnoEditor<?= $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caAnnoEditor<?= $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
-		jQuery("body").append('<div id="caImageCenterEditor<?= $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caImageCenterEditor<?= $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
+		jQuery("body").append('<div id="caAnnoEditor<?= $id_prefix; ?>" class="caAnnoEditorPanel"><div id="caAnnoEditor<?= $id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
+		jQuery("body").append('<div id="caImageCenterEditor<?= $id_prefix; ?>" class="caAnnoEditorPanel"><div id="caImageCenterEditor<?= $id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
 	
 		// Hide annotation editor links for non-timebased media
 		jQuery(".caAnnoEditorLaunchButton").hide();
@@ -679,14 +684,14 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 		jQuery(".annotationTypeSetCenterImage, .annotationTypeSetCenterDocument").show();
 	});
 	
-	function caSetImageCenterForSave<?= $vs_id_prefix; ?>(data) {
+	function caSetImageCenterForSave<?= $id_prefix; ?>(data) {
 		var id = data['id'];
 		jQuery("#topNavContainer").show(250);
-		jQuery('#<?= $vs_id_prefix; ?>_change_indicator_' + id).show();
+		jQuery('#<?= $id_prefix; ?>_change_indicator_' + id).show();
 		
 		var center_x = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('left'))/parseInt(jQuery('#caImageCenterEditorImage').width());
 		var center_y = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('top'))/parseInt(jQuery('#caImageCenterEditorImage').height());
-		jQuery('#<?= $vs_id_prefix; ?>_center_x_' + id).val(center_x);
-		jQuery('#<?= $vs_id_prefix; ?>_center_y_' + id).val(center_y);
+		jQuery('#<?= $id_prefix; ?>_center_x_' + id).val(center_x);
+		jQuery('#<?= $id_prefix; ?>_center_y_' + id).val(center_y);
 	}
 </script>

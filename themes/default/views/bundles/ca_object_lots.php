@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object_lot
@@ -117,6 +116,11 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 		if(!$read_only && ($t_subject->tableName() !== 'ca_objects')) {
 			print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
+	}
+	
+	if ($batch) {
+		print caBatchEditorConditionalUITrigger($id_prefix);
+		print caBatchEditorConditionalUI($id_prefix, []);
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 

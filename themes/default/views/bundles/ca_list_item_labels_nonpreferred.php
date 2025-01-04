@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,7 @@ $t_label 				= $this->getVar('t_label');
 $initial_values 		= $this->getVar('label_initial_values');
 if (!$force_new_labels 	= $this->getVar('new_labels')) { $force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
+$batch					= $this->getVar('batch');
 $settings 				= $this->getVar('settings');
 $add_label 				= $this->getVar('add_label');
 
@@ -48,6 +49,11 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $s
 ?>
 <div id="<?= $id_prefix; ?>NPLabels">
 <?php
+	if ($batch) {
+		print caBatchEditorConditionalUITrigger($id_prefix);
+		print caBatchEditorConditionalUI($id_prefix, []);
+	}
+	
 	//
 	// The bundle template - used to generate each bundle in the form
 	//

@@ -89,6 +89,11 @@ print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$bundle_name}
 <?php
 					}
 					
+					if($batch) {
+						print caBatchEditorConditionalUITrigger($id_prefix);
+						print caBatchEditorConditionalUI($id_prefix, []);
+					}
+					
 					//
 					// Generate "inherit" control for access where supported
 					//

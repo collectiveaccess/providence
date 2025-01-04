@@ -3952,6 +3952,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ($vb_batch) { 
 					$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
 					if($vs_batch_mode == '_disabled_') { continue; }
+					
+					$conditional = $_REQUEST["{$vs_placement_code}{$vs_form_prefix}_batch_conditional"] ?? null;
+					if(!caBatchEditorEvaluateConditional($this, $conditional)) { continue; }
 				}
 				if (isset($_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) && $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) {
 					// media field
@@ -4045,6 +4048,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_batch_mode = $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_batch_mode'] ?? null;
 				
+				$conditional = $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_batch_conditional'] ?? null;
+				if($vb_batch && !caBatchEditorEvaluateConditional($this, $conditional)) { continue; }
+				
 				if ($vb_batch && ($vs_batch_mode == '_delete_')) {		// Remove all attributes and continue
 					$this->removeAttributes($vn_element_id, array('force' => true));
 					continue;
@@ -4054,11 +4060,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// is it a newly created attribute?
 					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
 						if ($vb_batch) {
+							// Allow template tags when using batch editing
+							$vs_val = $this->getWithTemplate($vs_val);
+							
 							switch($vs_batch_mode) {
 								case '_disabled_':		// skip
 									continue(2);
 									break;
 								case '_add_':			// just try to add attribute as in normal non-batch save
+									// noop
+									break;
+								case '_update_':	
 									// noop
 									break;
 								case '_replace_':		// remove all existing attributes before trying to save
@@ -4200,8 +4212,10 @@ if (!$vb_batch) {
 	if (is_array($va_fields_by_type['special'] ?? null)) {
 		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
 			if ($vs_bundle !== 'hierarchy_location') { continue; }
-			
 			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
+			
+			$conditional = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_conditional', pString);
+			if($vb_batch && !caBatchEditorEvaluateConditional($this, $conditional)) { continue; }
 			
 			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
 			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
@@ -4432,7 +4446,10 @@ if (!$vb_batch) {
 				}
 }				
 				// check for new labels to add
-				foreach($_REQUEST as $vs_key => $vs_value ) {
+				foreach($_REQUEST as $vs_key => $vs_value ) {					
+					$conditional = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_conditional', pString);
+					if($vb_batch && !caBatchEditorEvaluateConditional($this, $conditional)) { continue; }
+					
 					if (!preg_match('/'.$vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
 					
 					if ($vb_batch) {
@@ -4443,6 +4460,9 @@ if (!$vb_batch) {
 								break;
 							case '_replace_':		// remove all existing preferred labels before trying to save
 								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
+								break;
+							case '_update_':	
+								// noop
 								break;
 							case '_delete_':		// remove all existing preferred labels
 								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
@@ -4589,7 +4609,10 @@ if (!$vb_batch) {
 }		
 			// check for new labels to add
 			foreach($va_fields_by_type['nonpreferred_label'] as $vs_placement_code => $vs_f) {
-				if ($vb_batch) {
+				if ($vb_batch) {				
+					$conditional = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_conditional', pString);
+					if($vb_batch && !caBatchEditorEvaluateConditional($this, $conditional)) { continue; }
+					
 					$vs_batch_mode = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref_batch_mode', pString);
 			
 					switch($vs_batch_mode) {
@@ -4597,6 +4620,9 @@ if (!$vb_batch) {
 							continue(2);
 							break;
 						case '_add_':			// just try to add attribute as in normal non-batch save
+							// noop
+							break;
+						case '_update_':	
 							// noop
 							break;
 						case '_replace_':		// remove all existing nonpreferred labels before trying to save
@@ -4762,6 +4788,9 @@ if (!$vb_batch) {
 						}
 
 						if ($vb_batch) {
+							$conditional = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_conditional', pString);
+							if(!caBatchEditorEvaluateConditional($this, $conditional)) { break; }
+							
 							$vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode'];
 	
 							if ($vs_batch_mode == '_disabled_') { break;}
@@ -6040,6 +6069,11 @@ if (!$vb_batch) {
  	private function _processRelated($po_request, $ps_bundle_name, $ps_form_prefix, $ps_placement_code, $pa_options=null) {
  		$pa_settings = caGetOption('settings', $pa_options, []);
  		$vb_batch = caGetOption('batch', $pa_options, false);
+ 		
+ 		if($vb_batch) {
+			$conditional = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_batch_conditional', pString);
+			if(!caBatchEditorEvaluateConditional($this, $conditional)) { return true; }
+		}
  		
  		if ($bundle_type_restrictions = caGetOption('bundleTypeRestrictions', $pa_settings, null)) {
  			if(!is_array($bundle_type_restrictions)) { $bundle_type_restrictions = [$bundle_type_restrictions]; }

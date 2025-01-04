@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,6 +106,12 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
 	}
+	
+	if ($batch) {
+		print caBatchEditorConditionalUITrigger($id_prefix);
+		print caBatchEditorConditionalUI($id_prefix, []);
+	}
+	
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 	//

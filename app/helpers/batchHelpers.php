@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,16 +44,16 @@ function caBatchEditorRelationshipModeControl($t_item, $ps_id_prefix) {
 		case 'ca_object_representations':
 			 $vs_select = caHTMLSelect($ps_id_prefix."_batch_mode", array(
 				_t("do not use") => "_disabled_", 
-				_t('replace value') => '_replace_',
-				_t('remove all values') => '_delete_'
+				_t('replace') => '_replace_',
+				_t('remove all') => '_delete_'
 			), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'));
 			break;
 		default:
 			$vs_select = caHTMLSelect($ps_id_prefix."_batch_mode", array(
 				_t("do not use") => "_disabled_", 
-				_t('add to each') => '_add_', 
-				_t('replace value') => '_replace_',
-				_t('remove all values') => '_delete_'
+				_t('add') => '_add_', 
+				_t('replace') => '_replace_',
+				_t('remove all') => '_delete_'
 			), array('id' => $ps_id_prefix.$t_item->tableNum().'_rel_batch_mode_select'));
 			break;
 	}
@@ -86,9 +86,10 @@ function caBatchEditorSetsModeControl($pn_table_num, $ps_id_prefix) {
 	$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
 		caHTMLSelect($ps_id_prefix."_batch_mode", array(
 		_t("do not use") => "_disabled_", 
-		_t('add to each item') => '_add_', 
-		_t('replace value') => '_replace_',
-		_t('remove all values') => '_delete_'
+		_t('add') => '_add_', 
+		_t('update') => '_update_',
+		_t('replace') => '_replace_',
+		_t('remove all') => '_delete_'
 	), array('id' => $ps_id_prefix.$pn_table_num.'_sets_batch_mode_select'))."</div>\n
 
 <script type=\"text/javascript\">
@@ -118,9 +119,10 @@ function caBatchEditorPreferredLabelsModeControl($t_item, $ps_id_prefix) {
 	$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
 		caHTMLSelect($ps_id_prefix."_batch_mode", array(
 		_t("do not use") => "_disabled_",
-		_t('add to each item') => '_add_',
-		_t('replace value') => '_replace_',
-		_t('remove all values') => '_delete_'
+		_t('add') => '_add_',
+		_t('update') => '_update_',
+		_t('replace') => '_replace_',
+		_t('remove all') => '_delete_'
 	), array('id' => $ps_id_prefix.'Labels_batch_mode_select'))."</div>\n
 
 <script type=\"text/javascript\">
@@ -150,9 +152,10 @@ function caBatchEditorNonPreferredLabelsModeControl($t_item, $ps_id_prefix) {
 	$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
 		caHTMLSelect($ps_id_prefix."_batch_mode", array(
 		_t("do not use") => "_disabled_", 
-		_t('add to each item') => '_add_', 
-		_t('replace value') => '_replace_',
-		_t('remove all values') => '_delete_'
+		_t('add') => '_add_', 
+		_t('update') => '_update_',
+		_t('replace') => '_replace_',
+		_t('remove all') => '_delete_'
 	), array('id' => $ps_id_prefix.'Labels_batch_mode_select'))."</div>\n
 
 <script type=\"text/javascript\">
@@ -182,7 +185,7 @@ function caBatchEditorIntrinsicModeControl($t_item, $ps_id_prefix) {
 	$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".
 		caHTMLSelect("{$ps_id_prefix}_batch_mode", array(
 			_t("do not use") => "_disabled_", 
-			_t('set for each item') => '_replace_'
+			_t('replace') => '_replace_'
 	), array("id" => "{$ps_id_prefix}_batch_mode_select"))."</div>\n
 <script type=\"text/javascript\">
 	jQuery(document).ready(function() {
@@ -210,9 +213,10 @@ function caBatchEditorAttributeModeControl($ps_id_prefix) {
 	$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".
 		caHTMLSelect("{$ps_id_prefix}_batch_mode", array(
 			_t("do not use") => "_disabled_", 
-			_t('add to each item') => '_add_', 
-			_t('replace values') => '_replace_',
-			_t('remove all values') => '_delete_'
+			_t('add') => '_add_', 
+			_t('update') => '_update_',
+			_t('replace') => '_replace_',
+			_t('remove all') => '_delete_'
 		), array('id' => "{$ps_id_prefix}_batch_mode_select"))."</div>\n
 <script type=\"text/javascript\">
 	jQuery(document).ready(function() {
@@ -669,7 +673,7 @@ function caGetAvailableMediaUploadModes(array $options=null) {
 }
 # ------------------------------------------------------
 /**
- * Test if media import mode is valud
+ * Test if media import mode is valid
  * 
  * @param string $mode
  * @param array $options No options are currently supported.
@@ -678,5 +682,34 @@ function caGetAvailableMediaUploadModes(array $options=null) {
 function caIsValidMediaUploadMode(string $mode, array $options=null) : bool {
 	$available_modes = caGetAvailableMediaUploadModes($options);
 	return in_array($mode, $available_modes, true);
+}
+# ------------------------------------------------------
+/**
+ * 
+ */
+function caBatchEditorConditionalUI(string $id_prefix, ?array $options=null) : string {
+	$buf = "<div class='labelInfo repeatingItem'>
+			<div class='formLabel' style='display: none;' id='{$id_prefix}_conditional_input'>"._t('Conditional expression<br/>%1', caHTMLTextInput("{$id_prefix}_batch_conditional", [], ['width' => caGetOption('width', $options, '670px')]))."</div>
+	</div>\n";
+	
+	return $buf;
+}
+# ------------------------------------------------------
+/**
+ * 
+ */
+function caBatchEditorConditionalUITrigger(string $id_prefix, ?array $options=null) : string {
+	$buf = "<div class='labelInfo repeatingItem'>
+		<div class='formLabel' s id='{$id_prefix}_conditional_button' onclick='jQuery(\"#{$id_prefix}_conditional_input\").slideDown(250); jQuery(\"#{$id_prefix}_conditional_button\").hide(); return false;'>".caNavIcon(__CA_NAV_ICON_FILTER__, '14px').' '._t('Conditional expression')."</div>
+	</div>";
+	return $buf;
+}
+# ------------------------------------------------------
+/**
+ * 
+ */
+function caBatchEditorEvaluateConditional(BaseModel $t_instance, string $conditional, ?array $options=null) : bool {
+	if((strlen($conditional) > 0) && !caEvaluateExpression($t_instance, $conditional)) { return false; }
+	return true;
 }
 # ------------------------------------------------------

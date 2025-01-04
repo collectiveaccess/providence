@@ -144,7 +144,7 @@ function caCalculateDateRangeAvgInDays() {
 /**
  * Return earliest date in list of date intervals passed as arguments. Any number of arguments may be passed. 
  * If an argument is a string with dates separated by semicolons, each date will be considered as if it were a separate argument.
- * This makes it possible to pass in repeating data fields using metadata elenent placeholders.
+ * This makes it possible to pass in repeating data fields using metadata element placeholders.
  *
  * Parameters controlling the format of the returned date may be passed as a string formatted as URL query parameters. The parameters
  * are those supported by TimeExpressionParser::getText(), including dateFormat and timeOmit. Unless set explicitly timeOmit is assumed to be
@@ -170,7 +170,7 @@ function caGetEarliestDate() : ?string {
 /**
  * Return latest date in list of date intervals passed as arguments. Any number of arguments may be passed. 
  * If an argument is a string with dates separated by semicolons, each date will be considered as if it were a separate argument.
- * This makes it possible to pass in repeating data fields using metadata elenent placeholders.
+ * This makes it possible to pass in repeating data fields using metadata element placeholders.
  *
  * Parameters controlling the format of the returned date may be passed as a string formatted as URL query parameters. The parameters
  * are those supported by TimeExpressionParser::getText(), including dateFormat and timeOmit. Unless set explicitly timeOmit is assumed to be

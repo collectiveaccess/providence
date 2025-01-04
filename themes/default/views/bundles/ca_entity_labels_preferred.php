@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $id_prefix 					= $this->getVar('placement_code').$this->getVar('id_prefix');
 $labels 					= $this->getVar('labels');
 $t_label 					= $this->getVar('t_label');
@@ -61,6 +60,11 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 ?>
 <div id="<?= $id_prefix; ?>Labels" <?= $batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
+	if ($batch) {
+		print caBatchEditorConditionalUITrigger($id_prefix);
+		print caBatchEditorConditionalUI($id_prefix, []);
+	}
+	
 	//
 	// The bundle template - used to generate each bundle in the form
 	//

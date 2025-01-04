@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-$vs_id_prefix 				= 	$this->getVar('placement_code').$this->getVar('id_prefix');
-$vs_error_source_code 		= 	$this->getVar('error_source_code');
-$vs_render_mode 			=	$this->getVar('render_mode');
+$id_prefix 				= 	$this->getVar('placement_code').$this->getVar('id_prefix');
+$error_source_code		= 	$this->getVar('error_source_code');
+$render_mode 			=	$this->getVar('render_mode');
 
 /** @var BaseModelWithAttributes $t_instance */
 $t_instance 				=	$this->getVar('t_instance');
@@ -62,7 +62,7 @@ $vb_is_read_only_for_existing_vals = false;
 $minimize_existing_values = $t_element->getSetting('minimizeExistingValues');
 
 // Show attribute source data (hardcoded text field)
-$include_source_data = ($t_element->getSetting('includeSourceData') && ($vs_render_mode !== 'checklist'));
+$include_source_data = ($t_element->getSetting('includeSourceData') && ($render_mode !== 'checklist'));
 
 $single_value_per_locale = (bool)$t_element->getSetting('singleValuePerLocale');
 
@@ -157,7 +157,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 		}
 		
 		// set errors for attribute
-		if(is_array($va_action_errors = $this->request->getActionErrors($vs_error_source_code, $o_attr->getAttributeID()))) {
+		if(is_array($va_action_errors = $this->request->getActionErrors($error_source_code, $o_attr->getAttributeID()))) {
 			foreach($va_action_errors as $o_error) {
 				$va_errors[$o_attr->getAttributeID()][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 			}
@@ -189,7 +189,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 	}
 	
 	// Set element errors an unsaved/new elements
-	if(is_array($va_action_errors = $this->request->getActionErrors($vs_error_source_code))) {
+	if(is_array($va_action_errors = $this->request->getActionErrors($error_source_code))) {
 		foreach($va_action_errors as $o_error) {
 			$va_errors['new_0'][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 		}
@@ -203,11 +203,11 @@ if (!$vs_add_label = ($settings['add_label'][$g_ui_locale] ?? null)) {
 }
 
 if ($vb_batch) {
-	print caBatchEditorAttributeModeControl($vs_id_prefix);
+	print caBatchEditorAttributeModeControl($id_prefix);
 } else {
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
+	print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $va_initial_values));
 }
-print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 
 if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], false)) {
 	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
@@ -215,27 +215,25 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 ?>
 	<div class='iconButton'>
 <?php
-		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
-		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
+		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$id_prefix}PrintTemplate"));
+		print "<a href='#' onclick='{$id_prefix}Print(); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
 ?>
 	</div>
 <?php
 	}
 }
-	
-	
 ?>
-<div id="<?= $vs_id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?= $id_prefix; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each editing bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo repeatingItem" style="clear: both;">	
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo repeatingItem" style="clear: both;">	
 			<span class="formLabelError">{error}</span>
 <?php
-	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
+	if (($render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
 ?>
 			<div style="float: right;">
 				<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
@@ -251,10 +249,10 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 		if (sizeof($va_template_list) > 0) {
 ?>
-		<div class='editorBundleValuePrintControl iconButton' id='<?= $vs_id_prefix; ?>_print_control_{n}'>
+		<div class='editorBundleValuePrintControl iconButton' id='<?= $id_prefix; ?>_print_control_{n}'>
 <?php
-			print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
-			print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
+			print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$id_prefix}PrintTemplate{n}"));
+			print "<a href='#' onclick='{$id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
 ?>
 		</div>
 <?php
@@ -295,10 +293,10 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 		//
 ?>
 	<textarea class='caExistingItemTemplate' style='display: none;'>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 		
-			<span id='<?= $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>{<?= "{$root_element_id}_label"; ?>}</span>
-			<?= caHTMLHiddenInput($vs_id_prefix.'_'.$root_element_id.'_{n}', ['value' => '{'.$root_element_id.'}']); ?>	
+			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>{<?= "{$root_element_id}_label"; ?>}</span>
+			<?= caHTMLHiddenInput($id_prefix.'_'.$root_element_id.'_{n}', ['value' => '{'.$root_element_id.'}']); ?>	
 <?php
 			if (!$vb_read_only && !$vb_dont_show_del) {
 ?><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
@@ -313,6 +311,11 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 	<div class="bundleContainer">
 		<div class="caItemList">
 <?php
+			if ($vb_batch) {
+				print caBatchEditorConditionalUITrigger($id_prefix);
+				print caBatchEditorConditionalUI($id_prefix, []);
+			}
+
 			if($vb_is_read_only_for_existing_vals) {
 				// hidden list of previews for read-only containers. these get inserted
 				// instead of the bundle form if the container is configured to do so
@@ -325,23 +328,23 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 <?php
 					foreach($va_readonly_previews as $vn_attr_id => $vs_readonly_preview) {
 ?>
-						<div class="caReadonlyContainer" id="caReadonlyContainer<?= $vs_id_prefix.'_'.$vn_attr_id; ?>">
-							<a class="caReadonlyContainerEditLink" id="caContainerEditLink<?= $vs_id_prefix.'_'.$vn_attr_id; ?>" href="#"><?= _t('Edit'); ?></a>
+						<div class="caReadonlyContainer" id="caReadonlyContainer<?= $id_prefix.'_'.$vn_attr_id; ?>">
+							<a class="caReadonlyContainerEditLink" id="caContainerEditLink<?= $id_prefix.'_'.$vn_attr_id; ?>" href="#"><?= _t('Edit'); ?></a>
 							<div class="caReadonlyContainerDisplay"><?= $vs_readonly_preview; ?></div>
 						</div>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
-								jQuery("#caContainerEditLink<?= $vs_id_prefix . '_' . $vn_attr_id; ?>").click(function () {
-									jQuery('#<?= $vs_id_prefix; ?>Item_<?= $vn_attr_id; ?>').show();
-									jQuery('#caReadonlyContainer<?= $vs_id_prefix.'_'.$vn_attr_id; ?>').hide();
-									jQuery('input[name="<?= $vs_id_prefix.'_dont_save_'.$vn_attr_id; ?>"]').val('0');
+								jQuery("#caContainerEditLink<?= $id_prefix . '_' . $vn_attr_id; ?>").click(function () {
+									jQuery('#<?= $id_prefix; ?>Item_<?= $vn_attr_id; ?>').show();
+									jQuery('#caReadonlyContainer<?= $id_prefix.'_'.$vn_attr_id; ?>').hide();
+									jQuery('input[name="<?= $id_prefix.'_dont_save_'.$vn_attr_id; ?>"]').val('0');
 								});
 							});
 						</script>
 <?php
 						// this signals saveBundlesForScreen() that this particular value shouldn't be saved;
 						// otherwise we nuke existing values that are in read-only mode
-						print caHTMLHiddenInput($vs_id_prefix.'_dont_save_'.$vn_attr_id, array('value' => 1));
+						print caHTMLHiddenInput($id_prefix.'_dont_save_'.$vn_attr_id, array('value' => 1));
 					}
 ?>
 				</div>
@@ -350,7 +353,7 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 ?>
 		</div>
 <?php
-	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {
+	if (($render_mode !== 'checklist') && !$vb_read_only) {
 ?>
 		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, "15px"); ?> <?= $vs_add_label; ?></a></div>
 <?php
@@ -362,17 +365,17 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 <script type="text/javascript">
 <?php
 	if (!$vb_batch) {
-		print $t_element->getPresetsJavascript($vs_id_prefix);
+		print $t_element->getPresetsJavascript($id_prefix);
 	}
-	if ($vs_render_mode === 'checklist') {
+	if ($render_mode === 'checklist') {
 ?>
-		caUI.initChecklistBundle('#<?= $vs_id_prefix; ?>', {
-			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+		caUI.initChecklistBundle('#<?= $id_prefix; ?>', {
+			fieldNamePrefix: '<?= $id_prefix; ?>_',
 			templateValues: [<?= join(',', caQuoteList($va_template_tags)); ?>],
 			initialValues: <?= json_encode($va_initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
 			errors: <?= json_encode($va_errors); ?>,
-			itemID: '<?= $vs_id_prefix; ?>Item_',
+			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			minRepeats: <?= ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
@@ -393,19 +396,19 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 ?>
 			var bundleFormElement = jQuery("#" + element.container.replace('#', '') + "Item_" + attribute_id);
 			bundleFormElement.hide();
-			bundleFormElement.after(jQuery('#caReadonlyContainer<?= $vs_id_prefix?>_' + attribute_id));
+			bundleFormElement.after(jQuery('#caReadonlyContainer<?= $id_prefix?>_' + attribute_id));
 <?php
 		}
 ?>
 		};
-		caUI.initBundle('#<?= $vs_id_prefix; ?>', {
-			fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+		caUI.initBundle('#<?= $id_prefix; ?>', {
+			fieldNamePrefix: '<?= $id_prefix; ?>_',
 			templateValues: [<?= join(',', caQuoteList($va_template_tags)); ?>],
 			initialValues: <?= json_encode($va_initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
 			forceNewValues: <?= json_encode($va_failed_inserts); ?>,
 			errors: <?= json_encode($va_errors); ?>,
-			itemID: '<?= $vs_id_prefix; ?>Item_',
+			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: '<?= $minimize_existing_values ?  'caExistingItemTemplate' : 'caItemTemplate'; ?>',
 			itemListClassName: 'caItemList',
@@ -414,8 +417,8 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 			minRepeats: <?= ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
 			maxRepeats: <?= ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 			showEmptyFormsOnLoad: <?= intval($this->getVar('min_num_to_display')); ?>,
-			hideOnNewIDList: ['<?= $vs_id_prefix; ?>_download_control_', '<?= $vs_id_prefix; ?>_print_control_',],
-			showOnNewIDList: ['<?= $vs_id_prefix; ?>_upload_control_'],
+			hideOnNewIDList: ['<?= $id_prefix; ?>_download_control_', '<?= $id_prefix; ?>_print_control_',],
+			showOnNewIDList: ['<?= $id_prefix; ?>_upload_control_'],
 			defaultValues: <?= json_encode($va_element_value_defaults); ?>,
 			bundlePreview: <?= caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?= $vb_read_only ? "1" : "0"; ?>,
@@ -431,9 +434,9 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 	}
 ?>
 	
-	function <?= $vs_id_prefix; ?>Print(attribute_id) {
+	function <?= $id_prefix; ?>Print(attribute_id) {
 		if (!attribute_id) { attribute_id = ''; }
-		var template = jQuery('#<?= $vs_id_prefix; ?>PrintTemplate' + attribute_id).val();
+		var template = jQuery('#<?= $id_prefix; ?>PrintTemplate' + attribute_id).val();
 		window.location = '<?= caNavUrl($this->request, '*', '*', 'PrintBundle', array('element_code' => $t_element->get('element_code'), $t_instance->primaryKey() => $t_instance->getPrimaryKey())); ?>/template/' + template + '/attribute_id/' + attribute_id;
 	}
 </script>
