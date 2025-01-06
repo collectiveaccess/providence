@@ -4203,7 +4203,7 @@ function caFileIsIncludable($ps_file) {
 		$move_articles = caGetOption('moveArticles', $options, true);
 
 		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
-		$display_value = preg_replace('![ ]+!', ' ', $display_value);
+		$display_value = preg_replace('![ ]+!u', ' ', $display_value);
 		
 		if($locale && $move_articles) {
 			// Move articles to end of string
@@ -4219,13 +4219,13 @@ function caFileIsIncludable($ps_file) {
 
 		// Left-pad numbers
 		$padded = [];
-		foreach(preg_split("![ \t]+!", $display_value) as $t) {
+		foreach(preg_split("![ \t]+!u", $display_value) as $t) {
 			if(is_numeric($t)) {
 				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
-			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!", $t, $m)) {
-				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $t, $m)) {
+				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
 			} else {
-				$padded[] = str_pad(substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
+				$padded[] = str_pad(mb_substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
 		}
 		$display_value = join(' ', $padded);
@@ -4276,6 +4276,10 @@ function caFileIsIncludable($ps_file) {
 
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
 				$va_ret[$vn_table_num] = $va_rel_table_info['table'];
+			}
+			if(isset($va_ret[56])) {
+				$t_instance = Datamodel::getInstanceByTableName('ca_objects_x_object_representations', true);
+				$va_ret[$t_instance->tableNum()] = $t_instance->tableName();
 			}
 		}
 

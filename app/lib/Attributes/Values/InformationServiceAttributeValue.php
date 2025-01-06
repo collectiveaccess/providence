@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2024 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -387,7 +387,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
     			}
     		}
     		
-            $vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
+            $vs_element = '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_input{n}">'.
             	$additional_ui_elements.
                 caHTMLTextInput(
                     '{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
@@ -396,7 +396,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
                         'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
                         'value' => '{{'.$pa_element_info['element_id'].'}}',
                         'maxlength' => 512,
-                        'id' => "infoservice_".$pa_element_info['element_id']."_autocomplete{n}",
+                        'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}",
                         'class' => $ps_class
                     )
                 ).
@@ -423,7 +423,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
             $vs_element .= "
                     <script type='text/javascript'>
                         jQuery(document).ready(function() {
-                            jQuery('#infoservice_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+                            jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
                                 {
                                     minLength: 3,delay: 800,
                                     source: function (request, response) {

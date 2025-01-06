@@ -135,6 +135,7 @@ class AccessRestrictions {
 		}
 
 		// check rules
+		$groups_passed_count = 0;
 		foreach($va_groups_to_check as $va_group){
 			if(!is_array($va_group) || !is_array($va_group["actions"] ?? null)) continue; // group without action restrictions
 			$vb_group_passed = false;
@@ -167,10 +168,11 @@ class AccessRestrictions {
 			if(!$vb_group_passed) { // one has to pass ALL groups!
 				return false;
 			}
+			$groups_passed_count++;
 		}
 		
 		// Fallback to denying if it appears to be an API call not defined in the restrictions file
-		if(in_array('json', array_map('strtolower', $pa_module_path))) { return false; }
+		if(($groups_passed_count === 0) && in_array('json', array_map('strtolower', $pa_module_path))) { return false; }
 		
 		return true; // all groups passed
 	}

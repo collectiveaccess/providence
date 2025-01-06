@@ -1,15 +1,16 @@
 /*
-	Date: 18 June 2024
+	Date: 29 November 2024
 	Migration: 198
-	Description: 
+	Description: Add home location for storage locations
 */
 
 /*==========================================================================*/
 
-ALTER TABLE ca_search_indexing_queue ADD COLUMN priority tinyint unsigned not null default 100;
-CREATE INDEX i_priority ON ca_search_indexing_queue (priority);
-DROP INDEX i_started_on ON ca_search_indexing_queue;
-CREATE INDEX i_started_on ON ca_search_indexing_queue(started_on, priority);
+alter table ca_storage_locations add column home_location_id int unsigned null;
+alter table ca_storage_locations add constraint fk_ca_storage_locations_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict;
+      
+create index i_home_location_id on ca_storage_locations(home_location_id);
 
 /*==========================================================================*/
 

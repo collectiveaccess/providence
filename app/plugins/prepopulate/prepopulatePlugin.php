@@ -150,7 +150,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
-        if (is_array($pa_options['restrictToRules'] ?? null)) {
+        if (isset($pa_options['restrictToRules'])) {
             $restrictToRules = explode(",", $pa_options['restrictToRules']);
             // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -159,7 +159,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                     $va_rules_filtered[] = $va_rules[$res_rules];
             }
             $va_rules=$va_rules_filtered;
-        } elseif(is_array($pa_options['excludeRules'] ?? null)) {
+        } elseif(isset($pa_options['excludeRules'])) {
             $excludeRules = explode(",", $pa_options['excludeRules']);
             // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];

@@ -956,7 +956,8 @@ class RequestHTTP extends Request {
 			}
 			return false;
 		} else {		
-			$msg = "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip();
+			$user_name = ($this->user && $this->user->getUserID()) ? $this->user->get('user_name') : ($pa_options["user_name"] ?? null);
+			$msg = "Successful login for '{$user_name}'; IP=".RequestHTTP::ip()."; user agent=".($_SERVER['HTTP_USER_AGENT'] ?? null);
 			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
 			
 			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");

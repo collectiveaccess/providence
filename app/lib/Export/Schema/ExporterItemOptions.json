@@ -223,6 +223,10 @@
         "includeDeleted": {
             "description": "Include deleted records in the exported data set.",
             "type": ["boolean", "integer"]
+        },
+        "fieldName": {
+            "description": "Value to use as column header in CSV output.",
+            "type": "string"
         }
     }
 }

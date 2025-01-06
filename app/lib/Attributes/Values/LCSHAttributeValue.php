@@ -6,10 +6,10 @@
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
- * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Software by Whirl-i-Gig (https://www.whirl-i-gig.com)
+ * Copyright 2009-2025 Whirl-i-Gig
  *
- * For more information visit http://www.CollectiveAccess.org
+ * For more information visit https://www.CollectiveAccess.org
  *
  * This program is free software; you may redistribute it and/or modify it under
  * the terms of the provided license as published by Whirl-i-Gig
@@ -19,13 +19,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
  * This source code is free and modifiable under the terms of 
- * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * GNU General Public License. (https://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
- * http://www.CollectiveAccess.org
+ * https://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
  * @subpackage BaseModel
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * @license https://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
@@ -153,23 +153,23 @@ $_ca_attribute_settings['LCSHAttributeValue'] = array(		// global
 		'description' => _t('Selects which vocabulary will be searched.'),
 		'options' => array(
 			_t('All vocabularies') => '',
-			_t('LC Subject Headings') => 'cs:http://id.loc.gov/authorities/subjects',
-			_t('LC Name Authority File') => 'cs:http://id.loc.gov/authorities/names',
-			_t('LC Subject Headings for Children') => 'cs:http://id.loc.gov/authorities/childrensSubjects',
-			_t('LC Genre/Forms File') => 'cs:http://id.loc.gov/authorities/genreForms',
-			_t('LC Classifications') => 'cs:http://id.loc.gov/authorities/classification',
-			_t('Thesaurus of Graphic Materials') => 'cs:http://id.loc.gov/vocabulary/graphicMaterials',
-			_t('Preservation Events') => 'cs:http://id.loc.gov/vocabulary/preservationEvents',
-			_t('Preservation Level Role') => 'cs:http://id.loc.gov/vocabulary/preservationLevelRole',
-			_t('Cryptographic Hash Functions') => 'cs:http://id.loc.gov/vocabulary/cryptographicHashFunctions',
-			_t('Controlled Vocabulary for Rare Materials Cataloging') => 'cs:http://id.loc.gov/vocabulary/rbmscv',
-			_t('MARC Relators') => 'cs:http://id.loc.gov/vocabulary/relators',
-			_t('MARC Countries') => 'cs:http://id.loc.gov/vocabulary/countries',
-			_t('MARC Geographic Areas') => 'cs:http://id.loc.gov/vocabulary/geographicAreas',
-			_t('MARC Languages') => 'cs:http://id.loc.gov/vocabulary/languages',
-			_t('ISO639-1 Languages') => 'cs:http://id.loc.gov/vocabulary/iso639-1',
-			_t('ISO639-2 Languages') => 'cs:http://id.loc.gov/vocabulary/iso639-2',
-			_t('ISO639-5 Languages') => 'cs:http://id.loc.gov/vocabulary/iso639-5',
+			_t('LC Subject Headings') => 'cs:https://id.loc.gov/authorities/subjects',
+			_t('LC Name Authority File') => 'cs:https://id.loc.gov/authorities/names',
+			_t('LC Subject Headings for Children') => 'cs:https://id.loc.gov/authorities/childrensSubjects',
+			_t('LC Genre/Forms File') => 'cs:https://id.loc.gov/authorities/genreForms',
+			_t('LC Classifications') => 'cs:https://id.loc.gov/authorities/classification',
+			_t('Thesaurus of Graphic Materials') => 'cs:https://id.loc.gov/vocabulary/graphicMaterials',
+			_t('Preservation Events') => 'cs:https://id.loc.gov/vocabulary/preservationEvents',
+			_t('Preservation Level Role') => 'cs:https://id.loc.gov/vocabulary/preservationLevelRole',
+			_t('Cryptographic Hash Functions') => 'cs:https://id.loc.gov/vocabulary/cryptographicHashFunctions',
+			_t('Controlled Vocabulary for Rare Materials Cataloging') => 'cs:https://id.loc.gov/vocabulary/rbmscv',
+			_t('MARC Relators') => 'cs:https://id.loc.gov/vocabulary/relators',
+			_t('MARC Countries') => 'cs:https://id.loc.gov/vocabulary/countries',
+			_t('MARC Geographic Areas') => 'cs:https://id.loc.gov/vocabulary/geographicAreas',
+			_t('MARC Languages') => 'cs:https://id.loc.gov/vocabulary/languages',
+			_t('ISO639-1 Languages') => 'cs:https://id.loc.gov/vocabulary/iso639-1',
+			_t('ISO639-2 Languages') => 'cs:https://id.loc.gov/vocabulary/iso639-2',
+			_t('ISO639-5 Languages') => 'cs:https://id.loc.gov/vocabulary/iso639-5',
 		)
 	)
 );
@@ -205,7 +205,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 		if (isset($options['asHTML']) && $options['asHTML']) {
 			if (preg_match('!sh([\d]+)!', $this->ops_text_value, $matches)) {
 				$value = preg_replace('!\[sh[\d]+\]!', '', $this->ops_text_value);
-				return "<a href='http://id.loc.gov/authorities/sh".$matches[1]."' target='_lcsh_details'>".$value.'</a>';
+				return "<a href='https://id.loc.gov/authorities/sh".$matches[1]."' target='_lcsh_details'>".$value.'</a>';
 			}
 		} 
 		if (caGetOption(['asText', 'text'], $options, false)) {
@@ -258,7 +258,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 			$tmp = explode('|', $value);
 			if (is_array($tmp) && (sizeof($tmp) > 1)) {
 			
-				$url = trim(str_replace('info:lc/', 'http://id.loc.gov/authorities/', $tmp[1]));
+				$url = trim(str_replace('info:lc/', 'https://id.loc.gov/authorities/', $tmp[1]));
 			
 				$tmp1 = explode('/', $tmp[1]);
 				$id = array_pop($tmp1);
@@ -267,10 +267,10 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 					'value_longtext2' => $url,							// uri
 					'value_decimal1' => is_numeric($id) ? $id : null	// id
 				);
-			} elseif (preg_match('!\[(http://[^\]]+)\]!', $value, $matches)) {
+			} elseif (preg_match('!\[(https://[^\]]+)\]!', $value, $matches)) {
 				// parse <text> [<url>] format
 				$url = trim($matches[1]);
-				$text = preg_replace('!\[http://([^\]]+)\]!', '', $value);
+				$text = preg_replace('!\[https://([^\]]+)\]!', '', $value);
 				
 				$tmp1 = explode('/', $url);
 				$id = array_pop($tmp1);
@@ -287,8 +287,8 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 				
 				$service_url = null;
 				if (caGetOption('matchUsingLOCLabel', $options, false)) {
-					$service_url = "http://id.loc.gov/authorities/label/".rawurlencode($value);
-				} elseif (preg_match("!http://id.loc.gov/authorities/[A-Za-z]+!", $value)) {
+					$service_url = "https://id.loc.gov/authorities/label/".rawurlencode($value);
+				} elseif (preg_match("!https://id.loc.gov/authorities/[A-Za-z]+!", $value)) {
 					$service_url = $value;
 				}
 				
@@ -313,7 +313,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 						$id = array_pop($url_bits);
 						$label = $headers['X-preflabel'];
 						
-						$url = str_replace('http://id.loc.gov/', 'info:lc/', $url);
+						$url = str_replace('https://id.loc.gov/', 'info:lc/', $url);
 				
 						if ($url) {
 							LCSHAttributeValue::$s_term_cache[$value] = array(
@@ -401,7 +401,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		$settings = $this->getSettingValuesFromElementArray($element_info, array('fieldWidth', 'fieldHeight'));
 		
-		$element = '<div id="lcsh_'.$element_info['element_id'].'_input{n}">'.
+		$element = '<div id="{fieldNamePrefix}'.$element_info['element_id'].'_input{n}">'.
 			caHTMLTextInput(
 				'{fieldNamePrefix}'.$element_info['element_id'].'_autocomplete{n}', 
 				array(
@@ -409,7 +409,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 					'height' => (isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight'], 
 					'value' => '{{'.$element_info['element_id'].'}}', 
 					'maxlength' => 512,
-					'id' => "lcsh_".$element_info['element_id']."_autocomplete{n}",
+					'id' => "{fieldNamePrefix}".$element_info['element_id']."_autocomplete{n}",
 					'class' => $class ? $class : 'lookupBg'
 				)
 			).
@@ -434,7 +434,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 		$element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#lcsh_".$element_info['element_id']."_autocomplete{n}').autocomplete(
+					jQuery('#{fieldNamePrefix}".$element_info['element_id']."_autocomplete{n}').autocomplete(
 						{ source: '{$url}', minLength: 3, delay: 800, 
 							select: function( event, ui ) {
 								jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').val(ui.item.label + ' [' + ui.item.idno + ']|' + ui.item.url);
@@ -454,7 +454,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 						}
 						
 						if (lcsh_id) {
-							jQuery('#{fieldNamePrefix}".$element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'http://id.loc.gov' + lcsh_id);
+							jQuery('#{fieldNamePrefix}".$element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'https://id.loc.gov' + lcsh_id);
 						}
 					}
 				});

@@ -45,6 +45,7 @@ require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Developer.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/BanHammer.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Localization.php');
 require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/AccessControl.php');
+require_once(__CA_LIB_DIR__.'/Utils/CLIUtils/Migration.php');
 
 class CLIUtils extends CLIBaseUtils {
 	use CLIUtilsMaintenance;
@@ -62,4 +63,5 @@ class CLIUtils extends CLIBaseUtils {
 	use CLIUtilsBanHammer;
 	use CLIUtilsLocalization;
 	use CLIUtilsAccessControl;
+	use CLIUtilsMigration;
 }

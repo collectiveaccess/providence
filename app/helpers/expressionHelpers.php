@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -139,6 +139,90 @@ function caCalculateDateRangeAvgInDays() {
 	} else {
 		return false;
 	}
+}
+# ---------------------------------------
+/**
+ * Return earliest date in list of date intervals passed as arguments. Any number of arguments may be passed. 
+ * If an argument is a string with dates separated by semicolons, each date will be considered as if it were a separate argument.
+ * This makes it possible to pass in repeating data fields using metadata elenent placeholders.
+ *
+ * Parameters controlling the format of the returned date may be passed as a string formatted as URL query parameters. The parameters
+ * are those supported by TimeExpressionParser::getText(), including dateFormat and timeOmit. Unless set explicitly timeOmit is assumed to be
+ * true. An example parameter string: "dateFormat=iso8601&timeOmit=0" (returns earliest date in ISO format with time included)
+ *
+ * @return string
+ */
+function caGetEarliestDate() : ?string {
+	[$acc, $params] = caGetDateListAndParams(func_get_args());
+	
+	$earliest = $earliest_ts = null;
+	foreach($acc as $d) {
+		if(is_array($ts = caDateToHistoricTimestamps($d))) {
+			if(is_null($earliest) || ($ts['start'] < $earliest)) { 
+				$earliest = $ts['start'];
+				$earliest_ts = $d;
+			}
+		}
+	}
+	return $earliest ? caGetLocalizedHistoricDate($earliest, $params) : null;
+}
+# ---------------------------------------
+/**
+ * Return latest date in list of date intervals passed as arguments. Any number of arguments may be passed. 
+ * If an argument is a string with dates separated by semicolons, each date will be considered as if it were a separate argument.
+ * This makes it possible to pass in repeating data fields using metadata elenent placeholders.
+ *
+ * Parameters controlling the format of the returned date may be passed as a string formatted as URL query parameters. The parameters
+ * are those supported by TimeExpressionParser::getText(), including dateFormat and timeOmit. Unless set explicitly timeOmit is assumed to be
+ * true. An example parameter string: "dateFormat=iso8601&timeOmit=0" (returns latest date in ISO format with time included)
+ *
+ * @return string
+ */
+function caGetLatestDate() : ?string {
+	[$acc, $params] = caGetDateListAndParams(func_get_args());
+	
+	$latest = $latest_ts = null;
+	foreach($acc as $d) {
+		if(is_array($ts = caDateToHistoricTimestamps($d))) {
+			if(is_null($latest) || ($ts['end'] > $latest)) { 
+				$latest = $ts['end'];
+				$latest_ts = $d;
+			}
+		}
+	}
+	return $latest ? caGetLocalizedHistoricDate($latest, $params) : null;
+}
+# ---------------------------------------
+/**
+ * Return earliest date in list of date intervals passed as arguments. Any number of arguments may be passed. 
+ * If an argument is a string with dates separated by semicolons, each date will be considered as if it were a separate argument.
+ * This makes it possible to pass in repeating data fields using metadata elenent placeholders.
+ *
+ * Parameters controlling the format of the returned date may be passed as a string formatted as URL query parameters. The parameters
+ * are those supported by TimeExpressionParser::getText(), including dateFormat and timeOmit. Unless set explicitly timeOmit is assumed to be
+ * true. An example parameter string: "dateFormat=iso8601&timeOmit=0" (returns earliest date in ISO format with time included)
+ *
+ * @return string
+ */
+function caGetDateListAndParams($args) {
+	$poss_params = array_pop($args);
+	if(!caIsValidDate($poss_params)) {
+		parse_str($poss_params, $params);
+	} else {
+		$args[] = $poss_params;
+		$params = [];
+	}
+	
+	$acc = [];
+	foreach($args as $arg) {
+		if(strpos($arg, ';') !== false) {
+			$acc = array_merge($acc, explode(';', $arg));
+		} else {
+			$acc[] = $arg;
+		}
+	}
+	if(!isset($params['timeOmit'])) { $params['timeOmit'] = true; }
+	return [$acc, $params];
 }
 # ---------------------------------------
 /**

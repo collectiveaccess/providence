@@ -51,7 +51,7 @@ textarea {
     
 }
 
-a, a:link, a:visited, a font { color:#333333; text-decoration: underline; }
+a, a:link, a:visited, a font { color:#138290; text-decoration: underline; }
 
 a:hover{
     color: #333;
@@ -224,10 +224,10 @@ div.clear {
 
 #leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
-    color: #333333;
+    color: #138290;
 }
 #leftNav h3 h4 a:hover{
-    color: #333333;
+    color: #138290;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
 #leftNav ul.arrow { padding:0px; }
@@ -237,7 +237,7 @@ div.clear {
 #leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
-#leftNav ul.arrow li a:hover { color: #333333}
+#leftNav ul.arrow li a:hover { color: #138290}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -309,10 +309,10 @@ div.clear {
 #leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
-	color: #333333;
+	color: #138290;
 }
 #leftNav .resultLink:hover  {
-	color: #333333;
+	color: #138290;
 	text-decoration:underline;
 }
 #leftNav .creatingNew {
@@ -498,7 +498,7 @@ div.inspectorCheckedOut {
 #leftNav div.form-button {text-align:right; margin-top: 5px; }
 #leftNav .form-button a {	text-transform:uppercase; text-decoration: underline; }
 #leftNav .form-button a:hover{
-    color: #333333;
+    color: #138290;
 }
 #leftNav #inspectorMedia, #leftNav #hierarchyInfo { display:none; }
 #leftNav #inspectorMedia {
@@ -1552,7 +1552,7 @@ div.button a{
 }
 
 div.button a:hover{
-    color: #333333;
+    color: #138290;
 }
 
 div.button img{
@@ -1574,7 +1574,7 @@ a.button{
 	font-weight:bold;
 }
 a.button:hover{
-    color: #333333;
+    color: #138290;
 }
 
 a.inline-button-small {
@@ -1584,7 +1584,7 @@ a.inline-button-small {
 }
 a.inline-button-small:hover {
     text-decoration: none;
-    color: #333333;
+    color: #138290;
 }
 
 a.form-button, span.form-button, del.form-button{
@@ -1764,7 +1764,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color: #333333;
+    color: #138290;
     text-decoration:none;
 }
 
@@ -2073,7 +2073,7 @@ a.deleteButton span{
 }
 
 a.deleteButton span.form-button:hover {
-	color: #333333;
+	color: #138290;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -2582,7 +2582,7 @@ select.searchToolsSelect {
 	cursor: pointer;
 }
 .qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
-    color:#333333;
+    color:#138290;
 }
 
 .objectThumbnailsImageContainer {
@@ -3980,7 +3980,7 @@ a.exploreSelected {
 
 }
 .hierNav a:hover{
-    color: #333333;
+    color: #138290;
 }
 .hierNav .buttonPosition{
     float:right;
@@ -3998,17 +3998,29 @@ a.exploreSelected {
     font-weight:normal;
     float:right;
     
-    padding-left:5px;
+    padding: 5px 0 5px 5px;
 }
 .hierarchyBrowserMessageContainer{    /*** message above browser on editor pages ***/
-    padding: 0px 8px 0px 8px;
+    padding: 5px 8px 5px 16px;
     color:#333;
     font-weight: normal;
 }
+
 .hierarchyBrowserNewLocationMessage{ /*** message above browser on editor pages dispaying new location to move record to ***/
     color: #EB0000;
-    padding:0px 5px 15px 0px;
+    padding:2px 5px 5px 0px;
     height:1em;
+    display: none;
+}
+
+.hierarchyReturnToHomeContainer {
+	padding:6px 5px 2px 0px;
+	font-weight: normal;
+}
+
+.hierarchyReturnToHomeButton {
+	text-decoration: none;
+    cursor: pointer;
 }
 
 /*** scrolling header styles ***/
@@ -4450,7 +4462,7 @@ div.quickSearchNoResults {
     white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
-    color:#333333;
+    color:#138290;
     text-decoration:underline;
 }
 .criteriaLink {
@@ -4638,8 +4650,9 @@ div.browseCriterion {
 	padding-left:20px;
 }
 [facet_item_selected="1"]::before {
-	font-family: FontAwesome;
+	font-family: Font Awesome\ 5 Free;
 	content: "\f067"; 
+	font-weight: 900;
 	padding-right:6px;
 	position:absolute;
 	left:7px;
@@ -7460,7 +7473,7 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #333333;
+	color: #138290;
 }
 
 .caIconRed {
@@ -7471,7 +7484,6 @@ div.caResultsComplexDataEditorErrorContainer {
 	padding-left:5px;
 	line-height:8px !important;
 }
-
 
 /* set items list in set editor */
 .setItem {
