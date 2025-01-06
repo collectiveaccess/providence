@@ -143,6 +143,8 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	$is_textarea = false;
 	$va_styles = array();
 	
+	$tag_name = caGetOption('textAreaTagName', $options, 'textarea');
+	
 	if(isset($attributes['style']) && $attributes['style']) {
 		$va_styles[] = $attributes['style'];
 	}
@@ -245,7 +247,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 				
 				$attr_string = _caHTMLMakeAttributeString($attributes, $options);			
 				$element .= "<div id=\"{$name}_container\" style='width: {$width}px; height: {$height}px; overflow-y: auto;'>
-					<textarea name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</textarea></div>
+					<{$tag_name} name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</{$tag_name}></div>
 <style>
 #{$name}_container .ck-editor__editable_inline {
 min-height: calc({$height}px - 100px);
@@ -287,7 +289,6 @@ min-height: calc({$height}px - 100px);
 		$o_config = Configuration::load();
 		if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
 	} elseif ($is_textarea) {
-		$tag_name = caGetOption('textAreaTagName', $options, 'textarea');
 		$value = $attributes['value'] ?? null;
 		if ($attributes['size'] ?? null) { $attributes['cols'] = $attributes['size']; }
 		unset($attributes['size']);
