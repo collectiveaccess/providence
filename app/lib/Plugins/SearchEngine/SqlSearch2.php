@@ -610,7 +610,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						{$private_sql} {$anchor_sql}
 				", $params);
 			}
-			$results[$i] = $this->_arrayFromDbResult($qr_res);
+			$results[] = $this->_arrayFromDbResult($qr_res);
 		}
 		
 		$ret = array_shift($results);
