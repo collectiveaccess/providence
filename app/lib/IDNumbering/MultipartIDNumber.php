@@ -238,8 +238,8 @@ class MultipartIDNumber extends IDNumber {
 		if (!is_array($elements)) { return []; }
 
 		$pv = $this->getParentValue();
-		if(preg_match('!^'.preg_quote($pv, '!').'!u', $v)) {
-			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $v);
+		if(preg_match('!^'.preg_quote($pv, '!').'!u', $value)) {
+			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $value);
 			$element_vals = $this->explodeValue($npv);
 			array_unshift($element_vals, $npv);
 		} else {
