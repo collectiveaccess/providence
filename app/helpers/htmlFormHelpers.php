@@ -199,9 +199,11 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	$attributes['style'] = join(" ", $va_styles);
 	
 	// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
-	if ($use_wysiwyg_editor && !isset($attributes['id'])) {
-		$attributes['id'] = $name;
-	}
+	// if ($use_wysiwyg_editor && !isset($attributes['id'])) {
+// 		$attributes['id'] = $name;
+// 	}
+	
+	$id = $attributes['id'] ?? $name;
 	
 	$element = '';
 	if ($use_wysiwyg_editor) {
@@ -267,7 +269,7 @@ min-height: calc({$height}px - 100px);
 						
 				$element .= caHTMLTextInput(
 					$name, 
-					['id' => "{$name}", 'value' => $attributes['value'] ?? null, 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
+					['id' => "{$id}", 'value' => $attributes['value'] ?? null, 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
 				);
 				
 				$element .= "
@@ -293,11 +295,11 @@ min-height: calc({$height}px - 100px);
 		unset($attributes['size']);
 		unset($attributes['value']);
 		$attr_string = _caHTMLMakeAttributeString($attributes, $options);
-		$element = "<{$tag_name} name='{$name}' id='{$name}' wrap='soft' {$attr_string}>".$value."</{$tag_name}>\n";
+		$element = "<{$tag_name} name='{$name}' id='{$id}' wrap='soft' {$attr_string}>".$value."</{$tag_name}>\n";
 	} else {
 		$attributes['size'] = ($attributes['size'] ?? false) ? $attributes['size'] : $attributes['width'] ?? null;
 		$attr_string = _caHTMLMakeAttributeString($attributes, $options);
-		$element = "<input name='{$name}' id='{$name}' {$attr_string} type='text'/>\n";
+		$element = "<input name='{$name}' id='{$id}' {$attr_string} type='text'/>\n";
 	}
 	return $element;
 }
