@@ -167,7 +167,7 @@ class MediaUploaderController extends ActionController {
 	public function recent(){
 		$user_id = $this->request->getUserID();
 
-		$recent = MediaUploadManager::getRecent(['user' => $user_id, 'limit' => 9, 'omitStatuses' => ['CANCELLED']]);
+		$recent = MediaUploadManager::getRecent(['user' => $user_id, 'limit' => 9]);
 		$this->view->setVar('response', array_merge(['ok' => 0, 'recent' => $recent], caGetUserMediaStorageUsageStats($user_id)));
 		
 		$this->response->setContentType('application/json');
