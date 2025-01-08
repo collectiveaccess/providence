@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -84,7 +84,8 @@ print $vs_control_box = caFormControlBox(
 			fileIcon: "<?= caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
 
 			displayFiles: true,
-			allowFileSelection: false,
+			allowFileSelection: true,
+			allowMultipleSelection: true,
 
 			uploadProgressMessage: <?= json_encode(_t("Upload progress: %1")); ?>,
 			uploadProgressID: "batchProcessingTableProgressGroup",
@@ -99,7 +100,18 @@ print $vs_control_box = caFormControlBox(
 			currentSelectionDisplayID: 'browseCurrentSelection',
 
 			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); } else { jQuery('#caDirectoryValue').val(''); }
+				if(name.length > 0) {
+					let l = name.map(x => path + '/' + x);
+					jQuery('#caDirectoryValue').val(l.join(';'))
+				} else {
+					jQuery('#caDirectoryValue').val(path);
+				}
+				
+				if(jQuery('#caDirectoryValue').val().length > 0) {
+					jQuery('#caDeleteSelectedMediaContainer').show(0);
+				} else {
+					jQuery('#caDeleteSelectedMediaContainer').hide(0);
+				}
 			}
 		});
 
@@ -107,7 +119,7 @@ print $vs_control_box = caFormControlBox(
 	});
 </script>
 <?php
-		print caHTMLHiddenInput('directory', array('value' => '', 'id' => 'caDirectoryValue'));
+		print caHTMLHiddenInput('directory', ['value' => '', 'id' => 'caDirectoryValue']);
 ?>
 				</div>
 				<div style="margin: 8px 0px 0px 0px; padding-bottom:5px;">
@@ -121,6 +133,8 @@ print $vs_control_box = caFormControlBox(
 				
 				if($this->getVar('user_can_delete_media_on_import')) {
 					print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import');
+					
+					print '<div id="caDeleteSelectedMediaContainer" style="float: right; display: none">'.caJSButton($this->request, __CA_NAV_ICON_TRASH__, _t('Delete files'), 'caDeleteSelectedMedia', [], ['size' => '16px']).'</div>';
 				}
 ?>
 				</div>
@@ -674,6 +688,26 @@ print $vs_control_box = caFormControlBox(
 				caUpdateFormForMode(jQuery('#importMode').val());
 			});
 			caUpdateFormForMode(jQuery('#importMode').val());
+			
+			jQuery('#caDeleteSelectedMedia').on('click', function(e) {
+				jQuery.post(
+					'<?= caNavUrl($this->request, '*', '*', 'DeleteFiles'); ?>', 
+					{ 
+						directory: jQuery('#caDirectoryValue').val(),
+						csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>
+					}, 
+					function(res) {
+						if (res['error']) { 
+							jQuery.jGrowl(res['error'], { header: '' });
+						} else { 
+							jQuery.jGrowl(res['msg'], { header: '' }); 
+							
+							oDirBrowser.reload();
+						};
+					},
+					'json'
+				);
+			});
 		});
 		
 	</script>
