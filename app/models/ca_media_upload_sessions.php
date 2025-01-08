@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,7 +104,6 @@ BaseModel::$s_ca_models_definitions['ca_media_upload_sessions'] = array(
 				_t('Submitted') => 'SUBMITTED',
 				_t('Processing') => 'PROCESSING',
 				_t('Processed') => 'PROCESSED',
-			//	_t('In review') => 'IN_REVIEW',
 				_t('Accepted') => 'ACCEPTED',
 				_t('Rejected') => 'REJECTED',
 				_t('Completed') => 'COMPLETED',
