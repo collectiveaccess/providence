@@ -366,20 +366,23 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		$class = trim((isset($options['class']) && $options['class']) ? $options['class'] : '');
 		$element = '';
 		
-		$opts = [
+		$attr = [
 			'width' => $width.(is_numeric($width) ? 'px' : ''), 
 			'height' => $height.(is_numeric($height) ? 'px' : ''), 
 			'value' => '{{'.$element_info['element_id'].'}}', 
 			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
-			'class' => "{$class}",
+			'class' => "{$class}"
+		];
+		$opts = [
+			'textAreaTagName' => caGetOption('textAreaTagName', $options, null)
 		];
 		$attributes = caGetOption('attributes', $options, null);
 		if(is_array($attributes)) { 
-			$opts = array_merge($attributes, $opts);
+			$attr = array_merge($attributes, $opts);
 		}
 			
 		if (caGetOption('readonly', $options, false)) { 
-			$opts['disabled'] = 1;
+			$attr['disabled'] = 1;
 		}
 		
 		if ($settings['usewysiwygeditor'] ?? null) {
@@ -439,7 +442,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									
 					$element .= "<div style='width: {$width_w_suffix}; height: {$height_w_suffix}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
-						$opts
+						$attr, $opts
 					)."</div><style>
 						.{fieldNamePrefix}{$element_info['element_id']}_container_{n} .ck-editor__editable_inline {
 							min-height: calc({$height}px - 100px);
@@ -468,12 +471,12 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 								".json_encode($quill_opts)."
 							);
 						</script>\n";
-					$opts['style'] = 'display: none;';
+					$attr['style'] = 'display: none;';
 					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='height: {$height_w_suffix};' class='ql-ca-editor'></div>";
 							
 					$element .= caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
-						$opts
+						$attr, $opts
 					);
 					$element .= "</div>\n";
 					break;
@@ -481,7 +484,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		} else {
 			$element .= caHTMLTextInput(
 				'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
-				$opts
+				$attr, $opts
 			);
 		}
 		

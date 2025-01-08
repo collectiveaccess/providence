@@ -472,6 +472,7 @@ function caBatchFindMatchingMedia($ps_directory, $ps_value, $pa_options=null) {
  * @param array $options Options include:
  *         user = User name or numeric user_id. If provided the media upload directory for the specified user will
  *                       be checked. If omitted, only the shared media import directory will be checked. [Default is null]
+ *		   userDirectoryOnly = Only check user directory. [Default is false]
  * @return string|bool
  */
 function caIsValidMediaImportDirectory(string $directory, array $options=null) {
@@ -482,7 +483,7 @@ function caIsValidMediaImportDirectory(string $directory, array $options=null) {
 		return false;
 	}
 	$directory = preg_replace('!^[/]+!', '', $directory);
-	if (is_dir($dir="{$batch_media_import_root_directory}/{$directory}")) {
+	if (!caGetOption('userDirectoryOnly', $options, false) && is_dir($dir="{$batch_media_import_root_directory}/{$directory}")) {
 		return $dir;
 	}
 
