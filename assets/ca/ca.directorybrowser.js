@@ -707,11 +707,16 @@ var caUI = caUI || {};
 		// Reload current browser view
 		//
 		that.reload = function() {
+		    let item_id = null;
+		    
 		    that.setUpHierarchyLevel(0, '/', 1, null, true);
 		    for(let l in that.selectedDirectories) {
-		        let item_id = that.selectedDirectories[l];
+		        item_id = that.selectedDirectories[l];
 		        that.setUpHierarchyLevel(parseInt(l) + 1, item_id, false, null, true);
 		    }
+		    if (that.onSelection) {
+			    that.onSelection('', '', [], '');
+			}
 		}
 		// --------------------------------------------------------------------------------
 		// END method definitions
