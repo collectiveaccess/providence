@@ -568,7 +568,6 @@ class MediaImportController extends ActionController {
 			throw new ApplicationException(_t('Access denied'));
 		}
 		$directory = $this->request->getParameter('directory', pString);
-		$directory = "/Users/seth/Sites/providence/uploads/~admin/foo.tst";
 		$to_delete = explode(';', $directory);
 		
 		$deleted_paths = $error_paths = [];
