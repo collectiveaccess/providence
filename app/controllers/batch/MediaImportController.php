@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,6 @@ require_once(__CA_LIB_DIR__."/ResultContext.php");
 require_once(__CA_LIB_DIR__."/BatchProcessor.php");
 require_once(__CA_LIB_DIR__."/BatchEditorProgress.php");
 require_once(__CA_LIB_DIR__."/BatchMediaImportProgress.php");
-
 
 class MediaImportController extends ActionController {
 	# -------------------------------------------------------
@@ -67,7 +66,7 @@ class MediaImportController extends ActionController {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
 
-		$this->opa_importable_tables = array(
+		$this->opa_importable_tables = [
 			caGetTableDisplayName('ca_objects') => 'ca_objects',
 			caGetTableDisplayName('ca_entities') => 'ca_entities',
 			caGetTableDisplayName('ca_places') => 'ca_places',
@@ -77,7 +76,7 @@ class MediaImportController extends ActionController {
 			caGetTableDisplayName('ca_object_lots') => 'ca_object_lots',
 			caGetTableDisplayName('ca_movements') => 'ca_movements',
 			caGetTableDisplayName('ca_loans') => 'ca_loans',
-		);
+		];
 
 		foreach($this->opa_importable_tables as $vs_key => $vs_table) {
 			if($this->getRequest()->getAppConfig()->get($vs_table.'_disable')) {
@@ -230,11 +229,6 @@ class MediaImportController extends ActionController {
 			$vs_import_target = 'ca_objects';
 		}
 		$directory = $this->request->getParameter('directory', pString);
-
-		if (!caIsValidMediaImportDirectory($directory, ['user_id' => $this->request->getUserID()])) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
 		
 		$va_options = array(
 			'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 
@@ -560,6 +554,43 @@ class MediaImportController extends ActionController {
 			$response['skippedMessage'] = ($skip_count == 1) ? _t('Skipped %1 file', $skip_count) : _t('Skipped %1 files', $skip_count);
 		}
 
+		$this->view->setVar('response', $response);
+		
+		$this->response->setContentType("application/json");
+		$this->render('mediaimport/file_upload_response_json.php');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function DeleteFiles() {
+		if(!$this->user_can_delete_media_on_import) {
+			throw new ApplicationException(_t('Access denied'));
+		}
+		$directory = $this->request->getParameter('directory', pString);
+		$to_delete = explode(';', $directory);
+		
+		$deleted_paths = $error_paths = [];
+		$files_deleted = 0;
+		foreach($to_delete as $d) {
+			if(!($path = caIsValidMediaImportDirectory($d, ['user_id' => $this->request->getUserID(), 'userDirectoryOnly' => true, 'allowFiles' => true]))) {
+				continue;
+			}
+			if($c = caRemoveDirectory($path, true, ['allowFiles' => true])) {
+				$files_deleted += $c;
+				
+				$deleted_paths[] = $path;
+				$tmp = explode('/', $path);
+				array_pop($tmp);
+				Session::setVar('lastMediaImportDirectoryPath', join('/', $tmp));
+			} else {
+				$error_paths[] = $path;
+			}
+		}
+		$response = !sizeof($error_paths) && sizeof($deleted_paths) ? 
+			['count' => $files_deleted, 'msg' => ($files_deleted === 1) ? _t('Deleted %1 file', $files_deleted) : _t('Deleted %1 files', $files_deleted)]
+			:
+			['count' => $files_deleted, 'errors' => _t('Could not delete %1 of %2 files', sizeof($error_paths), sizeof($to_delete))];
 		$this->view->setVar('response', $response);
 		
 		$this->response->setContentType("application/json");
