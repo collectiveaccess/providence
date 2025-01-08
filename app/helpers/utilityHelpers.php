@@ -320,8 +320,9 @@ function caFileIsIncludable($ps_file) {
 					if (is_dir("{$dir}/{$item}")) { 
 						$count += caRemoveDirectory("{$dir}/{$item}", true);
 					} else { 
-						@unlink("{$dir}/{$item}"); 
-						$count++;
+						if(@unlink("{$dir}/{$item}")) {
+							$count++;
+						}
 					}
 				}
 			}
