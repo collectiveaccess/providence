@@ -568,6 +568,7 @@ class MediaImportController extends ActionController {
 			throw new ApplicationException(_t('Access denied'));
 		}
 		$directory = $this->request->getParameter('directory', pString);
+		$directory = "/Users/seth/Sites/providence/uploads/~admin/foo.tst";
 		$to_delete = explode(';', $directory);
 		
 		$deleted_paths = $error_paths = [];
@@ -587,10 +588,15 @@ class MediaImportController extends ActionController {
 				$error_paths[] = $path;
 			}
 		}
-		$response = !sizeof($error_paths) && sizeof($deleted_paths) ? 
+		
+		$tdc = sizeof($to_delete);
+		$ec = sizeof($error_paths);
+		$dc = sizeof($deleted_paths);
+		
+		$response = !$ec && $dc ? 
 			['count' => $files_deleted, 'msg' => ($files_deleted === 1) ? _t('Deleted %1 file', $files_deleted) : _t('Deleted %1 files', $files_deleted)]
 			:
-			['count' => $files_deleted, 'errors' => _t('Could not delete %1 of %2 files', sizeof($error_paths), sizeof($to_delete))];
+			['count' => $files_deleted, 'error' => ($ec === $tdc) ? _t('Could not delete files (file permissions may not be correct)') : _t('Could not delete %1 of %2 files (file permissions may not be correct)', $ec, $tdc)];
 		$this->view->setVar('response', $response);
 		
 		$this->response->setContentType("application/json");
