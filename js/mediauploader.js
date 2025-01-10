@@ -825,10 +825,44 @@ class MediauploaderRecentsList extends React.Component {
 class MediauploaderRecentItem extends React.Component {
     constructor(props) {
         super(props);
+        this.cancel = this.cancel.bind(this);
+        
+        this.state = this.props.item;
     }
 
+    cancel(e) {
+        let session_key = this.state.session_key;
+        
+         axios
+          .post(endpoint + '/cancel', {}, {
+            params: {key: session_key}
+          })
+          .then((response) => {
+            if((response.data['ok'] === 1) && response.data['cancelled'] === 1) {
+                this.setState({
+                    status: 'CANCELLED',
+                    status_display: response.data.status_display,
+                    completed_on: response.data.completed_on,
+                });
+            } else if(response.data.errors) {
+                alert(response.data.errors.join('; '));
+            }
+          })
+          .catch((error) => {
+            if (error.response) {
+              console.log("Response error: " + error.response);
+            } else if (error.request) {
+              console.log("Request was made but no response was received");
+              console.log(error.request);
+            } else {
+              // Something happened in setting up the request and triggered an Error
+              console.log("Error", error.message);
+            }
+          });
+      }
+      
     render() {
-        let item = this.props.item;
+        let item = this.state;
         let n = item.num_files; 
         let examplePaths = Object.keys(item.files).slice(0, 3);
 
@@ -841,26 +875,35 @@ class MediauploaderRecentItem extends React.Component {
         if (item.status === 'CANCELLED') {
             current = 'Cancelled: ' + item.completed_on;
             status = 'Cancelled';
-            statusClass = 'badge bg-danger pull-right';
+            statusClass = 'badge bg-danger float-end';
         } else if (parseInt(item.error_code) > 0) {
             current = 'Error: ' + item.error_display;
             status = 'Error';
-            statusClass = 'badge bg-danger pull-right';
+            statusClass = 'badge bg-danger float-end';
         } else if (item.completed_on) {
             current = 'Completed: ' + item.completed_on;
             status = 'Completed';
-            statusClass = 'badge bg-success pull-right';
+            statusClass = 'badge bg-success float-end';
         } else {
             current = "Last activity: " + item.last_activity_on;
             status = 'Incomplete';
-            statusClass = 'badge bg-warning pull-right';
+            statusClass = 'badge bg-warning float-end';
         }
 
         return <div className="col-md-4 mt-4">
                 <div className="card mediaUploaderRecentItem">
                     <div className="card-body">
-                        <div
-                            className={statusClass}>{status}</div>
+                        
+                        <div className={statusClass}>{status}</div>
+                        
+                        <div className="position-absolute bottom-0 end-0 p-2">{item.status === "IN_PROGRESS" ? (
+                          <button type="button" className="button btn btn-danger mr-3" onClick={this.cancel}>
+                            <i className="fa fa-trash" aria-hidden="true"></i>
+                          </button>
+                        ) : (
+                          ""
+                        )}</div>
+                        
                         <h5 className="card-title">{n == 1 ? '1 file' : n + ' files'} ({fileSize(item.total_bytes)}) </h5>
                         <h6 className="card-subtitle mb-2 text-muted">{contentsStr}</h6>
                         <p className="card-text">

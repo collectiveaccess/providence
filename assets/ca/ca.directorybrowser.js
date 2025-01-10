@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,11 @@ var caUI = caUI || {};
 		// @param int item_id The database id of the item to be used as the root of the hierarchy. 
 		//
 		that.setUpHierarchy = function(item_id) {
+		    if(item_id) {
+		        // Take first time in potential list of paths
+		        let tmp = item_id.split(/;/);
+		        item_id = tmp[0];
+		    }
 			if (!item_id) { that.setUpHierarchyLevel(0, '/', 1, null, true); return; }
 			that.levelLists = [];
 			that.selectedDirectories = [];
@@ -510,7 +515,8 @@ var caUI = caUI || {};
 			}
 			
 			while(that.selectedDirectories.length > level) {
-				that.selectedDirectories.pop();
+				let dir_id = that.selectedDirectories.pop();
+				jQuery('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + dir_id.replace(/[^A-Za-z0-9_\-]+/g, '_')).removeClass(that.classNameSelected).parent().find('div a').removeClass(that.classNameSelected);
 			    that.selectedFiles = [];
 			}
 			
@@ -526,10 +532,15 @@ var caUI = caUI || {};
                         jQuery(item_id_selector).addClass(that.classNameSelected);
                     }
                 } else {
-                    that.selectedFiles = [];
-                    that.selectedDirectories.push(item_id);
-                    jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
-                    jQuery(item_id_selector).addClass(that.classNameSelected).addClass(that.classNameSelected);
+                    if(jQuery(item_id_selector).hasClass(that.classNameSelected)) {
+                        that.selectedDirectories = that.selectedDirectories.filter(e => e != item_id );
+                        jQuery(item_id_selector).removeClass(that.classNameSelected).parent().find('div a').removeClass(that.classNameSelected);
+                    } else {
+                        that.selectedFiles = [];
+                        that.selectedDirectories.push(item_id);
+                        jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
+                        jQuery(item_id_selector).addClass(that.classNameSelected).addClass(that.classNameSelected);
+                    }
                 }
             } else {
                 jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
@@ -544,7 +555,7 @@ var caUI = caUI || {};
 		
 			if (that.onSelection) {
 			    if(that.allowMultipleSelection) {
-			        that.onSelection(item_id, that.selectedDirectories.join("/"), that.selectedFiles)
+			        that.onSelection(item_id, that.selectedDirectories.join("/"), that.selectedFiles, item.type)
 			    } else {
 				    that.onSelection(item_id, that.selectedDirectories.join("/"), item.name, item.type);
 				}
@@ -691,6 +702,21 @@ var caUI = caUI || {};
 		//
 		that.numLevels = function() {
 			return that.levelLists.length;
+		}
+		// --------------------------------------------------------------------------------
+		// Reload current browser view
+		//
+		that.reload = function() {
+		    let item_id = null;
+		    
+		    that.setUpHierarchyLevel(0, '/', 1, null, true);
+		    for(let l in that.selectedDirectories) {
+		        item_id = that.selectedDirectories[l];
+		        that.setUpHierarchyLevel(parseInt(l) + 1, item_id, false, null, true);
+		    }
+		    if (that.onSelection) {
+			    that.onSelection('', '', [], '');
+			}
 		}
 		// --------------------------------------------------------------------------------
 		// END method definitions
