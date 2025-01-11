@@ -1454,7 +1454,7 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			$vs_bundle = $vs_table.'.home_location_value';
-			$vs_label = _t('Home location didplay value');
+			$vs_label = _t('Home location display value');
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_home_location_value'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Home location display value')."</div>";
 			$vs_description = _t('Home location of object');
 			

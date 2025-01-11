@@ -6703,7 +6703,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								}
 							}
 						} else {
-							throw new ApplicationException(_t('Error is subject logging: %1', $sql));
+							throw new ApplicationException(_t('Error in subject logging: %1', $sql));
 						}
 					}
 				}
