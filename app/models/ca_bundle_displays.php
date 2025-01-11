@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -230,8 +230,24 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		parent::__construct($id, $options);
 		
+		$this->initSettings();
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function load($id=null, $use_cache=true) {
+		$ret = parent::load($id, $use_cache);
+		$this->initSettings();
+		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function initSettings() {
 		//
-		$this->setAvailableSettings([
+		$settings = [
 			'show_empty_values' => [
 				'formatType' => FT_NUMBER,
 				'displayType' => DT_CHECKBOXES,
@@ -268,7 +284,25 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				'label' => _t('Show display in'),
 				'description' => _t('Restrict display to use in specific contexts. If no contexts are selected the display will be shown in all contexts.')
 			]
-		]);
+		];
+		if((int)$this->get('table_num') === 57) {
+			$settings['show_representations'] = [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 4, 'height' => 1,
+				'takesLocale' => false,
+				'default' => 'all',
+				'options' => [
+					_t('No') => '',
+					_t('All') => 'all',
+					_t('Primary only') => 'primary'
+				],
+				'label' => _t('Display representations?'),
+				'description' => _t('Display primary or all representations at top of display?')
+			];
+		}
+		
+		$this->setAvailableSettings($settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -345,7 +379,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				if ($pa_fields === 'table_num') { return false; }
 			}
 		}
-		return parent::set($pa_fields, $pm_value, $options);
+		
+		$ret = parent::set($pa_fields, $pm_value, $options);
+		if((is_array($pa_fields) && isset($pa_fields['table_num'])) || ($oa_fields === 'table_num')) {
+			$this->initSettings();
+		}
+		
+		return $ret;
 	}
 	# ------------------------------------------------------
 	public function __destruct() {
