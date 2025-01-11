@@ -966,6 +966,10 @@ class BatchProcessor {
 							// use filename without extension as identifier
 							$vs_rep_idno = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
 							break;
+						case 'directory':
+							// use the directory as identifier
+							$vs_rep_idno = $d;
+							break;
 						case 'directory_and_filename':
 							// use the directory + filename as identifier
 							$vs_rep_idno = $d.'/'.$f;
@@ -1272,6 +1276,10 @@ class BatchProcessor {
 				$f_no_ext = preg_replace(self::REGEXP_FILENAME_NO_EXT, '', $f);
 				$vs_idno_value = $f_no_ext;
 				break;
+			case 'directory':
+				// use the directory as identifier
+				$vs_idno_value = $d;
+				break;
 			case 'directory_and_filename':
 				// use the directory + filename as identifier
 				$vs_idno_value = $d.'/'.$f;
@@ -1320,7 +1328,7 @@ class BatchProcessor {
 				$vs_label_value = $d.'/'.$f;
 				break;
 			case 'directory':
-				// use the directory + filename as identifier
+				// use the directory as identifier
 				$vs_label_value = $d;
 				break;
 			case 'user':

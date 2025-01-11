@@ -288,6 +288,14 @@ print $vs_control_box = caFormControlBox(
 							</tr>
 							<tr>
 								<td><?php
+									$va_attrs = array('value' => 'directory', 'id' => 'caIdnoDirectoryMode');
+									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'directory')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
+								?></td>
+								<td class='formLabel'><?= _t('Set %1 identifier to directory name', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
 									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caIdnoDirectoryAndFilenameMode');
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
