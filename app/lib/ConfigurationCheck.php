@@ -252,7 +252,7 @@ final class ConfigurationCheck {
 			self::addError(_t("Your database is extremely out-of-date. Please install all database migrations starting with migration #1 or contact support@collectiveaccess.org for assistance."));
 		} else if (!caGetOption('forMigration', $options, false) && ($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
 			if($vn_schema_revision <= 158) { 
-				self::addError(_t("You appear to be upgrading a CollectiveAccess 1.7.x system. Upgrading is a multi-step process. Learn more about it at <a href='https://github.com/collectiveaccess/providence/tree/master?tab=readme-ov-file#updating-from-providence-version-17-or-later'>here</a>.</div>"));
+				self::addError(_t("You appear to be upgrading a CollectiveAccess 1.7.x system. Upgrading is a multi-step process. Learn more about it at <a href='https://github.com/collectiveaccess/providence/tree/master?tab=readme-ov-file#updating-from-providence-version-17-or-later'>here</a>."));
 			} elseif (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__) {
 				self::addError(_t("Your database is out-of-date. Please install all schema migrations starting with migration #%1. <a href='index.php?updateSchema=1'><strong>Click here</strong></a> to automatically apply the required updates.<br/><br/><div align='center'><strong>NOTE: you should back-up your database before applying updates!</strong></div>",($vn_schema_revision + 1)));
 			} else {
