@@ -289,7 +289,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$settings['show_representations'] = [
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
-				'width' => 4, 'height' => 1,
+				'width' => 40, 'height' => 1,
 				'takesLocale' => false,
 				'default' => 'all',
 				'options' => [
