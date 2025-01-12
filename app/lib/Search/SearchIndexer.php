@@ -217,7 +217,7 @@ class SearchIndexer extends SearchBase {
 				if (Datamodel::tableExists($vs_table)) {
 					$vn_num = Datamodel::getTableNum($vs_table);
 					if($pb_display_progress) {
-						print _t("\nTRUNCATING %1\n\n", $vs_table);
+						print _t("\nTRUNCATING INDEX FOR %1\n\n", $vs_table);
 					}
 					$this->opo_engine->truncateIndex($vn_num);
 					$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
