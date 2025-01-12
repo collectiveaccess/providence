@@ -543,14 +543,14 @@ class ca_user_roles extends BaseModel {
 			
 			if (is_array($va_raw_plugin_actions = ApplicationPluginManager::getPluginRoleActions())) {
 				$va_raw_actions['plugins'] = array(
-					'label' => 'Plugin actions',
+					'label' => _t('Plugin actions'),
 					'description' => '',
 					'actions' => $va_raw_plugin_actions
 				);
 			}
 			if (is_array($va_raw_widget_actions = WidgetManager::getWidgetRoleActions())) {
 				$va_raw_actions['widgets'] = array(
-					'label' => 'Widget actions',
+					'label' => _t('Widget actions'),
 					'description' => '',
 					'actions' => $va_raw_widget_actions
 				);
