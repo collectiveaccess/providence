@@ -1887,7 +1887,7 @@ function caSkipValueIf($value, string $refinery_name, array $item, ?array $optio
 		return true;
 	}
 	if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfNotValue"]) && !in_array($value, $skip_values)) {
-		if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in not in the skipIfNotValue list', $refinery_name, $value)); }
+		if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was not in the skipIfNotValue list', $refinery_name, $value)); }
 		return true;
 	}
 
