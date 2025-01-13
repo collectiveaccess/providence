@@ -913,12 +913,16 @@ class DataMigrationUtils {
 					} else {
 						// scalar value (simple single value attribute)
 						if ($va_value) {
-							if($source_value = caGetOption('_source', $va_value, null)) {
-								unset($va_value['_source']);
+							if(is_array($va_value)) {
+								if($source_value = caGetOption('_source', $va_value, null)) {
+									unset($va_value['_source']);
+								}
+							} else {
+								$va_value = [$vs_element => $va_value];
 							}
 							$pt_instance->addAttribute(array(
 								'locale_id' => $locale_id,
-								$vs_element => $va_value
+								$va_value
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
