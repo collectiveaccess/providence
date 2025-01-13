@@ -202,9 +202,9 @@ function caGetLatestDate() : ?string {
  * are those supported by TimeExpressionParser::getText(), including dateFormat and timeOmit. Unless set explicitly timeOmit is assumed to be
  * true. An example parameter string: "dateFormat=iso8601&timeOmit=0" (returns earliest date in ISO format with time included)
  *
- * @return string
+ * @return array
  */
-function caGetDateListAndParams($args) {
+function caGetDateListAndParams($args) : array {
 	$poss_params = array_pop($args);
 	if(!caIsValidDate($poss_params)) {
 		parse_str($poss_params, $params);
@@ -227,6 +227,7 @@ function caGetDateListAndParams($args) {
 # ---------------------------------------
 /**
  * Return true if date expression is a range rather than a single date
+ *
  * @return bool
  */
 function caDateIsRange($date_expression) {
@@ -237,5 +238,32 @@ function caDateIsRange($date_expression) {
 		return (strpos($v, '/') !== false);
 	}
 	return false;
+}
+# ---------------------------------------
+/**
+ * 
+ *
+ * @return 
+ */
+function caExpressionCount() {
+	$args = func_get_args();
+	
+	$poss_params = array_pop($args);
+	$params = [];
+	if(preg_match('!^params:(.*)!i', $poss_params, $m)) {
+		parse_str($m[1], $params);
+	} else {
+		$args[] = $poss_params;
+	}
+	
+	$acc = [];
+	foreach($args as $arg) {
+		if(strpos($arg, ';') !== false) {
+			$acc = array_merge($acc, explode(';', $arg));
+		} elseif(strlen($arg) > 0) {
+			$acc[] = $arg;
+		}
+	}
+	return count($acc);
 }
 # ---------------------------------------
