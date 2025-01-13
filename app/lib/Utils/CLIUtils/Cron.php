@@ -52,7 +52,7 @@ trait CLIUtilsCron {
 			"restart|r" => _t("Restart/reset unfinished tasks before queue processing. This option can be useful when the task queue script (or the whole machine) crashed and you have 'zombie' entries in your task queue. This option shouldn't interfere with any existing task queue processes that are actually running."),
 			"skip-recurring-tasks|s" => _t("Skip running of recurring tasks and run only queued tasks."),
 			"recurring-tasks-only|o" => _t("Only run recurring tasks, ignoring queued tasks."),
-			"tasks|t=s" => _t("Only process specified tasks (eg. mediaproc.")
+			"tasks|t=s" => _t("Only process specified tasks (eg. mediaproc.)")
 		);
 	}
 	# -------------------------------------------------------

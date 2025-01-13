@@ -1003,7 +1003,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '',
 								'label' => _t('Item color'),
-								'description' => _t('If set item that are not first or last in list will use this color.')
+								'description' => _t('If set items that are not first or last in list will use this color.')
 							),
 							'colorLastItem' => array(
 								'formatType' => FT_TEXT,
@@ -1240,7 +1240,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'multiple' => false,
 							'width' => "475px", 'height' => "1",
 							'label' => _t('Representation auto-complete lookup placeholder text'),
-							'description' => _t('Placeholder text to display in representation autocomplete search box when linking n existing representation to a record. (New UI only)')
+							'description' => _t('Placeholder text to display in representation autocomplete search box when linking an existing representation to a record. (New UI only)')
 						);
 						
 						$va_additional_settings['dontAllowRelationshipsToExistingRepresentations'] = array(
