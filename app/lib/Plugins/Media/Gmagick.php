@@ -272,10 +272,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		if (!caMediaPluginDcrawInstalled()) {
-			$va_status['warnings'][] = _t("RAW support is not avaiable because DCRAW cannot be found");
+			$va_status['warnings'][] = _t("RAW support is not available because DCRAW cannot be found");
 		}
 		if(!caMediaPluginImageMagickInstalled()) {
-			$va_status['warnings'][] = _t("HEIC support is not avaiable because ImageMagick cannot be found<br/>\n(GraphicsMagick does not provide support for HEIC)");
+			$va_status['warnings'][] = _t("HEIC support is not available because ImageMagick cannot be found<br/>\n(GraphicsMagick does not provide support for HEIC)");
 		}
 		
 		return $va_status;

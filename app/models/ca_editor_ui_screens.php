@@ -1697,7 +1697,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'default' => 1,
 									'width' => "20px", 'height' => 1,
 									'label' => _t('Number of columns in component display'),
-									'description' => _t('Number of columns use when displaying component list.')
+									'description' => _t('Number of columns to use when displaying component list.')
 								];
 								break;
 							case 'circulation_status':
