@@ -6673,6 +6673,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$cur_table = $primary_table = $this->tableName();
 						$cur_table_pk = $primary_table_pk = $this->primaryKey();
 						
+						$xrow_id = $this->getPrimaryKey();
 						if($is_metadata_value && (($id = $this->get('attribute_id')) > 0)) {
 							$t_attr = new ca_attributes($id);
 							$cur_table = $primary_table = Datamodel::getTableName($t_attr->get('table_num'));
