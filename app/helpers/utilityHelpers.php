@@ -5023,6 +5023,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Return absolute path or null if path is invalid
 	 */
 	function caSanitizeRelativeFilepath(string $relative_filepath, string $base_directory, ?array $options=null) : ?string {
+		$base_directory = str_replace('\\', '/', $base_directory);
+		$relative_filepath = str_replace('\\', '/', $relative_filepath);
 		$f = realpath($base_directory.'/'.$relative_filepath);
 		
 		if(!is_null($f)) {
