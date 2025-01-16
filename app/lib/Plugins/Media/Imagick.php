@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'image/tilepic' 	=> 'tpc',
 			'image/x-dpx'		=> 'dpx',
 			'image/x-exr'		=> 'exr',
-			'image/jp2'		=> 'jp2',
+			'image/jp2'			=> 'jp2',
+			'image/webp'		=> 'webp',
 			'image/x-adobe-dng'	=> 'dng',
 			'image/x-canon-cr2'	=> 'cr2',
 			'image/x-canon-crw'	=> 'crw',
@@ -86,7 +87,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'image/tilepic' 	=> 'tpc',
 			'image/x-dpx'		=> 'dpx',
 			'image/x-exr'		=> 'exr',
-			'image/jp2'		=> 'jp2',
+			'image/jp2'			=> 'jp2',
+			'image/webp'		=> 'webp',
 			'image/x-adobe-dng'	=> 'dng',
 			'image/x-canon-cr2'	=> 'cr2',
 			'image/x-canon-crw'	=> 'crw',
@@ -154,7 +156,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		'image/tilepic' 	=> 'Tilepic',
 		'image/x-dpx'		=> 'DPX',
 		'image/x-exr'		=> 'OpenEXR',
-		'image/jp2'		=> 'JPEG-2000',
+		'image/jp2'			=> 'JPEG-2000',
+		'image/webp'		=> 'webp',
 		'image/x-adobe-dng'	=> 'Adobe DNG',
 		'image/x-canon-cr2'	=> 'Canon CR2 RAW Image',
 		'image/x-canon-crw'	=> 'Canon CRW RAW Image',
@@ -181,7 +184,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		'image/tilepic' 	=> 'TPC',
 		'image/x-dpx'		=> 'DPX',
 		'image/x-exr'		=> 'EXR',
-		'image/jp2'		=> 'JP2',
+		'image/jp2'			=> 'JP2',
+		'image/webp'		=> 'webp',
 		'image/x-adobe-dng'	=> 'DNG',
 		'image/x-canon-cr2'	=> 'CR2',
 		'image/x-canon-crw'	=> 'CRW',
