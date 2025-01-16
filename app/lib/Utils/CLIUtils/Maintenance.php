@@ -421,7 +421,7 @@ trait CLIUtilsMaintenance {
 				CLIUtils::addMessage(_t("Removed search indexing queue lock"));
 				return true;
 			} else {
-				CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue. Try running caUtils under a user with privileges"));
+				CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue lock file. Try running caUtils under a user with privileges"));
 			}
 		} else {
 			CLIUtils::addMessage(_t("Search indexing queue lock is not present"));
