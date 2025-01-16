@@ -2325,7 +2325,9 @@ class BaseModel extends BaseObject {
 	/**
 	 *
 	 */
-	private function _processDatabaseException($e, $o_db) {
+	private function _processDatabaseException(DatabaseException $e, Db $o_db, ?string $source=null) {
+		$context = $e->getContext();
+		if(is_null($source)) { $source = $e->getContext(); }
 		switch($e->getNumber()) {
 			case 251: // Duplicate key error
 				$indices = $o_db->getIndices($this->tableName());	// try to get key info
@@ -2346,10 +2348,11 @@ class BaseModel extends BaseObject {
 				} else {
 					$msg = $e->getMessage();
 				}
-				$this->postError($e->getNumber(), $msg, $e->getContext());
-				$o_db->postError($e->getNumber(), $msg, $e->getContext());
+				$this->postError($e->getNumber(), $msg, $context, $source);
+				$o_db->postError($e->getNumber(), $msg, $context, $source);
 				break;
 			case 250: // Invalid foreign key error
+			case 1452:
 				$msg = $e->getMessage();
 				if (preg_match("!FOREIGN KEY \([`]*([A-Za-z0-9_]+)!", $msg, $m)) {
 					if ($m[1] === 'type_id') {
@@ -2358,12 +2361,12 @@ class BaseModel extends BaseObject {
 						$msg = _t('Invalid relationship reference for %1', $m[1]);
 					}
 				}
-				$this->postError($e->getNumber(), $msg, $e->getContext());
-				$o_db->postError($e->getNumber(), $msg, $e->getContext());
+				$this->postError($e->getNumber(), $msg, $context, $source);
+				$o_db->postError($e->getNumber(), $msg, $context, $source);
 				break;
 			default:
-				$this->postError($e->getNumber(), $e->getMessage(), $e->getContext());
-				$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext());
+				$this->postError($e->getNumber(), $e->getMessage(), $context, $source);
+				$o_db->postError($e->getNumber(), $e->getMessage(), $context, $source);
 				break;
 		}
 		return false;
@@ -2753,7 +2756,7 @@ class BaseModel extends BaseObject {
 			try {
 				$o_db->query($vs_sql);
 			} catch (DatabaseException $e) {
-				$this->_processDatabaseException($e, $o_db);
+				$this->_processDatabaseException($e, $o_db, caGetOption('source', $pa_options, null));
 			}
 			
 			if ($this->numErrors() == 0) {
@@ -3339,7 +3342,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				try {
 					$o_db->query($vs_sql);
 				} catch(DatabaseException $e) {
-					$this->_processDatabaseException($e, $o_db);
+					$this->_processDatabaseException($e, $o_db, caGetOption('source', $pa_options, null));
 				}
 				
 				if ($this->numErrors()) {
@@ -3654,7 +3657,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		try {
 			$o_db->query($vs_sql);
 		} catch(DatabaseException $e) {
-			$this->_processDatabaseException($e, $o_db);
+			$this->_processDatabaseException($e, $o_db, caGetOption('source', $pa_options, null));
 		}
 		
 		if ($this->numErrors() > 0) {
@@ -9553,7 +9556,7 @@ $pa_options["display_form_field_tips"] = true;
 			if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 			if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
-			$t_item_rel->insert();
+			$t_item_rel->insert(['source' => $pm_rel_table_name_or_num]);
 			
 			if ($t_item_rel->numErrors() > 0) {
 				$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9585,7 +9588,7 @@ $pa_options["display_form_field_tips"] = true;
 						$t_item_rel->set('is_primary', $is_primary);	
 					}
 					
-					$t_item_rel->insert();
+					$t_item_rel->insert(['source' => $pm_rel_table_name_or_num]);
 					
 					if ($t_item_rel->numErrors() > 0) {
 						$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9598,7 +9601,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_rel_id)) {
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
-							$t_item_rel->update();
+							$t_item_rel->update(['source' => $pm_rel_table_name_or_num]);
 							
 							if ($t_item_rel->numErrors() > 0) {
 								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9608,7 +9611,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 							if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }
-							$t_item_rel->insert();
+							$t_item_rel->insert(['source' => $pm_rel_table_name_or_num]);
 							
 							if ($t_item_rel->numErrors() > 0) {
 								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9618,7 +9621,7 @@ $pa_options["display_form_field_tips"] = true;
 						return $t_item_rel;
 					} else {
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
-						$this->update();
+						$this->update(['source' => $pm_rel_table_name_or_num]);
 					
 						if ($this->numErrors() > 0) {
 							$this->errors = array_merge($this->errors(), $t_item_rel->errors());
