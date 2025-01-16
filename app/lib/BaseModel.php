@@ -2330,6 +2330,7 @@ class BaseModel extends BaseObject {
 		if(is_null($source)) { $source = $e->getContext(); }
 		switch($e->getNumber()) {
 			case 251: // Duplicate key error
+			case 1062:
 				$indices = $o_db->getIndices($this->tableName());	// try to get key info
 
 				if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $e->getMessage(), $matches)) {
