@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -650,8 +650,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,
 							'options' => array(
-								_t('yes') => 1,
-								_t('no') => 0
+								_t('Yes') => 1,
+								_t('No') => 0
 							),
 							'default' => '',
 							'width' => "100px", 'height' => 1,
@@ -669,8 +669,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,
 							'options' => array(
-								_t('yes') => 1,
-								_t('no') => 0
+								_t('Yes') => 1,
+								_t('No') => 0
 							),
 							'default' => '',
 							'width' => "100px", 'height' => 1,
@@ -802,9 +802,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
 							'options' => array(
-								_t('yes') => 1,
-								_t('no') => 0,
-								_t('use default') => null
+								_t('Yes') => 1,
+								_t('No') => 0,
+								_t('Use default') => null
 							),
 							'default' => '',
 							'width' => "100px", 'height' => 1,
