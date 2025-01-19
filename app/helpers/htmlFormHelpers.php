@@ -200,11 +200,6 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	
 	$attributes['style'] = join(" ", $va_styles);
 	
-	// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
-	// if ($use_wysiwyg_editor && !isset($attributes['id'])) {
-// 		$attributes['id'] = $name;
-// 	}
-	
 	$id = $attributes['id'] ?? $name;
 	
 	$element = '';
