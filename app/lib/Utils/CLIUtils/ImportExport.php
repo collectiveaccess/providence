@@ -1437,4 +1437,73 @@ trait CLIUtilsImportExport {
 		return _t('Write import mapping to Excel-format file.');
 	}
 	# -------------------------------------------------------
+	/**
+	 * @param Zend_Console_Getopt|null $po_opts
+	 * @return bool
+	 */
+	public static function exit_through_the_gift_shop($opts=null) {
+		$directory = $opts->getOption('directory');
+		if (!$directory) {
+			CLIUtils::addError(_t('A directory must be specified'));
+			return false;
+		}
+
+		if ($directory && ((file_exists($directory) && !is_dir($directory) || !is_writeable($directory)) || (!file_exists($directory) && !is_writeable(pathinfo($directory, PATHINFO_DIRNAME))))) {
+			CLIUtils::addError(_t('Cannot write to directory %1', $file));
+			return false;
+		}
+		if(!file_exists($directory)) {
+			mkdir($directory);
+		}
+
+		if(!($format = strtoupper($opts->getOption('format')))) {
+			$format = 'XML';
+		}
+		
+		if (!in_array($format, ['CSV', 'XML'], true)) {
+			CLIUtils::addError(_t('Invalid format %x', $format));
+			return false;
+		}
+
+
+		try {
+			$em = new \Exit\ExitManager();
+			
+			print_R($em->getExportTableNames());
+		} catch (Exception $e) {
+			CLIUtils::addError(_t('Could not export data: %1', $e->getMessage()));
+			return false;
+		}
+		CLIUtils::addMessage(_t('Exported data'));
+		return true;
+	}
+	# -------------------------------------------------------
+	public static function exit_through_the_gift_shopParamList() {
+		return [
+			"format|m=s" => _t('Format of data export. Set to CSV or XML. Default is XML.'),
+			"directory|f=s" => _t('Directory to write export to. If directory does not exist it will be created.')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function exit_through_the_gift_shopUtilityClass() {
+		return _t('Import/Export');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function exit_through_the_gift_shopShortHelp() {
+		return _t('Export all system data in a format suitable for migration.');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function exit_through_the_gift_shopHelp() {
+		return _t('Export all system data in a format suitable for migration. Data may be written as CSV or XML. Files are created for each primary record type, all relationships, and various supporting records (Eg. list items, relationship types, Etc.)');
+	}
+	# -------------------------------------------------------
 }
