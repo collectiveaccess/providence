@@ -4252,12 +4252,17 @@ function caFileIsIncludable($ps_file) {
 	 * Get list of (enabled) primary tables as table_num => table_name mappings
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @param array $additional_tables Optional array of additional tables to include. [Default is null]
+	 * @param array $options Options include:
+	 		returnAllTables = Return all tables, regardless of configured availability. By default, only primary tables enabled for use in app.conf are returned. [Default is false]
 	 *
 	 * @return array
 	 */
-	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null) {
+	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null, ?array $options=null) {
 		$o_conf = Configuration::load();
 		$va_ret = [];
+		
+		$return_all_tables = caGetOption('returnAllTables', $options, false);
+		$enabled_primary_tables = [];
 		foreach([
 			'ca_objects' => 57,
 			'ca_object_lots' => 51,
@@ -4273,8 +4278,9 @@ function caFileIsIncludable($ps_file) {
 			'ca_tours' => 153,
 			'ca_tour_stops' => 155
 		] as $vs_table_name => $vn_table_num) {
-			if(!$o_conf->get($vs_table_name.'_disable')) {
+			if($return_all_tables || !$o_conf->get($vs_table_name.'_disable')) {
 				$va_ret[$vn_table_num] = $vs_table_name;
+				$enabled_primary_tables[$vs_table_name] = true;
 			}
 		}
 		if(is_array($additional_tables) && sizeof($additional_tables)) {
@@ -4285,11 +4291,14 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if($pb_include_rel_tables) {
-			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 			$t_rel = new ca_relationship_types();
 			$va_rels = $t_rel->getRelationshipsUsingTypes();
 
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
+				if(!($t_rel = Datamodel::getInstanceByTableName($va_rel_table_info['table']))) { continue; }
+				if(!isset($enabled_primary_tables[$t_rel->getLeftTableName()]) || !isset($enabled_primary_tables[$t_rel->getRightTableName()])) {
+					continue;
+				}
 				$va_ret[$vn_table_num] = $va_rel_table_info['table'];
 			}
 			if(isset($va_ret[56])) {
