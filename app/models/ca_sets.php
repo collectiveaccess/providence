@@ -2037,8 +2037,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
 
+		$set_processed_templates = $va_processed_templates = null;
 		if($ps_template = caGetOption('template', $pa_options, null)) {
 			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
+		}
+		if($set_item_template = caGetOption('setItemTemplate', $pa_options, null)) {
+			$set_processed_templates = caProcessTemplateForIDs($set_item_template, 'ca_set_items', $qr_res->getAllFieldValues('set_item_id'), array('returnAsArray' => true));
 			$qr_res->seek(0);
 		}
 
@@ -2141,8 +2146,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_row['set_item_label'] = $t_item->getLabelForDisplay(false);
 			}
 
+			$va_row['displayTemplate'] = '';
 			if($ps_template) {
 				$va_row['displayTemplate'] = array_shift($va_processed_templates);
+			}
+			if($set_item_template) {
+				$va_row['displayTemplate'] .= array_shift($set_processed_templates);
 			}
 			if($ps_templateDescription) {
 				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
@@ -2325,7 +2334,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_items = caExtractValuesByUserLocale($this->getItems(array(
 				'thumbnailVersion' => $vs_thumbnail_version,
 				'user_id' => $po_request->getUserID(),
-				'template' => $vs_template
+				'template' => $vs_template,
+				'setItemTemplate' => caGetOption("ca_set_items_display_template", $pa_bundle_settings, null)
 			)), null, null, array());
 			$va_items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $va_items);
 			$o_view->setVar('items', $va_items);

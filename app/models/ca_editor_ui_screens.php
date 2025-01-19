@@ -2199,7 +2199,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								$t_set = new ca_sets();
 								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
 								
-								$va_additional_settings = array();
+								$va_additional_settings = [
+										'ca_set_items_display_template' => [
+											'formatType' => FT_TEXT,
+											'displayType' => DT_FIELD,
+											'default' => '',
+											'width' => "475px", 'height' => "50px",
+											'label' => _t('Display template (%1)', _t('set items')),
+											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
+										]
+								];
 								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
 									$va_additional_settings[Datamodel::getTableName($vn_table_num).'_display_template'] = array(
 											'formatType' => FT_TEXT,
