@@ -1437,7 +1437,7 @@ related_indexing:
 											foreach($vo_attribute->getValues() as $vo_value) {
 												$vn_sub_element_id = $vo_value->getElementID();
 												$vn_list_id = ca_metadata_elements::getElementListID($vn_sub_element_id);
-												$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+												$vs_value_to_index = $vo_value->getDisplayValue(['list_id' => $vn_list_id]);
 												$attribute_id = $vo_attribute->getAttributeID();
 
 												$va_additional_indexing = $vo_value->getDataForSearchIndexing();
