@@ -72,17 +72,7 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use: ['style-loader', 'css-loader', {
-				  loader: 'postcss-loader', // Run post css actions
-				  options: {
-				    postcssOptions: {
-				        plugins: [
-				            ['precss'],
-				            ['autoprefixer']
-				        ]
-				    }
-				  }
-				},  'sass-loader']
+        use: ['style-loader', 'css-loader', 'sass-loader']
       },
       { test: /\.(png|woff|woff2|eot|ttf|svg|otf|gif)$/, 
         use: [{

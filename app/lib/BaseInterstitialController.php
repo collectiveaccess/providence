@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -170,6 +170,7 @@ class BaseInterstitialController extends BaseEditorController {
 			
 			$this->view->setVar('response', $va_response);
 			
+			$this->response->setContentType('application/json');
 			$this->render('interstitial/interstitial_result_json.php');
 			return;
 		}
@@ -263,6 +264,7 @@ class BaseInterstitialController extends BaseEditorController {
 		
 		$this->view->setVar('response', $va_response);
 		
+		$this->response->setContentType('application/json');
 		$this->render('interstitial/interstitial_result_json.php');
 	}
 	# -------------------------------------------------------

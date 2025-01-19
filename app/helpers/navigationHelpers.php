@@ -109,6 +109,7 @@
  	define('__CA_NAV_ICON_SPLIT__', 72);
  	define('__CA_NAV_ICON_TOGGLE__', 73);
  	define('__CA_NAV_ICON_CHECKBOX__', 74);
+ 	define('__CA_NAV_ICON_TRASH__', 75);
  	
  	/**
  	 * Icon position constants
@@ -917,7 +918,10 @@
 				break;
 			case __CA_NAV_ICON_CHECKBOX__:
 				$vs_fa_class = 'fa fa-check-square';
-				break;																					
+				break;				
+			case __CA_NAV_ICON_TRASH__:
+				$vs_fa_class = 'fas fa-trash';
+				break;															
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;

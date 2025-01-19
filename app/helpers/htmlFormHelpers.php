@@ -143,6 +143,8 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	$is_textarea = false;
 	$va_styles = array();
 	
+	$tag_name = caGetOption('textAreaTagName', $options, 'textarea');
+	
 	if(isset($attributes['style']) && $attributes['style']) {
 		$va_styles[] = $attributes['style'];
 	}
@@ -198,10 +200,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	
 	$attributes['style'] = join(" ", $va_styles);
 	
-	// WYSIWYG editor requires an DOM ID so generate one if none is explicitly set
-	if ($use_wysiwyg_editor && !isset($attributes['id'])) {
-		$attributes['id'] = $name;
-	}
+	$id = $attributes['id'] ?? $name;
 	
 	$element = '';
 	if ($use_wysiwyg_editor) {
@@ -245,7 +244,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 				
 				$attr_string = _caHTMLMakeAttributeString($attributes, $options);			
 				$element .= "<div id=\"{$name}_container\" style='width: {$width}px; height: {$height}px; overflow-y: auto;'>
-					<textarea name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</textarea></div>
+					<{$tag_name} name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</{$tag_name}></div>
 <style>
 #{$name}_container .ck-editor__editable_inline {
 min-height: calc({$height}px - 100px);
@@ -267,7 +266,7 @@ min-height: calc({$height}px - 100px);
 						
 				$element .= caHTMLTextInput(
 					$name, 
-					['id' => "{$name}", 'value' => $attributes['value'] ?? null, 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
+					['id' => "{$id}", 'value' => $attributes['value'] ?? null, 'style' => 'display: none;'], ['width' => '500px', 'height' => '200px']
 				);
 				
 				$element .= "
@@ -287,17 +286,16 @@ min-height: calc({$height}px - 100px);
 		$o_config = Configuration::load();
 		if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
 	} elseif ($is_textarea) {
-		$tag_name = caGetOption('textAreaTagName', $options, 'textarea');
 		$value = $attributes['value'] ?? null;
 		if ($attributes['size'] ?? null) { $attributes['cols'] = $attributes['size']; }
 		unset($attributes['size']);
 		unset($attributes['value']);
 		$attr_string = _caHTMLMakeAttributeString($attributes, $options);
-		$element = "<{$tag_name} name='{$name}' id='{$name}' wrap='soft' {$attr_string}>".$value."</{$tag_name}>\n";
+		$element = "<{$tag_name} name='{$name}' id='{$id}' wrap='soft' {$attr_string}>".$value."</{$tag_name}>\n";
 	} else {
 		$attributes['size'] = ($attributes['size'] ?? false) ? $attributes['size'] : $attributes['width'] ?? null;
 		$attr_string = _caHTMLMakeAttributeString($attributes, $options);
-		$element = "<input name='{$name}' id='{$name}' {$attr_string} type='text'/>\n";
+		$element = "<input name='{$name}' id='{$id}' {$attr_string} type='text'/>\n";
 	}
 	return $element;
 }

@@ -298,28 +298,43 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param string $dir The path to the directory you wish to remove
 	 * @param bool $pb_delete_dir By default caRemoveDirectory() will remove the specified directory after delete everything within it. Setting this to false will retain the directory after removing everything inside of it, effectively "cleaning" the directory.
-	 * @return bool Always returns true
+	 * @param array $options Options include:
+	 * 		allowFiles = If path is to a file, delete file. If not set the file is not deleted and false returned. [Default is false]
+	 *
+	 * @return int Number of files deleted; null on error
 	 */
-	function caRemoveDirectory($dir, $pb_delete_dir=true) {
+	function caRemoveDirectory($dir, $delete_dir=true, ?array $options=null) : ?int {
+		$count = 0;
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
+		
+		if(caGetOption('allowFiles', $options, false) && is_file($dir)) {
+			if(@unlink($dir)) { $count++; }
+			return $count;
+		}
+		
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != "..") {
-					if (is_dir("{$dir}/{$item}")) { caRemoveDirectory("{$dir}/{$item}", true);  }
-					else { @unlink("{$dir}/{$item}"); }
+					if (is_dir("{$dir}/{$item}")) { 
+						$count += caRemoveDirectory("{$dir}/{$item}", true);
+					} else { 
+						if(@unlink("{$dir}/{$item}")) {
+							$count++;
+						}
+					}
 				}
 			}
 			closedir($handle);
-			if ($pb_delete_dir) {
+			if ($delete_dir) {
 				@rmdir($dir);
 			}
 		} else {
-			return false;
+			return null;
 		}
 
-		return true;
+		return $count;
 	}
 	# ----------------------------------------
 	/**
@@ -5008,6 +5023,8 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Return absolute path or null if path is invalid
 	 */
 	function caSanitizeRelativeFilepath(string $relative_filepath, string $base_directory, ?array $options=null) : ?string {
+		$base_directory = str_replace('\\', '/', $base_directory);
+		$relative_filepath = str_replace('\\', '/', $relative_filepath);
 		$f = realpath($base_directory.'/'.$relative_filepath);
 		
 		if(!is_null($f)) {

@@ -78,7 +78,7 @@ class SqlSearch2ConfigurationSettings extends ASearchConfigurationSettings {
 			case __CA_SQLSEARCH_RUNNING_MYSQL__:
 				return _t("MySQL is back-end database");
 			case __CA_SQLSEARCH_TABLES_EXIST__:
-				return _t("SqlSearch database tables exist");
+				return _t("SqlSearch2 database tables exist");
 			case __CA_SQLSEARCH_CHINESE_WORD_SEGMENTER_AVAILABLE__:
 				return _t('Chinese word segmenter is available');
 			default:
@@ -91,7 +91,7 @@ class SqlSearch2ConfigurationSettings extends ASearchConfigurationSettings {
 			case __CA_SQLSEARCH_RUNNING_MYSQL__:
 				return _t("The SqlSearch2 search engine requires that MySQL be the back-end database for your CollectiveAccess installation.");
 			case __CA_SQLSEARCH_TABLES_EXIST__:
-				return _t("The SqlSearch2 search engine requires that certain tables be present in your database. They are installed by default and should be present, but if they are not SqlSearch will not be able to operate.");
+				return _t("The SqlSearch2 search engine requires that certain tables be present in your database. They are installed by default and should be present, but if they are not SqlSearch2 will not be able to operate.");
 			case __CA_SQLSEARCH_CHINESE_WORD_SEGMENTER_AVAILABLE__:
 				return _t("To fully index Chinese-language content the Jieba PHP word segmenter (https://github.com/binaryoung/jieba-php) should be installed.");
 			default:

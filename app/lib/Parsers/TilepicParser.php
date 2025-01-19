@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2023 Whirl-i-Gig
+ * Copyright 2004-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,16 +48,18 @@ class TilepicParser {
 	# Supported tile types
 	#
 	var $mimetype2magick = array(
-			"image/gif" 	=> "GIF",
-			"image/jpeg"	=> "JPEG",
-			"image/png"		=> "PNG",
-			"image/tiff"	=> "TIFF"
+		"image/gif" 	=> "GIF",
+		"image/jpeg"	=> "JPEG",
+		"image/png"		=> "PNG",
+		"image/tiff"	=> "TIFF",
+		"image/webp" 	=> "WEBP"
 	);
 	var $mimetype2ext = array(
-			"image/gif" 	=> "gif",
-			"image/jpeg"	=> "jpg",
-			"image/png"		=> "png",
-			"image/tiff"	=> "tiff"
+		"image/gif" 	=> "gif",
+		"image/jpeg"	=> "jpg",
+		"image/png"		=> "png",
+		"image/tiff"	=> "tiff",
+		"image/webp" 	=> "WEBP"
 	);
 	
 	var $magick_names = array(
@@ -68,29 +70,8 @@ class TilepicParser {
 		"image/x-bmp" 		=> "BMP",
 		"image/x-psd" 		=> "PDF",
 		"image/tilepic" 	=> "TPC",
-		"image/x-dcraw"		=> "RAW"
-	);
-	
-	var $apple_type_names = array(
-		"image/jpeg" 		=> "jpeg",
-		"image/gif" 		=> "gif",
-		"image/tiff" 		=> "tiff",
-		"image/png" 		=> "png",
-		"image/x-bmp" 		=> "bmp",
-		"image/x-psd" 		=> "psd",
-		"image/tilepic" 	=> "tpc",
-		"image/jp2"			=> "jp2"
-	);
-	
-	var $apple_UTIs = array(
-		"image/jpeg" 		=> "public.jpeg",
-		"image/gif" 		=> "com.compuserve.gif",
-		"image/tiff" 		=> "public.tiff",
-		"image/png" 		=> "public.png",
-		"image/x-bmp" 		=> "com.microsoft.bmp",
-		"image/x-psd" 		=> "com.adobe.photoshop.image",
-		"image/tilepic" 	=> "public.tpc",
-		"image/jp2"			=> "public.jpeg-2000"
+		"image/x-dcraw"		=> "RAW",
+		"image/webp" 		=> "WEBP"
 	);
 	
 	var $debug = false;
