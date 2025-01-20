@@ -1467,9 +1467,8 @@ trait CLIUtilsImportExport {
 
 
 		try {
-			$em = new \Exit\ExitManager();
-			
-			print_R($em->getExportTableNames());
+			$em = new \Exit\ExitManager($format);
+			$em->export($directory);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not export data: %1', $e->getMessage()));
 			return false;
