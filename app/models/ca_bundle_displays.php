@@ -1163,7 +1163,7 @@ if (!$pb_omit_editing_info) {
 				'displayType' => DT_FIELD,
 				'width' => 6, 'height' => 1,
 				'takesLocale' => false,
-				'default' => 2048,
+				'default' => 65535,
 				'label' => _t('Maximum length'),
 				'description' => _t('Maximum length, in characters, of displayed information.')
 			),
@@ -1263,6 +1263,21 @@ if (!$pb_omit_editing_info) {
 							'label' => _t('Display currency conversion?'),
 							'description' => _t('Check this option if you want your currency values to be displayed in both the specified and local currency.')
 						);
+					}
+					if (($va_all_elements[$vn_element_id]['datatype'] ?? null) == 0) {
+						$va_even_more_settings['newlines'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => 30, 'height' => 1,
+							'takesLocale' => false,
+							'default' => 'HTML',
+							'options' => array(
+								_t('Preserve newlines') => 'NL2BR',
+								_t('Display as HTML') => 'HTML'
+							),
+							'label' => _t('Newlines'),
+							'description' => _t('Determines how newlines in text are processed.')
+						];	
 					}
 					break;
 				default:
