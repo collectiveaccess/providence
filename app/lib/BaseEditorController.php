@@ -336,9 +336,6 @@ class BaseEditorController extends ActionController {
 				$vb_no_save_error = true;
 				$this->view->setVar('forced_values', $va_opts['ifv']);
 			}
-			if($t_subject->numErrors() > 0) {
-				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
-			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -230,8 +230,24 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		parent::__construct($id, $options);
 		
+		$this->initSettings();
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function load($id=null, $use_cache=true) {
+		$ret = parent::load($id, $use_cache);
+		$this->initSettings();
+		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function initSettings() {
 		//
-		$this->setAvailableSettings([
+		$settings = [
 			'show_empty_values' => [
 				'formatType' => FT_NUMBER,
 				'displayType' => DT_CHECKBOXES,
@@ -268,7 +284,25 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				'label' => _t('Show display in'),
 				'description' => _t('Restrict display to use in specific contexts. If no contexts are selected the display will be shown in all contexts.')
 			]
-		]);
+		];
+		if((int)$this->get('table_num') === 57) {
+			$settings['show_representations'] = [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 40, 'height' => 1,
+				'takesLocale' => false,
+				'default' => 'all',
+				'options' => [
+					_t('No') => '',
+					_t('All') => 'all',
+					_t('Primary only') => 'primary'
+				],
+				'label' => _t('Display representations?'),
+				'description' => _t('Display primary or all representations at top of display?')
+			];
+		}
+		
+		$this->setAvailableSettings($settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -345,7 +379,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				if ($pa_fields === 'table_num') { return false; }
 			}
 		}
-		return parent::set($pa_fields, $pm_value, $options);
+		
+		$ret = parent::set($pa_fields, $pm_value, $options);
+		if((is_array($pa_fields) && isset($pa_fields['table_num'])) || ($oa_fields === 'table_num')) {
+			$this->initSettings();
+		}
+		
+		return $ret;
 	}
 	# ------------------------------------------------------
 	public function __destruct() {
@@ -1123,7 +1163,7 @@ if (!$pb_omit_editing_info) {
 				'displayType' => DT_FIELD,
 				'width' => 6, 'height' => 1,
 				'takesLocale' => false,
-				'default' => 2048,
+				'default' => 65535,
 				'label' => _t('Maximum length'),
 				'description' => _t('Maximum length, in characters, of displayed information.')
 			),
@@ -1223,6 +1263,21 @@ if (!$pb_omit_editing_info) {
 							'label' => _t('Display currency conversion?'),
 							'description' => _t('Check this option if you want your currency values to be displayed in both the specified and local currency.')
 						);
+					}
+					if (($va_all_elements[$vn_element_id]['datatype'] ?? null) == 0) {
+						$va_even_more_settings['newlines'] = [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => 30, 'height' => 1,
+							'takesLocale' => false,
+							'default' => 'HTML',
+							'options' => array(
+								_t('Preserve newlines') => 'NL2BR',
+								_t('Display as HTML') => 'HTML'
+							),
+							'label' => _t('Newlines'),
+							'description' => _t('Determines how newlines in text are processed.')
+						];	
 					}
 					break;
 				default:
@@ -1414,7 +1469,7 @@ if (!$pb_omit_editing_info) {
 			}
 			
 			$vs_bundle = $vs_table.'.home_location_value';
-			$vs_label = _t('Home location didplay value');
+			$vs_label = _t('Home location display value');
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_home_location_value'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Home location display value')."</div>";
 			$vs_description = _t('Home location of object');
 			

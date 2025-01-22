@@ -2875,6 +2875,23 @@ class SearchResult extends BaseObject {
 									break;
 								}
 							}
+							
+							if($return_as = caGetOption('returnAs', $pa_options, null)) {
+								switch(strtolower($return_as)) {
+									case 'timecode':
+										$tc = new TimecodeParser();
+										if(is_array($d)) {
+											$d = array_map(function($v) use ($tc) {
+												$tc->parse($v);
+												return $tc->getText() ;
+											}, $d);
+										} else {
+											$tc->parse($d);
+											$d = $tc->getText('colon_delimited');
+										}
+										break;
+								}
+							}
 						
 							if(!$pa_options['returnAsArray'] && is_array($d)) {
 								$d = join("; ", $d);

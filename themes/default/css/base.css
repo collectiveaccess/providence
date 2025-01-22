@@ -8110,6 +8110,7 @@ div.searchResultDesc ul {
 ul.ui-autocomplete {
     max-height: 400px;
     overflow-y: auto;
+    z-index: 999999;
 }
 
 .ui-autocomplete {
