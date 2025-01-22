@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -238,8 +238,8 @@ class MultipartIDNumber extends IDNumber {
 		if (!is_array($elements)) { return []; }
 
 		$pv = $this->getParentValue();
-		if(preg_match('!^'.preg_quote($pv, '!').'!u', $v)) {
-			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $v);
+		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv, '!').'!u', $value)) {
+			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $value);
 			$element_vals = $this->explodeValue($npv);
 			array_unshift($element_vals, $npv);
 		} else {

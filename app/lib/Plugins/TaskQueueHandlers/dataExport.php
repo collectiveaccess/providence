@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,6 +91,14 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			'value' => $parameters['format'] ?? _t('Unknown')
 		);
 		
+		if($parameters['display_id'] ?? null) { 
+			$t_display = new ca_bundle_displays($parameters['display_id']);
+			$params['display'] = array(
+				'label' => _t('Display'),
+				'value' => $t_display->isLoaded() ? $t_display->get('ca_bundle_displays.preferred_labels') : _t('Unknown')
+			);
+		}
+		
 		$params['contentType'] = array(
 			'label' => _t('Content'),
 			'value' => Datamodel::getTableProperty($parameters["table"], !$is_summary ? 'NAME_PLURAL' : 'NAME_SINGULAR')
@@ -166,7 +174,8 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 		try {
 			switch($mode = $parameters['mode']) {
 				case 'EXPORT':
-					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Data_Export'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
+					$t_display = ($display_id = $parameters['display_id'] ?? null) ? new ca_bundle_displays($display_id) : null;
+					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Data_Export'), ['output' => 'FILE', 'display' => $t_display, 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'data_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[

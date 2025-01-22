@@ -129,7 +129,7 @@ class MediaUploadManager {
         $user = caGetOption('user', $options, null);
         $limit = caGetOption('limit', $options, 10);
 
-       	return self::getLog(['user' => $user, 'limit' => $limit]);
+       	return self::getLog(['user' => $user, 'limit' => $limit, 'omitStatuses' => ['CANCELLED']]);
     }
     # ------------------------------------------------------
     /**
@@ -142,13 +142,17 @@ class MediaUploadManager {
         $limit = caGetOption('limit', $options, 10);
         $source = caGetOption('source', $options, null, ['forceUppercase' => true]);        
         $form = caGetOption('form', $options, null);
-
+        
+        if(($omit_statuses = caGetOption('omitStatuses', $options, null)) && !is_array($omit_statuses)) {
+        	$omit_statuses = [$omit_statuses];
+        }
+		
         $user_id = $user ? self::_getUserID($user) : null;
            
         $session_key = caGetOption('sessionKey', $options, null);
         
         $sessions = [];
-        $params = [];
+        $params = (is_array($omit_statuses) && sizeof($omit_statuses)) ? ['status' => ['NOT IN', $omit_statuses]] : [];
         
         if($user_id) { $params['user_id'] = $user_id; }
         if($date && ($d = caDateToUnixTimestamps($date))) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -391,8 +391,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$use_editor = $o_config->get('wysiwyg_editor');
 			
 			if(is_numeric($width) && ($width < 200)) { $width = 200; } 	// force absolute minimum width	
-			if(is_numeric($height) && ($height < 150)) { $height = 150; } 	// force absolute minimum height	
-			
+			if(is_numeric($height) && ($height < 50)) { $height = 50; } 	// force absolute minimum height	
+
 			$width_w_suffix = is_numeric($width) ? "{$width}px" : $width;
 			$height_w_suffix = is_numeric($height) ? "{$height}px" : $height;
 			
@@ -411,6 +411,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
 						 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 						} from 'ckeditor5';
+						
+						import { ResizableHeight} from 'ckresizeable';
 					
 						ClassicEditor
 							.create( document.querySelector( '#{fieldNamePrefix}{$element_info['element_id']}_{n}' ), {
@@ -421,11 +423,17 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
 									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
-									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
 								toolbar: {
 									items: ".json_encode($toolbar).",
 									shouldNotGroupWhenFull: true
+								},
+								ResizableHeight: {
+									resize: true,
+									height: '{$height_w_suffix}',
+									minHeight: '50px',
+									maxHeight: '1500px'
 								}
 							} ).then(editor => {
 								// Don't let CKEditor pollute the top-level DOM with editor bits
@@ -440,14 +448,10 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							}).catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";
 									
-					$element .= "<div style='width: {$width_w_suffix}; height: {$height_w_suffix}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
+					$element .= "<div style='width: {$width_w_suffix}; overflow-y: auto;' class='{fieldNamePrefix}{$element_info['element_id']}_container_{n} ckeditor-wrapper'>".caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$attr, $opts
-					)."</div><style>
-						.{fieldNamePrefix}{$element_info['element_id']}_container_{n} .ck-editor__editable_inline {
-							min-height: calc({$height}px - 100px);
-						}
-						</style>\n";
+					)."</div>\n";
 					break;
 				case 'quilljs';
 				default:
