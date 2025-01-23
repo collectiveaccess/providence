@@ -131,7 +131,12 @@ class XML extends BaseExitFormat {
 						}
 						foreach($rv as $x => $y) {
 							if(($datatype === 0) || (in_array($f, ['preferred_labels', 'nonpreferred_labels']))) {
-								$se = $this->dom->createElement($x, $y);
+								if(is_array($y)) {
+									$se = $this->dom->createElement($x, $y['_idno']);
+									$se->setAttribute('id', $y['_id']);
+								} else {
+									$se = $this->dom->createElement($x, $y);
+								}
 								$fld->append($se);
 							} elseif($y && !is_array($y)) {
 								$fld->textContent = $y;
@@ -178,6 +183,8 @@ class XML extends BaseExitFormat {
 			$de->setAttribute('name', $d['name']);
 			$de->setAttribute('description', $d['description']);
 			$de->setAttribute('canRepeat', $d['canRepeat'] ? "yes" : "no");
+			if(strlen($d['list_id'] ?? null)) { $de->setAttribute('list_id', $d['list_id']); }
+			if(strlen($d['list_code'] ?? null)) { $de->setAttribute('list', $d['list_code']); }
 			$dict->append($de);
 		}
 		$this->root->append($dict);

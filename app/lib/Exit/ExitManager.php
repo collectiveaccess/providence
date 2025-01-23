@@ -118,19 +118,19 @@ class ExitManager {
 		
 		// Generate data dictionary
 		$dictionary = [];
-		if(!$t->isRelationship()) { 
+		if(!($is_relationship = $t->isRelationship())) { 
 			// @TODO: generate dictionary for sub-fields
 			$dictionary = [
 				'preferred_labels' => [
 					'name' => 'Preferred labels',
 					'description' => '',
-					'type' => 'container',
+					'type' => 'labels',
 					'canRepeat' => true
 				],
 				'nonpreferred_labels' => [
 					'name' => 'Non-preferred labels',
 					'description' => '',
-					'type' => 'container',
+					'type' => 'labels',
 					'canRepeat' => true
 				]
 			];
@@ -153,13 +153,26 @@ class ExitManager {
 				unset($intrinsic_info[$f]);
 				continue;
 			}
-			if ($f === 'locale_id') { $f = 'locale'; }
+			if ($f === 'locale_id') { 
+				$f = 'locale'; 
+				$d['FIELD_TYPE'] = FT_TEXT;
+			}
 			$dictionary[$f] = [
 				'name' => $d['LABEL'],
 				'description' => $d['DESCRIPTION'],
 				'type' => $this->_intrinsicTypeToDictionaryType($d['FIELD_TYPE']),
 				'canRepeat' => false
 			];
+			
+			if($d['LIST']) {
+				$dictionary[$f]['list_id'] = caGetListID($d['LIST']);
+				$dictionary[$f]['list_code'] = $d['LIST'];
+			}
+
+			if($d['LIST_CODE']) {
+				$dictionary[$f]['list_id'] = caGetListID($d['LIST_CODE']);
+				$dictionary[$f]['list_code'] = $d['LIST_CODE'];
+			}
 		}
 		
 		
@@ -173,6 +186,10 @@ class ExitManager {
 				'type' => $this->_attributeTypeToDictionaryType($d['datatype']),
 				'canRepeat' => true
 			];
+			if ($d['datatype'] == __CA_ATTRIBUTE_VALUE_LIST__) {
+				$dictionary[$f]['list_id'] = $d['list_id'];
+				$dictionary[$f]['list_code'] = caGetListCode($d['list_id']);
+			}
 		}
 		
 		// Marshall data X rows at a time
@@ -183,10 +200,10 @@ class ExitManager {
 		$format->setDictionary($dictionary);
 		while($qr->nextHit()) {
 			// Intrinsics
-			$acc = $this->_getIntrinsics($table, $intrinsic_info, $qr);
+			$acc = $this->_getIntrinsics($table, $intrinsic_info, $qr, ['isRelationship' => $is_relationship]);
 			
 			// Labels
-			if(!$t->isRelationship()) {
+			if(!$is_relationship) {
 				$acc['preferred_labels'] = $this->_getLabels($table, true, $qr);
 				$acc['nonpreferred_labels'] = $this->_getLabels($table, false, $qr);
 			}
@@ -218,8 +235,10 @@ class ExitManager {
 	/**
 	 *
 	 */
-	private function _getIntrinsics(string $table, array $intrinsic_info, \SearchResult $qr) : array {
+	private function _getIntrinsics(string $table, array $intrinsic_info, \SearchResult $qr, ?array $options=null) : array {
 		$acc = [];
+		
+		$is_relationship = caGetOption('isRelationship', $options, false);
 		foreach($intrinsic_info as $f => $info) {
 			switch($info['FIELD_TYPE']) {
 				case FT_MEDIA:
@@ -242,13 +261,21 @@ class ExitManager {
 						];
 					} elseif(isset($info['LIST'])) {
 						$id = caGetListItemIDForValue($info['LIST'], $acc[$f]);
-						print_R($l);
 						$acc[$f] = [
 							[
 								'_id' => $id,
 								'_idno' => caGetListItemIdno($id)
 							]
 						];
+					} elseif($is_relationship && ($f === 'type_id')) {
+						if($t_rel = \ca_relationship_types::findAsInstance($acc[$f])) {
+							$acc[$f] = [
+								[
+									'_id' => $acc[$f],
+									'_idno' => $t_rel->get('ca_relationship_types.type_code')
+								]
+							];
+						}
 					}
 					break;
 			}
@@ -260,10 +287,12 @@ class ExitManager {
 	/**
 	 *
 	 */
-	private function _getLabels(string $table, bool $preferred, \SearchResult $qr) : array {
+	private function _getLabels(string $table, bool $preferred, \SearchResult $qr, ?array $options=null) : array {
 		$key = $preferred ? "preferred_labels" : "nonpreferred_labels";
 		$l_acc = [];
 		$pk = \Datamodel::primaryKey($table);
+		$t = $qr->getInstance();
+		$t_label = $t->getLabelTableInstance();
 		if(is_array($labels = $qr->get("{$table}.{$key}", ['returnWithStructure' => true]))) {
 			foreach($labels as $l) {
 				$l_acc = array_merge($l_acc, $l);
@@ -271,10 +300,29 @@ class ExitManager {
 			foreach($l_acc as $i => $l) {
 				unset($l_acc[$i]['name_sort']);
 				unset($l_acc[$i]['item_type_id']);
+				unset($l_acc[$i]['source_info']);
+				unset($l_acc[$i]['is_preferred']);
 				unset($l_acc[$i][$pk]);
+				
 				if($l_acc[$i]['locale_id']) { 
 					$l_acc[$i]['locale'] = \ca_locales::IDToCode($l_acc[$i]['locale_id']); 
 					unset($l_acc[$i]['locale_id']);
+				} 
+				if($l_acc[$i]['type_id']) {
+					$vx = [
+						'_id' => $l_acc[$i]['type_id'],
+						'_idno' => caGetListItemIdno($l_acc[$i]['type_id'])
+					];
+					$l_acc[$i]['type_id'] = $vx;
+				}
+				if($l_acc[$i]['access']) {
+					$id = caGetListItemIDForValue($t_label->getFieldInfo('access', 'LIST'), $l_acc[$i]['access']);
+					
+					$vx = [
+						'_id' => $id,
+						'_idno' => caGetListItemIdno($id)
+					];
+					$l_acc[$i]['access'] = $vx;
 				}
 			}
 		}
@@ -285,7 +333,7 @@ class ExitManager {
 	/**
 	 *
 	 */
-	private function _getAttributes(string $table, array $attributes, \SearchResult $qr) : array {
+	private function _getAttributes(string $table, array $attributes, \SearchResult $qr, ?array $options=null) : array {
 		$acc = [];
 		foreach($attributes as $mdcode => $e) {
 			$d = $qr->get("{$table}.{$mdcode}", ['returnWithStructure' => true]);
