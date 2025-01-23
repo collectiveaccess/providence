@@ -1442,45 +1442,65 @@ trait CLIUtilsImportExport {
 	 * @return bool
 	 */
 	public static function exit_through_the_gift_shop($opts=null) {
+		$quiet = $opts->getOption('quiet');
 		$directory = $opts->getOption('directory');
 		if (!$directory) {
 			CLIUtils::addError(_t('A directory must be specified'));
 			return false;
 		}
 
+		if(!file_exists($directory)) {
+			mkdir($directory);
+		}
 		if ($directory && ((file_exists($directory) && !is_dir($directory) || !is_writeable($directory)) || (!file_exists($directory) && !is_writeable(pathinfo($directory, PATHINFO_DIRNAME))))) {
 			CLIUtils::addError(_t('Cannot write to directory %1', $file));
 			return false;
-		}
-		if(!file_exists($directory)) {
-			mkdir($directory);
 		}
 
 		if(!($format = strtoupper($opts->getOption('format')))) {
 			$format = 'XML';
 		}
 		
-		if (!in_array($format, ['CSV', 'XML'], true)) {
-			CLIUtils::addError(_t('Invalid format %x', $format));
+		if (!in_array($format, ['XML'], true)) {
+			CLIUtils::addError(_t('Invalid format %1', $format));
 			return false;
 		}
 
 
 		try {
-			$em = new \Exit\ExitManager($format);
+			$em = new \Exit\ExitManager($format, ['showProgress' => !$quiet]);
 			$em->export($directory);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not export data: %1', $e->getMessage()));
 			return false;
 		}
-		CLIUtils::addMessage(_t('Exported data'));
+		
+		if($compress = (bool)$opts->getOption('compress')) {
+			$z = new ZipFile();
+			if(is_array($paths = caGetDirectoryContentsAsList($directory))) {
+				$dir = explode('/', pathinfo($paths[0], PATHINFO_DIRNAME));
+				$pdir = array_pop($dir);
+				foreach($paths as $p) {
+					$z->addFile($p, "{$pdir}/".pathinfo($p, PATHINFO_BASENAME));
+				}
+				$tmp = $z->output(ZIPFILE_FILEPATH);
+				copy($tmp, "./".pathinfo($directory, PATHINFO_FILENAME).".zip");
+				unlink($tmp);
+				caRemoveDirectory($directory);	
+			}
+		}
+		
+		if(!$quiet) {
+			CLIUtils::addMessage(_t('Export complete'));
+		}
 		return true;
 	}
 	# -------------------------------------------------------
 	public static function exit_through_the_gift_shopParamList() {
 		return [
-			"format|m=s" => _t('Format of data export. Set to CSV or XML. Default is XML.'),
-			"directory|f=s" => _t('Directory to write export to. If directory does not exist it will be created.')
+			"format|m=s" => _t('Format of data export. Currently only XML is supported.'),
+			"directory|f=s" => _t('Directory to write export to. If directory does not exist it will be created.'),
+			"compress|c=s" => _t('Compress directory as ZIP file.')
 		];
 	}
 	# -------------------------------------------------------
