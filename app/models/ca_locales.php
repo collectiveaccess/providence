@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 BaseModel::$s_ca_models_definitions['ca_locales'] = array(
  	'NAME_SINGULAR' 	=> _t('locale'),
  	'NAME_PLURAL' 		=> _t('locales'),
