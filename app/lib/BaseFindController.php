@@ -566,6 +566,7 @@ class BaseFindController extends ActionController {
 			]);
 			$download_id = $t_download->insert();
 			
+			$display_id = $this->opo_result_context->getCurrentBundleDisplay($this->opn_type_restriction_id, $this->_getShowInStr());
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -580,7 +581,8 @@ class BaseFindController extends ActionController {
 					'searchExpression' => $exp,
 					'searchExpressionForDisplay' => $exp_display,
 					'user_id' => $this->request->getUserID(),
-					'download_id' => $download_id
+					'download_id' => $download_id,
+					'display_id' => $display_id
 				],
 				["priority" => 100, "entity_key" => join(':', [$this->ops_tablename, $this->ops_find_type, $this->opo_result_context->getSearchExpression()]), "row_key" => null, 'user_id' => $this->request->getUserID()]))
 			{
