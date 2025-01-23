@@ -107,14 +107,17 @@ class ExitManager {
 			throw new ApplicationException(_t('Invalid table: %1', $table));
 		}
 		
+		$show_progress = caGetOption('showProgress', $options, false);
+		
 		// Generate table header
 		$header = [
 			'table' => $table,
-			'name' => \Datamodel::getTableProperty($table, 'NAME_PLURAL'),
+			'name' => $table_display = \Datamodel::getTableProperty($table, 'NAME_PLURAL'),
 			'count' => $n,
 			'types' => $t->getTypeList(),
 			'exportDate' => date('c')
 		];
+		if ($show_progress) { print \CLIProgressBar::start($n, _t('[%1] Starting', $table_display)); }
 		
 		// Generate data dictionary
 		$dictionary = [];
@@ -199,6 +202,9 @@ class ExitManager {
 		$format->setHeader($header);
 		$format->setDictionary($dictionary);
 		while($qr->nextHit()) {
+			$id = $qr->getPrimaryKey();
+			if ($show_progress) { print \CLIProgressBar::next(1, _t('[%1] Processing %2', $table_display, $id)); }
+			
 			// Intrinsics
 			$acc = $this->_getIntrinsics($table, $intrinsic_info, $qr, ['isRelationship' => $is_relationship]);
 			
@@ -220,13 +226,13 @@ class ExitManager {
 			if(sizeof($data) >= self::$s_data_buffer_size) {
 				$format->process($data, ['primaryKey' => $t->primaryKey()]);
 				$data = [];
-				break;
+				//break;
 			}
 		}
 		if(sizeof($data) > 0) {
 			$format->process($data);
 		}
-		
+		if ($show_process) { print \CLIProgressBar::finish(); }
 		$format->write();
 		
 		return true;

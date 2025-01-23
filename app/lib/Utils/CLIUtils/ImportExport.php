@@ -1466,10 +1466,9 @@ trait CLIUtilsImportExport {
 			return false;
 		}
 
-
 		try {
-			$em = new \Exit\ExitManager($format, ['showProgress' => !$quiet]);
-			$em->export($directory);
+			$em = new \Exit\ExitManager($format);
+			$em->export($directory, ['showProgress' => !$quiet]);
 		} catch (Exception $e) {
 			CLIUtils::addError(_t('Could not export data: %1', $e->getMessage()));
 			return false;
