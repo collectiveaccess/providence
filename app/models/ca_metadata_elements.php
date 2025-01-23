@@ -1443,6 +1443,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get element description for given element_id (or code)
+	 * @param mixed $pm_element_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementDescription($pm_element_id) {
+		if(!$pm_element_id) { return null; }
+		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
+
+		if(MemoryCache::contains($pm_element_id, 'ElementDescriptions')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementDescriptions');
+		}
+
+		$vm_return = null;
+		if (!$t_element = self::getInstance($pm_element_id)) { return null; }
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('ca_metadata_elements.preferred_labels.description');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementDescriptions');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get element code for the parent of a given element_id (or code). Returns null if given ID has no parent
 	 * @param mixed $pm_element_id
 	 * @return string|null
