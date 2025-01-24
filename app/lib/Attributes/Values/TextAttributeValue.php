@@ -505,9 +505,9 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$t_element = new ca_metadata_elements($element_info['element_id']);
 			$elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
 			$element_dom_ids = [];
-			foreach($elements as $i => $element) {
-				if ($element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
-				$element_dom_ids[$element['element_code']] = "#{fieldNamePrefix}".$element['element_id']."_{n}";
+			foreach($elements as $i => $e) {
+				if ($e['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+				$element_dom_ids[$e['element_code']] = "#{fieldNamePrefix}".$e['element_id']."_{n}";
 			}
 			
 			$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
