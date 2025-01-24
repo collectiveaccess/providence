@@ -495,3 +495,10 @@ if (!defined('__CA_LONG_DATABASE_QUERY_THRESHOLD__')) {
 if (!defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__')) {
 	define('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__', false);
 }
+
+# __CA_DONT_CACHE_TRANSLATIONS__
+#
+# Disable caching of translations. May be useful when developing a new locale
+if (!defined('__CA_DONT_CACHE_TRANSLATIONS__')) {
+	define('__CA_DONT_CACHE_TRANSLATIONS__', false);
+}

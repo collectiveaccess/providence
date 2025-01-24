@@ -78,7 +78,7 @@ function _t($ps_key) {
 		)
 	) { return is_array($g_translation_strings[$ps_key]) ? $g_translation_strings[$ps_key][(string)$_locale] : $g_translation_strings[$ps_key]; }
 	
-	if(!isset($g_translation_cache[$ps_key])) {
+	if((defined('__CA_DONT_CACHE_TRANSLATIONS__') && __CA_DONT_CACHE_TRANSLATIONS__) || !isset($g_translation_cache[$ps_key])) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
 			foreach($_ as $o_locale) {
