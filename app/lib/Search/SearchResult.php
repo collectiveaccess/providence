@@ -2588,6 +2588,10 @@ class SearchResult extends BaseObject {
 							if($include_value_ids) {
 								$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = $o_value->getValueID();
 							}
+							
+							if(strlen($src = $o_attribute->getValueSource())) {
+								$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["__source__"] = $src;
+							}
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vs_val_proc;	
 						}
