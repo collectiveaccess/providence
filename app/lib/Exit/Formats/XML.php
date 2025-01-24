@@ -42,22 +42,17 @@ class XML extends BaseExitFormat {
 	/**
 	 *
 	 */
-	private $header_output = false;
-	
-	/**
-	 *
-	 */
 	private $root = null;
 	
 	/**
 	 *
 	 */
-	private $output = null;
+	 private $data = null;
 	
 	/**
 	 *
 	 */
-	 private $data = null;
+	private $output = null;
 	# ------------------------------------------------------
 	/**
 	 *
@@ -69,7 +64,7 @@ class XML extends BaseExitFormat {
 		$this->dom->formatOutput = true;
 		$this->dom->preserveWhiteSpace = false;
 		
-		if(!($this->output = fopen($fd = "{$directory}/{$file}.xml", "w"))) {
+		if(!($this->output = fopen($fd = "{$directory}/{$file}.".$this->getFileExtension(), "w"))) {
 			throw new \ApplicationException(_t('Could not open file for export: %1', $td));
 		}
 
@@ -97,7 +92,7 @@ class XML extends BaseExitFormat {
 		if(!$this->root) {
 			$this->writeHeader($options);
 		}
-		
+		//print_R($data);
 		$pk = caGetOption('primaryKey', $options, null);
 		foreach($data as $i => $item_data) {
 			$item = $this->dom->createElement('item', '');
@@ -125,6 +120,11 @@ class XML extends BaseExitFormat {
 						
 						$datatype = (int)($rv['_datatype'] ?? 1);
 						unset($rv['_datatype']);
+						
+						if(isset($rv['__source__']) && strlen($rv['__source__'])) {
+							$fld->setAttribute('source', $rv['__source__']);
+							unset($rv['__source__']);
+						}
 						if((sizeof($rv) === 2) && isset($rv['_id']) && isset($rv['_idno'])) { // intrinsic list
 							$fld->setAttribute('item_id', $rv['_id']);
 							$rv = [$rv['_idno']];
@@ -185,6 +185,25 @@ class XML extends BaseExitFormat {
 			$de->setAttribute('canRepeat', $d['canRepeat'] ? "yes" : "no");
 			if(strlen($d['list_id'] ?? null)) { $de->setAttribute('list_id', $d['list_id']); }
 			if(strlen($d['list_code'] ?? null)) { $de->setAttribute('list', $d['list_code']); }
+		
+			if(strlen($d['related_to_table'] ?? null)) { $de->setAttribute('relatedToTable', $d['related_to_table']); }
+			if(strlen($d['related_to_field'] ?? null)) { $de->setAttribute('relatedToField', $d['related_to_field']); }
+			
+			if(strlen($d['reference_to'] ?? null)) { $de->setAttribute('referenceTo', $d['reference_to']); }
+			
+			if(isset($d['subElements']) && sizeof($d['subElements'])) {
+				foreach($d['subElements'] as $sec => $dse) {
+					$se = $this->dom->createElement('data', '');
+					$se->setAttribute('code', $sec);
+					$se->setAttribute('type', $dse['type']);
+					$se->setAttribute('name', $dse['name']);
+					$se->setAttribute('description', $dse['description']);
+					if(strlen($dse['list_id'] ?? null)) { $se->setAttribute('list_id', $dse['list_id']); }
+					if(strlen($dse['list_code'] ?? null)) { $se->setAttribute('list', $dse['list_code']); }
+					if(strlen($dse['reference_to'] ?? null)) { $se->setAttribute('referenceTo', $dse['reference_to']); }
+					$de->append($se);
+				}
+			}
 			$dict->append($de);
 		}
 		$this->root->append($dict);

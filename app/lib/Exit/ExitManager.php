@@ -176,23 +176,16 @@ class ExitManager {
 				$dictionary[$f]['list_id'] = caGetListID($d['LIST_CODE']);
 				$dictionary[$f]['list_code'] = $d['LIST_CODE'];
 			}
+			
+			if(is_array($rel = \Datamodel::getManyToOneRelations($table, $f)) && sizeof($rel)) {
+				$dictionary[$f]['related_to_table'] = $rel['one_table'];
+				$dictionary[$f]['related_to_field'] = $rel['one_table_field'];
+			}
 		}
 		
 		
-		$md = \ca_metadata_elements::getElementsAsList(true, $table, null, true, true, true);
-	
-		foreach($md as $f => $d) {
-			// @TODO: generate dictionary for container sub-elements
-			$dictionary[$f] = [
-				'name' => $d['display_label'],
-				'description' => \ca_metadata_elements::getElementDescription($f),
-				'type' => $this->_attributeTypeToDictionaryType($d['datatype']),
-				'canRepeat' => true
-			];
-			if ($d['datatype'] == __CA_ATTRIBUTE_VALUE_LIST__) {
-				$dictionary[$f]['list_id'] = $d['list_id'];
-				$dictionary[$f]['list_code'] = caGetListCode($d['list_id']);
-			}
+		if(is_array($md = \ca_metadata_elements::getElementsAsList(true, $table, null, true, true, true))) {
+			$dictionary = array_merge($this->_genAttributeDictionary($md));
 		}
 		
 		// Marshall data X rows at a time
@@ -226,7 +219,6 @@ class ExitManager {
 			if(sizeof($data) >= self::$s_data_buffer_size) {
 				$format->process($data, ['primaryKey' => $t->primaryKey()]);
 				$data = [];
-				//break;
 			}
 		}
 		if(sizeof($data) > 0) {
@@ -282,7 +274,7 @@ class ExitManager {
 								]
 							];
 						}
-					}
+					} 
 					break;
 			}
 		}
@@ -352,19 +344,68 @@ class ExitManager {
 						foreach($values as $vx) {
 							$vx = [
 								'_id' => $vx[$mdcode],
-								'_idno' => caGetListItemIdno($vx[$mdcode])
+								'_idno' => caGetListItemIdno($vx[$mdcode]),
+								'_source' => $vx['__source__'] ?? null
 							];
 							$d_acc[] = array_merge([
 								'_datatype' => $e['datatype'],
 								'locale' => \ca_locales::IDToCode($locale_id)
 							], $vx);
 						}
-					} else {
+					} elseif((int)$e['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
 						foreach($values as $vx) {
+							foreach($vx as $sf => $sv) {
+								if(preg_match("!_sort_$!", $sf)) { unset($vx[$sf]); continue; }
+								$sdt = \ca_metadata_elements::getElementDatatype($sf);
+								$is_authority = \ca_metadata_elements::isAuthorityDatatype($sf);
+								if($sdt == __CA_ATTRIBUTE_VALUE_LIST__) {
+									$vx[$sf] = [
+										'_id' => $sv,
+										'_idno' => caGetListItemIdno($vx[$sf]),
+										'__source__' => $vx['__source__']
+									];
+								} elseif($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($sdt))) {
+									$labels = $t->getPreferredDisplayLabelsForIDs([$vx[$sf]]);
+									$vx[$sf] = [
+										'_id' => $vx[$sf],
+										'_idno' => array_shift($labels),
+										'__source__' => $vx['__source__']
+									];
+								}
+							}
+						
 							$d_acc[] = array_merge([
 								'_datatype' => $e['datatype'],
-								'locale' => \ca_locales::IDToCode($locale_id)
+								'locale' => \ca_locales::IDToCode($locale_id),
 							], $vx);
+						}
+					} else {
+						$is_authority = \ca_metadata_elements::isAuthorityDatatype($mdcode);
+						foreach($values as $vx) {
+							foreach($vx as $sf => $sv) {
+								if(preg_match("!_sort_$!", $sf)) { unset($vx[$sf]); }
+								if($sf === '__source__') { continue; }
+								
+								if($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($e['datatype']))) {
+									$labels = $t->getPreferredDisplayLabelsForIDs([$sv]);
+									$vx[$sf] = [
+										'_id' => $sv,
+										'_idno' => array_shift($labels),
+										'__source__' => $vx['__source__']
+									];
+									$d_acc[] = array_merge([
+										'_datatype' => $e['datatype'],
+										'locale' => \ca_locales::IDToCode($locale_id)
+									], $vx[$sf]);
+								} else {									
+									$d_acc[] = [
+										'_datatype' => $e['datatype'],
+										'locale' => \ca_locales::IDToCode($locale_id),
+										'__source__' => $vx['__source__'],
+										$sf => $vx[$sf]
+									];
+								}
+							}
 						}
 					}
 				}
@@ -435,7 +476,7 @@ class ExitManager {
 			case __CA_ATTRIBUTE_VALUE_TEXT__:
 				return 'text';
 			case __CA_ATTRIBUTE_VALUE_CONTAINER__:
-				return 'json';			
+				return 'container';			
 			case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 				return 'currency';			
 			case __CA_ATTRIBUTE_VALUE_DATERANGE__:
@@ -481,6 +522,57 @@ class ExitManager {
 				return 'reference';		
 		}
 		return null;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _genAttributeDictionary(array $md) : array {
+		$dictionary = [];
+		foreach($md as $f => $d) {
+			$is_authority = \ca_metadata_elements::isAuthorityDatatype($f);
+			
+			$dictionary[$f] = [
+				'name' => $d['display_label'],
+				'description' => \ca_metadata_elements::getElementDescription($f),
+				'type' => $this->_attributeTypeToDictionaryType($d['datatype']),
+				'canRepeat' => true
+			];
+			if ($d['datatype'] == __CA_ATTRIBUTE_VALUE_LIST__) {
+				$dictionary[$f]['list_id'] = $d['list_id'];
+				$dictionary[$f]['list_code'] = caGetListCode($d['list_id']);
+			}
+			
+			if($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($d['datatype']))) {
+				$dictionary[$f]['reference_to'] = $t->tableName();
+			}
+			
+			if(
+				($d['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__)
+				&&
+				(is_array($sub_elements = \ca_metadata_elements::getElementsForSet($d['element_id'])) && sizeof($sub_elements))
+			) {
+				$dictionary[$f]['subElements'] = [];
+				foreach($sub_elements as $se) {
+					if($se['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+					
+					$dictionary[$f]['subElements'][$se['element_code']] = [
+						'name' => $se['display_label'],
+						'description' => \ca_metadata_elements::getElementDescription($se['element_code'] ),
+						'type' => $this->_attributeTypeToDictionaryType($se['datatype'])
+					];
+					if ($se['datatype'] == __CA_ATTRIBUTE_VALUE_LIST__) {
+						$dictionary[$f]['subElements'][$se['element_code']]['list_id'] = $se['list_id'];
+						$dictionary[$f]['subElements'][$se['element_code']]['list_code'] = caGetListCode($se['list_id']);
+					}
+					
+					if(\ca_metadata_elements::isAuthorityDatatype($se['element_code']) && ($t = \AuthorityAttributeValue::elementTypeToInstance($se['datatype']))) {
+						$dictionary[$f]['subElements'][$se['element_code']]['reference_to'] = $t->tableName();
+					}
+				}
+			}
+		}
+		return $dictionary;
 	}
 	# -------------------------------------------------------
 }
