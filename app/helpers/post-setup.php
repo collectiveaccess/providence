@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -494,4 +494,11 @@ if (!defined('__CA_LONG_DATABASE_QUERY_THRESHOLD__')) {
 # that triggered execution of the query is recordded in the log.
 if (!defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__')) {
 	define('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__', false);
+}
+
+# __CA_DONT_CACHE_TRANSLATIONS__
+#
+# Disable caching of translations. May be useful when developing a new locale
+if (!defined('__CA_DONT_CACHE_TRANSLATIONS__')) {
+	define('__CA_DONT_CACHE_TRANSLATIONS__', false);
 }
