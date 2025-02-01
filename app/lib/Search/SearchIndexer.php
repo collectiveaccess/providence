@@ -353,6 +353,7 @@ class SearchIndexer extends SearchBase {
 	 * @return mixed True on success, null if the table is invalid or no ids are specified.
 	 */
 	public function reindexRows($pm_table_name_or_num, $pa_ids, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
 		if(!($t_instance = Datamodel::getInstance($pm_table_name_or_num))) { return null; }
 		if (!is_array($pa_ids) && !sizeof($pa_ids)) { return null; }
 
