@@ -92,7 +92,7 @@ class XML extends BaseExitFormat {
 		if(!$this->root) {
 			$this->writeHeader($options);
 		}
-		//print_R($data);
+		
 		$pk = caGetOption('primaryKey', $options, null);
 		foreach($data as $i => $item_data) {
 			$item = $this->dom->createElement('item', '');
@@ -110,6 +110,7 @@ class XML extends BaseExitFormat {
 			
 			// START ITEM
 			foreach($item_data as $f => $d) {
+				if(!preg_match("!^[a-z]+!i", $f)) { $f = "_{$f}"; }
 				if(is_array($d)) {
 					foreach($d as $r => $rv) {
 						$fld = $this->dom->createElement($f, '');
@@ -130,6 +131,7 @@ class XML extends BaseExitFormat {
 							$rv = [$rv['_idno']];
 						}
 						foreach($rv as $x => $y) {
+							if(!preg_match("!^[a-z]+!i", $x)) { $x = "_{$x}"; }
 							if(($datatype === 0) || (in_array($f, ['preferred_labels', 'nonpreferred_labels']))) {
 								if(is_array($y)) {
 									$se = $this->dom->createElement($x, $y['_idno']);
@@ -177,6 +179,8 @@ class XML extends BaseExitFormat {
 		$dict = $this->dom->createElement('dictionary', '');
 		
 		foreach($dictionary as $f => $d) {
+			if(!preg_match("!^[a-z]+!i", $f)) { $f = "_{$f}"; }
+			
 			$de = $this->dom->createElement('data', '');
 			$de->setAttribute('code', $f);
 			$de->setAttribute('type', $d['type']);
@@ -193,6 +197,7 @@ class XML extends BaseExitFormat {
 			
 			if(isset($d['subElements']) && sizeof($d['subElements'])) {
 				foreach($d['subElements'] as $sec => $dse) {
+					if(!preg_match("!^[a-z]+!i", $sec)) { $sec = "_{$sec}"; }
 					$se = $this->dom->createElement('data', '');
 					$se->setAttribute('code', $sec);
 					$se->setAttribute('type', $dse['type']);
