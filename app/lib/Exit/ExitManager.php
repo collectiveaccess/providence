@@ -57,7 +57,7 @@ class ExitManager {
 	 */
 	public function getExportTableNames(?array $options=null) : array {
 		$tables = caGetPrimaryTables(true, [
-			'ca_relationship_types'
+			'ca_lists', 'ca_relationship_types'
 		], ['returnAllTables' => true]);
 		
 		return $tables;
@@ -291,6 +291,7 @@ class ExitManager {
 		$pk = \Datamodel::primaryKey($table);
 		$t = $qr->getInstance();
 		$t_label = $t->getLabelTableInstance();
+		if(!$t_label->hasField('is_preferred') && !$preferred) { return []; }
 		if(is_array($labels = $qr->get("{$table}.{$key}", ['returnWithStructure' => true]))) {
 			foreach($labels as $l) {
 				$l_acc = array_merge($l_acc, $l);
