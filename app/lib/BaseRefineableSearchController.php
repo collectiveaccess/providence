@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -322,7 +322,8 @@ class BaseRefineableSearchController extends BaseFindController {
 		}
 		
 		$this->view->setVar('facet_list', $va_level_data);
-	
+		
+		$this->response->setContentType("application/json");
 		return $this->render('Browse/facet_hierarchy_level_json.php');
 	}
 	# -------------------------------------------------------

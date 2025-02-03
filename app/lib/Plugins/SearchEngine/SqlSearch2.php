@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1214,7 +1214,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (!is_array($options)) { $options = []; }
 		
 		$fi = $this->indexing_field_index;
-		$this->indexing_field_index++;
+		if($this->indexing_field_index < 255) { $this->indexing_field_index++; }
 		
 		if (!is_array($content)) {
 			$content = [$content];
@@ -1272,6 +1272,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$words = [];
 			if ($tokenize || $force_tokenize) {
 				foreach($content as $c) {
+					$c = str_replace("<", " ", $c);
+					$c = str_replace(">", " ", $c);
 					$words = array_merge($words, self::tokenize((string)$c));
 				}
 			}
@@ -1293,11 +1295,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 			$wc = sizeof($words);
+			if($wc > 255) { $wc = 255; }
 			foreach($words as $i => $vs_word) {
 				if(!strlen($vs_word)) { continue; }
 				if (!($word_id = (int)$this->getWordID($vs_word))) { continue; }
-			
-				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.$i.','.$wc.','.$fi.')';
+				
+				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.(($i >= 255) ? 255 : $i).','.$wc.','.$fi.')';
 			}
 		}
 	}
