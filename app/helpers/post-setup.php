@@ -388,7 +388,7 @@ define('__CA_ACL_EDIT_ACCESS__', 2);
 define('__CA_ACL_EDIT_DELETE_ACCESS__', 3);
 
 
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 # __CA_ALLOW_AUTOMATIC_UPDATE_OF_VENDOR_DIR__
 #
