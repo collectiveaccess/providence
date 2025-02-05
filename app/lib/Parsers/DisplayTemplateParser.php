@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1756,6 +1756,9 @@ class DisplayTemplateParser {
         if($o_dim_config->get('omit_repeating_units_for_measurements_in_templates')) {
 		    $pa_options['dimensionsUnitMap'] = self::createDimensionsUnitMap($ps_template);    // list of dimensional units used by tags; needed to support convoluted function to omit repeating units on quantities
 		}
+		if($o_dim_config->get('display_units')) {
+		    $pa_options['displayUnits'] = $o_dim_config->get('display_units');  
+		}
 		return DisplayTemplateParser::_processTemplateSubTemplates($o_doc->children, $pa_values, $pa_options);
 	}
 	# -------------------------------------------------------------------
@@ -1940,7 +1943,7 @@ class DisplayTemplateParser {
                         $i++;
                     }
                 }
-				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['omitUnits' => (isset($pa_options['dimensionsUnitMap']) && ($cur_unit == $next_unit))]);
+				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['displayUnits' => ($pa_options['displayUnits'] ?? null), 'omitUnits' => (isset($pa_options['dimensionsUnitMap']) && ($cur_unit == $next_unit))]);
 				
 				if ($pb_quote || (!is_numeric($vs_val) & $pb_quote_strings)) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');

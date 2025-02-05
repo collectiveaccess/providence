@@ -2588,6 +2588,10 @@ class SearchResult extends BaseObject {
 							if($include_value_ids) {
 								$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["{$vs_element_code}_value_id"] = $o_value->getValueID();
 							}
+							
+							if(strlen($src = $o_attribute->getValueSource())) {
+								$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]["__source__"] = $src;
+							}
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $vs_val_proc;	
 						}
@@ -2873,6 +2877,23 @@ class SearchResult extends BaseObject {
 								} else {
 									$d = null;
 									break;
+								}
+							}
+							
+							if($return_as = caGetOption('returnAs', $pa_options, null)) {
+								switch(strtolower($return_as)) {
+									case 'timecode':
+										$tc = new TimecodeParser();
+										if(is_array($d)) {
+											$d = array_map(function($v) use ($tc) {
+												$tc->parse($v);
+												return $tc->getText() ;
+											}, $d);
+										} else {
+											$tc->parse($d);
+											$d = $tc->getText('colon_delimited');
+										}
+										break;
 								}
 							}
 						

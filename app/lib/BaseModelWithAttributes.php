@@ -1719,7 +1719,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 		}
 		
-		return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
+		return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options ?? [], ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
 	}
 	# ------------------------------------------------------------------
 	// --- Forms

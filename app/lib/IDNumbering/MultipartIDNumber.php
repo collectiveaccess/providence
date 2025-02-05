@@ -237,11 +237,12 @@ class MultipartIDNumber extends IDNumber {
 		$elements = $this->getElements();
 		if (!is_array($elements)) { return []; }
 
+		$sep = $this->getSeparator();
 		$pv = $this->getParentValue();
-		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv, '!').'!u', $value)) {
-			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $value);
-			$element_vals = $this->explodeValue($npv);
-			array_unshift($element_vals, $npv);
+		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv.$sep, '!').'!u', $value)) {
+			$npv  = preg_replace('!^'.preg_quote($pv.$sep, '!').'!u', '', $value);
+			$element_vals = explode($sep, $npv);
+			array_unshift($element_vals, $pv);
 		} else {
 			$element_vals = $this->explodeValue($value);
 		}

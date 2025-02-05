@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2782,6 +2782,12 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 					if ($vs_measure_conv) {
 						if ($pb_omit_units) { $vs_measure_conv = trim(preg_replace("![^\d\-\.\/ ]+!", "", $vs_measure_conv)); }
 						$ps_value = "{$vs_measure_conv}";
+					}
+					
+					if(is_array($pa_options['displayUnits'])) { 
+						foreach($pa_options['displayUnits'] as $b => $a) {
+							$ps_value = preg_replace("!".preg_quote($b, '!')."\.*$!u", $a, $ps_value);
+						}
 					}
 				} catch (Exception $e) {
 					// noop
