@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,6 @@ require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
 require_once(__CA_LIB_DIR__.'/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
 global $_ca_attribute_settings;
-
 $_ca_attribute_settings['LengthAttributeValue'] = array(		// global
     'fieldWidth' => array(
         'formatType' => FT_NUMBER,
@@ -242,7 +241,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                     if (is_null($vn_precision)) {
                         $vn_precision = $this->config->get(strtolower($vs_convert_to_units).'_decimal_precision');
                     }
-                    $vs_value = $vo_measurement->convertTo($vs_convert_to_units, $vn_precision);
+                    $vs_value = $this->processUnitsInValue($vo_measurement->convertTo($vs_convert_to_units, $vn_precision));
                     break;
                 case 'english':
                 case 'fractions':
@@ -283,9 +282,10 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                     $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $iprecision, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                     if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
                                 } elseif($vn_inches > 0) {
-                                	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches). " in";
+                                	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches).' '.$this->getUnits('in');
                                 	if($add_period_after_units) { $vs_value .= '.'; }
                                 }
+                                $vs_value = $this->processUnitsInValue($vs_value);
                                 return trim($vs_value);
                                 break;
                             case Zend_Measure_Length::MILE:
@@ -308,9 +308,10 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                     $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => Zend_Measure_Length::INCH, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
                                     if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
                                 } elseif($vn_inches > 0) {
-                                	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches). " in";
+                                	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches).' '.$this->getUnits('in');
                                 	if($add_period_after_units) { $vs_value .= '.'; }
                                 }
+                                $vs_value = $this->processUnitsInValue($vs_value);
                                 return trim($vs_value);
                                 break;
                             case Zend_Measure_Length::INCH:
@@ -332,6 +333,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             if(in_array($pa_value_array['value_longtext2'], $add_period_after_units)) {
                 $vs_value .= '.';
             }
+            $vs_value = $this->processUnitsInValue($vs_value);
             return $vs_value;
         } catch (Exception $e) { 
             return $pa_value_array['value_longtext1'];
@@ -399,6 +401,28 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                 'class' => $vs_class
             )
         );
+    }
+    # ------------------------------------------------------------------
+    /**
+     *
+     */
+    private function getUnits(string $units) : string {
+    	$display_units = $this->config->get('display_units');
+    	if(isset($display_units[$units])) { return $display_units[$units]; }
+    	return $units;
+    }
+    # ------------------------------------------------------------------
+    /**
+     *
+     */
+    private function processUnitsInValue(string $value) : string {
+    	$display_units = $this->config->get('display_units');
+    	if(!is_array($display_units)) { return $value; }
+    	
+    	foreach($display_units as $b => $a) {
+    		$value = preg_replace("!".preg_quote($b, '!')."\.*$!i", $a, $value);
+    	}
+    	return $value;
     }
     # ------------------------------------------------------------------
     public function getAvailableSettings($pa_element_info=null) {
