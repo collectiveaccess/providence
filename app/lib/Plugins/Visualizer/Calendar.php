@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,7 +79,7 @@ class WLPlugVisualizerCalendar Extends BaseVisualizerPlugin Implements IWLPlugVi
 			<div id='eventContent' title='Event Details'>
 			    <span id='eventDate'></span>
 			    <div id='eventInfo'></div>
-			    <p><strong><a id='eventLink' href='#' target='_blank'>"._t("Open")."</a></strong></p>
+			    <p><strong><a id='eventLink' href='#' target='_blank' rel='noopener noreferrer'>"._t("Open")."</a></strong></p>
 			</div>
 		    <script type='text/javascript'>
 				function openModalA(title, info, url, start, end) {

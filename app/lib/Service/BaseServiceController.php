@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 	
- 	class BaseServiceController extends ActionController {
- 		# -------------------------------------------------------
- 	
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 	}
+class BaseServiceController extends ActionController {
+	# -------------------------------------------------------
+
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct($request, $response, $pa_view_paths=null) {
+		$response->setContentType('application/json');
+		parent::__construct($request, $response, $pa_view_paths);
+	}
+	# -------------------------------------------------------
+}

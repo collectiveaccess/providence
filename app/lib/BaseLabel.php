@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -162,9 +162,10 @@ class BaseLabel extends BaseModel {
 	 * the users' current locale setting is used.
 	 */
 	protected function _generateSortableValue() {
-		if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
+		$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
+		$vs_sort_field = $this->getProperty('LABEL_SORT_FIELD');
+		if ($vs_sort_field && ($vs_sort_field !== $vs_display_field)) {
 			if(strlen($this->get($vs_sort_field)) && Configuration::load()->get($this->LABEL_SUBJECT_TABLE.'_user_settable_sortable_value')) { return; }
-			$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 			
 			if (!($vs_locale = $this->getAppConfig()->get('use_locale_for_sortable_titles'))) {
 				$t_locale = new ca_locales();

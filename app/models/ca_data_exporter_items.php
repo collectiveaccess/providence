@@ -721,6 +721,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Include deleted records in the exported data set.')
 		);
 		
+		$va_settings['fieldName'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Field name'),
+			'description' => _t('Value to use as column header in CSV output.')
+		);
+		
 		$this->setAvailableSettings($va_settings);
 	}
 	# ------------------------------------------------------

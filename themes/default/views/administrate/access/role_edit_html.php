@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2021 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,16 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
+$t_role = $this->getVar('t_role');
+$vn_role_id = $this->getVar('role_id');
 
-	$t_role = $this->getVar('t_role');
-	$vn_role_id = $this->getVar('role_id');
-	
-	$va_bundle_list = $this->getVar('bundle_list');
-	$va_source_list = $this->getVar('source_list');
-	$va_type_list = $this->getVar('type_list');
-	$va_access_status_list = $this->getVar('access_status_list');
-	
-	$va_table_names = $this->getVar('table_display_names');
+$va_bundle_list = $this->getVar('bundle_list');
+$va_source_list = $this->getVar('source_list');
+$va_type_list = $this->getVar('type_list');
+$va_access_status_list = $this->getVar('access_status_list');
+
+$va_table_names = $this->getVar('table_display_names');
 ?>
 <div class="sectionBox">
 <?php
@@ -88,7 +87,7 @@
 				$vs_check_none_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$vs_group.'\').attr(\'checked\', false); return false;" class="roleCheckAllNoneButton">'._t('None').'</a>';
 				
 				print "<tr><td colspan='".($vn_num_cols * 2)."' class='formLabel roleCheckGroupHeading'><span id='group_label_".$vs_group."'>".$va_group_info['label']."</span> <span class='roleCheckAllNoneButtons'>{$vs_check_all_link}/{$vs_check_none_link}</span></td></tr>\n";
-				TooltipManager::add('#group_label_'.$vs_group, "<h3>".$va_group_info['label']."</h3>".$va_group_info['description']);
+				TooltipManager::add('#group_label_'.$vs_group, "<div class='tooltipHead'>".$va_group_info['label']."</div>".$va_group_info['description']);
 
 				foreach($va_group_info['actions'] as $vs_action => $va_action_info) {
 					if ($vn_c == 0) {
@@ -101,7 +100,7 @@
 					$va_attributes['class'] = 'role_action_group_'.$vs_group;
 					
 					print "<td>".caHTMLCheckboxInput($vs_action, $va_attributes)."</td><td width='120'><span id='role_label_".$vs_action."'>".$va_action_info['label']."</span></td>";
-					TooltipManager::add('#role_label_'.$vs_action, "<h3>".$va_action_info['label']."</h3>".$va_action_info['description']);
+					TooltipManager::add('#role_label_'.$vs_action, "<div class='tooltipHead'>".$va_action_info['label']."</div>".$va_action_info['description']);
 					
 					$vn_c++;
 					

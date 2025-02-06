@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
 BaseModel::$s_ca_models_definitions['ca_guids'] = array(
 	'NAME_SINGULAR' 	=> _t('globally unique identifier'),
 	'NAME_PLURAL' 		=> _t('globally unique identifiers'),
@@ -356,7 +351,7 @@ class ca_guids extends BaseModel {
             // TODO: make configurable
             if(in_array(Datamodel::getTableName($vn_table_num), ['ca_object_lots', 'ca_object_lot_labels', 'ca_lists', 'ca_list_items', 'ca_list_labels', 'ca_list_item_labels']))  { return true; }
             
-            if (!Datamodel::getFieldInfo($vn_table_num, 'access')) { return false; }        // TODO: support attributes on non-acess control tables (eg. config tables; interstitial attributes on relationships)
+            if (!Datamodel::getFieldInfo($vn_table_num, 'access')) { return false; }        // TODO: support attributes on non-access control tables (eg. config tables; interstitial attributes on relationships)
             $qr_guid = $o_db->query('
                 SELECT access FROM '.Datamodel::getTableName($vn_table_num)." WHERE ".Datamodel::primaryKey($vn_table_num).' = ?
             '.(Datamodel::getFieldInfo($vn_table_num, 'deleted') ? ' AND deleted = 0' : ''), [$vn_row_id]);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2021 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,8 +28,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-		
+ */	
 if (!is_array($opa_error_messages ?? null)) {
 	$opa_error_messages = self::$opa_error_messages;
 }
@@ -48,7 +47,7 @@ if (!is_array($opa_error_messages ?? null)) {
 		<div id="content">
 			<?= "<div class='error'>There are issues with your configuration</div>
 				<div class='errorDescription'>General installation instructions can be found
-				<a href='https://manual.collectiveaccess.org/setup/Installation.html' target='_blank'>here</a>.
+				<a href='https://docs.collectiveaccess.org' target='_blank' rel='noopener noreferrer'>here</a>.
 				or more specific information on detected issues review the messages below:</div>"; ?>
 <?php
 foreach ($opa_error_messages as $vs_message) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2021 Whirl-i-Gig
+ * Copyright 2018-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-  /**
-    *
-    */ 
-    
-    
 require_once(__CA_LIB_DIR__."/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/Plugins/InformationService/BaseInformationServicePlugin.php");
 
@@ -94,7 +88,7 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 
 		$vs_display_url = self::getLiteralFromRDFNode($ps_url, '<http://www.w3.org/2000/01/rdf-schema#seeAlso>');
 		if(!$vs_display_url) { $vs_display_url = $ps_url; }
-		$vs_display = '<div style="margin-top:10px; margin-bottom: 10px;"><a target="_blank" href="'.$vs_display_url.'">'.$vs_display_url.'</a></div>';
+		$vs_display = '<div style="margin-top:10px; margin-bottom: 10px;"><a target="_blank" rel="noopener noreferrer" href="'.$vs_display_url.'">'.$vs_display_url.'</a></div>';
 		foreach($va_service_conf['detail_view_info'] as $va_node) {
 			if(!isset($va_node['literal'])) { continue; }
 
@@ -226,7 +220,7 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 
 				// make links click-able
 				if(isURL($vs_string_to_add)) {
-					$vs_string_to_add = "<a href='{$vs_string_to_add}' target='_blank'>{$vs_string_to_add}</a>";
+					$vs_string_to_add = "<a href=\"{$vs_string_to_add}\" target=\"_blank\" rel=\"noopener noreferrer\">{$vs_string_to_add}</a>";
 				}
 
 				$va_return[] = $vs_string_to_add;

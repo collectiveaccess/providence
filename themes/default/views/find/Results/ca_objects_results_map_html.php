@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2020 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-AssetLoadManager::register("maps");
-
 $vo_result 				= $this->getVar('result');
 $vn_num_hits 			= $this->getVar('num_hits');
 $va_access_values 		= $this->getVar('access_values');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/BaseObject.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 
@@ -405,7 +401,7 @@ class BaseFindEngine extends BaseObject {
 						array_splice($sorted_page_hits, $index, $lr, array_slice($row_ids, 0, $lr));
 					} else {
 						// first result is at start of page, so we need to figure out if the sequence begins on a previous page
-						$start = null;
+						$start = 0;
 						if ($page_start > 0) {
 							$c = 0;
 							do {			// loop back through pages until we find the beginning
@@ -428,8 +424,6 @@ class BaseFindEngine extends BaseObject {
 								$start = $l * ($c-1);
 								break;
 							} while($s > 0);
-						} else {
-							$start = $map_index;
 						}
 					
 						if(!is_null($start)) {
@@ -987,14 +981,15 @@ class BaseFindEngine extends BaseObject {
 			}
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
- 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
- 				$sort_key_values[] = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
+ 			if ($t_rel_table && $t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$values = $this->_getRelatedSortValuesForIntrinsic($hits, $t_table, $t_rel_table, $sort_field, $direction);
  			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
- 				$sort_key_values[] = $this->_getRelatedSortValuesForLabel($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
+ 				$values = $this->_getRelatedSortValuesForLabel($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);	
  			} elseif($is_attribute) {							// sort key is metadata attribute
- 				$sort_key_values[] = $this->_getRelatedSortValuesForAttribute($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);		
+ 				$values = $this->_getRelatedSortValuesForAttribute($hits, $t_table, $t_rel_table, $sort_subfield ? $sort_subfield : $sort_field, $direction);		
  			} else {
-				throw new ApplicationException(_t('Unhandled secondary sort'));
+				//throw new ApplicationException(_t('Unhandled secondary sort'));
+				$values = $hits;
 			}
 		}
 		return $values;
@@ -1212,13 +1207,13 @@ class BaseFindEngine extends BaseObject {
 			} elseif(method_exists($t_table, 'hasElement') && $t_table->hasElement($sort_field)) { // is attribute
 				$row_ids = $this->_getRowIDsForAttribute($values, $t_table, $hit_table, $sort_field);
 			} elseif($sort_field === 'preferred_labels') {
-				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+				$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field, true);	
 			} else {
 				throw new ApplicationException(_t('Unhandled secondary sort'));
 			}
 		} elseif($t_table->getLabelTableName() == $sort_table) {
 			// is label?
-			$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_field);	
+			$row_ids = $this->_getRowIDsForLabel($values, $t_table, $hit_table, $sort_field, true);	
 		} else {
 			// is related field
 			$t_rel_table = Datamodel::getInstance($sort_table, true);
@@ -1230,14 +1225,15 @@ class BaseFindEngine extends BaseObject {
 			
  			$is_attribute = method_exists($t_rel_table, 'hasElement') ? $t_rel_table->hasElement($sort_field) : false;
  			
- 			if ($t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
- 				$sort_key_values[] = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
+ 			if ($t_rel_table && $t_rel_table->hasField($sort_field)) {			// sort key is intrinsic
+ 				$row_ids = $this->_getRelatedRowIDsForIntrinsic($values, $t_table, $t_rel_table, $hit_table, $sort_field);
  			} elseif($sort_field === 'preferred_labels') {		// sort key is preferred lables
- 				$sort_key_values[] = $this->_getRelatedRowIDsForLabel($values, $t_table, $t_rel_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
+ 				$row_ids = $this->_getRelatedRowIDsForLabel($values, $t_table, $t_rel_table, $hit_table, $sort_subfield ? $sort_subfield : $sort_field);	
  			} elseif($is_attribute) {							// sort key is metadata attribute
- 				$sort_key_values[] = $this->_getRelatedRowIDsForAttribute($values, $t_table, $t_rel_table, $hit_table, $sort_field);		
+ 				$row_ids = $this->_getRelatedRowIDsForAttribute($values, $t_table, $t_rel_table, $hit_table, $sort_field);		
  			} else {
-				throw new ApplicationException(_t('Unhandled secondary sort'));
+				//throw new ApplicationException(_t('Unhandled secondary sort'));
+				$row_ids = $values;
 			}
 		}
 		return $row_ids;
@@ -1303,7 +1299,7 @@ class BaseFindEngine extends BaseObject {
 	/**
 	 *
 	 */
-	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field) {
+	private function _getRowIDsForLabel(array $values, $t_table, string $hit_table, string $label_field, ?bool $is_preferred=true) {
 		if (!is_array($values) || !sizeof($values)) { return []; }
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
@@ -1313,12 +1309,16 @@ class BaseFindEngine extends BaseObject {
 		$t_label = $t_table->getLabelTableInstance();
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
+		$pref_sql = '';
+		if($t_label->hasField('is_preferred')) {
+			$pref_sql = $is_preferred ? ' AND l.is_preferred = 1' : ' AND l.is_preferred = 0';
+		}
 		$sql = "
 			SELECT l.{$table_pk}, l.{$label_field} val
 			FROM {$label_table} l
 			INNER JOIN {$hit_table} AS ht ON ht.row_id = l.{$table_pk}
 			WHERE
-				l.{$label_field} IN (?)
+				l.{$label_field} IN (?) {$pref_sql}
 		";
 		$qr_sort = $this->db->query($sql, [$values]);
 		$values = [];
@@ -1342,7 +1342,7 @@ class BaseFindEngine extends BaseObject {
 		$rel_table = $t_rel_table->tableName();		
 		$rel_table_pk = $t_rel_table->primaryKey();
 		
-		if(!($t_label = $t_table->getLabelTableInstance())) { return []; }
+		if(!($t_label = $t_rel_table->getLabelTableInstance())) { return []; }
 		if (!$label_field || !$t_label->hasField($label_field)) { $label_field = $t_table->getLabelSortField(); }
 		
 		$rel_label_table = $t_rel_table->getLabelTableName();
@@ -1351,7 +1351,7 @@ class BaseFindEngine extends BaseObject {
 		$join_sql = join("\n", $joins);
 		
 		$sql = "
-			SELECT rl.{$table_pk}, rl.{$label_field} val
+			SELECT rl.{$rel_table_pk}, rl.{$label_field} val
 			FROM {$label_table} t
 			{$join_sql}
 			LEFT JOIN {$rel_label_table} AS rl ON rl.{$rel_table_pk} = s.{$rel_table_pk}

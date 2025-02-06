@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 global $g_ui_locale_id;
 
 $t_subject 				= $this->getVar('t_subject');
@@ -86,10 +85,6 @@ $form_name = "ObjectComponentAddForm";
 		
 		<script type="text/javascript">
 			function caSave<?= $form_name.$field_name_prefix.$n; ?>(e) {
-				jQuery.each(CKEDITOR.instances, function(k, instance) {
-					instance.updateElement();
-				});
-				
 				jQuery.post('<?= caNavUrl($this->request, "editor/objects", "ObjectComponent", "Save"); ?>', jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						

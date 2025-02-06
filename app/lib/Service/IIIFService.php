@@ -52,7 +52,7 @@ class IIIFService {
 		$vs_key = $identifier."/".join("/", $va_path);
 		
 		if ($vs_tile = CompositeCache::fetch($vs_key, 'IIIFTiles')) {
-		    header("Content-type: ".CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
+		    $response->setContentType(CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
 		    $response->addContent($vs_tile);
 		    return true;
 		}
@@ -125,7 +125,7 @@ class IIIFService {
 	
 		if ($pb_is_info_request) {
 			// Return JSON-format IIIF metadata
-			header("Content-type: text/json");
+		    $response->setContentType('application/json');
 			header("Access-Control-Allow-Origin: *");
 			$response->addContent(caFormatJson(json_encode($va_image_info)));
 			return true;
@@ -188,7 +188,7 @@ class IIIFService {
 				$vn_tile = ceil($y * $vn_num_tiles_per_row) + ceil($x) + 1;
 				$vn_tile_num = $vn_tile_offset + $vn_tile;
 				
-				header("Content-type: ".$va_tilepic_info['PROPERTIES']['tile_mimetype']);
+				$response->setContentType($va_tilepic_info['PROPERTIES']['tile_mimetype']);
 				
 				$vs_tile = TilepicParser::getTileQuickly($va_media_paths['tilepic'], $vn_tile_num, true);
 				CompositeCache::save($vs_key, $vs_tile, 'IIIFTiles');
@@ -241,8 +241,7 @@ class IIIFService {
 			$vs_output_path = IIIFService::processImage($vs_image_path, $vs_mimetype, $va_operations, $request);
 			
 			// TODO: should we be caching output?
-		
-			header("Content-type: {$vs_mimetype}");
+			$response->setContentType($vs_mimetype);
 			header("Content-length: ".filesize($vs_output_path));
 			header("Access-Control-Allow-Origin: *");
 			

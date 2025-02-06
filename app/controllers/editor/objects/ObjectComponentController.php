@@ -212,6 +212,7 @@ class ObjectComponentController extends ActionController {
 			
 			$this->view->setVar('response', $va_response);
 			
+			$this->response->setContentType('application/json');
 			$this->render('component_result_json.php');
 			return;
 		}
@@ -340,6 +341,7 @@ class ObjectComponentController extends ActionController {
 		
 		$this->view->setVar('response', $va_response);
 		
+		$this->response->setContentType('application/json');
 		$this->render('component_result_json.php');
 	}
 	# -------------------------------------------------------

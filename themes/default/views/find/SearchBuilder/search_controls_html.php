@@ -24,8 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 	
+ */	
  	$t_subject = 			$this->getVar('t_subject');
  	$vs_table = 			$t_subject->tableName();
  	$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));

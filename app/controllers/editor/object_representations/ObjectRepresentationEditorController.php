@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__."/Media.php");
 require_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 require_once(__CA_LIB_DIR__."/BaseEditorController.php");
@@ -137,6 +136,7 @@ class ObjectRepresentationEditorController extends BaseEditorController {
 		$this->view->setVar('annotation_count', $vn_total =(int)$t_rep->getAnnotationCount());
 		$this->view->setVar('annotation_list', array('start' => $vn_start, 'max' => $vn_max, 'total' => $vn_total, 'list' => array_values($t_rep->getAnnotations(array('start' => $vn_start, 'max' => $vn_max)))));
 		
+		$this->response->setContentType('application/json');
 		return $this->render('ajax_representation_annotation_list_json.php');
 	}
 	# -------------------------------------------------------

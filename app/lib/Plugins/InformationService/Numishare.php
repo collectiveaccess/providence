@@ -156,7 +156,7 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 		if(!$vs_result) { return []; }
 		if(!is_array($va_data = json_decode($vs_result, true))) { return []; }
 			
-		$va_display = ["<strong>"._t('Link')."</strong>: <a href='{$ps_url}' target='_blank'>{$ps_url}</a><br/>"];
+		$va_display = ["<strong>"._t('Link')."</strong>: <a href='{$ps_url}' target='_blank' rel='noopener noreferrer'>{$ps_url}</a><br/>"];
 		
 		if (isset($va_data['@graph']) && is_array($va_data['@graph'])) {
 			foreach($va_data['@graph'] as $g) {

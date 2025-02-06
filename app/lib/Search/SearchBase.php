@@ -406,7 +406,7 @@ class SearchBase extends BaseFindEngine {
 			if(!is_array($info)) {
 				continue;
 			}
-			if(is_array($field_list = $info[$subject_table]['fields'])) {
+			if(is_array($info[$subject_table] ?? null) && ($field_list = ($info[$subject_table]['fields'] ?? null))) {
 				// Expand "_metadata" to all available metadata elements
 				if (isset($field_list['_metadata'])) {
 					$data = $field_list['_metadata'];

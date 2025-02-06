@@ -9,7 +9,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,29 +27,29 @@
  *
  * ----------------------------------------------------------------------
  */
-    //
-    // Send headers before any other content.
-    // Disable gzip or any compression to allow showing progressbar.
-    //
-    header('Content-Encoding: none');
-	define('__CollectiveAccess_Installer__', 1);
+//
+// Send headers before any other content.
+// Disable gzip or any compression to allow showing progressbar.
+//
+header('Content-Encoding: none');
+define('__CollectiveAccess_Installer__', 1);
 
-    error_reporting(E_ALL ^ E_NOTICE);
-	set_time_limit(7200);
-	ini_set("memory_limit", "512M");	
-	
-	// Check existence of setup.php
-	if (!file_exists('../setup.php')) {
-		die("You don't have a setup.php file present in the web root directory of your CollectiveAccess set up. Please copy setup.php-dist to setup.php, customize it and <a href='index.php'>re-run the installer</a>.");
-	}
-	require_once('../setup.php');
-	require_once('../app/helpers/configurationHelpers.php');
-	require_once('../app/helpers/htmlFormHelpers.php');
-	require_once("inc/Installer.php");
-	
-	$ps_instance = 	$_REQUEST['instance'];
-	$ps_action = 	$_REQUEST['action'];
-	$pn_page = 		$_REQUEST['page'];
+error_reporting(E_ALL ^ E_NOTICE);
+set_time_limit(7200);
+ini_set("memory_limit", "512M");	
+
+// Check existence of setup.php
+if (!file_exists('../setup.php')) {
+	die("You don't have a setup.php file present in the web root directory of your CollectiveAccess set up. Please copy setup.php-dist to setup.php, customize it and <a href='index.php'>re-run the installer</a>.");
+}
+require_once('../setup.php');
+require_once('../app/helpers/configurationHelpers.php');
+require_once('../app/helpers/htmlFormHelpers.php');
+require_once("inc/Installer.php");
+
+$ps_instance = 	$_REQUEST['instance'];
+$ps_action = 	$_REQUEST['action'];
+$pn_page = 		$_REQUEST['page'];
 
 if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 	if ($ps_action == 'profileUpload') {
@@ -128,8 +128,9 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	<link href="css/site.css" rel="stylesheet" type="text/css" />
 	<link rel="stylesheet" href="../assets/fontawesome/css/all.min.css" />
 	<link rel="stylesheet" href="../assets/fontawesome/css/v4-shims.min.css" />
-	<script src='../assets/jquery/jquery.js' type='text/javascript'></script>
-	<script src='../assets/jquery/jquery-ui/jquery-ui.min.js' type='text/javascript'></script></head>
+	<link rel="stylesheet" href="../assets/jquery/jquery-ui-1.14.0/jquery-ui.min.css" />  
+	<script src='../assets/jquery/jquery-3.7.1.js' type='text/javascript'></script>
+	<script src='../assets/jquery/jquery-ui-1.14.0/jquery-ui.min.js ' type='text/javascript'></script></head>
 <?php
 if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 ?>

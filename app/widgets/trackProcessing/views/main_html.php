@@ -80,7 +80,7 @@ if(!$is_ajax) {
 		if(sizeof($jobs_processing_data)>0) {
 ?>
 			<div id="running_<?= $widget_id; ?>">			
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= _t("Jobs currently being processed").":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= _t("Jobs currently being processed").":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium">
 					<table class='dashboardWidgetTable'>
 <?php
@@ -109,7 +109,7 @@ if(!$is_ajax) {
 			}
 ?>
 			<div id="queued_<?= $widget_id; ?>">
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= $message.":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium">
 					<table class='dashboardWidgetTable'>
 <?php
@@ -146,7 +146,7 @@ if(!$is_ajax) {
 			}
 ?>
 			<div id="completed_<?= $widget_id; ?>">
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= $message.":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
 <?php
 			foreach($jobs_done_data as $task_id => $job) {
@@ -201,7 +201,7 @@ if(!$is_ajax) {
 			}
 ?>
 			<div id="stuck_<?= $widget_id; ?>">
-				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 409px;"><strong><?= $message.":"; ?></strong></div>
+				<div style="background-color: #dedede; height: 20px; padding: 8px 0px 5px 10px; width: 100%;"><strong><?= $message.":"; ?></strong></div>
 				<div class="dashboardWidgetScrollMedium"><table class='dashboardWidgetTable'>
 <?php
 			foreach($jobs_stuck_data as $task_id => $job) {
@@ -209,7 +209,7 @@ if(!$is_ajax) {
 				<tr>
 					<td>
 <?php
-	if ((int)$job["completed_on"] ===  0) {
+	if ((int)($job["completed_on"] ?? 0) ===  0) {
 		print "<div style='float: right;'><a href='#' data-job_id='{$task_id}' class='widgetTaskRetry'>".caNavIcon(__CA_NAV_ICON_ROTATE__, '14px').' '._t('Retry')."</a></div>";
 	}
 ?>
@@ -217,7 +217,7 @@ if(!$is_ajax) {
 						
 						<?= "<strong>"._t("Created")."</strong>: ".$job['created']."<br />"; ?>
 <?php 
-						if ((int)$job["completed_on"] > 0) {
+						if ((int)($job["completed_on"] ?? 0) > 0) {
 							print "<strong>"._t('Completed on')."</strong>: ".caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp( $job['completed_on'])) . "<br/>\n";
 							
 							if ((int)$job["error_code"] > 0) {
@@ -273,13 +273,16 @@ if(!$is_ajax) {
 ?>
 <script type="text/javascript">
 	let trackProcessing<?= $widget_id; ?> = jQuery.cookieJar('trackProcessing<?= $widget_id; ?>');
-	jQuery(document).ready(function() {
+	function trackProcessing<?= $widget_id; ?>SetTabs() {
 		jQuery('#tabContainer_<?= $widget_id; ?>').tabs({ 
 			active: trackProcessing<?= $widget_id; ?>.get('default_tab'),
 			select: function(event, ui) {
 				trackProcessing<?= $widget_id; ?>.set('default_tab', ui.index);
 			}
 		});
+	}
+	
+	jQuery(document).ready(function() {
 		jQuery('#widget_<?= $widget_id; ?>').find('a.widgetTaskRetry').on('click', function(e) {
 			let task_id = jQuery(this).data('job_id');
 			jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'runWidgetFunction'); ?>', { widget_id: <?= json_encode($widget_id); ?>, method: 'RetryJob', options: JSON.stringify({task_id: task_id})}, function(e) {
@@ -288,11 +291,14 @@ if(!$is_ajax) {
 			return false;
 		});
 	});
+	trackProcessing<?= $widget_id; ?>SetTabs();
 <?php
 	if (!$this->request->isAjax()) {
 ?>
 		setInterval(function() {
-			jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>');
+			jQuery('#widget_<?= $widget_id; ?>').load('<?= caNavUrl($this->request, '', 'Dashboard', 'getWidget', ['widget_id' => $widget_id]);?>', function(e) {
+				trackProcessing<?= $widget_id; ?>SetTabs();
+			});
 		}, <?= ($this->getVar('update_frequency') * 1000); ?>);
 <?php
 	}

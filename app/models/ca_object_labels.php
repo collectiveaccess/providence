@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,11 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 
-
 BaseModel::$s_ca_models_definitions['ca_object_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('object title'),
- 	'NAME_PLURAL' 		=> _t('object titles'),
+ 	'NAME_SINGULAR' 	=> _t('title'),
+ 	'NAME_PLURAL' 		=> _t('titles'),
  	'FIELDS' 			=> array(
  		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 

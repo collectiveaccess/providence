@@ -2066,7 +2066,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'skip_on_idno':
 						if (!$vb_idno_is_template) {
 							$ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, [$erp_idno_fld => in_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($ids) && (sizeof($ids) > 0)) {
@@ -2079,7 +2079,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'skip_on_no_idno':
 						if (!$vb_idno_is_template) {
 							$ids = call_user_func_array($t_subject->tableName()."::find", array(
-								array_merge($va_base_criteria, [$erp_idno_fld => in_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
+								array_merge($va_base_criteria, [$erp_idno_fld => is_array($erp_idno) ? ['IN', $erp_idno] : $erp_idno]),
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 						}
@@ -2161,7 +2161,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;
 				}
 			}
-			if(!is_array($ids) || !sizeof($ids)) { continue; }
+			if(!is_array($ids) || !sizeof($ids)) { $ids = [null]; }
 			foreach($ids as $id) {	
 				$t_subject->load($id);		
 				if(in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
@@ -2175,7 +2175,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->clear();
 				}
 				
-				$vs_idno = $t_subject->get($vs_idno_fld);
+				if($t_subject->getPrimaryKey()) {
+					$vs_idno = $t_subject->get($vs_idno_fld);
+				}
 				
 				if ($merge_only && !$t_subject->getPrimaryKey()) { 
 					if ($log_erp) { $o_log->logInfo(_t('[%1] Skipping because mergeOnly option is set and could not match existing record by policy %2.', $vs_idno, $vs_existing_record_policy)); }

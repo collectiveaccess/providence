@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,26 +41,78 @@ abstract class BaseIIIFManifest {
 	/**
 	 *
 	 */
+	protected $iiif_config;
+	
+	/**
+	 *
+	 */
 	protected $base_url;
 	
 	/**
 	 *
 	 */
 	protected $manifest_url;
+	
+	/**
+	 *
+	 */
+	protected $manifest_name;
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function __construct() {
 		$this->config = \Configuration::load();
+		$this->iiif_config = \Configuration::load(__CA_CONF_DIR__.'/iiif.conf');
 		$this->base_url = $this->config->get('site_host').$this->config->get('ca_url_root'); //.$request->getBaseUrlPath();
 		
-		$manifest_url = '';
-		if(isset($_SERVER['REQUEST_URI'])) {
-			$this->manifest_url = $this->config->get('site_host').$_SERVER['REQUEST_URI'];
-		} else {
-			$this->manifest_url = $this->base_url."/manifest";
+		$this->manifest_url = \IIIFService::manifestUrl();
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function generateMetadata(\BaseModel $t_instance, ?string $format=null, ?array $options=null) : array {
+		$manifest_config = $this->iiif_config->getAssoc('manifests');
+		$manifest_config = $manifest_config[$this->manifest_name] ?? [];
+		
+		$manifest_config = ($format && isset($manifest_config[$format]) && is_array($manifest_config[$format])) ? $manifest_config[$format] : ($manifest_config['__default__'] ?? []);
+		if($is_item_level = caGetOption('itemLevel', $options, false)) {
+			$manifest_config = $manifest_config['items'] ?? [];
 		}
+		
+		$md = [];
+		foreach($manifest_config as $k => $item) {
+			switch(strtolower($k)) {
+				case 'id':
+					$md['id'] = $t_instance->getWithTemplate($item);
+					break;
+				case 'label':
+					if (is_array($item)) {
+						foreach($item as $lang => $t) {
+							$md['label'][$lang] = [$t_instance->getWithTemplate($t)];
+						}
+					} else {
+						$md['label']['none'] = [$t_instance->getWithTemplate($item)];
+					}
+					break;
+				case 'metadata':
+					if (is_array($item)) {
+						foreach($item as $mk => $mi) {
+							$mv = $t_instance->getWithTemplate($mi['template']);
+							if(!strlen($mv)) { continue; }
+							$language = $mi['language'] ?? 'none';
+							$md['metadata'][] = [
+								'label' => [$language => [$mi['label']]],
+								'value' => [$language => [$mv]]
+							];
+						}
+					}
+					//$md['id'] = $t_instance->getWithTemplate($item);
+					break;
+			}
+		}
+		return $md;
 	}
 	# -------------------------------------------------------
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -650,8 +650,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,
 							'options' => array(
-								_t('yes') => 1,
-								_t('no') => 0
+								_t('Yes') => 1,
+								_t('No') => 0
 							),
 							'default' => '',
 							'width' => "100px", 'height' => 1,
@@ -669,8 +669,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,
 							'options' => array(
-								_t('yes') => 1,
-								_t('no') => 0
+								_t('Yes') => 1,
+								_t('No') => 0
 							),
 							'default' => '',
 							'width' => "100px", 'height' => 1,
@@ -802,9 +802,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_TEXT,
 							'displayType' => DT_SELECT,
 							'options' => array(
-								_t('yes') => 1,
-								_t('no') => 0,
-								_t('use default') => null
+								_t('Yes') => 1,
+								_t('No') => 0,
+								_t('Use default') => null
 							),
 							'default' => '',
 							'width' => "100px", 'height' => 1,
@@ -1697,7 +1697,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'default' => 1,
 									'width' => "20px", 'height' => 1,
 									'label' => _t('Number of columns in component display'),
-									'description' => _t('Number of columns use when displaying component list.')
+									'description' => _t('Number of columns to use when displaying component list.')
 								];
 								break;
 							case 'circulation_status':
@@ -2199,7 +2199,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								$t_set = new ca_sets();
 								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
 								
-								$va_additional_settings = array();
+								$va_additional_settings = [
+										'ca_set_items_display_template' => [
+											'formatType' => FT_TEXT,
+											'displayType' => DT_FIELD,
+											'default' => '',
+											'width' => "475px", 'height' => "50px",
+											'label' => _t('Display template (%1)', _t('set items')),
+											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
+										]
+								];
 								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
 									$va_additional_settings[Datamodel::getTableName($vn_table_num).'_display_template'] = array(
 											'formatType' => FT_TEXT,
@@ -2318,7 +2327,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			TooltipManager::add(
 				"#uiEditorBundle_{$bundle_normalized}",
-				"<h2>{$vs_label}</h2>".
+				"<div class='tooltipHead'>{$vs_label}</div>".
 				_t("Bundle name").": {$bundle_normalized}<br />".
 				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);
@@ -2574,7 +2583,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$vs_description = $t_instance->getDisplayDescription($table.'.'.$vs_bundle_proc);
 			TooltipManager::add(
 				"#uiEditor_{$vn_placement_id}",
-				"<h2>{$vs_label}</h2>".
+				"<div class='tooltipHead'>{$vs_label}</div>".
 				_t("Bundle name").": {$vs_bundle_proc}<br />".
 				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);

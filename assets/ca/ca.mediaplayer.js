@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,8 +23,7 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
+ */ 
 var caUI = caUI || {};
 
 (function ($) {
@@ -34,32 +33,75 @@ var caUI = caUI || {};
 		var that = jQuery.extend({
 			players: {},
 			playerTypes: {},
-			isPlaying: {}
+			isPlaying: {},
+			playerStatus: {},	// true for key if player is able to play
+			playerCompleted: {},
+			playLists: {},
+			playerStartEnd: {},
+			playerEventHandlers: {},
+			loadOpacity: 0.0
 		}, options);
 		
 		// --------------------------------------------------------------------------------
+		
+		that.clear = function(clearPlayers=false) {
+			if(that.debug) { console.log("[CLEAR]", clearPlayers); }
+			if(clearPlayers) {
+				that['players'] = {};
+				that['playerTypes'] = {};
+			}
+			that['isPlaying'] = {};
+			that['playerStatus'] = {};
+			that['playerCompleted'] = {};
+			that['playLists'] = {};
+			that['playerStartEnd'] = {};
+			that['playerEventHandlers'] = {};
+		};
 		
 		// Register player
 		that.register = function(playerName, playerInstance, playerType) {
 			that.players[playerName] = playerInstance;
 			that.playerTypes[playerName] = playerType;
+			that.playerStatus[playerName] = false;
+			that.playerCompleted[playerName] = false;
 		}
 		
 		// Start playback
-		that.play = function(playerName) {
+		that.play = function(playerName, pause=false, noSeek=false) {
 			if (!that.players[playerName]) return null;
 			switch(that.playerTypes[playerName]) {
-				case 'VideoJS':
-					that.players[playerName].play();
-					that.isPlaying[playerName] = true;
-					break;
 				case 'Plyr':
-					that.players[playerName].play();
-					that.isPlaying[playerName] = true;
-					break;
-				case 'MediaElement':
-					that.players[playerName][0].play();
-					that.isPlaying[playerName] = true;
+					console.trace("[PLAY]", playerName);
+					if(that.playerStartEnd[playerName] && !noSeek) {
+						that.seek(playerName, that.playerStartEnd[playerName].start);
+						
+						that.onTimeUpdate(playerName, function(e) {
+							if(that.playerCompleted[playerName]) { return; }
+							let ct = that.currentTime(playerName);
+							if(ct >= that.playerStartEnd[playerName].end) { 
+								if(that.debug) { console.log("[PLAY]", playerName, "At end",  that.playerStartEnd[playerName]); }
+								that.stop(playerName);
+								that.playerCompleted[playerName] = true;
+								
+								that.nextInPlaylist(playerName);
+							}
+							
+						});
+					} else {
+						jQuery("#" + playerName + '_wrapper').css("opacity", 1.0);
+					}
+					let p = that.players[playerName].play();
+					if(that.debug) { console.log("[PLAY] Event for ", playerName, p); }
+					if (p !== undefined) {
+						p.then(_ => {
+							that.isPlaying[playerName] = true;
+							if(that.debug) { console.log("[PLAY]", "set pause", pause); }
+							if(pause) { that.pause(playerName); }
+						}).catch(error => {
+							if(that.debug) { console.log("[PLAY]", "Could not play video", playerName, error); }
+						});
+					}
+					
 					break;
 				default:
 					return false;
@@ -72,16 +114,9 @@ var caUI = caUI || {};
 		that.stop = that.pause = function(playerName) {
 			if (!that.players[playerName]) return null;
 			switch(that.playerTypes[playerName]) {
-				case 'VideoJS':
-					that.players[playerName].pause();
-					that.isPlaying[playerName] = false;
-					break;
 				case 'Plyr':
+					if(that.debug) { console.log("[STOP]", playerName); }
 					that.players[playerName].pause();
-					that.isPlaying[playerName] = false;
-					break;
-				case 'MediaElement':
-					that.players[playerName][0].pause();
 					that.isPlaying[playerName] = false;
 					break;
 				default:
@@ -93,40 +128,30 @@ var caUI = caUI || {};
 		// Jump to time
 		that.seek = function(playerName, t) {
 			if (!that.players[playerName]) return null;
+			if(that.debug) { console.log("[SEEK]", playerName, t); }
 			switch(that.playerTypes[playerName]) {
-				case 'VideoJS':
-					that.players[playerName].play();
-					that.players[playerName].currentTime(t);
-					that.isPlaying[playerName] = true;
-					break;
 				case 'Plyr':
-					that.players[playerName].stop();
-					that.isPlaying[playerName] = false;
+					//if(!that.isPlaying[playerName]) { return; }
+					jQuery("#" + playerName + '_wrapper').css("opacity", that.loadOpacity);
+					if(that.isPlaying[playerName]) {
+						that.players[playerName].stop();
+					}
+					//that.isPlaying[playerName] = false;
+					
+					that.players[playerName].on('seeked', function(e) {
+						jQuery("#" + playerName + '_wrapper').css("opacity", 1.0);
+					});
 					
 					const c = that.players[playerName].currentTime;
 					let readyState = that.players[playerName].media.readyState;
-					
 					if(readyState >= 1) {
 						that.players[playerName].currentTime = t;
-						that.isPlaying[playerName] = true;
-						that.players[playerName].play();
+						that.play(playerName, false, true);
 					} else {
-						jQuery("#" + playerName).css("opacity", 0.2);
 						that.players[playerName].on('canplaythrough', (event) => {
-							if(that.isPlaying[playerName]) { return; }
-							that.isPlaying[playerName] = true;
-							
 							that.players[playerName].currentTime = t;
-							that.players[playerName].play();
-							
-							jQuery("#" + playerName).css("opacity", 1.0);
 						});
 					}
-					break;
-				case 'MediaElement':
-					that.players[playerName][0].play();
-					that.players[playerName][0].setCurrentTime(t);
-					that.isPlaying[playerName] = true;
 					break;
 				default:
 					return false;
@@ -145,14 +170,8 @@ var caUI = caUI || {};
 			if (!that.players[playerName]) return null;
 			
 			switch(that.playerTypes[playerName]) {
-				case 'VideoJS':
-					return that.players[playerName].currentTime();
-					break;
 				case 'Plyr':
 					return that.players[playerName].currentTime;
-					break;
-				case 'MediaElement':
-					return that.players[playerName][0].currentTime;
 					break;
 				default:
 					return null;
@@ -165,14 +184,8 @@ var caUI = caUI || {};
 			if (!that.players[playerName]) return null;
 			
 			switch(that.playerTypes[playerName]) {
-				case 'VideoJS':
-					that.players[playerName].addEvent('timeupdate', f);
-					break;
 				case 'Plyr':
 					that.players[playerName].on('timeupdate', f);
-					break;
-				case 'MediaElement':
-					that.players[playerName][0].addEventListener('timeupdate', f);
 					break;
 				default:
 					return null;
@@ -184,21 +197,62 @@ var caUI = caUI || {};
 		that.onReady = function(playerName, f) {
 			if (!that.players[playerName]) return null;
 			
+			if(that.debug) { console.log("[READY]", playerName); }
 			switch(that.playerTypes[playerName]) {
-				case 'VideoJS':
-					that.players[playerName].addEvent('ready', f);
-					break;
 				case 'Plyr':
 					that.players[playerName].on('ready', f);
-					break;
-				case 'MediaElement':
-					that.players[playerName][0].addEventListener('ready', f);
 					break;
 				default:
 					return null;
 					break;
 			}
 		};
+		
+		that.onCanPlay = function(playerName, f) {
+			if (!that.players[playerName]) return null;
+			
+			if(that.debug) { console.log("[CAN_PLAY]", playerName); }
+			switch(that.playerTypes[playerName]) {
+				case 'Plyr':
+					that.players[playerName].on('canplay', f);
+					if(!that.playerEventHandlers[playerName]) { that.playerEventHandlers[playerName] = {}; }
+					that.playerEventHandlers[playerName]['canplay'] = f;
+					break;
+				default:
+					return null;
+					break;
+			}
+		};
+		
+		that.offCanPlay = function(playerName) {
+			if (!that.players[playerName]) return null;
+			
+			if(that.debug) { console.log("[OFF CAN_PLAY]", playerName); }
+			switch(that.playerTypes[playerName]) {
+				case 'Plyr':
+					that.players[playerName].off('canplay', that.playerEventHandlers[playerName]['canplay']);
+					break;
+				default:
+					return null;
+					break;
+			}
+		};
+		
+		// Register handler ready event
+		that.onEnd = function(playerName, f) {
+			if (!that.players[playerName]) return null;
+			
+			if(that.debug) { console.log("[END]", playerName); }
+			switch(that.playerTypes[playerName]) {
+				case 'Plyr':
+					that.players[playerName].on('ended', f);
+					break;
+				default:
+					return null;
+					break;
+			}
+		};
+		
 		
 		//
 		that.getPlayerNames = function() {
@@ -212,9 +266,40 @@ var caUI = caUI || {};
 		
 		//
 		that.playAll = function() {
-			let players=  that.getPlayers();
+			let players = that.getPlayers();
 			for(let p in players) {
-				that.play(p);
+				if(that.debug) { if(that.isPlaying[p]) { console.log("[PLAYALL]", "is playing already", p); continue; } }
+				that.play(p, false, false);
+			}
+		}
+		
+		//
+		that.playAllWhenReady = function() {
+			console.trace("[PLAYALLWHENREADY]");
+			let players = that.getPlayers();
+			for(let p in players) {
+				let playerName = p;
+				
+				that.onCanPlay(p, function(e) {
+					that.playerStatus[playerName] = true;
+					if(that.debug) { console.log("[PLAYALLWHENREADY::CAN_PLAY]", playerName); }
+					
+					let canPlayAll = true;
+					for(let x in that.playerStatus) {
+						if(!that.playerStatus[x]) {
+							canPlayAll = false;
+							continue;
+						}
+						
+						if(that.debug) { console.log("[PLAYALLWHENREADY::OFF_EVENT]", x); }
+						that.offCanPlay(x);
+					}
+					
+					if(canPlayAll) {
+						that.playAll();
+						if(that.debug) { console.log("[PLAYALLWHENREADY::READY]"); }
+					}
+				});
 			}
 		}
 		
@@ -223,6 +308,45 @@ var caUI = caUI || {};
 			let players=  that.getPlayers();
 			for(let p in players) {
 				that.stop(p);
+			}
+		}
+		
+		that.setPlaylist = function(playerName, playList) {
+			that.playLists[playerName] = playList;
+			if(playList && (playList.length > 0)) {
+				that.onEnd(playerName, function(e) {
+					that.nextInPlaylist(playerName);
+				});
+			}
+		}
+		
+		that.setPlayerStartEnd = function(playerName, start, end) {
+			that.playerStartEnd[playerName] = {
+				'start': start,
+				'end': end
+			};
+		}
+		
+		that.nextInPlaylist = function(playerName) {
+			if(that.playLists[playerName] && (that.playLists[playerName].length > 0)) {
+				let next = that.playLists[playerName].shift();
+				if(that.debug) { console.log("[NEXT]", playerName, " => ", next); }
+				that.stop(playerName);			
+				let start = next.sources[0].start;
+				let end = next.sources[0].end;
+				delete next.sources[0].start;
+				delete next.sources[0].end;
+							
+				that.players[playerName].source = next;
+				that.playerCompleted[playerName] = false;
+				jQuery("#" + playerName + '_wrapper').css("opacity", that.loadOpacity);
+				if(start > 0) {
+					if(that.debug) { console.log("[NEXT::SET_SEEK]", playerName, " => ", start, end); }
+					that.setPlayerStartEnd(playerName, start, end);
+				}
+				setTimeout(function() {
+					that.play(playerName, false, false);
+				}, 1000);
 			}
 		}
 		
