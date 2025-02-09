@@ -365,6 +365,7 @@ trait CLIUtilsMaintenance {
 				$vn_t += $vn_c;
 			}
 		}
+		self::remove_unused_guids($po_opts);
 		
 		if ($vn_t > 0) {
 			CLIUtils::addMessage(_t('Done!'), array('color' => 'green'));
