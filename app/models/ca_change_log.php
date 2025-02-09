@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -426,7 +426,26 @@ class ca_change_log extends BaseModel {
 						case 'element_id':
 							if(preg_match("!^ca_metadata_element!", $t_instance->tableName())) {
 								goto deflabel;
-							} elseif($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
+							} else {
+								$try = '';
+								if(!($vs_code = ca_metadata_elements::getElementCodeForId($vm_val))) {
+									// try to correct code
+									if($va_snapshot['value_id'] ?? null) {
+										if($t_val = ca_attribute_values::findAsInstance($va_snapshot['value_id'])) {
+											$vm_val = $t_val->get('ca_attribute_values.element_id');
+											$va_snapshot['element_id'] = $vm_val;
+											$vs_code = ca_metadata_elements::getElementCodeForId($vm_val);
+										}
+									} elseif(($va_snapshot['attribute_id'] ?? null) && ($t_attr = ca_attributes::findAsInstance($va_snapshot['attribute_id']))) {
+										$vm_val = $t_attr->get('ca_attributes.element_id');
+										$va_snapshot['element_id'] = $vm_val;
+										$vs_code = ca_metadata_elements::getElementCodeForId($vm_val);
+									}
+									if(!$vs_code) {
+										$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'element_does_not_exist']);
+										continue(2);
+									}
+								}
 								$va_snapshot['element_code'] = $vs_code;
 							
 								$vs_table_name = Datamodel::getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
@@ -443,9 +462,6 @@ class ca_change_log extends BaseModel {
 									$skipped[$vs_guid] = true;
 									continue(2);
 								}
-							} else {
-								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'element_does_not_exist']);
-								continue(2);
 							}
 							break;
 						case 'attribute_id':
