@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -401,7 +401,7 @@ class SetEditorController extends BaseEditorController {
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		caExportResult($this->request, $res, $export_format, '_output', ['display' => $display_id ? new ca_bundle_displays($display_id) : null, 'printTemplateType' => 'sets', 'set' => $t_set, 'filename' => $filename_stub]);
+		caExportResult($this->request, $res, $export_format, $filename_stub, ['display' => $display_id ? new ca_bundle_displays($display_id) : null, 'printTemplateType' => 'sets', 'set' => $t_set]);
 		
 		return;
 	}
@@ -417,7 +417,7 @@ class SetEditorController extends BaseEditorController {
 		if(!preg_match("!^_([a-z]+)_(.*)$!", $form, $m)) {
 			throw new ApplicationException(_t('Invalid template'));
 		}
-		$values = Session::getVar("print_sets_options_{$m[2]}");
+		$values = Session::getVar("print_template_sets_options_{$m[2]}");
 		
 		$form_options = caEditorPrintParametersForm('sets', $m[2], $values);
 		

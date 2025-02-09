@@ -355,7 +355,7 @@ class Db_mysqli extends DbDriverBase {
 			if($err_logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'db_errors'], null)) {
 				$err_logger->logError($prefix.json_encode(['code' => $this->nativeToDbError($error_num), 'errorNumber' => $error_num, 'errorMessage' => $error_message, 'sql' => $vs_sql, 'stacktrace' => caPrintStacktrace()]));
 			}
-			throw new DatabaseException($error_num, $error_message, "Db->mysqli->execute()");
+			throw new DatabaseException($error_message, $error_num, "Db->mysqli->execute()");
 		}
 
 		if($logger) {

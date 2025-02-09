@@ -43,6 +43,8 @@ var caUI = caUI || {};
             useInchesForDisplayUpTo: 72,
             useFeetForDisplayUpTo: 5279,
             
+            displayUnits: {},
+            
             forceInchesForAllWhenDimensionExceeds: null,
             forceFeetForAllWhenDimensionExceeds: null,
             forceMillimetersForAllWhenDimensionExceeds: null,
@@ -425,13 +427,15 @@ var caUI = caUI || {};
                                 lastUnits = null;
                                 q = vals.join(" ");
                             }
-                        
+                        	if(that.displayUnits[u]) { u = that.displayUnits[u]; }
                             templatevalues.push({'value': q, 'units': u, 'tag': tag, 'type': 'fractionalenglish'});
                             break;
                         // unit directly specified
                         default:
                         	q = qty.to(cmd[1]).toPrec(that.getPrecisionForUnit(cmd[1])).scalar;
                             lastUnits = cmd[1];
+                            
+                        	if(that.displayUnits[lastUnits]) { lastUnits = that.displayUnits[lastUnits]; }
                             templatevalues.push({'value': q, 'units': lastUnits, 'tag': tag, 'type': 'direct'});
                             break;
                     }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,7 +144,10 @@ $va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profil
 			} else {
 				$vs_message .= "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
 			}
-			if (sizeof($va_login_info) == 1) {
+			
+			if(!is_array($va_login_info)) {
+				$vs_message .= "<strong>[could not create logins]</strong>";
+			} elseif (sizeof($va_login_info) == 1) {
 				foreach($va_login_info as $vs_user_name => $vs_password) {
 					$vs_message .= "username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span>.<br/><b>Make a note of this password!</b><br/>";
 				}
@@ -196,4 +199,3 @@ $va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profil
 		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$vn_progress}); jQuery('#installerLog').html('Installing list <i>{$ps_list_code}</i>');</script>";
 		caFlushOutput();
 	}
-?>

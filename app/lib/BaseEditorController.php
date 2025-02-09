@@ -342,9 +342,6 @@ class BaseEditorController extends ActionController {
 				$vb_no_save_error = true;
 				$this->view->setVar('forced_values', $va_opts['ifv']);
 			}
-			if($t_subject->numErrors() > 0) {
-				$this->request->addActionErrors($t_subject->errors, 'saveBundlesForScreen');
-			}
 		}
 		$this->view->setVar('t_ui', $t_ui);
 
@@ -849,7 +846,10 @@ class BaseEditorController extends ActionController {
 			}
 		}
 		Session::setVar("{$table}_summary_export_in_background", false);
-		
+		if(!is_numeric($display_id) && strlen($display_id)) { 
+			$template = $display_id;
+			$display_id = null;
+		}
 		caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', []);
 		return;
 	}

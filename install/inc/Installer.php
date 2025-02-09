@@ -2126,7 +2126,7 @@ class Installer {
 
 			if ($t_user->numErrors()) {
 				$this->addError('processLogins', _t("Errors adding login %1: %2", $user_name, join("; ",$t_user->getErrors())));
-				return false;
+				continue;
 			}
 
 			$login_info[$user_name] = $password;
