@@ -528,7 +528,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					'use_inches_for_display_up_to', 'use_feet_for_display_up_to', 'use_millimeters_for_display_up_to', 
 					'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to',
 					'force_meters_for_all_when_dimension_exceeds', 'force_centimeters_for_all_when_dimension_exceeds', 'force_millimeters_for_all_when_dimension_exceeds',
-					'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds'
+					'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds', 'display_units'
 				] as $key) {
 				$proc_key = caSnakeToCamel($key);
 				$parser_opts[$proc_key] = $o_dimensions_config->get($key);
