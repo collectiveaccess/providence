@@ -846,7 +846,10 @@ class BaseEditorController extends ActionController {
 			}
 		}
 		Session::setVar("{$table}_summary_export_in_background", false);
-		
+		if(!is_numeric($display_id) && strlen($display_id)) { 
+			$template = $display_id;
+			$display_id = null;
+		}
 		caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', []);
 		return;
 	}

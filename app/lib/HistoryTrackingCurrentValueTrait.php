@@ -2842,7 +2842,7 @@ trait HistoryTrackingCurrentValueTrait {
 									return $v;
 								}
 							} elseif (($t_loc = Datamodel::getInstanceByTableName($va_current_location['type'], true)) && $t_loc->load($va_current_location['id'])) {
-								$v = $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name']);
+								$v = $t_loc->get($va_current_location['type'].'.'.$va_path_components['subfield_name'], $pa_options);
 								if ($for_report) { $v = self::_filterValueForReport($v); }
 								return $v;
 								
