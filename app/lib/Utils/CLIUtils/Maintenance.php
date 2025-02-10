@@ -1934,7 +1934,6 @@ trait CLIUtilsMaintenance {
 						CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
 						foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
 							$vs_processed_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $va_values);
-							
 							$va_values[$va_element['element_code']] = $vs_processed_value;
 							if (!$t_instance->load($vn_row_id)) { continue; }
 							$t_instance->setMode(ACCESS_WRITE);
