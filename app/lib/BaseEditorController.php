@@ -794,6 +794,7 @@ class BaseEditorController extends ActionController {
         
         $template = $this->request->getParameter('template', pString);
         $display_id = $this->request->getParameter('display_id', pString);
+        $this->request->user->setVar($t_subject->tableName().'_print_display_id', $display_id);
         if(preg_match("!^_pdf_!", $display_id)) {
         	$template = $display_id;
         	$display_id = 0;
