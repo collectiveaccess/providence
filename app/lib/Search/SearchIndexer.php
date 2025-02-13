@@ -639,8 +639,7 @@ class SearchIndexer extends SearchBase {
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_table_num] ?? null) && (isset($pa_exclusion_list[$pn_subject_table_num][$pn_subject_row_id]))) { return; }
 		
-		if(!$force && !$pb_reindex_mode && !$for_current_value_reindex && !sizeof(array_intersect($global_indexed_field_list ?? [], array_keys($pa_changed_fields ?? [])))) { goto related_indexing; }
-
+		if(!is_array($pa_changed_fields)) { $pa_changed_fields = []; }
 		if(!$pb_reindex_mode && caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing') && !defined('__CA_DONT_QUEUE_SEARCH_INDEXING__')) {
 			$field_data_proc = [];
 			foreach(array_keys($pa_changed_fields) as $k) {
@@ -656,6 +655,7 @@ class SearchIndexer extends SearchBase {
 			));
 			return;
 		}
+		if(!$force && !$pb_reindex_mode && !$for_current_value_reindex && !sizeof(array_intersect($global_indexed_field_list ?? [], array_keys($pa_changed_fields)))) { goto related_indexing; }		
 		
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
 
