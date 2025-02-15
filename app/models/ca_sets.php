@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3517,7 +3517,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @param array $tokens An array of tokens to add. Each token is an array with keys name, access and effective_date
 	 *
-	 * @return bool
+	 * @return bool True on success, false on failure
 	 */ 
 	public function addAnonymousAccessTokens(array $tokens) : ?bool {
 		if (!($id = (int)$this->getPrimaryKey())) { return null; }
@@ -3528,7 +3528,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_rel->clear();
 			$t_rel->load(['name' => $data['name'], 'set_id' => $id]);		// try to load existing record
 			$t_rel->set('set_id', $id);
-			$t_rel->set('access', $access);
+			$t_rel->set('name', $data['name']);
+			$t_rel->set('access', $data['access']);
 			$t_rel->set('effective_date', $data['effective_date']);
 			
 			if ($t_rel->getPrimaryKey()) {
@@ -3551,7 +3552,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @param array $tokens An array of tokens to add. Each token is an array with keys name, access and effective_date
 	 *
-	 * @return bool
+	 * @return bool True on success, false on failure
 	 */ 
 	public function setAnonymousAccessTokens(array $tokens) : ?bool {
 		if(is_array($existing_tokens = $this->getAnonymousAccessTokens())) {
@@ -3578,6 +3579,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Remove token with the specified guids
 	 *
 	 * @param array $guids A list of guids to remove
+	 *
+	 * @return bool True on success, false on failure
 	 */ 
 	public function removeAnonymousAccessTokens(array $guids) : ?bool {
 		if (!($id = (int)$this->getPrimaryKey())) { return null; }
@@ -3626,7 +3629,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------------------		
 	/**
-	 * @TODO
+	 * Generate editor bundle for management of anonymous access tokens
+	 *
+	 * @return string
 	 */
 	public function getAnonymousAccessTokenHTMLFormBundle($request, $form_name, $placement_code, $table_num, $item_id, $user_id=null, $options=null) : string {
 		$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $request->getViewsDirectoryPath();
