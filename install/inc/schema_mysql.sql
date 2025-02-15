@@ -5094,6 +5094,7 @@ create table ca_sets_x_anonymous_access (
 	access tinyint unsigned not null default 0,
 	guid varchar(100) not null,
 	name varchar(255) not null,
+	settings text not null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
