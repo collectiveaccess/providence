@@ -187,9 +187,19 @@ class Replicator {
 	/**
 	 *
 	 */
-	protected function getTargetsAsServiceClients() {
+	protected function getTargetsAsServiceClients(?array $options=null) {
 		$targets = $this->opo_replication_conf->get('targets');
-		if(!is_array($targets)) { throw new Exception('No sources configured'); }
+		if(($enabled_targets = caGetOption('target', $options, null)) || ($enabled_targets = $this->opo_replication_conf->getList('enabled_targets'))) {
+			if(!is_array($enabled_targets)) { $enabled_targets = [$enabled_targets]; }
+			$filtered_targets = [];
+			foreach($enabled_targets as $s) {
+				if(isset($targets[$s])) {
+					$filtered_targets[$s] = $targets[$s];
+				}
+			}
+			$targets = $filtered_targets;
+		}
+		if(!is_array($targets)) { throw new Exception('No targets configured'); }
 
 		return $this->getConfigAsServiceClients($targets);
 	}
@@ -1157,12 +1167,22 @@ class Replicator {
 	 *
 	 */
 	public function forceSyncOfLatest(string $source, string $guid, ?array $options=null) {
-		if(!is_array($targets = caGetOption('targets'. $options, null))) { 
-			//return null;
+		if(!($target = caGetOption('target', $options, null))) { 
+			return null;
 		}
 		
 		$o_source = array_shift($this->getSourcesAsServiceClients(['source' => $source]));
+		$o_target = array_shift($this->getTargetsAsServiceClients(['target' => $targets[0]]));
 		
+		$o_result = $o_source->setEndpoint('getsysguid')->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)->request();
+			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
+				$this->log(
+					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
+					\Zend_Log::ERR
+				);
+				return;
+			}
+			print "guid=$guid\n";
 		$log = $o_source->setEndpoint('getlog')
 			->clearGetParameters()
 			->addGetParameter('forGUID', $guid)
@@ -1172,15 +1192,40 @@ class Replicator {
 		
 		$acc = [];
 		
-		
+		$elements = ['dimensions'];
+		foreach($elements as $e) {
+			$el = ca_metadata_elements::getElementsForSet($e);
+			$elements = array_merge($elements, array_map(function($v) { return $v['element_code']; }, $el));
+		}
+		print_R($log);
+		$elements = array_unique($elements);
 		foreach($log as $log_id => $log_entry) {
-			if($log_entry['changetype'] !== 'U') { continue; }
+			if(($log_entry['logged_table_num'] == 3) && ($log_entry['changetype'] == 'I')) {
+				$log_entry['changetype'] = 'U';
+			}
+			
+			$is_element = (($log_entry['snapshot']['element_code'] ?? null) && in_array($log_entry['snapshot']['element_code'], $elements, true)); 
+			var_dump($is_element);
+			if(!$is_element && in_array($log_entry['changetype'], ['U'])) { continue; }
 			
 			if(!isset($acc[$log_entry['guid']])) { $acc[$log_entry['guid']] = []; }
 			$acc[$log_entry['guid']] = array_merge($acc[$log_entry['guid']], $log_entry);
 		}
-		
-		print_R($acc);
+		print_R($acc);die;
+		foreach($acc as $guid => $log_entry) {
+			print_R($log_entry);
+			$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+				->addGetParameter('system_guid', $source_system_guid)
+				->addGetParameter('push_missing', 1)
+				->setRequestBody([$log_entry])
+				->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+				->request();
+			
+			if ($resp) {
+				$res = $resp->getRawData();
+				print_R($res);
+			}
+		}
 		
 	}	
 	# --------------------------------------------------------------------------------------------------------------

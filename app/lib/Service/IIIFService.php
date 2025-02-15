@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,6 +31,7 @@
  */
 require_once(__CA_LIB_DIR__."/Media.php");
 require_once(__CA_LIB_DIR__."/Parsers/TilepicParser.php");
+require_once(__CA_LIB_DIR__.'/Search/Common/Stemmer/SnoballStemmer.php');
 
 class IIIFService {
 	# -------------------------------------------------------
@@ -70,7 +71,7 @@ class IIIFService {
 		$pb_is_info_request = false;
 		if (($ps_region = array_shift($va_path)) == 'info.json') {
 			$pb_is_info_request = true;
-			//$vb_cache = false;
+			$vb_cache = false;
 		} else {
 			$ps_size = array_shift($va_path);
 			$ps_rotation = array_shift($va_path);
@@ -79,12 +80,16 @@ class IIIFService {
 		// Load image
 		$pa_identifier = explode(':', $identifier);
 		
-		list($ps_type, $pn_id, $pn_page) = self::parseIdentifier($identifier);
-		
+		list($ps_type, $pn_id, $page) = self::parseIdentifier($identifier);
+
 		$vs_image_path = null;
+		//$vb_cache = false;
+		$highlight = $request->getParameter('highlight', pString);
+		$highlight_md5 = $highlight ? md5($highlight) : '';
 		
-		if ($vb_cache && CompositeCache::contains($identifier, 'IIIFMediaInfo')) {
-			$va_cache = CompositeCache::fetch($identifier,'IIIFMediaInfo');
+		$highlight_op = null;
+		if ($vb_cache && CompositeCache::contains($identifier.$highlight_md5, 'IIIFMediaInfo')) {
+			$va_cache = CompositeCache::fetch($identifier.$highlight_md5,'IIIFMediaInfo');
 			$va_sizes = $va_cache['sizes'];
 			$va_image_info = $va_cache['imageInfo'];
 			$va_tilepic_info = $va_cache['tilepicInfo'];
@@ -93,6 +98,39 @@ class IIIFService {
 			$vn_width = $va_cache['width'];
 			$vn_height = $va_cache['height'];
 		} else {
+			if($highlight) {
+				$tmp = explode(':', $identifier);
+				$base_identifier = join(':', array_slice($tmp, 0, 2));	// trim page
+				$res = self::search($base_identifier, ['q' => $highlight]);
+				if(is_array($res) && is_array($res['items']) && sizeof($res['items'])) {
+					// target is in the format: page-56098-5#xywh=1007,680,62,15
+					$target = $res['items'][0]['target'];
+					$tmp = explode('#', $target);
+					$page_tmp = explode('-', $tmp[0]);
+					$page = (int)$page_tmp[2];
+					
+					$highlight_region = str_replace("xywh=", "", $tmp[1]);
+					$highlight_region_tmp = explode(',', $highlight_region);
+					$ps_region = $highlight_region;
+					
+					$identifier = $base_identifier.':'.$page;
+					
+					$highlight_op = [
+						'x' => $highlight_region_tmp[0], 
+						'y' => $highlight_region_tmp[1], 
+						'width' => $highlight_region_tmp[2],
+						'height' => $highlight_region_tmp[3],
+						'color' => '#eded91'	// TODO: make color configureable
+					];
+					
+					// TODO: configurable margin?
+					$highlight_region_tmp[0] -= 200;
+					$highlight_region_tmp[1] -= 200;
+					$highlight_region_tmp[2] += 400;
+					$highlight_region_tmp[3] += 400;
+					$ps_region = join(',', $highlight_region_tmp);
+				}
+			}
 			$media = self::getMediaInstance($identifier, $request);
 			
 			$t_media = $media['instance'];
@@ -112,7 +150,7 @@ class IIIFService {
 				$va_media_paths[$vs_version] = $t_media->getMediaPath($vs_fldname, $vs_version);
 			}
 			
-			CompositeCache::save($identifier, [
+			CompositeCache::save($identifier.$highlight_md5, [
 				'sizes' => $va_sizes,
 				'imageInfo' => $va_image_info,
 				'tilepicInfo' => $va_tilepic_info,
@@ -132,10 +170,17 @@ class IIIFService {
 		} else {
 			$va_operations = [];
 			
+			
+			if(is_array($highlight_op)) {
+				$va_operations[] = ['HIGHLIGHT' => $highlight_op];
+			}
+			
 			// region
+			$is_cropped = false;
 			$va_region = IIIFService::calculateRegion($vn_width, $vn_height, $ps_region);
 			if (($va_region['width'] != $vn_width) && ($va_region['height'] != $vn_height)) {
 				$va_operations[] = ['CROP' => $va_region];
+				$is_cropped = true;
 			}
 			
 			// size	
@@ -164,7 +209,7 @@ class IIIFService {
 				$vn_num_tiles_per_row = ceil(($vn_width/$vn_scale_factor)/$vn_tile_width);					// number of tiles per row for this layer/magnification
 				
 				// calculate # of tiles in each layer of the image
-				if (!CompositeCache::contains($identifier, 'IIIFTileCounts')) {
+				if (!CompositeCache::contains($identifier.$highlight_md5, 'IIIFTileCounts')) {
 					$va_tile_counts = [];
 					$vn_layer_width = $vn_width;
 					$vn_layer_height = $vn_height;
@@ -173,9 +218,9 @@ class IIIFService {
 						$vn_layer_width = ceil($vn_layer_width/2);
 						$vn_layer_height = ceil($vn_layer_height/2);
 					}
-					CompositeCache::save($identifier, $va_tile_counts, 'IIIFTileCounts');
+					CompositeCache::save($identifier.$highlight_md5, $va_tile_counts, 'IIIFTileCounts');
 				} else {
-					$va_tile_counts = CompositeCache::fetch($identifier, 'IIIFTileCounts');
+					$va_tile_counts = CompositeCache::fetch($identifier.$highlight_md5, 'IIIFTileCounts');
 				}
 				
 				// calculate tile offset to required layer
@@ -224,8 +269,8 @@ class IIIFService {
 			$vs_target_version = null;
 			$vn_d = null;
 			foreach($va_sizes as $vs_version => $va_size) {
-				$dw = $va_size['width'] - $va_dimensions['width'];
-				$dh = $va_size['height'] - $va_dimensions['height'];
+				$dw = $va_size['width'] - ($is_cropped ? $vn_width : $va_dimensions['width']);
+				$dh = $va_size['height'] - ($is_cropped ? $vn_height : $va_dimensions['height']);
 				if (($dw < 0) || ($dh < 0)) { continue; }
 				$d = sqrt(pow($dw, 2) + pow($dh,2));
 				
@@ -274,6 +319,7 @@ class IIIFService {
 					case 'ROTATE':
 					case 'SET':
 					case 'FLIP':
+					case 'HIGHLIGHT':
 						$o_media->transform($vs_operation, $va_params);
 						break;
 				}
@@ -525,27 +571,27 @@ class IIIFService {
 		if (sizeof($pa_identifier) > 1) {
 			$ps_type = $pa_identifier[0];
 			$pn_id = (int)$pa_identifier[1];
-			$pn_page = isset($pa_identifier[2]) ? (int)$pa_identifier[2] : null;
+			$page = isset($pa_identifier[2]) ? (int)$pa_identifier[2] : null;
 		} else{
 			$pn_id = (int)$pa_identifier[0];
-			$pn_page = isset($pa_identifier[1]) ? (int)$pa_identifier[1] : null;
+			$page = isset($pa_identifier[1]) ? (int)$pa_identifier[1] : null;
 		}
-		return [$ps_type, $pn_id, $pn_page];
+		return [$ps_type, $pn_id, $page];
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function getMediaInstance(string $identifier, RequestHTTP $request) {
-		list($ps_type, $pn_id, $pn_page) = self::parseIdentifier($identifier);
+		list($ps_type, $pn_id, $page) = self::parseIdentifier($identifier);
 		
 		switch($ps_type) {
 			case 'attribute':
-				if ($pn_page) {
+				if ($page) {
 					$t_attr_val = new ca_attribute_values($pn_id);
 					$t_attr_val->useBlobAsMediaField(true);
 					$t_instance = new ca_attribute_value_multifiles();
-					$t_instance->load(['value_id' => $pn_id, 'resource_path' => $pn_page]);
+					$t_instance->load(['value_id' => $pn_id, 'resource_path' => $page]);
 					$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 					$vs_fldname = 'media';
 				} 
@@ -574,9 +620,9 @@ class IIIFService {
 			
 				break;
 			case 'representation':
-				if ($pn_page) {
+				if ($page) {
 					$t_instance = new ca_object_representation_multifiles();
-					$t_instance->load(['representation_id' => $pn_id, 'resource_path' => $pn_page]);
+					$t_instance->load(['representation_id' => $pn_id, 'resource_path' => $page]);
 				}
 				if (!$t_instance || !$t_instance->getPrimaryKey()) {
 					$t_instance = new ca_object_representations($pn_id);
@@ -611,7 +657,7 @@ class IIIFService {
 				break;
 		}
 		
-		return ['instance' => $t_instance, 'field' => $vs_fldname, 'type' => $ps_type, 'id' => $pn_id, 'page' => $pn_page];
+		return ['instance' => $t_instance, 'field' => $vs_fldname, 'type' => $ps_type, 'id' => $pn_id, 'page' => $page];
 	}
 	# -------------------------------------------------------
 	/**
@@ -633,38 +679,319 @@ class IIIFService {
 		return $manifest->manifest($identifiers);
 	}
 	# -------------------------------------------------------
+	/*/
+	 *
+	 */
+	private static function _tokenize(string $content) : array {
+		$content = array_filter(array_map(function($v) {
+			return preg_replace("/[^[:alnum:][:space:]]/u", '', $v);
+		}, caTokenizeString($content)), function($x) { return strlen($x); });
+		
+		return $content;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function search($identifier, ?array $options=null) : ?array {
+		global $g_request;
+		if(!$identifier) { return null; }
+		$media = self::getMediaInstance($identifier, $g_request);
+		$target = caGetOption('target', $options, null);
+		$q = caGetOption('q', $options, null);
+		$exact = caGetOption('exact', $options, 1, ['castAs' => 'integer']);
+
+		$tokens = self::_tokenize($q);
+		$token_count = sizeof($tokens);
+		
+		$image_width = caGetOption('width', $options, null);
+		$image_height = caGetOption('height', $options, null);
+		
+		// Do in-page search
+		$page_data_files = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/newspaper_data/'.$media['instance']->getPrimaryKey());
+		$data = [];
+		
+		$files = array_values($media['instance']->getFileList());
+		
+		foreach($page_data_files as $p => $page_data_file) {
+			$file_info = $files[$p];
+			
+			$page_data = json_decode(file_get_contents($page_data_file), true);
+			$locations = $page_data['locations'];
+			
+			if($image_width && $image_height){
+				$sw  = $image_width;
+				$sh = $image_height;
+			} else {
+				$sw = $file_info['original_width'];
+				$sh = $file_info['original_height'];
+			}
+			
+			$offset = 0;
+			foreach($tokens as $tindex => $t) {
+				$token_locations = self::_getLocations($t, $locations, ['exact' => $exact]);
+				if($token_locations) {
+					foreach($token_locations as $c) {
+						$is_ok = true;
+						if(($tindex > 0) && (!isset($data[$p+1][$c['i']-$tindex]))) { 
+							$is_ok = false;
+						} elseif($tindex < ($token_count - 1)){
+							$is_ok = false;
+							$ft = $tokens[$tindex + 1];
+							$forward_locations = self::_getLocations($ft, $locations, ['exact' => $exact]);
+							if(is_array($forward_locations)) {
+								foreach($forward_locations as $fl) {
+									if($fl['i'] == ($c['i'] + 1)) {
+										$is_ok = true;
+										break;
+									}
+								}
+							} else {
+								$is_ok = false;
+							}
+						}
+						if(!$is_ok) { continue; }
+						
+						if($tindex > 0) {
+							if(isset($data[$p+1][$c['i']-($tindex-$offset)])) {
+								if(abs(((int)($c['y'] * $sh)) - $data[$p+1][$c['i'] - ($tindex-$offset)]['y']) < 8) {
+									$data[$p+1][$c['i'] - ($tindex - $offset)]['width'] = (int)(($c['x'] + $c['w']) * $sw) - $data[$p+1][$c['i'] - ($tindex - $offset)]['x'];
+									$data[$p+1][$c['i'] - ($tindex - $offset)]['value'] .= ' '.$t;
+									$data[$p+1][$c['i'] - ($tindex - $offset)]['c']++;
+								} else {
+									// new line
+									$data[$p+1][$c['i']] = [
+										'value' => $t,
+										'x' => (int)($c['x'] * $sw),
+										'y' => (int)($c['y'] * $sh),
+										'width' => (int)($c['w'] * $sw),
+										'height' => (int)($c['h'] * $sh),
+										'c' => 0,
+										'partial' => true
+									];
+									$data[$p+1][$c['i'] - $tindex]['partial'] = true;
+									$offset = $tindex;
+								}
+							}
+						} else {
+							$data[$p+1][$c['i']] = [
+								'value' => $t,
+								'x' => (int)($c['x'] * $sw),
+								'y' => (int)($c['y'] * $sh),
+								'width' => (int)($c['w'] * $sw),
+								'height' => (int)($c['h'] * $sh),
+								'c' => 0,
+								'partial' => false
+							];
+						}
+					}	
+				}
+			}
+			if($token_count > 1) {
+				foreach($data as $p => $pdata){
+					$data[$p] = array_filter($pdata, function($v) use($token_count){
+						return (($v['partial']) || ($v['c'] === ($token_count - 1)));
+					});
+				}
+			}
+		}
+		$search = new \CA\Media\IIIFResponses\Search();
+		return $search->response($data, ['identifiers' => [$identifier], 'target' => $target]);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _getLocations($token, $locations, ?array $options=null) {
+		$exact = caGetOption('exact', $options, true);
+		
+		if($exact) {
+			return $locations[$token] ?? null;
+		}
+		
+		$stemmer = new SnoballStemmer();
+		
+		$token = $stemmer->stem($token);
+		$words = array_keys($locations);
+		$fwords = array_filter($words, function($v) use ($token, $stemmer) {
+			$v = $stemmer->stem($v);
+			return preg_match("!^".preg_quote($token, '!')."!i", $v);
+		});
+	
+		$acc = [];
+		foreach($fwords as $fword) {
+			$acc = array_merge($acc, $locations[$fword]);
+		}
+		return $acc;
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function cliplist($identifier, RequestHTTP $request, ?array $options=null) {
+		global $g_locale_id;
+		 $auth_success = $request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => false));
 		if(!is_array($media = self::getMediaInstance($identifier, $request))) {
 			throw new IIIFAccessException(_t('Unknown error'), 400);
 		}
+		$data = json_decode($request->getRawPostData() ?? null, true);
 		
-		$vtt = caGetOption('vtt', $options, false);
+		$mode = caGetOption('mode', $options, $request->getParameter('mode', pString));
+		$canvas = caGetOption('canvas', $data, $request->getParameter('canvas', pString));
+		$canvas_bits = explode('-', $canvas);
+		$filter_to_page = $canvas_bits[2] ?? null;
+		if(intval($filter_to_page) < 1) {
+			$filter_to_page = null;	
+		}
 		
 		$t_media = $media['instance'];
-
-  		$clip_list = [];
-		if(is_array($annotations = $t_media->getAnnotations(['vtt' => true]))) {
-			foreach($annotations as $annotation) {
-				if($vtt) {
-					$clip_list[] = "{$annotation['startTimecode_vtt']} --> {$annotation['endTimecode_vtt']}\n{$annotation['label']}";
-				} else {
-					$clip_list[] = [
-						'identifier' => $annotation['annotation_id'],
-						'text' => $annotation['label'],
-						'start' => $annotation['startTimecode_vtt'],
-						'end' => $annotation['endTimecode_vtt']
-					];
+		$representation_id = $t_media->getPrimaryKey();
+		
+		$annotation_type = $t_media->getAnnotationType();
+		$is_timebased = in_array($annotation_type, ['TimeBasedAudio', 'TimeBasedVideo']);
+		
+  		$annotations = $t_media->getAnnotations(['vtt' => $is_timebased]) ?? [];
+  		$t_media->annotationMode('user');
+  		$annotations = array_merge($annotations, $t_media->getAnnotations(['vtt' => $is_timebased, 'session_id' => Session::getSessionID(), 'user_id' => $request->getUserID()]) ?? []);
+  		
+  		$method = $request->getRequestMethod();
+  		
+  		$files = $t_media->getFileList(null, $page, 1, ['returnAllVersions' => true]) ?? [];
+		$files = array_values($files);
+		
+		if(is_array($data)) {
+			if(is_array($data) && sizeof($data)) {
+				switch(strtoupper($method)) {
+					case 'DELETE':
+						if($id = ($data['annotation']['id'] ?? null)) {
+							if($t_anno = ca_user_representation_annotations::findAsInstance(['representation_id' => $representation_id, 'annotation_id' => $id])) {
+								// TODO: check ownership
+								if($t_anno->delete(true)) {
+									$annotations = array_filter($annotations, function($v) use ($id) {
+										return ($id != $v['annotation_id']);
+									});
+								}
+							}
+						}
+						break;
+					case 'GET':
+					case 'POST':
+					case 'PUT':
+						if(($coords = $data['annotation']['target']['selector']['value'] ?? null)) {
+							$id = ($data['annotation']['id'] ?? null);
+							
+							$coords = preg_replace('!^xywh=!', '', $coords);
+							$coords = explode(',', $coords);
+							
+							$tmp = explode('-', $data['annotation']['target']['source']['id'] ?? '');
+							
+							$page = $tmp[2] ?? 1;
+							$page_info = $files[$page - 1];
+							$page_width = $page_info['original_width'];
+							$page_height = $page_info['original_height'];
+							
+							$properties = [
+								'page' => $page,
+								'x' => $coords[0]/$page_width,
+								'y' => $coords[1]/$page_height,
+								'w' => $coords[2]/$page_width,
+								'h' => $coords[3]/$page_height
+							];
+							if(!($title = $data['annotation']['body']['value'] ?? null) && is_array($data['annotation']['body'])) {
+								foreach($data['annotation']['body'] as $b) {
+									if($b['type'] === 'TextualBody') {
+										$title = $b['value'];
+										break;
+									}
+								}
+							}
+							if(!$title) { $title = _t('Clipping'); }
+							
+							if($id && is_numeric($id) && 
+								(
+									$t_anno = $t_media->editAnnotation($id, 'en_US', $properties, 0, 0, [], ['returnAnnotation' => true])
+								)
+							) {
+								$t_anno->replaceLabel(['name' => $title], 'en_US', null, true);
+							} elseif(
+								$id && ($anno_id = ca_user_representation_annotations::find(['idno' => $id], ['returnAs' => 'firstId']))
+								&&
+								($t_anno = $t_media->editAnnotation($anno_id, 'en_US', $properties, 0, 0, [], ['returnAnnotation' => true]))
+							) {
+								$t_anno->replaceLabel(['name' => $title], 'en_US', null, true);
+							} else {
+							print "session key is ".Session::getSessionID();
+								print_R(Session::getVarKeys());
+								$t_media->addAnnotation($title, 'en_US', $request->getUserID(), $properties, 0, 0, ['idno' => $id], ['forcePreviewGeneration' => true]);
+							}
+						}
+						break;
 				}
 			}
 		}
-		
-		if($vtt) {
-			return "WEBVTT \n\n".join("\n\n", $clip_list);
+
+  		$clip_list = [];
+  		
+		if(is_array($annotations) && sizeof($annotations)) {
+			foreach($annotations as $annotation) {
+				if(!is_null($filter_to_page) && ($filter_to_page != (int)$annotation['page'])) { continue; }
+				switch($annotation_type) {
+					case 'TimeBasedAudio':
+					case 'TimeBasedVideo':
+						if($mode === 'vtt') {
+							$clip_list[] = "{$annotation['startTimecode_vtt']} --> {$annotation['endTimecode_vtt']}\n{$annotation['label']}";
+						} else {
+							$clip_list[] = [
+								'identifier' => $annotation['annotation_id'],
+								'text' => $annotation['label'],
+								'start' => $annotation['startTimecode_vtt'],
+								'end' => $annotation['endTimecode_vtt']
+							];
+						}
+						break;
+					case 'Document':
+						$page_info = $files[$annotation['page'] - 1];
+						$page_width = $page_info['original_width'];
+						$page_height = $page_info['original_height'];
+						$mimetype = $page_info['original_mimetype'];
+						
+						$clip_list[] = [
+							'label' => $annotation['label'],
+							'identifier' => $annotation['annotation_id'],
+							'representation_id' => $annotation['representation_id'],
+							'preview' => $annotation['preview_url_thumbnail'],// TODO generalize version
+							'x' => $annotation['x'] * $page_width,
+							'y' => $annotation['y'] * $page_height,
+							'w' => $annotation['w'] * $page_width,
+							'h' => $annotation['h'] * $page_height,
+							'mimetype' => $mimetype,
+							'page' => $annotation['page']
+						];
+						break;
+				}
+			}
 		}
-		return $clip_list;
+		switch($mode) {
+			case 'iiif':
+				$clip_response = new \CA\Media\IIIFResponses\Clips();
+				return $clip_response->response([], ['identifiers' => [$identifier], 'clip_list' => $clip_list]);
+			case 'vtt':
+				return "WEBVTT \n\n".join("\n\n", $clip_list);
+			default:
+				return $clip_list;
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function manifestUrl() : string {
+		$config = Configuration::load();
+		if(isset($_SERVER['REQUEST_URI'])) {
+			return  $config->get('site_host').$_SERVER['REQUEST_URI'];
+		} else {
+			return $config->get('site_host').$config->get('ca_url_root')."/manifest";
+		}
 	}
 	# -------------------------------------------------------
 }

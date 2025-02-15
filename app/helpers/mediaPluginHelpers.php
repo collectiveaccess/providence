@@ -576,7 +576,7 @@ function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
 /**
  * Remove EXIF Orientation tag using ExifTool
  *
- * @param string $pfilepath file path
+ * @param string $filepath file path
  *
  * @return bool True on success, false if operation failed
  */
@@ -584,6 +584,25 @@ function caExtractRemoveOrientationTagWithExifTool($filepath){
 	if(!file_exists($filepath)) { return false; }
 	if ($path_to_exif_tool = caExifToolInstalled()) {
 		caExec("{$path_to_exif_tool} -overwrite_original_in_place -P -fast -Orientation= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
+
+		if($return == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Remove all embedded metadata using ExifTool
+ *
+ * @param string $filepath file path
+ *
+ * @return bool True on success, false if operation failed
+ */
+function caRemoveAllMediaMetadata($filepath){
+	if(!file_exists($filepath)) { return false; }
+	if ($path_to_exif_tool = caExifToolInstalled()) {
+		caExec("{$path_to_exif_tool} -all= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
 
 		if($return == 0) {
 			return true;

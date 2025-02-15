@@ -58,6 +58,7 @@ class BaseMediaViewer {
 		$check_access = caGetOption('checkAccess', $options, null);
 		
 		$display_version = caGetOption('display_version', $data['display'], null);
+		$display_type = caGetOption('display_type', $data, null);
 		$subject_table = $t_subject ? $t_subject->tableName() : null;
 		
 		// Controls
@@ -170,7 +171,9 @@ class BaseMediaViewer {
 		$o_view->setVar('hideAllOverlayControls', caGetOption('hideAllOverlayControls', $options, false));
 		$o_view->setVar('hideOverlayControls', caGetOption('hideOverlayControls', $options, false));
 		$o_view->setVar('controls', $controls);
-	
+		$o_view->setVar('displayType', $display_type);
+		$o_view->setVar('displayInfo', $data['display']);
+		
 		return $o_view->render(caGetOption('viewerWrapper', $options, 'viewerWrapper').'.php');
 	}
 	# -------------------------------------------------------
