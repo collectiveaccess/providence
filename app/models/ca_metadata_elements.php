@@ -627,7 +627,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					}
 					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideDown(250);';
 					
-					if ($attributes['checked']) {
+					if ($attributes['checked'] ?? false) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $ids)."').hide();
@@ -644,7 +644,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					}
 					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideUp(250);';
 					
-					if (!$attributes['checked']) {
+					if (!($attributes['checked'] ?? false)) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $ids)."').hide();

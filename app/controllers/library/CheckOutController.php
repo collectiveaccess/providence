@@ -189,6 +189,8 @@ class CheckOutController extends ActionController {
 		}
 		
 		$this->view->setVar('data', $infos);
+		
+		$this->response->setContentType('application/json');
 		$this->render('checkout/ajax_data_json.php');
 	}
 	# -------------------------------------------------------
@@ -277,6 +279,8 @@ class CheckOutController extends ActionController {
 		}
 		
 		$this->view->setVar('data', $ret);
+		
+		$this->response->setContentType('application/json');
 		$this->render('checkout/ajax_data_json.php');
 	}
 	# -------------------------------------------------------

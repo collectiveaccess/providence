@@ -1692,7 +1692,7 @@ class ca_users extends BaseModel {
 					break;
 				# ---------------------------------
 				default:
-					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
+					return $va_pref_info["default"] ?? null;
 					break;
 				# ---------------------------------
 			}

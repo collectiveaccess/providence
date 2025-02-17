@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,6 @@ class WLPlugBanHammerExportFrequency Extends BaseBanHammerPlugin  {
 		if ((($ban_probability = (float)($config['ban_probability'] ?? 0)) < 0) || ($ban_probability > 1.0)) {
 			$ban_probability = 1.0;
 		}
-		
 		// Frequency ban
 		if (!($ip = RequestHTTP::ip())) { return 0; }
 		$export_count = ExternalCache::fetch($ip, 'BanHammer_ExportCounts');
@@ -88,14 +87,15 @@ class WLPlugBanHammerExportFrequency Extends BaseBanHammerPlugin  {
 	 *
 	 */
 	static public function banTTL() {
-		return null;	// forever
+		$config = self::$config ? self::$config->get('plugins.ExportFrequency') : [];
+		return self::getTTLFromConfig($config);
 	}
 	# ------------------------------------------------------
 	/**
 	 * Ban is partial or global?
 	 */
 	static public function isPartial() {
-		return true;	// only ban exports
+		return true;	
 	}
 	# ------------------------------------------------------
 }

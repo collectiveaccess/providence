@@ -920,26 +920,23 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$num_processed = 0;
 
-
 		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
-			$header = $header_sources = [];
+			$use_ids_as_headers = (bool)$t_mapping->getSetting('CSV_use_ids_as_field_names');
+			
+			$header = [];
 			$mapping_items = $t_mapping->getItems();
+			ksort($mapping_items);
 			foreach($mapping_items as $i => $mapping_item) {
 				$settings = caUnserializeForDatabase($mapping_item['settings']);
-				$header_sources[(int)$mapping_item['element']] = $settings['_id'] ? $settings['_id'] : $mapping_item['source'];
-			}
-			ksort($header_sources);
-			foreach($header_sources as $element => $source) {
-				$tmp = explode(".", $source);
-				$label = null;
-				if ($t_table = Datamodel::getInstanceByTableName($tmp[0], true)) {
-					$label = $t_table->getDisplayLabel($source);
+				if(!($label = ($settings['fieldName'] ?? null))) {
+					if($use_ids_as_headers && isset($settings['_id'])) {
+						$label = $settings['_id'];
+					} elseif (!($label = caGetLabelForBundle($mapping_item['source']))) {
+						$label = $mapping_item['source'] ?? null;
+					}
 				}
-				if (!$label) {
-					$label = $source;
-				}
+				if(!strlen($label)) { $label = '???'; }
 				$header[] = $label;
-
 			}
 			$delimiter = $t_mapping->getSetting('CSV_delimiter') ?: ",";
 			$enclosure = $t_mapping->getSetting('CSV_enclosure') ?: '"';
@@ -1848,10 +1845,12 @@ itemOutput:
 						$parents = $t_rel->get("{$new_table_name}.hierarchy.{$key}", ['returnAsArray' => true, 'restrictToTypes' => $filter_types]);
 
 						$related = [];
-						foreach(array_unique($parents) as $vn_pk) {
-							$related[] = [
-								$key => intval($vn_pk)
-							];
+						if(is_array($parents)) {
+							foreach(array_unique($parents) as $vn_pk) {
+								$related[] = [
+									$key => intval($vn_pk)
+								];
+							}
 						}
 						break;
 					case 'ca_sets':

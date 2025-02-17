@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -154,11 +154,9 @@ class MultipartIDNumber extends IDNumber {
 	 */
 	protected function explodeValue($value) {
 		$separator = $this->getSeparator();
-		
 		if ($separator && $this->formatHas('PARENT', 0)) {
 			// starts with PARENT element so explode in reverse since parent value may include separators
 			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "_PARENT_", $value);
-		
 			$element_vals = explode($separator, $v_proc);
 
 			$i = 0;
@@ -240,8 +238,8 @@ class MultipartIDNumber extends IDNumber {
 		if (!is_array($elements)) { return []; }
 
 		$pv = $this->getParentValue();
-		if(preg_match('!^'.preg_quote($pv, '!').'!u', $v)) {
-			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $v);
+		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv, '!').'!u', $value)) {
+			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $value);
 			$element_vals = $this->explodeValue($npv);
 			array_unshift($element_vals, $npv);
 		} else {
@@ -1150,6 +1148,9 @@ class MultipartIDNumber extends IDNumber {
 		
 		foreach ($elements as $element_info) {
 			switch($element_info['type']) {
+				case 'PARENT':
+					$values[$i] = $this->getParentValue();
+					break;
 				case 'SERIAL':
 					$num_serial_elements_seen++;
 
@@ -1219,7 +1220,6 @@ class MultipartIDNumber extends IDNumber {
 			return (isset($_REQUEST["{$name}_extra_0"])) ? [$_REQUEST["{$name}_extra_0"]] : null; 
 		}
 		$return_template = caGetOption('returnTemplate', $options, false);
-
 		$element_names = array_keys($elements);
 		$separator = $this->getSeparator();
 		$element_values = [];

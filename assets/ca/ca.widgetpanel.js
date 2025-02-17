@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
 
 (function ($) {
@@ -34,8 +33,6 @@ var caUI = caUI || {};
 		var that = jQuery.extend({
 			widgetUrl: '',
 			panelCSSClass: 'browseSelectPanel',
-			
-			useExpose: true,
 			
 			isChanging: false
 		}, options);
@@ -47,9 +44,6 @@ var caUI = caUI || {};
 			that.isChanging = true;
 			jQuery("#dashboardWidgetPanel").fadeIn(200, function() { that.isChanging = false; });
 			
-			if (that.useExpose) { 
-				jQuery("#dashboardWidgetPanel").expose({api: true, color: '#000000', opacity: 0.5}).load(); 
-			}
 			jQuery("#dashboardWidgetPanelContent").load(that.widgetUrl, {});
 		}
 		
@@ -57,9 +51,6 @@ var caUI = caUI || {};
 			that.isChanging = true;
 			jQuery("#dashboardWidgetPanel").fadeOut(200, function() { that.isChanging = false; });
 			
-			if (that.useExpose) {
-				jQuery.mask.close();
-			}
 			jQuery("#dashboardWidgetPanelContent").empty();
 		}
 		

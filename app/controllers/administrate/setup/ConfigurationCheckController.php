@@ -50,6 +50,13 @@ class ConfigurationCheckController extends ActionController {
 		$this->view->setVar('search_config_settings',$vo_search_config_settings);
 		$this->view->setVar('search_config_engine_name',  SearchEngine::getPluginEngineName());
 		
+		// Search queue
+		$sq_count = ca_search_indexing_queue::count();
+		$sq_is_running = ca_search_indexing_queue::isRunning();
+		
+		$this->view->setVar('search_indexing_queue_count', $sq_count);
+		$this->view->setVar('search_indexing_queue_is_running', $sq_is_running);
+		
 		// Media
 		$t_media = new Media();
 		$va_plugin_names = $t_media->getPluginNames();

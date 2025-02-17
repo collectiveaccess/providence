@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,14 +25,13 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	if(!($vs_window_title = trim(MetaTagManager::getWindowTitle()))) {
- 		$va_breadcrumb = $this->getVar('nav')->getDestinationAsBreadCrumbTrail();
- 		if (is_array($va_breadcrumb) && sizeof($va_breadcrumb)) {
- 			$vs_window_title = array_pop($va_breadcrumb);
- 		}
- 	}
-	$vs_window_title = strip_tags($vs_window_title);
+if(!($window_title = trim(MetaTagManager::getWindowTitle()))) {
+	$breadcrumb = $this->getVar('nav')->getDestinationAsBreadCrumbTrail();
+	if (is_array($breadcrumb) && sizeof($breadcrumb)) {
+		$window_title = array_pop($breadcrumb);
+	}
+}
+$window_title = strip_tags($window_title);
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -43,15 +42,15 @@
 		<meta http-equiv="Content-Style-Type" content="text/css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 
-		<title><?= $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
+		<title><?= $this->appconfig->get("window_title").($window_title ? " : {$window_title}" : ''); ?></title>
 
 		<script type="text/javascript">window.caBasePath = '<?= $this->request->getBaseUrlPath(); ?>';</script>
 <?php
 	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
 	print MetaTagManager::getHTML();
 	
-	if ($vs_local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
-		print "<link rel='stylesheet' href='{$vs_local_css_url_path}' type='text/css' media='screen' />
+	if ($local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
+		print "<link rel='stylesheet' href='{$local_css_url_path}' type='text/css' media='screen' />
 ";
 	}
 	

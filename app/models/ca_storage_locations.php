@@ -467,8 +467,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 			'location_id' => $vn_id = $t_root->getPrimaryKey(),
 			'item_id' => $vn_id,
 			'name' => _t('Storage locations'),
-			'children' => $qr_children->numRows(),
-			'has_children' => $qr_children->numRows() ? true : false
+			'children' => $qr_children ? $qr_children->numRows() : 0,
+			'has_children' => ($qr_children && $qr_children->numRows()) ? true : false
 		));
 	 }
 	# ------------------------------------------------------

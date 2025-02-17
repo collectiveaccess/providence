@@ -60,7 +60,7 @@ class BanHammer {
 			if ($plugin == "BaseBanHammerPlugin.php") { continue; }
 			if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $plugin, $m)) {
 				$n = $m[1];
-				require("{$p}/{$plugin}");
+				require_once("{$p}/{$plugin}");
 				$classname = "WLPlugBanHammer{$n}";
 				self::$plugin_names[$classname::$priority][] = $n;
 			}

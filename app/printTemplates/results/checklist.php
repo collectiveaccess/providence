@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,7 +85,7 @@ $num_items				= (int)$result->numHits();
 							print "<div class='title'>".$result->getWithTemplate('^ca_objects.preferred_labels.name')."</div>"; 
 							if (is_array($display_list)) {
 								foreach($display_list as $placement_id => $display_item) {
-									$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
+									$locale = caGetOption('locale', is_array($display_item['settings']) ? $display_item['settings'] : [], null);
 									if(!$locale && preg_match("!^(ca_object_representations.media|ca_objects.preferred_labels)!", $display_item['bundle_name'] ?? null)) { continue; }
 									if (!strlen($display_value = $t_display->getDisplayValue($result, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true]))) {
 										if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,7 +30,9 @@
 	
 	$t_display 				= $this->getVar('t_display');
 	$placements 			= $this->getVar("placements");
-	$reps 					= $t_item->getRepresentations(array("thumbnail", "small", "medium"));
+	
+	$show_reps = $t_display->getSetting('show_representations');
+	$reps 					= (!in_array($show_reps, ['all', 'primary'], true)) ? [] : $t_item->getRepresentations(array("thumbnail", "small", "medium"), null, ['primaryOnly' => ($show_reps === 'primary')]);
 ?>
     <div id="summary" style="clear: both;">
 <?php

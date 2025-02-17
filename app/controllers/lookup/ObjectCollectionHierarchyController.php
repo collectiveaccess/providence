@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -219,6 +219,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 		$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);
 
+		$this->response->setContentType('application/json');
 		return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_level_json.php');
 	}
 	# -------------------------------------------------------
@@ -526,6 +527,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 		$this->view->setVar('ancestors', $va_ancestors);
 
+		$this->response->setContentType('application/json');
 		return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_ancestors_json.php');
 	}
 	# -------------------------------------------------------

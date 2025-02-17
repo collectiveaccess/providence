@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -162,6 +162,7 @@ if(is_array($va_action_errors = $this->request->getActionErrors('hierarchy_locat
 
 $path = [];
 $va_object_collection_collection_ancestors = $this->getVar('object_collection_collection_ancestors');
+
 $do_objects_x_collections_hierarchy = false;
 if ($objects_x_collections_hierarchy_enabled && is_array($va_object_collection_collection_ancestors)) {
 	$ancestors = $va_object_collection_collection_ancestors + $ancestors;
@@ -309,7 +310,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 	}
 	if (($id > 0) || $batch) {
 ?>
-		<div id="<?= $id_prefix; ?>HierarchyBrowserContainer" class="editorHierarchyBrowserContainer">		
+		<div id="<?= $id_prefix; ?>HierarchyBrowserContainer" style="display: none;" class="editorHierarchyBrowserContainer">		
 			<div  id="<?= $id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
 <?php
@@ -506,7 +507,8 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 
 		jQuery("#<?= $id_prefix; ?>browseToggle").click(function(e, opts) {
 			_init<?= $id_prefix; ?>ExploreHierarchyBrowser();
-			var delay = (opts && opts.delay && (parseInt(opts.delay) >= 0)) ? opts.delay :  250;
+			var delay = (opts && (opts.delay !== undefined) && (parseInt(opts.delay) >= 0)) ? opts.delay :  250;
+
 			jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").slideToggle(delay, function() { 
 				jQuery("#<?= $id_prefix; ?>browseToggle").html((this.style.display == 'block') ? '<?= '<span class="form-button">'._t('Close browser').'</span>';?>' : '<?= '<span class="form-button">'._t('Show Hierarchy').'</span>';?>');
 			}); 

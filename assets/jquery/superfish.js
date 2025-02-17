@@ -124,9 +124,6 @@
 				$ul.css('margin-left', (parseInt($ul.css('margin-left')) - (1.2 * $ul.width())) + 'px');
 				$ul.css('margin-top', (parseInt($ul.css('margin-top')) + 25) + 'px');
 				
-				if ($.browser.msie && (parseInt($.browser.version) >= 7) && (parseInt($.browser.version) < 8)) {
-					$ul.parent().css('z-index', $ul.parent().css('z-index') + 10);	// IE7 wants the z-index set to something higher than the parent...
-				}
 				$ul.data('moved', 1);
 			} 
 			
@@ -137,3 +134,5 @@
 	});
 
 })(jQuery);
+
+
