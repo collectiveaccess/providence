@@ -1908,6 +1908,13 @@ table.listtable tbody td {
     background-color: #FFF;
     vertical-align: middle;
 }
+
+table.listtable tbody td div.result-content {
+    min-width: 100px;
+    max-height: 240px;
+    overflow: auto;
+}
+
 table.listtable tbody td.listtableEditDelete, table.uiScreenItem tbody td.listtableEditDelete {
 	width:55px;
 }
