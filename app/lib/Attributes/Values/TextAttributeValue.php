@@ -405,8 +405,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			switch($use_editor) {
 				case 'ckeditor':
 					AssetLoadManager::register("ck5");
-					
-					$toolbar = caGetCK5Toolbar();
 					$element .= "
 					<script type=\"module\">
 						import {
@@ -432,7 +430,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
 								toolbar: {
-									items: ".json_encode($toolbar).",
+									items: ".json_encode(caGetCK5Toolbar()).",
 									shouldNotGroupWhenFull: true
 								},
 								ResizableHeight: {
