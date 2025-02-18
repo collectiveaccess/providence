@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,97 +43,142 @@ $stats			= $this->getVar('statistics');
 		);
 	}
 	print caFormTag($this->request, 'SetAccess', 'caAccessControlList');
+	
+	if($t_instance->hasField('access')) {
 ?>	
 	<div class='globalAccess'>
-		<div class='title'><?= _t('Global access'); ?></div>
+		<div class='title'><?= _t('Public access'); ?></div>
+		<p class=""><?=  $t_instance->htmlFormElement('access', '^LABEL ^ELEMENT'); ?></p>
+<?php
+		if (
+			(bool)$t_instance->getAppConfig()->get($t_instance->tableName().'_allow_access_inheritance') 
+			&& 
+			$t_instance->hasField('access_inherit_from_parent')
+			&&
+			($t_instance->get('parent_id') > 0)
+		) {
+			print $t_instance->htmlFormElement('access_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit access from parent?')]);
+		}
+		
+				if((bool)$t_instance->hasField('access_inherit_from_parent') && (($stats['subRecordCount'] ?? 0) > 0)) {
+?>
+		<p>
+			<?= ($stats['inheritingSubRecordCount'] === 1) ? 
+				_t('%1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($t_instance->tableName(), 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount']) 
+				: 
+				_t(' %1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($t_instance->tableName(), 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount'])  
+			?>
+<?php
+			if(
+					($stats['subRecordCount'] !== $stats['inheritingSubRecordCount'])
+					||
+					($stats['inheritingSubRecordCount'] > 0)
+			) {
+?>
+				<div style="margin-left: 10px;">
+<?php
+				if($stats['subRecordCount'] !== $stats['inheritingAccessSubRecordCount']) {
+?>
+					<?= caHTMLCheckboxInput('set_all_access_inherit_from_parent', ['id' => 'setAllAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+<?php
+				}
+				
+				if($stats['inheritingAccessSubRecordCount'] > 0) {
+?>
+					<?= caHTMLCheckboxInput('set_none_access_inherit_from_parent', ['id' => 'setNoneAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?>
+<?php
+				}
+?>
+				</div>
+<?php
+			}
+		}
+		if(($t_instance->tableName() === 'ca_collections') && (bool)$t_instance->getAppConfig()->get('ca_objects_allow_access_inheritance')) {
+?>
+		<p>
+			<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
+				_t('%1 %2 (out of %4 total) will inherit Pawtucket access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount']) 
+				: 
+				_t(' %1 %2 (out of %4 total) will inherit Pawtucket access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'])  
+			?>
+<?php
+			if(
+					($stats['potentialInheritingAccessRelatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount'])
+					||
+					($stats['inheritingAccessRelatedObjectCount'] > 0)
+			) {
+?>
+				<div style="margin-left: 10px;">
+<?php
+				if($stats['potentialInheritingAccessRelatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount']) {
+?>
+					<?= caHTMLCheckboxInput('set_all_objects_access_inherit_from_parent', ['id' => 'setAllObjectsAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+<?php
+				}
+				
+				if($stats['inheritingAccessRelatedObjectCount'] > 0) {
+?>
+					<?= caHTMLCheckboxInput('set_none_objects_access_inherit_from_parent', ['id' => 'setNoneObjectsAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?>
+<?php
+				}
+?>
+				</div>
+<?php
+			}
+		}
+	}
+?>
+	</div>
+
+	<div class='globalAccess'>
+		<div class='title'><?= _t('Item access'); ?></div>
+		
+		<div class='subtitle'><?= _t('Global access'); ?></div>
 <?php 	
 		$global_access = $t_instance->getACLWorldAccess(['returnAsInitialValuesForBundle' => true]);
 		$global_access_status = $global_access['access_display'];
-		print "<p>"._t('All groups and users ')." <b>"; 
-		print "<span class='accessName'>{$global_access_status}</span>";
-		print"</b> "._t('this record, unless you create an exception')."</p>";
-
-?>
-		<div id='editGlobalAccess'>
-<?= $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	?>	
-		</div>
-		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?= _t('Edit Global Access'); ?></a></div>
-		<div style='width:100%; clear:both; height: 1px;'></div> 
-	</div>
-	<div class='globalAccess'>
-		<div class='title'><?= _t('Exceptions'); ?></div>
-<?php
-		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
-		 	print "<p>"._t('The following groups and users have special access or restrictions for this record').".</p>";
-		} else {
-			print "<p>"._t('No access exceptions exist for this record')."</p>";
-		}
-		$group_access = $t_instance->getACLUserGroups(['returnAsInitialValuesForBundle' => true]);
-		foreach($group_access as $group_access_item) {
-			print "<div><span class='accessName'>".ucwords($group_access_item['name'])."</span> <b>(group)</b>: ".$group_access_item['access_display']."</div>";
-		}
-		$user_access = $t_instance->getACLUsers(['returnAsInitialValuesForBundle' => true]);
-		foreach($user_access as $user_access_item) {
-			print "<div class='accessName'><span class='accessName'>".$user_access_item['lname'].", ".$user_access_item['fname']."</span>: ".$user_access_item['access_display'];
-			if($user_access_item['inherited_from'] ?? null) {
-				print '<div class="inheritName">'._t('Inherited from %1', $user_access_item['inherited_from']).'</div>';
-			}
-			print "</div>";
-		}
+		print "<div>"._t('All groups and users %1 this record, unless an exception is created', $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList'))."</div>"; 
 ?>		
-		<div id='editUserAccess'>
-			<h2><?= _t('Group access'); ?></h2>
+		<hr/>
+		<div class='subtitle'><?= _t('Exceptions'); ?></div>
 <?php
-			print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');			
-			print caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
+		print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');			
+		print caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
 ?>	
-			<h2><?= _t('User access'); ?></h2>
-			<?= $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList'); ?>
+		<?= $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList'); ?>
 
-		</div>
-<?php
-		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
-?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Edit Exceptions'); ?></a></div>
-<?php   
-		} else {
-?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?= caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?= _t('Create an Exception'); ?></a></div>
-<?php
-		}		
-?>
-		<div style='width:100%; clear:both; height: 1px;'></div>
-	</div>
-<?php
-		if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
-			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', '',['forACLAccessScreen' => true], ['request' => $this->request]);
-		}
-		if ($t_instance->hasField('acl_inherit_from_parent')) {
-			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', '', ['forACLAccessScreen' => true], ['request' => $this->request]);
-		}
-		if ((bool)$t_instance->getAppConfig()->get($t_instance->tableName().'_allow_access_inheritance') && $t_instance->hasField('access_inherit_from_parent')) {
-			print $t_instance->getBundleFormHTML('access_inherit_from_parent', '', ['forACLAccessScreen' => true], ['request' => $this->request]);
-		}
-?>
+			
+		<hr/>
+		<div class='subtitle'><?= _t('Inheritance'); ?></div>
 <?php
 if(
 	($t_instance->hasField('acl_inherit_from_parent') && (($stats['subRecordCount'] ?? null) > 0))
 	||
+	($t_instance->hasField('acl_inherit_from_ca_collections'))
+	||
 	(($t_instance->tableName() === 'ca_collections') && (($stats['relatedObjectCount'] ?? null) > 0))
 ) {
-?>	
-	<div class='globalAccess'>
-		<div class='title'><?= _t('Usage'); ?></div>
+	
+	if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
+?>
+		<div><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT', []); ?></div>
 <?php
+	}
+	if ($t_instance->hasField('acl_inherit_from_parent')) {
+?>
+		<div><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit access from parent?')]); ?></div>
+<?php
+	}
+
 	if(
 		($t_instance->hasField('acl_inherit_from_parent') && (($stats['subRecordCount'] ?? null) > 0))
 	) {
 ?>
 		<p>
 			<?= ($stats['inheritingSubRecordCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_SINGULAR'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount']) 
+				_t('%1 %2 (out of %4 total) will inherit item access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_SINGULAR'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount']) 
 				: 
-				_t('%1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount'])  
+				_t('%1 %2 (out of %4 total) will inherit item access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount'])  
 			?>
 <?php
 			if(
@@ -163,26 +208,25 @@ if(
 		</p>
 <?php
 	}
-?>
-<?php
+
 	if(($t_instance->tableName() === 'ca_collections') && (($stats['relatedObjectCount'] ?? null) > 0)) {
 ?>
 		<p>
 			<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) will inherit item-level access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount']) 
+				_t('%1 %2 (out of %4 total) will inherit item access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount']) 
 				: 
-				_t(' %1 %2 (out of %4 total) will inherit item-level access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount'])  
+				_t(' %1 %2 (out of %4 total) will inherit item access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'])  
 			?>
 <?php
 			if(
-				($stats['relatedObjectCount'] !== $stats['inheritingRelatedObjectCount'])
+				($stats['potentialInheritingRelatedObjectCount'] !== $stats['inheritingRelatedObjectCount'])
 				||
 				($stats['inheritingRelatedObjectCount'] > 0)
 			) {
 ?>
 				<div style="margin-left: 10px;">
 <?php
-				if($stats['relatedObjectCount'] !== $stats['inheritingRelatedObjectCount']) {
+				if($stats['potentialInheritingRelatedObjectCount'] !== $stats['inheritingRelatedObjectCount']) {
 ?>
 					<?= caHTMLCheckboxInput('set_all_acl_inherit_from_ca_collections', ['id' => 'setAllACLInheritFromCollections', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
 <?php
@@ -200,44 +244,12 @@ if(
 ?>			
 		</p>
 <?php
-		if((bool)$t_instance->getAppConfig()->get('ca_objects_allow_access_inheritance')) {
-?>
-		<p>
-			<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount']) 
-				: 
-				_t(' %1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['relatedObjectCount'])  
-			?>
-<?php
-			if(
-					($stats['relatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount'])
-					||
-					($stats['inheritingAccessRelatedObjectCount'] > 0)
-			) {
-?>
-				<div style="margin-left: 10px;">
-<?php
-				if($stats['relatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount']) {
-?>
-					<?= caHTMLCheckboxInput('set_all_access_inherit_from_parent', ['id' => 'setAllAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
-<?php
-				}
-				
-				if($stats['inheritingAccessRelatedObjectCount'] > 0) {
-?>
-					<?= caHTMLCheckboxInput('set_none_access_inherit_from_parent', ['id' => 'setNoneAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?>
-<?php
-				}
-?>
-				</div>
-<?php
-			}
+
 ?>			
 		</p>
 <?php
 		}
 	}
-}
 ?>
 	</form>	
 	<div class="editorBottomPadding"><!-- empty --></div>

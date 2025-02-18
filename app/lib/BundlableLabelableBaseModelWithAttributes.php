@@ -389,11 +389,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			// Parent record for which access is changing
 			if ($this->changed('access')) {
-				$this->getDb()->query("
-					UPDATE ".$this->tableName()." SET access = ? 
-					WHERE
-						parent_id = ? AND access_inherit_from_parent = 1
-				", array((int)$this->get('access'), $this->getPrimaryKey()));
+				ca_acl::applyAccessInheritanceToChildrenFromRow($this);
+				ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($this);
 			}
 		}
 	

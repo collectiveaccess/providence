@@ -496,9 +496,9 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
-		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
-			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
-		}
+		// if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+// 			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
+// 		}
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
@@ -1044,6 +1044,13 @@ class BaseEditorController extends ActionController {
 			'is_insert' => false)
 		);
 		
+		// Set Pawtucket access
+		$orig_access = $t_subject->get('access');
+		if(!is_null($this->request->parameterExists('access')) && $t_subject->hasField('access')) {
+			$t_subject->set('access', $this->request->getParameter('access', pInteger) );
+			$t_subject->update();
+		}
+		
 		// Force all?
 		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
 			if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
@@ -1062,15 +1069,25 @@ class BaseEditorController extends ActionController {
 			$_REQUEST['form_timestamp'] = time();
 		}
 		if(
+			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
+		) {
+			if(!ca_acl::setAccessInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
+		if(
 			($subject_table === 'ca_collections')
 			&&
-			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
+			($set_all = $this->request->getParameter('set_all_objects_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_objects_access_inherit_from_parent', pInteger))
 		) {
 			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
+		
+		
 
 		// Save user ACL's
 		$users_to_set = [];
@@ -1119,6 +1136,10 @@ class BaseEditorController extends ActionController {
 			}
 		}
 		
+		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
+		}
+		
 		ca_acl::updateACLInheritanceForRow($t_subject);
 
 		$this->opo_app_plugin_manager->hookSaveItem(
@@ -1131,6 +1152,8 @@ class BaseEditorController extends ActionController {
 				'request' => $this->request
 			]
 		);
+
+		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
 
 		$this->Access();
 	}

@@ -300,7 +300,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				_t('Do not inherit access settings from related collections') => 0,
 				_t('Inherit access settings from related collections') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from collections?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for related collections are applied to this object.')
+			'LABEL' => _t('Inherit item access control settings from collections?'), 'DESCRIPTION' => _t('Determines whether item access control settings set for related collections are applied to this object.')
 		),
 		'acl_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -309,10 +309,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access control settings from parents') => 0,
-				_t('Inherit item-level access control settings from parents') => 1
+				_t('Do not inherit item access control settings from parents') => 0,
+				_t('Inherit item access control settings from parents') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set from parent objects are applied to this object.')
+			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 

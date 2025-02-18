@@ -6092,7 +6092,11 @@ a.caDeleteLabelButton {
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
 
-.globalAccess {
+div.globalAccess hr {
+	border: 1px dashed #ccc;
+}
+
+div.globalAccess {
     background-color:#eee;
     border-radius: 4px;
     -moz-border-radius: 4px;
@@ -6100,31 +6104,40 @@ a.caDeleteLabelButton {
     padding:10px;
     margin-bottom: 15px;
 }
-.globalAccess .title {
+div.globalAccess .title {
     font-size: 18px;
     font-family: arial;
     font-weight: normal;
 }
-.globalAccess .bundleContainer {
+
+div.globalAccess div.subtitle {
+    font-size: 14px;
+    font-family: arial;
+    font-weight: normal;
+    margin: 10px 0 0 0; 
+}
+
+div.globalAccess div.control {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+    margin: 5px 0 5px 0;
+}
+div.globalAccess .bundleContainer {
     border: 0px;
     padding-left:0px;
+    background-color:#eee;
+    
 }
-.globalAccess .labelInfo {
+div.globalAccess .labelInfo {
     background-color:#eee;
     border-top: none;
 }
-.globalAccess h2 {
+div.globalAccess h2 {
     padding-top:10px;
     border-top: dotted 1px #ccc;
     font-family: arial;
     font-weight: normal;
 }
-#editGlobalAccess {
-    display:none;
-}
-#editUserAccess {
-    display:none;
-}
+
 .editLink a{
     text-decoration:none;
     font-size: 12px;
