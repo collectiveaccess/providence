@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2024 Whirl-i-Gig
+ * Copyright 2021-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,6 +138,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 		
 			$row = [];
 			foreach($bundles as $f) {
+				$of = $f;
 				$pt = caParseTagOptions($f);
 				$f = $pt['tag'] ?? null;
 				$use_code = $pt['options']['useCode'] ?? null;
@@ -154,7 +155,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 				if($is_template) {
 					$row[] = [
 							'name' => $f, 
-							'code' => $use_code ? $use_code : $f,
+							'code' => $use_code ? $use_code : $of,
 							'locale' => null,
 							'dataType' => "Text",
 							'values' => [

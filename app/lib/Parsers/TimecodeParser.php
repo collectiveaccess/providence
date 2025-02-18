@@ -121,7 +121,8 @@ class TimecodeParser {
 					$has_meridian = false;
 					if(preg_match("!(".join('|', $meridians).")[ ]*$!i", $va_pieces[sizeof($va_pieces)-1], $m)) {
 						$va_pieces[sizeof($va_pieces)-1] = str_replace($m[1], '', $va_pieces[sizeof($va_pieces)-1]);
-						if(($m[1] === $meridian_table['p.m.']) && ($va_pieces[0] < 12)) {
+					
+						if((mb_strtolower($m[1]) === mb_strtolower($meridian_table['p.m.'])) && ($va_pieces[0] < 12)) {
 							$va_pieces[0] += 12;
 						}
 						$has_meridian = true;

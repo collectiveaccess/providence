@@ -483,7 +483,14 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					$display_id = (int)$template_file; 
 					$template_file = null;
 				} elseif($template_file) { 
-					$display_id = null; 
+					if($t_display) {
+						$view->setVar('display', $t_display);
+						$placements = $t_display->getPlacements(['settingsOnly' => true]);
+						$view->setVar('display_list', $placements);
+						$display_id = $t_display->getPrimaryKey();
+					} else {
+						$display_id = null; 
+					}
 				}
 				break;
 			}
@@ -531,7 +538,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	}
 	
 	$t_display = new ca_bundle_displays();
-	if ($display_id && ($t_display->load($display_id)) && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
+	if (!$template_file && $display_id && ($t_display->load($display_id)) && ($t_display->haveAccessToDisplay($request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 		$placements = $t_display->getPlacements(['settingsOnly' => true]);
 		$view->setVar('display_list', $placements);
 		$view->setVar('display', $t_display);
@@ -1212,7 +1219,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 /**
  *
  */
-function caExportSummary($request, BaseModel $t_instance, string $template, int $display_id, string $output_filename, ?string $title=null, ?array $options=null) {
+function caExportSummary($request, BaseModel $t_instance, string $template, $display_id, string $output_filename, ?string $title=null, ?array $options=null) {
 	$config = Configuration::load();
 	$output = caGetOption('output', $options, 'STREAM');
 	$access_values = caGetOption('checkAccess', $options, null);

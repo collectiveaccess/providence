@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
-*
-*/
-
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__."/Parsers/MediaMetadata/XMPParser.php");
 
@@ -581,7 +576,7 @@ function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
 /**
  * Remove EXIF Orientation tag using ExifTool
  *
- * @param string $pfilepath file path
+ * @param string $filepath file path
  *
  * @return bool True on success, false if operation failed
  */
@@ -589,6 +584,25 @@ function caExtractRemoveOrientationTagWithExifTool($filepath){
 	if(!file_exists($filepath)) { return false; }
 	if ($path_to_exif_tool = caExifToolInstalled()) {
 		caExec("{$path_to_exif_tool} -overwrite_original_in_place -P -fast -Orientation= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
+
+		if($return == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Remove all embedded metadata using ExifTool
+ *
+ * @param string $filepath file path
+ *
+ * @return bool True on success, false if operation failed
+ */
+function caRemoveAllMediaMetadata($filepath){
+	if(!file_exists($filepath)) { return false; }
+	if ($path_to_exif_tool = caExifToolInstalled()) {
+		caExec("{$path_to_exif_tool} -all= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
 
 		if($return == 0) {
 			return true;
@@ -1270,5 +1284,28 @@ function caTranscribeAVMedia(string $mimetype) : bool {
 	// Check that Whisper is installed
 	if(!caWhisperInstalled()) { return false; }
 	return true;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caExtractTextFromPDF(string $filepath, ?array $options=null) : ?string {
+	if(!($pdf_to_text_path = caMediaPluginPdftotextInstalled())) { return null; }
+	
+	$page_start = caGetOption('start', $options, 1);
+	if($page_start < 1) { $page_start = 1; }
+	$num_pages = caGetOption('pages', $options, 0);
+	$num_chars = caGetOption('chars', $options, 0);
+	
+	$page_limits = " -f {$page_start} ";
+	if($num_pages > 0) { $page_limits .= "-l ".($page_start + $num_pages)." "; }
+	
+	$tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
+	caExec($pdf_to_text_path.' -q -enc UTF-8 '.$page_limits.caEscapeShellArg($filepath).' '.caEscapeShellArg($tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+	$extracted_text = file_get_contents($tmp_filename);
+	
+	if($num_chars > 0) { $extracted_text = mb_substr($extracted_text, 0, $num_chars, 'UTF-8'); }
+	@unlink($tmp_filename);
+	return $extracted_text;
 }
 # ------------------------------------------------------------------------------------------------

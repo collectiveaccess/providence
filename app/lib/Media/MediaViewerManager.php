@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2022 Whirl-i-Gig
+ * Copyright 2016-2023 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-require_once(__CA_LIB_DIR__.'/Configuration.php');
 
 class MediaViewerManager {
 	# -------------------------------------------------------
@@ -73,9 +67,9 @@ class MediaViewerManager {
 	/**
 	 * 
 	 */
-	public static function viewerIsAvailable($ps_viewer_name) {
+	public static function viewerIsAvailable(string $viewer_name) {
 		MediaViewerManager::initViewers();
-		if (in_array(strtolower($ps_viewer_name), MediaViewerManager::$s_media_viewers)) {
+		if (in_array(strtolower($viewer_name), MediaViewerManager::$s_media_viewers)) {
 			return true;
 		}
 		return false;
@@ -87,33 +81,37 @@ class MediaViewerManager {
 	public static function getViewerNames() {
 		if(!file_exists(MediaViewerManager::$s_media_viewer_plugin_dir)) { return array(); }
 		
-		$va_media_viewers = [];
+		$media_viewers = [];
 		if (is_resource($r_dir = opendir(MediaViewerManager::$s_media_viewer_plugin_dir))) {
-			while (($vs_plugin = readdir($r_dir)) !== false) {
-				$vs_plugin_proc = str_replace(".php", "", $vs_plugin);
-				if (preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_plugin_proc)) {
-					require_once(MediaViewerManager::$s_media_viewer_plugin_dir."/".$vs_plugin);
-					$va_media_viewers[] = $vs_plugin_proc;
+			while (($plugin = readdir($r_dir)) !== false) {
+				$plugin_proc = str_replace(".php", "", $plugin);
+				if (preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $plugin_proc)) {
+					require_once(MediaViewerManager::$s_media_viewer_plugin_dir."/".$plugin);
+					$media_viewers[] = $plugin_proc;
 				}
 			}
 		}
 		
-		sort($va_media_viewers);
+		sort($media_viewers);
 		
-		return $va_media_viewers;
+		return $media_viewers;
 	}
 	# ----------------------------------------------------------
 	/**
 	 *
 	 */
-	public static function getViewerForMimetype($ps_context, $ps_mimetype) {
-		$va_info = caGetMediaDisplayInfo($ps_context, $ps_mimetype);
-		if (!isset($va_info['viewer']) || !($vs_viewer = $va_info['viewer'])) { 
-			$vs_viewer = caGetDefaultMediaViewer($ps_mimetype);
+	public static function getViewerForMimetype(string $context, string $mimetype, ?array $options=null) {
+		$config = Configuration::load(__CA_CONF_DIR__.'/media_display.conf');
+		if(caGetOption('alwaysUseCloverViewer', $options, (bool)$config->get('always_use_clover_viewer'))) {
+			$viewer = 'Clover';
+		} else {
+			$info = caGetMediaDisplayInfo($context, $mimetype);
+			if (!isset($info['viewer']) || !($viewer = $info['viewer'])) { 
+				$viewer = caGetDefaultMediaViewer($mimetype);
+			}
+			if (!$viewer) { return null; }
 		}
-		if (!$vs_viewer) { return null; }
-		
-		return MediaViewerManager::viewerIsAvailable($vs_viewer) ? $vs_viewer : null;
+		return MediaViewerManager::viewerIsAvailable($viewer) ? $viewer : null;
 	} 
 	# ----------------------------------------------------------
 }

@@ -405,8 +405,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			switch($use_editor) {
 				case 'ckeditor':
 					AssetLoadManager::register("ck5");
-					
-					$toolbar = caGetCK5Toolbar();
 					$element .= "
 					<script type=\"module\">
 						import {
@@ -432,7 +430,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
 								toolbar: {
-									items: ".json_encode($toolbar).",
+									items: ".json_encode(caGetCK5Toolbar()).",
 									shouldNotGroupWhenFull: true
 								},
 								ResizableHeight: {
@@ -528,7 +526,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					'use_inches_for_display_up_to', 'use_feet_for_display_up_to', 'use_millimeters_for_display_up_to', 
 					'use_centimeters_for_display_up_to', 'use_meters_for_display_up_to',
 					'force_meters_for_all_when_dimension_exceeds', 'force_centimeters_for_all_when_dimension_exceeds', 'force_millimeters_for_all_when_dimension_exceeds',
-					'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds'
+					'force_feet_for_all_when_dimension_exceeds', 'force_inches_for_all_when_dimension_exceeds', 'display_units'
 				] as $key) {
 				$proc_key = caSnakeToCamel($key);
 				$parser_opts[$proc_key] = $o_dimensions_config->get($key);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,7 +141,6 @@ trait CLIUtilsMaintenance {
 		$o_db = new Db();
 
 		$t_rep = new ca_object_representations();
-		$t_rep->setMode(ACCESS_WRITE);
 
 		$qr_reps = $o_db->query("SELECT representation_id, media FROM ca_object_representations");
 		print CLIProgressBar::start($qr_reps->numRows(), _t('Loading valid file paths from database'))."\n";
@@ -245,7 +244,6 @@ trait CLIUtilsMaintenance {
 		$o_db = new Db();
 
 		$t_rep = new ca_object_representations();
-		$t_rep->setMode(ACCESS_WRITE);
 		$va_paths = array();
 
 		$qr_reps = $o_db->query("SELECT * FROM ca_object_representations WHERE deleted=1");
@@ -266,7 +264,6 @@ trait CLIUtilsMaintenance {
 
 			if($vb_delete_opt) {
 				$t_rep->load($qr_reps->get('representation_id'));
-				$t_rep->setMode(ACCESS_WRITE);
 				$t_rep->removeAllLabels();
 				$t_rep->delete(true, array('hard' => true));
 			}
@@ -340,8 +337,7 @@ trait CLIUtilsMaintenance {
 			if(is_array($va_tables_to_process) && sizeof($va_tables_to_process) && !in_array($vs_table, $va_tables_to_process)) { continue; }
 			if (!$t_instance = Datamodel::getInstanceByTableName($vs_table)) { continue; }
 			if (!$t_instance->hasField('deleted')) { continue; }
-		
-			$t_instance->setMode(ACCESS_WRITE);
+
 			$pk = $t_instance->primaryKey();
 
 			$qr_del = $o_db->query("SELECT {$pk} FROM {$vs_table} WHERE deleted = 1");
@@ -358,7 +354,6 @@ trait CLIUtilsMaintenance {
 				foreach($row_ids as $row_id) {
 					print CLIProgressBar::next();
 					$t_instance->load($row_id);
-					$t_instance->setMode(ACCESS_WRITE);
 					$t_instance->removeAllLabels();
 					$t_instance->delete(true, array('hard' => true));
 					$vn_c++;
@@ -370,6 +365,7 @@ trait CLIUtilsMaintenance {
 				$vn_t += $vn_c;
 			}
 		}
+		self::remove_unused_guids($po_opts);
 		
 		if ($vn_t > 0) {
 			CLIUtils::addMessage(_t('Done!'), array('color' => 'green'));
@@ -421,7 +417,7 @@ trait CLIUtilsMaintenance {
 				CLIUtils::addMessage(_t("Removed search indexing queue lock"));
 				return true;
 			} else {
-				CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue. Try running caUtils under a user with privileges"));
+				CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue lock file. Try running caUtils under a user with privileges"));
 			}
 		} else {
 			CLIUtils::addMessage(_t("Search indexing queue lock is not present"));
@@ -811,7 +807,6 @@ trait CLIUtilsMaintenance {
 							$t_attr_val = new ca_attribute_values($vn_value_id);
 							if ($t_attr_val->getPrimaryKey()) {
 								$c++;
-								$t_attr_val->setMode(ACCESS_WRITE);
 								$t_attr_val->useBlobAsMediaField(true);
 
 
@@ -899,7 +894,6 @@ trait CLIUtilsMaintenance {
 							if ($t_attr_val->getPrimaryKey()) {
 								$c++;
 								
-								$t_attr_val->setMode(ACCESS_WRITE);
 								$t_attr_val->useBlobAsFileField(true);
 
 
@@ -1934,10 +1928,8 @@ trait CLIUtilsMaintenance {
 						CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
 						foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
 							$vs_processed_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $va_values);
-							
 							$va_values[$va_element['element_code']] = $vs_processed_value;
 							if (!$t_instance->load($vn_row_id)) { continue; }
-							$t_instance->setMode(ACCESS_WRITE);
 							$t_instance->editAttribute(
 								$vn_attr_id, $vn_root_id, $va_values
 							);
