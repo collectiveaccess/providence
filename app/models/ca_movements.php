@@ -143,8 +143,8 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item access control settings from parents') => 0,
-				_t('Inherit item access control settings from parents') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
 			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
 		),
@@ -156,8 +156,8 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'DONT_ALLOW_IN_UI' => true,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit public access settings from parent') => 0,
-				_t('Inherit public access settings from parent') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
 			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),

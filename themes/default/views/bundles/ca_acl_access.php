@@ -161,12 +161,12 @@ if(
 	
 	if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
 ?>
-		<div><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT', []); ?></div>
+		<div><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT',  ['label' => _t('Inherit item access from collection(s)?')]); ?></div>
 <?php
 	}
 	if ($t_instance->hasField('acl_inherit_from_parent')) {
 ?>
-		<div><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit access from parent?')]); ?></div>
+		<div><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit item access from parent?')]); ?></div>
 <?php
 	}
 
@@ -241,10 +241,6 @@ if(
 				</div>
 <?php
 			}
-?>			
-		</p>
-<?php
-
 ?>			
 		</p>
 <?php

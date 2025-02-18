@@ -1050,7 +1050,6 @@ class ca_acl extends BaseModel {
 				if ($t_link = $t_coll->getRelationshipInstance('ca_objects')) {
 					if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
 						if(is_array($ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
-							print_R($ids);
 							$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?)", [$access, $ids]);
 							
 							$o_tq = new TaskQueue(['transaction' => $t_coll->getTransaction()]);
@@ -1158,7 +1157,6 @@ class ca_acl extends BaseModel {
 		$qr = caMakeSearchResult($subject_table, $ids);
 		$inherit_from_parent_flag_exists = $subject->hasField('access_inherit_from_parent');
 		
-			
 		// Apply rows to all
 		$ids_to_set = [];
 		while($qr->nextHit()) {
@@ -1178,10 +1176,9 @@ class ca_acl extends BaseModel {
 				// the change directly in the database. This means these changes don't appear in the log and won't
 				// be transmitted to replicated systems. Might be a problem for someone someday, so we should consider ways
 				// to enable logging (via background processing?)
-				print "UPDATE {$subject_table} SET access = ? WHERE {$subject_pk} IN (?)";
-				print_R($access); print_R($ids);
 				if(!$db->query("UPDATE {$subject_table} SET access = ? WHERE {$subject_pk} IN (?)", [$access, $ids])) {
-					$ret = false;
+					die("ERR");
+					return false;
 				} else {
 					$k = "{$subject_table}::".$subject->getPrimaryKey();
 					
