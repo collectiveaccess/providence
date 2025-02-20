@@ -544,29 +544,29 @@ function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
 /**
  * Extracts media metadata using ExifTool
  *
- * @param string $ps_filepath file path
- * @param bool $pb_skip_unknown If set to true, exiftool won't try to extract unknown tags from the source file
+ * @param string $filepath file path
+ * @param bool $skip_unknown If set to true, exiftool won't try to extract unknown tags from the source file
  * 			Use this if metadata extraction fails for unknown reasons. Sometimes tools like Photoshop write weird
  *			binary data into the files that causes json_decode to barf.
  *
  * @return array|null Extracted metadata, null if exiftool is not installed or something went wrong
  */
-function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
-	if ($vs_path_to_exif_tool = caExifToolInstalled()) {
-		$vs_unknown_param = ($pb_skip_unknown ? '' : '-u');
-		caExec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+function caExtractMetadataWithExifTool(string $filepath, ?bool $skip_unknown=false) : ?array {
+	if ($path_to_exif_tool = caExifToolInstalled()) {
+		$unknown_param = ($skip_unknown ? '' : '-u');
+		caExec("{$path_to_exif_tool} -json -a {$unknown_param} -g1 ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $vn_return);
 
 		if($vn_return == 0) {
-			$va_data = json_decode(join("\n", $va_output), true);
-			if(!is_array($va_data)) { return null; }
-			$va_data = array_shift($va_data);
+			$data = json_decode(join("\n", $output), true);
+			if(!is_array($data)) { return null; }
+			$data = array_shift($data);
 			
 			// rewrite GPS entries to include ref
-			if (isset($va_data['GPS']['GPSLatitude'])) { $va_data['GPS']['GPSLatitude'] .= " ".substr($va_data['GPS']['GPSLatitudeRef'], 0, 1); }
-			if (isset($va_data['GPS']['GPSLongitude'])) { $va_data['GPS']['GPSLongitude'] .= " ".substr($va_data['GPS']['GPSLongitudeRef'], 0, 1); }
+			if (isset($data['GPS']['GPSLatitude'])) { $data['GPS']['GPSLatitude'] .= " ".substr($data['GPS']['GPSLatitudeRef'], 0, 1); }
+			if (isset($data['GPS']['GPSLongitude'])) { $data['GPS']['GPSLongitude'] .= " ".substr($data['GPS']['GPSLongitudeRef'], 0, 1); }
 
-			if(sizeof($va_data)>0) {
-				return $va_data;
+			if(sizeof($data)>0) {
+				return $data;
 			}
 		}
 	}
@@ -580,7 +580,7 @@ function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
  *
  * @return bool True on success, false if operation failed
  */
-function caExtractRemoveOrientationTagWithExifTool($filepath){
+function caExtractRemoveOrientationTagWithExifTool(string $filepath) : bool {
 	if(!file_exists($filepath)) { return false; }
 	if ($path_to_exif_tool = caExifToolInstalled()) {
 		caExec("{$path_to_exif_tool} -overwrite_original_in_place -P -fast -Orientation= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
@@ -599,7 +599,7 @@ function caExtractRemoveOrientationTagWithExifTool($filepath){
  *
  * @return bool True on success, false if operation failed
  */
-function caRemoveAllMediaMetadata($filepath){
+function caRemoveAllMediaMetadata(string $filepath) : bool {
 	if(!file_exists($filepath)) { return false; }
 	if ($path_to_exif_tool = caExifToolInstalled()) {
 		caExec("{$path_to_exif_tool} -all= ".caEscapeShellArg($filepath)." 2> /dev/null", $output, $return);
@@ -612,310 +612,159 @@ function caRemoveAllMediaMetadata($filepath){
 }
 # ------------------------------------------------------------------------------------------------
 /**
- * Perform mapping of extracted media metadata to CollectiveAccess bundles.
- *
- * @param BundlableLabelableBaseModelWithAttributes $po_instance Model instance to insert extracted metadata into
- * @param array $pa_metadata Extracted metadata
- * @param int $pn_locale_id The current locale as a numeric locale_id
- * @return bool True extracted metadata was mapped and the model changed, false if no change was made to the model
- */
-function caExtractEmbeddedMetadata($po_instance, $pa_metadata, $pn_locale_id) {
-	if (!is_array($pa_metadata)) { return false; }
-	$vb_did_mapping = false;
-	if (!($vs_media_metadata_config = __CA_CONF_DIR__.'/media_metadata.conf')) { return false; }
-	$o_metadata_config = Configuration::load($vs_media_metadata_config);
-
-	$va_mappings = $o_metadata_config->getAssoc('import_mappings');
-	$vs_tablename = $po_instance->tableName();
-
-	if (!isset($pa_metadata['system']['filename']) && ($vs_original_filename = $po_instance->get('original_filename'))) {
-		$pa_metadata['system']['filename'] = $vs_original_filename;
-	}
-
-	// set extracted georef?
-	$va_georef_elements = $o_metadata_config->getList('extract_embedded_exif_georeferencing_to');
-	$va_georef_containers = $o_metadata_config->getAssoc('extract_embedded_exif_georeferencing_to_container');
-	$va_date_elements = $o_metadata_config->getList('extract_embedded_exif_creation_date_to');
-	$va_date_containers = $o_metadata_config->getAssoc('extract_embedded_exif_creation_date_to_container');
-
-	if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_georef_containers) && sizeof($va_georef_containers))  || (is_array($va_date_elements) && sizeof($va_date_elements))  || (is_array($va_date_containers) && sizeof($va_date_containers)))) {
-		$va_exif_data = $pa_metadata['EXIF'];
-
-		if (is_array($va_georef_elements)) {
-			if (is_array($va_coords = caParseEXIFLatLong($va_exif_data))) {
-				foreach($va_georef_elements as $vs_element) {
-					$va_tmp = explode('.', $vs_element);
-					$po_instance->addAttribute(array($va_tmp[1] => "[".$va_coords['latitude'].", ".$va_coords['longitude']."]", 'locale_id' => $pn_locale_id), $va_tmp[1]);
-				}
-				$vb_did_mapping = true;
-			}
-		}
-
-		if (is_array($va_georef_containers)) {
-			if (is_array($va_coords = caParseEXIFLatLong($va_exif_data))) {
-				foreach($va_georef_containers as $vs_container => $va_info) {
-					$va_tmp = explode('.', $vs_container);
-					$vs_value_element = array_pop(explode('.', $va_info['value']));
-
-					$va_data = array($vs_value_element => "[".$va_coords['latitude'].", ".$va_coords['longitude']."]", 'locale_id' => $pn_locale_id);
-					if(isset($va_info['map']) && is_array($va_info['map'])) {
-						foreach($va_info['map'] as $vs_sub_element => $vs_value) {
-							$va_tmp2 = explode('.', $vs_sub_element);
-							$vs_sub_element = array_pop($va_tmp2);
-							if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
-								switch($t_element->get('datatype')) {
-									case 3:	// List
-										$t_list = new ca_lists();
-										$va_data[$vs_sub_element] = $t_list->getItemIDFromList($t_element->get('list_id'), $vs_value);
-										break;
-									default:
-										$va_data[$vs_sub_element] = $vs_value;
-										break;
-								}
-							}
-						}
-					}
-					$po_instance->addAttribute($va_data, $va_tmp[1]);
-				}
-				$vb_did_mapping = true;
-			}
-		}
-
-		if (is_array($va_date_elements)) {
-			if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['ExifIFD']['DateTimeOriginal'])) {
-				$va_date_tmp = preg_split('![: ]+!', $vs_raw_date);
-				$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
-				foreach($va_date_elements as $vs_element) {
-					$va_tmp = explode('.', $vs_element);
-					if(strlen($po_instance->get($vs_element))>0) {
-						$po_instance->addAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
-					} else {
-						$po_instance->replaceAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
-					}
-				}
-				$po_instance->update();	// commit immediately and don't worry about errors (in case date is somehow invalid)
-				$vb_did_mapping = true;
-			}
-		}
-
-		if (is_array($va_date_containers)) {
-			$t_list = new ca_lists();
-			if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['ExifIFD']['DateTimeOriginal'])) {
-				$va_date_tmp = preg_split('![: ]+!', $vs_raw_date);
-				$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
-				foreach($va_date_containers as $vs_container => $va_info) {
-					$va_tmp = explode('.', $vs_container);
-					$vs_value_element = array_pop(explode('.', $va_info['value']));
-
-					$va_data = array($vs_value_element => $vs_date, 'locale_id' => $pn_locale_id);
-					if(isset($va_info['map']) && is_array($va_info['map'])) {
-						foreach($va_info['map'] as $vs_sub_element => $vs_value) {
-							$va_tmp2 = explode('.', $vs_sub_element);
-							$vs_sub_element = array_pop($va_tmp2);
-							if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
-								switch($t_element->get('datatype')) {
-									case 3:	// List
-										$va_data[$vs_sub_element] = $t_list->getItemIDFromList($t_element->get('list_id'), $vs_value);
-										break;
-									default:
-										$va_data[$vs_sub_element] = $vs_value;
-										break;
-								}
-							}
-						}
-					}
-					$po_instance->addAttribute($va_data, $va_tmp[1]);
-				}
-				$vb_did_mapping = true;
-			}
-		}
-	}
-
-	if (!isset($va_mappings[$po_instance->tableName()])) { return $vb_did_mapping; }
-	$va_mapping = $va_mappings[$vs_tablename];
-
-	$vs_type = $po_instance->getTypeCode();
-	if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-		$va_mapping = $va_mapping[$vs_type];
-	} else {
-		if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-			$va_mapping = $va_mapping['__default__'];
-		} else {
-			return $vb_did_mapping;
-		}
-	}
-
-	foreach($va_mapping as $vs_metadata => $va_attr) {
-		$va_tmp = explode(":", $vs_metadata);
-		$vs_delimiter = caGetOption('delimiter', $va_attr, false);
-
-		foreach($va_attr as $vs_attr) {
-			if($vs_attr == 'delimiter') { continue; }
-
-			$va_metadata =& $pa_metadata;
-			foreach($va_tmp as $vs_el) {
-				if (isset($va_metadata[$vs_el])) {
-					$va_metadata =& $va_metadata[$vs_el];
-				} else {
-					continue(2);
-				}
-			}
-
-			if(is_array($va_metadata)) { $va_metadata = join(";", $va_metadata); }
-			if(!is_int($va_metadata)){ // pass ints through for values like WhiteBalance = 0
-				if (!trim($va_metadata)) { continue(2); }
-			}
-			if(!caSeemsUTF8($va_metadata)) { $va_metadata = caEncodeUTF8Deep($va_metadata); }
-
-			$va_tmp2 = explode(".", $vs_attr);
-
-			switch($va_tmp2[0]) {
-				case 'preferred_labels':
-					$po_instance->replaceLabel(array($va_tmp2[1] => $va_metadata), $pn_locale_id, null, true);
-					break;
-				case 'nonpreferred_labels':
-					$po_instance->replaceLabel(array($va_tmp2[1] => $va_metadata), $pn_locale_id, null, false);
-					break;
-				default:
-					if($po_instance->hasField($vs_attr)) {
-						$po_instance->set($vs_attr, $va_metadata);
-					} else {
-						// try as attribute
-						if(sizeof($va_tmp2)==2){ // format ca_objects.foo, we only want "foo"
-							if($vs_delimiter) {
-								$va_m = explode($vs_delimiter, $va_metadata);
-								$po_instance->removeAttributes($va_tmp2[1]);
-								foreach($va_m as $vs_m) {
-									$po_instance->addAttribute(array(
-										$va_tmp2[1] => trim($vs_m),
-										'locale_id' => $pn_locale_id
-									),$va_tmp2[1]);
-								}
-							} else {
-								$po_instance->replaceAttribute(array(
-									$va_tmp2[1] => $va_metadata,
-									'locale_id' => $pn_locale_id
-								),$va_tmp2[1]);
-							}
-						}
-					}
-			}
-			$vb_did_mapping = true;
-		}
-	}
-
-	return $vb_did_mapping;
-}
-
-# ------------------------------------------------------------------------------------------------
-/**
  * Embed media metadata into given file. Embedding is performed on a copy of the file and placed into the
- * system tmp directory. The given file is never modified.
+ * system tmp directory. The original file is never modified.
  *
- * @param string $ps_file The file to embed metadata into
- * @param string $ps_table Table name of the subject record. This is used to figure out the appropriate mapping to use from media_metadata.conf
- * @param int $pn_pk Primary key of the subject record. This is used to run the export for the right record.
- * @param string $ps_type_code Optional type code for the subject record
- * @param int $pn_rep_pk Primary key of the subject representation.
+ * @param string $file The file to embed metadata into
+ * @param string $table Table name of the subject record. This is used to figure out the appropriate mapping to use from media_metadata.conf
+ * @param int $pk Primary key of the subject record. This is used to run the export for the right record.
+ * @param string $type_code Optional type code for the subject record
+ * @param int $rep_pk Primary key of the subject representation.
  * 		If there are export mapping for object representations, we run them after the mapping for the subject table.
  * 		Fields that get exported here should overwrite fields from the subject table export.
- * @param string $ps_rep_type_code type code for object representation
+ * @param string $rep_type_code type code for object representation
  * @return string File name of a temporary file with the embedded metadata, false on failure
  */
-function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
-	if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
-	$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
-
+function caEmbedMediaMetadataIntoFile($t_instance, string $version, ?array $options=null) {
 	global $file_cleanup_list;
 	
-	if (!@is_readable($ps_file)) { return false; }
-	if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
+	if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
+	$path_to_exif_tool = caGetExternalApplicationPath('exiftool');
+	
+	if(!($file = caGetOption('path', $options, null))) {
+		if(is_a($t_instance, 'ca_object_representations')) {
+			$file = $t_instance->getMediaPath('media', $version);
+		} elseif(is_a($t_instance, 'RepresentableBaseModel')) {
+			$file = $t_instance->get("ca_object_representations.media.{$version}.path");
+		}
+	}
+	
+	if (!@is_readable($file)) { return false; }
+	if (!preg_match("/^image\//", mime_content_type($file))) { return false; } // Don't try to embed in files other than images
 
 	// make a temporary copy (we won't touch the original)
-	copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
-	$file_cleanup_list[] = $vs_tmp_filepath;
-
-	//
-	// SUBJECT TABLE
-	//
-	if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
-		$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
-		if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
-		caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-		@unlink($vs_export_filename);
-		@unlink("{$vs_tmp_filepath}_original");
+	$tmp_filepath = __CA_APP_DIR__."/tmp/".time().md5($file);
+	if(!copy($file, $tmp_filepath)) {
+		return false;
 	}
+	$file_cleanup_list[] = $tmp_filepath;
 
-	//
-	// REPRESENTATION
-	//
-
-	if($vs_representation_export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
-		$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
-		if(@file_put_contents($vs_export_filename, $vs_representation_export) === false) { return false; }
-		caExec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-		@unlink($vs_export_filename);
-		@unlink("{$vs_tmp_filepath}_original");
-	}
-
-	return $vs_tmp_filepath;
-}
-# ------------------------------------------------------------------------------------------------
-function caGetExifTagArgsForExport($data) {
-	$xml = new SimpleXMLElement($data);	
-	$xml->registerXPathNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-	$xml->registerXPathNamespace('et', 'http://ns.exiftool.ca/1.0/');
-	$xml->registerXPathNamespace('ExifTool', 'http://ns.exiftool.ca/1.0/');
-	$xml->registerXPathNamespace('System', 'http://ns.exiftool.ca/File/System/1.0/');
-	$xml->registerXPathNamespace('File', 'http://ns.exiftool.ca/File/1.0/');
-	$xml->registerXPathNamespace('JFIF', 'http://ns.exiftool.ca/JFIF/JFIF/1.0/');
-	$xml->registerXPathNamespace('IFF0', 'http://ns.exiftool.ca/EXIF/IFD0/1.0/');
-	$xml->registerXPathNamespace('ExifIFD', 'http://ns.exiftool.ca/EXIF/ExifIFD/1.0/');
-	$xml->registerXPathNamespace('Apple', 'http://ns.exiftool.ca/MakerNotes/Apple/1.0/');
-	$xml->registerXPathNamespace('XMP-x', 'http://ns.exiftool.ca/XMP/XMP-x/1.0/');
-	$xml->registerXPathNamespace('XMP-xmp', 'http://ns.exiftool.ca/XMP/XMP-xmp/1.0/');
-	$xml->registerXPathNamespace('XMP-photoshop', 'http://ns.exiftool.ca/XMP/XMP-photoshop/1.0/');
-	$xml->registerXPathNamespace('Photoshop', 'http://ns.exiftool.ca/Photoshop/Photoshop/1.0/');
-	$xml->registerXPathNamespace('ICC-header', 'http://ns.exiftool.ca/ICC_Profile/ICC-header/1.0/');
-	$xml->registerXPathNamespace('ICC_Profile', 'http://ns.exiftool.ca/ICC_Profile/ICC_Profile/1.0/');
-	$xml->registerXPathNamespace('ICC-view', 'http://ns.exiftool.ca/ICC_Profile/ICC-view/1.0/');
-	$xml->registerXPathNamespace('IVV-meas', 'http://ns.exiftool.ca/ICC_Profile/ICC-meas/1.0/');
-	$xml->registerXPathNamespace('Composite', 'http://ns.exiftool.ca/Composite/1.0/');
+	$o_config = Configuration::load(__CA_CONF_DIR__.'/media_metadata.conf');
 	
-	$tags = $xml->xpath('rdf:Description/*');
+	$table = $t_instance->tableName();
+	$typecode = $t_instance->get("{$table}.type_id", ['convertCodesToIdno' => true]);
 	
-	$tag_args = [];
-	foreach($tags as $t) {
-		$ns = array_shift(array_keys($t->getNamespaces()));
-		$n = $t->getName();
-		$v = $t->__toString();
-		$tag_args[] = "-{$n}=\"$v\"";
+	$mappings = $o_config->get('export_mappings');
+	if(isset($mappings[$table])) {
+		$map = $mappings[$table][$typecode] ?? $mappings[$table]['__default__'] ?? null;
+		if(!is_array($map)) { return null; }
+		
+		$acc = [];
+		foreach($map as $tag => $template) {
+			$tmp = explode(':', $tag);
+			
+			switch($standard = strtolower($tmp[0])) {
+				case 'iptc':
+					if($code = caIPTCTagNameToCode($tmp[1])) {
+						$v = strip_tags(br2nl($t_instance->getWithTemplate($template)));
+						$acc[$standard][$tag] = $v;
+					}
+					break;
+				case 'xmp':
+					if($code = caXMPTagNameToCode($tmp[1])) {
+						$v = strip_tags(br2nl($t_instance->getWithTemplate($template)));
+						$acc[$standard][$tag] = $v;
+					}
+					break;
+			}
+		}
+		
+		if(isset($acc['iptc'])) {
+			$exif_tool_params = [];
+
+			foreach($acc['iptc'] as $tag => $value) {
+				$exif_tool_params[] = "-{$tag}=".caEscapeShellArg($value);
+			}
+			
+			caExec("{$path_to_exif_tool} ".join(' ', $exif_tool_params)." {$tmp_filepath}", $output, $return);
+		}
+		if(isset($acc['xmp'])) {
+			$exif_tool_params = [];
+
+			foreach($acc['xmp'] as $tag => $value) {
+				$exif_tool_params[] = "-{$tag}=".caEscapeShellArg($value);
+			}
+			
+			caExec("{$path_to_exif_tool} ".join(' ', $exif_tool_params)." {$tmp_filepath}", $output, $return);
+		}
 	}
-	return $tag_args;
+	
+	return $tmp_filepath;
 }
 # ------------------------------------------------------------------------------------------------
 /**
  *
  */
-function caExportMediaMetadataForRecord(string $table, string $type_code, int $id) {
-	$o_app_config = Configuration::load();
-
-	if (!($media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
-	$o_metadata_config = Configuration::load($media_metadata_config);
-
-	$mappings = $o_metadata_config->getAssoc('export_mappings');
-	if(!isset($mappings[$table])) { return false; }
-
-	$export_mapping = null;
-	if(isset($mappings[$table][$type_code])) {
-		$export_mapping = $mappings[$table][$type_code];
-	} elseif(isset($mappings[$table]['__default__'])) {
-		$export_mapping = $mappings[$table]['__default__'];
+function caXMPTagNameToCode(string $name) : ?string {	
+	$xmp_code = [
+		'owner' => 'xmpRights:Owner',
+		'usageterms' => 'xmpRights:UsageTerms',
+		'webstatement' => 'xmpRights:WebStatement',
+		'copyright' => 'crs:Copyright',
+		'advisory' => 'xmp:Advisory',
+		'createdate' => 'xmp:CreateDate',
+		'description' => 'xmp:Description',
+		'format' => 'xmp:Format',
+		'identifier' => 'xmp:Identifier',
+		'title' => "xmp:Title",
+		'keywords' => "xmp:Keywords",
+		'label' => "xmp:Label",
+		'metadatadate' => "xmp:MetadataDate",
+	];
+	if(!($code = $xmp_code[mb_strtolower($name)] ?? null)) {
+		return null;
 	}
-	if(!is_string($export_mapping) || !strlen($export_mapping)) {
-		return false;
+	return $code;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caIPTCTagNameToCode(string $name) : ?int {	
+	$iptc_codes = [
+		'keywords' => 25,
+		'datecreated' => 55,
+		'timecreated' => 60,
+		'digitalcreationdate' => 62,
+		'digitalcreationtime' => 63,
+		'by-line' => 80,
+		'byline' => 80,
+		'by-linetitle' => 85,
+		'bylinetitle' => 85,
+		'city' => 90,
+		'sub-location' => 92,
+		'sublocation' => 92,
+		'country-primarylocationcode' => 100,
+		'countrycode' => 100,
+		'country-primarylocationname' => 101,
+		'country' => 101,
+		'headline' => 105,
+		'credit' => 110,
+		'source' => 115,
+		'copyrightnotice' => 116,
+		'contact' => 118,
+		'caption-abstract' => 120,
+		'captionabstract' => 120,
+		'caption' => 120,
+	];
+	
+	if(!($code = $iptc_codes[mb_strtolower($name)] ?? null)) {
+		if(is_numeric($name) && in_array((int)$name, array_values($iptc_codes))) {
+			return (int)$name;
+		}
+		return null;
 	}
-	return ca_data_exporters::exportRecord($export_mapping, $id);
+	return $code;
 }
 # ------------------------------------------------------------------------------------------------
 /**
