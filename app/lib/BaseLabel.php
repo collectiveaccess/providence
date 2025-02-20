@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
@@ -241,6 +236,19 @@ class BaseLabel extends BaseModel {
 	 */
 	public static function normalizeLabel(array $label_values) : array {
 		return $label_values;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function get($field, $options=null) {
+		$v = parent::get($field, $options);
+		
+		if(caGetOption('stripEnclosingParagraphTags', $options, true)) {
+			$v = preg_replace("!^<p>!i", "", $v);
+			$v = preg_replace("!</p>$!i", "", $v);
+		}
+		return $v;
 	}
 	# -------------------------------------------------------
 }
