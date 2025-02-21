@@ -55,7 +55,7 @@ $stats			= $this->getVar('statistics');
 			&& 
 			$t_instance->hasField('access_inherit_from_parent')
 			&&
-			($t_instance->get('parent_id') > 0)
+			(($t_instance->get('parent_id') > 0) || ($t_instance->tableName() === 'ca_objects'))
 		) {
 			print $t_instance->htmlFormElement('access_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit access from parent?')]);
 		}
@@ -132,22 +132,21 @@ $stats			= $this->getVar('statistics');
 
 	<div class='globalAccess'>
 		<div class='title'><?= _t('Item access'); ?></div>
-		
-		<div class='subtitle'><?= _t('Global access'); ?></div>
 <?php 	
 		$global_access = $t_instance->getACLWorldAccess(['returnAsInitialValuesForBundle' => true]);
 		$global_access_status = $global_access['access_display'];
-		print "<div>"._t('All groups and users %1 this record, unless an exception is created', $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList'))."</div>"; 
+		print "<div class='control'>"._t('All groups and users %1 this record, unless an exception is created', $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList'))."</div>"; 
 ?>		
 		<hr/>
 		<div class='subtitle'><?= _t('Exceptions'); ?></div>
+		<div class='control'>
 <?php
 		print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');			
 		print caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
 ?>	
 		<?= $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList'); ?>
 
-			
+		</div>
 		<hr/>
 		<div class='subtitle'><?= _t('Inheritance'); ?></div>
 <?php
@@ -161,12 +160,12 @@ if(
 	
 	if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
 ?>
-		<div><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT',  ['label' => _t('Inherit item access from collection(s)?')]); ?></div>
+		<div class='control'><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT',  ['label' => _t('Inherit item access from collection(s)?')]); ?></div>
 <?php
 	}
 	if ($t_instance->hasField('acl_inherit_from_parent')) {
 ?>
-		<div><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit item access from parent?')]); ?></div>
+		<div class='control'><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit item access from parent?')]); ?></div>
 <?php
 	}
 
@@ -187,7 +186,7 @@ if(
 				($stats['inheritingSubRecordCount'] > 0)
 			) {
 ?>
-				<div style="margin-left: 10px;">
+				<div class='inheritanceControl'>
 <?php
 				if($stats['subRecordCount'] !== $stats['inheritingSubRecordCount']) {
 ?>
@@ -224,7 +223,7 @@ if(
 				($stats['inheritingRelatedObjectCount'] > 0)
 			) {
 ?>
-				<div style="margin-left: 10px;">
+				<div class='inheritanceControl'>
 <?php
 				if($stats['potentialInheritingRelatedObjectCount'] !== $stats['inheritingRelatedObjectCount']) {
 ?>

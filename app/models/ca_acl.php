@@ -1041,16 +1041,17 @@ class ca_acl extends BaseModel {
 		$db = $subject->getDb() ?? new Db();
 		
 		$access = (int)$subject->get('access');
+		$row_id = $subject->getPrimaryKey();
 		
 		if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
 			while($qr_sub_records->nextRow()) {
 				if(($qr_sub_records->get('collection_id') != $row_id) && !$qr_sub_records->get('access_inherit_from_parent')) { continue; }
 				if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
-				
+		
 				if ($t_link = $t_coll->getRelationshipInstance('ca_objects')) {
 					if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
 						if(is_array($ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
-							$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?)", [$access, $ids]);
+							$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?) AND access_inherit_from_parent = 1 AND deleted = 0", [$access, $ids]);
 							
 							$o_tq = new TaskQueue(['transaction' => $t_coll->getTransaction()]);
 							$k = 'ca_collections::'.$t_coll->getPrimaryKey();

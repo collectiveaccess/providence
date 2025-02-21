@@ -6117,10 +6117,15 @@ div.globalAccess div.subtitle {
     margin: 10px 0 5px 0; 
 }
 
+div.globalAccess div.inheritanceControl {
+    margin: 50px 0 5px 0; 
+}
+
 div.globalAccess div.control {
     font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
-    margin: 5px 0 5px 0;
+    margin: 10px 0 5px 0;
 }
+
 div.globalAccess .bundleContainer {
     border: 0px;
     padding-left:0px;

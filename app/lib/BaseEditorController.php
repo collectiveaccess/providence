@@ -1018,7 +1018,7 @@ class BaseEditorController extends ActionController {
 	 */
 	public function SetAccess(?array $options=null) {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
-	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	$this->Edit();
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
@@ -1054,7 +1054,7 @@ class BaseEditorController extends ActionController {
 		// Force all?
 		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
 			if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
+				$t_subject->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
@@ -1064,7 +1064,7 @@ class BaseEditorController extends ActionController {
 			($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
 		) {
 			if(!ca_acl::setInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+				$t_subject->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
@@ -1072,7 +1072,7 @@ class BaseEditorController extends ActionController {
 			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
 		) {
 			if(!ca_acl::setAccessInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+				$t_subject->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
@@ -1082,7 +1082,7 @@ class BaseEditorController extends ActionController {
 			($set_all = $this->request->getParameter('set_all_objects_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_objects_access_inherit_from_parent', pInteger))
 		) {
 			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
+				$t_subject->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
@@ -1131,9 +1131,9 @@ class BaseEditorController extends ActionController {
 			}
 			$t_subject->update();
 
-			if ($t_subject->numErrors()) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
-			}
+			// if ($t_subject->numErrors()) {
+// 				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
+// 			}
 		}
 		
 		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
