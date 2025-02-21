@@ -463,7 +463,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		if(is_array($ret)) { return $ret; }
 	 	}
 	 	
-	 	if(!is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
+	 	if(!is_null($words[0]) && strlen($words[0]) && !is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
 			$words[0] = mb_substr($words[0], 1);
 		}
 		
