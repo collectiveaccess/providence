@@ -257,7 +257,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'default' => 1,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Omit leading definite and indefinite articles when sorting'),
-		'description' => _t('Check this option to sort values wuthout definite and indefinite articles when they are at the beginning of the text.')
+		'description' => _t('Check this option to sort values without definite and indefinite articles when they are at the beginning of the text.')
 	),
 );
 
