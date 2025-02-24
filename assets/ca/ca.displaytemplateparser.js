@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 var caUI = caUI || {};
 
 (function (jQuery) {
@@ -128,7 +127,6 @@ var caUI = caUI || {};
         that.processDependentTemplate = function(template, values, init, omitRepeatingUnits) {
             if(!omitRepeatingUnits) { omitRepeatingUnits = false; }
         	if (!template) return '';
-            
             // get tags from template
             var tagList = template.match(that.tagRegex);
             var fullTagList = tagList;
@@ -320,7 +318,7 @@ var caUI = caUI || {};
                                 q = qty.to('mi').toPrec(that.getPrecisionForUnit("mi")).scalar;
                                 lastUnits = 'mi';
                             }
-                            templatevalues.push({'value': q, 'units': lastUnits, 'tag': tag, 'type': 'english'});
+                            templatevalues.push({'value': q, 'units': that.displayUnits[lastUnits] ? that.displayUnits[lastUnits] : lastUnits, 'tag': tag, 'type': 'english'});
                             break;
                         case 'metric':
                             var inCM = qty.to('cm').toPrec(0.001).scalar;
@@ -342,8 +340,8 @@ var caUI = caUI || {};
                                 q = qty.to('km').toPrec(that.getPrecisionForUnit("km")).scalar;
                                 lastUnits = 'km';
                             }
-                        
-                            templatevalues.push({'value': q, 'units': lastUnits, 'tag': tag, 'type': 'metric'});
+                        	
+                            templatevalues.push({'value': q, 'units': that.displayUnits[lastUnits] ? that.displayUnits[lastUnits] : lastUnits, 'tag': tag, 'type': 'metric'});
                             break;
                         case 'fractionalenglish':
                         case 'infrac':
@@ -351,7 +349,6 @@ var caUI = caUI || {};
                             if (!forceFeet && (forceInches || (inInches <= that.useInchesForDisplayUpTo))) {
                                 emitUnits = (!omitRepeatingUnits) || (lastUnits !== 'in');
                                 q = that.convertLengthToFractions(qty.to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': false, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")});
-                                u = 'in';
                                 lastUnits = 'in';
                             } else if (!forceInches && (forceFeet || (inInches <= that.useFeetForDisplayUpTo))) {
                                 var inFeet = parseInt(inInches / 12);
@@ -367,22 +364,18 @@ var caUI = caUI || {};
                                 if (inFeet > 0) { 
                                     if (inInches == 0) {
                                         vals.push(inFeet);
-                                        lastUnits = u = 'ft';
+                                        lastUnits = 'ft';
                                     } else {
                                         vals.push(inFeet + (emitUnits ? " ft" : "") + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
-                                        lastUnits = null; u = '';
                                     }
                                 }
                                 if (inInches > 0) {
                                     if (inFeet > 0) {
                                         vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
-                                        lastUnits = null; u = '';
                                     } else {
-                                        
                                         vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}));
-                                        lastUnits = u = 'in';
-                                        lastUnits = null; u = '';
                                     }
+                                	lastUnits = 'in'; 
                                 }
                                 q = vals.join(" ");
                             } else {
@@ -392,8 +385,6 @@ var caUI = caUI || {};
                                 inInches -= inFeet * 12;
                             
                                 var vals = [];
-                            
-                                u = '';
                                 var x = 0;
                                 if (inMiles > 0) { emitUnits = (lastUnits !== 'mi');  x++; }
                                 if (inFeet > 0) { emitUnits = (lastUnits !== 'ft'); x++; }
@@ -405,7 +396,7 @@ var caUI = caUI || {};
                                         vals.push(inMiles + (emitUnits ? " miles" : "") + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('MILE') !== -1)) ? "." : ""));
                                     } else {
                                         vals.push(inMiles);
-                                        u = 'miles';
+                                        lastUnits = 'miles';
                                     }
                                 }
                                 if (inFeet > 0) { 
@@ -413,7 +404,7 @@ var caUI = caUI || {};
                                         vals.push(inFeet + (emitUnits ? " ft" : "") + (((that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('FEET') !== -1)) ? "." : ""));
                                     } else {
                                         vals.push(inFeet);
-                                        u = 'ft';
+                                        lastUnits = 'ft';
                                     }
                                 }
                                 if (inInches > 0) {
@@ -421,22 +412,19 @@ var caUI = caUI || {};
                                         vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}) + ((emitUnits && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf('INCH') !== -1)) ? "." : ""));
                                     } else {
                                         vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': false, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}));
-                                        u = 'in';
+                                        lastUnits = 'in';
                                     }
                                 }
-                                lastUnits = null;
                                 q = vals.join(" ");
                             }
-                        	if(that.displayUnits[u]) { u = that.displayUnits[u]; }
-                            templatevalues.push({'value': q, 'units': u, 'tag': tag, 'type': 'fractionalenglish'});
+                            templatevalues.push({'value': q, 'units':  that.displayUnits[lastUnits] ? that.displayUnits[lastUnits] : lastUnits, 'tag': tag, 'type': 'fractionalenglish'});
                             break;
                         // unit directly specified
                         default:
                         	q = qty.to(cmd[1]).toPrec(that.getPrecisionForUnit(cmd[1])).scalar;
                             lastUnits = cmd[1];
                             
-                        	if(that.displayUnits[lastUnits]) { lastUnits = that.displayUnits[lastUnits]; }
-                            templatevalues.push({'value': q, 'units': lastUnits, 'tag': tag, 'type': 'direct'});
+                            templatevalues.push({'value': q, 'units': that.displayUnits[lastUnits] ? that.displayUnits[lastUnits] : lastUnits, 'tag': tag, 'type': 'direct_' + lastUnits});
                             break;
                     }
                 }
@@ -447,7 +435,7 @@ var caUI = caUI || {};
             var unitMap = [], lastQType = null, acc = [];
             for(var k in templatevalues) {
                 var v = templatevalues[k];
-                if((lastQType !== null) && (lastQType !== v['type'])) {
+                if(((lastQType !== null) && (lastQType !== v['type'])) || !omitRepeatingUnits) {
                     // on type boundary
                     var uniqueUnits = acc.reduce(function(A, X) { if (A.indexOf(X['units']) === -1 ) { A.push(X['units']) }; return A; }, []);
 
@@ -559,7 +547,7 @@ var caUI = caUI || {};
             var i = parseInt(num / denom);
             num %= denom;
             if (!num) {
-                return "" + new Qty(i + " in").toPrec(precision).scalar  + (includeUnits ? " in" : "");
+                return "" + new Qty(i + " in").toPrec(precision).scalar  + (includeUnits ? ' ' + (that.displayUnits['in'] ?? 'in') : '');
             }
 
             // Use Euclid's algorithm to find the GCD.
@@ -609,10 +597,10 @@ var caUI = caUI || {};
                 		frac = f;
                 	}
                 }
-                return "" + i + " " + frac + (includeUnits ? " in" : "");
+                return "" + i + " " + frac + (includeUnits ? ' ' + (that.displayUnits['in'] ?? 'in') : '');
             }
 
-            return "" + frac + (includeUnits ? " in" : "");
+            return "" + frac + (includeUnits ? ' ' + (that.displayUnits['in'] ?? 'in') : '');
         };
         // --------------------------------------------------------------------------------
         that.isEnglish = function(units) {
