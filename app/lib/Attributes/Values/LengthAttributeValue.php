@@ -174,7 +174,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             return;
         }
 
-        $this->ops_text_value = $this->_getValueAsText($pa_value_array, ['precision' => 4]);			
+        $this->ops_text_value = $this->_getValueAsText($pa_value_array, ['precision' => 8]);			
 
         // Trim off trailing zeros in quantity
         $this->ops_text_value = preg_replace("!\\.([1-9]*)[0]+([A-Za-z\\.\"' ]+)$!", ".$1$2", $this->ops_text_value);
