@@ -1131,14 +1131,15 @@ class BaseEditorController extends ActionController {
 			}
 			$t_subject->update();
 
-			// if ($t_subject->numErrors()) {
-// 				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
-// 			}
+			//if ($t_subject->numErrors()) {
+			//	$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
+			//}
 		}
 		
-		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+		if($t_subject->tableName() === 'ca_collections') {
 			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
 		}
+		ca_acl::applyAccessInheritance($t_subject);
 		
 		ca_acl::updateACLInheritanceForRow($t_subject);
 

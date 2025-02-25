@@ -1214,6 +1214,30 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
+	public static function applyAccessInheritance($subject) : ?bool {
+		if(!$subject->hasField('access_inherit_from_parent')) { return null; }
+		if(!$subject->get('access_inherit_from_parent')) { return false; }
+		
+		$object_collections_hier_enabled = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
+		$object_collections_rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type');
+		
+		$subject_table_name = $subject->tableName();
+		if($parent_id = $subject->get('parent_id')) {
+			$parent = $subject_table_name::find($parent_id, ['returnAs' => 'array']);
+			$subject->set('access', $parent['access']);
+			return $subject->update();
+		} elseif(($subject_table_name == 'ca_objects') && $object_collections_hier_enabled && $object_collections_rel_type) {
+			if($coll = $subject->getRelatedItems('ca_collections', ['returnAs' => 'firstModelInstance'])) {
+				$subject->set('access', $coll->get('access'));
+				return $subject->update();
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public static function copyACL(BaseModel $subject, string $target, int $target_id) {
 		$db = $subject->getDb() ?? new Db();
 		

@@ -48,7 +48,7 @@ $stats			= $this->getVar('statistics');
 ?>	
 	<div class='globalAccess'>
 		<div class='title'><?= _t('Public access'); ?></div>
-		<p class=""><?=  $t_instance->htmlFormElement('access', '^LABEL ^ELEMENT'); ?></p>
+		<p class=""><?=  $t_instance->htmlFormElement('access', '^LABEL ^ELEMENT', ['readonly' => (bool)$t_instance->get('access_inherit_from_parent')]); ?></p>
 <?php
 		if (
 			(bool)$t_instance->getAppConfig()->get($t_instance->tableName().'_allow_access_inheritance') 
