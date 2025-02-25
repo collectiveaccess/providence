@@ -569,7 +569,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 			}
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
-			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 			
 			// Extract metadata mapping with configured mappings
 			$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
@@ -635,8 +634,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 				if ($vb_media_has_changed) {
 					$va_metadata = $this->get('media_metadata', array('binary' => true));
-					caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
-									
+					
 					// Extract metadata mapping with configured mappings
 					$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 				}

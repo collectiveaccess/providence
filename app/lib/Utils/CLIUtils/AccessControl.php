@@ -265,7 +265,7 @@ trait CLIUtilsAccessControl {
 			"email|e=s" => _t("Email address for new account"),
 			"firstname|f=s" => _t("First name of user"),
 			"lastname|l=s" => _t("Last name of user"),
-			"userclass|c=s" => _t("Class of account. User FULL for full login; PUBLIC for public-only login. Default is FULL."),
+			"userclass|c=s" => _t("Class of account. Use FULL for full login; PUBLIC for public-only login. Default is FULL."),
 			"auto-generate-password|a=s" => _t("Generate new password for account."),
 			"roles|r=s" => _t("Comma-separated list of roles to add to account"),
 			"groups|g=s" => _t("Comma-separated list of groups to add to account"),

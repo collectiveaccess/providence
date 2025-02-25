@@ -2619,10 +2619,7 @@ class BaseEditorController extends ActionController {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
                     if(!$t_rep->isReadable($this->request->user)) { continue; }
                     
-                    if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
-                        $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
-                        $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
-                    ))) {
+                    if(!($vs_path = caEmbedMediaMetadataIntoFile($t_subject, $ps_version, ['path' => $t_rep->getMediaPath('media', $ps_version)]))) {
                         $vs_path = $va_rep['paths'][$ps_version];
                     }
                 } else {

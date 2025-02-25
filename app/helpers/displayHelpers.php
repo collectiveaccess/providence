@@ -2778,12 +2778,15 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
 							break;
 					}
+					
+					if(preg_match("!\.[0]+[ ]+!", $vs_measure_conv)) { // remove trailing zero decimals
+						$vs_measure_conv = preg_replace("!\.[0]+[ ]+!", " ", $vs_measure_conv);
+					}
 
 					if ($vs_measure_conv) {
 						if ($pb_omit_units) { $vs_measure_conv = trim(preg_replace("![^\d\-\.\/ ]+!", "", $vs_measure_conv)); }
 						$ps_value = "{$vs_measure_conv}";
 					}
-					
 					if(is_array($pa_options['displayUnits'])) { 
 						foreach($pa_options['displayUnits'] as $b => $a) {
 							$ps_value = preg_replace("!".preg_quote($b, '!')."\.*$!u", $a, $ps_value);
