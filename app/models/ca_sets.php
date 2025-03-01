@@ -621,9 +621,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if (isset($pa_options['all']) && $pa_options['all']) {
-			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass != 255))";
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users))";
 		} elseif (isset($pa_options['allUsers']) && $pa_options['allUsers']) {
-			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 0))";
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass IN (0, 255)))";
 		} elseif (isset($pa_options['publicUsers']) && $pa_options['publicUsers']) {
 			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 1))";
 		} else {
