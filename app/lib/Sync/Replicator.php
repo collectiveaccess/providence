@@ -77,6 +77,16 @@ class Replicator {
 	protected $target_key;
 	
 	/**
+	 * Starting log id of current chunk
+	 */
+	protected $start_log_id;
+	
+	/**
+	 * Ending log id of current chunk
+	 */
+	protected $end_log_id;
+	
+	/**
 	 * Last log id processed for current sync
 	 */
 	protected $last_log_id;
@@ -177,9 +187,19 @@ class Replicator {
 	/**
 	 *
 	 */
-	protected function getTargetsAsServiceClients() {
+	protected function getTargetsAsServiceClients(?array $options=null) {
 		$targets = $this->opo_replication_conf->get('targets');
-		if(!is_array($targets)) { throw new Exception('No sources configured'); }
+		if(($enabled_targets = caGetOption('target', $options, null)) || ($enabled_targets = $this->opo_replication_conf->getList('enabled_targets'))) {
+			if(!is_array($enabled_targets)) { $enabled_targets = [$enabled_targets]; }
+			$filtered_targets = [];
+			foreach($enabled_targets as $s) {
+				if(isset($targets[$s])) {
+					$filtered_targets[$s] = $targets[$s];
+				}
+			}
+			$targets = $filtered_targets;
+		}
+		if(!is_array($targets)) { throw new Exception('No targets configured'); }
 
 		return $this->getConfigAsServiceClients($targets);
 	}
@@ -442,11 +462,11 @@ class Replicator {
 					}
 					
                     $log_ids = array_keys($this->source_log_entries);
-                    $start_log_id = array_shift($log_ids);
-                    $end_log_id = array_pop($log_ids);
+                    $start_log_id = $this->start_log_id = array_shift($log_ids);
+                    $end_log_id = $this->end_log_id = array_pop($log_ids);
                     if(!$end_log_id) { $end_log_id = $start_log_id; }
                     
-                    $this->logDebug(_t("[%1] Found %2 source log entries starting at %3 [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
+                    $this->logDebug(_t("[%1] Found %2 source log entries starting at [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
                     //$this->logDebug(_t("[%1] %2", $this->source_key, print_r($this->source_log_entries,true)), Zend_Log::DEBUG);
                     
                     $filtered_log_entries = null;
@@ -599,9 +619,9 @@ class Replicator {
 						$response_data = $o_resp->getRawData();
 					} else {
 						$o_resp = null;
-						$response_data = ['replicated_log_id' => $this->last_log_id];
+						$response_data = ['replicated_log_id' => $end_log_id];
 						$this->logDebug(_t("[%1] Nothing to send (all filtered) so incrementing to last log_id (%2)",
-								$source_key, $this->last_log_id), Zend_Log::DEBUG);
+								$source_key, $end_log_id), Zend_Log::DEBUG);
 					}
 					
 					if (($o_resp && !$o_resp->isOk()) || !isset($response_data['replicated_log_id'])) {
@@ -614,7 +634,7 @@ class Replicator {
 							//  are pulled as part of the primary record and then as a dependency)
 							$this->sent_log_ids[$mlog_id] = true;
 						}
-						$replicated_log_id = ($this->last_log_id > 0) ? ($this->last_log_id + 1) : ((int) $response_data['replicated_log_id']) + 1;
+						$replicated_log_id = $end_log_id + 1; //($this->last_log_id > 0) ? ($this->last_log_id + 1) : ((int) $response_data['replicated_log_id']) + 1;
 						$this->log(_t("[%1] Chunk sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::DEBUG);
 						$num_log_entries = sizeof($this->source_log_entries);
 						$last_log_entry = array_pop($this->source_log_entries);
@@ -733,7 +753,7 @@ class Replicator {
 			$skip_guids = [];
 			$unresolved_dependent_guids = [];
 			foreach($log_for_missing_guid as $missing_entry) {
-				if (!$single_log_id_mode && ($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] > $this->last_log_id)) {
+				if (!$single_log_id_mode && ($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] > $this->end_log_id)) {
 					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it is in the future; current log_id is %3", $this->source_key, $missing_entry['log_id'], $this->last_log_id), Zend_Log::WARN);    
 					continue;
 				}
@@ -1147,12 +1167,22 @@ class Replicator {
 	 *
 	 */
 	public function forceSyncOfLatest(string $source, string $guid, ?array $options=null) {
-		if(!is_array($targets = caGetOption('targets'. $options, null))) { 
-			//return null;
+		if(!($target = caGetOption('target', $options, null))) { 
+			return null;
 		}
 		
 		$o_source = array_shift($this->getSourcesAsServiceClients(['source' => $source]));
+		$o_target = array_shift($this->getTargetsAsServiceClients(['target' => $targets[0]]));
 		
+		$o_result = $o_source->setEndpoint('getsysguid')->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)->request();
+			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
+				$this->log(
+					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
+					\Zend_Log::ERR
+				);
+				return;
+			}
+			print "guid=$guid\n";
 		$log = $o_source->setEndpoint('getlog')
 			->clearGetParameters()
 			->addGetParameter('forGUID', $guid)
@@ -1162,15 +1192,40 @@ class Replicator {
 		
 		$acc = [];
 		
-		
+		$elements = ['dimensions'];
+		foreach($elements as $e) {
+			$el = ca_metadata_elements::getElementsForSet($e);
+			$elements = array_merge($elements, array_map(function($v) { return $v['element_code']; }, $el));
+		}
+		print_R($log);
+		$elements = array_unique($elements);
 		foreach($log as $log_id => $log_entry) {
-			if($log_entry['changetype'] !== 'U') { continue; }
+			if(($log_entry['logged_table_num'] == 3) && ($log_entry['changetype'] == 'I')) {
+				$log_entry['changetype'] = 'U';
+			}
+			
+			$is_element = (($log_entry['snapshot']['element_code'] ?? null) && in_array($log_entry['snapshot']['element_code'], $elements, true)); 
+			var_dump($is_element);
+			if(!$is_element && in_array($log_entry['changetype'], ['U'])) { continue; }
 			
 			if(!isset($acc[$log_entry['guid']])) { $acc[$log_entry['guid']] = []; }
 			$acc[$log_entry['guid']] = array_merge($acc[$log_entry['guid']], $log_entry);
 		}
-		
-		print_R($acc);
+		print_R($acc);die;
+		foreach($acc as $guid => $log_entry) {
+			print_R($log_entry);
+			$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+				->addGetParameter('system_guid', $source_system_guid)
+				->addGetParameter('push_missing', 1)
+				->setRequestBody([$log_entry])
+				->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
+				->request();
+			
+			if ($resp) {
+				$res = $resp->getRawData();
+				print_R($res);
+			}
+		}
 		
 	}	
 	# --------------------------------------------------------------------------------------------------------------

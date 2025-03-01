@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,18 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
+$t_display				= $this->getVar('t_display');
+$va_display_list 		= $this->getVar('display_list');
+$vo_result 				= $this->getVar('result');
+$vn_items_per_page 		= $this->getVar('current_items_per_page');
+$vs_current_sort 		= $this->getVar('current_sort');
+$vs_default_action		= $this->getVar('default_action');
+$vo_ar					= $this->getVar('access_restrictions');
+$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+$vn_start				= (int)$this->getVar('start');
 
-	$t_display				= $this->getVar('t_display');
-	$va_display_list 		= $this->getVar('display_list');
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
-	$vn_start				= (int)$this->getVar('start');
-	
-	$vn_id_count = 0;
+$vn_id_count = 0;
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
@@ -99,7 +98,7 @@
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_entities', $vn_entity_id, array())."</td>";
 					foreach($va_display_list as $placement_id => $info) {
-						print "<td>".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(['request' => $this->request], is_array($info['settings']) ? $info['settings'] :[]))."</td>";
+						print "<td><div class='result-content'>".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(['request' => $this->request], is_array($info['settings']) ? $info['settings'] :[]))."</div></td>";
 					}
 ?>	
 				</tr>

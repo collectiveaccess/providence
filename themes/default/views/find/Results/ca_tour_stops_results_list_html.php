@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,16 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
-
-	$t_display				= $this->getVar('t_display');
-	$va_display_list 		= $this->getVar('display_list');
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
-	$vn_start				= (int)$this->getVar('start');
+$t_display				= $this->getVar('t_display');
+$va_display_list 		= $this->getVar('display_list');
+$vo_result 				= $this->getVar('result');
+$vn_items_per_page 		= $this->getVar('current_items_per_page');
+$vs_current_sort 		= $this->getVar('current_sort');
+$vs_default_action		= $this->getVar('default_action');
+$vo_ar					= $this->getVar('access_restrictions');
+$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+$vn_start				= (int)$this->getVar('start');
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
@@ -97,7 +96,7 @@
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_tour_stops', $vn_stop_id, array())."</td>";
 					foreach($va_display_list as $placement_id => $info) {
-						print "<td>".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))."</td>";
+						print "<td><div class='result-content'>".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'], array_merge(array('request' => $this->request), is_array($info['settings']) ? $info['settings'] : array()))."</div></td>";
 					}
 ?>	
 				</tr>

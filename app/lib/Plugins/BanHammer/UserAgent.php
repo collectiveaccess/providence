@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2023 Whirl-i-Gig
+ * Copyright 2019-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,11 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 	 */
 	static $priority = 100;
 	
+	/**
+	 *
+	 */
+	static $banned_useragents_list_filepath = __CA_APP_DIR__.'/tmp/userAgents.json';
+	
 	# ------------------------------------------------------
 	/**
 	 *
@@ -43,9 +48,14 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 		$config = self::$config->get('plugins.UserAgent');
 		$banned_useragents = caGetOption('banned_useragents', $config, []);
 		
+		if($config['use_useragent_list'] ?? false) {
+			if(is_array($banned_useragents_list = self::getBannedUserAgentList())) {
+				$banned_useragents = array_merge($banned_useragents, $banned_useragents_list);
+			}
+		}
 		$request_useragent = $_SERVER["HTTP_USER_AGENT"];
 		foreach($banned_useragents as $u) {
-			if (preg_match("!".preg_quote($u, "!")."!i", $request_useragent)) {
+			if (preg_match("!{$u}!i", $request_useragent)) {
 				return 1.0;
 			}
 		}
@@ -64,7 +74,75 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 	 *
 	 */
 	static public function banTTL() {
-		return 60 * 60 * 24;	// ban for 1 day
+		$config = self::$config ? self::$config->get('plugins.UserAgent') : [];
+		return self::getTTLFromConfig($config);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getBannedUserAgentList() {
+		self::init($request, $options);
+		if(file_exists(self::$banned_useragents_list_filepath)) {
+			return json_decode(file_get_contents(self::$banned_useragents_list_filepath), true) ?? [];
+		}
+		return [];
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function hookPeriodicTask(&$params) {
+		self::init($request, $options);
+		$config = self::$config ? self::$config->get('plugins.UserAgent') : [];
+		if(!$config['use_useragent_list']) { return false; }
+		if(!$config['useragent_list_url']) { return false; }
+		$appvars = new ApplicationVars();
+		
+		$log = caGetLogger();
+		
+		$force = (bool)($config['useragent_list_force_reload'] ?? false);
+		
+		$is_loading = $appvars->getVar('banhammerUserAgentData_isLoading');
+		if(!$is_loading || $force){
+			$appvars->setVar('banhammerUserAgentData_isLoading', true);	
+			$appvars->save();
+			
+			$filetime = filemtime(self::$banned_useragents_list_filepath);
+			$threshold = (int)($config['useragent_list_ttl'] ?? 0);
+			if($threshold <= 0) { $threshold = 21600; }
+			
+			if(!file_exists(self::$banned_useragents_list_filepath) || ((time() - $filetime) > $threshold) || $force) {
+				$data = json_decode(file_get_contents($config['useragent_list_url']), true);
+			 	if(!is_array($data)) {
+			 		$log->logError(_t('[BanHammer::UserAgent] Could not load user agent list from URL "%1"', $config['useragent_list_url']));
+			 		return false;
+			 	}
+				$user_agents = array_map(function ($v) {
+					return $v['pattern'];
+				}, $data);
+				
+				if(is_array($exclude_list = $config['exclude_useragents'] ?? []) && sizeof($exclude_list)) {
+					$user_agents = array_filter($user_agents, function($v) use ($exclude_list) {
+						foreach($exclude_list as $e) {
+							if(preg_match("!{$e}!i", $v)) {
+								return false;
+							}
+						}
+						return true;
+					});
+				}
+				$log->logInfo(_t('[BanHammer::UserAgent] Loaded user agent list from URL "%1"; got %2 user agents', $config['useragent_list_url'], sizeof($user_agents)));
+			
+				if(!file_put_contents(self::$banned_useragents_list_filepath, json_encode(array_values($user_agents)))) {
+					$log->logError(_t('[BanHammer::UserAgent] Could not write user agent list to "%1"', self::$banned_useragents_list_filepath));
+				}
+				$appvars->setVar('banhammerUserAgentData_isLoading', false);
+				$appvars->save();	
+			}
+		} 
 	}
 	# ------------------------------------------------------
 }
+// 
+//     exclude_useragents = []

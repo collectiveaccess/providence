@@ -304,6 +304,7 @@ function caGetSourceListForUser($pm_table_name_or_num, $pa_options=null) {
  * @param array $pa_options Array of options:
  * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
  *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+ *		includeSubtypes = if set returned list is expanded to include sub-items. [Default is true]
  *
  * @return array List of numeric type_ids
  */
@@ -380,8 +381,10 @@ function caMakeItemIDList($pm_list_code_or_id, $pa_item_idnos, $pa_options=null)
 	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	
-	if (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) {
-		$pa_options['noChildren'] = true;
+	if (isset($pa_options['dont_include_subtypes_in_type_restriction'])) {
+		$pa_options['noChildren'] = (bool)$pa_options['dont_include_subtypes_in_type_restriction'];
+	} elseif(isset($pa_options['includeSubtypes'])) {
+		$pa_options['noChildren'] = !($pa_options['includeSubtypes'] ?? true);
 	}
 	
 	$va_item_ids = [];
@@ -428,6 +431,7 @@ function caMakeItemIDList($pm_list_code_or_id, $pa_item_idnos, $pa_options=null)
  * @param array $pa_options Array of options:
  * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
  *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+ *		includeSubtypes = if set returned list is expanded to include sub-items. [Default is true]
  *
  * @return array List of type codes
  */
@@ -437,8 +441,10 @@ function caMakeTypeList($pm_table_name_or_num, $pa_type_ids, $pa_options=null) {
 	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	
-	if (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) {
-		$pa_options['noChildren'] = true;
+	if (isset($pa_options['dont_include_subtypes_in_type_restriction'])) {
+		$pa_options['noChildren'] = (bool)$pa_options['dont_include_subtypes_in_type_restriction'];
+	} elseif(isset($pa_options['includeSubtypes'])) {
+		$pa_options['noChildren'] = !($pa_options['includeSubtypes'] ?? true);
 	}
 
 	if (is_numeric($pm_table_name_or_num)) {

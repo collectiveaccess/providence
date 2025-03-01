@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2023 Whirl-i-Gig
+ * Copyright 2004-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,16 +48,18 @@ class TilepicParser {
 	# Supported tile types
 	#
 	var $mimetype2magick = array(
-			"image/gif" 	=> "GIF",
-			"image/jpeg"	=> "JPEG",
-			"image/png"		=> "PNG",
-			"image/tiff"	=> "TIFF"
+		"image/gif" 	=> "GIF",
+		"image/jpeg"	=> "JPEG",
+		"image/png"		=> "PNG",
+		"image/tiff"	=> "TIFF",
+		"image/webp" 	=> "WEBP"
 	);
 	var $mimetype2ext = array(
-			"image/gif" 	=> "gif",
-			"image/jpeg"	=> "jpg",
-			"image/png"		=> "png",
-			"image/tiff"	=> "tiff"
+		"image/gif" 	=> "gif",
+		"image/jpeg"	=> "jpg",
+		"image/png"		=> "png",
+		"image/tiff"	=> "tiff",
+		"image/webp" 	=> "WEBP"
 	);
 	
 	var $magick_names = array(
@@ -68,29 +70,8 @@ class TilepicParser {
 		"image/x-bmp" 		=> "BMP",
 		"image/x-psd" 		=> "PDF",
 		"image/tilepic" 	=> "TPC",
-		"image/x-dcraw"		=> "RAW"
-	);
-	
-	var $apple_type_names = array(
-		"image/jpeg" 		=> "jpeg",
-		"image/gif" 		=> "gif",
-		"image/tiff" 		=> "tiff",
-		"image/png" 		=> "png",
-		"image/x-bmp" 		=> "bmp",
-		"image/x-psd" 		=> "psd",
-		"image/tilepic" 	=> "tpc",
-		"image/jp2"			=> "jp2"
-	);
-	
-	var $apple_UTIs = array(
-		"image/jpeg" 		=> "public.jpeg",
-		"image/gif" 		=> "com.compuserve.gif",
-		"image/tiff" 		=> "public.tiff",
-		"image/png" 		=> "public.png",
-		"image/x-bmp" 		=> "com.microsoft.bmp",
-		"image/x-psd" 		=> "com.adobe.photoshop.image",
-		"image/tilepic" 	=> "public.tpc",
-		"image/jp2"			=> "public.jpeg-2000"
+		"image/x-dcraw"		=> "RAW",
+		"image/webp" 		=> "WEBP"
 	);
 	
 	var $debug = false;
@@ -1305,31 +1286,12 @@ class TilepicParser {
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
 					if($vn_orientation > 0) {
-						// Make copy without EXIF rotation and re-read. There's no other way
-						// to get rid of the orientation tag in derived files (argh).
-						$use_exif_tool_to_strip = (bool)$this->opo_config->get('dont_use_exiftool_to_strip_exif_orientation_tags');
+						// remove all metadata - especially orientation tag
+						$h->stripImage();
 						
-						// Fall back to using stripImage() if ExifTool is not available. This is quick and easy 
-						// but will strip *everything* including color profiles which will be a problem for many users.
-						if (!caExifToolInstalled() || $use_exif_tool_to_strip) {	
-							$h->stripImage();
-						} else {
-							// Stripping with EXIF tool means copying the entire file and then shelling out
-							// to remove the EXIF tag. We could avoid a copy by running EXIF tool on each tile we
-							// generate, but then we'd be shelling out hundreds or thousands of times per image. 
-							// Either way it sucks.
-							$tmp_path = caGetTempDirPath()."/".pathinfo($ps_filepath, PATHINFO_FILENAME)."_orient.".pathinfo($ps_filepath, PATHINFO_EXTENSION);
-							copy($ps_filepath, $tmp_path);
-							caExtractRemoveOrientationTagWithExifTool($tmp_path);
-							
-							try {
-								$h = new Gmagick($tmp_path);
-								$this->setResourceLimits_gmagick($h);
-								$h->setimageindex(0);	// force use of first image in multi-page TIFF
-							} catch (Exception $e){
-								$this->error = "Couldn't open image {$ps_filepath}_orient";
-								return false;
-							}
+						// restore color profile if present, otherwise image will probabl look awful
+						if($profile = $va_exif['IFD0']['ICC_Profile'] ?? null) {
+							$h->profileimage('icc', $profile);
 						}
 					}
 					switch($vn_orientation) {

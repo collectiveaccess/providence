@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,18 +26,18 @@
  *
  * ----------------------------------------------------------------------
  */
-	if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
-	
-	require_once(__CA_APP_DIR__.'/lib/ConfigurationCheck.php');
-	
-	$o_config = Configuration::load();
+if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
+
+require_once(__CA_APP_DIR__.'/lib/ConfigurationCheck.php');
+
+$o_config = Configuration::load();
 ?>
 
 <div id='box'>
 	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 	<div id="content">
 	<H1>
-		<?php _p('Version %1 installer (XML)', constant('__CollectiveAccess__')); ?>
+		<?= _t('Version %1 installer (XML)', constant('__CollectiveAccess__')); ?>
 	</H1>
 <?php
 	// Check for configuration issues
@@ -45,11 +45,20 @@
 	
 	if (ConfigurationCheck::foundErrors()) {
 		ConfigurationCheck::renderInstallErrorsAsHTMLOutput();
+	} elseif(($vo_installer = new \Installer\Installer("profiles/", '', '', false, false)) && $vo_installer->isAlreadyInstalled()
+			&& (!__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__)
+	) {
+?>
+	<div class="permissionError">
+		<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, ['class' => 'permissionErrorIcon']); ?>
+		<?= _t("Cannot install: an existing installation has been detected (%1)", '<a href="../">'._t("login").'</a>'); ?>
+		<div style='clear:both; height:1px;'><!-- empty --></div>
+	</div>
+<?php
 	} else {
 ?>
-	
 	<p>
-		<?php _p("This installer will have your installation of CollectiveAccess ready to use in just a few minutes. 
+		<?= _t("This installer will have your installation of CollectiveAccess ready to use in just a few minutes. 
 		Before you run the installer make sure the settings in your <i>setup.php</i> file are correct. 
 		The installer will test your database connection, install the database schema and load default values into the newly established database. 
 		It will also establish an administrator's login for you to use to access your new system."); ?>
@@ -58,14 +67,14 @@
 		<form action='index.php' name='page1form' id='page1form'>
 			<div class='formItem'>
 <?php	
-						if(sizeof($va_errors)) { 
-							print "<div class='contentError'> ".caNavIcon(__CA_NAV_ICON_ALERT__ , 1, ['class' => 'permissionErrorIcon'])._t('Please enter a valid email address')."</div>\n"; 
-						}
+				if(sizeof($va_errors)) { 
+					print "<div class='contentError'> ".caNavIcon(__CA_NAV_ICON_ALERT__ , 1, ['class' => 'permissionErrorIcon'])._t('Please enter a valid email address')."</div>\n"; 
+				}
 ?>
-				<?php _p("Administrator's e-mail address"); ?>:<br/>
+				<?=_t("Administrator's e-mail address"); ?>:<br/>
 				<input type='text' name='email' value='<?= htmlspecialchars($ps_email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
 			</div><!-- end formItem -->
-			<div class='formItem'><?php _p("Installation profile"); ?>:<br/>
+			<div class='formItem'><?= _t("Installation profile"); ?>:<br/>
 				<div id="profileChooser">
 <?php
 					print caHTMLSelect('profile', caGetAvailableProfiles(), array('id' => 'profileSelect'), array('value' => $ps_profile));
@@ -84,11 +93,7 @@
 ?>
 					<div class='profileNotes'>
 <?php
-						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="https://manual.collectiveaccess.org/dataModelling/Profiles.html" target="_blank">manual</a>.');
-?>
-						<br/><br/>
-<?php
-						_p('Don\'t see a suitable profile? Browse our <a href="https://manual.collectiveaccess.org/dataModelling/profiles/ConfigurationLibrary.html" target="_blank">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles/xml</i> directory on your server and reload the installer in your web browser.');
+						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="https://docs.collectiveaccess.org" target="_blank">manual</a>.');
 ?>
 					</div>
 				</div>
@@ -105,7 +110,7 @@
 			}
 ?>
 				
-				<div class="loginSubmitButton"><a href='#' onclick='jQuery("#page1form").submit();' class='form-button'><span class='form-button'><i class="form-button-left fa fa-check-circle-o fa-2x" style='padding-right: 10px;'></i> <?php _p('Begin installation'); ?></span></a></div>
+				<div class="loginSubmitButton"><a href='#' onclick='jQuery("#page1form").submit();' class='form-button'><span class='form-button'><i class="form-button-left fa fa-check-circle-o fa-2x" style='padding-right: 10px;'></i> <?= _t('Begin installation'); ?></span></a></div>
 				<input type='hidden' name='page' value='2'/>
 			</form>
 		</div><!-- end installForm -->

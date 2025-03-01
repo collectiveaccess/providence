@@ -45,7 +45,7 @@ class DownloadsController extends ActionController {
 			$md = $t_download->get('ca_user_export_downloads.metadata');
 			$this->view->setVar('t_download', $t_download);
 			$this->view->setVar('file_path', $file_path = $t_download->getFilePath('export_file'));
-			$this->view->setVar('download_name', preg_replace("![^A-Za-z0-9_\-\.]+!", '', $md['searchExpressionForDisplay']).'.'.$md['extension']);
+			$this->view->setVar('download_name', caEscapeFilenameForDownload($md['searchExpressionForDisplay'].'.'.$md['extension']));
 			
 			$t_download->set([
 				'downloaded_on' => _t('now'),

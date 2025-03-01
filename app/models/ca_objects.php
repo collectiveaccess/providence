@@ -31,17 +31,9 @@
  */
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
-require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
-require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
-require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
-require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
-require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 require_once(__CA_LIB_DIR__."/DeaccessionTrait.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_objects'] = array(
  	'NAME_SINGULAR' 	=> _t('object'),
@@ -308,7 +300,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				_t('Do not inherit access settings from related collections') => 0,
 				_t('Inherit access settings from related collections') => 1
 			),
-			'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
+			'LABEL' => _t('Inherit item-level access control settings from collections?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for related collections are applied to this object.')
 		),
 		'acl_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -330,10 +322,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'DONT_ALLOW_IN_UI' => true,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit access settings from parent') => 0,
-				_t('Inherit access settings from parent') => 1
+				_t('Do not inherit public access settings from parent') => 0,
+				_t('Inherit public access settings from parent') => 1
 			),
-			'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
+			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),
 		'view_count' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -892,7 +884,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-			$va_ids = ca_objects::find(['parent_id' => $pn_object_id, 'type_id' => $va_component_types], ['returnAs' => 'ids']);
+			$va_ids = ca_objects::find(['parent_id' => $pn_object_id, 'type_id' => ['IN', $va_component_types]], ['returnAs' => 'ids']);
 		} else {
 			$va_ids = ca_objects::find(['parent_id' => $pn_object_id], ['returnAs' => 'ids']);
 		}

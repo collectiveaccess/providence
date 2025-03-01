@@ -352,7 +352,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->properties["mimetype"] = $this->media_metadata["mime_type"];
 			$this->properties["typename"] = isset($this->typenames[$this->properties["mimetype"]]) ? $this->typenames[$this->properties["mimetype"]] : _t("Unknown");
 
-			$this->properties["duration"] = $this->media_metadata["playtime_seconds"];
+			$this->properties["duration"] = $this->media_metadata["playtime_seconds"] ?? null;
 
 			// getID3 sometimes messes up the duration. mediainfo seems a little more reliable so use it if it's available
 			if($this->ops_path_to_mediainfo && ($mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
@@ -590,7 +590,10 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$preview_height = $this->properties["height"];
 
 				if (caMediaPluginFFmpegInstalled() && ($this->media_metadata["mime_type"] != 'application/x-shockwave-flash')) {
-					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -frames:v 1 -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$preview_width}:{$preview_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
+					// Pad dimensions should be one more than scale dimensions to deal with rounding issues
+					$pad_width = $preview_width + 1;
+					$pad_height = $preview_height + 1;
+					caExec(caGetExternalApplicationPath('ffmpeg')." -i ".caEscapeShellArg($this->filepath)." -frames:v 1 -f image2 -ss ".($start_secs)." -t 0.04 -vf \"scale=w={$preview_width}:h={$preview_height}:force_original_aspect_ratio=decrease,pad={$pad_width}:{$pad_height}:(ow-iw)/2:(oh-ih)/2\"  -y ".caEscapeShellArg("{$filepath}.{$ext}"). (caIsPOSIX() ? " 2> /dev/null" : ""), $output, $return);
 					$exists = file_exists("{$filepath}.{$ext}");
 					if (($return < 0) || ($return > 1) || (!$exists || !@filesize("{$filepath}.{$ext}"))) {
 						if($exists) { @unlink("{$filepath}.{$ext}"); }

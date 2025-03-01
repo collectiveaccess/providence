@@ -620,7 +620,7 @@ class OAIPMHService extends BaseService {
 			
 			if($q === '*') {
 				$table = $this->table;
-				$qr_res = $table::findAsSearchResult('*', ['includeDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL'], 'restrictToTypes' => caGetOption('restrictToTypes', $this->opa_provider_info, null), 'excludeTypes' => caGetOption('excludeTypes', $this->opa_provider_info, null)]);
+				$qr_res = $table::findAsSearchResult('*', ['includeDeleted' => $vb_show_deleted, 'checkAccess' => ($vb_dont_enforce_access_settings || $vb_show_deleted) ? null : $va_access_values, 'dontFilterByACL' => $this->opa_provider_info['dontFilterByACL'], 'restrictToTypes' => caGetOption('restrictToTypes', $this->opa_provider_info, null), 'excludeTypes' => caGetOption('excludeTypes', $this->opa_provider_info, null)]);
 			} else {
 				if(is_array($type_res = caGetOption('restrictToTypes', $this->opa_provider_info, null)) && sizeof($type_res)) {
 					$o_search->setTypeRestrictions($type_res);

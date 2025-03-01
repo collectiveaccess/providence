@@ -47,6 +47,15 @@
     	}
     }
     
+    $path = explode('\\', $class);
+    if(sizeof($path) > 1) {
+    	if($path[0] === 'CA') { array_shift($path); }
+    	if(file_exists(__CA_LIB_DIR__.'/'.join('/', $path).'.php')) {
+    		include_once(__CA_LIB_DIR__.'/'.join('/', $path).'.php');
+    		return true;
+    	}
+    }
+    
     // strip namespaces if present
  	$base = $class;
  	$parts = [$class];

@@ -627,7 +627,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					}
 					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideDown(250);';
 					
-					if ($attributes['checked']) {
+					if ($attributes['checked'] ?? false) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $ids)."').hide();
@@ -644,7 +644,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					}
 					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideUp(250);';
 					
-					if (!$attributes['checked']) {
+					if (!($attributes['checked'] ?? false)) {
 						$vs_return .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		jQuery('".join(",", $ids)."').hide();
@@ -844,12 +844,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
 		$vs_cache_key = md5($vn_table_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').serialize($pa_data_types));
 
-		// if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'ElementList')) {
-// 			$va_element_list = CompositeCache::fetch($vs_cache_key, 'ElementList');
-// 			if (!$pb_return_stats || isset($va_element_list['ui_counts'])) {
-// 				return $va_element_list;
-// 			}
-// 		}
+		if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'ElementList')) {
+			$va_element_list = CompositeCache::fetch($vs_cache_key, 'ElementList');
+			if (!$pb_return_stats || isset($va_element_list['ui_counts'])) {
+				return $va_element_list;
+			}
+		}
 
 		if ($pb_return_stats) {
 			$va_counts_by_attribute = ca_metadata_elements::getUIUsageCounts();

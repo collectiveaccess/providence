@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -129,7 +129,7 @@ class MediaUploadManager {
         $user = caGetOption('user', $options, null);
         $limit = caGetOption('limit', $options, 10);
 
-       	return self::getLog(['user' => $user, 'limit' => $limit]);
+       	return self::getLog(['user' => $user, 'limit' => $limit, 'omitStatuses' => ['CANCELLED']]);
     }
     # ------------------------------------------------------
     /**
@@ -142,13 +142,17 @@ class MediaUploadManager {
         $limit = caGetOption('limit', $options, 10);
         $source = caGetOption('source', $options, null, ['forceUppercase' => true]);        
         $form = caGetOption('form', $options, null);
-
+        
+        if(($omit_statuses = caGetOption('omitStatuses', $options, null)) && !is_array($omit_statuses)) {
+        	$omit_statuses = [$omit_statuses];
+        }
+		
         $user_id = $user ? self::_getUserID($user) : null;
            
         $session_key = caGetOption('sessionKey', $options, null);
         
         $sessions = [];
-        $params = [];
+        $params = (is_array($omit_statuses) && sizeof($omit_statuses)) ? ['status' => ['NOT IN', $omit_statuses]] : [];
         
         if($user_id) { $params['user_id'] = $user_id; }
         if($date && ($d = caDateToUnixTimestamps($date))) {
@@ -330,10 +334,15 @@ class MediaUploadManager {
 		$user_dir_path = caGetMediaUploadPathForUser($user_id);
 
 		// Start up server
-		$server = new \TusPhp\Tus\Server('redis');  // TODO: make cache type configurable
+		\TusPhp\Config::set(__CA_LIB_DIR__.'/TusConfig.php');
+		$server = new \TusPhp\Tus\Server('file');  
 
 		$server->middleware()->add(MediaUploaderHandler::class);
-		$server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+		if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET')) {
+			$server->setApiPath('/Import/tus')->setUploadDir($user_dir_path);
+		} else {
+			$server->setApiPath('/batch/MediaUploader/tus')->setUploadDir($user_dir_path);
+		}
 
 		$server->event()->addListener('tus-server.upload.progress', function (\TusPhp\Events\TusEvent $event) use ($user_id) {
 			$fileMeta = $event->getFile()->details();
@@ -341,7 +350,6 @@ class MediaUploadManager {
 			$response = $event->getResponse();
 			$key = $request->header('x-session-key');
 
-			// ...
 			if ($session = MediaUploadManager::findSession($key, $user_id)) {
 				$session->set('last_activity_on', _t('now'));
 				
@@ -361,11 +369,32 @@ class MediaUploadManager {
 			$request  = $event->getRequest();
 			$response = $event->getResponse();
 			$key = $request->header('x-session-key');
-
+			
+			$session = MediaUploadManager::findSession($key, $user_id);
+			
 			$fp = self::_partialToFinalPath($fileMeta['file_path']);
+			$ext = pathinfo($fp, PATHINFO_EXTENSION);
+			
+			$log = caGetLogger();
+			$log->logInfo("Delete ".print_r($fileMeta, true));
+			
+			if(in_array(strtolower($ext), ['php', 'exe', 'py', 'rb', 'pl', 'sh'])) {
+				@unlink($fileMeta['file_path']);
+				if($session) {
+					$session->setFile($fp, [
+						'bytes_received' => 0, 'total_bytes' => $fileMeta['size'],
+						'completed_on' => _t('now'), 'last_activity_on' => _t('now'), 
+						'error_code' => 4000
+					]);
+					
+					$session->updateStats();
+					self::updateStorageStats($user_id, $session, $fileMeta);
+					return;
+				}
+			}
 				
 			// ...
-			if ($session = MediaUploadManager::findSession($key, $user_id)) {
+			if ($session) {
 				$session->set('last_activity_on', _t('now'));
 				
 				$session->setFile($fp, [

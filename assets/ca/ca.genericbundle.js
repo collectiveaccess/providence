@@ -415,7 +415,6 @@ var caUI = caUI || {};
 				if (defaultLocaleSelectedIndex !== false) {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
 						// There's a locale drop-down to mess with
-						console.log("set ", templateValues.n, defaultLocaleSelectedIndex);
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want

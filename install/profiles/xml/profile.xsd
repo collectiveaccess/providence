@@ -689,6 +689,7 @@
 
   <xs:complexType name="metadataDictionaryEntry">
     <xs:sequence>
+      <xs:element name="labels" type="displayLabels" minOccurs="0" maxOccurs="1"/>
 
       <!-- settings -->
 

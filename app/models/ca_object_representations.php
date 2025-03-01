@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -186,7 +186,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'IS_NULL' => true, 
 			'DEFAULT' => null,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object reprsentation.')
+			'LABEL' => _t('Home location'), 'DESCRIPTION' => _t('The customary storage location for this object representation.')
 		),
 		'access' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -471,7 +471,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['transcription_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of transcriptions'));
 		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
 		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
-		$this->BUNDLES['caption_files'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption files'));
 		$this->BUNDLES['caption_file_locales'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption file locales'));
 		$this->BUNDLES['media_dimensions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media dimensions'));
 		$this->BUNDLES['media_duration'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media duration'));
@@ -545,7 +544,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 			}
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
-			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
 			
 			// Extract metadata mapping with configured mappings
 			$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
@@ -611,8 +609,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 				if ($vb_media_has_changed) {
 					$va_metadata = $this->get('media_metadata', array('binary' => true));
-					caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));	// TODO: deprecate in favor of import mapping based system below?
-									
+					
 					// Extract metadata mapping with configured mappings
 					$this->_importEmbeddedMetadata(array_merge($options, ['path' => !isUrl($media_path) ? $media_path : null, 'reader' => $reader]));
 				}
@@ -892,7 +889,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vs_annotation_label_table = $this->annotationLabelTable();
  		
  		$vs_access_sql = '';
- 		if (is_array($options['checkAccess']) && sizeof($options['checkAccess'])) {
+ 		if (is_array($options['checkAccess'] ?? null) && sizeof($options['checkAccess'])) {
 			$vs_access_sql = ' AND cra.access IN ('.join(',', $options['checkAccess']).')';
 		}
 		
@@ -1002,7 +999,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				} else {
 					$va_val['labels'] = $va_labels[$vn_annotation_id] ? $va_labels[$vn_annotation_id] : array();
 					$va_val['label'] = $vs_label;
-					$va_val['key'] = $va_key[$va_annotation_classes_flattened[$vn_annotation_id]];
+					$va_val['key'] = $va_key[$va_annotation_classes_flattened[$vn_annotation_id] ?? null] ?? null;
 				}
  				$va_sorted_annotations[$vn_annotation_id] = $va_val;
  			}
@@ -1292,7 +1289,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
 				if (!($vs_label = $va_item['label'])) { $vs_label = ''; }
-				$va_inital_values[$va_item[$t_item->primaryKey()]] = array_merge($va_item, array('id' => $va_item[$vs_rel_pk], 'item_type_id' => $va_item['item_type_id'], 'relationship_type_id' => $va_item['relationship_type_id'], 'label' => $vs_label));
+				$va_inital_values[$va_item[$t_item->primaryKey()]] = array_merge($va_item, array('id' => $va_item[$vs_rel_pk], 'item_type_id' => $va_item['item_type_id'] ?? null, 'relationship_type_id' => $va_item['relationship_type_id'] ?? null, 'label' => $vs_label));
 			}
 		}
 		

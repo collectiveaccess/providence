@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1346,26 +1346,24 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if(sizeof($va_item_values)) {
 			// Quickly create set item links
-			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()
-			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id, vars) VALUES ".join(",", $va_item_values));
-			if ($this->getDb()->numErrors()) {
-				$this->errors = $this->getDb()->errors;
-				return false;
+			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()	
+			$item_ids = [];
+			foreach($va_item_values as $s) {
+				$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id, vars) VALUES {$s}");
+				if ($this->getDb()->numErrors()) {
+					$this->errors = $this->getDb()->errors;
+					return false;
+				}
+				$item_ids[] = $this->getDb()->getLastInsertID();
 			}
-			
-			// Get the item_ids for the newly created links
-			$qr_res = $this->getDb()->query("SELECT item_id FROM ca_set_items WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
-				(int)$vn_set_id, (int)$vn_table_num, (int)$vn_type_id, $va_row_ids
-			));
-			$va_item_ids = $qr_res->getAllFieldValues('item_id');
-			
+				
 			// Set the ranks of the newly created links
 			$this->getDb()->query("UPDATE ca_set_items SET `rank` = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
 				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
 			));
 
 			// Add empty labels to newly created items
-			foreach($va_item_ids as $vn_item_id) {
+			foreach($item_ids as $vn_item_id) {
 				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'["._t("BLANK")."]')";
 			}
 			$this->getDb()->query("INSERT INTO ca_set_item_labels (item_id, locale_id, caption) VALUES ".join(",", $va_label_values));
@@ -1375,26 +1373,40 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 			// Index the links
-			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => (bool) caGetOption('queueIndexing', $pa_options, true)));
+			$this->getSearchIndexer()->reindexRows('ca_set_items', $item_ids, array('queueIndexing' => (bool) caGetOption('queueIndexing', $pa_options, true)));
 		
 			// Create change log entries
-			if(sizeof($va_item_ids)) {
-				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($va_item_ids));
+			if(sizeof($item_ids)) {
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_items WHERE item_id IN (?)", array($item_ids));
 			
 				$t_set_item = new ca_set_items();
 				
 				$va_set_ids = [];
+				$log_entries = [];
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
 					$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
-					$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+					$log_entries[] = [
+						'table' => 'ca_set_items',
+						'row_id' => $qr_res->get('ca_set_items.item_id'),
+						'user_id' => $pn_user_id,
+						'type' => 'I',
+						'snapshot' => $va_snapshot
+					];
 				}
 			
 				$t_set_item_label = new ca_set_item_labels();
-				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($va_item_ids));
+				$qr_res = $this->getDb()->query("SELECT * FROM ca_set_item_labels WHERE item_id IN (?)", array($item_ids));
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-					$t_set_item_label->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_item_labels.label_id'), 'snapshot' => $va_snapshot]);
+					
+					$log_entries[] = [
+						'table' => 'ca_set_item_labels',
+						'row_id' => $qr_res->get('ca_set_item_labels.ca_set_item_labels'),
+						'user_id' => $pn_user_id,
+						'type' => 'I',
+						'snapshot' => $va_snapshot
+					];
 				}
 				
 				$qr_res = $this->getDb()->query("SELECT * FROM ca_sets WHERE set_id IN (?)", array(array_keys($va_set_ids)));
@@ -1402,7 +1414,28 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$t_set = new ca_sets();
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
+					$log_entries[] = [
+						'table' => 'ca_sets',
+						'row_id' => $qr_res->get('ca_sets.set_id'),
+						'user_id' => $pn_user_id,
+						'type' => 'U',
+						'snapshot' => $va_snapshot
+					];
+				}
+				
+				if(sizeof($log_entries) > 0) {
+					$k = "ca_sets::{$vn_set_id}";
+					$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
+					if (!$o_tq->addTask(
+						'bulkLogger',
+						[
+							"logEntries" => $log_entries,
+						],
+						["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $pn_user_id]))
+					{
+						// Error adding queue item
+						throw new ApplicationException(_t('Could not add logging tasks to queue'));
+					}
 				}
 			}
 			
@@ -1727,10 +1760,21 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_set_item = new ca_set_items();
 			
 			$va_set_ids = [];
+			
+			$o_tq = new TaskQueue(['transaction' => $this->getTransaction()]);
+			
+			$log_entries = [];
 			while($qr_res->nextRow()) {
 				$va_snapshot = $qr_res->getRow();
 				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
-				$t_set_item->logChange("I", $pn_user_id, ['row_id' => $qr_res->get('ca_set_items.item_id'), 'snapshot' => $va_snapshot]);
+				$log_entries[] = [
+					'table' => 'ca_set_items',
+					'row_id' => $qr_res->get('ca_set_items.item_id'),
+					'user_id' => $pn_user_id,
+					'type' => 'U',
+					'snapshot' => $va_snapshot
+				];
+				
 			}
 			
 			if (sizeof($va_set_ids)) {
@@ -1739,11 +1783,29 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$t_set = new ca_sets();
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
-					$t_set->logChange("U", $pn_user_id, ['row_id' => $qr_res->get('ca_sets.set_id'), 'snapshot' => $va_snapshot]);
+					$log_entries[] = [
+						'table' => 'ca_sets',
+						'row_id' => $qr_res->get('ca_sets.set_id'),
+						'user_id' => $pn_user_id,
+						'type' => 'U',
+						'snapshot' => $va_snapshot
+					];
+				}
+			}
+			
+			if(sizeof($log_entries)) {
+				if (!$o_tq->addTask(
+					'bulkLogger',
+					[
+						"logEntries" => $log_entries,
+					],
+					["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $pn_user_id]))
+				{
+					// Error adding queue item
+					throw new ApplicationException(_t('Could not add logging tasks to queue'));
 				}
 			}
 		}
-		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_we_set_transaction) { $o_trans->rollback(); }
@@ -1975,8 +2037,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
 
+		$set_processed_templates = $va_processed_templates = null;
 		if($ps_template = caGetOption('template', $pa_options, null)) {
 			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+			$qr_res->seek(0);
+		}
+		if($set_item_template = caGetOption('setItemTemplate', $pa_options, null)) {
+			$set_processed_templates = caProcessTemplateForIDs($set_item_template, 'ca_set_items', $qr_res->getAllFieldValues('set_item_id'), array('returnAsArray' => true));
 			$qr_res->seek(0);
 		}
 
@@ -2079,8 +2146,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_row['set_item_label'] = $t_item->getLabelForDisplay(false);
 			}
 
+			$va_row['displayTemplate'] = '';
 			if($ps_template) {
 				$va_row['displayTemplate'] = array_shift($va_processed_templates);
+			}
+			if($set_item_template) {
+				$va_row['displayTemplate'] .= array_shift($set_processed_templates);
 			}
 			if($ps_templateDescription) {
 				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
@@ -2263,8 +2334,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_items = caExtractValuesByUserLocale($this->getItems(array(
 				'thumbnailVersion' => $vs_thumbnail_version,
 				'user_id' => $po_request->getUserID(),
-				'template' => $vs_template
+				'template' => $vs_template,
+				'setItemTemplate' => caGetOption("ca_set_items_display_template", $pa_bundle_settings, null)
 			)), null, null, array());
+			$va_items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $va_items);
 			$o_view->setVar('items', $va_items);
 		} else {
 			$o_view->setVar('items', array());
@@ -3362,6 +3435,218 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			];
 		}
 		return null;
+	}
+	# ------------------------------------------------------------------
+	# Anonymous access
+	# ------------------------------------------------------------------
+	/**
+	 * Returns array of anonymous access tokens associated with the currently loaded row. Array keys are:
+	 *			relation_id		[unique integer identifier for token]
+	 *			name			[token display name]
+	 *			uuid			[token]
+	 *			sdatetime		[start date/time of access]
+	 *			edatetime		[end date/time of access]
+	 *			effective_date	[date range for display]
+	 *			access			[access level]
+	 *
+	 * @param array $pa_options Options include:
+	 *		row_id = Get user list for a specific row rather than the currently loaded one. [Default is null]
+	 *
+	 * @return array List of tokens associated with the currently loaded row
+	 */ 
+	public function getAnonymousAccessTokens(?array $options=null) {
+		if (!($id = caGetOption('row_id', $options, null)) && !($id = (int)$this->getPrimaryKey())) { return null; }
+		if (!is_array($options)) { $options = []; }
+		
+		$t_rel = new ca_sets_x_anonymous_access();
+		$o_tep = new TimeExpressionParser();
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT l.*
+			FROM ca_sets_x_anonymous_access l
+			WHERE
+				l.set_id = ?
+		", [$id]);
+		
+		$tokens = [];
+		$qr_res->seek(0);
+		while($qr_res->nextRow()) {
+			$row = [];
+			foreach(['name', 'guid', 'sdatetime', 'edatetime', 'access'] as $f) {
+				$row[$f] = $qr_res->get($f);
+			}
+			$o_tep->init();
+			$o_tep->setUnixTimestamps($qr_res->get('sdatetime'), $qr_res->get('edatetime'));
+			$row['effective_date'] = $o_tep->getText();
+			
+			$tokens[$row['guid']] = $row;
+		}
+		
+		return $tokens;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Checks if currently loaded row is accessible (read or edit access) using a token
+	 *
+	 * @param string $token A token
+	 *
+	 * @return bool True if token can access the currently loaded row; returns null if no row is currently loaded.
+	 */ 
+	public function isAccessibleUsingToken(string $token) {
+		if (is_array($tokens = $this->getAnonymousAccessTokens())) {
+			foreach($tokens as $guid => $data) {
+				if ($token === $guid) {
+					// is effective date set?
+					if (($data['sdatetime'] > 0) && ($data['edatetime'] > 0)) {
+						if (($data['sdatetime'] > time()) || ($data['edatetime'] <= time())) {
+							return false;
+						}
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Add tokens to current set. 
+	 *
+	 * @param array $tokens An array of tokens to add. Each token is an array with keys name, access and effective_date
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function addAnonymousAccessTokens(array $tokens) : ?bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		$t_rel = new ca_sets_x_anonymous_access();
+		
+		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+		foreach($tokens as $data) {
+			$t_rel->clear();
+			$t_rel->load(['name' => $data['name'], 'set_id' => $id]);		// try to load existing record
+			$t_rel->set('set_id', $id);
+			$t_rel->set('name', $data['name']);
+			$t_rel->set('access', $data['access']);
+			$t_rel->set('effective_date', $data['effective_date']);
+			
+			if ($t_rel->getPrimaryKey()) {
+				$t_rel->update();
+			} else {
+				$t_rel->insert();
+			}
+			
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Add access tokens
+	 *
+	 * @param array $tokens An array of tokens to add. Each token is an array with keys name, access and effective_date
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function setAnonymousAccessTokens(array $tokens) : ?bool {
+		if(is_array($existing_tokens = $this->getAnonymousAccessTokens())) {
+			$existing_names = [];
+			foreach($existing_tokens as $guid => $data) {
+				$existing_names[$data['name']] = $guid;
+			}
+			
+			$token_names = array_map(function($v) { return $v['name']; }, $tokens);
+			
+			$tokens_to_remove = [];
+			foreach($existing_names as $name => $guid) {
+				if (!in_array($name, $token_names)) {
+					$tokens_to_remove[] = $guid;
+				}
+			}
+			if (!$this->removeAnonymousAccessTokens($tokens_to_remove)) { return false; }
+			if (!$this->addAnonymousAccessTokens($tokens)) { return false; }
+		}
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Remove token with the specified guids
+	 *
+	 * @param array $guids A list of guids to remove
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function removeAnonymousAccessTokens(array $guids) : ?bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+		
+		$existing_tokens = $this->getAnonymousAccessTokens();
+		
+		foreach($guids as $guid) {
+			if (!isset($existing_tokens[$guid])) { continue; }
+			
+			if ($t_rel = ca_sets_x_anonymous_access::findAsInstance(['set_id' => $id, 'guid' => $guid])) {
+				$t_rel->delete(true);
+				
+				if ($t_rel->numErrors()) {
+					$this->errors = $t_rel->errors;
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Removes all tokens from currently loaded row
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function removeAllAnonymousAccessTokens() : ?bool {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		$t_rel = new ca_sets_x_anonymous_access();
+		if(is_array($existing_tokens = $this->getAnonymousAccessTokens())) {
+			foreach($existing_tokens as $guid => $data) {
+				if($t_rel = ca_sets_x_anonymous_access::findAsInstance(['set_id' => $id, 'guid' => $guid])) {
+					$t_rel->delete();
+					
+					if ($t_rel->numErrors()) {
+						$this->errors = $t_rel->errors;
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------------------		
+	/**
+	 * Generate editor bundle for management of anonymous access tokens
+	 *
+	 * @return string
+	 */
+	public function getAnonymousAccessTokenHTMLFormBundle($request, $form_name, $placement_code, $table_num, $item_id, $user_id=null, $options=null) : string {
+		$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $request->getViewsDirectoryPath();
+		$o_view = new View($request, "{$view_path}/bundles/");
+		$t_rel = new ca_sets_x_anonymous_access();
+		$o_view->setVar('t_rel', $t_rel);
+		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('table_num', $table_num);
+		$o_view->setVar('id_prefix', $form_name);	
+		$o_view->setVar('placement_code', $placement_code);		
+		$o_view->setVar('request', $request);	
+		$o_view->setVar('initialValues', $this->getAnonymousAccessTokens());
+		
+		return $o_view->render('ca_sets_x_anonymous_access.php');
 	}
 	# ---------------------------------------------------------------
 }

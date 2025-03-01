@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2023 Whirl-i-Gig
+ * Copyright 2018-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,13 +32,13 @@
 trait CLIUtilsMaintenance { 
 	# -------------------------------------------------------
 	/**
-	 * Rebuild search indices
+	 * Rebuild sort values
 	 */
 	public static function rebuild_sort_values($po_opts=null) {
 		$o_db = new Db();
-		ini_set('memory_limit', '4000m');
+		ini_set('memory_limit', '4096m');
 		
-		$tables = trim((string)$po_opts->getOption('table'));
+		$tables = $po_opts ? trim((string)$po_opts->getOption('table')) : null;
 		
 		if($tables) {
 			$tables = preg_split('![,;]+!', $tables);
@@ -62,30 +62,34 @@ trait CLIUtilsMaintenance {
 				$t_label = new $vs_label_table_name;
 				$vs_label_pk = $t_label->primaryKey();
 				$qr_labels = $o_db->query("SELECT {$vs_label_pk} FROM {$vs_label_table_name}");
+				
+				$table_name_display = $t_label->getProperty('NAME_PLURAL');
 
 				print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
 				while($qr_labels->nextRow()) {
 					$vn_label_pk_val = $qr_labels->get($vs_label_pk);
 					
-					CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
+					CLIProgressBar::setMessage(_t("[Sort: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
 					print CLIProgressBar::next();
 					if ($t_label->load($vn_label_pk_val)) {
 						$t_table->logChanges(false);
-						$t_label->update();
+						$t_label->update(['dontDoSearchIndexing' => true]);
 					}
 				}
 				print CLIProgressBar::finish();
 			}
 
 			print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
+			
+			$table_name_display = $t_table->getProperty('NAME_PLURAL');
 			while($qr_res->nextRow()) {
 				$vn_pk_val = $qr_res->get($vs_pk);
 				
-				CLIProgressBar::setMessage(_t("Memory: %1", caGetMemoryUsage()));
+				CLIProgressBar::setMessage(_t("[Sort: %1 identifiers][Mem: %2]", $table_name_display, caGetMemoryUsage()));
 				print CLIProgressBar::next();
 				if ($t_table->load($vn_pk_val)) {
 					$t_table->logChanges(false);
-					$t_table->update();
+					$t_table->update(['dontDoSearchIndexing' => true]);
 				}
 			}
 			print CLIProgressBar::finish();
@@ -137,7 +141,6 @@ trait CLIUtilsMaintenance {
 		$o_db = new Db();
 
 		$t_rep = new ca_object_representations();
-		$t_rep->setMode(ACCESS_WRITE);
 
 		$qr_reps = $o_db->query("SELECT representation_id, media FROM ca_object_representations");
 		print CLIProgressBar::start($qr_reps->numRows(), _t('Loading valid file paths from database'))."\n";
@@ -241,7 +244,6 @@ trait CLIUtilsMaintenance {
 		$o_db = new Db();
 
 		$t_rep = new ca_object_representations();
-		$t_rep->setMode(ACCESS_WRITE);
 		$va_paths = array();
 
 		$qr_reps = $o_db->query("SELECT * FROM ca_object_representations WHERE deleted=1");
@@ -262,7 +264,6 @@ trait CLIUtilsMaintenance {
 
 			if($vb_delete_opt) {
 				$t_rep->load($qr_reps->get('representation_id'));
-				$t_rep->setMode(ACCESS_WRITE);
 				$t_rep->removeAllLabels();
 				$t_rep->delete(true, array('hard' => true));
 			}
@@ -336,8 +337,7 @@ trait CLIUtilsMaintenance {
 			if(is_array($va_tables_to_process) && sizeof($va_tables_to_process) && !in_array($vs_table, $va_tables_to_process)) { continue; }
 			if (!$t_instance = Datamodel::getInstanceByTableName($vs_table)) { continue; }
 			if (!$t_instance->hasField('deleted')) { continue; }
-		
-			$t_instance->setMode(ACCESS_WRITE);
+
 			$pk = $t_instance->primaryKey();
 
 			$qr_del = $o_db->query("SELECT {$pk} FROM {$vs_table} WHERE deleted = 1");
@@ -354,7 +354,6 @@ trait CLIUtilsMaintenance {
 				foreach($row_ids as $row_id) {
 					print CLIProgressBar::next();
 					$t_instance->load($row_id);
-					$t_instance->setMode(ACCESS_WRITE);
 					$t_instance->removeAllLabels();
 					$t_instance->delete(true, array('hard' => true));
 					$vn_c++;
@@ -366,6 +365,7 @@ trait CLIUtilsMaintenance {
 				$vn_t += $vn_c;
 			}
 		}
+		self::remove_unused_guids($po_opts);
 		
 		if ($vn_t > 0) {
 			CLIUtils::addMessage(_t('Done!'), array('color' => 'green'));
@@ -407,65 +407,6 @@ trait CLIUtilsMaintenance {
 	
 	# -------------------------------------------------------
 	/**
-	 * Update database schema
-	 */
-	public static function update_database_schema($po_opts=null) {
-		$config_check = new ConfigurationCheck();
-		if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
-			CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
-			flush();
-			ob_flush();
-			$confirmation  =  trim( fgets( STDIN ) );
-			if ( $confirmation !== 'y' ) {
-				// The user did not say 'y'.
-				return false;
-			}
-			$va_messages = ConfigurationCheck::performDatabaseSchemaUpdate();
-
-			print CLIProgressBar::start(sizeof($va_messages), _t('Updating database'));
-			foreach($va_messages as $vs_message) {
-				print CLIProgressBar::next(1, $vs_message);
-			}
-			print CLIProgressBar::finish();
-		} else {
-			print CLIProgressBar::finish();
-			CLIUtils::addMessage(_t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__));
-		}
-
-		return true;
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaParamList() {
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaUtilityClass() {
-		return _t('Maintenance');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaShortHelp() {
-		return _t("Update database schema to the current version.");
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function update_database_schemaHelp() {
-		return _t("Updates database schema to current version.");
-	}
-	
-	
-	# -------------------------------------------------------
-	/**
 	 * @param Zend_Console_Getopt|null $po_opts
 	 * @return bool
 	 */
@@ -476,7 +417,7 @@ trait CLIUtilsMaintenance {
 				CLIUtils::addMessage(_t("Removed search indexing queue lock"));
 				return true;
 			} else {
-				CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue. Try running caUtils under a user with privileges"));
+				CLIUtils::addMessage(_t("Insufficient privileges to remove search indexing queue lock file. Try running caUtils under a user with privileges"));
 			}
 		} else {
 			CLIUtils::addMessage(_t("Search indexing queue lock is not present"));
@@ -508,7 +449,6 @@ trait CLIUtilsMaintenance {
 	public static function clear_search_indexing_queue_lock_fileHelp() {
 		return _t('The search indexing queue is a task run periodically, usually via cron, to process pending indexing tasks. Simultaneous instances of the queue processor are prevented by means of a lock file. The lock file is created when the queue starts and deleted when it completed. While it is present new queue processing instances will refuse to start. In some cases, when a queue processing instance is killed or crashes, the lock file may not be removed and the queue will refuse to re-start. Lingering lock files may be removed using this command. Note that you must run caUtils under a user with privileges to delete the lock file.');
 	}
-	
 	# -------------------------------------------------------
 	/**
 	 * Fix file permissions
@@ -867,7 +807,6 @@ trait CLIUtilsMaintenance {
 							$t_attr_val = new ca_attribute_values($vn_value_id);
 							if ($t_attr_val->getPrimaryKey()) {
 								$c++;
-								$t_attr_val->setMode(ACCESS_WRITE);
 								$t_attr_val->useBlobAsMediaField(true);
 
 
@@ -955,7 +894,6 @@ trait CLIUtilsMaintenance {
 							if ($t_attr_val->getPrimaryKey()) {
 								$c++;
 								
-								$t_attr_val->setMode(ACCESS_WRITE);
 								$t_attr_val->useBlobAsFileField(true);
 
 
@@ -1111,19 +1049,26 @@ trait CLIUtilsMaintenance {
 	public static function clear_caches($po_opts=null) {
 		$config = Configuration::load();
 
-		$ps_cache = strtolower((string)$po_opts->getOption('cache'));
-		if (!in_array($ps_cache, array('all', 'app', 'usermedia'))) { $ps_cache = 'all'; }
+		$ps_cache = strtolower($po_opts ? (string)$po_opts->getOption('cache') : 'all');
+		if (!in_array($ps_cache, ['all', 'app', 'usermedia'])) { $ps_cache = 'all'; }
 
-		if (in_array($ps_cache, array('all', 'app'))) {
+		if (in_array($ps_cache, ['all', 'app'])) {
 			CLIUtils::addMessage(_t('Clearing application caches...'));
 			if (is_writable($config->get('taskqueue_tmp_directory'))) {
 				caRemoveDirectory($config->get('taskqueue_tmp_directory'), false);
+				mkdir($config->get('purify_serializer_path'));
 			} else {
 				CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 			}
-			PersistentCache::flush();
+			try {
+				PersistentCache::flush();
+			} catch(Exception $e) {
+				// noop
+			}
+			ExternalCache::flush();
+			MemoryCache::flush();
 		}
-		if (in_array($ps_cache, array('all', 'usermedia'))) {
+		if (in_array($ps_cache, ['all', 'usermedia'])) {
 			if (($vs_tmp_directory = $config->get('media_uploader_root_directory')) && (file_exists($vs_tmp_directory))) {
 				if (is_writable($vs_tmp_directory)) {
 					CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));
@@ -1696,7 +1641,7 @@ trait CLIUtilsMaintenance {
 			if(in_array($table, ['ca_application_vars', 'ca_guids', 'ca_change_log', 'ca_change_log_subjects', 'ca_change_log_snapshots'])) { continue; }
 			if(!($t_instance = Datamodel::getInstance($table))) { continue; }
 			
-			print CLIProgressBar::next(1, _t('Removing unused for table %1', $t_instance->tableName()));
+			print CLIProgressBar::next(1, _t('Removing unused GUIDs for table %1', $t_instance->tableName()));
 			if(!ca_guids::removeUnusedGUIDs($table)) {
 				CLIUtils::addError(_t("Could not remove unused GUIDs for %1.", $table));
 			}
@@ -1983,10 +1928,8 @@ trait CLIUtilsMaintenance {
 						CLIUtils::addMessage(_t('Processing row %1 for %2.%3', $vn_row_id, $vs_root_code, $va_element['element_code']));
 						foreach($va_values_by_attribute_id as $vn_attr_id => $va_values) {
 							$vs_processed_value = caProcessTemplate($va_element['settings']['dependentValueTemplate'], $va_values);
-							
 							$va_values[$va_element['element_code']] = $vs_processed_value;
 							if (!$t_instance->load($vn_row_id)) { continue; }
-							$t_instance->setMode(ACCESS_WRITE);
 							$t_instance->editAttribute(
 								$vn_attr_id, $vn_root_id, $va_values
 							);
@@ -2148,9 +2091,12 @@ trait CLIUtilsMaintenance {
 				$t = Datamodel::getInstance($table, true);
 				$qr = $table::find('*', ['returnAs' => 'searchResult']);
 				print CLIProgressBar::start($qr->numHits(), _t('Starting...'));
+				
+				$table_name_display = $t->getProperty('NAME_PLURAL');
+				
 				while($qr->nextHit()) {
 					if ($t->load($qr->getPrimaryKey())) {
-						print CLIProgressBar::next(1, _t('Processing %1', $t->getWithTemplate("^{$table}.preferred_labels (^{$table}.idno)")));
+						print CLIProgressBar::next(1, _t('[History: %1][Mem: %2] %3', $table_name_display, caGetMemoryUsage(), $t->getWithTemplate("^{$table}.preferred_labels (^{$table}.idno)")));
 						if ($t->deriveHistoryTrackingCurrentValue()) {
 							$c++;
 						}

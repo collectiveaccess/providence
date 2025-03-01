@@ -67,6 +67,7 @@ class DashboardController extends ActionController {
 		);
 		$this->opo_dashboard_manager->moveWidgets($va_move_info);
 		
+		$this->response->setContentType('application/json');
 		$this->render('dashboard/move_widgets_json.php');
 	}
 	# -------------------------------------------------------

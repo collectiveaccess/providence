@@ -107,7 +107,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 						if(!is_array($facet_values)) {
-							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
+							throw new \ServiceException(_t('Facet %1 is not defined for table %2', $facet, $browse_info['table']));
 						}
 						
 						$facet_info = $browse->getInfoForFacet($facet, ['checkAccess' => $user_access_values]);
@@ -427,7 +427,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						$facet_values = $browse->getFacet($facet, ['start' => $args['start'] ?? null, 'limit' => $args['limit'] ?? null, 'checkAccess' => $user_access_values]);
 						
 						if(!is_array($facet_values)) {
-							throw new \ServiceException(_t('Facets %1 is not defined for table %2', $facet, $browse_info['table']));
+							throw new \ServiceException(_t('Facet %1 is not defined for table %2', $facet, $browse_info['table']));
 						}
 						
 						$facet_info = $browse->getInfoForFacet($facet, ['checkAccess' => $user_access_values]);

@@ -583,8 +583,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *		excludeTypes = Restrict returned items to those that are not of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
 	 *		dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set, no expansion will be performed. [Default is false]
+	 *		includeSubtypes = If restrictToTypes is set, by default the type list is expanded to include subtypes (aka child types). If set to false, no expansion will be performed. [Default is true]
 	 *		includeDeleted = If set deleted rows are returned in result set. [Default is false]
 	 *		dontFilterByACL = If set don't enforce item-level ACL rules. [Default is false]
+	 *		filterDeaccessionedRecords = Omit deaccessioned records from the result set. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 	 */
@@ -621,6 +623,12 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vb_purify_with_fallback 	= caGetOption('purifyWithFallback', $pa_options, false);
 		$vb_purify 					= $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
 		
+		$filter_deaccessioned 		= caGetOption('filterDeaccessionedRecords', $pa_options, false);
+		
+		if($filter_deaccessioned && $t_instance->hasField('is_deaccessioned')) {
+			$pa_values['is_deaccessioned'] = 0;
+		}
+		
 		$vn_table_num = $t_instance->tableNum();
 		$vs_table_pk = $t_instance->primaryKey();
 		
@@ -628,15 +636,21 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$va_type_restriction_sql = [];
 		$va_type_restriction_params = [];
+		
+		$dont_include_subtypes_in_type_restriction = isset($pa_options['dontIncludeSubtypesInTypeRestriction']) ? (bool)$pa_options['dontIncludeSubtypesInTypeRestriction'] : null;
+		if(!is_null($dont_include_subtypes_in_type_restriction)) {
+			$include_subtypes = $dont_include_subtypes_in_type_restriction;
+		} else {
+			$include_subtypes = isset($pa_options['includeSubtypes']) ? (bool)$pa_options['includeSubtypes'] : true;
+		}
+	
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$va_type_restriction_sql[] = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
 		}
 		if ($va_exclude_types = caGetOption('excludeTypes', $pa_options, null)) {
-			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 			if (is_array($va_exclude_types = caMakeTypeIDList($vs_table, $va_exclude_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$va_type_restriction_sql[] = "{$vs_table}.".$t_instance->getTypeFieldName()." NOT IN (?)";
 				$va_type_restriction_params[] = $va_exclude_types;
@@ -3142,7 +3156,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	# ------------------------------------------------------------------
 	/**
 	 * Returns array of users associated with the currently loaded row. The array
-	 * is key'ed on user user user_id; each value is an  array containing information about the user. Array keys are:
+	 * is key'ed on user user_id; each value is an  array containing information about the user. Array keys are:
 	 *			user_id			[user_id for user]
 	 *			user_name		[name of user]
 	 *			fname			[first name of user]
@@ -3155,7 +3169,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_options Options include:
 	 *		row_id = Get user list for a specific row rather than the currently loaded one. [Default is null]
 	 *
-	 * @return array List of groups associated with the currently loaded row
+	 * @return array List of users associated with the currently loaded row
 	 */ 
 	public function getUsers($pa_options=null) {
 		if (!($vn_id = caGetOption('row_id', $pa_options, null)) && !($vn_id = (int)$this->getPrimaryKey())) { return null; }

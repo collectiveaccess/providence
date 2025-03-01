@@ -139,4 +139,13 @@ BaseExportFormat::$s_format_settings['CSV'] = array(
 		'label' => _t('Print field names'),
 		'description' => _t('Print names of output fields in first row of output.')
 	),
+	'CSV_use_ids_as_field_names' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 40, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '"',
+		'label' => _t('Use IDs as field names?'),
+		'description' => _t('Use IDs for names of output fields in first row of output.')
+	),
 );

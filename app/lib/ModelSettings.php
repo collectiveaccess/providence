@@ -432,38 +432,6 @@ trait ModelSettings {
 						$vs_text_value = $vs_value;
 					}
 					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"] ?? null, 'height' => $va_properties["height"] ?? null, 'value' => $vs_text_value, 'class' => $input_class,  'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
-					
-					if($va_properties['usewysiwygeditor'] ?? null) {
-						AssetLoadManager::register("ckeditor");
-						
-						$config = Configuration::load();
-						if(!is_array($va_toolbar_config = $config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = []; }
-								
-						$vs_width = $va_properties['width'];					
-						if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
-							$vs_width = ((int)$vs_width * 6)."px";
-						}
-						$vs_height = $va_properties['height'];
-						if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
-							$vs_height = ((int)$vs_height * 16)."px";
-						}
-						
-						$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() {
-						var ckEditor = CKEDITOR.replace( '{$vs_input_id}{$vs_input_name_suffix}',
-						{
-							toolbar : ".json_encode(array_values($va_toolbar_config)).",
-							width: '{$vs_width}',
-							height: '{$vs_height}',
-							toolbarLocation: 'top',
-							enterMode: CKEDITOR.ENTER_BR
-						});
-				
-						ckEditor.on('instanceReady', function(){ 
-							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
-						});
-	});									
-	</script>";
-					}
 				}
 				break;
 			# --------------------------------------------
@@ -676,7 +644,7 @@ trait ModelSettings {
 					}
 				} else {
 					if(isset($va_properties['showSortableElementsFor']) && ($va_properties['showSortableElementsFor'] > 0)) {
-						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor'], false);
+						$elements = ca_metadata_elements::getElementsForSet((int)$va_properties['showSortableElementsFor'], ['noCache' => true]);
 						$elements = array_filter($elements, function($e) {
 							return (isset($e['settings']['canBeUsedInSort']) && (bool)$e['settings']['canBeUsedInSort']);
 						});
@@ -692,7 +660,7 @@ trait ModelSettings {
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, $va_select_attr, $va_opts);
 					} elseif (is_array($va_properties['showSortableBundlesFor'] ?? null) && (strlen($va_properties['showSortableBundlesFor']['table'] ?? '') > 0)) {
 						$va_select_opts = array_merge([
-							_t('User defined sort order') => ''
+							_t('-') => ''
 						], array_flip(caGetAvailableSortFields($va_properties['showSortableBundlesFor']['table'], null, ['includeInterstitialSortsFor' => $va_properties['showSortableBundlesFor']['relationship'], 'distinguishInterstitials' => true])));
 						
 						$va_select_opts = array_filter($va_select_opts, function($v) { return ($v !== '_natural'); });

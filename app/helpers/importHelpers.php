@@ -156,10 +156,11 @@ function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa
 			if (!$vs_name && isset($va_parent['name'])) { continue; }
 		
 			$va_attributes_spec = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : [];
+			$attribute_delimiters = (isset($va_parent['attributesDelimiters']) && is_array($va_parent['attributesDelimiters'])) ? $va_parent['attributesDelimiters'] : null;
 		
 			// Process "attributes" block
 			$va_attributes = array_merge(
-				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)),
+				caProcessRefineryAttributes($va_attributes_spec, $pa_source_data, $pa_item, $pn_c, ['delimiter' => $va_delimiter, 'attributeDelimiters' => $attribute_delimiters, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name]),
 				['idno' => $vs_idno, 'parent_id' => $vn_id, '_treatNumericValueAsID' => true]
 			);
 		
@@ -350,7 +351,8 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 	$o_reader = caGetOption('reader', $pa_options, null);
 	$o_trans = caGetOption('transaction', $pa_options, null);
 	$ps_refinery_name = caGetOption('refineryName', $pa_options, null);
-	$delimiter = caGetOption('delimiter', $pa_options, null);
+	$default_delimiter = caGetOption('delimiter', $pa_options, null);
+	$attribute_delimiters = caGetOption('attributeDelimiters', $pa_options, null);
 	
 	$apply_import_item_settings = $pa_item['settings']["{$ps_refinery_name}_applyImportItemSettings"];
 	
@@ -380,7 +382,16 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 					if (!is_array($va_attrs_i)) { $va_attrs_i = [$va_attrs_i]; }
 					foreach($va_attrs_i as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-					
+						
+						$delimiter = $default_delimiter;
+						if(is_array($attribute_delimiters) && isset($attribute_delimiters[$vs_element_code])) {
+							if(is_array($attribute_delimiters[$vs_element_code])) {
+								$delimiter = isset($attribute_delimiters[$vs_element_code][$vs_k]) ? $attribute_delimiters[$vs_element_code][$vs_k] : $default_delimiter;
+							} else {
+								$delimiter = $attribute_delimiters[$vs_element_code];
+							}
+						}
+						
 						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 
 						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
@@ -439,9 +450,18 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 				foreach($va_attrs as $vs_k => $vs_v) {
 					// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 					
+					$delimiter = $default_delimiter;
+					if(is_array($attribute_delimiters) && isset($attribute_delimiters[$vs_element_code])) {
+						if(is_array($attribute_delimiters[$vs_element_code])) {
+							$delimiter = isset($attribute_delimiters[$vs_element_code][$vs_k]) ? $attribute_delimiters[$vs_element_code][$vs_k] : $default_delimiter;
+						} else {
+							$delimiter = $attribute_delimiters[$vs_element_code];
+						}
+					}
+					
 					$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 
-					if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
+					if (is_array($va_vals) && (sizeof($va_vals) > 1)) { $vb_is_repeating = true; }
 					
 					if ($vb_is_repeating) {
 						if (is_null($vn_num_repeats)) { $vn_num_repeats = sizeof($va_vals); }
@@ -477,6 +497,10 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 					}
 				}
 			} elseif (is_array($va_vals_to_import = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c, 'returnAsString' => false, 'delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings)))) {
+				$delimiter = $default_delimiter;
+				if(is_array($attribute_delimiters) && isset($attribute_delimiters[$vs_element_code]) && is_string($attribute_delimiters[$vs_element_code])) {
+					$delimiter = $attribute_delimiters[$vs_element_code];
+				}
 				foreach($va_vals_to_import as $vm_val_to_import) {
 					if(!file_exists($vs_path = $vs_prefix.$vm_val_to_import) && ($va_candidates = array_filter($va_prefix_file_list, function($v) use ($vs_path) { return preg_match("!^{$vs_path}!", $v); })) && is_array($va_candidates) && sizeof($va_candidates)){
 						$vs_path = array_shift($va_candidates);
@@ -489,7 +513,11 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 					}
 				}
 			} elseif(is_string($va_attrs)) {
-				$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['delimiter' => caGetOption('delimiter', $pa_options, null), 'returnAsString' => true, 'ignoreIndexForNonRepeatingValues' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
+				$delimiter = $default_delimiter;
+				if(is_array($attribute_delimiters) && isset($attribute_delimiters[$vs_element_code]) && is_string($attribute_delimiters[$vs_element_code])) {
+					$delimiter = $attribute_delimiters[$vs_element_code];
+				}
+				$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['delimiter' => $delimiter, 'returnAsString' => true, 'ignoreIndexForNonRepeatingValues' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
 			} else {
 				 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 			}
@@ -1045,7 +1073,7 @@ function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, 
 	
 					// Set attributes
 					//      $va_attr_vals = directly attached attributes for item
-					if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('delimiter' => $va_delimiter, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name)))) {
+					if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, ['delimiter' => $va_delimiter, 'attributeDelimiters' => $pa_item['settings']["{$ps_refinery_name}_attributeDelimiters"] ?? null, 'log' => $o_log, 'reader' => $o_reader, 'refineryName' => $ps_refinery_name]))) {
 						foreach($va_attr_vals as $k => $v) {	// only overwrite if is value is not yet set
 							if(!isset($va_val[$k]) || !strlen($va_val[$k])) { $va_val[$k] = $v; }
 						}
@@ -1859,7 +1887,7 @@ function caSkipValueIf($value, string $refinery_name, array $item, ?array $optio
 		return true;
 	}
 	if (is_array($skip_values = $item['settings']["{$refinery_name}_skipIfNotValue"]) && !in_array($value, $skip_values)) {
-		if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was in not in the skipIfNotValue list', $refinery_name, $value)); }
+		if ($log) { $log->logDebug(_t('[%1] Skipped %2 because it was not in the skipIfNotValue list', $refinery_name, $value)); }
 		return true;
 	}
 

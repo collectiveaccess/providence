@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2024 Whirl-i-Gig
+ * Copyright 2019-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,6 +81,26 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 			return false;
 		}
 
+		if (isset($options['restrictToRules'])) {
+            $restrictToRules = explode(",", $options['restrictToRules']);
+            // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
+            $rules_filtered = [];
+            foreach ($restrictToRules as $res_rules) {
+                if (is_array($rules[$res_rules]))
+                    $rules_filtered[] = $rules[$res_rules];
+            }
+            $rules=$rules_filtered;
+        } elseif(isset($options['excludeRules'])) {
+            $excludeRules = explode(",", $options['excludeRules']);
+            // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
+            $rules_filtered = [];
+            foreach ($rules as $rule_key => $rule) {
+                if (!(in_array($rule_key,$excludeRules)))
+                    $rules_filtered[$rule_key] = $rule;
+            }
+            $rules = $rules_filtered;
+        }
+        
 		if(!$rules || (!is_array($rules)) || (sizeof($rules)<1)) { return false; }
 
 		$tables = array_unique(array_values(array_map(function($v) { return $v['table']; }, $rules)));
@@ -96,7 +116,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 			// Array_diff between all tables and excluded tables. It will ignore the ones that doesn't exists
 			$tables = array_diff($tables, $excludeTables);
 		}
-
+		
 		// Check again that, after filters, $tables array is not empty
 		if (!is_array($tables) || (sizeof($tables) < 1)) { return false; }
 

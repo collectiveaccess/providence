@@ -554,7 +554,7 @@ function caGetPrintFormatsListAsHTMLForRelatedBundles($ps_id_prefix, $po_request
 	uksort($va_options, 'strnatcasecmp');
 	
 	$vs_buf = "<div class='editorBundlePrintControl'>"._t("Export as")." ";
-	$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'dontTriggerUnsavedChangeWarning'), array('value' => Session::getVar("P{$placement_id}_last_export_format"), 'width' => '150px'))."\n";
+	$vs_buf .= caHTMLSelect('export_format', $va_options, array('id' => "{$ps_id_prefix}_reportList", 'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'), array('value' => Session::getVar("P{$placement_id}_last_export_format"), 'width' => '150px'))."\n";
 	
 	$vs_buf .= caJSButton($po_request, __CA_NAV_ICON_GO__, '', "{$ps_id_prefix}_report", ['onclick' => "caGetExport{$ps_id_prefix}(); return false;"], ['size' => '15px']);
 	
@@ -645,6 +645,8 @@ function caEditorPrintSummaryControls($view) {
 	$t_item = $view->getVar('t_subject');
 	$request = $view->request;
 	
+	$defalt_display_id = $request->user->getVar($t_item->tableName().'_print_display_id');
+	
 	$item_id = $t_item->getPrimaryKey();
 	
 	$config = Configuration::load();
@@ -696,7 +698,7 @@ function caEditorPrintSummaryControls($view) {
 		'display_id', 
 		$display_opts, 
 		['onchange' => 'return caSummaryUpdateOptions();', 'id' => 'caSummaryDisplaySelector', 'class' => 'searchFormSelector'],
-		['value' => $t_display->getPrimaryKey()]
+		['value' => $defalt_display_id ? $defalt_display_id : $t_display->getPrimaryKey()]
 	);
 	$view->setVar('print_display_select_html', $print_display_select_html);
 	

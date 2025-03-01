@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -158,6 +158,30 @@ trait CLIUtilsReplication {
 				}
 				if(!$t_item->addLabel(['name_singular' => $system_info['app_name_display'], 'name_plural' => $system_info['app_name_display']], ca_locales::getDefaultCataloguingLocaleID(), 0, true)) {
 					print "Could not create label for collection source entry : ".join("; ", $t_list->getErrors())."\n";
+				}
+			}
+		}
+		
+		// create set_source
+		$t_list = new ca_lists(['list_code' => 'set_sources']);
+		if(!$t_list->isLoaded()) { 
+			print "No list for set sources is defined\n";
+		} else {
+			if(ca_list_items::findAsInstance(['idno' => $system_info['app_name'], 'list_id' => $t_list->getPrimaryKey()])) {
+				print "Found existing collection source\n";
+			} else {
+				$t_item = new ca_list_items();
+				$t_item->set([
+					'idno' => $system_info['app_name'],
+					'type_id' => 'concept',
+					'list_id' => $t_list->getPrimaryKey(),
+					'access' => 1
+				]);
+				if(!$t_item->insert()) {
+					print "Could not create set source entry : ".join("; ", $t_list->getErrors())."\n";
+				}
+				if(!$t_item->addLabel(['name_singular' => $system_info['app_name_display'], 'name_plural' => $system_info['app_name_display']], ca_locales::getDefaultCataloguingLocaleID(), 0, true)) {
+					print "Could not create label for set source entry : ".join("; ", $t_list->getErrors())."\n";
 				}
 			}
 		}

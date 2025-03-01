@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
-  
 require_once(__CA_LIB_DIR__."/Configuration.php");
 require_once(__CA_LIB_DIR__."/Db/Transaction.php");
 require_once(__CA_LIB_DIR__.'/GenericVersionUpdater.php');
+require_once(__CA_LIB_DIR__.'/System/Updater.php');
 
-
- 	define('__CA_SCHEMA_UPDATE_ERROR__', 0);
- 	define('__CA_SCHEMA_UPDATE_WARNING__', 1);
- 	define('__CA_SCHEMA_UPDATE_INFO__', 2);
+define('__CA_SCHEMA_UPDATE_ERROR__', 0);
+define('__CA_SCHEMA_UPDATE_WARNING__', 1);
+define('__CA_SCHEMA_UPDATE_INFO__', 2);
 
 final class ConfigurationCheck {
 	# -------------------------------------------------------
@@ -50,26 +45,35 @@ final class ConfigurationCheck {
 	private static $opo_db;
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public static function init() {
+		if(!self::$opo_config) {
+			self::$opa_error_messages = [];
+			self::$opo_db = new Db();
+			self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * Invokes all "QuickCheck" methods. Note that this is usually invoked
 	 * in index.php and that any errors set here cause the application
 	 * to die and display a nasty configuration error screen.
 	 */
-	public static function performQuick($options=null) {
-		self::$opa_error_messages = array();
-		self::$opo_db = new Db();
-		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
-
+	public static function performQuick(?array $options=null) : bool {
+		self::init();
 		/* execute checks */
 		$vo_reflection = new ReflectionClass("ConfigurationCheck");
 		$va_methods = $vo_reflection->getMethods();
 		foreach($va_methods as $vo_method){
 			if(strpos($vo_method->name,"QuickCheck")!==false){
 			    if (caGetOption('skipPathChecks', $options, false) && in_array($vo_method->name, ['caUrlRootQuickCheck', 'caBaseDirQuickCheck'])) { continue; }
-				if (!$vo_method->invoke(null, "ConfigurationCheck")) {
-					return;
+				if (!$vo_method->invoke(null, $options)) {
+					return false;
 				}
 			}
 		}
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -78,8 +82,9 @@ final class ConfigurationCheck {
 	 * errors set here are "non-lethal", i.e. the application still works
 	 * although certain features may not function properly.
 	 */
-	public static function performExpensive() {
-		self::$opa_error_messages = array();
+	public static function performExpensive(?array $options=null) : bool {
+		self::init();
+		self::$opa_error_messages = [];
 		self::$opo_db = new Db();
 		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
 
@@ -88,11 +93,13 @@ final class ConfigurationCheck {
 		$va_methods = $vo_reflection->getMethods();
 		foreach($va_methods as $vo_method){
 			if(strpos($vo_method->name,"ExpensiveCheck")!==false){
-				if (!$vo_method->invoke(null, "ConfigurationCheck")) {	// true means keep on doing checks; false means stop performing checks
-					return;
+				if (!$vo_method->invoke(null, $options)) {	// true means keep on doing checks; false means stop performing checks
+					return false;
 				}
 			}
 		}
+		
+		return true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -100,9 +107,7 @@ final class ConfigurationCheck {
 	 * CollectiveAccess installation
 	 */
 	public static function performInstall() {
-		self::$opa_error_messages = array();
-		self::$opo_db = new Db();
-		self::$opo_config = ConfigurationCheck::$opo_db->getConfig();
+		self::init();
 
 		self::PHPVersionQuickCheck();
 		self::PHPModuleRequirementQuickCheck();
@@ -111,6 +116,7 @@ final class ConfigurationCheck {
 		self::permissionInstallCheck();
 		self::DBLoginQuickCheck();
 		self::tmpDirQuickCheck();
+		self::htmlPurifierDirQuickCheck();
 	}
 	# -------------------------------------------------------
 	private static function addError($ps_error) {
@@ -158,7 +164,7 @@ final class ConfigurationCheck {
 		// Check media
 		//
 		$vs_media_root = self::$opo_config->get('ca_media_root_dir');
-                $vs_base_dir = self::$opo_config->get('ca_base_dir');
+    	$vs_base_dir = self::$opo_config->get('ca_base_dir');
 		$va_tmp = explode('/', $vs_media_root);
 		$vb_perm_media_error = false;
 		$vs_perm_media_path = null;
@@ -241,17 +247,19 @@ final class ConfigurationCheck {
 	/**
 	 * Is the DB schema up-to-date?
 	 */
-	public static function DBOutOfDateQuickCheck() {
+	public static function DBOutOfDateQuickCheck(?array $options=null) {
 		if (!in_array('ca_schema_updates', self::$opo_db->getTables())) {
 			self::addError(_t("Your database is extremely out-of-date. Please install all database migrations starting with migration #1 or contact support@collectiveaccess.org for assistance."));
-		} else if (($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
-			if (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__) {
+		} else if (!caGetOption('forMigration', $options, false) && ($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
+			if($vn_schema_revision <= 158) { 
+				self::addError(_t("You appear to be upgrading a CollectiveAccess 1.7.x system. Upgrading is a multi-step process. Learn more about it at <a href='https://github.com/collectiveaccess/providence/tree/master?tab=readme-ov-file#updating-from-providence-version-17-or-later'>here</a>."));
+			} elseif (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__) {
 				self::addError(_t("Your database is out-of-date. Please install all schema migrations starting with migration #%1. <a href='index.php?updateSchema=1'><strong>Click here</strong></a> to automatically apply the required updates.<br/><br/><div align='center'><strong>NOTE: you should back-up your database before applying updates!</strong></div>",($vn_schema_revision + 1)));
 			} else {
 				self::addError(_t("Your database is out-of-date. Please install all schema migrations starting with migration #%1.<br/><br/><div align='center'><strong>NOTE: you should back-up your database before applying updates!</strong></div>",($vn_schema_revision + 1)));
 			}
 			for($vn_i = ($vn_schema_revision + 1); $vn_i <= __CollectiveAccess_Schema_Rev__; $vn_i++) {
-				if ($o_instance = ConfigurationCheck::getVersionUpdateInstance($vn_i)) {
+				if ($o_instance = \System\Updater::getVersionUpdateInstance($vn_i)) {
 					if ($vs_preupdate_message = $o_instance->getPreupdateMessage()) {
 						self::addError(_t("For migration %1", $vn_i).": {$vs_preupdate_message}");		
 					}
@@ -340,8 +348,9 @@ final class ConfigurationCheck {
 	 * Does the HTMLPurifier DefinitionCache dir exist and is it writable?
 	 */
 	public static function htmlPurifierDirQuickCheck() {
-		$vs_purifier_path = __CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer';
-
+		self::init();
+		$vs_purifier_path = self::$opo_config->get('purify_serializer_path');
+		if(!file_exists($vs_purifier_path)) { mkdir($vs_purifier_path); }
 		if(!file_exists($vs_purifier_path) || !is_writable($vs_purifier_path)){
 			self::addError(_t("It looks like the directory for HTML filtering caches is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.", $vs_purifier_path));
 		}
@@ -366,7 +375,8 @@ final class ConfigurationCheck {
 	/**
 	 * I suspect that the application would die before we even reach this check if the base dir is messed up?
 	 */
-	public static function caBaseDirQuickCheck() {
+	public static function caBaseDirQuickCheck(?array $options=null) {
+		if(caGetOption('forMigration', $options, false)) { return true; }
 		$possible_bases = self::_baseGuesses();
 
 		if (caGetOSFamily() === OS_WIN32) {	// Windows paths are case insensitive
@@ -503,7 +513,7 @@ final class ConfigurationCheck {
 			self::addError(_t(
 				'The memory limit for your PHP installation may not be sufficient to run CollectiveAccess correctly. '.
 				'Please consider adjusting the "memory_limit" variable in your PHP configuration (usually a file named) '.
-				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank">http://us.php.net/manual/en/ini.core.php</a> '.
+				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank" rel="noopener noreferrer">http://us.php.net/manual/en/ini.core.php</a> '.
 				'for more details. The value in your config is &quot;%1&quot;, the recommended value is &quot;128M&quot; or higher.'
 			,$vs_memory_limit));
 		}
@@ -596,66 +606,6 @@ final class ConfigurationCheck {
 		');
 		if ($qr_res->nextRow()) {
 			return $qr_res->get('n');
-		}
-		return null;
-	}
-	# -------------------------------------------------------
-	public static function performDatabaseSchemaUpdate() {
-		$va_messages = array();
-		if (($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {			
-			
-			for($vn_i = ($vn_schema_revision + 1); $vn_i <= __CollectiveAccess_Schema_Rev__; $vn_i++) {
-				if (!($o_updater = ConfigurationCheck::getVersionUpdateInstance($vn_i))) {
-					$o_updater = new GenericVersionUpdater($vn_i);
-				}
-				
-				
-				$va_methods_that_errored = array();
-				
-				// pre-update tasks
-				foreach($o_updater->getPreupdateTasks() as $vs_preupdate_method) {
-					if (!$o_updater->$vs_preupdate_method()) {
-						//$va_messages["error_{$vn_i}_{$vs_preupdate_method}_preupdate"] = _t("Pre-update task '{$vs_preupdate_method}' failed");
-						$va_methods_that_errored[] = $vs_preupdate_method;
-					}
-				}
-				
-				if (is_array($va_new_messages = $o_updater->applyDatabaseUpdate())) {
-					$va_messages = $va_messages + $va_new_messages;
-				} else {
-					$va_messages["error_{$vn_i}_sql_fail"] = _t('Could not apply database update for migration %1', $vn_i);
-				}
-				// post-update tasks
-				foreach($o_updater->getPostupdateTasks() as $vs_postupdate_method) {
-					if (!$o_updater->$vs_postupdate_method()) {
-						//$va_messages["error_{$vn_i}_{$vs_postupdate_method}_postupdate"] = _t("Post-update task '{$vs_postupdate_method}' failed");
-						$va_methods_that_errored[] = $vs_postupdate_method;
-					}
-				}
-				
-				if ($vs_message = $o_updater->getPostupdateMessage()) {
-					$va_messages[(sizeof($va_methods_that_errored) ? "error" : "info")."_{$vn_i}_{$vs_postupdate_method}_postupdate_message"] = _t("For migration %1", $vn_i).": {$vs_message}";
-				} else {
-					if (sizeof($va_methods_that_errored)) {
-						$va_messages["error_{$vn_i}_{$vs_postupdate_method}_postupdate_message"] = _t("For migration %1", $vn_i).": "._t("The following tasks did not complete: %1", join(', ', $va_methods_that_errored));
-					} else {
-						$va_messages["info_{$vn_i}_postupdate"] = _t("Applied migration %1", $vn_i);
-					}
-				}
-			}
-		}
-		
-		// Clean cache
-		caRemoveDirectory(__CA_APP_DIR__.'/tmp', false);
-		
-		return $va_messages;
-	}
-	# -------------------------------------------------------
-	private static function getVersionUpdateInstance($pn_version) {
-		$vs_classname = "VersionUpdate{$pn_version}";
-		if (file_exists(__CA_BASE_DIR__."/support/sql/migrations/{$vs_classname}.php")) {
-			require_once(__CA_BASE_DIR__."/support/sql/migrations/{$vs_classname}.php");
-			return new $vs_classname();
 		}
 		return null;
 	}

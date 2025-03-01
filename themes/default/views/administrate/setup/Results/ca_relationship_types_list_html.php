@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- if (!$this->getVar('no_hierarchies_defined')) {
+if (!$this->getVar('no_hierarchies_defined')) {
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
@@ -100,7 +99,7 @@
 				</td>
 <?php
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
-					print "<td>".$t_display->getDisplayValue($vo_result, ($vn_placement_id > 0) ? $vn_placement_id : $va_display_item['bundle_name'])."</td>";
+					print "<td><div class='result-content'>".$t_display->getDisplayValue($vo_result, ($vn_placement_id > 0) ? $vn_placement_id : $va_display_item['bundle_name'])."</div></td>";
 				}
 				print "<td class='listtableEditDelete'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'editIcon', 'ca_relationship_types', $vn_type_id, array());
 				print " <a href='#' onclick='caOpenBrowserWith({$vn_type_id}); return false;' class='hierarchyIcon'>".caNavIcon(__CA_NAV_ICON_HIER__, 2, array('title' => _t('View in hierarchy'), 'style' => 'margin-top:5px;'), array('rotate' => 270))."</a>";

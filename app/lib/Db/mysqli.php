@@ -155,7 +155,7 @@ class Db_mysqli extends DbDriverBase {
 			throw new DatabaseException(mysqli_connect_error(), 200, "Db->mysqli->connect()");
 		}
 
-		mysqli_query($this->opr_db, 'SET NAMES \'utf8mb4\'');
+		mysqli_set_charset($this->opr_db, 'utf8mb4');
 		mysqli_query($this->opr_db, 'SET character_set_results = NULL');	
 		
 		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
@@ -355,7 +355,7 @@ class Db_mysqli extends DbDriverBase {
 			if($err_logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'db_errors'], null)) {
 				$err_logger->logError($prefix.json_encode(['code' => $this->nativeToDbError($error_num), 'errorNumber' => $error_num, 'errorMessage' => $error_message, 'sql' => $vs_sql, 'stacktrace' => caPrintStacktrace()]));
 			}
-			throw new DatabaseException($error_num, $error_message, "Db->mysqli->execute()");
+			throw new DatabaseException($error_message, $error_num, "Db->mysqli->execute()");
 		}
 
 		if($logger) {

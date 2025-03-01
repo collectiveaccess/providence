@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,13 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_set_labels'] = array(
  	'NAME_SINGULAR' 	=> _t('set name'),
@@ -166,7 +160,7 @@ class ca_set_labels extends BaseLabel {
 	protected $LABEL_DISPLAY_FIELD = 'name';
 	
 	# --- Name of field used for sorting purposes
-	protected $LABEL_SORT_FIELD = null;
+	protected $LABEL_SORT_FIELD = 'name';
 	
 	# --- Name of table this table contains label for
 	protected $LABEL_SUBJECT_TABLE = 'ca_sets';
