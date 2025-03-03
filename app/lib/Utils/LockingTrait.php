@@ -115,7 +115,7 @@ trait LockingTrait {
 	 */
 	static public function lockPath() : string {
 		$c = get_called_class();
-	    return __CA_APP_DIR__ . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . __CA_APP_NAME__.$c.'.lock';
+	    return __CA_TEMP_DIR__ . DIRECTORY_SEPARATOR . __CA_APP_NAME__.$c.'.lock';
 	}
 	# ------------------------------------------------------
 	/**
