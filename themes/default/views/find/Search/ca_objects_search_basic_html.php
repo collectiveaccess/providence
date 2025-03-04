@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */ 
-	$vo_result 				= $this->getVar('result');
- 	$vo_result_context 		= $this->getVar('result_context');
- 	
- 	print $this->render('Search/search_controls_html.php');
+$vo_result 				= $this->getVar('result');
+$vo_result_context 		= $this->getVar('result_context');
+
+print $this->render('Search/search_controls_html.php');
  ?>
  	<div id="resultBox">
 <?php
@@ -62,5 +62,4 @@
 	}
 ?>
 </div><!-- end resultbox -->
-	
 <div class="editorBottomPadding"><!-- empty --></div>
