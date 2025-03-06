@@ -69,31 +69,33 @@ if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items))
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
 	
 	$qr = $t_set->getItemsAsSearchResult();
-	$count = $qr->numHits();
+	$count = $qr ? $qr->numHits() : 0;
 	
 	$found  = $not_found = $in_part = $not_checked = 0;
 	
-	while($qr->nextHit()) {
-		switch($qr->get('ca_set_items.inventory_cont.found_object')) {
-			case 13654:
-				$found++;
-				break;
-			case 13655:
-				$not_found++;
-				break;
-			case 13656:
-				$in_part++;
-				break;
-			default:
-				$not_checked++;
-				break;
+	if($qr && ($count > 0)) {
+		while($qr->nextHit()) {
+			switch($qr->get('ca_set_items.inventory_cont.found_object')) {
+				case 13654:
+					$found++;
+					break;
+				case 13655:
+					$not_found++;
+					break;
+				case 13656:
+					$in_part++;
+					break;
+				default:
+					$not_checked++;
+					break;
+			}
 		}
-	}
 ?>
 	<div class='bundleSubLabel'>
 		<h3><?= _t('Found: %1 (%2%)', $found, sprintf("%3.1f", $found/$count * 100));?> - <?= _t('Not found: %1 (%2%)', $not_found, sprintf("%3.1f", $not_found/$count * 100));?> - <?= _t('Found in part: %1 (%2%)', $in_part, sprintf("%3.1f", $in_part/$count * 100));?> - <?= _t('Not checked: %1 (%2%)', $not_checked, sprintf("%3.1f", $not_checked/$count * 100));?></h3>
 	</div>
 <?php
+	}
 	//print 'zzz='.$t_set->getWithTemplate($settings['summaryTemplate']);
 ?>
 	<div id="<?= $id_prefix; ?>setItems" class="setItems">
