@@ -81,7 +81,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 			return false;
 		}
 
-		if (isset($options['restrictToRules'])) {
+		if (isset($options['restrictToRules']) && strlen($options['restrictToRules'])) {
             $restrictToRules = explode(",", $options['restrictToRules']);
             // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
             $rules_filtered = [];
@@ -90,7 +90,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
                     $rules_filtered[] = $rules[$res_rules];
             }
             $rules=$rules_filtered;
-        } elseif(isset($options['excludeRules'])) {
+        } elseif(isset($options['excludeRules']) && strlen($options['excludeRules'])) {
             $excludeRules = explode(",", $options['excludeRules']);
             // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
             $rules_filtered = [];
@@ -121,8 +121,9 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 		if (!is_array($tables) || (sizeof($tables) < 1)) { return false; }
 
 		$findQuery='*';
-		if ($options['findQuery'])
+		if ($options['findQuery']) {
 			$findQuery=json_decode($options['findQuery'],true);
+		}
 
 		foreach($tables as $t) {
 			if ($qr = $t::find($findQuery, ['returnAs' => 'searchResult'])) {
@@ -130,7 +131,7 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 				while($qr->nextHit()) {
 					print CLIProgressBar::next(1, $qr->get("{$t}.preferred_labels"));
 					$opts = ['instance' => $qr->getInstance()];
-					if (!$this->prepopulateInstance->prepopulateFields($opts ,$options)) {
+					if (!$this->prepopulateInstance->prepopulateFields($opts, $options)) {
 						print "ERROR\n";
 					}
 				}

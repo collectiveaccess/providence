@@ -93,7 +93,14 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_anonymous_access'] = array(
 			'DEFAULT' => '',
 			'START' => 'sdatetime', 'END' => 'edatetime',
 			'LABEL' => _t('Effective date'), 'DESCRIPTION' => _t('Period of time for which this access is in effect. Leave blank if you do not wish to restrict access to a specific period of time.')
-		)
+		),
+		'settings' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Display settings')
+		),
  	)
 );
 
@@ -202,18 +209,25 @@ class ca_sets_x_anonymous_access extends BaseModel {
 		$settings = [
 			'download_versions' => [
 				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'multiple' => 1,
-				'width' => 40, 'height' => 1,
+				'displayType' => DT_TEXT,
+				'width' => 4, 'height' => 1,
 				'takesLocale' => false,
-				'default' => '',
-				'options' => ['original' => 'original'],
-				'label' => _t('Available download formats'),
-				'description' => _t('Media versions available for download with this token.')
+				'default' => null,
+				'label' => _t('Download versions'),
+				'description' => _t('Media versions available for download with this token')
 			]
 		];
 				
 		$this->setAvailableSettings($settings);
+	}
+	# ------------------------------------------------------
+	public function __destruct() {
+		unset($this->SETTINGS);
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions($options=null) {
+		parent::initLabelDefinitions($options);
+		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display settings'));
 	}
 	# ------------------------------------------------------
 }
