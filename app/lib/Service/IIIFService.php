@@ -496,6 +496,8 @@ class IIIFService {
 		$va_tmp = explode("/", $vs_base_url);
 		if ($vn_i = array_search("service.php", $va_tmp)) {
 			$va_tmp = array_slice($va_tmp, 0, $vn_i + 3);
+		} elseif ($vn_i = array_search("service", $va_tmp)) {
+			$va_tmp = array_slice($va_tmp, 0, $vn_i + 3);
 		}
 		
 		$vs_base_url = join('/', $va_tmp);

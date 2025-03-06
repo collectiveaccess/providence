@@ -150,7 +150,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
-        if (isset($pa_options['restrictToRules'])) {
+        if (isset($pa_options['restrictToRules']) && strlen($pa_options['restrictToRules'])) {
             $restrictToRules = explode(",", $pa_options['restrictToRules']);
             // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -159,7 +159,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                     $va_rules_filtered[] = $va_rules[$res_rules];
             }
             $va_rules=$va_rules_filtered;
-        } elseif(isset($pa_options['excludeRules'])) {
+        } elseif(isset($pa_options['excludeRules']) && strlen($pa_options['excludeRules'])) {
             $excludeRules = explode(",", $pa_options['excludeRules']);
             // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
@@ -214,7 +214,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                 $vs_template = caGetOption('template', $va_rule, null);
                 if((strlen($vs_template) < 1) && (strlen($vs_source = caGetOption('source', $va_rule, null)) < 1)) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
             }
-
             $vs_context = caGetOption('context', $va_rule, null);
 
 			// respect restrictToTypes option

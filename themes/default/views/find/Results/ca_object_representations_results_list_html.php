@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2020 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,17 +24,16 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$t_display				= $this->getVar('t_display');
-	$va_display_list 		= $this->getVar('display_list');
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
-	$vn_start				= (int)$this->getVar('start');
+ */ 
+$t_display				= $this->getVar('t_display');
+$va_display_list 		= $this->getVar('display_list');
+$vo_result 				= $this->getVar('result');
+$vn_items_per_page 		= $this->getVar('current_items_per_page');
+$vs_current_sort 		= $this->getVar('current_sort');
+$vs_default_action		= $this->getVar('default_action');
+$vo_ar					= $this->getVar('access_restrictions');
+$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+$vn_start				= (int)$this->getVar('start');
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
@@ -42,7 +41,7 @@
 			<thead>
 			<tr>
 			<th class='list-header-nosort addItemToSetControl'>
-				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
+				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('input.addItemToSetControl').prop('checked', (jQuery('#addItemToSetSelectAllControl').prop('checked') == true));"/>
 			</th>
 			<th class='list-header-nosort'>
 				<?= ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>

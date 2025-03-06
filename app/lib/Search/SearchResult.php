@@ -2228,6 +2228,10 @@ class SearchResult extends BaseObject {
 					}
 					$vs_val_proc = $va_label[($va_path_components['subfield_name'] ?? null) ? $va_path_components['subfield_name'] : $pt_instance->getLabelDisplayField()];
 					
+					if($pa_options['stripEnclosingParagraphTags'] ?? true) {
+						$vs_val_proc = preg_replace("!^<p>!i", "", $vs_val_proc);
+						$vs_val_proc = preg_replace("!</p>$!i", "", $vs_val_proc);
+					}
 					switch($pa_options['output']) {
 						case 'text':
 							$vs_val_proc = $this->_convertCodeToDisplayText($vs_val_proc, $va_path_components, $label_instance, $pa_options);
@@ -2910,7 +2914,7 @@ class SearchResult extends BaseObject {
 				// is intrinsic field in primary table
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
 				
-					if ($pa_options['useLocaleCodes']) {
+					if ($pa_options['useLocaleCodes'] ?? false) {
 						if (!$vn_locale_id || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($vn_locale_id))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 					} else {
 						if (!($vm_locale_id = $vn_locale_id)) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
@@ -2919,21 +2923,26 @@ class SearchResult extends BaseObject {
 					foreach($va_values as $vn_i => $va_value) {
 						$va_ids[] = $vn_id = $va_value[$vs_pk];
 							
-						$vs_prop = $va_value[$va_path_components['field_name']];
+						$vs_prop = $va_value[$va_path_components['field_name']] ?? null;
 					
-						if ($pa_options['unserialize']) {
+						if ($pa_options['unserialize'] ?? false) {
 							$vs_prop = caUnserializeForDatabase($vs_prop);
 							
-							if(is_array($vs_prop) && $va_path_components['subfield_name']) {
+							if(is_array($vs_prop) && ($va_path_components['subfield_name'] ?? null)) {
 								$vs_prop = isset($vs_prop[$va_path_components['subfield_name']]) ? $vs_prop[$va_path_components['subfield_name']] : null;
 							}
 						}
+						
+						if($pa_options['stripEnclosingParagraphTags'] ?? false) {
+							$vs_prop = preg_replace("!^<p>!i", "", $vs_prop);
+							$vs_prop = preg_replace("!</p>$!i", "", $vs_prop);
+						}
 					
-						if ($pa_options['convertCodesToDisplayText']) {
+						if ($pa_options['convertCodesToDisplayText'] ?? false) {
 							$vs_prop = $this->_convertCodeToDisplayText($vs_prop, $va_path_components, $pt_instance, $pa_options);
-						} elseif($pa_options['convertCodesToIdno']) {
+						} elseif($pa_options['convertCodesToIdno'] ?? false) {
 							$vs_prop = $this->_convertCodeToIdno($vs_prop, $va_path_components, $pt_instance, $pa_options);
-						} elseif($pa_options['convertCodesToValue']) {
+						} elseif($pa_options['convertCodesToValue'] ?? false) {
 							$vs_prop = $this->_convertCodeToValue($vs_prop, $va_path_components, $pt_instance, $pa_options);
 						}
 						

@@ -1641,7 +1641,7 @@ trait CLIUtilsMaintenance {
 			if(in_array($table, ['ca_application_vars', 'ca_guids', 'ca_change_log', 'ca_change_log_subjects', 'ca_change_log_snapshots'])) { continue; }
 			if(!($t_instance = Datamodel::getInstance($table))) { continue; }
 			
-			print CLIProgressBar::next(1, _t('Removing unused for table %1', $t_instance->tableName()));
+			print CLIProgressBar::next(1, _t('Removing unused GUIDs for table %1', $t_instance->tableName()));
 			if(!ca_guids::removeUnusedGUIDs($table)) {
 				CLIUtils::addError(_t("Could not remove unused GUIDs for %1.", $table));
 			}

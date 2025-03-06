@@ -44,7 +44,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			<thead>
 			<tr>
 			<th class='list-header-nosort addItemToSetControl'>
-				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
+				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('input.addItemToSetControl').prop('checked', (jQuery('#addItemToSetSelectAllControl').prop('checked') == true));"/>
 			</th>
 			<th class='list-header-nosort'>
 				<?= ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
