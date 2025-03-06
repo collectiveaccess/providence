@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -582,6 +582,7 @@ class SearchEngine extends SearchBase {
 				$va_terms = [];
 				$vs_term = (string)$po_term->getTerm()->text;
 				foreach($va_fields as $vs_field) {
+					$vs_term = (string)$po_term->getTerm()->text;
 					$va_tmp = explode(".", $vs_field);
 					
 					// Rewrite FT_BIT fields to accept yes/no values

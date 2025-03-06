@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,7 +78,7 @@ function _t($ps_key) {
 		)
 	) { return is_array($g_translation_strings[$ps_key]) ? $g_translation_strings[$ps_key][(string)$_locale] : $g_translation_strings[$ps_key]; }
 	
-	if(!isset($g_translation_cache[$ps_key])) {
+	if((defined('__CA_DONT_CACHE_TRANSLATIONS__') && __CA_DONT_CACHE_TRANSLATIONS__) || !isset($g_translation_cache[$ps_key])) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
 			foreach($_ as $o_locale) {
@@ -1513,7 +1513,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @param array $pa_options Options include:
 	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
-	 *      caseInsenstive = Sort case insensitively. [Default is true]
+	 *      caseInsensitive = Sort case insensitively. [Default is true]
 	 *      naturalSort = Sort case insensitively and only considers letters and numbers in sort, stripping punctuation and other characters. [Default is false]
 	 *		mode = PHP sort mode to use. [Default is null; use string sort]
 	 * @return array The sorted array
@@ -1671,7 +1671,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
-	function caGetMediaClass(string $mimetype, ?array $options=null) : ?string {
+	function caGetMediaClass(?string $mimetype, ?array $options=null) : ?string {
 		$tmp = explode("/", $mimetype);
 
 		$for_iiif = caGetOption('forIIIF', $options, false);
@@ -2036,6 +2036,24 @@ function caFileIsIncludable($ps_file) {
 	function caHistoricTimestampToUnixTimestamp($pn_timestamp) {
 		$o_tep = new TimeExpressionParser();
 		return $o_tep->historicToUnixTimestamp($pn_timestamp);
+	}
+	# ---------------------------------------
+	/**
+	  * Returns true if date expression is a current date
+	  *
+	  * @param string $date_expression Date expression
+	  * @return bool True if expression encompasses current date
+	  */
+	function caDateIsCurrent($date_expression) : bool {
+		if($date_expression) {
+			$ts = caDateToUnixTimestamps($date_expression);
+			$t = time();
+			if(is_array($ts) && (($ts['start'] <= $t) && ($ts['end'] >= $t))) {
+				return true;
+			}
+			return false;
+		}
+		return false;
 	}
 	# ---------------------------------------
 	/**
@@ -4123,8 +4141,11 @@ function caFileIsIncludable($ps_file) {
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 
+		$display_units = $o_display_config->getAssoc('displayUnits');
+		$inch_dim = ($display_units['INCHES'] ?? 'in');
+		
 		if (!$num) {
-			return "{$int} in";
+			return "{$int} {$inch_dim}";
 		}
 
 		if ($pb_reduce) {
@@ -4192,7 +4213,7 @@ function caFileIsIncludable($ps_file) {
             $frac = "{$num}/{$pn_denom}";
         }
 
-        return ($int > 0) ? trim("{$int} {$frac} in") : trim("{$frac} in");
+        return ($int > 0) ? trim("{$int} {$frac} {$inch_dim}") : trim("{$frac} {$inch_dim}");
 	}
 	# ----------------------------------------
 	/**
@@ -4217,8 +4238,7 @@ function caFileIsIncludable($ps_file) {
 		$omit_article = caGetOption('omitArticle', $options, true);
 		$move_articles = caGetOption('moveArticles', $options, true);
 
-		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
-		$display_value = preg_replace('![ ]+!u', ' ', $display_value);
+		$display_value = preg_replace('![ ]+!u', ' ', $text);
 		
 		if($locale && $move_articles) {
 			// Move articles to end of string
@@ -4231,6 +4251,7 @@ function caFileIsIncludable($ps_file) {
 				}
 			}
 		}
+		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $display_value));
 
 		// Left-pad numbers
 		$padded = [];

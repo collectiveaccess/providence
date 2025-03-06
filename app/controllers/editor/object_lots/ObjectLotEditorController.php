@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_LIB_DIR__.'/Parsers/ZipStream.php');
 
 class ObjectLotEditorController extends BaseEditorController {
@@ -122,10 +121,7 @@ class ObjectLotEditorController extends BaseEditorController {
 						if (!file_exists($vs_media_path)) { continue; }
 
 						if($o_media_metadata_conf->get('do_metadata_embedding_for_lot_media_download')) {
-							if(!($vs_path = caEmbedMediaMetadataIntoFile($vs_media_path,
-								'ca_objects', $vn_object_id, $va_path_info['type_code'],
-								$va_path_info['representation_ids'][$vn_i], $va_path_info['representation_types'][$vn_i]
-							))) {
+							if(!($vs_path = caEmbedMediaMetadataIntoFile($t_lot, 'original', ['path' => $vs_media_path]))) {
 								$vs_path = $vs_media_path;
 							}
 						} else {

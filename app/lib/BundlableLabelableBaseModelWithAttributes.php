@@ -2051,6 +2051,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					// 
+					case 'anonymous_access':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!($this instanceof ca_sets)) { return null; }
+
+						$vs_element .= $this->getAnonymousAccessHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						break;
+					# -------------------------------
+					// 
 					case 'ca_user_roles':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
 						$vs_element .= $this->getUserRoleHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
@@ -5254,6 +5262,30 @@ if (!$vb_batch) {
 						}
 						
 						$this->setUsers($va_users_to_set, $va_user_effective_dates);
+						
+						break;
+					# -------------------------------------
+					case 'anonymous_access':
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!($this instanceof ca_sets)) { return null; }
+	
+						$links_to_set = [];
+						foreach($_REQUEST as $key => $val) { 
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_relation_id(.*)$!", $key, $matches)) {
+								$id = $val;
+								$effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_effective_date_".$matches[1], pString);
+								$name = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_name".$matches[1], pString);
+								$downloads = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_download_version".$matches[1], pArray);
+							
+								$links_to_set[] = [
+									'id' => $id,
+									'name' => $name,
+									'effective_date' => $effective_date,
+									'downloads' => $downloads
+								];
+							}
+						}
+						$this->setAnonymousAccessTokens($links_to_set);
 						
 						break;
 					# -------------------------------------

@@ -237,11 +237,12 @@ class MultipartIDNumber extends IDNumber {
 		$elements = $this->getElements();
 		if (!is_array($elements)) { return []; }
 
+		$sep = $this->getSeparator();
 		$pv = $this->getParentValue();
-		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv, '!').'!u', $value)) {
-			$npv  = preg_replace('!^'.preg_quote($pv, '!').'!u', '', $value);
-			$element_vals = $this->explodeValue($npv);
-			array_unshift($element_vals, $npv);
+		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv.$sep, '!').'!u', $value)) {
+			$npv  = preg_replace('!^'.preg_quote($pv.$sep, '!').'!u', '', $value);
+			$element_vals = $sep ? explode($sep, $npv) : [$npv];
+			array_unshift($element_vals, $pv);
 		} else {
 			$element_vals = $this->explodeValue($value);
 		}
@@ -398,7 +399,7 @@ class MultipartIDNumber extends IDNumber {
 		$separator = $this->getSeparator();
 		$elements = $this->getElements();
 		
-		$is_parent = null;
+		$is_parent = $is_serial = null;
 
 		if ($value == null) {
 			$element_vals = [];
@@ -467,6 +468,7 @@ class MultipartIDNumber extends IDNumber {
 						$element_vals[$i] = $element_info['value'];
 						break;
 					case 'SERIAL':
+						$is_serial = true;
 						$element_vals[$i] = $value[$ename] ?? '';
 						break;
 					default:
@@ -493,6 +495,7 @@ class MultipartIDNumber extends IDNumber {
 						$element_vals[$i] = $element_info['value'];
 						break;
 					case 'SERIAL':
+						$is_serial = true;
 						if(!isset($element_vals[$i])) { $element_vals[$i] = ''; }
 						break;
 				}
@@ -531,6 +534,9 @@ class MultipartIDNumber extends IDNumber {
 		
 		if($stub === '') {
 			$field_limit_sql = "{$field} <> ''";
+		} elseif($is_serial) {
+			$field_limit_sql = "{$field} REGEXP ?";
+			$params = [preg_quote($stub.$separator, "!").'[0-9]+$'];
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];

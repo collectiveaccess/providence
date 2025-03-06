@@ -4963,7 +4963,10 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							}
 							$magic = rand(0,99999);
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
-
+	
+							if($cs = $this->_CONFIG->get('force_image_to_colorspace')) {
+								$m->set('colorspace', $cs);
+							}
 							if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
 								$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
@@ -9123,7 +9126,6 @@ $pa_options["display_form_field_tips"] = true;
 							}
 							
 							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
-								AssetLoadManager::register("ckeditor");
 								$vs_width = $vn_display_width;
 								$vs_height = $vn_display_height;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
@@ -9132,11 +9134,107 @@ $pa_options["display_form_field_tips"] = true;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
 									$vs_height = ((int)$vs_height * 16)."px";
 								}
+								$attr = [
+									'width' => $vs_width, 
+									'height' => $vs_height, 
+									'value' => $this->escapeHTML($vm_field_value), 
+									'id' => $pa_options['id'] ?? null,
+									'class' => $pa_options['classname'] ?? null
+								];
+								$opts = [
+									'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)
+								];
 								
-								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
-								
-								
-								
+								$o_config = Configuration::load();
+								$use_editor = $o_config->get('wysiwyg_editor');
+								switch($use_editor) {
+									case 'ckeditor':
+										AssetLoadManager::register("ck5");
+										
+										$vs_element = "
+											<script type=\"module\">
+												import {
+												 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
+												 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+												 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
+												 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
+												 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
+												 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+												} from 'ckeditor5';
+												
+												import { ResizableHeight} from 'ckresizeable';
+											
+												ClassicEditor
+													.create( document.querySelector( '#".($pa_options['id'] ?? null)."' ), {
+														plugins: [ 
+															BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
+															GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+															ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
+															Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
+															SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
+															SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
+															Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
+														],
+														toolbar: {
+															items: ".json_encode(caGetCK5Toolbar()).",
+															shouldNotGroupWhenFull: true
+														},
+														ResizableHeight: {
+															resize: true,
+															height: '{$height_w_suffix}',
+															minHeight: '50px',
+															maxHeight: '1500px'
+														}
+													} ).then(editor => {
+														// Don't let CKEditor pollute the top-level DOM with editor bits
+														const body = editor.ui.view.body._bodyCollectionContainer
+														body.remove()
+														editor.ui.view.element.appendChild(body);
+														
+														// Add current instance to list of initialized editors
+														if(!caUI) { caUI = {}; }
+														if(!caUI.ckEditors) { caUI.ckEditors = []; }
+														caUI.ckEditors.push(editor);
+													}).catch((e) => console.log('Error initializing CKEditor: ' + e));
+											</script>\n";
+															
+											$vs_element .= "<div style='width: {$vs_width}; overflow-y: auto;' class='ckeditor-wrapper'>".caHTMLTextInput(
+												$pa_options["name"], 
+												$attr, $opts
+											)."</div>\n";
+										break;
+									case 'quilljs';
+									default:
+										AssetLoadManager::register("quilljs");
+										$quill_opts = [
+											'viewSource' => true,
+											'okText' => _t('OK'),
+											'cancelText' => _t('Cancel'),
+											'buttonHTML' => _t('HTML'),
+											'buttonTitle' => _t('Show HTML source')
+										];
+										
+										$vs_element = "<div id='".$pa_options['id']."_container' class='ql-ca-container' style='width: {$vs_width};'>";
+										$vs_element .= "
+											<script type='text/javascript'>
+												caUI.newTextEditor(
+													'".$pa_options['id']."_editor', 
+													'".$pa_options['id']."',
+													'".$attr['value']."',
+													".json_encode(caGetQuillToolbar()).",
+													".json_encode($quill_opts)."
+												);
+											</script>\n";
+										$attr['style'] = 'display: none;';
+										$vs_element .= "<div id='".$pa_options['id']."_editor' style='height: {$vs_height};' class='ql-ca-editor'></div>";
+												
+										$vs_element .= caHTMLTextInput(
+											$pa_options['id'].'', 
+											$attr, $opts
+										);
+										$vs_element .= "</div>\n";
+										break;
+								}
 							}
 						}
 					}

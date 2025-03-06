@@ -3156,7 +3156,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	# ------------------------------------------------------------------
 	/**
 	 * Returns array of users associated with the currently loaded row. The array
-	 * is key'ed on user user user_id; each value is an  array containing information about the user. Array keys are:
+	 * is key'ed on user user_id; each value is an  array containing information about the user. Array keys are:
 	 *			user_id			[user_id for user]
 	 *			user_name		[name of user]
 	 *			fname			[first name of user]
@@ -3169,7 +3169,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_options Options include:
 	 *		row_id = Get user list for a specific row rather than the currently loaded one. [Default is null]
 	 *
-	 * @return array List of groups associated with the currently loaded row
+	 * @return array List of users associated with the currently loaded row
 	 */ 
 	public function getUsers($pa_options=null) {
 		if (!($vn_id = caGetOption('row_id', $pa_options, null)) && !($vn_id = (int)$this->getPrimaryKey())) { return null; }
