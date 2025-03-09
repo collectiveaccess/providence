@@ -1387,17 +1387,17 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vn_i = 0;
 			
+			if($limit > 0) {
+				$va_relation_ids = array_slice($va_relation_ids, $start, $limit);
+			} elseif($start > 0) {
+				$va_relation_ids = array_slice($va_relation_ids, $start);
+			}
+			
 			// Get display template values
 			$va_display_template_values = [];
 			if($vs_bundle_template && ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) {
 				$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('filterNonPrimaryRepresentations' => false, 'start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true)));
 				$va_relation_ids = array_keys($va_display_template_values);
-			}
-			
-			if($limit > 0) {
-				$va_relation_ids = array_slice($va_relation_ids, $start, $limit);
-			} elseif($start > 0) {
-				$va_relation_ids = array_slice($va_relation_ids, $start);
 			}
 			
 			foreach ($va_relation_ids as $relation_id) {
