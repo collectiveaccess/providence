@@ -5273,7 +5273,7 @@ function caGetTooltipJS($pa_tooltips, $ps_class = 'tooltipFormat') {
 	$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
 
 	foreach($pa_tooltips as $vs_element_selector => $vs_tooltip_text) {
-		$vs_buf .= "jQuery('{$vs_element_selector}').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
+		$vs_buf .= "jQuery('{$vs_element_selector}').css('cursor', 'pointer').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
 	}
 
 	$vs_buf .= "});\n</script>\n";

@@ -30,7 +30,9 @@ $t_instance 	= $this->getVar('t_instance');
 $t_item 		= $this->getVar('t_group');
 $t_subject 		= $this->getVar('t_subject');		
 $settings 		= $this->getVar('settings');
-$add_label 		= $this->getVar('add_label');
+$add_label 		= $this->getVar('add_label') ?? _t("Add group exception");
+
+$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucket' => true]);
 
 //$read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 $read_only = false;
@@ -51,9 +53,8 @@ if (!is_array($initial_values)) { $initial_values = []; }
 			<table class="caListItem">
 				<tr>
 					<td class="formLabel">
-						<?= _t('Group'); ?>
 						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
-						<?= $t_acl->htmlFormElement('access', '^ELEMENT', array('name' => $id_prefix.'_access_{n}', 'id' => $id_prefix.'_access_{n}', 'value' => '{{access}}', 'no_tooltips' => true)); ?>
+						<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => "{$id_prefix}_access_{n}", 'id' => "{$id_prefix}_access_{n}", 'value' => '{{access}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]); ?>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
@@ -72,19 +73,20 @@ if (!is_array($initial_values)) { $initial_values = []; }
 	
 	<div class="bundleContainer">
 		<div class="control">
-			<?= _t('Groups'); ?> 
-<?php
-	if (!$read_only) {
-?>	
-		<span class='button labelInfo caAddItemButton' aria-label='<?= htmlspecialchars($add_label ? $add_label : _t("Add group")); ?>'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?></a></span>
-<?php
-	}
-?>		
+			<?= _t('Groups'); ?> 	
 		</div>
 		<div class="caItemList">
 		
 		</div>
-
+		<div class="control">
+<?php
+	if (!$read_only) {
+?>	
+		<div class='button labelInfo caAddItemButton' aria-label='<?= htmlspecialchars($add_label); ?>'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px').' '.$add_label; ?></a></div>
+<?php
+	}
+?>	
+		</div>
 	</div>
 </div>
 			
@@ -101,7 +103,6 @@ if (!is_array($initial_values)) { $initial_values = []; }
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
-			addMode: 'prepend',
 			readonly: <?= $read_only ? "true" : "false"; ?>,
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'UserGroup', 'Get', array()); ?>'
 		});

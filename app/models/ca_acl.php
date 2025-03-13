@@ -33,8 +33,8 @@ if(!defined('__CA_ACL_NO_ACCESS__')) { define('__CA_ACL_NO_ACCESS__', 0); }
 if(!defined('__CA_ACL_READONLY_ACCESS__')) { define('__CA_ACL_READONLY_ACCESS__', 1); }
 if(!defined('__CA_ACL_EDIT_ACCESS__')) { define('__CA_ACL_EDIT_ACCESS__', 2); }
 if(!defined('__CA_ACL_EDIT_DELETE_ACCESS__')) { define('__CA_ACL_EDIT_DELETE_ACCESS__', 3); }
- 
- BaseModel::$s_ca_models_definitions['ca_acl'] = array(
+
+BaseModel::$s_ca_models_definitions['ca_acl'] = array(
  	'NAME_SINGULAR' 	=> _t('access control list'),
  	'NAME_PLURAL' 		=> _t('access control lists'),
  	'FIELDS' 			=> array(
@@ -1353,6 +1353,27 @@ class ca_acl extends BaseModel {
 				// noop - is unrecoverable
 			}
 		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Override htmlFormElement to truncate "access" option list when "forPawtucket" option is set
+	 * 
+	 * @param string $field field name
+	 * @param string $format field format
+	 * @param array $options additional options
+	 */
+	public function htmlFormElement($field, $format=null, $options=null) {
+		switch($field) {
+			case 'access':
+				if(caGetOption('forPawtucket', $options, false)) {
+					$opts = array_filter(BaseModel::$s_ca_models_definitions['ca_acl']['FIELDS'][$field]['BOUNDS_CHOICE_LIST'], function($v) { 
+						return ($v <= 1);
+					});
+					return caHTMLSelect($options['name'] ?? $field, $opts, ['id' => $options['id'] ?? null], $options);
+				}
+				break;
+		}
+		return parent::htmlFormElement($field, $format, $options);
 	}
 	# ------------------------------------------------------
 }

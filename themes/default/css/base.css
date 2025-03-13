@@ -6105,13 +6105,13 @@ div.globalAccess {
     margin-bottom: 15px;
 }
 div.globalAccess .title {
-    font-size: 18px;
+    font-size: 20px;
     font-family: arial;
     font-weight: normal;
 }
 
 div.globalAccess div.subtitle {
-    font-size: 14px;
+    font-size: 16px;
     font-family: arial;
     font-weight: normal;
     margin: 10px 0 5px 0; 
@@ -6141,6 +6141,10 @@ div.globalAccess h2 {
     border-top: dotted 1px #ccc;
     font-family: arial;
     font-weight: normal;
+}
+
+div.publicAccessHeader {
+
 }
 
 .editLink a{
