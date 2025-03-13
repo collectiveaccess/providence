@@ -173,6 +173,8 @@ class BaseEditorController extends ActionController {
 		if (!($vn_type_id = $t_subject->getTypeID())) {
 			$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
 		}
+		
+		Session::SetVar($this->ops_table_name.'_type_id', $vn_type_id);
 
 		if (!$t_ui || !$t_ui->getPrimaryKey()) {
 			$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
@@ -1061,8 +1063,12 @@ class BaseEditorController extends ActionController {
 			if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
 				$user_id = (int)$this->request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
 				$access = $this->request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
+				$include_representations = $this->request->getParameter($form_prefix.'_include_representations_'.$matches[1], pInteger);
 				if ($access >= 0) {
-					$users_to_set[$user_id] = $access;
+					$users_to_set[$user_id] = [
+						'access' => $access,
+						'include_representations' => $include_representations
+					];
 				}
 			}
 		}

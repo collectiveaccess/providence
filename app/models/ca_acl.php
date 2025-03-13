@@ -87,6 +87,13 @@ if(!defined('__CA_ACL_EDIT_DELETE_ACCESS__')) { define('__CA_ACL_EDIT_DELETE_ACC
 					_t('can edit + delete') => __CA_ACL_EDIT_DELETE_ACCESS__
 				)
 		),
+		'include_representations' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Set access for associated representations?'), 'DESCRIPTION' => _t('Determines whether access settings set for representations associated with this item.')
+		),
 		'notes' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,

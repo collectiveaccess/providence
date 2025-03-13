@@ -935,6 +935,7 @@ class AppNavigation extends BaseObject {
 					$l = caMakeTypeIDList($vs_table, $this->opo_request->config->get($vs_pref),['dontIncludeSubtypesInTypeRestriction' => true]);
 					$s = caGetOption('type_id', $options, (int)Session::getVar("{$vs_table}_type_id"));
 					$vs_value = in_array($s, $l, true);
+					
 					if ($vb_not) { $vs_value = !$vs_value; }
 					break;
 				case 'global':

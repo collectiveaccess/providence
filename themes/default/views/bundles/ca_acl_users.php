@@ -60,6 +60,12 @@ if (!is_array($initial_values)) { $initial_values = []; }
 							'omit_from_bounds_choice_list' => [__CA_ACL_NO_ACCESS__], 
 							'hide_select_if_only_one_option' => true
 						]); ?>
+						<span class="formLabelPlain"><?= $t_acl->htmlFormElement('include_representations', '^ELEMENT',[
+							'name' => $id_prefix.'_include_representations_{n}',
+							'id' => $id_prefix.'_include_representations_{n}',
+							'value' => '{{include_representations}}', 
+							'no_tooltips' => true,
+						]).' '._t('Include representations?'); ?></span>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>

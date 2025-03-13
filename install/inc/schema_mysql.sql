@@ -2802,6 +2802,8 @@ create table ca_acl
    notes                          char(10)                       not null,
    inherited_from_table_num       tinyint unsigned               null,
    inherited_from_row_id          int unsigned                   null,
+   include_representations 		  tinyint unsigned               not null default 0,
+   
    primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
@@ -7907,4 +7909,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (199, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (200, unix_timestamp());

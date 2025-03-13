@@ -7750,7 +7750,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		while($qr_res->nextRow()) {
 			$va_row = [];
-			foreach(array('user_id', 'fname', 'lname', 'email', 'access') as $vs_f) {
+			foreach(array('user_id', 'fname', 'lname', 'email', 'access', 'include_representations') as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
 			
@@ -7789,10 +7789,16 @@ $pa_options["display_form_field_tips"] = true;
 			$t_acl->set('row_id', $id);
 			$t_acl->set('user_id', $user_id);
 		
+			if(is_array($access)) {
+				$include_representations = $access['include_representations'] ?? 0;
+				$access = $access['access'] ?? 0;
+			}
+		
 			if($access != $t_acl->get('access')) {
 				$t_acl->set('inherited_from_table_num', null);
 				$t_acl->set('inherited_from_row_id', null);
 			}
+			$t_acl->set('include_representation', $include_representations);
 			
 			$t_acl->set('access', $access);
 			
