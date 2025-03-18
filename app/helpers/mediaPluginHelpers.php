@@ -515,6 +515,7 @@ function caWhisperInstalled(array $options=null) {
  * @return mixed Path to executable if installed, false if not installed
  */
 function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
+	if(Configuration::load()->get('dont_extract_pdf_content_locations')) { return false; }
 	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_pdfminer_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_pdfminer_installed", "mediaPluginInfo"); }
 	if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 

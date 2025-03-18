@@ -8168,3 +8168,14 @@ div.ck-reset {
 .ckeditor-wrapper {
     font: 14px "Helvetica Neue", Arial, Helvetica, Sans-serif;
 }
+
+div.anonymousAccessUrl, div.anonymousAccessDownloads {
+	font-size: 12px;
+	font-weight: normal;
+	margin: 10px;
+}
+
+span.anonymousAccessUrlLabel {
+	font-size: 12px;
+	font-weight: bold;
+}
