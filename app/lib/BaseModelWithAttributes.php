@@ -1676,6 +1676,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * @return string HTML for list element
 	 */ 
 	public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
 		$t_list = new ca_lists();
 		if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 			$pa_options['childrenOnlyForItemID'] = $this->get('type_id');
