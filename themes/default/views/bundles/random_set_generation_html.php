@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2024 Whirl-i-Gig
+ * Copyright 2022-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- AssetLoadManager::register("panel");
+AssetLoadManager::register("panel");
 $t_item = $this->getVar('t_item');
 $t_content = $t_item->getItemTypeInstance();
 $t_type = $t_item->getTypeInstance();
@@ -73,7 +73,9 @@ $default_count = caGetOption('random_generation_size', $settings, 5);
 					jQuery("#topNavContainer").show(250);
 				}
 			});
-		}		
+		}	
+		
+		jQuery("#caRandomSetGenetationFormTypeID").multiselect();
 	});
 	function caAddRandomItems() {
 		jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'randomSetGeneration'); ?>', jQuery("#caRandomSetGenetationForm").serialize(), function(e) {

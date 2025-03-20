@@ -340,6 +340,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['anonymous_access'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Anonymous access'));
 		$this->BUNDLES['ca_set_items'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Set items'));
+		$this->BUNDLES['inventory_list'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Inventory contents'));
 		
 		$this->BUNDLES['_itemCount'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of items in set'));
 		
@@ -1864,6 +1865,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @seealso caMakeSearchResult()
 	 */
 	public function getItemsAsSearchResult($options=null) {
+		if(!is_array($options)) { $options = []; }
 		if(!$this->isLoaded()) { return null; }
 		$ids = $this->getItems(array_merge($options, ['sort' => null, 'sortDirection' => null, 'idsOnly' => true, 'start' => 0, 'limit' => null]));
 
@@ -2433,6 +2435,111 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 		
 		return $o_view->render('ca_set_items.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of inventory items in the currently loaded set
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getInventoryListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $settings=null) {
+		if ($this->getItemCount() > 50) {
+			$vs_thumbnail_version = 'tiny';
+		} else {
+			$vs_thumbnail_version = "thumbnail";
+		}
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_set', $this);	
+		$o_view->setVar('t_item', $t_item = new ca_set_items());		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+		
+		if ($this->getPrimaryKey()) {
+			$vs_set_table_name = Datamodel::getTableName($this->get('table_num'));
+			if (!($vs_template = caGetOption("{$vs_set_table_name}_display_template", $settings, null))) {		// display template by table
+				if (!($vs_template = caGetOption('display_template', $settings, null))) {						// try the old non-table-specific template?
+					$vs_template = $this->getAppConfig()->get("{$vs_set_table_name}_set_item_display_template");			// use default in app.conf
+				}
+			} 
+		
+			$va_items = caExtractValuesByUserLocale($this->getItems(array(
+				'thumbnailVersion' => $vs_thumbnail_version,
+				'user_id' => $po_request->getUserID(),
+				'template' => $vs_template,
+				'setItemTemplate' => caGetOption("ca_set_items_display_template", $settings, null)
+			)), null, null, array());
+			$va_items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $va_items);
+			$o_view->setVar('initialValues', $va_items);
+		} else {
+			$o_view->setVar('initialValues', []);
+		}
+		
+		$container_element_code = $this->getAppConfig()->get('inventory_container_element_code');
+		
+		$bundles_to_edit = ["ca_set_items.{$container_element_code}"];
+		$found_bundle = $this->getAppConfig()->get('inventory_found_element_code');
+		
+		//$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
+		
+		$sub_fields = [];
+		$bundles_to_edit_proc = [];
+		foreach($bundles_to_edit as $i => $f) {
+			$tmp = explode('.', $f);
+			$sf = array_pop($tmp);
+			if($t_item->hasElement($sf)) {
+				if(is_array($selist = ca_metadata_elements::getElementsForSet($sf))) {
+					foreach($selist as $se) {
+						if($se['datatype'] == 0) { continue; }
+						
+						if($se['element_code'] == $found_bundle) { continue; }
+						$sub_fields[] = "{$sf}.{$se['element_code']}";
+					}
+					if($found_bundle) {
+						array_unshift($sub_fields, "{$sf}.{$found_bundle}");
+					}
+					$bundles_to_edit_proc += $sub_fields;
+					continue;
+				} 
+			}
+			$bundles_to_edit_proc[] = $f;
+		}
+		$o_view->setVar('container_element_code', $container_element_code);
+		$o_view->setVar('found_element_code', $found_bundle);
+		$o_view->setVar('bundles_to_edit', $bundles_to_edit_proc);
+		
+		$row_ids = array_map(function($v) {
+			return $v['item_id'];
+		}, $va_items);
+		if(sizeof($row_ids)) {
+			if($qr = caMakeSearchResult('ca_set_items', $row_ids)) {
+				while($qr->nextHit()) {
+					$item_id = $qr->get('ca_set_items.item_id');
+					$acc = [];
+					foreach($bundles_to_edit_proc as $f) {
+						$acc[$f] = $qr->get("ca_set_items.{$f}");
+						$acc["{$f}_display"] = $qr->get("ca_set_items.{$f}", ['convertCodesToDisplayText' => true]);
+					}
+					
+					$acc["{$container_element_code}.{$found_bundle}_idno"] = $qr->get("ca_set_items.{$container_element_code}.{$found_bundle}", ['convertCodesToIdno' => true]);
+					$va_items[$item_id] = array_merge($va_items[$item_id], $acc);
+				}
+			}
+			$o_view->setVar('initialValues', $va_items);
+		}
+		$o_view->setVar('settings', $settings);
+		
+		if ($t_row = $this->getItemTypeInstance()) {
+			$o_view->setVar('t_row', $t_row);
+			$o_view->setVar('type_singular', $t_row->getProperty('NAME_SINGULAR'));
+			$o_view->setVar('type_plural', $t_row->getProperty('NAME_PLURAL'));
+		}
+		
+		return $o_view->render('inventory_list.php');
 	}
 	# ------------------------------------------------------
 	/**

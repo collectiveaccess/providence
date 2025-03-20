@@ -6235,7 +6235,6 @@ table.caConfirmBatchExecutionPanelAlertControls {
     display: none;
     margin: 0px;
     padding:0px !important;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFF;
     border: 1px solid #999;
     border-radius:4px;

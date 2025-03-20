@@ -384,7 +384,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		];
 		$attributes = caGetOption('attributes', $options, null);
 		if(is_array($attributes)) { 
-			$attr = array_merge($attributes, $opts);
+			$attr = array_merge($attr, $attributes);
 		}
 			
 		if (caGetOption('readonly', $options, false)) { 

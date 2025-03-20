@@ -1964,6 +1964,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						break;
 					# -------------------------------
+					// This bundle is only available when editing objects of type ca_sets
+					case 'inventory_list':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getInventoryListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						break;
+					# -------------------------------
 					// This bundle is only available for types which support set membership
 					case 'ca_sets_checklist':
 						require_once(__CA_MODELS_DIR__."/ca_sets.php");	// need to include here to avoid dependency errors on parse/compile
@@ -5107,6 +5113,29 @@ if (!$vb_batch) {
 							$checked[$rid] = (bool)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}checked{$rid}", pString);
 						}
 						$this->reorderItems($rids, ['user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => true, 'checked' => $checked]);
+						break;
+					# -------------------------------------
+					// This bundle is only available ca_sets in inventory type
+					case 'inventory_list':
+						if ($vb_batch) { break; } // not supported in batch mode
+						// @TODO: check that this is a set of inventory type
+						
+						$container_fld = $this->getAppConfig()->get('inventory_container_element_code');
+						$found_fld = $this->getAppConfig()->get('inventory_found_element_code');
+						$acc = [];
+						foreach($_REQUEST as $k => $v) {
+							if(preg_match("!^inventory_([\d]+)_{$container_fld}_(.*)$!", $k, $m)) {
+								$acc[$m[1]][$m[2]] = $v;
+							}
+							//inventory_396220_inventory_cont_inventory_notes
+						}
+						foreach($acc as $item_id => $d) {
+							if(!$d[$found_fld]) { continue; } 
+							if($s = ca_set_items::findAsInstance($item_id)) {
+								$s->replaceAttribute($d, $container_fld);
+								$s->update();
+							}
+						}
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 

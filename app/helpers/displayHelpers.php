@@ -1854,7 +1854,7 @@ jQuery(document).ready(function() {
 			AssetLoadManager::register("panel");
 			$t_set = new ca_sets();
 			if ($t_set->load($vn_set_id = $t_item->get('set_id'))) {
-				$buf .= "<div><strong>"._t("Part of set")."</strong>: ".caEditorLink($view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";
+				$buf .= "<div><strong>"._t("Part of %1", $t_set->getTypeName())."</strong>: ".caEditorLink($view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";
 
 				$t_content_instance = Datamodel::getInstanceByTableNum($vn_item_table_num = $t_item->get('table_num'));
 				if ($t_content_instance->load($vn_row_id = $t_item->get('row_id'))) {

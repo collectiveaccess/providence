@@ -27,6 +27,7 @@
 //
 // Note: requires jQuery UI.Sortable
 //
+ 
 var caUI = caUI || {};
 
 (function ($) {
@@ -42,28 +43,22 @@ var caUI = caUI || {};
 			rowIDListID: 'setRowIDList',
 			displayTemplate: null,
 			
-			showCheckedControls: false,
-			
 			lookupURL: null,
 			itemInfoURL: null,
 			editSetItemsURL: null,			// url of set item editor (without item_id parameter key or value)
 			
-			editSetItemToolTip: null,
+			editSetItemButton: null,		// html to use for edit set item button
 			deleteSetItemButton: null,		// html to use for delete set item button
 			
-			editSetItemInlineButton: null,
-			editSetItemInlineToolTip: null,
-			
 			initialValues: null,
-			initialValueOrder: null,			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */		
+			initialValueOrder: null,			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */	
 		
-		    setItemEditorPanel: null,
-		    setItemEditorBaseUrl: null,
 		}, options);
 		
 		
 		// ------------------------------------------------------------------------------------
 		that.initSetEditor = function() {
+			
 			// setup autocompleter
 			jQuery('#' + that.setItemAutocompleteID).autocomplete(
 				{
@@ -109,15 +104,14 @@ var caUI = caUI || {};
 			
 			var itemID = valueArray['item_id'];
 			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
-			var counterHTML = '<div class="setItemCounter"></div> ';
-			var checkedControl = that.showCheckedControls ? '<div class="setItemCheckControl"><input type="checkbox" name="' + that.fieldNamePrefix + 'checked' + rID + '"' + ((parseInt(valueArray['checked']) == 1) ? 'checked="1"' : '') +'/></div>' : '';
+			
+			var counterHTML = '';
+			counterHTML = '<div class="setItemCounter"></div> ';
 			
 			var editLinkHTML = '';
 			if ((that.editSetItemButton) && (itemID > 0)) {
-				counterHTML = '<a href="' + that.editSetItemsURL + '/item_id/' + valueArray['item_id'] + '" title="' + that.editSetItemToolTip +'" class="setItemEditButton">' + counterHTML + '</a> ';
+				editLinkHTML = '<div style="float: left;"><a href="' + that.editSetItemsURL + '/item_id/' + valueArray['item_id'] + '" title="' + that.editSetItemToolTip +'" class="setItemEditButton">' + that.editSetItemButton + '</a></div> ';
 			}
-			
-			editLinkHTML += "<a href='#' class='caInterstitialEditButton' data-item_id='" + valueArray['item_id'] + "' data-set_id='" + that.setID + "' title='" + that.editSetItemInlineToolTip + "'>" + that.editSetItemInlineButton + "</a>";
 			
 			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rID + "' class='imagecontainer'>";
 			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>" + that.deleteSetItemButton + "</a></div>"; }
@@ -127,17 +121,13 @@ var caUI = caUI || {};
 			} else {
 				displayLabel = valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]";
 			}
-			itemHTML += counterHTML + checkedControl + "<div class='setItemThumbnail'>" + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort 
-			    + "</div></div><br style='clear: both;'/>"
-			    + "<div class='setItemEditDeleteControl'>" + editLinkHTML + "</div>"
-			    + "</li>";
+			itemHTML += counterHTML + "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);
 			} else {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).append(itemHTML);
 			}
-			
 			
 			if (itemID > 0) { that.setDeleteButton(rowID, itemID); }
 			
@@ -192,22 +182,6 @@ var caUI = caUI || {};
 			// set warning if no items on load
 			jQuery('#' + that.fieldNamePrefix + that.setItemListID + ' li.setItem').length ? jQuery('#' + that.fieldNamePrefix + that.setNoItemWarningID).hide() : jQuery('#' + that.fieldNamePrefix + that.setNoItemWarningID).show();
 			jQuery('#' + that.rowIDListID).val(that.getRowIDs().join(';'));
-			
-			if(that.setItemEditorBaseUrl) {
-                jQuery('#' + that.fieldNamePrefix + that.setItemListID).find(".caInterstitialEditButton").on('click', null,  {}, function(e) {
-                    // Trigger set items edit panel
-                    var item_id = jQuery(this).data('item_id');
-                    var set_id = jQuery(this).data('set_id');
-                    var u = that.setItemEditorBaseUrl + '/set_id/' + set_id + '/item_id/' + item_id; 
-              
-                    that.setItemEditorPanel.showPanel(u);
-                
-                    jQuery('#' + that.setItemEditorPanel.getPanelContentID()).data('panel', that.setItemEditorPanel);
-                
-                    e.preventDefault();
-                    return false;
-                });
-            }
 		}
 		// ------------------------------------------------------------------------------------
 		that.sort = function(key) {
@@ -253,7 +227,7 @@ var caUI = caUI || {};
 				var rIDBits = id.split(/_/);
 				that.setDeleteButton(rIDBits[0], rIDBits[1]);
 			});
-				
+			
 			caUI.utils.showUnsavedChangesWarning(true);
 			that.refresh();
 		}

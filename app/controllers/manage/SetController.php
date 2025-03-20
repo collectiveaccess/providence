@@ -47,7 +47,15 @@ class SetController extends ActionController {
 		$this->opn_items_per_page = ((int) $this->request->config->get('items_per_page_default_for_ca_sets_search') ?: 20);
 		$this->view->setVar('items_per_page', $this->opn_items_per_page);
 		
-		$this->opn_list_set_type_id = $this->request->getParameter('list_set_type_id', pInteger);
+		$this->_setType((int)$this->request->getParameter('list_set_type_id', pInteger));
+		
+		$this->opa_sorts = array("name", "set_content_type", "access", "lname", "item_count", "set_type", "access", "status", "rank", "created");
+	}
+	# -------------------------------------------------------
+	private function _setType(?int $type_id) {
+		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
+
+		$this->opn_list_set_type_id = $type_id;
 		if (strlen($this->opn_list_set_type_id) > 0) {
 			if((int)$o_result_context->getParameter('set_type_id') != (int)$this->opn_list_set_type_id){
 				$this->opb_criteria_has_changed = true;
@@ -73,7 +81,6 @@ class SetController extends ActionController {
 		$this->view->setVar('list_set_type_id', $this->opn_list_set_type_id);
 		$this->view->setVar('type_name_singular', $this->ops_set_type_singular);
 		$this->view->setVar('type_name_plural', $this->ops_set_type_plural);
-		$this->opa_sorts = array("name", "set_content_type", "access", "lname", "item_count", "set_type", "access", "status", "rank", "created");
 	}
 	# -------------------------------------------------------
 	public function ListSets() {
@@ -174,6 +181,17 @@ class SetController extends ActionController {
 		$o_result_context->saveContext();
 		
 		$this->render('set_list_html.php');
+	}
+	# -------------------------------------------------------
+	public function ListInventories() {
+		if(!(bool)$this->request->config->get('enable_inventories')) {
+			throw new ApplicationException(_t('Inventories disabled'));
+		}
+		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
+		
+		$inventory_type_id = caGetListItemID('set_types', 'inventory');
+		$this->_setType($inventory_type_id);
+		return $this->ListSets();
 	}
 	# -------------------------------------------------------
 	public function ListSetsByUser() {
@@ -491,6 +509,11 @@ class SetController extends ActionController {
 			foreach($va_hier as $vn_item_id => $va_item) {
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
+				
+				if(isset($pa_params['options']['exclude']) && is_array($pa_params['options']['exclude']) && sizeof($pa_params['options']['exclude'])) {
+					if(in_array($va_item['idno'], $pa_params['options']['exclude'], true)) { continue; }
+				}
+				
 				// does this item have sub-items?
 				$va_subtypes = array();
 				if (

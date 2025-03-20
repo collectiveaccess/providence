@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -506,6 +506,10 @@ class AppNavigation extends BaseObject {
 		// invoke controller method
 		$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
 	
+		// Parse options
+		if(is_array($va_info['options'] ?? null)) {
+			$va_info['options'] = $this->_parseAdditionalParameters($va_info['options']);
+		}
 		if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
 			// Invalid controller path
 			$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getDynamicSubmenu()");
@@ -829,48 +833,63 @@ class AppNavigation extends BaseObject {
 		return $va_additional_params;
 	}
 	# -------------------------------------------------------
-	private function _parseParameterValue($ps_value) {
-			
-		$vs_value = '';
-		$va_tmp = explode(':', $ps_value);
-		if(count($va_tmp)==2) {
-			switch($va_tmp[0]) {
-				case 'session':
-					$vs_value = Session::getVar($va_tmp[1]);
-					break;
-				case 'parameter':
-					$vs_value = $this->opo_request->getParameter($va_tmp[1], pString);
-					break;
-				case 'preference':
-					if ($this->opo_request->isLoggedIn()){ 
-						$vs_value = $this->opo_request->user->getPreference($va_tmp[1]);
-					} else {
-						$vs_value = '';
-					}
-					break;
-				case 'string':
-					$vs_value = $va_tmp[1];
-					break;
-				case 'global':
-					$vs_value = $GLOBALS[$va_tmp[1]];
-					break;
-				case 'constant':
-					$vs_value = constant($va_tmp[1]);
-					break;
-				default:
-					$vs_value = '';
-					break;
-			}
-			if ($va_tmp[1]) {
-				return $vs_value;
-			}
-			return '';
-		} else {
-			if ($va_tmp[0]) {
-				return $vs_value;
+	/**
+	 *
+	 */
+	private function _parseParameterValue($values) {
+		$is_array = true;
+		if(!is_array($values)) {
+			$is_array = false;
+			$values = [$values]; 
+		}
+		
+		$acc = [];
+		foreach($values as $v) {
+			$pvalue = '';
+			$tmp = explode(':', $v);
+			if(count($tmp)==2) {
+				switch($tmp[0]) {
+					case 'session':
+						$pvalue = Session::getVar($tmp[1]);
+						break;
+					case 'parameter':
+						$pvalue = $this->opo_request->getParameter($tmp[1], pString);
+						break;
+					case 'preference':
+						if ($this->opo_request->isLoggedIn()){ 
+							$pvalue = $this->opo_request->user->getPreference($tmp[1]);
+						} else {
+							$pvalue = '';
+						}
+						break;
+					case 'string':
+						$pvalue = $tmp[1];
+						break;
+					case 'global':
+						$pvalue = $GLOBALS[$tmp[1]];
+						break;
+					case 'constant':
+						$pvalue = constant($tmp[1]);
+						break;
+					case 'configuration':
+						$pvalue = $this->opo_request->config->get($tmp[1]);
+						break;
+					default:
+						$pvalue = '';
+						break;
+				}
+				if ($tmp[1]) {
+					$acc[] = $pvalue;
+				} else {
+					$acc[] = '';
+				}
+			} else {
+				if ($tmp[0]) {
+					$acc[] = $pvalue;
+				}
 			}
 		}
-		return $ps_value;
+		return $is_array ? $acc : array_shift($acc);
 	}
 	# -------------------------------------------------------
 	private function _evaluateRequirements(&$pa_requirements, $options=null) {
