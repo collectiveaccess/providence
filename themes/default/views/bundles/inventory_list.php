@@ -52,7 +52,6 @@ $initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCh
 // Dyamically loaded sort ordering
 $loaded_sort 			= $this->getVar('sort');
 $loaded_sort_direction 	= $this->getVar('sortDirection');
-//print_r($initial_values);
 $errors = $failed_inserts = [];
 
 $bundles_to_edit_proc = $this->getVar('bundles_to_edit');
@@ -70,7 +69,7 @@ $found_element_code = $this->getVar('found_element_code');
 	
 	if($qr && ($count > 0)) {
 		while($qr->nextHit()) {
-			switch($z=$qr->get('ca_set_items.inventory_cont.found_object', ['convertCodesToIdno' => true])) {
+			switch($qr->get('ca_set_items.inventory_cont.found_object', ['convertCodesToIdno' => true])) {
 				case 'located':
 					$found++;
 					break;
@@ -93,29 +92,30 @@ $found_element_code = $this->getVar('found_element_code');
 <?php
 	if(is_array($initial_values) && sizeof($initial_values)) {
 ?>
-	    <div class='bundleSubLabel' style='text-align: center;'>
+	    <div class='bundleSubLabel inventoryStats' style='text-align: center;'>
 <?php
-			//print caEditorBundleBatchEditorControls($this->request, $settings['placement_id'] ?? null, $t_set, $t_item->tableName(), $settings);
-          //  print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_item->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+		if(is_array($initial_values) && sizeof($initial_values)) {
+			print "<div style='float:right; '>".caEditorPrintSetItemsControls($this)."</div>";
+		}
 ?>
-			<h3>
-				<?= _t('<a href="#" class="inventoryItemShowFound">Found</a>: %1 (%2%)', $found, sprintf("%3.1f", $found/$count * 100));?> - 
-				<?= _t('<a href="#" class="inventoryItemShowNotFound">Not found</a>: %1 (%2%)', $not_found, sprintf("%3.1f", $not_found/$count * 100));?> - 
-				<?= _t('<a href="#" class="inventoryItemShowNotChecked">Not checked</a>: %1 (%2%)', $not_checked, sprintf("%3.1f", $not_checked/$count * 100));?>
-				<?= _t('<a href="#" class="inventoryItemShowAll">All</a>: %1', $count);?>
-			</h3>
+			<?= _t('<a href="#" class="inventoryItemShowFound">Found</a>: %1 (%2%)', $found, sprintf("%3.1f", $found/$count * 100));?> - 
+			<?= _t('<a href="#" class="inventoryItemShowNotFound">Not found</a>: %1 (%2%)', $not_found, sprintf("%3.1f", $not_found/$count * 100));?> - 
+			<?= _t('<a href="#" class="inventoryItemShowNotChecked">Not checked</a>: %1 (%2%)', $not_checked, sprintf("%3.1f", $not_checked/$count * 100));?>
+			<?= _t('<a href="#" class="inventoryItemShowAll">All</a>: %1', $count);?>
 		</div>
+		<br style="clear: both">
 <?php
 	}
 	
 ?>
+		<hr>
 		<div class="caItemList">
 <?php
 	foreach($initial_values as $item_id => $item) {
 ?>
 		<table style="margin: 15px 5px 15px 5px; width: 100%; border-bottom: 1px dotted #aaa;" class="inventoryItem inventoryItem_<?= $item["{$container_element_code}.{$found_element_code}_idno"] ?: 'not_checked'; ?>">
 			<tr>
-				<td colspan="2"><?= caEditorLink($this->request, $item['displayTemplate'], '', 'ca_objects', $item['row_id']); ?></td>
+				<td colspan="2" class='inventoryTitle'><?= $item['displayTemplate']; ?></td>
 			</tr>
 			<tr valign="top">
 				<td style="width: 125px;"><?= $item['representation_tag']; ?></td>
@@ -153,24 +153,26 @@ $found_element_code = $this->getVar('found_element_code');
 </div>
 
 <script>
-	function caFilterInventoryByFoundStatus(s) {
+	function caFilterInventoryByFoundStatus(s, e) {
 		if(s) {
 			jQuery('.inventoryItem').hide(0);
 			jQuery('.inventoryItem_' + s).show(0);
 		} else {
 			jQuery('.inventoryItem').show(0);
 		}
+		jQuery('.inventoryItemShowFound, .inventoryItemShowNotFound, .inventoryItemShowNotChecked, .inventoryItemShowAll').removeClass('inventoryItemShowSelected');
+		if(e) { jQuery(e.target).addClass('inventoryItemShowSelected'); }
 	}
 	
 	jQuery(document).ready(function() {
 		jQuery('.inventoryItemShowFound').on('click', function(e) {
-			caFilterInventoryByFoundStatus('located');
+			caFilterInventoryByFoundStatus('located', e);
 		});
 		jQuery('.inventoryItemShowNotFound').on('click', function(e) {
-			caFilterInventoryByFoundStatus('not_located');
+			caFilterInventoryByFoundStatus('not_located', e);
 		});
 		jQuery('.inventoryItemShowNotChecked').on('click', function(e) {
-			caFilterInventoryByFoundStatus('not_checked');
+			caFilterInventoryByFoundStatus('not_checked', e);
 		});
 		jQuery('.inventoryItemShowAll').on('click', function(e) {
 			caFilterInventoryByFoundStatus(null);

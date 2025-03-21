@@ -104,12 +104,13 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 <?php
 	}
 ?>
+			<a href="#" onclick='editSetItem("{set_id}", "{item_id}");' class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?>
+			
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
 			print caGetRelationDisplayString($this->request, 'ca_sets', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => 'none'));
 ?>
 			</span>
-			<a href="#" onclick='editSetItem("{set_id}", "{item_id}");' class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?>
 			<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 		</div>

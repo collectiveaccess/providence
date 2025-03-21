@@ -322,7 +322,7 @@ div.clear {
 	font-size: 13px;
 	line-height: 1.4em;
 }
-#leftNav div.visualize, #leftNav div.setTools, #leftNav div.batchTools {
+#leftNav div.visualize, #leftNav div.setTools, div.inventoryTools, #leftNav div.batchTools {
 	background-color:#f7f7f7;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -333,10 +333,10 @@ div.clear {
 	text-transform:capitalize;
 	font-size:14px;
 }
-#leftNav div.setTools img, #leftNav div.batchTools img {
+#leftNav div.setTools img, #leftNav div.inventoryTools img, #leftNav div.batchTools img {
 	padding-right:5px;
 }
-#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.batchTools a {
+#leftNav div.visualize a, #leftNav div.setTools a, #leftNav div.inventoryTools a, #leftNav div.batchTools a {
 	text-decoration:none;
 }
 #caColorbox {
@@ -432,7 +432,7 @@ div.inspectorLotObjectTypeControls {
 #leftNav #toolIcons .button {
 	text-align:left;
 }
-#leftNav #searchSetTools .button, #leftNav #batchTools .button {
+#leftNav #searchSetTools .button, #leftNav #inventorySetTools .button, #leftNav #batchTools .button {
 	text-align: right;
 	width: unset;
 	float: unset;
@@ -2505,7 +2505,7 @@ select.searchToolsSelect {
 }
 /* Set Tools */
 
-#searchSetTools, #batchTools {
+#searchSetTools, #searchInventoryTools, #batchTools {
 	display:none;
 	background-color: #f7f7f7;
 	border-radius: 4px;
@@ -2514,18 +2514,18 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col, #batchTools .col {
+#searchSetTools .col, #searchInventoryTools .col, #batchTools .col {
 	margin-bottom:15px;
 }
-#searchSetTools .header, #batchTools .header {
+#searchSetTools .header, #searchInventoryTools .header, #batchTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
 	font-weight:bold;
 }
-#searchSetTools a, #batchTools a {
+#searchSetTools a, #searchInventoryTools a, #batchTools a {
 	clear: left;
 	text-align: right;
 }
-#searchSetTools .searchSetsToggle a {
+#searchSetTools .searchSetsToggle a, #searchInventoryTools .searchInventoryToggle a {
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: 0px;
@@ -2533,7 +2533,7 @@ select.searchToolsSelect {
 	text-decoration: none;
 }
 
-#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator {
+#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator, #caAddToInventoryIDIndicator, #caCreateInventoryFromResultsIndicator {
 	display: none;
 }
 
@@ -8222,4 +8222,34 @@ div.anonymousAccessUrl, div.anonymousAccessDownloads {
 span.anonymousAccessUrlLabel {
 	font-size: 12px;
 	font-weight: bold;
+}
+
+/**
+ * Inventory
+ */
+td.inventoryTitle, td.inventoryTitle a {
+	font-size: 12px;
+	font-weight: normal;
+	color: #000;
+	text-decoration: none;
+}
+
+td.inventoryTitle:hover a {
+	text-decoration: underline;
+}
+
+div.inventoryStats, a.inventoryItemShowFound, a.inventoryItemShowNotFound, a.inventoryItemShowNotChecked, a.inventoryItemShowAll {
+	font-size: 14px;
+	font-weight: bold;
+	color: #000;
+	text-decoration: none;
+}
+
+div.inventoryStats {
+	font-weight: normal;
+}
+
+a.inventoryItemShowSelected, a.inventoryItemShowFound:hover, a.inventoryItemShowFound:hover, a.inventoryItemShowNotFound:hover, a.inventoryItemShowNotChecked:hover, a.inventoryItemShowAll:hover {
+	color: red;
+	text-decoration: underline;
 }
