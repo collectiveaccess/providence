@@ -1346,13 +1346,14 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		
 		$start = caGetOption('start', $pa_options, 0);
 		$limit = caGetOption('limit', $pa_options, null);
-		unset($pa_options['start']);
-		unset($pa_options['limit']);
 		
 		$vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, Configuration::load()->get('ca_object_representations_default_editor_display_template'), ['defaultOnEmptyString' => true]);
 		$bundles_to_save = caGetOption('showBundlesForEditing', $pa_bundle_settings, null);
 		
 		$va_reps = $this->getRepresentations(['thumbnail', 'original'], null, $pa_options);
+		
+		unset($pa_options['start']);
+		unset($pa_options['limit']);	
 	
 		$t_item = new ca_object_representations();
 		$va_rep_type_list = $t_item->getTypeList();
@@ -1386,12 +1387,6 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			if(!is_array($va_relation_ids) || !sizeof($va_relation_ids)) { return []; }
 			
 			$vn_i = 0;
-			
-			if($limit > 0) {
-				$va_relation_ids = array_slice($va_relation_ids, $start, $limit);
-			} elseif($start > 0) {
-				$va_relation_ids = array_slice($va_relation_ids, $start);
-			}
 			
 			// Get display template values
 			$va_display_template_values = [];
