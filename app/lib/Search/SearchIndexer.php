@@ -452,7 +452,7 @@ class SearchIndexer extends SearchBase {
 		if(is_array($va_ids) && (sizeof($va_ids) == 1)) {
 			$fld = array_pop(explode('.', $ps_field));
 			if(isset($field_data[$fld])) {
-				$return = array('values' => [$field_data[$fld]], 'path' => $field_data[$fld]);
+				$return = array('values' => [$pn_subject_row_id => $field_data[$fld]], 'path' => $field_data[$fld]);
 				MemoryCache::save($vs_key, $return, "SearchIndexerHierPaths_{$t}");
 				return $return;
 			}
@@ -1231,7 +1231,7 @@ if (!$for_current_value_reindex) {
 					// * (Not an issue as the count would always be 1...) *
 					if ($vb_index_count) {
 						foreach($va_counts as $vs_key => $vn_count) {
-							$this->opo_engine->indexField($vn_related_table_num, 'COUNT', 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
+							$this->opo_engine->indexField($vn_related_table_num, 'COUNT', $pn_subject_row_id, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
 							$this->_genIndexInheritance($t_subject, $t_rel, 'COUNT', $pn_subject_row_id, 0, [(int)$vn_count], ['relationship_type_id' => $vs_key, 'PRIVATE' => $vn_private]);
 						}
 					}
