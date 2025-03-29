@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2024 Whirl-i-Gig
+ * Copyright 2019-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 class BaseBanHammerPlugin {
 	# ------------------------------------------------------
 	/**
@@ -83,6 +82,13 @@ class BaseBanHammerPlugin {
 		$ttl = (int)$ttl;
 		if($ttl <= 0) { $ttl = 24 * 60 * 60; }
 		return $ttl;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getLogger() {
+		return self::$config->get('logging') ? caGetLogger(['logName' => 'ban']) : null;
 	}
 	# ------------------------------------------------------
 }
