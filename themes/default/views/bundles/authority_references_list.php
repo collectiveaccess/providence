@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@
 	if (is_array($va_errors) && sizeof($va_errors)) {
 		print "<h2>".join("; ", $va_errors)."</h2>\n";
 	} else {
-		if (sizeof($va_references) > 0) {
+		if (sizeof($va_references ?? array()) > 0) {
 ?>
 			<div id="<?= $vs_id_prefix; ?>AuthorityReferenceTabs" class="authorityReferenceListContainer">
 				<ul>

@@ -510,7 +510,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						}
 					}
 					// rewrite file name to use originally uploaded name
-					if(array_key_exists("FILE", $this->metadata['EXIF']) && ($f = caGetOption('original_filename', $options, null))) {
+					if(array_key_exists("FILE", $this->metadata['EXIF'] ?? []) && ($f = caGetOption('original_filename', $options, null))) {
 						$this->metadata['EXIF']['FILE']['FileName'] = $f;
 					}
 					
