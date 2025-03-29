@@ -60,20 +60,20 @@ function bundleDataType($t_instance, $bundle) {
 	$f = ($spec['subfield_name']) ? $spec['subfield_name'] : $spec['field_name'];
 	
 	if(in_array($f, ['preferred_labels', 'nonpreferred_labels'], true)) {
-		return \Attribute::attributeTypes(0, ['short' => true]); // container
+		return \CA\Attributes\Attribute::attributeTypes(0, ['short' => true]); // container
 	} 
 	if($t_instance->hasElement($spec['field_name'])) {
-		return \Attribute::attributeTypes(\ca_metadata_elements::getElementDatatype($f), ['short' => true]);
+		return \CA\Attributes\Attribute::attributeTypes(\ca_metadata_elements::getElementDatatype($f), ['short' => true]);
 	}
 	if($t_instance->hasField($f)) {
 		$ft = $t_instance->getFieldInfo($f, 'FIELD_TYPE');
 		
 		switch($ft) {
 			case FT_BIT:
-				return \Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_INTEGER__, ['short' => true]);
+				return \CA\Attributes\Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_INTEGER__, ['short' => true]);
 				break;
 			case FT_NUMBER:
-				return \Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_NUMERIC__, ['short' => true]);
+				return \CA\Attributes\Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_NUMERIC__, ['short' => true]);
 				break;
 			case FT_TEXT:
 			case FT_FILE:
@@ -81,7 +81,7 @@ function bundleDataType($t_instance, $bundle) {
 			case FT_TIMECODE:
 			case FT_PASSWORD:
 			case FT_VARS:
-				return \Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_TEXT__, ['short' => true]);
+				return \CA\Attributes\Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_TEXT__, ['short' => true]);
 				break;
 			case FT_DATERANGE:
 			case FT_HISTORIC_DATERANGE:
@@ -92,7 +92,7 @@ function bundleDataType($t_instance, $bundle) {
 			case FT_DATETIME:
 			case FT_TIME:
 			case FT_TIMERANGE:
-				return \Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_DATERANGE__, ['short' => true]);
+				return \CA\Attributes\Attribute::attributeTypes(__CA_ATTRIBUTE_VALUE_DATERANGE__, ['short' => true]);
 				break;
 		}
 	}
