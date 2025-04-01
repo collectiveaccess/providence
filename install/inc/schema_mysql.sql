@@ -5046,6 +5046,7 @@ create table ca_sets_x_user_groups (
 	set_id int unsigned not null,
 	group_id int unsigned not null,
 	access tinyint unsigned not null default 0,
+	settings text not null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
@@ -5070,6 +5071,7 @@ create table ca_sets_x_users (
 	pending_access tinyint unsigned null,
 	activation_key char(36) null,
 	activation_email varchar(255) null,
+	settings text not null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
@@ -7928,4 +7930,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (200, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (201, unix_timestamp());
