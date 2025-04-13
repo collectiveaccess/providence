@@ -960,14 +960,16 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private function _checkRepresentationReferences(string $table, string $type_code, BaseModel $t_rep) {
 		$always_remove_config = $this->getAppConfig()->getAssoc('always_delete_representation_when_relationship_removed_to');
+		$ignore_remove = $this->getAppConfig()->getAssoc('during_delete_representation_ignore_representation_relationships_to');
+		
 		if(is_array($always_remove_config) && isset($always_remove_config[$table]) && is_array($always_remove_config[$table]) && sizeof($always_remove_config[$table])) {
 			if(in_array($type_code, $always_remove_config[$table])) {
 				return [];	// trigger delete
 			}
 		}
 		
-		$rels = $t_rep->hasRelationships();
-
+		$rels = $t_rep->hasRelationships(['manyManyRelationshipsOnly' => true, 'excludeTypes' => $ignore_remove]);
+	
 		if(is_array($rels)) {
 			foreach($rels as $k => $v) {
 				switch($k) {
