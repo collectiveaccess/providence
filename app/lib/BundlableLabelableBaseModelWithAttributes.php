@@ -5248,7 +5248,7 @@ if (!$vb_batch) {
 						if (!$po_request->user->canDoAction('is_administrator') && ($po_request->getUserID() != $this->get('user_id'))) { break; }	// don't save if user is not owner
 						require_once(__CA_MODELS_DIR__.'/ca_users.php');
 	
-						$va_users_to_set = $va_user_effective_dates = [];
+						$va_users_to_set = $va_user_effective_dates = $download_versions = [];
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_id(.*)$!", $vs_key, $va_matches)) {
 								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_effective_date_".$va_matches[1], pString);
@@ -5258,10 +5258,10 @@ if (!$vb_batch) {
 									$va_users_to_set[$vn_user_id] = $vn_access;
 									$va_user_effective_dates[$vn_user_id] = $vs_effective_date;
 								}
+								$download_versions[$vn_user_id]['download_versions'] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_download_version".$va_matches[1], pArray);
 							}
 						}
-						
-						$this->setUsers($va_users_to_set, $va_user_effective_dates);
+						$this->setUsers($va_users_to_set, $va_user_effective_dates, $download_versions);
 						
 						break;
 					# -------------------------------------
