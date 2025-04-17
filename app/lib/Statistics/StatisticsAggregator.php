@@ -31,7 +31,6 @@
  */
 use \CollectiveAccessService as CAS;
 
-
 class StatisticsAggregator {
 	# ------------------------------------------------------------------
 	/**
