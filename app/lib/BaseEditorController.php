@@ -1022,8 +1022,11 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
+		$config = Configuration::load();
+		$save_access = $config->get('acl_show_public_access_controls');
+		
 		//if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-		if(!caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
+		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		
 		$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_subject, ['forPawtucket' => true]);
 		

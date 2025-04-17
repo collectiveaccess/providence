@@ -50,6 +50,7 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 		);
 	}
 	print caFormTag($this->request, 'SetAccess', 'caAccessControlList');
+	print caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
 	
 	if($t_instance->hasField('access') && $show_public_access_controls) {
 ?>	
@@ -158,7 +159,6 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 		<div class='control'>
 <?php
 		print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');			
-		print caHTMLHiddenInput($t_instance->primaryKey(), ['value' => $t_instance->getPrimaryKey()]);
 ?>	
 		<?= $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList'); ?>
 
