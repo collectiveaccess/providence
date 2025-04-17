@@ -500,8 +500,8 @@ trait CLIUtilsMaintenance {
 			chmod($vs_path, 0775);
 		}
 
-		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for ownership by \"%1\"...", $vs_user)); }
-		$va_files = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true, ['includeRoot' => true]);
+		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory " . Configuration::load()->get('purify_serializer_path') . " for ownership by \"%1\"...", $vs_user)); }
+		$va_files = caGetDirectoryContentsAsList(Configuration::load()->get('purify_serializer_path'), true, false, false, true, ['includeRoot' => true]);
 
 		foreach($va_files as $vs_path) {
 			chown($vs_path, $vs_user);
@@ -1055,8 +1055,12 @@ trait CLIUtilsMaintenance {
 		if (in_array($ps_cache, ['all', 'app'])) {
 			CLIUtils::addMessage(_t('Clearing application caches...'));
 			if (is_writable($config->get('taskqueue_tmp_directory'))) {
+				$tempdir_info = stat($config->get('taskqueue_tmp_directory'));
 				caRemoveDirectory($config->get('taskqueue_tmp_directory'), false);
-				mkdir($config->get('purify_serializer_path'));
+				mkdir($config->get('purify_serializer_path'), $tempdir_info['mode']);
+				chown($config->get('purify_serializer_path'), $tempdir_info['uid']);
+				chgrp($config->get('purify_serializer_path'), $tempdir_info['gid']);
+				clearstatcache();
 			} else {
 				CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 			}
