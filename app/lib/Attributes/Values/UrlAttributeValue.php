@@ -474,7 +474,7 @@ class UrlAttributeValue extends AttributeValue implements IAttributeValue {
 					$qr_attr = $o_db->query('SELECT * FROM ca_attributes where attribute_id=?', $qr_vals->get('attribute_id'));
 					if(!$qr_attr->nextRow()) { throw new Exception('Something went horribly wrong.'); } // each value should have an attribute
 
-					$vs_msg = _t("There was an error while veryfing URL for %1 with ID %2: %3",
+					$vs_msg = _t("There was an error while verifying URL for %1 with ID %2: %3",
 						caGetTableDisplayName($qr_attr->get('table_num'), false),
 						$qr_attr->get('row_id'), $e->getMessage()
 					);

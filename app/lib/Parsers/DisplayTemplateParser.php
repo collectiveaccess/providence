@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -474,6 +474,9 @@ class DisplayTemplateParser {
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
 					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
 
+					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
+					$va_skip_if_expression_tags = caGetTemplateTags($vs_unit_skip_if_expression);
+					
 					$va_get_options = [
 						'returnAsCount' => true, 'checkAccess' => $check_access, 
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
@@ -493,9 +496,29 @@ class DisplayTemplateParser {
 					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
 					$vn_limit++;
 					foreach($va_codes as $vs_code) {
-						if($vs_filter_regex) {
-							$vals = $pr_res->get($vs_code, array_merge($va_get_options, ['returnAsCount' => false, 'returnAsArray' => true]));
-							$vals = array_filter($vals, function($v) use ($vs_filter_regex) { return preg_match($vs_filter_regex, $v); });
+						$tmp = explode('.', $vs_code);
+						$is_table = false;
+						if(Datamodel::tableExists($tmp[0]) && ((sizeof($tmp) === 1) || ($tmp[1] === 'related'))) {
+							$is_table = true;
+							$code = $tmp[0];
+						}
+						
+						if($vs_filter_regex || strlen($vs_unit_skip_if_expression)) {
+							if($is_table) {
+								$d = $pr_res->get($vs_code, ['returnWithStructure' => true]);
+								$qr_vals = caMakeSearchResult($vs_code, array_keys($d));
+								$vals = [];
+								if($qr_vals) {
+									while($qr_vals->nextHit()) {
+										if(!caEvaluateExpression($qr_vals, $vs_unit_skip_if_expression)) {
+											$vals[] = $qr_vals->getPrimaryKey();
+										}
+									}
+								}
+							} else {
+								$vals = $pr_res->get($vs_code, array_merge($va_get_options, ['returnAsCount' => false, 'returnAsArray' => true]));
+								if($vs_filter_regex) { $vals = array_filter($vals, function($v) use ($vs_filter_regex) { return preg_match($vs_filter_regex, $v); }); }
+							}
 							$vn_count = sizeof($vals);
 						} else {
 							$vn_count = (int)$pr_res->get($vs_code, $va_get_options);
@@ -984,11 +1007,16 @@ class DisplayTemplateParser {
 				case 't':
 					$vs_acc .= _t($o_node->getInnerText());
 					break;
+				case '~comment~':
+					// noop
+					break;
 				default:
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {
 						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
-					} else {
+					} elseif(trim($o_node->html())) {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
+					} else {
+						$vs_proc_template = '';
 					}
 					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
@@ -1756,6 +1784,9 @@ class DisplayTemplateParser {
         if($o_dim_config->get('omit_repeating_units_for_measurements_in_templates')) {
 		    $pa_options['dimensionsUnitMap'] = self::createDimensionsUnitMap($ps_template);    // list of dimensional units used by tags; needed to support convoluted function to omit repeating units on quantities
 		}
+		if($o_dim_config->get('display_units')) {
+		    $pa_options['displayUnits'] = $o_dim_config->get('display_units');  
+		}
 		return DisplayTemplateParser::_processTemplateSubTemplates($o_doc->children, $pa_values, $pa_options);
 	}
 	# -------------------------------------------------------------------
@@ -1940,7 +1971,7 @@ class DisplayTemplateParser {
                         $i++;
                     }
                 }
-				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['omitUnits' => (isset($pa_options['dimensionsUnitMap']) && ($cur_unit == $next_unit))]);
+				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp, ['displayUnits' => ($pa_options['displayUnits'] ?? null), 'omitUnits' => (isset($pa_options['dimensionsUnitMap']) && ($cur_unit == $next_unit))]);
 				
 				if ($pb_quote || (!is_numeric($vs_val) & $pb_quote_strings)) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$vs_tag_proc = preg_quote($vs_tag, '/');

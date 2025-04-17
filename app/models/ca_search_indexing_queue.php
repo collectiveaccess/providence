@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -291,7 +291,7 @@ class ca_search_indexing_queue extends BaseModel {
 	 */
 	static public function flush() {
 		$o_db = new Db();
-		$o_db->query("DELETE FROM ca_search_indexing_queue");
+		$o_db->query("TRUNCATE TABLE ca_search_indexing_queue");
 	}
 	# ------------------------------------------------------
 }

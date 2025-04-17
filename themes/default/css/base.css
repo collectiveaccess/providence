@@ -1908,6 +1908,13 @@ table.listtable tbody td {
     background-color: #FFF;
     vertical-align: middle;
 }
+
+table.listtable tbody td div.result-content {
+    min-width: 100px;
+    max-height: 240px;
+    overflow: auto;
+}
+
 table.listtable tbody td.listtableEditDelete, table.uiScreenItem tbody td.listtableEditDelete {
 	width:55px;
 }
@@ -8160,4 +8167,15 @@ div.ck-reset {
 
 .ckeditor-wrapper {
     font: 14px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+}
+
+div.anonymousAccessUrl, div.anonymousAccessDownloads {
+	font-size: 12px;
+	font-weight: normal;
+	margin: 10px;
+}
+
+span.anonymousAccessUrlLabel {
+	font-size: 12px;
+	font-weight: bold;
 }

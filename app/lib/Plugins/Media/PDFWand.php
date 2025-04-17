@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2024 Whirl-i-Gig
+ * Copyright 2006-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -345,7 +345,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		// Try to extract text
 		$this->handle['content_by_location'] = $this->ohandle['content_by_location'] = [];
 		
-		if($locations = caExtractTextFromPDF($ps_filepath)) {
+		if($locations = caExtractTextLocationsFromPDF($ps_filepath)) {
 			$this->handle['content'] = join("\n", $locations['__pages__'] ?? []);
 			unset($locations['__pages__']);
 			$this->handle['content_by_location'] = $this->ohandle['content_by_location'] = $locations;
@@ -354,17 +354,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if(($num_pages = (int)$this->opo_config->get("document_text_extraction_max_number_of_pages")) <= 0) { $num_pages = null; }
 			if(($num_chars = (int)$this->opo_config->get("document_text_extraction_max_characters")) <= 0) { $num_chars = null; }
 			
-			$page_limits = " -f {$page_start} ";
-			if($num_pages > 0) { $page_limits .= "-l ".($page_start + $num_pages)." "; }
-			
-			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			caExec($this->ops_pdftotext_path.' -q -enc UTF-8 '.$page_limits.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
-			$vs_extracted_text = file_get_contents($vs_tmp_filename);
-			
-			if($num_chars > 0) { $vs_extracted_text = mb_substr($vs_extracted_text, 0, $num_chars, 'UTF-8'); }
-			
-			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
-			@unlink($vs_tmp_filename);
+			$this->handle['content'] = $this->ohandle['content'] = caExtractTextFromPDF($ps_filepath, ['start' => $page_start, 'pages' => $num_pages, 'chars' => $num_chars]);
 		}
 			
 		return true;	

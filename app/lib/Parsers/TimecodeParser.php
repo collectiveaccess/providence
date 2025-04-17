@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2024 Whirl-i-Gig
+ * Copyright 2004-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,10 +108,25 @@ class TimecodeParser {
 				}
 				return $this->opn_parsed_value_in_seconds = ($vn_hours * 3600) + ($vn_minutes * 60) + ($vn_seconds) + ($vn_frames/$this->opn_timebase);
 			} else {
-				if (preg_match("/[\d]+:[\d]/", $ps_timecode)) {
+				$meridian_table = $this->getMeridianTable();
+				$meridians = array_map(function($v) { 
+						return preg_quote($v, '!');
+					}, array_values($meridian_table));
+					
+				if (preg_match("![\d]+:[\d]!", $ps_timecode) || preg_match("![\d]+[ ]*(".join('|', $meridians).")[ ]*$!", $ps_timecode)) {
 					// colon format
 					$va_pieces = explode(":", $ps_timecode);
 					
+					
+					$has_meridian = false;
+					if(preg_match("!(".join('|', $meridians).")[ ]*$!i", $va_pieces[sizeof($va_pieces)-1], $m)) {
+						$va_pieces[sizeof($va_pieces)-1] = str_replace($m[1], '', $va_pieces[sizeof($va_pieces)-1]);
+					
+						if((mb_strtolower($m[1]) === mb_strtolower($meridian_table['p.m.'])) && ($va_pieces[0] < 12)) {
+							$va_pieces[0] += 12;
+						}
+						$has_meridian = true;
+					};
 					switch(sizeof($va_pieces)) {
 						case 4:
 							// with frames
@@ -128,11 +143,28 @@ class TimecodeParser {
 							$vn_frames = 0;
 							break;
 						case 2:
-							//ms
-							$vn_hours = 0;
-							$vn_minutes = intval($va_pieces[0]);
-							$vn_seconds = floatval($va_pieces[1]);
-							$vn_frames = 0;
+							if($has_meridian) {
+								$vn_hours = intval($va_pieces[0]);
+								$vn_minutes = intval($va_pieces[1]);
+								$vn_seconds = 0;
+								$vn_frames = 0;
+							} else {
+								//ms
+								$vn_hours = 0;
+								$vn_minutes = intval($va_pieces[0]);
+								$vn_seconds = floatval($va_pieces[1]);
+								$vn_frames = 0;
+							}
+							break;
+						case 1:
+							if($has_meridian) {
+								$vn_hours = intval($va_pieces[0]);
+								$vn_minutes = 0;
+								$vn_seconds = 0;
+								$vn_frames = 0;
+							} else {
+								return false;
+							}
 							break;
 						default:
 							return false;
@@ -270,11 +302,7 @@ class TimecodeParser {
 					
 					switch($ps_format) {
 						case 'TIME_12_HOUR':
-							global $g_ui_locale;
-							$lang = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$g_ui_locale}.lang");
-							if (!($meridian_table = $lang->getAssoc('meridianTable'))) {
-								$meridian_table = ['a.m.' => 'am', 'p.m.' => 'pm'];
-							} 
+							$meridian_table = $this->getMeridianTable();
 							if ((float)$vn_seconds != intval($vn_seconds)) {
 								if ($pb_no_fractional_seconds) {
 									$vs_seconds = sprintf("%02.0f", round($vn_seconds));
@@ -329,6 +357,18 @@ class TimecodeParser {
 				return floatval($this->opn_parsed_value_in_seconds)."s";
 				break;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function getMeridianTable() : array {	
+		global $g_ui_locale;
+		$lang = Configuration::load(__CA_LIB_DIR__."/Parsers/TimeExpressionParser/{$g_ui_locale}.lang");
+		if (!is_array($meridian_table = $lang->getAssoc('meridianTable')) || !sizeof($meridian_table)) {
+			$meridian_table = ['a.m.' => 'am', 'p.m.' => 'pm'];
+		} 
+		return $meridian_table;
 	}
 	# ------------------------------------------------------------------
 }

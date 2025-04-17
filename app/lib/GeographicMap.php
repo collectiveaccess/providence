@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ class GeographicMap {
 		$o_config = Configuration::load();
 		$vs_plugin_name = $o_config->get('mapping_plugin');
 		
-		if (!file_exists(__CA_LIB_DIR__.'/Plugins/GeographicMap/'.$vs_plugin_name.'.php')) { throw new ApplicationException("Mapping plugin {$vs_plugin_name} does not exist"); }
+		if (!file_exists(__CA_LIB_DIR__."/Plugins/GeographicMap/{$vs_plugin_name}.php")) { $vs_plugin_name = 'Leaflet'; }
 		
 		require_once(__CA_LIB_DIR__.'/Plugins/GeographicMap/'.$vs_plugin_name.'.php');
 		$vs_plugin_classname = 'WLPlugGeographicMap'.$vs_plugin_name;

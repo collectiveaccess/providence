@@ -4963,7 +4963,10 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							}
 							$magic = rand(0,99999);
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
-
+	
+							if($cs = $this->_CONFIG->get('force_image_to_colorspace')) {
+								$m->set('colorspace', $cs);
+							}
 							if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
 								$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
@@ -9123,7 +9126,6 @@ $pa_options["display_form_field_tips"] = true;
 							}
 							
 							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
-								AssetLoadManager::register("ckeditor");
 								$vs_width = $vn_display_width;
 								$vs_height = $vn_display_height;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
@@ -9132,11 +9134,107 @@ $pa_options["display_form_field_tips"] = true;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
 									$vs_height = ((int)$vs_height * 16)."px";
 								}
+								$attr = [
+									'width' => $vs_width, 
+									'height' => $vs_height, 
+									'value' => $this->escapeHTML($vm_field_value), 
+									'id' => $pa_options['id'] ?? null,
+									'class' => $pa_options['classname'] ?? null
+								];
+								$opts = [
+									'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null)
+								];
 								
-								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
-								
-								
-								
+								$o_config = Configuration::load();
+								$use_editor = $o_config->get('wysiwyg_editor');
+								switch($use_editor) {
+									case 'ckeditor':
+										AssetLoadManager::register("ck5");
+										
+										$vs_element = "
+											<script type=\"module\">
+												import {
+												 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
+												 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+												 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
+												 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
+												 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
+												 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+												} from 'ckeditor5';
+												
+												import { ResizableHeight} from 'ckresizeable';
+											
+												ClassicEditor
+													.create( document.querySelector( '#".($pa_options['id'] ?? null)."' ), {
+														plugins: [ 
+															BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
+															GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+															ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
+															Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
+															SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
+															SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
+															Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
+														],
+														toolbar: {
+															items: ".json_encode(caGetCK5Toolbar()).",
+															shouldNotGroupWhenFull: true
+														},
+														ResizableHeight: {
+															resize: true,
+															height: '{$height_w_suffix}',
+															minHeight: '50px',
+															maxHeight: '1500px'
+														}
+													} ).then(editor => {
+														// Don't let CKEditor pollute the top-level DOM with editor bits
+														const body = editor.ui.view.body._bodyCollectionContainer
+														body.remove()
+														editor.ui.view.element.appendChild(body);
+														
+														// Add current instance to list of initialized editors
+														if(!caUI) { caUI = {}; }
+														if(!caUI.ckEditors) { caUI.ckEditors = []; }
+														caUI.ckEditors.push(editor);
+													}).catch((e) => console.log('Error initializing CKEditor: ' + e));
+											</script>\n";
+															
+											$vs_element .= "<div style='width: {$vs_width}; overflow-y: auto;' class='ckeditor-wrapper'>".caHTMLTextInput(
+												$pa_options["name"], 
+												$attr, $opts
+											)."</div>\n";
+										break;
+									case 'quilljs';
+									default:
+										AssetLoadManager::register("quilljs");
+										$quill_opts = [
+											'viewSource' => true,
+											'okText' => _t('OK'),
+											'cancelText' => _t('Cancel'),
+											'buttonHTML' => _t('HTML'),
+											'buttonTitle' => _t('Show HTML source')
+										];
+										
+										$vs_element = "<div id='".$pa_options['id']."_container' class='ql-ca-container' style='width: {$vs_width};'>";
+										$vs_element .= "
+											<script type='text/javascript'>
+												caUI.newTextEditor(
+													'".$pa_options['id']."_editor', 
+													'".$pa_options['id']."',
+													'".$attr['value']."',
+													".json_encode(caGetQuillToolbar()).",
+													".json_encode($quill_opts)."
+												);
+											</script>\n";
+										$attr['style'] = 'display: none;';
+										$vs_element .= "<div id='".$pa_options['id']."_editor' style='height: {$vs_height};' class='ql-ca-editor'></div>";
+												
+										$vs_element .= caHTMLTextInput(
+											$pa_options['id'].'', 
+											$attr, $opts
+										);
+										$vs_element .= "</div>\n";
+										break;
+								}
 							}
 						}
 					}
@@ -10515,37 +10613,121 @@ $pa_options["display_form_field_tips"] = true;
 	 * Returns a list of tables for which relationships exist.
 	 *
 	 * @param array $pa_options Options are:
-	 *		None yet
+	 *		restrictToTypes = Only consider relationships to related records with specified types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of types for each table. [Default is null]
+	 *		restrictToRelationshipTypes = Only consider relationships to related records with specified relationship types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of relationship types for each table. [Default is null]
+	 *		excludeTypes = Only consider relationships to related records that are not in the list of types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of types to exclude for each table. [Default is null]
+	 *		excludeRelationshipTypes = Only consider relationships to related records that are not in the list of relationship types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of relationship types to exclude for each table. [Default is null]
+	 *		manyManyRelationshipsOnly = Only consider many-to-many [Default is false]
 	 *
 	 * @return mixed Array of table names for which this row has at least one relationship, with keys set to table names and values set to the number of relationships per table.
 	 */
-	public function hasRelationships($pa_options=null) {
-		$va_one_to_many_relations = Datamodel::getOneToManyRelations($this->tableName());
-
-		if (is_array($va_one_to_many_relations)) {
+	public function hasRelationships(?array $options=null) {		
+		$table = $this->tableName();
+		$one_to_many_relations = Datamodel::getOneToManyRelations($table);
+		
+		$restrict_to_types = caGetOption('restrictToTypes', $options, null);
+		$restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null);
+		$exclude_types = caGetOption('excludeTypes', $options, null);
+		$restrict_to_relationship_types = caGetOption('excludeRelationshipTypes', $options, null);
+	
+		$many_many_only = caGetOption('manyManyRelationshipsOnly', $options, false);
+		
+		$tables = [];
+		if (is_array($one_to_many_relations)) {
 			$o_db = $this->getDb();
-			$vn_id = $this->getPrimaryKey();
-			$o_trans = $this->getTransaction();
+			$id = $this->getPrimaryKey();
 			
-			$va_tables = array();
-			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
-				foreach($va_info as $va_relationship) {
+			foreach($one_to_many_relations as $many_table => $info) {
+				foreach($info as $relationship) {
 					# do any records exist?
-					$vs_rel_pk = Datamodel::primaryKey($vs_many_table);
+					$t = $relationship['many_table_field'];
+					$rel_pk = Datamodel::primaryKey($many_table);
+					if($many_many_only && !Datamodel::isRelationship($many_table)) { continue; }
 					
 					$qr_record_check = $o_db->query("
-						SELECT {$vs_rel_pk}
-						FROM {$vs_many_table}
+						SELECT {$rel_pk}
+						FROM {$many_table}
 						WHERE
-							({$va_relationship['many_table_field']} = ?)"
-					, array((int)$vn_id));
-					
-					if (($vn_count = $qr_record_check->numRows()) > 0) {
-						$va_tables[$vs_many_table] = $vn_count;	
+							({$t} = ?)"
+					, [(int)$id]);
+	
+					if (($count = $qr_record_check->numRows()) > 0) {
+						$tables[$many_table] = $count;	
 					}
 				}
 			}
-			return $va_tables;
+
+			if(
+				(is_array($restrict_to_types) && sizeof($restrict_to_types)) || 
+				(is_array($exclude_types) && sizeof($exclude_types)) ||
+				(is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types)) || 
+				(is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types))
+			) {
+				if(is_array($many_to_many_relations = Datamodel::getManyToManyRelations($table))) {
+					foreach($many_to_many_relations as $r) {
+						$rtypes = $etypes = null;
+						$side = ($r['left_table'] === $table) ? 'right' : 'left';
+						
+						$rt = $r["{$side}_table"];
+						$lt = $r["linking_table"];
+						$rtfld = $r["{$side}_table_field"];
+						$ltrfld = $r["linking_table_{$side}_field"];
+						
+						$lt_k = $r["linking_table_".(($side == 'left') ? 'right' : 'left')."_field"];
+						
+						$sql_wheres = ["{$lt}.{$lt_k} = ?"];
+						$params = [(int)$id];
+						
+						$do_check = false;
+						
+						if($delete_sql = (Datamodel::getFieldNum($rt, 'deleted')) ? "{$rt}.deleted = 0" : '') {
+							$sql_wheres[] = $delete_sql;
+						}
+						if(is_array($restrict_to_types[$rt] ?? null))  {
+							if(is_array($rtypes = caMakeTypeIDList($rt, $restrict_to_types[$rt])) && sizeof($rtypes)) {
+								$sql_wheres[] = "({$rt}.type_id IN (?))";
+								$params[] = $rtypes;
+								$do_check = true;
+							}
+						} elseif(is_array($exclude_types[$rt] ?? null)) {
+							if(is_array($etypes = caMakeTypeIDList($rt, $exclude_types[$rt])) && sizeof($etypes)) {
+								$sql_wheres[] = "({$rt}.type_id NOT IN (?))";
+								$params[] = $etypes;
+								$do_check = true;
+							}
+						}
+						
+						if(Datamodel::getFieldNum($lt, 'type_id')) {
+							if(is_array($restrict_to_relationship_types[$rt] ?? null))  {
+								if(is_array($rreltypes = caMakeRelationshipTypeIDList($lt, $restrict_to_relationship_types[$rt])) && sizeof($rreltypes)) {
+									$sql_wheres[] = "({$lt}.type_id IN (?))";
+									$params[] = $rreltypes;
+									$do_check = true;
+								}
+							} elseif(is_array($exclude_relationship_types[$rt] ?? null)) {
+								if(is_array($ereltypes = caMakeRelationshipTypeIDList($lt, $exclude_relationship_types[$rt])) && sizeof($ereltypes)) {
+									$sql_wheres[] = "({$lt}.type_id NOT IN (?))";
+									$params[] = $ereltypes;
+									$do_check = true;
+								}
+							}
+						}
+						if($do_check) {
+							$qr_record_check = $o_db->query("
+								SELECT {$lt}.relation_id
+								FROM {$lt}
+								INNER JOIN {$rt} ON {$rt}.{$rtfld} = {$lt}.{$ltrfld}
+								WHERE
+									".join(" AND ", $sql_wheres), $params);
+									
+							if (($count = $qr_record_check->numRows()) > 0) {
+								$tables[$lt] = $count;	
+							}
+						}
+					}
+				}
+			}
+			return $tables;
 		}
 		
 		return null;
@@ -10574,7 +10756,6 @@ $pa_options["display_form_field_tips"] = true;
 		if (is_array($many_to_many_relations)) {
 			$o_db = $this->getDb();
 			$id = (int)$this->getPrimaryKey();
-			$o_trans = $this->getTransaction();
 			$tables = [];
 			foreach($many_to_many_relations as $rel_info) {
 				$rel_pk = Datamodel::primaryKey($many_table = $rel_info['linking_table']);

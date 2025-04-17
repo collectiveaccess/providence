@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_WEIGHT__", 9);
-
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/AttributeValue.php');
@@ -162,8 +157,10 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
 	private $ops_text_value;
 	private $opn_decimal_value;
+	private $config;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
+        $this->config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
 		parent::__construct($pa_value_array);
 	}
 	# ------------------------------------------------------------------
@@ -223,14 +220,14 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 		switch(caGetOption('units', $pa_options, $g_ui_units_pref)) {
 			case 'metric':
 				$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
-				return $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2);
+				return $this->processUnitsInValue($vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2));
 				break;
 			case 'english':
 			case 'fractions':
 				$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
-				return $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 2);
+				return $this->processUnitsInValue($vo_measurement->convertTo(Zend_Measure_Weight::POUND, 2));
 				break;
-			default: // show value in unit entered
+			default: // show value in unit as-entered
 				return $this->ops_text_value;
 				break;
 		}	
@@ -299,6 +296,28 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 			)
 		);
 	}
+	# ------------------------------------------------------------------
+    /**
+     *
+     */
+    private function getUnits(string $units) : string {
+    	$display_units = $this->config->get('display_units');
+    	if(isset($display_units[$units])) { return $display_units[$units]; }
+    	return $units;
+    }
+    # ------------------------------------------------------------------
+    /**
+     *
+     */
+    private function processUnitsInValue(string $value) : string {
+    	$display_units = $this->config->get('display_units');
+    	if(!is_array($display_units)) { return $value; }
+    	
+    	foreach($display_units as $b => $a) {
+    		$value = preg_replace("!".preg_quote($b, '!')."\.*$!i", $a, $value);
+    	}
+    	return $value;
+    }
 	# ------------------------------------------------------------------
 	public function getAvailableSettings($pa_element_info=null) {
 		global $_ca_attribute_settings;

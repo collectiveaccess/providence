@@ -509,7 +509,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'limit',
 							'type' => Type::int(),
-							'description' => _t('Maximum number of meedia to return. If omitted all media are returned.')
+							'description' => _t('Maximum number of media to return. If omitted all media are returned.')
 						],
 						[
 							'name' => 'checkAccess',
@@ -671,7 +671,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'limit',
 							'type' => Type::int(),
-							'description' => _t('Maximum number of meedia to return. If omitted all media are returned.')
+							'description' => _t('Maximum number of media to return. If omitted all media are returned.')
 						],
 						[
 							'name' => 'checkAccess',

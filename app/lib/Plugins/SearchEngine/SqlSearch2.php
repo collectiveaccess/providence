@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -463,7 +463,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		if(is_array($ret)) { return $ret; }
 	 	}
 	 	
-	 	if(!is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
+	 	if(!is_null($words[0]) && strlen($words[0]) && !is_null($anchor_mode = $this->_getAnchorMode($words[0]))) {
 			$words[0] = mb_substr($words[0], 1);
 		}
 		
@@ -512,6 +512,24 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$use_boost = false;
 			} else{
 				$params[] = $text;
+			}
+			
+			$anchor_sql = '';
+			switch($anchor_mode) {
+				case 'EXACT':
+					$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+					break;
+				case 'START':
+					$anchor_sql = " AND swi.word_index = {$w}";
+					if(!$has_wildcard && (bool)$this->search_config->get('add_wildcard_on_begins_searches')) { 
+						$word_op = 'LIKE';
+						$text .= '%';
+						array_pop($params); array_push($params, $text);
+					}
+					break;
+				case 'END':
+					$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
+					break;
 			}
 			
 	 		if($is_blank || $is_not_blank) { $use_boost = false; }
@@ -565,21 +583,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 		
-			$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
-				
-			$anchor_sql = '';
-			switch($anchor_mode) {
-				case 'EXACT':
-					$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
-					break;
-				case 'START':
-					$anchor_sql = " AND swi.word_index = {$w}";
-					break;
-				case 'END':
-					$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
-					break;
-			}
-		
+			$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');		
 			if ($is_bare_wildcard) {
 				$t = Datamodel::getInstance($subject_tablenum, true);
 				$pk = $t->primaryKey();
@@ -706,6 +710,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						break;
 					case 'START':
 						$anchor_sql = " AND swi.word_index = {$w}";
+						if(!$has_wildcard && (bool)$this->search_config->get('add_wildcard_on_begins_searches')) { 
+							$word_op = 'LIKE';
+							$word .= '%';
+						}
 						break;
 					case 'END':
 						$anchor_sql = " AND ((swi.word_count >= {$wc}) AND (swi.word_index = (swi.word_count - {$wc} + {$w})))";
@@ -1214,7 +1222,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (!is_array($options)) { $options = []; }
 		
 		$fi = $this->indexing_field_index;
-		$this->indexing_field_index++;
+		if($this->indexing_field_index < 255) { $this->indexing_field_index++; }
 		
 		if (!is_array($content)) {
 			$content = [$content];
@@ -1272,6 +1280,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$words = [];
 			if ($tokenize || $force_tokenize) {
 				foreach($content as $c) {
+					$c = str_replace("<", " ", $c);
+					$c = str_replace(">", " ", $c);
 					$words = array_merge($words, self::tokenize((string)$c));
 				}
 			}
@@ -1293,11 +1303,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				}
 			}
 			$wc = sizeof($words);
+			if($wc > 255) { $wc = 255; }
 			foreach($words as $i => $vs_word) {
 				if(!strlen($vs_word)) { continue; }
 				if (!($word_id = (int)$this->getWordID($vs_word))) { continue; }
-			
-				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.$i.','.$wc.','.$fi.')';
+				
+				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.(($i >= 255) ? 255 : $i).','.$wc.','.$fi.')';
 			}
 		}
 	}
