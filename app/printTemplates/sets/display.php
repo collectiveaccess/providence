@@ -78,8 +78,8 @@ while($result->nextHit()) {
 ?>
 	<div class="row">
 		<table>
-			<tr>
-				<td><b><?php print $c; ?></b>&nbsp;&nbsp;</td>
+			<tr valign="top">
+				<td><b><?= $c; ?></b>&nbsp;&nbsp;</td>
 <?php
 	if($table === 'ca_objects') {
 ?>
@@ -107,12 +107,12 @@ while($result->nextHit()) {
 <?php				
 			
 						foreach($display_list as $placement_id => $display_item) {	
-							$locale = caGetOption('locale', is_array($display_item['settings']) ? $display_item['settings'] : [], null);
+							$locale = caGetOption('locale', $display_item['settings'] ?? [], null);
 							if (!($display_value = trim($t_display->getDisplayValue($result, $placement_id, ['locale' => $locale, 'forReport' => true, 'purify' => true])))) { continue; }
 ?>
-							<tr>
-								<td width="30%" style='padding: 4px;'><?php print $display_item['display']; ?></td>
-								<td style='padding: 4px;'><?php print $display_value; ?></td>
+							<tr valign="top">
+								<td width="30%" style='padding: 4px; font-style: italic; font-size: 11px;'><?= $display_item['display']; ?></td>
+								<td style='padding: 4px; font-size: 11px;'><?= $display_value; ?></td>
 							</tr>
 <?php
 						}						
