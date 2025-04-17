@@ -1048,7 +1048,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $set_ids The id of the set to check. If omitted then currently loaded set will be checked.
 	 * @param array $options Options include:
 	 * 		sharesOnly = Only check access for shared users. Access via administrative roles and set ownership is not considered. [Default is false]
-	 *
+	 *		dontCheckAccessValue = Don't consider "access" value when determining accessibility. [Default is false]
 	 * @return array Array of access levels, keyed on set_id
 	 */
 	public function haveAccessToSets(?int $user_id, int $access, ?array $set_ids, ?array $options=null) {
@@ -3113,7 +3113,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check source restrictions
-		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+		if (caSourceAccessControlIsEnabled($this)) {
 			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
 			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;

@@ -2962,6 +2962,9 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			foreach(array('group_id', 'name', 'code', 'description', 'sdatetime', 'edatetime', 'access') as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
+			
+			$va_row['settings'] = caUnserializeForDatabase($qr_res->get('settings'));
+			
 			if ($vb_supports_date_restrictions) {
 				$o_tep->init();
 				$o_tep->setUnixTimestamps($qr_res->get('sdatetime'), $qr_res->get('edatetime'));
@@ -3011,14 +3014,15 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param array $pa_group_ids
 	 * @param array $pa_effective_dates
 	 * @param array $pa_options Supported options are:
-	 *		user_id - if set, only user groups owned by the specified user_id will be added
+	 *		user_id = if set, only user groups owned by the specified user_id will be added
+	 * @param array $settings
 	 */ 
-	public function addUserGroups($pa_group_ids, $pa_effective_dates=null, $pa_options=null) {
+	public function addUserGroups(array $pa_group_ids, ?array $pa_effective_dates=null, ?array $pa_options=null, ?array $settings=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		if (!($vs_group_rel_table = $this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'))) { return null; }
 		$vs_pk = $this->primaryKey();
 		
-		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : null;
+		$vn_user_id = $pa_options['user_id'] ?? null;
 		
 		$t_rel = Datamodel::getInstanceByTableName($vs_group_rel_table, true);
 		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
@@ -3040,6 +3044,12 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				$t_rel->set('effective_date', $pa_effective_dates[$vn_group_id]);
 			}
 			
+			if(is_array($settings[$vn_user_id] ?? null)) {
+				foreach($settings[$vn_user_id] as $setting => $setting_value) {
+					$t_rel->setSetting($setting, $setting_value);
+				}
+			}
+			
 			if ($t_rel->getPrimaryKey()) {
 				$t_rel->update();
 			} else {
@@ -3058,7 +3068,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	/**
 	 * 
 	 */ 
-	public function setUserGroups($pa_group_ids, $pa_effective_dates=null, $pa_options=null) {
+	public function setUserGroups(array $pa_group_ids, ?array $pa_effective_dates=null, ?array $pa_options=null, ?array $settings=null) {
 		if(is_array($va_groups = $this->getUserGroups([]))) {
 			$va_group_ids_to_remove = [];
 			foreach($va_groups as $vn_group_id => $va_info) {
@@ -3067,7 +3077,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				}
 			}
 			if (!$this->removeUserGroups($va_group_ids_to_remove)) { return false; }
-			if (!$this->addUserGroups($pa_group_ids, $pa_effective_dates)) { return false; }
+			if (!$this->addUserGroups($pa_group_ids, $pa_effective_dates, $pa_options, $settings)) { return false; }
 		}
 		return true;
 	}
@@ -3199,14 +3209,18 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($qr_users = $this->makeSearchResult('ca_users', $va_user_ids)) {
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_users, new ca_users(), array('stripTags' => true));
 		} else {
-			$va_initial_values = array();
+			$va_initial_values = [];
 		}
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$va_row = array();
-			foreach(array('user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
+			foreach(['user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access'] as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
+			
+			$va_row['settings'] = caUnserializeForDatabase($qr_res->get('settings'));
+			$va_row['downloads'] = $va_row['settings']['download_versions'] ?? null;
+			
 			if ($vb_supports_date_restrictions) {
 				$o_tep->init();
 				$o_tep->setUnixTimestamps($qr_res->get('sdatetime'), $qr_res->get('edatetime'));
@@ -3221,7 +3235,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				$va_users[(int)$qr_res->get('user_id')] = $va_row;
 			}
 		}
-		
 		return $va_users;
 	}
 	# ------------------------------------------------------------------
@@ -3253,7 +3266,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	/**
 	 * 
 	 */ 
-	public function addUsers($pa_user_ids, $pa_effective_dates=null) {
+	public function addUsers(array $pa_user_ids, ?array $pa_effective_dates=null, ?array $settings=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 		$vs_pk = $this->primaryKey();
@@ -3263,13 +3276,19 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 		foreach($pa_user_ids as $vn_user_id => $vn_access) {
 			$t_rel->clear();
-			$t_rel->load(array('user_id' => $vn_user_id, $vs_pk => $vn_id));		// try to load existing record
+			$t_rel->load(['user_id' => $vn_user_id, $vs_pk => $vn_id]);		// try to load existing record
 			
 			$t_rel->set($vs_pk, $vn_id);
 			$t_rel->set('user_id', $vn_user_id);
 			$t_rel->set('access', $vn_access);
 			if ($t_rel->hasField('effective_date')) {
-				$t_rel->set('effective_date', $pa_effective_dates[$vn_user_id]);
+				$t_rel->set('effective_date', $pa_effective_dates[$vn_user_id] ?? null);
+			}
+			
+			if(is_array($settings[$vn_user_id] ?? null)) {
+				foreach($settings[$vn_user_id] as $setting => $setting_value) {
+					$t_rel->setSetting($setting, $setting_value);
+				}
 			}
 			
 			if ($t_rel->getPrimaryKey()) {
@@ -3290,7 +3309,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	/**
 	 * 
 	 */ 
-	public function setUsers($pa_user_ids, $pa_effective_dates=null) {
+	public function setUsers(array $pa_user_ids, ?array $pa_effective_dates=null, ?array $settings=null) {
 		if(is_array($va_users = $this->getUsers([]))) {
 			$va_user_ids_to_remove = [];
 			foreach($va_users as $vn_user_id => $va_info) {
@@ -3299,7 +3318,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				}
 			}
 			if (!$this->removeUsers($va_user_ids_to_remove)) { return false; }
-			if (!$this->addUsers($pa_user_ids, $pa_effective_dates)) { return false; }
+			if (!$this->addUsers($pa_user_ids, $pa_effective_dates, $settings)) { return false; }
 		}
 		return true;
 	}
@@ -3307,7 +3326,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	/**
 	 * 
 	 */ 
-	public function removeUsers($pa_user_ids) {
+	public function removeUsers(array $pa_user_ids) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		if (!($vs_user_rel_table = $this->getProperty('USERS_RELATIONSHIP_TABLE'))) { return null; }
 		$vs_pk = $this->primaryKey();
@@ -3378,7 +3397,17 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
-		$o_view->setVar('initialValues', $this->getUsers(array('returnAsInitialValuesForBundle' => true)));
+		
+		$downloads = caGetPawtucketLightboxDownloadVersions(Datamodel::getTableName($this->get('table_num')));
+		$o_view->setVar('downloads', $downloads);
+		
+		$initial_values = $this->getUsers(array('returnAsInitialValuesForBundle' => true));
+		foreach($initial_values as $i => $iv) {
+			foreach($downloads as $d => $di) {
+				$initial_values[$i]["download_{$d}"] = in_array($d, $iv['downloads'] ?: []) ? 'CHECKED="1"' : '';
+			}
+		}
+		$o_view->setVar('initialValues', $initial_values);
 		
 		return $o_view->render('ca_users.php');
 	}
