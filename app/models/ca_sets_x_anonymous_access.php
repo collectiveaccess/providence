@@ -99,7 +99,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_anonymous_access'] = array(
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
-			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Display settings')
+			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Share settings')
 		),
  	)
 );
@@ -227,7 +227,7 @@ class ca_sets_x_anonymous_access extends BaseModel {
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($options=null) {
 		parent::initLabelDefinitions($options);
-		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display settings'));
+		$this->BUNDLES['settings'] = ['type' => 'special', 'repeating' => false, 'label' => _t('Share settings')];
 	}
 	# ------------------------------------------------------
 }

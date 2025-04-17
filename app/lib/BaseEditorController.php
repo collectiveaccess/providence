@@ -3070,6 +3070,7 @@ class BaseEditorController extends ActionController {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
 		}
 		
+		$this->response->setContentType('application/json');
 		$this->view->setVar('response', $resp);
 		$this->render('../generic/return_to_home_locations.php');
 	}

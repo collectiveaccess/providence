@@ -10613,37 +10613,121 @@ $pa_options["display_form_field_tips"] = true;
 	 * Returns a list of tables for which relationships exist.
 	 *
 	 * @param array $pa_options Options are:
-	 *		None yet
+	 *		restrictToTypes = Only consider relationships to related records with specified types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of types for each table. [Default is null]
+	 *		restrictToRelationshipTypes = Only consider relationships to related records with specified relationship types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of relationship types for each table. [Default is null]
+	 *		excludeTypes = Only consider relationships to related records that are not in the list of types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of types to exclude for each table. [Default is null]
+	 *		excludeRelationshipTypes = Only consider relationships to related records that are not in the list of relationship types. Pass restrictions in an array with keys set to table names (ex. "ca_objects") and values as lists of relationship types to exclude for each table. [Default is null]
+	 *		manyManyRelationshipsOnly = Only consider many-to-many [Default is false]
 	 *
 	 * @return mixed Array of table names for which this row has at least one relationship, with keys set to table names and values set to the number of relationships per table.
 	 */
-	public function hasRelationships($pa_options=null) {
-		$va_one_to_many_relations = Datamodel::getOneToManyRelations($this->tableName());
-
-		if (is_array($va_one_to_many_relations)) {
+	public function hasRelationships(?array $options=null) {		
+		$table = $this->tableName();
+		$one_to_many_relations = Datamodel::getOneToManyRelations($table);
+		
+		$restrict_to_types = caGetOption('restrictToTypes', $options, null);
+		$restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null);
+		$exclude_types = caGetOption('excludeTypes', $options, null);
+		$restrict_to_relationship_types = caGetOption('excludeRelationshipTypes', $options, null);
+	
+		$many_many_only = caGetOption('manyManyRelationshipsOnly', $options, false);
+		
+		$tables = [];
+		if (is_array($one_to_many_relations)) {
 			$o_db = $this->getDb();
-			$vn_id = $this->getPrimaryKey();
-			$o_trans = $this->getTransaction();
+			$id = $this->getPrimaryKey();
 			
-			$va_tables = array();
-			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
-				foreach($va_info as $va_relationship) {
+			foreach($one_to_many_relations as $many_table => $info) {
+				foreach($info as $relationship) {
 					# do any records exist?
-					$vs_rel_pk = Datamodel::primaryKey($vs_many_table);
+					$t = $relationship['many_table_field'];
+					$rel_pk = Datamodel::primaryKey($many_table);
+					if($many_many_only && !Datamodel::isRelationship($many_table)) { continue; }
 					
 					$qr_record_check = $o_db->query("
-						SELECT {$vs_rel_pk}
-						FROM {$vs_many_table}
+						SELECT {$rel_pk}
+						FROM {$many_table}
 						WHERE
-							({$va_relationship['many_table_field']} = ?)"
-					, array((int)$vn_id));
-					
-					if (($vn_count = $qr_record_check->numRows()) > 0) {
-						$va_tables[$vs_many_table] = $vn_count;	
+							({$t} = ?)"
+					, [(int)$id]);
+	
+					if (($count = $qr_record_check->numRows()) > 0) {
+						$tables[$many_table] = $count;	
 					}
 				}
 			}
-			return $va_tables;
+
+			if(
+				(is_array($restrict_to_types) && sizeof($restrict_to_types)) || 
+				(is_array($exclude_types) && sizeof($exclude_types)) ||
+				(is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types)) || 
+				(is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types))
+			) {
+				if(is_array($many_to_many_relations = Datamodel::getManyToManyRelations($table))) {
+					foreach($many_to_many_relations as $r) {
+						$rtypes = $etypes = null;
+						$side = ($r['left_table'] === $table) ? 'right' : 'left';
+						
+						$rt = $r["{$side}_table"];
+						$lt = $r["linking_table"];
+						$rtfld = $r["{$side}_table_field"];
+						$ltrfld = $r["linking_table_{$side}_field"];
+						
+						$lt_k = $r["linking_table_".(($side == 'left') ? 'right' : 'left')."_field"];
+						
+						$sql_wheres = ["{$lt}.{$lt_k} = ?"];
+						$params = [(int)$id];
+						
+						$do_check = false;
+						
+						if($delete_sql = (Datamodel::getFieldNum($rt, 'deleted')) ? "{$rt}.deleted = 0" : '') {
+							$sql_wheres[] = $delete_sql;
+						}
+						if(is_array($restrict_to_types[$rt] ?? null))  {
+							if(is_array($rtypes = caMakeTypeIDList($rt, $restrict_to_types[$rt])) && sizeof($rtypes)) {
+								$sql_wheres[] = "({$rt}.type_id IN (?))";
+								$params[] = $rtypes;
+								$do_check = true;
+							}
+						} elseif(is_array($exclude_types[$rt] ?? null)) {
+							if(is_array($etypes = caMakeTypeIDList($rt, $exclude_types[$rt])) && sizeof($etypes)) {
+								$sql_wheres[] = "({$rt}.type_id NOT IN (?))";
+								$params[] = $etypes;
+								$do_check = true;
+							}
+						}
+						
+						if(Datamodel::getFieldNum($lt, 'type_id')) {
+							if(is_array($restrict_to_relationship_types[$rt] ?? null))  {
+								if(is_array($rreltypes = caMakeRelationshipTypeIDList($lt, $restrict_to_relationship_types[$rt])) && sizeof($rreltypes)) {
+									$sql_wheres[] = "({$lt}.type_id IN (?))";
+									$params[] = $rreltypes;
+									$do_check = true;
+								}
+							} elseif(is_array($exclude_relationship_types[$rt] ?? null)) {
+								if(is_array($ereltypes = caMakeRelationshipTypeIDList($lt, $exclude_relationship_types[$rt])) && sizeof($ereltypes)) {
+									$sql_wheres[] = "({$lt}.type_id NOT IN (?))";
+									$params[] = $ereltypes;
+									$do_check = true;
+								}
+							}
+						}
+						if($do_check) {
+							$qr_record_check = $o_db->query("
+								SELECT {$lt}.relation_id
+								FROM {$lt}
+								INNER JOIN {$rt} ON {$rt}.{$rtfld} = {$lt}.{$ltrfld}
+								WHERE
+									".join(" AND ", $sql_wheres), $params);
+									
+							if (($count = $qr_record_check->numRows()) > 0) {
+								$tables[$lt] = $count;	
+							}
+						}
+					}
+				}
+			}
+			return $tables;
 		}
 		
 		return null;
@@ -10672,7 +10756,6 @@ $pa_options["display_form_field_tips"] = true;
 		if (is_array($many_to_many_relations)) {
 			$o_db = $this->getDb();
 			$id = (int)$this->getPrimaryKey();
-			$o_trans = $this->getTransaction();
 			$tables = [];
 			foreach($many_to_many_relations as $rel_info) {
 				$rel_pk = Datamodel::primaryKey($many_table = $rel_info['linking_table']);

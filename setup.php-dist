@@ -161,6 +161,13 @@ if (!defined("__CA_GOOGLE_MAPS_KEY__")) {
 	define("__CA_GOOGLE_MAPS_KEY__", "");
 }
 
+# __CA_HC_INFO_KEY__ = Key to pass to health check endpoint. When set as "key" parameter in
+# health check request, extended information about server configuration will be returned in
+# JSON format. Leave set to null to disable extended information.
+#
+if (!defined("__CA_HC_INFO_KEY__")) {
+    define('__CA_HC_INFO_KEY__', null);
+}
 
 # *** 
 # __   __          _                _                  

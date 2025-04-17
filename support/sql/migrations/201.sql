@@ -1,12 +1,13 @@
 /*
-	Date: 8 January 2025
+	Date: 31 March 2025
 	Migration: 201
-	Description: Add checked field to set items
+	Description: Add settings to user and group set access
 */
 
 /*==========================================================================*/
 
-alter table ca_set_items add column checked tinyint unsigned not null default 0;
+ALTER TABLE ca_sets_x_users ADD COLUMN settings text not null;
+ALTER TABLE ca_sets_x_user_groups ADD COLUMN settings text not null;
 
 /*==========================================================================*/
 

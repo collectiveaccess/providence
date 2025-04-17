@@ -214,7 +214,7 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Render data as JSON
+	 * Render data as text
 	 * 
 	 * @param bool $dont_add_content_to_response
 	 * @param array $options
