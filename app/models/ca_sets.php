@@ -3113,7 +3113,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check source restrictions
-		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+		if (caSourceAccessControlIsEnabled($this)) {
 			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
 			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
