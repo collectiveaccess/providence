@@ -40,8 +40,6 @@ if (!is_array($initial_values)) { $initial_values = []; }
 $initial_values = array_values($initial_values);
 
 $template_values = isset($initial_values[0]) ? array_keys($initial_values[0]) : ['relation_id', 'name', 'effective_date', 'guid'];
-
-
 $pawtuckets = caGetPawtucketInstalltionList();
 
 

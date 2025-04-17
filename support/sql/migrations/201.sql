@@ -1,7 +1,7 @@
 /*
 	Date: 17 February 2025
 	Migration: 201
-	Description: Add access inheritance fields
+	Description: Add access inheritance fields; add settings to user and group set access
 */
 
 /*==========================================================================*/
@@ -26,6 +26,9 @@ ALTER TABLE ca_object_representations ADD COLUMN acl_inherit_from_parent tinyint
 ALTER TABLE ca_object_lots ADD COLUMN acl_inherit_from_parent tinyint unsigned not null default 0;
 ALTER TABLE ca_loans ADD COLUMN acl_inherit_from_parent tinyint unsigned not null default 0;
 ALTER TABLE ca_movements ADD COLUMN acl_inherit_from_parent tinyint unsigned not null default 0;
+
+ALTER TABLE ca_sets_x_users ADD COLUMN settings text not null;
+ALTER TABLE ca_sets_x_user_groups ADD COLUMN settings text not null;
 
 /*==========================================================================*/
 

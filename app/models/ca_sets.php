@@ -1048,7 +1048,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $set_ids The id of the set to check. If omitted then currently loaded set will be checked.
 	 * @param array $options Options include:
 	 * 		sharesOnly = Only check access for shared users. Access via administrative roles and set ownership is not considered. [Default is false]
-	 *
+	 *		dontCheckAccessValue = Don't consider "access" value when determining accessibility. [Default is false]
 	 * @return array Array of access levels, keyed on set_id
 	 */
 	public function haveAccessToSets(?int $user_id, int $access, ?array $set_ids, ?array $options=null) {
@@ -3539,7 +3539,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$row = [];
-			foreach(['relation_id', 'name', 'guid', 'sdatetime', 'edatetime', 'access'] as $f) {
+			foreach(['name', 'guid', 'sdatetime', 'edatetime', 'access'] as $f) {
 				$row[$f] = $qr_res->get($f);
 			}
 			$o_tep->init();

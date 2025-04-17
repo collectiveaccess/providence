@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -598,14 +598,15 @@ class BaseBrowseController extends BaseFindController {
 							$va_ancestors = $t_item->getHierarchyAncestorsForIDs(array_keys($va_facet), array('returnAs' => 'ids'));
 							
 							$vn_c = 0;
+							$facet_ids = array_flip(array_map(function($v) { return $v['id']; }, $va_facet));
 							while($qr_res->nextHit()) {
 								if ($vn_start > $vn_c) { $vn_c++; continue; }
 								$vn_parent_id = $qr_res->get("{$vs_rel_table}.parent_id");
 								$vn_item_id = $qr_res->get("{$vs_rel_table}.{$vs_pk}");
 								
-								if (!isset($va_facet[$vn_item_id]) && !in_array($vn_item_id, $va_ancestors)) { continue; } 
+								if (!isset($facet_ids[$vn_item_id]) && !in_array($vn_item_id, $va_ancestors)) { continue; } 
 								
-								$va_item = array();
+								$va_item = [];
 								$va_item['item_id'] = $vn_item_id;
 								$va_item['name'] = $qr_res->get("{$vs_rel_table}.preferred_labels");
 								$va_item['children'] = (isset($va_child_counts[$vn_item_id]) && $va_child_counts[$vn_item_id]) ? $va_child_counts[$vn_item_id] : 0;
