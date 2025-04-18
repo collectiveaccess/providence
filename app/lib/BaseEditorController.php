@@ -1037,11 +1037,10 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 		
-		$can_save_acl = (!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL());
+		$can_save_acl = (!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL());
 		
 		$subject_table = $t_subject->tableName();
 		$subject_pk = $t_subject->primaryKey();
-		
 		$form_prefix = $this->request->getParameter('_formName', pString);
 
 		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
