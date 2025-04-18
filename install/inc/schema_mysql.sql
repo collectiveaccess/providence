@@ -5020,12 +5020,14 @@ create table ca_set_items (
     type_id     int unsigned not null,
 	`rank`		int unsigned not null default 0,
 	vars        longtext not null,
+	checked     tinyint unsigned not null default 0,
 	deleted     tinyint unsigned not null default 0,
 	
 	primary key (item_id),
 	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
+	key i_checked_id (set_id, checked),
 	key i_row_key (row_id, representation_id, annotation_id),
 	key i_table_num (table_num),
 	
@@ -5065,6 +5067,7 @@ create table ca_sets_x_user_groups (
 	set_id int unsigned not null,
 	group_id int unsigned not null,
 	access tinyint unsigned not null default 0,
+	settings text not null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
@@ -5089,6 +5092,7 @@ create table ca_sets_x_users (
 	pending_access tinyint unsigned null,
 	activation_key char(36) null,
 	activation_email varchar(255) null,
+	settings text not null,
 	sdatetime int unsigned null,
 	edatetime int unsigned null,
 	
@@ -7947,4 +7951,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (201, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (202, unix_timestamp());

@@ -89,6 +89,11 @@ class SnoballStemmer
 {
 	private $opa_stem_cache;
 	
+	/**
+	 * @int Maximum number of stemmed word cache entries. When the cache size exceeds this limit the cache is cleared.
+	 */
+	public $max_stem_cache_size = 100000;
+	
 	public function __construct() {
 		$this->opa_stem_cache = array();
 	}
@@ -119,6 +124,11 @@ class SnoballStemmer
         $orig_word = $word;
 
 		if (isset($this->opa_stem_cache[$word])) { return $this->opa_stem_cache[$word]; }
+		
+        if(sizeof($this->opa_stem_cache) > $this->max_stem_cache_size) {
+        	$this->opa_stem_cache = [];
+        }
+        
 		 // Use PECL function if it is installed
         if (function_exists('stem')) {
         	$this->opa_stem_cache[$word] = stem($word, $this->lang2code($lang));

@@ -1676,6 +1676,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * @return string HTML for list element
 	 */ 
 	public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = []; }
 		$t_list = new ca_lists();
 		if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 			$pa_options['childrenOnlyForItemID'] = $this->get('type_id');
@@ -1997,9 +1998,6 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		
 		// get all elements of this element set
 		$va_element_set = $t_element->getElementsInSet();
-
-		// get attributes of this element attached to this row
-		$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 		
 		$t_attr = new ca_attributes();
 		$t_attr->setTransaction($this->getTransaction());
@@ -2207,7 +2205,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		// Set the list of existing attributes for the current row
 		$vs_sort = $pa_bundle_settings['sort'] ?? null;
 		$vs_sort_dir = $pa_bundle_settings['sortDirection'] ?? null;
-		$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
+		$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), ['sort' => $vs_sort, 'sortDirection' => $vs_sort_dir]);
 		
 		$o_view->setVar('attribute_list', $va_attribute_list);
 		

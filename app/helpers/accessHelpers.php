@@ -716,7 +716,7 @@ function caGetBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 	if (isset($g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name])) { return $g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name]; }
 	list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
 
-	if ($g_request) {
+	if ($g_request && $g_request->isLoggedIn()) {
 		return $g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name] = $g_request->user->getBundleAccessLevel($ps_table_name, $ps_bundle_name);
 	}
 	

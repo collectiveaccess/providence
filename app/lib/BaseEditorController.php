@@ -1022,8 +1022,11 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
+		$config = Configuration::load();
+		$save_access = $config->get('acl_show_public_access_controls');
+		
 		//if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-		if(!caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
+		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		
 		$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_subject, ['forPawtucket' => true]);
 		
@@ -1034,11 +1037,10 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 		
-		$can_save_acl = (!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL());
+		$can_save_acl = (!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL());
 		
 		$subject_table = $t_subject->tableName();
 		$subject_pk = $t_subject->primaryKey();
-		
 		$form_prefix = $this->request->getParameter('_formName', pString);
 
 		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
@@ -3150,6 +3152,7 @@ class BaseEditorController extends ActionController {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
 		}
 		
+		$this->response->setContentType('application/json');
 		$this->view->setVar('response', $resp);
 		$this->render('../generic/return_to_home_locations.php');
 	}
