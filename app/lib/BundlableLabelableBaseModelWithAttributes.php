@@ -7924,7 +7924,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$preserve_inherited_acl_sql = '';
 		if((is_array($preserve_inherited_acl) && sizeof($preserve_inherited_acl))) {
-			$preserve_inherited_acl_sql = " AND inherited_from_table_num NOT IN (?)";
+			$preserve_inherited_acl_sql = " AND (inherited_from_table_num NOT IN (?) OR inherited_from_table_num IS NULL)";
 			$params[] = $preserve_inherited_acl;
 		}
 		
