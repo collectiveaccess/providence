@@ -6773,7 +6773,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			$snapshot = $this->getSnapshot(($change_type === 'U') ? true : false); 
 		}
 
-		if (!(($change_type == 'U') && (!sizeof($snapshot)))) {
+		if (!(($change_type == 'U') && (!sizeof($snapshot))) || caGetOption('touch', $options, false)) {
 			$snapshot = caSerializeForDatabase($snapshot, true);
 			// Create primary log entry
 			$this->opqs_change_log->execute(

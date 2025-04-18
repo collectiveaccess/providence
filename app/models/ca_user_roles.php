@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/WidgetManager.php");
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
  	
-
 BaseModel::$s_ca_models_definitions['ca_user_roles'] = array(
  	'NAME_SINGULAR' 	=> _t('user role'),
  	'NAME_PLURAL' 		=> _t('user roles'),
@@ -447,7 +441,7 @@ class ca_user_roles extends BaseModel {
 	 */
 	public function getSourceAccessSettings() {
 		if(!$this->getPrimaryKey()) { return array(); }
-		if(!$this->getAppConfig()->get('perform_source_access_checking')) { array(); }
+		if(!caSourceAccessControlIsEnabled()) { array(); }
 
 		$va_vars = $this->get('vars');
  		if(isset($va_vars['source_access_settings'])){
@@ -469,7 +463,7 @@ class ca_user_roles extends BaseModel {
 	public function setAccessSettingForSource($ps_table, $pm_source_id_or_code, $pn_access, $pb_is_default=false) {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		//if(!$this->getAppConfig()->get('perform_source_access_checking')) { return false; }
+		//if(!caSourceAccessControlIsEnabled()) { return false; }
 		$t_list = new ca_lists();	
 
 		$va_vars = $this->get('vars');

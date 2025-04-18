@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2024 Whirl-i-Gig
+ * Copyright 2019-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 require_once(__CA_LIB_DIR__."/Plugins/BanHammer/BaseBanHammerPlugin.php");
 
 class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
@@ -48,16 +49,40 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 		$config = self::$config->get('plugins.UserAgent');
 		$banned_useragents = caGetOption('banned_useragents', $config, []);
 		
+		$request_useragent = $_SERVER["HTTP_USER_AGENT"];
+		$ip = RequestHTTP::ip();
+		
+		$ip_to_ua = ExternalCache::fetch('ip_to_ua');
+		if(!is_array($ip_to_ua)) { $ip_to_ua = []; }
+		
+		$log = self::getLogger();
+		if(isset($ip_to_ua[$ip]) && ($ip_to_ua[$ip] !== $request_useragent)) {
+			if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent changed from %2 to %3', $ip, $ip_to_ua[$ip], $request_useragent)); }
+			return 1.0;
+		}
+		$ip_to_ua[$ip] = $request_useragent;
+		if(sizeof($ip_to_ua) > 10000) {
+			$ip_to_ua = array_slice(0, 7500);
+		}
+		ExternalCache::save('ip_to_ua', $ip_to_ua);
+		
 		if($config['use_useragent_list'] ?? false) {
 			if(is_array($banned_useragents_list = self::getBannedUserAgentList())) {
 				$banned_useragents = array_merge($banned_useragents, $banned_useragents_list);
 			}
 		}
-		$request_useragent = $_SERVER["HTTP_USER_AGENT"];
 		foreach($banned_useragents as $u) {
 			if (preg_match("!{$u}!i", $request_useragent)) {
+				if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent %2 is on ban list', $ip, $request_useragent)); }
+			
 				return 1.0;
 			}
+		}
+		
+		$cd = new CrawlerDetect();
+		if($cd->isCrawler($_SERVER["HTTP_USER_AGENT"])) {
+			if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent %2 is on CrawlerDetect list', $ip, $request_useragent)); }
+			return 1.0;
 		}
 		
 		return 0;
@@ -99,7 +124,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 		if(!$config['useragent_list_url']) { return false; }
 		$appvars = new ApplicationVars();
 		
-		$log = caGetLogger();
+		$log = self::getLogger();
 		
 		$force = (bool)($config['useragent_list_force_reload'] ?? false);
 		
@@ -141,8 +166,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 				$appvars->save();	
 			}
 		} 
+		return $params;
 	}
 	# ------------------------------------------------------
 }
-// 
-//     exclude_useragents = []
