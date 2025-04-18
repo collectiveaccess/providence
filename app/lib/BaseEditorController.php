@@ -1171,7 +1171,10 @@ class BaseEditorController extends ActionController {
 				// @TODO: make configurable
 				$access_to_acl_map = [
 					0 => __CA_ACL_NO_ACCESS__,
-					1 => __CA_ACL_READONLY_ACCESS__
+					1 => __CA_ACL_READONLY_ACCESS__,
+					2 => __CA_ACL_NO_ACCESS__,
+					4 => __CA_ACL_READONLY_ACCESS__,
+					5 => __CA_ACL_NO_ACCESS__
 				];
 				$t_subject->setACLWorldAccess($access_to_acl_map[$this->request->getParameter('access', pInteger) ?? 0], ['preserveInherited' => $preserve_inherited]);
 			} else {
