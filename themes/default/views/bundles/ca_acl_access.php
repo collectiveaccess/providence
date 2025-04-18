@@ -71,9 +71,9 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 ?>
 		<p>
 			<?= ($stats['inheritingSubRecordCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount']) 
+				_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount']) 
 				: 
-				_t(' %1 %2 (out of %4 total) will inherit public access settings from this %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount'])  
+				_t(' %1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['subRecordCount'])  
 			?>
 <?php
 			if(
@@ -104,9 +104,9 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 ?>
 		<p>
 			<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) will inherit Pawtucket access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount']) 
+				_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount']) 
 				: 
-				_t(' %1 %2 (out of %4 total) will inherit Pawtucket access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'])  
+				_t(' %1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'])  
 			?>
 <?php
 			if(
@@ -194,9 +194,9 @@ if(!$pawtucket_only_acl_enabled) {
 ?>
 			<p>
 				<?= ($stats['inheritingSubRecordCount'] === 1) ? 
-					_t('%1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_SINGULAR'), $typename, $stats['subRecordCount']) 
+					_t('%1 %2 (out of %4 total) are inheriting access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_SINGULAR'), $typename, $stats['subRecordCount']) 
 					: 
-					_t('%1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $typename, $stats['subRecordCount'])  
+					_t('%1 %2 (out of %4 total) are inheriting access settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $typename, $stats['subRecordCount'])  
 				?>
 <?php
 				if(
@@ -230,9 +230,9 @@ if(!$pawtucket_only_acl_enabled) {
 ?>
 			<p>
 				<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-					_t('%1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount']) 
+					_t('%1 %2 (out of %4 total) are inheriting access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount']) 
 					: 
-					_t(' %1 %2 (out of %4 total) will inherit access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'])  
+					_t(' %1 %2 (out of %4 total) are inheriting access settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'])  
 				?>
 <?php
 			if(
