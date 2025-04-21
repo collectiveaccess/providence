@@ -3398,7 +3398,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
 		
-		$downloads = caGetPawtucketLightboxDownloadVersions(Datamodel::getTableName($this->get('table_num')));
+		if(!($t = Datamodel::getTableName($this->get('editor_type')))) { return null; }
+		$downloads = caGetPawtucketLightboxDownloadVersions($t);
 		$o_view->setVar('downloads', $downloads);
 		
 		$initial_values = $this->getUsers(array('returnAsInitialValuesForBundle' => true));

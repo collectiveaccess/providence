@@ -100,7 +100,8 @@ class MediaViewerManager {
 	/**
 	 *
 	 */
-	public static function getViewerForMimetype(string $context, string $mimetype, ?array $options=null) {
+	public static function getViewerForMimetype(string $context, ?string $mimetype, ?array $options=null) {
+		if(!$mimetype) { return null; }
 		$config = Configuration::load(__CA_CONF_DIR__.'/media_display.conf');
 		if(caGetOption('alwaysUseCloverViewer', $options, (bool)$config->get('always_use_clover_viewer'))) {
 			$viewer = 'Clover';

@@ -443,7 +443,12 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 			    $vs_template_content = $t_template->get('template');
 			}
-			
+			if($t_page->get("ca_site_pages.title")){
+				MetaTagManager::setWindowTitle($t_page->get("ca_site_pages.title")); 				
+			}
+			if($t_page->get("ca_site_pages.description")){
+				MetaTagManager::addMetaProperty("description", $t_page->get("ca_site_pages.description")); 				
+			}
 			return $o_content_view->render($vs_template_content, false, ['string' => true]); 
 		}
 		return false;

@@ -967,7 +967,9 @@ class ResultContext {
 		if (!is_array($pa_attributes)) {
 			$pa_attributes = [];
 		}
-		$pa_attributes['aria-label'] = _t('Return to results');
+		if (!$pa_attributes['aria-label']) {
+			$pa_attributes['aria-label'] = _t('Back to results');
+		}
 		$o_find_navigation = Configuration::load(((defined('__CA_THEME_DIR__') && file_exists(__CA_THEME_DIR__.'/conf/find_navigation.conf')) ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 		$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
 		$va_nav = $va_find_nav[$va_tmp[0] ?? 0] ?? null;
