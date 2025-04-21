@@ -2406,7 +2406,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			$vs_element = null;
 			switch($ps_field) {
 				case $vs_source_id_fld_name:
-					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+					if (caSourceAccessControlIsEnabled($this)) {
 						$pa_options['value'] = $this->get($ps_field);
 						$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
 						$vs_element = $this->getSourceListAsHTMLFormElement($pa_options['name'], array(), $pa_options);

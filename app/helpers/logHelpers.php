@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/Logging/KLogger/KLogger.php");
+require_once(__CA_LIB_DIR__."/Logging/AccessLogger.php");
 # ---------------------------------------
 /**
  * Return KLogger instance for import log
@@ -149,5 +150,12 @@ function caLogEvent(string $code, string $message, ?string$source=null, ?array $
 	$log->logInfo("[{$code}] {$message}".(strlen($source) ? " ({$source})" : ""));
 	
 	return true;  
+}
+# ----------------------------------------
+/** 
+ *
+ */
+function caGetAccessLogger() {
+	return new AccessLogger(caGetLogPath(), caLogLevelStringToNumber('INFO'), 'access');
 }
 # ----------------------------------------
