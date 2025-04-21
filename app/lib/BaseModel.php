@@ -9350,8 +9350,8 @@ $pa_options["display_form_field_tips"] = true;
 				case(FT_FILE):
 					$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
 					$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
-
-					$vs_element = '<div class="formLabelUploadSizeNote"><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/><br/>'._t("Maximum upload size: %1", $post_max_size) . '</div>';
+					$class_attr = _caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, 'formLabelUploadSizeNote')]);
+					$vs_element = '<div '.$class_attr.'><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/>'._t("Maximum upload size is %1", $post_max_size) . '</div>';
 
 					// show current media icon
 					if ($vs_version = (array_key_exists('displayMediaVersion', $pa_options)) ? $pa_options['displayMediaVersion'] : 'icon') {
