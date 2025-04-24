@@ -55,6 +55,12 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	private $debug = false;
 	
+	
+	/**
+	 *
+	 */
+	private $init = false;
+	
 	# --------------------------------------------------------------------------------
 	/**
 	 *
@@ -63,18 +69,8 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
     	if(caIsRunFromCLI()) { return; }
         $this->auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
         $this->debug = (bool)$this->auth_config->get('shibboleth_debug');
-        $shibSP = $this->auth_config->get('shibboleth_service_provider');
         
         $this->log = caGetLogger();
-        
-        if($this->debug) { $this->log->logDebug(_t("[Shibboleth::debug] Created new shib context")); }
-        try{
-            $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
-            session_write_close();
-        } catch (Exception $e) {
-       		if($this->debug) { $this->log->logDebug(_t("Could not create SimpleSAML auth object: %1", $e->getMessage())); }
-            throw new ShibbolethException(_t("Could not create SimpleSAML auth object: %1", $e->getMessage()));
-        }
         
         $map = $this->getAttributeMap();
 		if (!array_key_exists('uid', $map)) {
@@ -89,8 +85,26 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	/**
 	 *
 	 */
-	public function authenticate($username, $password = '', $options=null) {
-    	if(caIsRunFromCLI()) { return false; }
+	private function init() {
+		if($this->opo_shibAuth) { return; }
+        $shibSP = $this->auth_config->get('shibboleth_service_provider');
+		if($this->debug) { $this->log->logDebug(_t("[Shibboleth::debug] Created new shib context %1", $shibSP)); }
+        try{
+            $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
+            session_write_close();
+        } catch (Exception $e) {
+       		if($this->debug) { $this->log->logDebug(_t("Could not create SimpleSAML auth object: %1", $e->getMessage())); }
+            throw new ShibbolethException(_t("Could not create SimpleSAML auth object: %1", $e->getMessage()));
+        }
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function authenticate($username, $password='', $options=null) {
+		if(caIsRunFromCLI()) { return false; }
+    	
+    	$this->init();
     	
         if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Attempting to authenticate with {$username}::{$password}")); }
 		try{
@@ -109,7 +123,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 		$uid = $this->mapAttribute('uid', $attrs);
 		
-		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Got uid {$uid} while attemtping to authenticate with {$username}::{$password}. Attributes were %1", print_R($attrs, true))); }
+		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Got uid {$uid} while attempting to authenticate with {$username}::{$password}. Attributes were %1", print_R($attrs, true))); }
 	    if (!$uid) { return false; }
 		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Authentication with {$username}::{$password} was successful")); }
 	   
@@ -121,6 +135,8 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
 	public function getUserInfo($username, $password, $options=null) {
     	if(caIsRunFromCLI()) { return null; }
+    	
+    	$this->init();
     	
     	if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Getting user info with {$username}::{$password}")); }
         if(!$this->opo_shibAuth->isAuthenticated()){
@@ -175,7 +191,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
 	/**
 	 * @param string $username Username to create account for
-	 * @param string $passowrd Ignored
+	 * @param string $password Ignored
 	 */
 	public function createUserAndGetPassword($username, $password=null) {
     	if(caIsRunFromCLI()) { return null; }
@@ -202,7 +218,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			case __CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__:
 				return false;
 			case __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__:
-			    return true;
+			    return (bool)$this->auth_config->get('shibboleth_auto_create_new_users');
 			default:
 				return false;
 		}
@@ -241,9 +257,12 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 */
     public function deauthenticate($options=null) {
     	if(caIsRunFromCLI()) { return false; }
-        setcookie("SimpleSAML", "", time()-3600, '/');
-        setcookie("SimpleSAMLAuthToken", "", time()-3600, '/');
-        setcookie($this->auth_config->get('shibboleth_token_cookie'), '', time()-3600, __CA_URL_ROOT__);
+    	
+		$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+		$secure = (__CA_SITE_PROTOCOL__ === 'https');
+        setcookie("SimpleSAML", "", time()-3600, $cookiepath, null, $secure, true);
+        setcookie("SimpleSAMLAuthToken", "", time()-3600, $cookiepath, null, $secure, true);
+        setcookie($this->auth_config->get('shibboleth_token_cookie'), '', time()-3600, $cookiepath, null, $secure, true);
         return true;
     }
 	# --------------------------------------------------------------------------------
@@ -267,7 +286,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	 * return array
 	 */
 	private function getAttributeMap() : ?array {
-		if(is_array($map = $this->auth_config->get('shibboleth_field_map'))) {
+		if(is_array($map = $this->auth_config->get(['shibboleth_field_map', 'shibboleth_attribute_map']))) {
 			return $map;
 		}
 		throw new ShibbolethException(_t("shibboleth_field_map not found in configuration"));

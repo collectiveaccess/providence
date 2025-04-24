@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,8 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-
 final class GarbageCollection {
 	# -------------------------------------------------------
 	/**
@@ -46,7 +44,7 @@ final class GarbageCollection {
 		// -> time for us to run the GC
 		$show_cli = caGetOption('showCLIProgress', $options, false);
 		$force = (bool)caGetOption('force', $options, false);
-		
+
 		if($force || !ExternalCache::contains('last_gc', 'gc') || (((int)ExternalCache::fetch('last_gc', 'gc') + 300) < time())) {
 			if($show_cli) { CLIUtils::addMessage(_t('Removing stale disk cache items...')); }
 			self::removeStaleDiskCacheItems($options);
@@ -57,6 +55,7 @@ final class GarbageCollection {
 			// remove old user media files
 			if($show_cli) { CLIUtils::addMessage(_t('Clearing old user media...')); }
 			caCleanUserMediaDirectories();
+			caCleanTmpDirectory();
 					
 			// Purge CSRF tokens that haven't been updated for at least a day from persistent cache
 			if($show_cli) { CLIUtils::addMessage(_t('Removing old CSRF tokens...')); }

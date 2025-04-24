@@ -168,11 +168,11 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 						
 						$s = $this->_getSession($session_key);
 						if(!$s) {
-							throw new \ServiceException(_t('Invalid session key'));
+							throw new \ServiceException(_t('[getSession:1] Invalid session key: %1', $session_key));
 						}
 						
-						if(!is_array($log_entries = MediaUploadManager::getLog(['sessionKey' => $session_key, 'user' => $user_id])) || !sizeof($log_entries)) {
-							throw new \ServiceException(_t('Invalid session key'));
+						if(!is_array($log_entries = MediaUploadManager::getLog(['sessionKey' => $session_key])) || !sizeof($log_entries)) {
+							throw new \ServiceException(_t('[getSession:2] Invalid session key: %1', $session_key));
 						}
 						
 						$data = array_shift($log_entries);
@@ -319,15 +319,24 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 						$session_key = $args['sessionKey'];
 						$status = $args['status'];
 						if(!in_array($status, ['ACCEPTED', 'REJECTED'])) {
-							throw new \ServiceException(_t('Invalid status: %1', $status));
+							throw new \ServiceException(_t('[updateSessionStatus:1] Invalid status: %1', $status));
 						}
 						
 						if(!($s = $this->_getSession($session_key))) {
-							throw new \ServiceException(_t('Invalid session key: %1', $session_key));
+							throw new \ServiceException(_t('[updateSessionStatus:2] Invalid session key: %1', $session_key));
 						}
 					
 						$s->set('status', $status);
 						if ($s->update()) {
+							// Set access on related items
+							if($qr = ca_objects::findAsSearchResult(['submission_session_id' => $s->getPrimaryKey()])) {
+								while($qr->nextHit()) {
+									$t = $qr->getInstance();
+									$t->set('access', ($status === 'ACCEPTED') ? 1 : 0);
+									$t->update();
+								}
+							}
+							
 							return ['updated' => 1];
 						} else {
 							throw new \ServiceException(_t('Could not update session: %1', join('; ', $s->getErrors())));
@@ -382,7 +391,7 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 			throw new \ServiceException(_t('Empty session key'));
 		}
 		if(!($s = ca_media_upload_sessions::find(['session_key' => $session_key], ['returnAs' => 'firstModelInstance']))) {
-			throw new \ServiceException(_t('Invalid session key'));
+			throw new \ServiceException(_t('[_getSession] Invalid session key: %1', $session_key));
 		}
 		
 		return $s;

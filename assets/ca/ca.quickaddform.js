@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,9 +24,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
-
 
 (function ($) {
 	caUI.initQuickAddFormHandler = function(options) {
@@ -72,13 +70,15 @@ var caUI = caUI || {};
 		// Define methods
 		// --------------------------------------------------------------------------------
 		that.save = function(e) {
-			jQuery("#" + that.formID).find("." + that.progressClassName).html(that.sendingDataText);
+		    // Force CKEditor text into form elements where we can grab it
+			if(caUI.ckEditors) { 
+			    jQuery.each(caUI.ckEditors, function(k, instance) {
+				    instance.updateSourceElement();
+			    });
+			}
 		
-			// Force CKEditor text into form elements where we can grab it
-			jQuery.each(CKEDITOR.instances, function(k, instance) {
-				instance.updateElement();
-			});
-			
+			jQuery("#" + that.formID).find("." + that.progressClassName).html(that.sendingDataText);
+
 			formData = jQuery("#" + that.formID).serializeObject();
 			formData['csrfToken'] = that.csrfToken;
 			
@@ -193,9 +193,11 @@ var caUI = caUI || {};
 		};
 		
 		that.switchForm = function() {
-			jQuery.each(CKEDITOR.instances, function(k, instance) {
-				instance.updateElement();
-			});
+		    if(caUI.ckEditors) { 
+			    jQuery.each(caUI.ckEditors, function(k, instance) {
+				    instance.updateSourceElement();
+			    });
+			}
 			jQuery("#" + that.formID + " input[name=type_id]").val(jQuery("#" + that.formTypeSelectID).val());
 			var formData = jQuery("#" + that.formID).serializeObject();
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
@@ -209,7 +211,7 @@ var caUI = caUI || {};
 		
 		that.cleanupOnCancel = function(e) {
 			var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
-			if(relationbundle) { relationbundle.deleteFromBundle('new_0'); }
+			if(relationbundle) { relationbundle.deleteNewFromBundle(); }
 		}
 		
 		// --------------------------------------------------------------------------------

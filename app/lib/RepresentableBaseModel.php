@@ -581,10 +581,6 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			$t_rep->set('status', $pn_status);
 			$t_rep->set('access', $pn_access);
 			if($ps_media_path) { $t_rep->set('media', $ps_media_path, $pa_options); }
-	
-			if ($o_idno = $t_rep->getIDNoPlugInInstance()) {
-				$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
-			}
 			
 			if($ps_media_path && is_array($skip_config = $this->getAppConfig()->get('skip_object_representation_versions_for_mimetype_when'))) {
 				// process values to use codes for list items
@@ -620,11 +616,19 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			}
+			
+			$rep_idno_instance = $t_rep->getIDNoPlugInInstance();
+		
 			if (is_array($pa_values)) {
-				if (isset($pa_values['idno']) && !empty($pa_values['idno']) && empty($t_rep->get('idno')) ) {
-					$t_rep->set('idno', $pa_values['idno']);
-					unset($pa_values['idno']);
+				if($rep_idno_instance->isSerialFormat()) {
+					if(!strlen($t = $rep_idno_instance->makeTemplateFromValue($pa_values['idno'] ?? ''))) {
+						$t = '%';
+					}
+					$t_rep->setIdnoWithTemplate($t);
+				} else {
+					$t_rep->set('idno', $pa_values['idno'] ?? null);
 				}
+				unset($pa_values['idno']);
 				foreach($pa_values as $vs_element => $va_value) { 					
 					if (is_array($va_value)) {
 						// array of values (complex multi-valued attribute)
@@ -644,12 +648,9 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				}
-			}
-			if(!isset($pa_values['idno'])) {
+			} elseif($rep_idno_instance->isSerialFormat()) {
 				$t_rep->setIdnoWithTemplate('%', ['serialOnly' => true]);
 			}
-			
-			
 			
 			try {
 				$t_rep->insert($media_proc_opts);

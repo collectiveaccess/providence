@@ -57,6 +57,10 @@ class AuthenticationManager {
 			AuthenticationManager::$g_authentication_conf = $o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
+			
+			if(defined("__CA_IS_SERVICE_REQUEST__") && (bool)__CA_IS_SERVICE_REQUEST__ && ($auth_adapter_for_services = $o_auth_config->get('auth_adapter_for_services'))) {
+				$vs_auth_adapter = $auth_adapter_for_services;
+			}
             
 		    if ($is_local = (isset($_REQUEST['local']) && $_REQUEST['local'])) { $vs_auth_adapter = 'CaUsers'; }
 		

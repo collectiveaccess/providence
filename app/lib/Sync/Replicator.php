@@ -77,6 +77,16 @@ class Replicator {
 	protected $target_key;
 	
 	/**
+	 * Starting log id of current chunk
+	 */
+	protected $start_log_id;
+	
+	/**
+	 * Ending log id of current chunk
+	 */
+	protected $end_log_id;
+	
+	/**
 	 * Last log id processed for current sync
 	 */
 	protected $last_log_id;
@@ -442,11 +452,11 @@ class Replicator {
 					}
 					
                     $log_ids = array_keys($this->source_log_entries);
-                    $start_log_id = array_shift($log_ids);
-                    $end_log_id = array_pop($log_ids);
+                    $start_log_id = $this->start_log_id = array_shift($log_ids);
+                    $end_log_id = $this->end_log_id = array_pop($log_ids);
                     if(!$end_log_id) { $end_log_id = $start_log_id; }
                     
-                    $this->logDebug(_t("[%1] Found %2 source log entries starting at %3 [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
+                    $this->logDebug(_t("[%1] Found %2 source log entries starting at [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
                     //$this->logDebug(_t("[%1] %2", $this->source_key, print_r($this->source_log_entries,true)), Zend_Log::DEBUG);
                     
                     $filtered_log_entries = null;
@@ -599,9 +609,9 @@ class Replicator {
 						$response_data = $o_resp->getRawData();
 					} else {
 						$o_resp = null;
-						$response_data = ['replicated_log_id' => $this->last_log_id];
+						$response_data = ['replicated_log_id' => $end_log_id];
 						$this->logDebug(_t("[%1] Nothing to send (all filtered) so incrementing to last log_id (%2)",
-								$source_key, $this->last_log_id), Zend_Log::DEBUG);
+								$source_key, $end_log_id), Zend_Log::DEBUG);
 					}
 					
 					if (($o_resp && !$o_resp->isOk()) || !isset($response_data['replicated_log_id'])) {
@@ -614,7 +624,7 @@ class Replicator {
 							//  are pulled as part of the primary record and then as a dependency)
 							$this->sent_log_ids[$mlog_id] = true;
 						}
-						$replicated_log_id = ($this->last_log_id > 0) ? ($this->last_log_id + 1) : ((int) $response_data['replicated_log_id']) + 1;
+						$replicated_log_id = $end_log_id + 1; //($this->last_log_id > 0) ? ($this->last_log_id + 1) : ((int) $response_data['replicated_log_id']) + 1;
 						$this->log(_t("[%1] Chunk sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::DEBUG);
 						$num_log_entries = sizeof($this->source_log_entries);
 						$last_log_entry = array_pop($this->source_log_entries);
@@ -733,7 +743,7 @@ class Replicator {
 			$skip_guids = [];
 			$unresolved_dependent_guids = [];
 			foreach($log_for_missing_guid as $missing_entry) {
-				if (!$single_log_id_mode && ($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] > $this->last_log_id)) {
+				if (!$single_log_id_mode && ($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] > $this->end_log_id)) {
 					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it is in the future; current log_id is %3", $this->source_key, $missing_entry['log_id'], $this->last_log_id), Zend_Log::WARN);    
 					continue;
 				}

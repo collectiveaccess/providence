@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 
 class CheckInController extends ActionController {
@@ -78,6 +77,8 @@ class CheckInController extends ActionController {
 		$va_info['title'] = $va_info['name'].' ('.$va_info['idno'].')';
 		$va_info['borrower'] = _t('Borrowed by %1 on %2', $va_info['user_name'], $va_info['checkout_date']);
 		$this->view->setVar('data', $va_info);
+		
+		$this->response->setContentType('application/json');
 		$this->render('checkin/ajax_data_json.php');
 	}
 	# -------------------------------------------------------
@@ -139,6 +140,8 @@ class CheckInController extends ActionController {
 		}
 		
 		$this->view->setVar('data', $va_ret);
+		
+		$this->response->setContentType('application/json');
 		$this->render('checkin/ajax_data_json.php');
 	}
 	# -------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2022 Whirl-i-Gig
+ * Copyright 2019-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,6 +75,97 @@ trait CLIUtilsStatistics {
 	public static function fetch_statisticsHelp() {
 		return _t('Fetches data and usage statistics from local and remote CollectiveAccess instances and makes them available in the Statistics Dashboard.');
 	}
-	
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function export_search_log($opts=null) {	
+		if (!($filename = $opts->getOption('file'))) {
+			CLIUtils::addError(_t('You must specify a file to write export output to.'));
+			return false;
+		}
+
+		if(is_writeable($filename === false)){
+			// probably a permission error
+			CLIUtils::addError("Can't write to file %1. Check the permissions.",$filename);
+			return false;
+		}
+		
+		$db = new Db();
+
+		$r = fopen($filename, "w");
+		fputcsv($r, [_t('Date'), _t('User name'), _t('User email'), _t('Target'), _t('Search'), _t('Num hits'), _t('IP'), _t('Time'), _t('Source')]);
+		
+		$count = 0;
+		$start = 0;
+		
+		$qr = $db->query("SELECT count(*) c FROM ca_search_log");
+		$qr->nextRow();
+		$total = $qr->get('c');
+		print CLIProgressBar::start($total, _t('Exporting search log'));
+
+		do {
+			$qr = $db->query("
+				SELECT l.search_id, l.log_datetime, l.table_num, l.search_expression, l.num_hits, l.ip_addr, 
+					l.execution_time, l.search_source, u.fname, u.lname, u.email 
+				FROM ca_search_log l 
+				LEFT JOIN ca_users AS u ON l.user_id = u.user_id
+				ORDER BY l.search_id
+				LIMIT {$start}, 100
+			");
+			
+			$n = $qr->numRows();
+			while($qr->nextRow()) {
+				$s = [
+					date('c', $qr->get('log_datetime')),
+					trim($qr->get('fname').' '.$qr->get('lname')),
+					$qr->get('email'),
+					Datamodel::getTableName($qr->get('table_num')),
+					$qr->get('search_expression'),
+					$qr->get('num_hits'),
+					$qr->get('ip_addr'),
+					$qr->get('execution_time').'s',
+					$qr->get('search_source')
+				];
+				fputcsv($r, $s);
+				$count++;
+				
+				print CLIProgressBar::next(1, _t('Exporting search log entry %1', $count));
+			
+			}
+			$start += $n;
+		} while($n > 0);
+		
+		CLIProgressBar::finish();
+		fclose($r);
+		CLIUtils::addMessage(($count === 1) ? _t("Exported %1 search log entry", $count) : _t("Exported %1 search log entries", $count));
+	}
+	# -------------------------------------------------------
+	public static function export_search_logParamList() {
+		return [
+			"file|f=s" => _t('Required. File to save CSV-format log data to.')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function export_search_logUtilityClass() {
+		return _t('Statistics');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function export_search_logShortHelp() {
+		return _t('Export log of user searches as CSV file.');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function export_search_logHelp() {
+		return _t('Exports log with CSV-format information about user searches');
+	}
 	# -------------------------------------------------------
 }

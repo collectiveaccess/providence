@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,16 +29,10 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
  	'NAME_SINGULAR' 	=> _t('storage location'),
@@ -89,6 +83,14 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable object identifier as integer', 'DESCRIPTION' => 'Integer value used for sorting objects; used for idno range query.'
+		),
+		'home_location_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LABEL' => _t('Home location ID'), 'DESCRIPTION' => _t('The customary storage location for this location.')
 		),
 		'source_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -397,6 +399,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
 		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 		
+		$this->BUNDLES['home_location_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Home location display value'), 'displayOnly' => true);
+		
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
@@ -463,8 +467,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 			'location_id' => $vn_id = $t_root->getPrimaryKey(),
 			'item_id' => $vn_id,
 			'name' => _t('Storage locations'),
-			'children' => $qr_children->numRows(),
-			'has_children' => $qr_children->numRows() ? true : false
+			'children' => $qr_children ? $qr_children->numRows() : 0,
+			'has_children' => ($qr_children && $qr_children->numRows()) ? true : false
 		));
 	 }
 	# ------------------------------------------------------

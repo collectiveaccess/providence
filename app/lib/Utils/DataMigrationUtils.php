@@ -152,6 +152,10 @@ class DataMigrationUtils {
 		
 		$vs_plural_label 			= (isset($pa_values['preferred_labels']['name_plural']) && $pa_values['preferred_labels']['name_plural']) ? $pa_values['preferred_labels']['name_plural'] : '';
 		if (!$vs_plural_label) { $vs_plural_label = (isset($pa_values['name_plural']) && $pa_values['name_plural']) ? $pa_values['name_plural'] : str_replace("_", " ", $ps_item_idno); }
+		
+		
+		$description 			= (isset($pa_values['preferred_labels']['description']) && $pa_values['preferred_labels']['description']) ? $pa_values['preferred_labels']['description'] : '';
+		if (!$description) { $description = (isset($pa_values['description']) && $pa_values['description']) ? $pa_values['description'] : ''; }
 
 		if (!$vs_singular_label) { $vs_singular_label = $vs_plural_label; }
 		if (!$vs_plural_label) { $vs_plural_label = $vs_singular_label; }
@@ -327,7 +331,8 @@ class DataMigrationUtils {
 			$t_item->addLabel(
 				array(
 					'name_singular' => $vs_singular_label,
-					'name_plural' => $vs_plural_label
+					'name_plural' => $vs_plural_label,
+					'description' => $description
 				), $locale_id, null, true
 			);
 
@@ -908,12 +913,16 @@ class DataMigrationUtils {
 					} else {
 						// scalar value (simple single value attribute)
 						if ($va_value) {
-							if($source_value = caGetOption('_source', $va_value, null)) {
-								unset($va_value['_source']);
+							if(is_array($va_value)) {
+								if($source_value = caGetOption('_source', $va_value, null)) {
+									unset($va_value['_source']);
+								}
+							} else {
+								$va_value = [$vs_element => $va_value];
 							}
 							$pt_instance->addAttribute(array(
 								'locale_id' => $locale_id,
-								$vs_element => $va_value
+								$va_value
 							), $vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
@@ -1079,7 +1088,7 @@ class DataMigrationUtils {
 		
 		
 		$pb_output_errors 				= caGetOption('outputErrors', $options, false);
-		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, false);
+		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, true);
 		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'displayname'), array('castTo' => "array"));
 		$ps_event_source 				= caGetOption('importEventSource', $options, '?'); 
 		$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $options, false);
@@ -1213,7 +1222,7 @@ class DataMigrationUtils {
 				case 'nonpreferred_labels':
 					$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
 				
-					if ($pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
+					if (($vs_table_class == 'ca_entities') && $pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
 						// entities only
 						$va_params = array($vs_label_spec => array('displayname' => trim($pa_label['displayname'])));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }

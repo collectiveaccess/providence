@@ -1298,6 +1298,7 @@ class BaseModel extends BaseObject {
 	 */
 	static public function getIDsForIdnos($idnos, $options=null) {
 	    if (!is_array($idnos) && strlen($idnos)) { $idnos = [$idnos]; }
+	    if(!is_array($idnos)) { return null; }
 	    
 	    $access_values = caGetOption('checkAccess', $options, null);
 
@@ -1307,7 +1308,7 @@ class BaseModel extends BaseObject {
 		$table_name = get_called_class();
 		
 		if ($restrict_to_types = caGetOption('restrictToTypes', $options, null)) {
-			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types);
+			$restrict_to_types = caMakeTypeIDList($table_name, $restrict_to_types, $options);
 		}
 		
 		if (!($t_instance = Datamodel::getInstanceByTableName($table_name, true))) { return null; }
@@ -2324,9 +2325,12 @@ class BaseModel extends BaseObject {
 	/**
 	 *
 	 */
-	private function _processDatabaseException($e, $o_db) {
+	private function _processDatabaseException(DatabaseException $e, Db $o_db, ?string $source=null) {
+		$context = $e->getContext();
+		if(is_null($source)) { $source = $e->getContext(); }
 		switch($e->getNumber()) {
 			case 251: // Duplicate key error
+			case 1062:
 				$indices = $o_db->getIndices($this->tableName());	// try to get key info
 
 				if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $e->getMessage(), $matches)) {
@@ -2345,10 +2349,11 @@ class BaseModel extends BaseObject {
 				} else {
 					$msg = $e->getMessage();
 				}
-				$this->postError($e->getNumber(), $msg, $e->getContext());
-				$o_db->postError($e->getNumber(), $msg, $e->getContext());
+				$this->postError($e->getNumber(), $msg, $context, $source);
+				$o_db->postError($e->getNumber(), $msg, $context, $source);
 				break;
 			case 250: // Invalid foreign key error
+			case 1452:
 				$msg = $e->getMessage();
 				if (preg_match("!FOREIGN KEY \([`]*([A-Za-z0-9_]+)!", $msg, $m)) {
 					if ($m[1] === 'type_id') {
@@ -2357,12 +2362,12 @@ class BaseModel extends BaseObject {
 						$msg = _t('Invalid relationship reference for %1', $m[1]);
 					}
 				}
-				$this->postError($e->getNumber(), $msg, $e->getContext());
-				$o_db->postError($e->getNumber(), $msg, $e->getContext());
+				$this->postError($e->getNumber(), $msg, $context, $source);
+				$o_db->postError($e->getNumber(), $msg, $context, $source);
 				break;
 			default:
-				$this->postError($e->getNumber(), $e->getMessage(), $e->getContext());
-				$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext());
+				$this->postError($e->getNumber(), $e->getMessage(), $context, $source);
+				$o_db->postError($e->getNumber(), $e->getMessage(), $context, $source);
 				break;
 		}
 		return false;
@@ -2752,7 +2757,7 @@ class BaseModel extends BaseObject {
 			try {
 				$o_db->query($vs_sql);
 			} catch (DatabaseException $e) {
-				$this->_processDatabaseException($e, $o_db);
+				$this->_processDatabaseException($e, $o_db, caGetOption('source', $pa_options, null));
 			}
 			
 			if ($this->numErrors() == 0) {
@@ -2900,7 +2905,7 @@ class BaseModel extends BaseObject {
 	 *		force = if set field values are not verified prior to performing the update
 	 *		dontLogChange = don't log change in change log. [Default is false]
 	 *      dontUpdateHistoryCurrentValueTracking = Skip updating current value tracking caches. Used internally when deleting rows. [Default is false]
-	 *		dontDoSearchIndexing = if set to true then no search indexing on the inserted record is performed. [Default is false]
+	 *		dontDoSearchIndexing = if set to true then no search indexing on the updated record is performed. [Default is false]
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
@@ -3338,7 +3343,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				try {
 					$o_db->query($vs_sql);
 				} catch(DatabaseException $e) {
-					$this->_processDatabaseException($e, $o_db);
+					$this->_processDatabaseException($e, $o_db, caGetOption('source', $pa_options, null));
 				}
 				
 				if ($this->numErrors()) {
@@ -3653,7 +3658,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		try {
 			$o_db->query($vs_sql);
 		} catch(DatabaseException $e) {
-			$this->_processDatabaseException($e, $o_db);
+			$this->_processDatabaseException($e, $o_db, caGetOption('source', $pa_options, null));
 		}
 		
 		if ($this->numErrors() > 0) {
@@ -4105,9 +4110,9 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				return $va_media_info[$ps_version];
 			} else {
 				// Try key as passed, then all UPPER and all lowercase
-				if($vs_v = $va_media_info[$ps_version][$ps_property]) { return $vs_v; }
-				if($vs_v = $va_media_info[$ps_version][strtoupper($ps_property)]) { return $vs_v; }
-				if($vs_v = $va_media_info[$ps_version][strtolower($ps_property)]) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][$ps_property] ?? null)) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][strtoupper($ps_property)] ?? null)) { return $vs_v; }
+				if($vs_v = ($va_media_info[$ps_version][strtolower($ps_property)] ?? null)) { return $vs_v; }
 			}
 		} else {
 			return $va_media_info;
@@ -4424,6 +4429,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
 	 *		dont_allow_duplicate_media = if set to true, and the model has a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
 	 *		skipWhen = skip processing of specific versions of media when file size exceeds threshold and use an existing version in its place. An array should be set, indexed by version name. Each skipped version should have an array with two keys, "threshold" (size in bytes) and "replaceWithVersion" (the version to use). [Default is null]
+	 *		skipUrlIfMediaExistsAsRepresentation = When media is a URL, check if downloaded media already exists as an object representation before processing. [Default is false]
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -4505,6 +4511,13 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$vn_url_fetched_on = time();
 						
 						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
+						if((bool)$this->_CONFIG->get('skip_remote_url_if_media_exists_as_representation')) {
+							if(ca_object_representations::mediaExists($vs_tmp_file)) {
+								$this->postError(1600, _t('Media already exists as representation'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);								
+								set_time_limit($vn_max_execution_time);
+								return false;
+							}
+						}
 						$vb_is_fetched_file = true;
 					} catch(Exception $e) {
 						$this->postError(1600, $e->getMessage(), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
@@ -6631,8 +6644,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$id = $t->get($field);
 							} elseif($is_metadata_value) {
 								$t_attr = new ca_attributes($this->get('attribute_id'));
-								if(!($row_id = $t_attr->get('row_id'))) { return false; }
-								if(!$t->load($row_id)) { return false; }
+								if(!($xrow_id = $t_attr->get('row_id'))) { return false; }
+								if(!$t->load($xrow_id)) { return false; }
 								$id = $t->get($field);
 							} else {
 								$id = $this->get($field);
@@ -6664,15 +6677,16 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$cur_table = $primary_table = $this->tableName();
 						$cur_table_pk = $primary_table_pk = $this->primaryKey();
 						
+						$xrow_id = $this->getPrimaryKey();
 						if($is_metadata_value && (($id = $this->get('attribute_id')) > 0)) {
 							$t_attr = new ca_attributes($id);
 							$cur_table = $primary_table = Datamodel::getTableName($t_attr->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($t_attr->get('table_num'));
-							$row_id = $t_attr->get('row_id');
+							$xrow_id = $t_attr->get('row_id');
 						} elseif ($is_metadata && (($id = $this->get('row_id')) > 0)) {	// At a minimum always log self as subject
 							$cur_table = $primary_table = Datamodel::getTableName($this->get('table_num'));
 							$cur_table_pk = $primary_table_pk = Datamodel::primaryKey($this->get('table_num'));
-							$row_id = $this->get('row_id');
+							$xrow_id = $this->get('row_id');
 						}
 
 						$sql = "SELECT {$dest_table}.{$dest_primary_key} FROM {$cur_table}\n";
@@ -6686,7 +6700,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						}
 						$sql .= "WHERE {$primary_table}.{$primary_table_pk} = ?";
 
-						if ($qr_subjects = $o_db->query($sql, [$row_id])) {
+						if ($qr_subjects = $o_db->query($sql, [$xrow_id])) {
 							if (!isset($subjects[$dest_table_num]) || !is_array($subjects[$dest_table_num])) { $subjects[$dest_table_num] = []; }
 							while($qr_subjects->nextRow()) {
 								if (($id = $qr_subjects->get($dest_primary_key)) > 0) {
@@ -6694,7 +6708,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								}
 							}
 						} else {
-							throw new ApplicationException(_t('Error is subject logging: %1', $sql));
+							throw new ApplicationException(_t('Error in subject logging: %1', $sql));
 						}
 					}
 				}
@@ -9122,23 +9136,7 @@ $pa_options["display_form_field_tips"] = true;
 								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
 								
 								
-								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
-								{
-									toolbar : ".json_encode(array_values($va_toolbar_config)).",
-									width: '{$vs_width}',
-									height: '{$vs_height}',
-									toolbarLocation: 'top',
-									enterMode: CKEDITOR.ENTER_BR,
-                                    lookupUrls: ".json_encode(caGetLookupUrlsForTables()).",
-                                    key: '".$pa_options['id']."_lookup'
-								});
-						
-								ckEditor.on('instanceReady', function(){ 
-									 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
-								});
- 	});									
-</script>";
+								
 							}
 						}
 					}
@@ -9255,7 +9253,7 @@ $pa_options["display_form_field_tips"] = true;
 					$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
 					$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
 
-					$vs_element = '<div class="formLabelUploadSizeNote"><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/>'._t("Maximum upload size is %1", $post_max_size) . '</div>';
+					$vs_element = '<div class="formLabelUploadSizeNote"><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/><br/>'._t("Maximum upload size: %1", $post_max_size) . '</div>';
 
 					// show current media icon
 					if ($vs_version = (array_key_exists('displayMediaVersion', $pa_options)) ? $pa_options['displayMediaVersion'] : 'icon') {
@@ -9559,7 +9557,7 @@ $pa_options["display_form_field_tips"] = true;
 			if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }		// TODO: verify type_id based upon type_id's of each end of the relationship
 			if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
-			$t_item_rel->insert();
+			$t_item_rel->insert(['source' => $pm_rel_table_name_or_num]);
 			
 			if ($t_item_rel->numErrors() > 0) {
 				$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9591,7 +9589,7 @@ $pa_options["display_form_field_tips"] = true;
 						$t_item_rel->set('is_primary', $is_primary);	
 					}
 					
-					$t_item_rel->insert();
+					$t_item_rel->insert(['source' => $pm_rel_table_name_or_num]);
 					
 					if ($t_item_rel->numErrors() > 0) {
 						$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9604,7 +9602,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_rel_id)) {
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
-							$t_item_rel->update();
+							$t_item_rel->update(['source' => $pm_rel_table_name_or_num]);
 							
 							if ($t_item_rel->numErrors() > 0) {
 								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9614,7 +9612,7 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
 							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
 							if($t_item_rel->hasField($f = $t_item_rel->getTypeFieldName())) { $t_item_rel->set($f, $pn_type_id); }
-							$t_item_rel->insert();
+							$t_item_rel->insert(['source' => $pm_rel_table_name_or_num]);
 							
 							if ($t_item_rel->numErrors() > 0) {
 								$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -9624,7 +9622,7 @@ $pa_options["display_form_field_tips"] = true;
 						return $t_item_rel;
 					} else {
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
-						$this->update();
+						$this->update(['source' => $pm_rel_table_name_or_num]);
 					
 						if ($this->numErrors() > 0) {
 							$this->errors = array_merge($this->errors(), $t_item_rel->errors());
@@ -10810,7 +10808,8 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+			$tag_user_id = $t_ixt->get('user_id');
+			if ($tag_user_id && ($tag_user_id != $pn_user_id)) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
 				return false;
 			}
@@ -10861,7 +10860,8 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if ($g_request && $g_request->isLoggedIn() && ($user_id = $g_request->getUserID())) {
-			if ($t_ixt->get('user_id') != $user_id) {
+			$tag_user_id = $t_ixt->get('user_id');
+			if ($tag_user_id && ($tag_user_id != $user_id)) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->changeTagAccess()', 'ca_item_tags');
 				return false;
 			}
@@ -10906,7 +10906,8 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if ($pn_user_id) {
-			if ($t_ixt->get('user_id') != $pn_user_id) {
+			$tag_user_id = $t_ixt->get('user_id');
+			if ($tag_user_id && ($tag_user_id != $pn_user_id)) {
 				$this->postError(2820, _t('Tag was not created by specified user'), 'BaseModel->removeTag()', 'ca_item_tags');
 				return false;
 			}
@@ -12127,6 +12128,36 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return primary key and idno for record with idno following or preceding that of currently loaded record
+	 *
+	 * @param string $mode Either "next" or "previous"
+	 *
+	 * @return array Array with key 'id' with primary key of next or previous record, key 'idno' with idno of next or previous record; null if no record found
+	 */
+	public function getAdjacentByIdno(string $mode) : ?array {
+		if(!$this->getPrimaryKey()) { return null; }
+		$idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
+		if(!$idno_fld || !$this->hasField("{$idno_fld}_sort_num")) { return null; }
+		$pk = $this->primaryKey();
+		$table = $this->tableName();
+		$db = $this->getDb();
+		$n = $this->get("{$idno_fld}_sort_num");
+		$deleted = ($this->hasField('deleted')) ? ' AND deleted = 0' : '';
+		if (strtolower($mode) === 'previous') {
+			$qr = $db->query("SELECT {$pk}, {$idno_fld} FROM {$table} WHERE {$idno_fld}_sort_num < {$n} {$deleted} ORDER BY {$idno_fld}_sort_num DESC LIMIT 1");
+		} else {
+			$qr = $db->query("SELECT {$pk}, {$idno_fld} FROM {$table} WHERE {$idno_fld}_sort_num > {$n} {$deleted} ORDER BY {$idno_fld}_sort_num ASC LIMIT 1");
+		}
+		if($qr && $qr->nextRow()) {
+			return [
+				'id' => $qr->get($pk),
+				'idno' => $qr->get($idno_fld)
+			];
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Find row(s) with fields having values matching specific values. 
 	 * Results can be returned as model instances, numeric ids or search results (when possible).
 	 *
@@ -12244,8 +12275,13 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_restriction_sql = '';
 		$va_type_restriction_params = [];
 		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
-			$include_subtypes = caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
-			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => $include_subtypes])) && sizeof($va_restrict_to_types)) {
+			$dont_include_subtypes_in_type_restriction = isset($pa_options['dontIncludeSubtypesInTypeRestriction']) ? (bool)$pa_options['dontIncludeSubtypesInTypeRestriction'] : null;
+			if(!is_null($dont_include_subtypes_in_type_restriction)) {
+				$include_subtypes = $dont_include_subtypes_in_type_restriction;
+			} else {
+				$include_subtypes = isset($pa_options['includeSubtypes']) ? (bool)$pa_options['includeSubtypes'] : true;
+			}
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => !$include_subtypes])) && sizeof($va_restrict_to_types)) {
 				$vs_type_restriction_sql = "{$vs_table}.".$t_instance->getTypeFieldName()." IN (?)";
 				$va_type_restriction_params[] = $va_restrict_to_types;
 			}
@@ -12372,7 +12408,7 @@ $pa_options["display_form_field_tips"] = true;
 				$vs_op = strtolower($va_field_value[0]);
 				$vm_value = $va_field_value[1];
 				
-				if (($vs_op == '=') && ($vm_value == '*')) { $vb_find_all = true; break(2); }
+				if (($vs_op == '=') && ($vm_value == '*') && (sizeof($pa_values) === 1)) { $vb_find_all = true; break(2); }
 				
 				if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
 					if (!caIsValidSqlOperator($vs_op, ['type' => 'numeric', 'nullable' => $t_instance->getFieldInfo($vs_field, 'IS_NULL'), 'isList' => is_array($vm_value)])) { throw new ApplicationException(_t('Invalid numeric operator: %1', $vs_op)); }

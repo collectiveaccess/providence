@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,6 +114,23 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Type restrictions')
 						],
+						[
+							'name' => 'includeSubtypes',
+							'type' => Type::boolean(),
+							'description' => _t('Expand type restriction to include subtypes?'),
+							'defaultValue' => true
+						],
+						[
+							'name' => 'filterNonPrimaryRepresentations',
+							'type' => Type::boolean(),
+							'description' => 'Only return primary representation?'
+						],
+						[
+							'name' => 'filterDeaccessioned',
+							'type' => Type::boolean(),
+							'description' => 'Remove deaccessioned records?',
+							'defaultValue' => false
+						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -130,7 +147,9 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'bundles' => $args['bundles'],
 								'start' => $args['start'],
 								'limit' => $args['limit'],
-								'restrictToTypes' => $args['restrictToTypes']
+								'restrictToTypes' => $args['restrictToTypes'],
+								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false,
+								'filterDeaccessioned' => $args['filterDeaccessioned'] ?? false
 							]];
 						}
 						$valid_tables = caFilterTableList(['ca_objects', 'ca_collections', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_list_items', 'ca_storage_locations', 'ca_loans', 'ca_object_lots', 'ca_movements', 'ca_object_representations']);
@@ -148,7 +167,6 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								throw new \ServiceException(_t('Search cannot be empty'));
 							}
 						
-							
 							if(!in_array($table, $valid_tables, true)) { 
 								throw new \ServiceException(_t('Invalid table: %1', $table));
 							}
@@ -165,15 +183,15 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								$t['restrictToTypes'] = [$t['restrictToTypes']];
 							}
 							if(is_array($t['restrictToTypes']) && sizeof($t['restrictToTypes'])) {
-								$s->setTypeRestrictions($t['restrictToTypes']);
+								$s->setTypeRestrictions($t['restrictToTypes'], ['includeSubtypes' => $args['includeSubtypes'] ?? true]);
 							}
 						
-							$qr = $s->search($search, ['checkAccess' => $t['checkAccess'] ?? null]);
+							$qr = $s->search($search, ['checkAccess' => $t['checkAccess'] ?? null, 'filterDeaccessionedRecords' => $t['filterDeaccessioned'] ?? false]);
 							$rec = \Datamodel::getInstance($table, true);
 						
 							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
 
-							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors']]), 'count' => $qr->numHits()];
+							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors'], 'filterNonPrimaryRepresentations' => $t['filterNonPrimaryRepresentations']]), 'count' => $qr->numHits()];
 							if(is_null($ftable)) {
 								// Stash details of first search for use in "flat" response
 								$ftable = $table;
@@ -245,6 +263,23 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Type restrictions')
 						],
+						[
+							'name' => 'includeSubtypes',
+							'type' => Type::boolean(),
+							'description' => _t('Expand type restriction to include subtypes?'),
+							'defaultValue' => true
+						],
+						[
+							'name' => 'filterNonPrimaryRepresentations',
+							'type' => Type::boolean(),
+							'description' => 'Only return primary representation?'
+						],
+						[
+							'name' => 'filterDeaccessioned',
+							'type' => Type::boolean(),
+							'description' => 'Remove deaccessioned records?',
+							'defaultValue' => false
+						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
@@ -261,7 +296,10 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								'bundles' => $args['bundles'],
 								'start' => $args['start'],
 								'limit' => $args['limit'],
-								'restrictToTypes' => $args['restrictToTypes']
+								'restrictToTypes' => $args['restrictToTypes'],
+								'includeSubtypes' => $args['includeSubtypes'] ?? true,
+								'filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false,
+								'filterDeaccessioned' => $args['filterDeaccessioned'] ?? false
 							]];
 						}
 						
@@ -289,7 +327,14 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 								$t['restrictToTypes'] = [$t['restrictToTypes']];
 							}
 						
-							if(!($qr = $table::find($z=\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($t['criteria'], $table), ['returnAs' => 'searchResult', 'allowWildcards' => true, 'restrictToTypes' => $t['restrictToTypes'], 'checkAccess' => $check_access]))) {
+							if(!($qr = $table::find(\GraphQLServices\Helpers\Search\convertCriteriaToFindSpec($t['criteria'], $table), [
+								'returnAs' => 'searchResult', 
+								'allowWildcards' => true, 
+								'restrictToTypes' => $t['restrictToTypes'], 
+								'includeSubtypes' => $t['includeSubtypes'],
+								'checkAccess' => $check_access,
+								'filterDeaccessionedRecords' => $filterDeaccessioned
+							]))) {
 								throw new \ServiceException(_t('No results for table: %1', $table));
 							}
 					
@@ -297,7 +342,13 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						
 							$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $t, []);
 
-							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, ['checkAccess' => $check_access, 'start' => $t['start'], 'limit' => $t['limit'], 'filterByAncestors' => $t['filterByAncestors']]), 'count' => sizeof($r)];
+							$results[] = ['name' => $name, 'result' => $r = \GraphQLServices\Helpers\fetchDataForBundles($qr, $bundles, [
+								'checkAccess' => $check_access, 
+								'start' => $t['start'], 
+								'limit' => $t['limit'], 
+								'filterByAncestors' => $t['filterByAncestors'], 
+								'filterNonPrimaryRepresentations' => $t['filterNonPrimaryRepresentations']
+							]), 'count' => sizeof($r)];
 							if(is_null($ftable)) {
 								// Stash details of first find for use in "flat" response
 								$ftable = $table;
@@ -331,6 +382,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'restrictToTypes',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Type restrictions')
+						],
+						[
+							'name' => 'includeSubtypes',
+							'type' => Type::boolean(),
+							'description' => _t('Expand type restriction to include subtypes?'),
+							'defaultValue' => true
 						],
 						[
 							'name' => 'bundle',
@@ -383,8 +440,12 @@ class SearchController extends \GraphQLServices\GraphQLServiceController {
 						$t = \Datamodel::getInstance($table, true);
 						switch($b = $bundle_bits[0]) {
 							case 'idno':
-								$ids = $table::getIDsForIdnos($values, ['restrictToTypes' => $args['restrictToTypes'], 'returnAll' => true]);
-							
+								$ids = $table::getIDsForIdnos($values, [
+									'restrictToTypes' => $args['restrictToTypes'] ?? null, 
+									'includeSubtypes' => $args['includeSubtypes'] ?? true,
+									'returnAll' => true
+								]);
+								if(!is_array($ids)) { break; }
 								foreach($values as $v) {
 									if(!array_key_exists($v, $ids)) { $ids[$v] = null; }
 								}

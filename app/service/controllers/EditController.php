@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -124,13 +124,13 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'matchOn',
 							'type' => Type::listOf(Type::string()),
 							'default' => ['idno'],
-							'description' => _t('List of fields to test for existance of record. Values can be "idno" or "preferred_labels".')
+							'description' => _t('List of fields to test for existence of record. Values can be "idno" or "preferred_labels".')
 						],
 						[
 							'name' => 'existingRecordPolicy',
 							'type' => Type::string(),
 							'default' => 'SKIP',
-							'description' => _t('Policy if record with same identifier already exists. Values are: IGNORE (ignore existing records, REPLACE (delete existing and create new), MERGE (execute as edit), SKIP (do not perform add).')
+							'description' => _t('Policy if record with same identifier already exists. Values are: IGNORE (ignore existing records), REPLACE (delete existing and create new), MERGE (execute as edit), SKIP (do not perform add).')
 						],
 						[
 							'name' => 'ignoreType',
@@ -153,7 +153,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							'name' => 'list',
 							'type' => Type::string(),
 							'default' => false,
-							'description' => _t('List to add records to (when inserting list items.')
+							'description' => _t('List to add records to when inserting list items.')
 						],
 					],
 					'resolve' => function ($rootValue, $args) {
@@ -254,7 +254,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 															$criteria = [$m => $b['value']];
 															if(!$ignore_parent && ($insert_mode === 'HIERARCHICAL') && $last_id) { $criteria['parent_id'] = $last_id; }
 															if($instance = $table::findAsInstance($criteria)) {
-																$info[] = Error\info($b['value'], 'MATCH', _t('Record found for match on (%1) with values(%2)', $m, $b['value']), 'GENERAL');
+																$info[] = Error\info($b['value'], 'MATCH', _t('Record found for match on (%1) with values (%2)', $m, $b['value']), 'GENERAL');
 																break(2);
 															}
 														}
@@ -1134,7 +1134,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 						}
 					} else {
 						// invalid operation
-						$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);	
+						$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : ($id ? 'edit' : 'add')), $bundle_name));	
 					}
 					
 					foreach($instance->errors() as $e) {
@@ -1212,7 +1212,7 @@ class EditController extends \GraphQLServices\GraphQLServiceController {
 							$rc = $instance->update();
 						} else {
 							// invalid operation
-							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : $id ? 'edit' : 'add')), $bundle_name);
+							$warnings[] = Error\warning($idno, "", _t('Invalid operation %1 on %2', ($delete ? _t('delete') : ($id ? 'edit' : 'add')), $bundle_name));
 						}
 					} elseif(!$intrinsics_only) {
 						$warnings[] = Error\warning($idno, "", _t('Bundle %1 was skipped because it does not exist', $bundle_name), $bundle_name);	

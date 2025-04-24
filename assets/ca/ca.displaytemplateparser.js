@@ -597,6 +597,14 @@ var caUI = caUI || {};
                 if (num < 0) {
                     num *= -1;
                 }
+                for(let f in that.fractionTable) {
+                	if (!that.useUnicodeFractionGlyphsFor || that.useUnicodeFractionGlyphsFor.indexOf(f) === -1) { continue; }
+                	let v = that.fractionTable[f];
+                	
+                	if(v == frac) {
+                		frac = f;
+                	}
+                }
                 return "" + i + " " + frac + (includeUnits ? " in" : "");
             }
 

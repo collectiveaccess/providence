@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2019 Whirl-i-Gig
+ * Copyright 2007-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__."/BaseObject.php");
  
 class View extends BaseObject {
@@ -316,6 +311,34 @@ class View extends BaseObject {
 		}
 		
 		return $vs_buf;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render view variable as JSON. Variable used can by set using the 'var' option. If not set 
+	 * the "data" variable is used.
+	 *
+	 * @param array $options Options include:
+	 *		var = Name of view variable to render. [Default is "data"]
+	 *
+	 * @string JSON output
+	 */
+	public function renderAsJSON(?array $options=null) {
+		$var = caGetOption('var', $options, 'data');
+		return json_encode($this->getVar($var));
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render view variable as text. Variable used can by set using the 'var' option. If not set 
+	 * the "data" variable is used.
+	 *
+	 * @param array $options Options include:
+	 *		var = Name of view variable to render. [Default is "data"]
+	 *
+	 * @string Text output
+	 */
+	public function renderAsText(?array $options=null) {
+		$var = caGetOption('var', $options, 'data');
+		return $this->getVar($var);
 	}
 	# -------------------------------------------------------
 	/**

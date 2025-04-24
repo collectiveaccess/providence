@@ -485,6 +485,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$pb_omit_root = caGetOption('omitRoot', $pa_options, false);
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 		
+		$filter_expr = caGetOption('filterExpression', $pa_options, null);
+		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
 		if(!is_array($pa_check_access) && $pa_check_access) { $pa_check_access = [$pa_check_access]; }
 		if(is_array($pa_check_access)) { $pa_check_access = array_map('intval', $pa_check_access); }
@@ -1083,7 +1085,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pm_list_name_or_id}/{$ps_idno}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
-			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
+			$va_item = ca_lists::$s_list_item_display_cache[$vs_cache_key];
 		} else {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 			
@@ -1108,11 +1110,11 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
-		}
 		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
-		$va_item = array_shift($va_tmp);
+			$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
+			$va_item = array_shift($va_tmp);
+			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_item;
+		}
 		
 		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
 	}
@@ -1142,7 +1144,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], "{$pn_item_id}");
 		
 		if (isset(ca_lists::$s_list_item_display_cache[$vs_cache_key])) {
-			$va_items = ca_lists::$s_list_item_display_cache[$vs_cache_key];
+			$va_item = ca_lists::$s_list_item_display_cache[$vs_cache_key];
 		} else {
 		    $va_params = [(int)$pn_item_id];
 		    $vs_access_sql = '';
@@ -1164,11 +1166,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				 $va_items[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_items;
+			
+			$va_tmp = caExtractValuesByUserLocale($va_items, null, isset($pa_options['locale']) ? [$pa_options['locale']] : null, array());
+			$va_item = array_shift($va_tmp);
+			
+			ca_lists::$s_list_item_display_cache[$vs_cache_key] = $va_item;
 		}
-		
-		$va_tmp = caExtractValuesByUserLocale($va_items, null, isset($pa_options['locale']) ? [$pa_options['locale']] : null, array());
-		$va_item = array_shift($va_tmp);
 		
 		return is_array($va_item) ? $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'] ?? null : null;
 	}
@@ -1634,7 +1637,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				continue;
 			}
 
-			$va_options[$va_item[$pa_options['key'] ?? null] ?? null] = str_repeat('&nbsp;', intval(($va_item['LEVEL'] ?? 0)) * 3).' '.$va_item['name_singular'];
+			$va_options[$va_item[$pa_options['key'] ?? null] ?? null] = str_repeat('&nbsp;', intval(($va_item['LEVEL'] ?? 0)) * 3).' '.$va_item[$singular ? 'name_singular' : 'name_plural'];
 
 			$va_colors[$vn_item_id] = $va_item['color'];
 			

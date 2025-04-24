@@ -117,7 +117,7 @@
             "description": "This setting can be used to switch the context of the export for this exporter item and all its children to a different table, for instance to related entities. The element is automatically repeated for all selected related records. Leave empty to inherit context from parent item.",
             "type": ["string", "array"],
             "items": {
-                "type": "string"
+                "type": ["string", "object"]
             }
         },
         "locale": {
@@ -223,6 +223,10 @@
         "includeDeleted": {
             "description": "Include deleted records in the exported data set.",
             "type": ["boolean", "integer"]
+        },
+        "fieldName": {
+            "description": "Value to use as column header in CSV output.",
+            "type": "string"
         }
     }
 }

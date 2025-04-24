@@ -37,7 +37,6 @@ class DocumentRepresentationAnnotationCoder extends BaseRepresentationAnnotation
 	# ------------------------------------------------------------------
 	/**
 	 * 
-	 *
 	 */
 	public function __construct() {
 		parent::__construct();

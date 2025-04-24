@@ -579,7 +579,6 @@ class SearchEngine extends SearchBase {
 				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
 					$vs_bool = 'OR';
 				}
-				
 				$va_terms = [];
 				$vs_term = (string)$po_term->getTerm()->text;
 				foreach($va_fields as $vs_field) {
@@ -603,7 +602,7 @@ class SearchEngine extends SearchBase {
 						$vs_term .= '|';
 					}
 					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field.($vs_rel_types ? "/{$vs_rel_types}" : ''));
-					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : false;
+					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
 					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : [];
 				}
 				

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,12 +28,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
- 
- /**
-  *
-  */
-	
-	interface IMediaViewer {
-		static public function getViewerHTML($po_request, $ps_identifier, $pa_data=null, $pa_options=null);
-	}
+ */	
+interface IMediaViewer {
+	static public function getViewerHTML($po_request, $ps_identifier, $pa_data=null, $pa_options=null);
+}

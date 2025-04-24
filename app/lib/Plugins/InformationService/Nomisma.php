@@ -44,7 +44,7 @@ $g_information_service_settings_nomisma = [
 			_t('Mints') => 'nmo:Mint',
 			_t('Regions') => 'nmo:Region',
 			_t('Materials') => 'nmo:Material',
-			_t('Demoninations') => 'nmo:Denomination',
+			_t('Denominations') => 'nmo:Denomination',
 			_t('Hoards') => 'nmo:Hoard',
 			_t('Person') => 'foaf:Person',
 		),

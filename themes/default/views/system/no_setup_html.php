@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -42,7 +41,7 @@
 						In the main directory of your Providence install there is a file called <code>setup.php-dist</code>. 
 						Make a copy of this file and rename it to <code>setup.php</code>. For your CollectiveAccess system to work you MUST add 
 						values for your database server hostname, user name, password, database, and administrative e-email. For more information see the 
-						<a href="https://manual.collectiveaccess.org/setup/Installation.html">installation instructions</a> and the manual page for <a href="https://manual.collectiveaccess.org/setup/setup.php.html">setup.php</a>.
+						<a href="https://docs.collectiveaccess.org">installation instructions</a>.
 				</div>
 			</div>
 		</div><!-- end content -->

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
 
 (function ($) {
@@ -290,8 +289,6 @@ var caUI = caUI || {};
 				that.dataEditorPanel = caUI.initPanel({ 
 					panelID: that.dataEditorID,									/* DOM ID of the <div> enclosing the panel */
 					panelContentID: that.dataEditorID + "Content",				/* DOM ID of the content area <div> in the panel */
-					exposeBackgroundColor: "#000000",				
-					exposeBackgroundOpacity: 0.7,					
 					panelTransitionSpeed: 100,						
 					closeButtonSelector: "#" +  that.dataEditorID + " .caResultsComplexDataEditorPanelClose",
 					center: true,

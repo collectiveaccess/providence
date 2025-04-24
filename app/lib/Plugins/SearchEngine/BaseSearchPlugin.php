@@ -137,7 +137,7 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	 *
 	 * @param string $option Name of option
 	 * @param mixed $value option setting
-	 * @return bool True on succes, false if option in not valid
+	 * @return bool True on success, false if option in not valid
 	 */
 	public function setOption($option, $value) {
 		if ($this->isValidOption($option)) {

@@ -1009,6 +1009,7 @@ class SearchResult extends BaseObject {
 	 *			unserialize = When fetching intrinsic value of type FT_VARS (serialized variables) return unserialized value. [Default is false]
 	 *			list = A list code or array or list codes to restrict returned values to when referencing ca_list_items values. [Default is null]
 	 *          primaryOnly = Return only related representations marked "primary", otherwise return all representations. Has no effect when not pulling related representations. [Default is false]
+	 *			dontReturnDefault = Don't use metadata element default value when value is empty. [Default is false]
 	 *			
 	 *		[Formatting options for strings and arrays]
 	 *			template = Display template use when formatting return values. @see http://docs.collectiveaccess.org/wiki/Display_Templates. [Default is null]
@@ -1229,6 +1230,7 @@ class SearchResult extends BaseObject {
 		
 			switch($va_path_components['hierarchical_modifier']) {
 				case 'parent':
+				case 'parents':
 					$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 					if ($va_path_components['related']) {
 						// [RELATED TABLE PARENT]
@@ -1262,7 +1264,9 @@ class SearchResult extends BaseObject {
 							}
 						}
 						
-						$va_parent_ids = array_slice($va_parent_ids, 0, 1);
+						if($va_path_components['hierarchical_modifier'] === 'parent') {
+							$va_parent_ids = array_slice($va_parent_ids, 0, 1);
+						}
 					
 						if (!($qr_hier = $t_instance->makeSearchResult($va_path_components['table_name'], $va_parent_ids, $pa_options))) {
 							return $pa_options['returnAsArray'] ? array() : null;
@@ -2553,7 +2557,7 @@ class SearchResult extends BaseObject {
 								}
 								continue(2);
 							default:
-								if (in_array($o_value->getDisplayValue(array('output' => 'idno')), $pa_exclude_idnos)) {
+								if (in_array($o_value->getDisplayValue(array('output' => 'idno', 'doRefSubstitution' => false)), $pa_exclude_idnos)) {
 									continue(2);
 								}
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
@@ -2570,7 +2574,7 @@ class SearchResult extends BaseObject {
 					$va_spec = $va_path_components['components'];
 					
 					array_pop($va_spec);
-					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno')));
+					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno', 'doRefSubstitution' => false)));
 					
 					if (!$vb_dont_return_value) {
 						$vb_did_return_value = true;
@@ -2622,7 +2626,7 @@ class SearchResult extends BaseObject {
 			}
 		} else {
 			// is blank
-			$default_value = ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
+			$default_value = ($pa_options['dontReturnDefault'] ?? false) ? '' : ca_metadata_elements::getElementDefaultValue($va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']);
 			
 			if (($pa_options['returnWithStructure'] ?? null) && ($pa_options['returnBlankValues'] ?? null)) {
 				$va_return_values[(int)$vn_id][null][null][$e = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = $default_value;
@@ -2869,6 +2873,23 @@ class SearchResult extends BaseObject {
 								} else {
 									$d = null;
 									break;
+								}
+							}
+							
+							if($return_as = caGetOption('returnAs', $pa_options, null)) {
+								switch(strtolower($return_as)) {
+									case 'timecode':
+										$tc = new TimecodeParser();
+										if(is_array($d)) {
+											$d = array_map(function($v) use ($tc) {
+												$tc->parse($v);
+												return $tc->getText() ;
+											}, $d);
+										} else {
+											$tc->parse($d);
+											$d = $tc->getText('colon_delimited');
+										}
+										break;
 								}
 							}
 						
@@ -3338,7 +3359,8 @@ class SearchResult extends BaseObject {
 		if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
+		$d = is_array($this->opa_field_media_info[$ps_field]) ? array_shift($this->opa_field_media_info[$ps_field]) : null;
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($ps_version, $ps_key, array_merge($pa_options, ['data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3349,7 +3371,8 @@ class SearchResult extends BaseObject {
 	    if (!($this->opa_field_media_info[$ps_field] ?? null)) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
+		$d = is_array($this->opa_field_media_info[$ps_field]) ? array_shift($this->opa_field_media_info[$ps_field]) : null;
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($ps_version, array_merge($pa_options, ['data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3379,7 +3402,8 @@ class SearchResult extends BaseObject {
 	    if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => array_shift($this->opa_field_media_info[$ps_field])]));
+		$d = is_array($this->opa_field_media_info[$ps_field]) ? array_shift($this->opa_field_media_info[$ps_field]) : null;
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaUrl($ps_version, array_merge($pa_options, ['data' => $d]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3419,7 +3443,9 @@ class SearchResult extends BaseObject {
 		} else {
 		    $alt_text = null;
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($this->opa_field_media_info[$ps_field])]));
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaTag($ps_version, array_merge($pa_options, ['alt' => $alt_text, 'data' => reset($d)]));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3465,7 +3491,9 @@ class SearchResult extends BaseObject {
 	    if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3485,7 +3513,9 @@ class SearchResult extends BaseObject {
 		if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3496,7 +3526,8 @@ class SearchResult extends BaseObject {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
 
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(['data' => reset($this->opa_field_media_info[$ps_field])]);	
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(['data' => reset($d)]);	
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3506,7 +3537,9 @@ class SearchResult extends BaseObject {
 	    if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($ps_version, ['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($ps_version, ['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3516,7 +3549,9 @@ class SearchResult extends BaseObject {
 		if (!$this->opa_field_media_info[$ps_field]) {
 		    $this->opa_field_media_info[$ps_field] = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		}
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($ps_version, $ps_mirror, ['data' => reset($this->opa_field_media_info[$ps_field])]);
+		
+		$d = $this->opa_field_media_info[$ps_field] ?? [];
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($ps_version, $ps_mirror, ['data' => reset($d)]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3524,7 +3559,10 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileInfo($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileInfo(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+		
+		$v = $this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true]);
+		$d = is_array($v) ? array_shift($v) : null;
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileInfo($d);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3532,7 +3570,10 @@ class SearchResult extends BaseObject {
 	 */
 	function getFilePath($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFilePath(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+		
+		$v = $this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true]);
+		$d = is_array($v) ? array_shift($v) : null;
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFilePath($d);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3540,7 +3581,10 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileUrl($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileUrl(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+		
+		$v = $this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true]);
+		$d = is_array($v) ? array_shift($v) : null;
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileUrl($d);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3548,7 +3592,10 @@ class SearchResult extends BaseObject {
 	 */
 	function hasFile($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->hasFile(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+		
+		$v = $this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true]);
+		$d = is_array($v) ? array_shift($v) : null;
+		return $GLOBALS["_DbResult_fileinfocoder"]->hasFile($d);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3556,7 +3603,9 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileConversions($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversions(array($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+		
+		$d = [$this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true])];
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversions($d);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3564,7 +3613,9 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileConversionPath($ps_field, $ps_mimetype) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionPath(array($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_mimetype);
+		
+		$d = [$this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true])];
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionPath($d, $ps_mimetype);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3572,17 +3623,19 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileConversionUrl($ps_field, $ps_mimetype) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionUrl(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_mimetype);
+		
+		$v = $this->get($va_field["field"], ["unserialize" => true, 'returnWithStructure' => true]);
+		$d = is_array($v) ? array_shift($v) : null;
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionUrl($d, $ps_mimetype);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * 
 	 */
 	function getDate($ps_field, $pa_options=null) {
-		
 		$va_field = $this->getFieldInfo($ps_field);
 		if (is_object($va_field["instance"])) {
-			if (!in_array($vn_field_type = $va_field["instance"]->getFieldInfo($va_field["field"], "FIELD_TYPE"), array(FT_DATE, FT_TIME, FT_DATETIME, FT_TIMESTAMP, FT_HISTORIC_DATETIME, FT_HISTORIC_DATERANGE, FT_DATERANGE))) {
+			if (!in_array($vn_field_type = $va_field["instance"]->getFieldInfo($va_field["field"], "FIELD_TYPE"), [FT_DATE, FT_TIME, FT_DATETIME, FT_TIMESTAMP, FT_HISTORIC_DATETIME, FT_HISTORIC_DATERANGE, FT_DATERANGE])) {
 				return false;
 			}
 			
@@ -3766,6 +3819,9 @@ class SearchResult extends BaseObject {
 		} elseif ($modifier == 'parent') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'parent';
+		} elseif ($modifier == 'parents') {
+			array_splice($va_tmp, 1, 1);
+			$vs_hierarchical_modifier = 'parents';
 		} elseif ($modifier == 'children') {
 			array_splice($va_tmp, 1, 1);
 			$vs_hierarchical_modifier = 'children';
@@ -3936,7 +3992,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	static public function _isHierarchyModifier($pm_modifier) {
-		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'children', 'descendants', 'branch', 'siblings', 'next', 'previous'];
+		$va_hierarchy_modifiers = ['hierarchy', 'parent', 'parents', 'children', 'descendants', 'branch', 'siblings', 'next', 'previous'];
 	
 		if (is_array($pm_modifier)) {
 			return (sizeof(array_intersect($va_hierarchy_modifiers, $pm_modifier)) > 0);
@@ -3995,7 +4051,7 @@ class SearchResult extends BaseObject {
 			return strlen($b) <=> strlen($a);
 		});
 		
-		$content = $g_highlight_cache[$content] = preg_replace("/(?<![A-Za-z0-9\/=<])(".join('|', $highlight_text).")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<= |^)(".preg_quote(join('|', $highlight_text), '/').")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}

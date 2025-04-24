@@ -837,7 +837,7 @@ function caGetQueryStringForHTMLFormInput($po_result_context, $pa_options=null) 
 			foreach($va_value_list as $vn_i => $vs_value) {
 				if (!strlen(trim($vs_value))) { continue; }
 				if ((strpos($vs_value, ' ') !== false) && ($vs_value[0] != '[')) {
-					$vs_query_element = '"'.str_replace('"', "\\\"", $vs_value).'"';
+					$vs_query_element = '"'.str_replace('"', '', $vs_value).'"';
 				} else {
 					$vs_query_element = $vs_value;
 				}
@@ -1023,8 +1023,9 @@ function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 				$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
 				// intentional fallthrough to next case here
 			case 'Zend_Search_Lucene_Search_Query_Term':
-				$vs_field = caGetLabelForBundle($subquery->getTerm()->field);
-				$va_query[] = ($vs_field && !$pb_omit_field_names ? "{$vs_field}: " : "").$subquery->getTerm()->text;
+				$field = $subquery->getTerm()->field;
+				$label = caGetLabelForBundle($field);
+				$va_query[] = ($label && !$pb_omit_field_names ? "{$label}: " : "").caGetDisplayValueForBundle($field, $subquery->getTerm()->text);
 				break;	
 			case 'Zend_Search_Lucene_Search_Query_Range':
 				$vs_field = caGetLabelForBundle($subquery->getLowerTerm()->field);
@@ -1038,7 +1039,7 @@ function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 				break;
 		}
 	}
-	return join(" ", $va_query);
+	return join(caGetOption('delimiter', $pa_options, ' '), $va_query);
 }
 # ---------------------------------------
 /**
@@ -1058,9 +1059,13 @@ function caGetSubQueries($po_parsed_query) {
 			$va_items = $po_parsed_query->getTerms();
 			$va_signs = $po_parsed_query->getSigns();
 			break;
+		case 'Zend_Search_Lucene_Search_Query_Term':
+			$va_items = [$po_parsed_query];
+			$va_signs = null;
+			break;
 		case 'Zend_Search_Lucene_Search_Query_Phrase':
 		case 'Zend_Search_Lucene_Search_Query_Range':
-			$va_items = $po_parsed_query;
+			$va_items = [$po_parsed_query];
 			$va_signs = null;
 			break;
 		default:
@@ -1131,35 +1136,54 @@ function caGetLabelForBundle($ps_bundle) {
 	$va_tmp = explode(".", $ps_bundle);
 	
 	if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
-		return $t_instance->getDisplayLabel($ps_bundle);
+		return $t_instance->getDisplayLabel($ps_bundle, ['useDisambiguationLabels' => true]);
 	}
+	
+	// Maybe it's an access point?
+	if($indexing_config = Configuration::load(__CA_CONF_DIR__."/search_indexing.conf")) {
+		$keys = $indexing_config->getAssocKeys();
+		
+		foreach($keys as $k) {
+			$c = $indexing_config->getAssoc($k);
+			if(is_array($c['_access_points'])) {
+				if(isset($c['_access_points'][$ps_bundle]) && isset($c['_access_points'][$ps_bundle]['label'])) {
+					return $c['_access_points'][$ps_bundle]['label'];
+				}
+			}
+		}
+	}
+	
 	return $ps_bundle;
 }
 # ---------------------------------------
 /**
  *
  */
-function caGetDisplayValueForBundle($ps_bundle, $ps_value) {
-	$va_tmp = explode(".", $ps_bundle);
+function caGetDisplayValueForBundle(?string $bundle, string $value) {
+	$va_tmp = explode(".", $bundle);
 	
 	if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
 		if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
-			return $ps_value;
+			return $value;
 		} elseif($t_instance->hasElement($va_tmp[1])) {	// metadata element
 			if($t_element = ca_metadata_elements::getInstance($va_tmp[1])) {
 				switch(ca_metadata_elements::getElementDatatype($va_tmp[1])) {
-				//	case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-				//		$o_tep = new TimeExpressionParser();
-				//		return $o_tep->parse($ps_value) ? $o_tep->getText() : $ps_value;
-				//		break;
+					case __CA_ATTRIBUTE_VALUE_LIST__:
+						if(is_numeric($value)) {
+							if(strlen($ret = caGetListItemByIDForDisplay((int)$value))) {
+								return $ret;
+							}
+						}
+						return $value;
+						break;
 					default:
-						return $ps_value;
+						return $value;
 						break;
 				}
 			}
 		}
 	}
-	return "???";
+	return $value;
 }
 # ---------------------------------------
 /**
@@ -1766,6 +1790,11 @@ function caGetAvailableSortFields($ps_table, $pn_type_id = null, $options=null) 
 			$pb_distinguish_interstitials = caGetOption('distinguishInterstitials', $options, true);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+				if(is_array($va_sortable_element['elements'] ?? null)) {
+					foreach($va_sortable_element['elements'] as $e) {
+						$va_base_fields[$vs_relation_table.'.'.$va_sortable_element['element_code'].'.'.$e['element_code']] = str_repeat("&nbsp;", 5).'↳ '.$e['display_label'].($pb_distinguish_interstitials ? " ("._t('Interstitial').")" : "");
+					}	
+				}
 			}
 			
 			foreach(['is_primary'] as $f) {
@@ -2108,7 +2137,16 @@ function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_b
 	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
 	
 	$key = 'filters_'.$t_subject->tableName().caMakeCacheKeyFromOptions($options ?? [], $t_user ? $t_user->getUserID() : '');
-	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { return $cached_data; }
+	if (!caGetOption('noCache', $options, false) && CompositeCache::contains($key, 'SearchBuilder') && is_array($cached_data = CompositeCache::fetch($key, 'SearchBuilder'))) { 
+		// Values come out of the cache as arrays, but QueryBuilder wants them to be objects in the encoded JSON
+		// so we cast them to objects here
+		foreach($cached_data as $k => $v) {
+			if(isset($v['values']) && is_array($v['values'])) {
+				$cached_data[$k]['values'] = (object)$cached_data[$k]['values'];
+			}
+		}
+		return $cached_data; 
+	}
 	
 	$table = $t_subject->tableName();
 	$t_search_form = new ca_search_forms();
@@ -2207,6 +2245,8 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 	$vs_name_no_table = caGetBundleNameForSearchSearchBuilder($vs_name);
 	$table = $t_subject->tableName();
 	
+	$render_in_builder = false;
+	
 	$priority = caGetPriorityBundlesForSearchBuilder($table, $search_builder_config, []);
 	
 	$va_operators_by_type = $search_builder_config->get(['search_builder_operators', 'query_builder_operators']);
@@ -2255,13 +2295,15 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 			$vs_list_code = ca_metadata_elements::getElementListID($vs_name_no_table);
 			$t_element = ca_metadata_elements::getInstance($element_id);
 			
+			$render_in_builder = $t_element ? $t_element->getSetting('renderInSearchBuilder') : null;
+			
 			$vn_display_type = $vs_list_code ? DT_SELECT : DT_FIELD;
 			// Convert CA attribute datatype to query builder type and operators.
 			switch (ca_metadata_elements::getElementDatatype($vs_name_no_table)) { 
 				case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 				case __CA_ATTRIBUTE_VALUE_LENGTH__:
 				case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-					$va_result['type'] = 'string';
+					$va_result['type'] = 'date';
 					break;
 				case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 					$va_result['type'] = 'double';
@@ -2292,7 +2334,6 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 			$va_select_options = [];
 			$t_list = new ca_lists();
 			$max_length = $t_element ? $t_element->getSetting('useTextEntryInSearchBuilderWhenListLongerThan') : 200;
-			$render_in_builder = $t_element ? $t_element->getSetting('renderInSearchBuilder') : null;
 	
 			if(!$vs_list_code || ($t_list->numItemsInList($vs_list_code) > $max_length)) {
 				$va_select_options = null;
@@ -2677,7 +2718,7 @@ function caFieldNumToBundleCode($table_name_or_num, string $field_num) : ?string
 }
 # ---------------------------------------
 /**
-	Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
+ * Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
  */
 function caExtractTextFromPDF(string $filepath) : ?array {
 	if ($miner_path = caPDFMinerInstalled()) {

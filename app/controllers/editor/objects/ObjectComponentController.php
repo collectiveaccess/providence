@@ -91,7 +91,9 @@ class ObjectComponentController extends ActionController {
 				if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
 					$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
 				}
-				$t_subject->set('idno', $t_parent->get('idno'));
+				if (!($o_idno = $t_subject->getIDNoPlugInInstance()) || !$o_idno->isSerialFormat($o_idno->getFormat())) {
+					$t_subject->set('idno', $t_parent->get('idno'));
+				}
 			}
 		}
 		
@@ -129,7 +131,6 @@ class ObjectComponentController extends ActionController {
 				$t_subject->set($vs_f, $vs_v);
 			}
 		}	
-		$t_subject->set('idno', $t_parent->get('idno'));
 		
 		// Set attributes
 		if (is_array($va_field_values['attributes'])) {
@@ -211,6 +212,7 @@ class ObjectComponentController extends ActionController {
 			
 			$this->view->setVar('response', $va_response);
 			
+			$this->response->setContentType('application/json');
 			$this->render('component_result_json.php');
 			return;
 		}
@@ -339,6 +341,7 @@ class ObjectComponentController extends ActionController {
 		
 		$this->view->setVar('response', $va_response);
 		
+		$this->response->setContentType('application/json');
 		$this->render('component_result_json.php');
 	}
 	# -------------------------------------------------------

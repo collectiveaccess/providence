@@ -47,13 +47,13 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div id="<?= $vs_id_prefix; ?>Container" class="editorHierarchyBrowserContainer">		
-				<div  id="<?= $vs_id_prefix; ?>Tabs">
+				<div id="<?= $vs_id_prefix; ?>Tabs">
 					<ul>
 						<li><a href="#<?= $vs_id_prefix; ?>Tabs-status"><span><?= _t('Current status'); ?></span></a></li>
 						<li><a href="#<?= $vs_id_prefix; ?>Tabs-history"><span><?= _t('History'); ?></span></a></li>
 						<li><a href="#<?= $vs_id_prefix; ?>Tabs-reservations"><span><?= _t('Reservations'); ?></span></a></li>
 					</ul>
-					<div id="<?= $vs_id_prefix; ?>Tabs-status" class="hierarchyBrowseTab">	
+					<div id="<?= $vs_id_prefix; ?>Tabs-status" class="objectCheckoutStatusTab">	
 <?php
 				if ($t_subject->canBeCheckedOut() && ($va_checkout_status = $t_subject->getCheckoutStatus(array('returnAsArray' => true)))) {
 					
@@ -100,7 +100,7 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 				//
 ?>
 					</div>
-					<div id="<?= $vs_id_prefix; ?>Tabs-history" class="hierarchyBrowseTab caLocationHistoryTab">	
+					<div id="<?= $vs_id_prefix; ?>Tabs-history" class="objectCheckoutStatusTab caLocationHistoryTab">	
 						<h2>
 							<?= ($vn_checkout_count != 1) ? _t('Checked out %1 times', $vn_checkout_count) : _t('Checked out %1 time', $vn_checkout_count); ?>
 							<?= ($vn_client_count != 1) ? _t('by %1 clients', $vn_client_count) : _t('by %1 client', $vn_client_count); ?>
@@ -132,7 +132,7 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 							</tbody>
 						</table>
 					</div>
-					<div id="<?= $vs_id_prefix; ?>Tabs-reservations" class="hierarchyBrowseTab caLocationHistoryTab">	
+					<div id="<?= $vs_id_prefix; ?>Tabs-reservations" class="objectCheckoutStatusTab caLocationHistoryTab">	
 <?php
 					if(sizeof($reservations) > 0) {
 ?>

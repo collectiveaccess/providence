@@ -738,7 +738,15 @@ class RequestHTTP extends Request {
 		if((!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__) && defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {			
 			$disable_background_processing = $this->getAppConfig()->get(['disable_background_processing']);
 			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing') && !$disable_background_processing && $this->getAppConfig()->get('run_search_indexing_queue') ) {
-				if(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0)) {
+				if(
+					!ca_search_indexing_queue::isRunning() 
+					&& 
+					(
+						(isset(SearchIndexer::$queued_entry_count) && (SearchIndexer::$queued_entry_count > 0))
+						||
+						(ca_search_indexing_queue::hasEntries())
+					)
+				) {
 					\CA\Process\Background::run('searchIndexingQueue');
 				}
 			}
@@ -948,7 +956,8 @@ class RequestHTTP extends Request {
 			}
 			return false;
 		} else {		
-			$msg = "Successful login for '".$pa_options["user_name"]."'; IP=".$_SERVER["REMOTE_ADDR"]."; user agent=".RequestHTTP::ip();
+			$user_name = ($this->user && $this->user->getUserID()) ? $this->user->get('user_name') : ($pa_options["user_name"] ?? null);
+			$msg = "Successful login for '{$user_name}'; IP=".RequestHTTP::ip()."; user agent=".($_SERVER['HTTP_USER_AGENT'] ?? null);
 			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
 			
 			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
@@ -1075,8 +1084,11 @@ class RequestHTTP extends Request {
 	 * @return string
 	 */
 	static public function ip() {
-		if (isset($_SERVER['HTTP_X_REAL_IP']) && $_SERVER['HTTP_X_REAL_IP']) { return $_SERVER['HTTP_X_REAL_IP']; }
-		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) { return $_SERVER['HTTP_X_FORWARDED_FOR']; }
+		if(is_array($headers = Configuration::load()->getList('request_ip_headers'))) {
+			foreach($headers as $h) {
+				if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
+			}
+		}
 		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 	}
 	# ----------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2021 Whirl-i-Gig
+ * Copyright 2019-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,14 @@
  *
  * ----------------------------------------------------------------------
  */
-
- /**
-  *
-  */
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/Utils/BaseApplicationTool.php');
 require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
 
 class applyPrepopulateRulesTool extends BaseApplicationTool {
 	# -------------------------------------------------------
-
 	/**
-	 * Name of tool. Usuall the same as the class name. Must be unique to the tool
+	 * Name of tool. Usually the same as the class name. Must be unique to the tool.
 	 */
 	protected $ops_tool_name = 'Prepopulate apply rules tool';
 
@@ -51,18 +46,18 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 	protected $ops_tool_id = 'applyPrepopulateRulesTool';
 
 	/**
-	 * Description of tool for display
+	 * Description of tool for display.
 	 */
 	protected $ops_description = 'Apply configured prepopulate rules to all records';
 	# -------------------------------------------------------
 	/**
 	 * Set up tool and settings specifications
 	 */
-	public function __construct($pa_settings=null, $ps_mode='CLI') {
+	public function __construct($settings=null, $mode='CLI') {
 		$this->opa_available_settings = [];
-		$this->prepopulateInstance = caGetOption('prepopulateInstance', $pa_settings, null);
+		$this->prepopulateInstance = caGetOption('prepopulateInstance', $settings, null);
 
-		parent::__construct($pa_settings, $ps_mode, __CA_APP_DIR__.'/plugins/prepopulate/conf/prepopulate.conf');
+		parent::__construct($settings, $mode, __CA_APP_DIR__.'/plugins/prepopulate/conf/prepopulate.conf');
 	}
 	# -------------------------------------------------------
 	# Commands
@@ -114,7 +109,8 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 				print CLIProgressBar::start($qr->numHits(), _t('Processing %1', $t));
 				while($qr->nextHit()) {
 					print CLIProgressBar::next(1, $qr->get("{$t}.preferred_labels"));
-					if (!$this->prepopulateInstance->prepopulateFields($opts = ['instance' => $qr->getInstance()],$options)) {
+					$opts = ['instance' => $qr->getInstance()];
+					if (!$this->prepopulateInstance->prepopulateFields($opts ,$options)) {
 						print "ERROR\n";
 					}
 				}
@@ -132,13 +128,13 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 	 *
 	 * @return string
 	 */
-	public function getShortHelpText($ps_command) {
-		switch($ps_command) {
+	public function getShortHelpText($command) {
+		switch($command) {
 			case 'Apply_Prepopulate_Rules':
 			default:
 			return _t('Applies rules defined in prepopulate.conf to all relevant records.');
 		}
-		return _t('No help available for %1', $ps_command);
+		return _t('No help available for %1', $command);
 	}
 	# -------------------------------------------------------
 	/**
@@ -146,13 +142,13 @@ class applyPrepopulateRulesTool extends BaseApplicationTool {
 	 *
 	 * @return string
 	 */
-	public function getHelpText($ps_command) {
-		switch($ps_command) {
+	public function getHelpText($command) {
+		switch($command) {
 			case 'Apply_Prepopulate_Rules':
 			default:
 			return _t('Applies rules defined in prepopulate.conf to all relevant records.');
 		}
-		return _t('No help available for %1', $ps_command);
+		return _t('No help available for %1', $command);
 	}
 	# -------------------------------------------------------
 }

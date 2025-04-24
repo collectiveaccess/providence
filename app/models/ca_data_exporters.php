@@ -632,11 +632,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Set setting values. You must call insert() or update() to write the settings to the database.
 	 *
 	 * @param string $setting
-	 * @param string $value
+	 * @param mixed $value
 	 *
 	 * @return bool
 	 */
-	public function setSetting(string $setting, string $value) {
+	public function setSetting(string $setting, $value) {
 		$current_settings = $this->getAvailableSettings();
 		
 		if(($setting === 'exporter_format') && $value) {
@@ -920,26 +920,23 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$num_processed = 0;
 
-
 		if (!$individual_files && $t_mapping->getSetting('CSV_print_field_names')) {
-			$header = $header_sources = [];
+			$use_ids_as_headers = (bool)$t_mapping->getSetting('CSV_use_ids_as_field_names');
+			
+			$header = [];
 			$mapping_items = $t_mapping->getItems();
+			ksort($mapping_items);
 			foreach($mapping_items as $i => $mapping_item) {
 				$settings = caUnserializeForDatabase($mapping_item['settings']);
-				$header_sources[(int)$mapping_item['element']] = $settings['_id'] ? $settings['_id'] : $mapping_item['source'];
-			}
-			ksort($header_sources);
-			foreach($header_sources as $element => $source) {
-				$tmp = explode(".", $source);
-				$label = null;
-				if ($t_table = Datamodel::getInstanceByTableName($tmp[0], true)) {
-					$label = $t_table->getDisplayLabel($source);
+				if(!($label = ($settings['fieldName'] ?? null))) {
+					if($use_ids_as_headers && isset($settings['_id'])) {
+						$label = $settings['_id'];
+					} elseif (!($label = caGetLabelForBundle($mapping_item['source']))) {
+						$label = $mapping_item['source'] ?? null;
+					}
 				}
-				if (!$label) {
-					$label = $source;
-				}
+				if(!strlen($label)) { $label = '???'; }
 				$header[] = $label;
-
 			}
 			$delimiter = $t_mapping->getSetting('CSV_delimiter') ?: ",";
 			$enclosure = $t_mapping->getSetting('CSV_enclosure') ?: '"';
@@ -1270,6 +1267,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$ignore_context = caGetOption('ignoreContext', $options);
 		$current_context = caGetOption('currentContext', $options);
 		$attribute_id = caGetOption('attribute_id', $options);
+		$label_id = caGetOption('label_id', $options);
 		$offset = (int)caGetOption('offset', $options, 0); 
 
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $item_id, $table_num, $record_id));
@@ -1297,7 +1295,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// Don't prevent context switches for children of context-switched exporter items. This way you can
 		// build cascades for jobs like exporting objects related to the creator of the record in question.
 		unset($options['ignoreContext']);
+		$item_info = [];
 
+		// Core mapping parameters
+		$source = $t_exporter_item->get('source');
+		$element = $t_exporter_item->get('element');
+		$is_repeat = caGetOption(['repeat_element_for_multiple_values', 'repeatElementForMultipleValues'], $settings, null);
+		$deduplicate = $settings['deduplicate'] ?? false;
+		$template = $settings['template'] ?? null;
+		
 		// BEGIN evaluate skip criteria
 		//
 		if(($skip_if_empty = ($settings['skipIfEmpty'] ?? false)) && (!(strlen($t_instance->get($source)) > 0))) {
@@ -1315,17 +1321,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		//
 		// END evaluate skip criteria
-
-		$item_info = [];
-
-		// Core mapping parameters
-		$source = $t_exporter_item->get('source');
-		$element = $t_exporter_item->get('element');
-		$is_repeat = caGetOption(['repeat_element_for_multiple_values', 'repeatElementForMultipleValues'], $settings, null);
-		$deduplicate = $settings['deduplicate'] ?? false;
+		
+		// Force display default for list items to display text (this is the traditional default)
+		if(!($settings['returnIdno'] ?? false) && !($settings['convertCodesToIdno'] ?? false) && !isset($settings['convertCodesToDisplayText'])) {
+			$settings['convertCodesToDisplayText'] = true;
+		}
 
 		// Derive options to use for get() calls
-		$get_options = $this->itemGetOptions($t_exporter_item, $settings, $options);
+		$get_options = $this->itemGetOptions($t_exporter_item, $t_instance, $settings, $options);
 		
 		$old_ui_locale = null;
 		if(isset($get_options['locale'])) {
@@ -1338,9 +1341,52 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$skip_if_expr = $settings['skipIfExpression'] ?? null;
 		$expr_tags = caGetTemplateTags($skip_if_expr);
 
-		// BEGIN context is specific attribute (via "attribute_id" option)
-		//
-		if($attribute_id) {
+		if($label_id) {
+			// BEGIN context is specific label (via "label_id" option)
+			//
+			$t_label = $t_instance->getLabelTableInstance();
+			$label_table = $t_label->tableName();
+			$source = preg_replace("!^ca_[A-Za-z0-9_]+\.nonpreferred_labels\.!i", "{$label_table}.", $source);
+			$t_label->load($label_id);
+			$o_log->logInfo(_t("Processing mapping in label mode for label_id = %1.", $label_id));
+			$relative_to = "{$t_instance->tableName()}.nonpreferred_labels";
+			
+			if($template) { // if template is set, run through template engine as <unit>
+				$get_with_template = trim($t_instance->getWithTemplate("
+					<unit relativeTo='{$relative_to}' start='{$offset}' length='1'>
+						{$template}
+					</unit>
+				"));
+
+				if($get_with_template) {
+					$item_info[] = [
+						'text' => $get_with_template,
+						'element' => $element,
+						'template' => $template
+					];
+				}
+			} elseif($source) {
+				if(preg_match("/^_CONSTANT_:(.*)$/", $source, $matches)) {
+					$o_log->logDebug(_t("This is a constant in label mode. Value for this mapping is '%1'", trim($matches[1])));
+					$item_info[] = array(
+						'text' => trim($matches[1]),
+						'element' => $element
+					);
+				} else {						
+					$item_info[] = [
+						'text' => $d = $t_label->get($source),
+						'text_raw' => $d,
+						'element' => $element,
+					];
+				}
+			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
+				$item_info[] = [
+					'element' => $element,
+				];
+			}
+		} elseif($attribute_id) {
+			// BEGIN context is specific attribute (via "attribute_id" option)
+			//
 			$t_attr = ca_attributes::findAsInstance(['attribute_id' => $attribute_id]);
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $attribute_id));
 			$relative_to = "{$t_instance->tableName()}.{$t_attr->getElementCode()}";
@@ -1369,7 +1415,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				} else {					
 					$values = $t_attr->getAttributeValues();
 					$src_tmp = explode('.', $source);
-					
 					if($t_attr->get('table_num') == Datamodel::getTableNum($src_tmp[0])) {
 						array_shift($src_tmp);
 					}
@@ -1487,6 +1532,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					'text' => trim($matches[1]),
 					'element' => $element,
 				];
+			} else if($template) {
+				$proc_template = caProcessTemplateForIDs($template, $table_num, [$record_id], []);
+				$item_info[] = [
+					'text' => $proc_template,
+					'element' => $element,
+				];
 			} else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
 				// Relationship type
 				if(isset($options[$source]) && strlen($options[$source])>0) {							
@@ -1502,7 +1553,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				// Values
-				$values = $t_instance->get($source, array_merge($get_options, ['returnAsArray' => true]));
+				$values = $t_instance->get($source, array_merge(
+					$get_options, 
+					['returnAsArray' => true]
+				));
 				$values_raw = $return_raw_data ? $t_instance->get($source, ['returnAsArray' => true]) : [];
 				
 				// TODO: handle this more centrally?
@@ -1791,10 +1845,12 @@ itemOutput:
 						$parents = $t_rel->get("{$new_table_name}.hierarchy.{$key}", ['returnAsArray' => true, 'restrictToTypes' => $filter_types]);
 
 						$related = [];
-						foreach(array_unique($parents) as $vn_pk) {
-							$related[] = [
-								$key => intval($vn_pk)
-							];
+						if(is_array($parents)) {
+							foreach(array_unique($parents) as $vn_pk) {
+								$related[] = [
+									$key => intval($vn_pk)
+								];
+							}
 						}
 						break;
 					case 'ca_sets':
@@ -1848,26 +1904,40 @@ itemOutput:
 								if($o_log) { $o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $context)); }
 								return [];
 							}
-							
-							$attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
-
 							$info = [];
-
-							if(is_array($attrs) && sizeof($attrs)>0) {
-								if($o_log) {
-									$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
-									$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($attrs,true)));
-								}
+							if($va_context_tmp[1] === 'nonpreferred_labels') {
+								$np = $t_rel->get($context, ['returnWithStructure' => true]);
+								$np = array_shift($np);
+								
 								$index = 0;
-								foreach($attrs as $vo_attr) {
-									$va_attribute_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
-										array_merge(['currentContext' => $context, 'ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
+								foreach($np as $np_label_id => $np_label) {
+									$np_label_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
+										array_merge(['currentContext' => $context, 'ignoreContext' => true, 'label_id' => $np_label_id, 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
 									);
-									$info = array_merge($info, $va_attribute_export);
+									$info = array_merge($info, $np_label_export);
 									$index++;
 								}
 							} else {
-								$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+								$attrs = $t_rel->getAttributesByElement($va_context_tmp[1]);
+	
+								$info = [];
+	
+								if(is_array($attrs) && sizeof($attrs)>0) {
+									if($o_log) {
+										$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
+										$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($attrs,true)));
+									}
+									$index = 0;
+									foreach($attrs as $vo_attr) {
+										$va_attribute_export = $this->processExporterItem($item_id, $cur_table_num, $cur_record_id,
+											array_merge(['currentContext' => $context, 'ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $index, 'includeDeleted' => caGetOption('includeDeleted', $context_settings, false)], $options)
+										);
+										$info = array_merge($info, $va_attribute_export);
+										$index++;
+									}
+								} else {
+									$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+								}
 							}
 							return $info;
 
@@ -1905,7 +1975,7 @@ itemOutput:
 	/**
 	 * 
 	 */
-	private function itemGetOptions(ca_data_exporter_items $t_exporter_item, array $settings, ?array $options=null) {
+	private function itemGetOptions(ca_data_exporter_items $t_exporter_item, BaseModel $t_instance, array $settings, ?array $options=null) {
 		$get_options = ['returnURL' => true];	// always return URL for export, not an HTML tag
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")) {
@@ -1915,7 +1985,8 @@ itemOutput:
 		if($vs_template = ($settings['template'] ?? null)) {
 			$get_options['template'] = $vs_template;
 		}
-		if($filter_non_primary_representations = ($settings['filterNonPrimaryRepresentations'] ?? 1)) {
+		
+		if($filter_non_primary_representations = ($settings['filterNonPrimaryRepresentations'] ?? (($t_instance->tableName() === 'ca_object_representations') ? 0 : 1))) {
 			$get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_representations;
 		}
 		
@@ -1933,7 +2004,7 @@ itemOutput:
 		}
 
 		foreach([
-			'convertCodesToIdno', 'returnIdno', 'start_as_iso8601', 'startAsISO8601', 'end_as_iso8601', 'endAsISO8601', 
+			'convertCodesToIdno', 'returnIdno', 'convertCodesToDisplayText', 'start_as_iso8601', 'startAsISO8601', 'end_as_iso8601', 'endAsISO8601', 
 			'timeOmit', 'stripTags', 'dontReturnValueIfOnSameDayAsStart', 'returnAllLocales'
 		] as $opt) {
 			$get_options[$opt] = (bool)($settings[$opt] ?? null);
@@ -2195,11 +2266,11 @@ itemOutput:
 							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
 							// in the mapping document.
 
-							$keys_to_lookup = [$mapping_item_to_repeat];
+							$keys_to_lookup = [(string)$mapping_item_to_repeat];
 
 							foreach($mapping as $item_key => $item) {
-								if(in_array($item['parent_id'], $keys_to_lookup, true)) {
-									$keys_to_lookup[] = $item_key;
+								if(in_array((string)$item['parent_id'], $keys_to_lookup, true)) {
+									$keys_to_lookup[] = (string)$item_key;
 									$new_items[$key."_:_".$item_key] = $item;
 									$new_items[$key."_:_".$item_key]['parent_id'] = $key . ($item['parent_id'] ? "_:_".$item['parent_id'] : "");
 									
@@ -2207,7 +2278,6 @@ itemOutput:
 								}
 							}
 						}
-
 						$mapping = $mapping + $new_items;
 					}
 
@@ -2267,10 +2337,10 @@ itemOutput:
 				}
 
 				// Look for replacements
-				foreach($mapping as $k => &$v) {
+				foreach($mapping as $k => $v) {
 					if(preg_match("!\_\:\_".$mapping_num."$!", $k)) {
-						$v['options']['original_values'][] = $search;
-						$v['options']['replacement_values'][] = $replace;
+						$mapping[$k]['options']['original_values'][] = $search;
+						$mapping[$k]['options']['replacement_values'][] = $replace;
 					}
 				}
 
@@ -2345,7 +2415,7 @@ itemOutput:
 		foreach($mapping as $mapping_id => $info) {
 			$item_settings = [];
 
-			if (is_array($info['options'])) {
+			if (is_array($info) && is_array($info['options'])) {
 				foreach($info['options'] as $k => $v) {
 					switch($k) {
 						case 'replacement_values':
@@ -2464,7 +2534,7 @@ itemOutput:
         foreach($settings as $k => $v) {
             $o_sheet->setCellValue($a_to_z[0].$line, "Setting");
             $o_sheet->setCellValue($a_to_z[1].$line, $k);
-            $o_sheet->setCellValue($a_to_z[2].$line, $v);
+            $o_sheet->setCellValue($a_to_z[2].$line, is_array($v) ? join(";",$v) : $v);
             $line++;
         }
         
@@ -2513,7 +2583,7 @@ itemOutput:
 	 * 
 	 * @return null|string
 	 */
-	public function getTargetTableName() : ?BaseModel {
+	public function getTargetTableName() : ?string {
 		if(!$this->getPrimaryKey()) { return null; }
 
 		return Datamodel::getTableName($this->get('table_num'));

@@ -407,11 +407,11 @@ function caExportGetDefaultDisplay(string $table) : ?array {
  */
 function caExportResult(RequestHTTP $request, $result, string $template, string $output_filename, ?array $options=null) {
 	caIncrementExportCount();
-	
 	$output = caGetOption('output', $options, 'STREAM');
 	
 	$config = Configuration::load();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
+	$template_file = null;
 	
 	// Pass in current browse criteria to report view (some reports may vary based upon browse criteria)
 	$view->setVar('browse_criteria', caGetOption('browseCriteria', $options, null));
@@ -431,7 +431,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	if($t_display = caGetOption('display', $options, null)) {
 		$display_id = $t_display->getPrimaryKey();
 	}
-	$export_config = $template_info = null;
+	$export_config = $template_info = $display_list = null;
+	
 	if (!(bool)$config->get('disable_pdf_output') && substr($template, 0, 5) === '_pdf_') {
 		$template_info = caGetPrintTemplateDetails($template_type, substr($template, 5));
 		$format = caGetOption('fileFormat', $template_info, 'pdf');	// allow override of format
@@ -470,38 +471,63 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 		}
 		$template_info = caGetPrintTemplateDetails($template_type, 'display');
 		$format = 'pdf';
-	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_!', $template, $m)) {
+	} elseif(!(bool)$config->get('disable_export_output') && preg_match('!^_([a-z]+)_(.*)!', $template, $m)) {
 		switch($m[1]) {
 			case 'csv':
 			case 'tab':
-				$format = $m[1];
-				if(is_numeric(substr($template, 5))) { $display_id = substr($template, 5); }
-				break;
 			case 'xlsx':
 			case 'docx':
 				$format = $m[1];
-				if(is_numeric(substr($template, 6))) { $display_id = substr($template, 6); }
-				break;
-			default:
-				// Look it up in app.conf export_formats
-				$export_config = $config->getAssoc('export_formats');
-				if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
-			
-					switch($export_config[$table][$template]['type']) {
-						case 'xlsx':
-							$format = 'xlsx';
-							break;
-						case 'csv':
-							$format = 'csv';
-							break;
-						case 'tab':
-							$format = 'tab';
-							break;
-					}
-				} else {
-					throw new ApplicationException(_t("Invalid format %1", $template));
+				$template_file = preg_replace('![^A-Za-z0-9_]+!', '', $m[2] ?? null);
+				if(is_numeric($template_file)) { 
+					$display_id = (int)$template_file; 
+					$template_file = null;
+				} elseif($template_file) { 
+					$display_id = null; 
 				}
+				break;
 			}
+	} 
+	if(!$format && !(bool)$config->get('disable_export_output')) {
+		// Look it up in app.conf export_formats
+		$export_config = $config->getAssoc('export_formats');
+		if (is_array($export_config) && is_array($export_config[$table]) && is_array($export_config[$table][$template])) {
+	
+			switch($export_config[$table][$template]['type']) {
+				case 'xlsx':
+					$format = 'xlsx';
+					break;
+				case 'csv':
+					$format = 'csv';
+					break;
+				case 'tab':
+					$format = 'tab';
+					break;
+			}
+			
+			if($format && is_array($export_config[$table][$template]['columns'])) {
+				$placement_id = 1;
+				foreach($export_config[$table][$template]['columns'] as $header => $info) {
+					$t = $info['template'] ?? null;
+					$tags = caGetTemplateTags($t);
+					
+					$display_list[$placement_id] = [
+						'placement_id' => $placement_id,
+						'display' => $header,
+						'settings' => []
+					];
+					if((sizeof($tags) === 1) && preg_match("!^ca_object_representations.media!", $tags[0])) {
+						$display_list[$placement_id]['bundle_name'] = $tags[0];
+					} else {
+						$display_list[$placement_id]['template'] = $t;
+					}
+					$placement_id++;
+				}
+				$view->setVar('display_list', $display_list);
+			}
+		} else {
+			throw new ApplicationException(_t("Invalid format %1", $template));
+		}
 	}
 	
 	$t_display = new ca_bundle_displays();
@@ -529,15 +555,15 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			];
 		}
 		$view->setVar('display_list', $display_list);
-	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx'])) {
-		// custom non-PDF display
+	} elseif(!in_array($format, ['pdf', 'xlsx', 'tab', 'csv', 'docx']) || !is_null($template_file)) {
+		// custom non-PDF/delimited data display
 		$template_info = caGetPrintTemplateDetails($template_type, $template);
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
-		$content = $view->render("{$template_dir}/{$display_id}.php");
+		$content = $view->render($template_file ? "{$template_dir}/{$template_file}.php" : "{$template_dir}/{$display_id}.php");
 		
 		print $content;
 		return $content;
-	} elseif(!$display_id || !is_numeric($display_id)) {
+	} elseif((!$display_id || !is_numeric($display_id)) && (!is_array($display_list) || !sizeof($display_list))) {
 		// Generate default display list when no display is specified
 		$display_list = $placements = caExportGetDefaultDisplay($table);
 		$view->setVar('display_list', $display_list);
@@ -580,11 +606,17 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			while($result->nextHit()) {
 				$row = [];
 				foreach($display_list as $placement_id => $display_item) {
-					$value = $t_display ? 
-						html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8')
-						:
-						$result->get($display_item['bundle_name'])	
-					;
+					$t = $display_item['template'] ?? null;
+					$b = $display_item['bundle_name'] ?? null;
+					if($t) {
+						$value = $result->getWithTemplate($t);
+					} elseif($t_display) {
+						$value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, ['forReport' => true, 'convert_codes_to_display_text' => true, 'convertLineBreaks' => false]), ENT_QUOTES, 'UTF-8');
+					} elseif($b) {
+						$value = $result->get($b, ['convertCodesToDisplayText' => true, 'delimiter' => '; ']);
+					} else {
+						$value = '';
+					}
 					$value = preg_replace("![\r\n\t]+!", " ", $value);
 					
 					// quote values as required
@@ -614,13 +646,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			}
 			break;
 		case 'xlsx':
-
 			$precision = ini_get('precision');
 			ini_set('precision', 12);
 	
 			$t_display				= $view->getVar('display');
-			$va_display_list 		= $view->getVar('display_list');
-
+			$display_list 		= $view->getVar('display_list');
+			
 			$ratio_pixels_to_excel_height = 0.85;
 			$ratio_pixels_to_excel_width = 0.135;
 
@@ -714,14 +745,18 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						// Transform bundle with template including media into a media bundle as that's the only way to show media within an XLSX
 						$info['bundle_name'] = $tags[0];
 					}
-					if (
+					
+					$display_text = null;
+					if($info['template'] ?? null) {
+						$display_text = $result->getWithTemplate($info['template']);
+					} elseif (
 						(preg_match('!^ca_object_representations.media!', $info['bundle_name']))
 						&&
-						!strlen($info['settings']['format'])
+						!strlen($info['settings']['format'] ?? null)
 						&&
-						(!isset($info['settings']['display_mode']) || ($info['settings']['display_mode'] !== 'url'))
+						(!isset($info['settings']['display_mode']) || (($info['settings']['display_mode'] ?? null) !== 'url'))
 					) {
-						$bits = explode(".", $info['bundle_name']);
+						$bits = explode(".", $info['bundle_name'] ?? null);
 						$version = array_pop($bits);
 				
 						if (!in_array($version, $media_versions)) { $version = $media_versions[0]; }
@@ -754,22 +789,24 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							}
 
 						}
-					} elseif ($t_display && ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : [])))) {
-						$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
-						// We trust the autosizing up to a certain point, but
-						// we want column widths to be finite :-).
-						// Since Arial is not fixed-with and font rendering
-						// is different from system to system, this can get a
-						// little dicey. The values come from experimentation.
-						if ($o_sheet->getColumnDimension($supercol.$column)->getWidth() == -1) {  // don't overwrite existing settings
-							if(strlen($display_text)>55) {
-								$o_sheet->getColumnDimension($supercol.$column)->setWidth(50);
-							}
+					} else { 
+						$display_text = $t_display ? 
+							$t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : []))
+							:
+							$result->get($info['bundle_name']);
+						;	
+					}
+					
+					$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
+					// We trust the autosizing up to a certain point, but
+					// we want column widths to be finite :-).
+					// Since Arial is not fixed-with and font rendering
+					// is different from system to system, this can get a
+					// little dicey. The values come from experimentation.
+					if ($o_sheet->getColumnDimension($supercol.$column)->getWidth() == -1) {  // don't overwrite existing settings
+						if(strlen($display_text)>55) {
+							$o_sheet->getColumnDimension($supercol.$column)->setWidth(50);
 						}
-					} else {
-						$display_text = $result->get($info['bundle_name']);
-						$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
-						
 					}
 
 					if (!($column = next($a_to_z))) {
@@ -797,13 +834,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1,1);
 		
 				if($request && $config->get('excel_report_header_enabled')){
-					if(file_exists($request->getThemeDirectoryPath()."/graphics/logos/".$request->config->get('report_img'))){
-						$logo_path = $request->getThemeDirectoryPath().'/graphics/logos/'.$request->config->get('report_img');
-					}
-					$objDrawing = new \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooterDrawing();
-					$objDrawing->setName('Image');
-					$objDrawing->setHeight(36);
-					$o_sheet->getHeaderFooter()->addImage($objDrawing, \PhpOffice\PhpSpreadsheet\Worksheet\HeaderFooter::IMAGE_HEADER_LEFT);
 					$criteria_summary = str_replace("&", "+", strip_tags(html_entity_decode($criteria_summary)));
 					$criteria_summary = (strlen($criteria_summary) > 90) ? mb_substr($criteria_summary, 0, 90)."..." : $criteria_summary;
 					$criteria_summary = wordwrap($criteria_summary, 50, "\n", true);
@@ -827,7 +857,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_writer->save('php://output');
 				exit;
 			} else {
-				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
+				$path = file_exists($output_filename) ? $output_filename : caGetTempFileName('caExport', 'xlsx');
+				$o_writer->save($path);
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 					'path' => $path,
@@ -999,7 +1030,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				$o_writer->save('php://output');
 				return;
 			} else {
-				$o_writer->save($path = ($output_filename ? $output_filename : './output.xlsx'));
+				$path = file_exists($output_filename) ? $output_filename : caGetTempFileName('caExport', 'xlsx');
+				$o_writer->save($path);
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'path' => $path,

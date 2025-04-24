@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,7 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 
 <div class="caMediaOverlayControls">
 	<div class="objectInfo"><?= "{$vs_media_type}; ".caGetRepresentationDimensionsForDisplay($t_rep, 'original'); ?></div>
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?= caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close annotations'); ?></a></div>
+	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?= caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
 </div>
 	
 <div class="caAnnoEditorTlContainer">

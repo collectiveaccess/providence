@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__."/BaseFindEngine.php");
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__."/Db.php");
@@ -386,6 +381,50 @@ class SearchBase extends BaseFindEngine {
 		}
 
 		return $va_info['_access_points'][$ps_access_point];
+	}
+	# -------------------------------------------------
+	/**
+	 * Fetch list of fields in table that are indexed either directly or against a related table
+	 
+	 * @param mixed $pm_subject_table
+	 */
+	public function getIndexedFieldsForTable($subject_table, ?array $options=null) : array {
+		global $g_indexed_field_cache;
+		if(!$g_indexed_field_cache) { $g_indexed_field_cache = []; }
+		if (is_numeric($subject_table)) {
+			$subject_table = Datamodel::getTableName($subject_table);
+		}
+		if(isset($g_indexed_field_cache[$subject_table])) { return $g_indexed_field_cache[$subject_table]; }
+		$t_subject = Datamodel::getInstance($subject_table, true);
+		
+		$include_non_root_elements = caGetOption('includeNonRootElements', $options, false);
+		
+		$indexed_tables = $this->getIndexedTables();
+		$fields = [];
+		foreach($indexed_tables as $table_num => $table_info) {
+			$info = $this->opo_search_indexing_config->getAssoc($table_info['name']);
+			if(!is_array($info)) {
+				continue;
+			}
+			if(is_array($info[$subject_table] ?? null) && ($field_list = ($info[$subject_table]['fields'] ?? null))) {
+				// Expand "_metadata" to all available metadata elements
+				if (isset($field_list['_metadata'])) {
+					$data = $field_list['_metadata'];
+					unset($field_list['_metadata']);
+	
+					$field_data = $t_subject->getApplicableElementCodes(null, $include_non_root_elements, false);
+					foreach($field_data as $element_id => $element_code) {
+						$field_list['_ca_attribute_'.$element_id] = $data;
+					}
+				}
+				unset($field_list['_count']);
+				
+				$fields = array_merge($fields, array_keys($field_list));
+			}
+		}
+		$fields = array_unique($fields);
+		$g_indexed_field_cache[$subject_table] = $fields;
+		return $fields;
 	}
 	# -------------------------------------------------
 	/**

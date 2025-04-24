@@ -262,8 +262,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if ($po_trans) { $t_attr->setTransaction($po_trans); } else { $t_attr->setTransaction($this->getTransaction()); }
 		$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 		if ($t_attr->numErrors()) {
+			$error_set_for_source = [];
 			foreach($t_attr->errors as $o_error) {
+				if($error_set_for_source[$pa_info['error_source']] ?? null) { continue; }
 				$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
+				$error_set_for_source[$pa_info['error_source']] = true;
 			}
 			return false;
 		}
@@ -341,6 +344,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			// queued values 
 			foreach(($this->opa_attributes_to_add + $this->opa_attributes_to_edit) as $a) {
 				foreach($pa_values as $k => $v) {
+					$datatype = ca_metadata_elements::getDataTypeForElementCode($k);
+					// Media and files never match existing
+					if(in_array($datatype, [__CA_ATTRIBUTE_VALUE_FILE__, __CA_ATTRIBUTE_VALUE_MEDIA__], true)) {
+						continue(2);
+					}
 					if(!array_key_exists($k, $a['values']) || ($a['values'][$k] !== $v)) {
 						continue(2);
 					}
@@ -518,8 +526,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
+			$error_set_for_source = [];
 			foreach($t_attr->errors as $o_error) {
+				if($error_set_for_source[$pa_info['error_source']] ?? null) { continue; }
 				$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
+				$error_set_for_source[$pa_info['error_source']] = true;
 			}
 			return false;
 		}
@@ -1708,7 +1719,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 		}
 		
-		return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options, ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
+		return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options ?? [], ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
 	}
 	# ------------------------------------------------------------------
 	// --- Forms
@@ -1724,7 +1735,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			}
 			if (!$this->hasField($va_tmp[1]) && !in_array($va_tmp[1], array('created', 'modified', 'lastModified')) && !in_array($va_tmp[0], array('created', 'modified', 'lastModified'))) {
 				$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
-				return $this->getAttributeLabel($va_tmp[1], $options);	
+				return $this->getAttributeLabel((sizeof($va_tmp) > 2) ? $va_tmp[2] : $va_tmp[1], $options);	
 			}
 		}
 		return parent::getDisplayLabel($ps_field, $options);
@@ -1758,6 +1769,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	  *		autocomplete = 
 	  *		value = 
 	  *		values = 
+	  *		attributes = 
 	  *		
 	  * @return string HTML text of form element. Will return null (from superclass) if it is not possible to generate an HTML form widget for the bundle.
 	  */
@@ -1770,13 +1782,16 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('id' => str_replace('.', '_', $ps_field), 'class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
 		}
 		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(!is_array($attributes)) { $attributes = []; }
+		
 		if ($ps_render = caGetOption('render', $pa_options, null)) {
 			switch($ps_render) {
 				case 'is_set':
-					return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '['._t('SET').']'));
+					return caHTMLCheckboxInput($ps_field.$vs_rel_types, array_merge($attributes, ['value' => '['._t('SET').']']));
 					break;
 				case 'is':
-					return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => caGetOption('value', $pa_options, null)));
+					return caHTMLCheckboxInput($ps_field.$vs_rel_types, array_merge($attributes, ['value' => caGetOption('value', $pa_options, null)]));
 					break;
 			}
 		}
@@ -1810,8 +1825,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 							'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 							'class' => (isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '',
 							'format' => '^ELEMENT',
+							'placeholder' => $pa_options['placeholder'] ?? null,
+							'forSimpleForm' => false,
 							'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
-							'placeholder' => $pa_options['placeholder'] ?? null
+							'placeholder' => $pa_options['placeholder'] ?? null,
+							'attributes' => $attributes
 						)));
 			}
 		}
@@ -1848,6 +1866,10 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			return $this->getTypeListAsHTMLFormElement($ps_field, ($use_current_row_value ? ['value' => $this->get($this->getTypeFieldName())] : null), $pa_options);
 		}
 		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(!is_array($attributes)) { $attributes = []; }
+		
+		
 		if ($va_tmp[0] != $this->tableName()) { return null; }
 		if (!$this->hasField($va_tmp[1])) {
 			$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
@@ -1862,7 +1884,8 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						'id' => (isset($pa_options['id']) && $pa_options['id']) ? $pa_options['id'] : null,
 						'format' => '^ELEMENT',
 						'forSimpleForm' => true,
-						'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT'
+						'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
+						'attributes' => $attributes
 					)));
 		}
 		return parent::htmlFormElementForSimpleForm($po_request, $ps_field, array_merge($pa_options, array('view' => caGetOption('view', $pa_options, 'ca_simple_form_attributes.php'))));
@@ -2211,6 +2234,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			return false;
 		}
 		
+		$attributes = caGetOption('attributes', $pa_options, null);
+		if(!is_array($attributes)) { $attributes = []; }
+		
 		$use_current_row_value = caGetOption('useCurrentRowValueAsDefault', $pa_options, false);
 		
 		$policy = caGetOption('policy', $pa_options, null);     // current value policy
@@ -2279,7 +2305,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				}
 			}
 		
-			$va_element_opts = array_merge(array(
+			$va_element_opts = array_merge([
 				'label' => $va_label['name'] ?? null,
 				'description' => $va_label['description'] ?? null,
 				't_subject' => $this,
@@ -2290,8 +2316,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				'value' => $vm_values,
 				'forSearch' => true,
 				'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
-				'render' => $va_element['settings']['render'] ?? null
-			), array_merge($pa_options, $va_override_options));
+				'render' => $va_element['settings']['render'] ?? null,
+				'attributes' => $attributes
+			], array_merge($pa_options, $va_override_options));
 			
 			if (caGetOption('forSimpleForm', $pa_options, false)) { 
 				unset($va_element_opts['nullOption']);
@@ -2311,7 +2338,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 			
 			if ($vs_force_value = caGetOption('force', $pa_options, false)) {
-				$vs_form_element = caHTMLHiddenInput($vs_fld_name, array('value' =>$vs_force_value));
+				$vs_form_element = caHTMLHiddenInput($vs_fld_name, array('value' => $vs_force_value));
 			} else {
 				$vs_form_element = ca_attributes::attributeHtmlFormElement($va_element, $va_element_opts);
 				//
@@ -3517,6 +3544,25 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				
 			", [$va_row_ids]);
 			if($qr_existant->numRows()>0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if any metadata elements have non-empty values on currently loaded record.
+	 *
+	 * @param array $options No options currently supported
+	 * 
+	 * @return bool
+	 */
+	public function metadataIsSet(?array $options=null) : bool {
+		$element_codes = $this->getApplicableElementCodes();
+		$table_name = $this->tableName();
+		
+		foreach($element_codes as $element_code) {
+			if(strlen($z=$this->get("{$table_name}.{$element_code}", ['dontReturnDefault' => true]))){
 				return true;
 			}
 		}

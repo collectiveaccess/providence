@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2024 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,138 +25,127 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/BaseSearchController.php");
- 	require_once(__CA_LIB_DIR__."/Search/ObjectLotSearch.php");
- 	require_once(__CA_LIB_DIR__."/Browse/ObjectLotBrowse.php");
- 	
- 	class SearchObjectLotsController extends BaseSearchController {
- 		# -------------------------------------------------------
- 		/**
- 		 * Name of subject table (ex. for an object search this is 'ca_objects')
- 		 */
- 		protected $ops_tablename = 'ca_object_lots';
- 		
- 		/** 
- 		 * Number of items per search results page
- 		 */
- 		protected $opa_items_per_page = array(10, 20, 30, 40, 50);
- 		
- 		/**
- 		 * List of search-result views supported for this find
- 		 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
- 		 */
- 		protected $opa_views;
- 		
- 		/**
- 		 * Name of "find" used to defined result context for ResultContext object
- 		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
- 		 */
- 		protected $ops_find_type = 'basic_search';
- 		
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
-			if($this->request->config->get('enable_full_thumbnail_result_views_for_ca_object_lots_browse')){
-				$this->opa_views = array(
-					'list' => _t('list'),
-					'thumbnail' => _t('thumbnails'),
-					'full' => _t('full')
-				);
-			}else{
-				$this->opa_views = array(
-					'list' => _t('list')
-				);
-			}
-			
-			$this->opo_browse = new ObjectLotBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
-		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Search handler (returns search form and results, if any)
- 		 * Most logic is contained in the BaseSearchController->Search() method; all you usually
- 		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
- 		 * (eg. ObjectLotSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search() 
- 		 */ 
- 		public function Index($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			return parent::Index($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns "search tools" widget
- 		 */ 
- 		public function Tools($pa_parameters) {
- 			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectLotSearch()
- 			return parent::Tools($pa_parameters);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		public function _getSubTypeActionNav($pa_item) {
- 			return [
-				[
-					'displayName' => _t('Search'),
-					"default" => ['module' => 'find', 'controller' => 'SearchObjectLots', 'action' => 'Index'],
-					'parameters' => array(
-						'type_id' => $pa_item['item_id'],
-						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
-					'requires' => [
-						'action:can_search_ca_object_lots' => 'AND',
-						'checktypelimitinconfig:!ca_object_lots_no_search_for_types:ca_object_lots' => 'AND',
-						'configuration:!ca_object_lots_disable_basic_search' => 'AND'
-					]
-				],
-				[
-					'displayName' => _t('Advanced search'),
-					"default" => ['module' => 'find', 'controller' => 'SearchObjectLotsAdvanced', 'action' => 'Index'],
-					'useActionInPath' => 1,
-					'parameters' => array(
-						'type_id' => $pa_item['item_id'],
-						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					),
-					'is_enabled' => true,
-					'requires' => [
-						'action:can_search_ca_object_lots' => 'AND',
-						'action:can_use_adv_search_forms' => 'AND',
-						'checktypelimitinconfig:!ca_object_lots_no_advanced_search_for_types:ca_object_lots' => 'AND',
-						'configuration:!ca_object_lots_disable_advanced_search' => 'AND'
-					]
-				],
-				[
-					'displayName' => _t('Search builder'),
-					"default" => ['module' => 'find', 'controller' => 'SearchObjectLotsBuilder', 'action' => 'Index'],
-					'useActionInPath' => 1,
-					'parameters' => [
-						'type_id' => $pa_item['item_id'],
-						'reset' => $this->request->getUser()->getPreference('persistent_search')
-					],
-					'is_enabled' => !$this->request->config->get('ca_object_lots_disable_search_builder'),
-					'requires' => [
-						'action:can_search_ca_object_lots' => 'AND',
-						'action:can_use_searchbuilder' => 'AND',
-						'checktypelimitinconfig:!ca_object_lots_no_search_builder_for_types:ca_object_lots' => 'AND',
-						'configuration:!ca_object_lots_disable_searchbuilder' => 'AND'
-					]
-				],
-				[
-					'displayName' => _t('Browse'),
-					"default" => ['module' => 'find', 'controller' => 'BrowseObjectLots', 'action' => 'Index'],
-					'parameters' => array(
-						'type_id' => $pa_item['item_id']
-					),
-					'is_enabled' => true,
-					'requires' => [
-						'action:can_browse_ca_object_lots' => 'AND',
-						'checktypelimitinconfig:!ca_object_lots_no_browse_for_types:ca_object_lots' => 'AND',
-						'configuration:!ca_object_lots_disable_browse' => 'AND'
-					]
+require_once(__CA_LIB_DIR__."/BaseSearchController.php");
+require_once(__CA_LIB_DIR__."/Search/ObjectLotSearch.php");
+require_once(__CA_LIB_DIR__."/Browse/ObjectLotBrowse.php");
+
+class SearchObjectLotsController extends BaseSearchController {
+	# -------------------------------------------------------
+	/**
+	 * Name of subject table (ex. for an object search this is 'ca_objects')
+	 */
+	protected $ops_tablename = 'ca_object_lots';
+	
+	/** 
+	 * Number of items per search results page
+	 */
+	protected $opa_items_per_page = array(10, 20, 30, 40, 50);
+	
+	/**
+	 * List of search-result views supported for this find
+	 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
+	 */
+	protected $opa_views;
+	
+	/**
+	 * Name of "find" used to defined result context for ResultContext object
+	 * Must be unique for the table and have a corresponding entry in find_navigation.conf
+	 */
+	protected $ops_find_type = 'basic_search';
+	
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+		$this->opa_views = caApplyFindViewUserRestrictions($po_request->getUser(), 'ca_object_lots', ['returnAll' => $this->request->config->get('enable_full_thumbnail_result_views_for_ca_object_lots_search'), 'type_id' => $this->opn_type_restriction_id]);
+		$this->opo_browse = new ObjectLotBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Search handler (returns search form and results, if any)
+	 * Most logic is contained in the BaseSearchController->Search() method; all you usually
+	 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
+	 * (eg. ObjectLotSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search() 
+	 */ 
+	public function Index($pa_options=null) {
+		$pa_options['search'] = $this->opo_browse;
+		return parent::Index($pa_options);
+	}
+	# -------------------------------------------------------
+	# Sidebar info handler
+	# -------------------------------------------------------
+	/**
+	 * Returns "search tools" widget
+	 */ 
+	public function Tools($pa_parameters) {
+		// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectLotSearch()
+		return parent::Tools($pa_parameters);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function _getSubTypeActionNav($pa_item) {
+		return [
+			[
+				'displayName' => _t('Search'),
+				"default" => ['module' => 'find', 'controller' => 'SearchObjectLots', 'action' => 'Index'],
+				'parameters' => array(
+					'type_id' => $pa_item['item_id'],
+					'reset' => $this->request->getUser()->getPreference('persistent_search')
+				),
+				'is_enabled' => true,
+				'requires' => [
+					'action:can_search_ca_object_lots' => 'AND',
+					'checktypelimitinconfig:!ca_object_lots_no_search_for_types:ca_object_lots' => 'AND',
+					'configuration:!ca_object_lots_disable_basic_search' => 'AND'
 				]
-			];
- 		}
- 		# -------------------------------------------------------
- 	}
+			],
+			[
+				'displayName' => _t('Advanced search'),
+				"default" => ['module' => 'find', 'controller' => 'SearchObjectLotsAdvanced', 'action' => 'Index'],
+				'useActionInPath' => 1,
+				'parameters' => array(
+					'type_id' => $pa_item['item_id'],
+					'reset' => $this->request->getUser()->getPreference('persistent_search')
+				),
+				'is_enabled' => true,
+				'requires' => [
+					'action:can_search_ca_object_lots' => 'AND',
+					'action:can_use_adv_search_forms' => 'AND',
+					'checktypelimitinconfig:!ca_object_lots_no_advanced_search_for_types:ca_object_lots' => 'AND',
+					'configuration:!ca_object_lots_disable_advanced_search' => 'AND'
+				]
+			],
+			[
+				'displayName' => _t('Search builder'),
+				"default" => ['module' => 'find', 'controller' => 'SearchObjectLotsBuilder', 'action' => 'Index'],
+				'useActionInPath' => 1,
+				'parameters' => [
+					'type_id' => $pa_item['item_id'],
+					'reset' => $this->request->getUser()->getPreference('persistent_search')
+				],
+				'is_enabled' => !$this->request->config->get('ca_object_lots_disable_search_builder'),
+				'requires' => [
+					'action:can_search_ca_object_lots' => 'AND',
+					'action:can_use_searchbuilder' => 'AND',
+					'checktypelimitinconfig:!ca_object_lots_no_search_builder_for_types:ca_object_lots' => 'AND',
+					'configuration:!ca_object_lots_disable_search_builder' => 'AND'
+				]
+			],
+			[
+				'displayName' => _t('Browse'),
+				"default" => ['module' => 'find', 'controller' => 'BrowseObjectLots', 'action' => 'Index'],
+				'parameters' => array(
+					'type_id' => $pa_item['item_id']
+				),
+				'is_enabled' => true,
+				'requires' => [
+					'action:can_browse_ca_object_lots' => 'AND',
+					'checktypelimitinconfig:!ca_object_lots_no_browse_for_types:ca_object_lots' => 'AND',
+					'configuration:!ca_object_lots_disable_browse' => 'AND'
+				]
+			]
+		];
+	}
+	# -------------------------------------------------------
+}
