@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,15 +38,15 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 	 */
 	private $limit;
 
-	public function __construct($ps_widget_path, $pa_settings) {
+	public function __construct($widget_path, $settings) {
 		$this->title = _t('Processing status');
 		$this->description = _t('View the current status of queued processing tasks');
-		parent::__construct($ps_widget_path, $pa_settings);
+		parent::__construct($widget_path, $settings);
 		
-		$this->config = Configuration::load($ps_widget_path.'/conf/trackProcessing.conf');
+		$this->config = Configuration::load($widget_path.'/conf/trackProcessing.conf');
 		$this->db = new Db();
 		
-		$this->getLimit($pa_settings);
+		$this->getLimit($settings);
 		
 		AssetLoadManager::register('prettyDate');
 	}
@@ -75,14 +75,24 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 		return $this->limit;
 	}
 	# -------------------------------------------------------
-	public function renderWidget($ps_widget_id, &$pa_settings) {
-		parent::renderWidget($ps_widget_id, $pa_settings);
+	public function renderWidget($widget_id, &$settings) {
+		parent::renderWidget($widget_id, $settings);
 		$this->opo_view->setVar('request', $this->getRequest());
-		$this->opo_view->setVar('hours', $pa_settings['hours']);
+		$this->opo_view->setVar('hours', $settings['hours']);
 		
-		$this->getLimit($pa_settings);
+		$this->getLimit($settings);
 		
-		$vo_tq = new TaskQueue();
+		$o_tq = new TaskQueue();
+		
+		$qr_count = $this->db->query("
+			SELECT count(*) c
+			FROM ca_task_queue tq 
+			WHERE tq.completed_on > ? 
+			ORDER BY tq.completed_on desc
+		", [time() - (60*60*$settings['hours'])], ['resultMode' => MYSQLI_STORE_RESULT]);
+		
+		$result_count = ($qr_count->nextRow()) ? (int)$qr_count->get('c') : 0;
+
 		$qr_completed = $this->db->query("
 			SELECT tq.task_id, tq.user_id, tq.row_key, tq.created_on, tq.started_on, tq.completed_on,
 			tq.priority, tq.handler, tq.error_code, tq.parameters, tq.notes, u.fname, u.lname 
@@ -90,15 +100,15 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 			LEFT JOIN ca_users u ON u.user_id = tq.user_id 
 			WHERE tq.completed_on > ? 
 			ORDER BY tq.completed_on desc
-		", time() - (60*60*$pa_settings['hours']));
+		", [time() - (60*60*$settings['hours'])], ['resultMode' => MYSQLI_USE_RESULT]);
 
 		$completed = [];
-		$vn_reported = 0;
-		while($qr_completed->nextRow() && $vn_reported < $this->limit){
+		$reported = 0;
+		while($qr_completed->nextRow() && $reported < $this->limit){
 			$row = $qr_completed->getRow();
 			$created_on_display = caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp($row['created_on']));
 			
-			$completed[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+			$completed[$row["task_id"]]["handler_name"] = $o_tq->getHandlerName($row['handler']);
 			$completed[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
 			$completed[$row["task_id"]]["completed_on"] = $row["completed_on"];
 			$completed[$row["task_id"]]["error_code"] = $row["error_code"];
@@ -115,71 +125,109 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 			}
 			
 			
-			$completed[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
-			$vn_reported ++;
+			$completed[$row["task_id"]]["status"] = $o_tq->getParametersForDisplay($row);
+			$reported++;
 		}
-		$this->opo_view->setVar('count_jobs_done', $qr_completed->numRows());
-		$this->opo_view->setVar('additional_jobs_done', max($qr_completed->numRows() - $this->limit, 0));
+		$qr_completed->free();
+		$this->opo_view->setVar('count_jobs_done', $result_count);
+		$this->opo_view->setVar('additional_jobs_done', max($result_count - $this->limit, 0));
 		$this->opo_view->setVar('data_jobs_done', $completed);
+
+		$qr_count = $this->db->query("
+			SELECT count(*) c
+			FROM ca_task_queue tq
+			WHERE tq.completed_on is NULL and tq.started_on is NULL
+		",[], ['resultMode' => MYSQLI_STORE_RESULT]);
+		
+		$result_count = ($qr_count->nextRow()) ? (int)$qr_count->get('c') : 0;
+		
+		$qr_qd = $this->db->query("
+			SELECT tq.task_id, tq.user_id, tq.row_key, tq.created_on, tq.started_on, tq.completed_on,
+			tq.priority, tq.handler, tq.error_code, tq.parameters, tq.notes, u.fname, u.lname 
+			FROM ca_task_queue tq
+			LEFT JOIN ca_users AS u ON tq.user_id = u.user_id
+			WHERE tq.completed_on is NULL and tq.started_on is NULL
+		",[], ['resultMode' => MYSQLI_USE_RESULT]);
+		
+		$qd_jobs = [];
+		$reported = 0;
+		
+		$rows = [];
+		while($qr_qd->nextRow() && $reported < $this->limit){
+			$rows[] = $qr_qd->getRow();
+			$reported++;
+		}
+		$qr_qd->free();
+		
+		foreach($rows as $row) {
+			$created_on_display = caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp($row['created_on']));
+
+			if(!$o_tq->rowKeyIsBeingProcessed($row["row_key"])){
+				$qd_jobs[$row["task_id"]]["handler_name"] = $o_tq->getHandlerName($row['handler']);
+				$qd_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+				$qd_jobs[$row["task_id"]]["status"] = $o_tq->getParametersForDisplay($row);
+			}
+		}
+		
+		$this->opo_view->setVar('count_jobs_queued', $result_count);
+		$this->opo_view->setVar('data_jobs_queued', $qd_jobs);
+		$this->opo_view->setVar('additional_jobs_queued', max($result_count - $this->limit, 0));
 
 		$qr_qd = $this->db->query("
 			SELECT tq.task_id, tq.user_id, tq.row_key, tq.created_on, tq.started_on, tq.completed_on,
 			tq.priority, tq.handler, tq.error_code, tq.parameters, tq.notes, u.fname, u.lname 
 			FROM ca_task_queue tq
 			LEFT JOIN ca_users AS u ON tq.user_id = u.user_id
-			WHERE tq.completed_on is NULL
-		");
+			WHERE tq.completed_on is NULL and tq.started_on > 0
+		", [], ['resultMode' => MYSQLI_USE_RESULT]);
 		
-		$qd_jobs = $pr_jobs = $stuck_jobs = [];
-		$vn_reported = 0;
-		while($qr_qd->nextRow() && $vn_reported < $this->limit){
-			$row = $qr_qd->getRow();
+		$pr_jobs = $stuck_jobs = [];
+		$reported = 0;
+		
+		$rows = [];
+		while($qr_qd->nextRow() && $reported < $this->limit){
+			$rows[] = $qr_qd->getRow();
+			$reported++;
+		}
+		$qr_qd->free();
+		
+		foreach($rows as $row) {
 			$created_on_display = caGetLocalizedHistoricDate(caUnixTimestampToHistoricTimestamp($row['created_on']));
 
-			if(!$vo_tq->rowKeyIsBeingProcessed($row["row_key"])){
-				if(!$row["completed_on"] && ($row["started_on"] > 0)) {
-					$stuck_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
-					$stuck_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
-					$stuck_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
-				} else {
-					$qd_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
-					$qd_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
-					$qd_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
-				}
+			if(!$o_tq->rowKeyIsBeingProcessed($row["row_key"])){
+				$stuck_jobs[$row["task_id"]]["handler_name"] = $o_tq->getHandlerName($row['handler']);
+				$stuck_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
+				$stuck_jobs[$row["task_id"]]["status"] = $o_tq->getParametersForDisplay($row);
 			} else {
-				$pr_jobs[$row["task_id"]]["handler_name"] = $vo_tq->getHandlerName($row['handler']);
+				$pr_jobs[$row["task_id"]]["handler_name"] = $o_tq->getHandlerName($row['handler']);
 				$pr_jobs[$row["task_id"]]["created"] = _t('%1 by %2', $created_on_display, caFormatPersonName( $row["fname"], $row['lname'], _t('Command line or job')));
-				$pr_jobs[$row["task_id"]]["status"] = $vo_tq->getParametersForDisplay($row);
+				$pr_jobs[$row["task_id"]]["status"] = $o_tq->getParametersForDisplay($row);
 			}
-			$vn_reported ++;
 		}
 		
-		$this->opo_view->setVar('count_jobs_queued',sizeof($qd_jobs));
-		$this->opo_view->setVar('count_jobs_processing',sizeof($pr_jobs));
-		$this->opo_view->setVar('count_jobs_stuck',sizeof($stuck_jobs));
-		$this->opo_view->setVar('data_jobs_queued',$qd_jobs);
-		$this->opo_view->setVar('data_jobs_processing',$pr_jobs);
-		$this->opo_view->setVar('data_jobs_stuck',$stuck_jobs);
-		$this->opo_view->setVar('additional_jobs_queued', max(sizeof($qd_jobs) - $this->limit, 0));
+		$this->opo_view->setVar('count_jobs_processing', sizeof($pr_jobs));
+		$this->opo_view->setVar('count_jobs_stuck', sizeof($stuck_jobs));
+		$this->opo_view->setVar('data_jobs_processing', $pr_jobs);
+		$this->opo_view->setVar('data_jobs_stuck', $stuck_jobs);
 		$this->opo_view->setVar('additional_jobs_processing', max(sizeof($pr_jobs) - $this->limit, 0));
 		$this->opo_view->setVar('additional_jobs_stuck', max(sizeof($stuck_jobs) - $this->limit, 0));
 		
-		$vn_freq = (int)($pa_settings['refresh_interval'] ?? 60);
-		$this->opo_view->setVar('update_frequency', ($vn_freq > 0) ? $vn_freq : 60);
+		$freq = (int)($settings['refresh_interval'] ?? 60);
+		$this->opo_view->setVar('update_frequency', ($freq > 0) ? $freq : 60);
 		return $this->opo_view->render('main_html.php');
 	}
 	# -------------------------------------------------------
 	/**
 	 * Add widget user actions
 	 */
-	public function hookGetRoleActionList($pa_role_list) {
-		$pa_role_list['widget_trackProcessing'] = array(
+	public function hookGetRoleActionList($role_list) {
+		$role_list['widget_trackProcessing'] = array(
 			'label' => _t('Track processing widget'),
 			'description' => _t('Actions for track processing widget'),
 			'actions' => trackProcessingWidget::getRoleActionList()
 		);
 
-		return $pa_role_list;
+		return $role_list;
 	}
 	# -------------------------------------------------------
 	/**
