@@ -38,8 +38,6 @@ $display_modes = $this->getVar('display_modes');
 $is_inventory = $this->getVar('is_inventory');
 
 if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
-?>
-<div><?php
 	$counts = [];
 	if($mine_count > 0) { $counts[] = _t("%1 available to you", $mine_count); }
 	if($user_count > 0) { $counts[] = _t("%1 created by users", $user_count); }
@@ -48,11 +46,11 @@ if ($this->request->user->canDoAction('is_administrator') || $this->request->use
 	if(sizeof($counts)) {
 ?>
 		<h3 class='setStats'><?= _t('%1', $type_name_plural); ?>:
-		<?= join("<br>", $counts); ?>
+		<div><?= join("<br>", $counts); ?></div>
 <?php
 	}
-?></div>
-</h3><h3 class='setStats'><?= _t('Show %1', $type_name_plural); ?>:
+?></h3>
+<h3 class='setStats'><?= _t('Show %1', $type_name_plural); ?>:
 <div><?php
 		print caFormTag($this->request, $is_inventory ? 'ListInventories' : 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));		
 		print caHTMLSelect('mode', $display_modes, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('mode'), 'width' => '130px'))."\n";
@@ -60,8 +58,7 @@ if ($this->request->user->canDoAction('is_administrator') || $this->request->use
 ?>
 		</form>
 <?php
-?></div>
-</h3>
+?></div></h3>
 <?php	
 } else {
 ?>
