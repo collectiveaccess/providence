@@ -1395,7 +1395,15 @@ function caEditorInspector($view, $options=null) {
 			}
 		}
 
-		if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
+		if(
+			$t_item->getPrimaryKey()
+			&&
+			(
+				($is_inventory && $view->request->user->canDoAction("can_duplicate_inventories"))
+				||
+				(!$is_inventory && $view->request->user->canDoAction("can_duplicate_{$table_name}"))
+			)
+		) {
 			$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
 							caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
 							"<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".

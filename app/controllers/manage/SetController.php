@@ -89,6 +89,12 @@ class SetController extends ActionController {
 		
 		$is_inventory = (bool)$this->view->getVar('is_inventory');
 		
+		if($is_inventory && !$this->request->user->canDoAction('can_view_inventories')) {
+			throw new ApplicationException(_t('No access to inventories'));
+		} elseif(!$is_inventory && !$this->request->user->canDoAction('can_view_sets')) {
+			throw new ApplicationException(_t('No access to sets'));
+		}	
+		
 		$o_result_context = new ResultContext($this->request, 'ca_sets', $is_inventory ? 'inventory' : 'basic_search');
 		$t_set = new ca_sets();
 		
@@ -117,7 +123,7 @@ class SetController extends ActionController {
 			$o_result_context->setCurrentResultsPageNumber($page_num);
 		}
 	
-		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
+		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction($is_inventory ? 'can_administrate_inventories' : 'can_administrate_sets')) {
 			$ps_mode = $this->request->getParameter('mode', pString);
 			if (strlen($ps_mode) > 0) {
 				$mode = (int)$ps_mode;
@@ -158,7 +164,7 @@ class SetController extends ActionController {
 		$set_ids = array();
 		if ($set_list) {
 			foreach ($set_list as $id => $set) {
-				$set_list[$id]['can_delete'] = $this->UserCanDeleteSet($set['user_id']);
+				$set_list[$id]['can_delete'] = $this->UserCanDeleteSet($set);
 			
 				# --- order the set
 				if(!in_array($sort, array("status", "access"))){
@@ -439,23 +445,27 @@ class SetController extends ActionController {
 		$this->ListSets();
 	}
 	# -------------------------------------------------------
-	private function UserCanDeleteSet($user_id) {
-		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
+	/**
+	 *
+	 */
+	private function UserCanDeleteSet($set) {
+		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction($is_inventory ? 'can_administrate_inventories' : 'can_administrate_sets')) {
 			return true;
 		}
-		$vb_can_delete = false;
-		// If users can delete all sets, show Delete button
-		if ($this->request->user->canDoAction('can_delete_sets')) {
-			$vb_can_delete = true;
+		$is_inventory = ($this->request->getAction() == 'ListInventories');
+		$can_delete = false;
+		// If users can delete all sets, show delete button
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_inventories' : 'can_delete_sets')) {
+			$can_delete = true;
 		}
 		
 		// If users can delete own sets, and this set belongs to them, show Delete button
-		if ($this->request->user->canDoAction('can_delete_own_sets')) {
-			if ($user_id == $this->request->getUserID()) {
-				$vb_can_delete = true;
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+			if (($set['user_id'] ?? null) == $this->request->getUserID()) {
+				$can_delete = true;
 			}
 		}
-		return $vb_can_delete;
+		return $can_delete;
 	}
 	# -------------------------------------------------------
 	/**
@@ -466,9 +476,10 @@ class SetController extends ActionController {
 		
 		$user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;
 		
-		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
+		$is_inventory = ($this->request->getAction() == 'ListInventories');
+		$this->view->setVar('is_inventory', $is_inventory);$o_result_context = new ResultContext($this->request, 'ca_sets', $is_inventory ? 'inventory' : 'basic_search');
 		
-		if($this->request->getAction() == 'ListInventories') {
+		if($is_inventory) {
 			$mode = '';
 			$set_stats = ['mine' => [], 'user' => [], 'public' => []];
 			$this->view->setVar('type_name_singular', _t('Inventory'));
@@ -478,7 +489,6 @@ class SetController extends ActionController {
 				_t('Available to you') => 0,
 				_t('By other users') => 1
 			]);
-			$this->view->setVar('is_inventory', true);
 		} else {
 			$set_stats = array('mine' => caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array()));
 			if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
@@ -491,7 +501,6 @@ class SetController extends ActionController {
 				_t('By other users') => 1,
 				_t('By the public') => 2
 			]);
-			$this->view->setVar('is_inventory', false);
 		}
 		$mode = (int)$o_result_context->getParameter('set_display_mode');
 		

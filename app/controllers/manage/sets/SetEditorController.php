@@ -79,7 +79,7 @@ class SetEditorController extends BaseEditorController {
 		
 		Session::setVar('last_set_id', $t_subject->getPrimaryKey());
 		
-		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
+		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject));
 		parent::Edit($values, $options);
 	}
 	# -------------------------------------------------------
@@ -102,7 +102,7 @@ class SetEditorController extends BaseEditorController {
 		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($options);
 
 		if (!$vn_subject_id) { return; }
-		if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
+		if (!$this->UserCanDeleteSet($t_subject)) {
 			$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
 		} else {
 			$is_inventory = caIsInventory($t_subject);
@@ -116,20 +116,22 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	private function UserCanDeleteSet($user_id) {
-	  $can_delete = FALSE;
-	  // If users can delete all sets, show Delete button
-	  if ($this->request->user->canDoAction('can_delete_sets')) {
-		$can_delete = TRUE;
-	  }
-
-	  // If users can delete own sets, and this set belongs to them, show Delete button
-	  if ($this->request->user->canDoAction('can_delete_own_sets')) {
-		if ($user_id == $this->request->getUserID()) {
-		  $can_delete = TRUE;
+	private function UserCanDeleteSet(BaseModel $t_subject) {
+		$can_delete = false;
+		$is_inventory = caIsInventory($t_subject);
+		
+		// If users can delete all sets, show Delete button
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_inventories' : 'can_delete_sets')) {
+			$can_delete = true;
 		}
-	  }
-	  return $can_delete;
+		
+		// If users can delete own sets, and this set belongs to them, show Delete button
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+			if ($user_id == $this->request->getUserID()) {
+				$can_delete = true;
+			}
+		}
+		return $can_delete;
 	}
 	# -------------------------------------------------------
 	# Ajax handlers
@@ -278,12 +280,14 @@ class SetEditorController extends BaseEditorController {
 		}
 		$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
 		if(!$t_set->getPrimaryKey()) { return; }
+		
+		$is_inventory = caIsInventory($t_set);
 
-		if(!(bool)$this->request->config->get('ca_sets_disable_duplication_of_items') && $this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
+		if(!$is_inventory && !(bool)$this->request->config->get('ca_sets_disable_duplication_of_items') && $this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
 			if($this->getRequest()->getParameter('setForDupes', pString) == 'current') {
-				$dupe_options = array('addToCurrentSet' => true);
+				$dupe_options = ['addToCurrentSet' => true];
 			} else {
-				$dupe_options = array('addToCurrentSet' => false);
+				$dupe_options = ['addToCurrentSet' => false];
 			}
 
 			unset($_REQUEST['form_timestamp']);

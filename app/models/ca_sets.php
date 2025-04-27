@@ -1067,7 +1067,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		
-		$ret = array_flip($set_ids);
+		$ret = array_map(function($v) { return null; }, array_flip($set_ids));
 		
 		$shares_only = caGetOption('sharesOnly', $options, false);
 		$dont_check_access_value = caGetOption('dontCheckAccessValue', $options, false);
@@ -1077,7 +1077,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			!$shares_only && (
 			$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')
 			||
-			($t_user->load($user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets')))	
+			($t_user->load($user_id) && ($t_user->canDoAction('is_administrator')))
 		)) { 
 			foreach($set_ids as $set_id) {
 				$ret[$set_id] = true;
@@ -1086,21 +1086,32 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		$o_db =  $this->getDb();
+		if(!$t_user->isLoaded()) { $t_user->load($user_id); }
 		
 		if(!$shares_only) {
+			$inventory_type_ids = $this->getAppConfig()->get('enable_inventories') ? caMakeTypeIDList('ca_sets', $this->getAppConfig()->get('inventory_set_type')) : null;
+		
 			$qr_res = $o_db->query("
-				SELECT s.set_id, s.user_id, s.access
+				SELECT s.set_id, s.user_id, s.access, s.type_id
 				FROM ca_sets s 
 				WHERE 
 					s.set_id IN (?) AND s.deleted = 0
 			", [$set_ids]);
 			while($qr_res->nextRow()) {
 				$set_id = $qr_res->get('set_id');
+				if(in_array($qr_res->get('type_id'), $inventory_type_ids)) {
+					if($t_user->canDoAction('can_administrate_inventories')) { 
+						$ret[$set_id] = true;
+						continue;
+					}
+				} elseif($t_user->canDoAction('can_administrate_sets')) { 
+					$ret[$set_id] = true;
+					continue;
+				}
 				if((int)$qr_res->get('user_id') === $user_id) {
 					$ret[$set_id] = true;
 					continue;
 				}
-				
 				if(!$dont_check_access_value) {
 					if((int)$qr_res->get('access') >= $access) {
 						$ret[$set_id] = true;
@@ -1148,7 +1159,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$set_id = $qr_res->get('set_id');
 			$ret[$set_id] = true;
 		}
-		
 		return $ret;
 	}
 	# ------------------------------------------------------
@@ -3218,7 +3228,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ---------------------------------------------------------------
 	/**
-	 * Check if currently loaded row is save-able
+	 * Check if currently loaded row is saveable
 	 *
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
@@ -3250,10 +3260,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check actions
-		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_sets')) {
+		$is_inventory = caIsInventory($this);
+		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction($is_inventory ? 'can_create_inventories' : 'can_create_sets')) {
 			return false;
 		}
-		if ($this->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_sets')) {
+		if ($this->getPrimaryKey() && !$po_request->user->canDoAction($is_inventory ? 'can_edit_inventories' : 'can_edit_sets')) {
 			return false;
 		}
 
@@ -3263,6 +3274,63 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 		return true;
 	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is deletable
+ 	 *
+ 	 * @param RequestHTTP|ca_user $po_request
+ 	 * @return bool True if record can be deleted, false if not
+ 	 */
+ 	public function isDeletable($po_request) {
+ 		$t_user = null;
+ 		if(is_a($po_request, 'ca_users')) {
+ 			$t_user = $po_request;
+ 		} elseif($po_request && property_exists($po_request, 'user')) {
+ 			$t_user = $po_request->user;
+ 		}
+ 		if (!$t_user) { return false; }
+ 		
+ 		// Is row loaded?
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 		
+ 		$table = $this->tableName();
+ 		$config = $this->getAppConfig();
+ 		
+ 		if($config->get("{$table}_disable_delete")) { return false; }
+ 		if($config->get("{$table}_".$this->getTypeCode()."_disable_delete")) { return false; }
+ 		
+ 		// Check type restrictions
+ 		if ((bool)$config->get('perform_type_access_checking')) {
+			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
+			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check source restrictions
+ 		if (caSourceAccessControlIsEnabled($this)) {
+			$vn_source_access = $t_user->getSourceAccessLevel($table, $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+			$vn_item_access = $this->checkACLAccessForUser($t_user);
+			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
+				return false;
+			}
+		}
+		
+ 		// Check actions
+		$is_inventory = caIsInventory($this);
+ 		if (!$this->getPrimaryKey() || !$t_user->canDoAction($is_inventory ? 'can_delete_inventories': 'can_delete_sets')) {
+ 			return false;
+ 		}
+ 		
+ 		return true;
+ 	}
 	# ---------------------------------------------------------------
 	/**
 	 * Duplicate all items in this set
@@ -3277,6 +3345,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$t_user = new ca_users($pn_user_id);
 		if(!$t_user->getPrimaryKey()) { return false; } // we need a user for duplication
 		global $g_ui_locale_id;
+		
+		if(caIsInventory($this)) { return false; }
 
 		if(caGetOption('addToCurrentSet', $pa_options, false)) {
 			$t_set_to_add_dupes_to = $this;

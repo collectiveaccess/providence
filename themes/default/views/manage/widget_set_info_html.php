@@ -30,9 +30,9 @@ $type_id			= $this->getVar('type_id');
 $type_name_singular	= $this->getVar('type_name_singular');
 $type_name_plural	= $this->getVar('type_name_plural');
 
-$mine_count = sizeof($sets['mine']);
-$user_count = sizeof($sets['user']);
-$public_count = sizeof($sets['public']);
+$mine_count = sizeof($sets['mine'] ?? []);
+$user_count = sizeof($sets['user'] ?? []);
+$public_count = sizeof($sets['public'] ?? []);
 
 $display_modes = $this->getVar('display_modes');
 $is_inventory = $this->getVar('is_inventory');

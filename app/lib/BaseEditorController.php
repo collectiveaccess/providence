@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,7 +76,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Are we duplicating?
 		//
-		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName())) {
+		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$this->_privTableName($t_subject))) {
 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
@@ -670,7 +670,7 @@ class BaseEditorController extends ActionController {
 	 *
 	 * @param string $$t_subject Instance of delete row
 	 */
-	protected function redirectAfterDelete(BaseModel $t_subject) : void {
+	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
 		
 		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
@@ -977,7 +977,7 @@ class BaseEditorController extends ActionController {
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		if (ca_user_roles::isValidAction('can_view_change_log_'.$t_subject->tableName()) && (!$this->request->user->canDoAction('can_view_change_log_'.$t_subject->tableName()))) {
+		if (ca_user_roles::isValidAction('can_view_change_log_'.$this->_privTableName($t_subject)) && (!$this->request->user->canDoAction('can_view_change_log_'.$this->_privTableName($t_subject)))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -999,7 +999,7 @@ class BaseEditorController extends ActionController {
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
+		if ((!$this->request->user->canDoAction('can_change_acl_'.$this->_privTableName($t_subject)))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -1022,7 +1022,7 @@ class BaseEditorController extends ActionController {
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
+		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$this->_privTableName($t_subject)))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -1145,7 +1145,7 @@ class BaseEditorController extends ActionController {
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
+		if ($this->request->user->canDoAction("can_change_type_".$this->_privTableName($t_subject))) {
 			if (method_exists($t_subject, "changeType")) {
 				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
 
@@ -3127,6 +3127,17 @@ class BaseEditorController extends ActionController {
 
 		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode($va_sorted_ids));
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _privTableName($t_subject) {
+		$t = $t_subject->tableName();
+		if($t === 'ca_sets') {
+			return caIsInventory($t_subject) ? 'inventories' : 'sets';
+		}
+		return $t;
 	}
 	# -------------------------------------------------------
 }
