@@ -87,10 +87,10 @@ class SetController extends ActionController {
 		AssetLoadManager::register('tableList');
 		$config = Configuration::load();
 		
-		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
-		$t_set = new ca_sets();
-		
 		$is_inventory = (bool)$this->view->getVar('is_inventory');
+		
+		$o_result_context = new ResultContext($this->request, 'ca_sets', $is_inventory ? 'inventory' : 'basic_search');
+		$t_set = new ca_sets();
 		
 		// get content types for sets
 		if($is_inventory) {
@@ -202,7 +202,6 @@ class SetController extends ActionController {
 		if(!(bool)$this->request->config->get('enable_inventories')) {
 			throw new ApplicationException(_t('Inventories disabled'));
 		}
-		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
 		
 		$inventory_type_id = caGetListItemID('set_types', 'inventory');
 		
@@ -307,7 +306,7 @@ class SetController extends ActionController {
 			$pa_set_ids = array_filter($pa_set_ids, function($vn_set_id) use ($t_set, $vn_user_id) {
 				return $t_set->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__, $vn_set_id);
 			});
-			
+			die("Meow");
 			if (sizeof($pa_set_ids) > 0) {
 				$delete_count = 0;
 				foreach($pa_set_ids as $set_id) {
