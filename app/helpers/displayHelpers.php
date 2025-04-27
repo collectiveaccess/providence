@@ -1780,12 +1780,12 @@ jQuery(document).ready(function() {
 			}
 
 			if($vn_set_item_count > 0) {
-				$buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}</div>\n";
+				$buf .= "<div><strong>"._t("Count")."</strong>: {$vn_set_item_count}</div>\n";
 			}
 			$vn_set_table_num = $t_item->get('table_num');
 			$vs_set_table_name = Datamodel::getTableName($vn_set_table_num);
 			if ($t_item->getPrimaryKey()) {
-				$buf .= "<div><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."</div>\n";				
+				$buf .= "<div><strong>"._t("Contents")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."</div>\n";				
 				$t_set_type = $t_item->getTypeInstance();
 				$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
 				if(caGetOption('random_generation_mode', $type_settings, 0) > 0) {
@@ -1797,7 +1797,7 @@ jQuery(document).ready(function() {
 
 					FooterManager::add($random_set_view->render("random_set_generation_html.php"));
 				}
-				if(!(bool)$view->request->config->get('ca_sets_disable_duplication_of_items') && $view->request->user->canDoAction('can_duplicate_items_in_sets') && $view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
+				if(!$is_inventory && !(bool)$view->request->config->get('ca_sets_disable_duplication_of_items') && $view->request->user->canDoAction('can_duplicate_items_in_sets') && $view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 					$buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					$buf .= caFormTag($view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 					$buf .= _t("Duplicate items in this set and add to") . " ";
