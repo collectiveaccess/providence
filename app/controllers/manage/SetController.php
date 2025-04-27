@@ -306,7 +306,7 @@ class SetController extends ActionController {
 			$pa_set_ids = array_filter($pa_set_ids, function($vn_set_id) use ($t_set, $vn_user_id) {
 				return $t_set->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__, $vn_set_id);
 			});
-			die("Meow");
+			
 			if (sizeof($pa_set_ids) > 0) {
 				$delete_count = 0;
 				foreach($pa_set_ids as $set_id) {
