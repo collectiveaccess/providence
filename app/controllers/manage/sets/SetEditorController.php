@@ -495,4 +495,15 @@ class SetEditorController extends BaseEditorController {
 		return $this->render('widget_set_info_html.php', true);
 	}
 	# -------------------------------------------------------
+	/**
+	 * Return label for navigation breadcrumb trail
+	 */
+	public function BreadcrumbValue($parameters) {
+		if ($set_id = $this->request->getParameter('set_id', pInteger)) {
+			$t_set = new ca_sets($set_id);
+			return caIsInventory($t_set) ? _t('Inventory') : _t('Set');
+		}
+		return '???';
+	}
+	# -------------------------------------------------------
 }

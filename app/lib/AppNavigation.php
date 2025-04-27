@@ -61,9 +61,9 @@ class AppNavigation extends BaseObject {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Generated translation table mapping controller paths used in URLS (and directly related to code directory layout)
+	 * Generated translation table mapping controller paths used in urls (and directly related to code directory layout)
 	 * to navigation labels used in navigation configuration file. The mapping allows one to reorganize the menu layout
-	 * in the configuration file without regard for how the code is actually organized on disk.
+	 * in the configuration file without regard for how the code is actually organized.
 	 *
 	 * The table itself is just an associative array, the keys of which are full action URL paths (a concatenation of 
 	 * module path, controller name and action name separated by /'s) and the values of which are navigation label paths
@@ -203,7 +203,7 @@ class AppNavigation extends BaseObject {
 						}
 					} else {
 						if (isset($va_node['breadcrumbHints']) && is_array($va_node['breadcrumbHints'])) {
-							if ($vs_trail_item = $this->_getBreadcrumbHint($va_node['breadcrumbHints'])) {
+							if ($vs_trail_item = $this->_getBreadcrumbHint($va_node['breadcrumbHints'], $va_node)) {
 								$va_trail[] = $vs_trail_item;
 							} else {
 								$va_trail[] = $va_node['displayName'];
@@ -237,7 +237,7 @@ class AppNavigation extends BaseObject {
 	 * example). _getBreadcrumbHint() extracts relevant text based upon configuration and request
 	 * parameters and returns it. Will return null if there are no relevant breadcrumb hints.
 	 */
-	private function _getBreadcrumbHint($pa_hints) {
+	private function _getBreadcrumbHint(array $pa_hints, ?array $node=null) {
 		foreach($pa_hints as $vs_var => $vs_val) {
 			$va_tmp = explode(":", $vs_var);
 			
@@ -262,6 +262,21 @@ class AppNavigation extends BaseObject {
 						
 						return $vs_val;
 					}
+					break;
+				case 'method':
+					$ret = null;
+					if(isset($node['default']) && is_array($node['default']) && isset($node['default']['controller'])) {
+						$classname = $node['default']['controller'].'Controller';
+						$module = $node['default']['module'] ?? null;
+						$method = $va_tmp[1] ?? null;
+						
+						if($classname && $module && $method) {
+							$o_action_controller = new $classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$module);
+							$ret = $o_action_controller->$method([]);
+						} 
+					}
+					
+					return $ret ?? '???';
 					break;
 			}
 		}
