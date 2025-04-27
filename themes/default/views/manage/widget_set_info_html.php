@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,31 +26,36 @@
  * ----------------------------------------------------------------------
  */
 $sets 				= $this->getVar('sets');
-$type_id				= $this->getVar('type_id');
+$type_id			= $this->getVar('type_id');
 $type_name_singular	= $this->getVar('type_name_singular');
 $type_name_plural	= $this->getVar('type_name_plural');
 
+$mine_count = sizeof($sets['mine']);
+$user_count = sizeof($sets['user']);
+$public_count = sizeof($sets['public']);
+
+$display_modes = $this->getVar('display_modes');
+$is_inventory = $this->getVar('is_inventory');
+
 if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
 ?>
-<h3 class='setStats'><?= _t('%1 Statistics', $type_name_singular); ?>:
 <div><?php
-	print _t("%1 available to you", sizeof($sets['mine']));
-	print "<br/>\n";
-	print _t("%1 created by users", sizeof($sets['user']));
-	print "<br/>\n";
-	print _t("%1 created by the public", sizeof($sets['public']));
+	$counts = [];
+	if($mine_count > 0) { $counts[] = _t("%1 available to you", $mine_count); }
+	if($user_count > 0) { $counts[] = _t("%1 created by users", $user_count); }
+	if($public_count > 0) { $counts[] = _t("%1 created by the public", $public_count); }
+	
+	if(sizeof($counts)) {
+?>
+		<h3 class='setStats'><?= _t('%1', $type_name_plural); ?>:
+		<?= join("<br>", $counts); ?>
+<?php
+	}
 ?></div>
 </h3><h3 class='setStats'><?= _t('Show %1', $type_name_plural); ?>:
 <div><?php
-		print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
-
-		$options = [
-			_t('Available to you') => 0,
-			_t('By other users') => 1,
-			_t('By the public') => 2
-		];
-		
-		print caHTMLSelect('mode', $options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('mode'), 'width' => '130px'))."\n";
+		print caFormTag($this->request, $is_inventory ? 'ListInventories' : 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));		
+		print caHTMLSelect('mode', $display_modes, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('mode'), 'width' => '130px'))."\n";
 		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '16px'), 'button', 'caSetDisplayMode', null, ['aria-label' => _t('Show results')]);
 ?>
 		</form>

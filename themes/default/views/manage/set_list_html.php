@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,6 +31,7 @@ $vn_type_id 		= $this->getVar('list_set_type_id');
 $vs_current_sort 	= $this->getVar('current_sort');
 $vs_current_sort_direction 	= $this->getVar('current_sort_direction');
 $vs_type_name_singular		= $this->getVar('type_name_singular');
+$table_list 		= $this->getVar('table_list');
 
 $user_id = $this->request->getUserID();
 	
@@ -46,8 +47,14 @@ if (!$this->request->isAjax()) {
 	}else{
 		$vs_set_type_menu .= " <b>".mb_strtolower($vs_type_name_singular)."</b><input type='hidden' id='typeList' name='set_type' value='".$vn_type_id."'> ";
 	}
-	$vs_set_type_menu .= _t('containing').' '.caHTMLSelect('table_num', $this->getVar('table_list'), ['id' => 'tableList'], ['value' => Datamodel::getTableNum($t_set->getAppConfig()->get('set_editor_default_table'))]).'</form>'.'</div>';
-
+	$vs_set_type_menu .= _t('containing').' ';
+	
+	if(sizeof($table_list) > 1) {
+		$vs_set_type_menu .= caHTMLSelect('table_num', $table_list, ['id' => 'tableList'], ['value' => Datamodel::getTableNum($t_set->getAppConfig()->get('set_editor_default_table'))]).'</form>'.'</div>';
+	} else {
+		$n = array_keys($table_list);
+		$vs_set_type_menu .= $n[0].caHTMLHiddenInput('table_num', ['value' => $table_list[$n[0]], 'id' => 'tableList']);
+	}
 ?>
 <script language="JavaScript" type="text/javascript">
 	jQuery(document).ready(function(){

@@ -1059,6 +1059,9 @@ function caEditorInspector($view, $options=null) {
 		$style = "style='padding-top:10px;'";
 	}
 	
+	// Is set inventory (when editing set records)
+	$is_inventory = caIsInventory($t_item);
+	
 	$components_tools = [];
 	$component_count = 0;
 
@@ -1351,7 +1354,7 @@ function caEditorInspector($view, $options=null) {
 				TooltipManager::add("#caWatchItemButton", _t('Watch/Unwatch this record'));
 			}
 
-			if ($view->request->user->canDoAction("can_change_type_{$table_name}") && (sizeof($t_item->getTypeList()) >= 1)) {
+			if (!$is_inventory && $view->request->user->canDoAction("can_change_type_{$table_name}") && (sizeof($t_item->getTypeList()) >= 1)) {
 				$tools[] = "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
 				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
@@ -1769,16 +1772,16 @@ jQuery(document).ready(function() {
 		// Output extra useful info for sets
 		//
 		if ($table_name === 'ca_sets') {
+			$vn_set_item_count = $t_item->getItemCount(['user_id' => $view->request->getUserID()]);
 
-			$vn_set_item_count = $t_item->getItemCount(array('user_id' => $view->request->getUserID()));
-
-			if (($vn_set_item_count > 0) && ($view->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_item->get('table_num'))))) {
+			if (!$is_inventory && ($vn_set_item_count > 0) && ($view->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($t_item->get('table_num'))))) {
 				$buf .= caNavButton($view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
+				TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit'));
 			}
-			TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit'));
 
-			$buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}<br/>\n";
-
+			if($vn_set_item_count > 0) {
+				$buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}<br/>\n";
+			}
 			$vn_set_table_num = $t_item->get('table_num');
 			$vs_set_table_name = Datamodel::getTableName($vn_set_table_num);
 			if ($t_item->getPrimaryKey()) {
@@ -1798,7 +1801,7 @@ jQuery(document).ready(function() {
 
 					FooterManager::add($random_set_view->render("random_set_generation_html.php"));
 				}
-				if(!(bool)$view->request->config->get('ca_sets_disable_duplication_of_items') && $view->request->user->canDoAction('can_duplicate_items_in_sets') && $view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
+				if(!$is_inventory && !(bool)$view->request->config->get('ca_sets_disable_duplication_of_items') && $view->request->user->canDoAction('can_duplicate_items_in_sets') && $view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 					$buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					$buf .= caFormTag($view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
 					$buf .= _t("Duplicate items in this set and add to") . " ";
@@ -6343,6 +6346,20 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		$groups = array_merge($groups, $group);
 	}
 	return $groups;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caIsInventory(BaseModel $t_set) : bool {
+	$config = Configuration::load();
+	if(!$config->get('enable_inventories')) { return false; }
+	if(!$t_set || !is_a($t_set, 'ca_sets')) { return false; }
+	if($t_set->getTypeCode() !== $config->get('inventory_set_type')) { return false; }
+	
+	if(in_array(Datamodel::getTableName($t_set->get('table_num')), $config->getList('inventory_types') ?? [], true)) { return true; }
+	
+	return false;
 }
 # ------------------------------------------------------------------
 
