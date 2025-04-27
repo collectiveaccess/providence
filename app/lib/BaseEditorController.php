@@ -667,13 +667,14 @@ class BaseEditorController extends ActionController {
 	 * Redirects to a sensible location after a record delete. Defaults to the last find action
 	 * for the current table, which depending on the table may not be available. Can be
 	 * overridden in subclasses/implementations.
-	 * @param string $ps_table table name
+	 *
+	 * @param string $$t_subject Instance of delete row
 	 */
-	protected function redirectAfterDelete($t_subject) {
+	protected function redirectAfterDelete(BaseModel $t_subject) : void {
 		$this->getRequest()->close();
 		
 		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
-		if (($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
+		if (!$redirect_url && ($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
 			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
 		} elseif(!$redirect_url) {
 			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
