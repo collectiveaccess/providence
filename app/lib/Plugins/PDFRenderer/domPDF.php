@@ -61,8 +61,8 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 		$options = new Options();
 		$options->set('isRemoteEnabled', TRUE);
 		$options->set('chroot', $chroot);
-		$options->set('logOutputFile', __CA_APP_DIR__.'/tmp/log.htm');
-    	$options->set('tempDir', __CA_APP_DIR__.'/tmp');
+		$options->set('logOutputFile', __CA_TEMP_DIR__.'/log.htm');
+    	$options->set('tempDir', __CA_TEMP_DIR__);
     	
     	// Look for theme and app-based font directories
     	if(file_exists(__CA_THEME_DIR__.'/fonts')) {
