@@ -92,20 +92,22 @@ $inventory_found_options = $this->getVar('inventory_found_options');
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
 			{representation_tag}
-			{displayTemplate} Status: {_INVENTORY_STATUS_}
+			{displayTemplate} {_INVENTORY_STATUS_} {item_id}
 			
-			<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton">Set status</a>
+			<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton"><?= caNavIcon(__CA_NAV_ICON_EDIT__, "20px"); ?></a>
 		</div>
 	</textarea>
 	
 	<textarea class="<?= $id_prefix; ?>inventoryEditorTemplate" style="display: none;">
+		<div id="inventoryEditor{item_id}" class="inventoryEditor">
 <?php
-	foreach($bundles_to_edit_proc as $f) {
-		print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
-		"<br/>".
-		$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'525px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
-	}
+			foreach($bundles_to_edit_proc as $f) {
+				print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
+				"<br/>".
+				$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'525px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
+			}
 ?>
+		</div>
 	</textarea>
 </div>
 
@@ -138,6 +140,7 @@ $inventory_found_options = $this->getVar('inventory_found_options');
 			
 			inventorySetStatusButtonClass: 'inventorySetStatusButton',
 			inventoryFoundOptions: <?= json_encode($inventory_found_options); ?>,
+			inventoryContainerElementCode: <?= json_encode($container_element_code); ?>,
 			inventoryFoundBundle: <?= json_encode("{$container_element_code}.{$found_element_code}"); ?>,
 			
 			displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,

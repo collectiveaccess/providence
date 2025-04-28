@@ -47,6 +47,7 @@ var caUI = caUI || {};
 			displayTemplate: null,
 			editorTemplateClass: null,
 			
+			inventoryContainerElementCode: null,
 			inventoryFoundOptions: {},
 			inventoryFoundBundle: null,
 			
@@ -120,10 +121,25 @@ var caUI = caUI || {};
 				'set_id': that.inventoryID, 'start': start, 'length': length, 
 				'sort': sort, 'sortDirection': sortDirection
 			}, function(resp) {
-				that.items = [];
+				//that.items = [];
+				let items = [];
 				for(let i in resp.data.order) {
-					that.items.push(resp.data.items[resp.data.order[i]]);
+					let d = resp.data.items[resp.data.order[i]];
+					// preserve form data if defined
+					for(let x in that.items) {
+						if(that.itemsWithForms[resp.data.order[i]] && (that.items[x]['item_id'] == resp.data.order[i])) {
+							const re = new RegExp('^' + that.inventoryContainerElementCode);
+							for(let k in that.items[x]) {
+								if(k.match(re) || (k === '_INVENTORY_STATUS_')) {
+									d[k] = that.items[x][k];
+								}
+							}
+							break;
+						}
+					}
+					items.push(d);
 				}
+				that.items = items;
 				that.refresh();
 			});
 		}
@@ -205,7 +221,6 @@ var caUI = caUI || {};
 					});
 					
 					jQuery(editor).find("input,select,textarea").on("change", function(e) {
-						console.log(that.inventoryFoundOptions);
 						const id = jQuery(this).attr('id');
 						const m = id.match(/^inventory_([\d]+)_(.*)$/);
 						const item_id = m[1];
@@ -223,6 +238,10 @@ var caUI = caUI || {};
 							}
 						}
 					});
+					
+					if(!(form_item_id && (form_item_id == v['item_id']))) {
+						jQuery(editor).hide();
+					}
 				
 					jQuery(item).append(editor);
 					that.itemsWithForms[form_item_id] = true;
