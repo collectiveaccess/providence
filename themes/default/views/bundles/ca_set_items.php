@@ -95,13 +95,13 @@ if(caGetOption('showCount', $settings, false)) { print ($count = sizeof($items))
 					rowIDListID: '<?= $id_prefix; ?>setRowIDList',
 					displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
 					
-					editSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>',
-					deleteSetItemButton: '<?= addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>',
+					editSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>,
+					deleteSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>,
 					
 					lookupURL: '<?= $lookup_urls['search']; ?>',
 					itemInfoURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
 					editSetItemsURL: '<?= caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit', array('set_id' => $set_id)); ?>',
-					editSetItemToolTip: '<?= _t("Edit set item metadata"); ?>'
+					editSetItemToolTip: <?= json_encode(_t('Edit set item metadata')); ?>
 				});
 			});
 		</script>
