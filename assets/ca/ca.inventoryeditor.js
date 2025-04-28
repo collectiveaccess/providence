@@ -38,11 +38,17 @@ var caUI = caUI || {};
 			inventoryNoItemWarningID: 'inventoryNoItemsWarning',
 			inventoryItemAutocompleteID: 'inventoryItemAutocompleter',
 			sortControlID: 'inventorySortControl',
+			inventoryCountsID: 'inventoryCounts',
 			
 			itemTemplateClass: "{idno}",
 			
+			inventorySetStatusButtonClass: '',
+			
 			displayTemplate: null,
 			editorTemplateClass: null,
+			
+			inventoryFoundOptions: {},
+			inventoryFoundBundle: null,
 			
 			sorts: null,
 			
@@ -51,12 +57,15 @@ var caUI = caUI || {};
 			itemInfoURL: null,
 			editInventoryItemsURL: null,			// url of inventory item editor (without item_id parameter key or value)
 			
-			editInventoryItemButton: null,		// html to use for edit inventory item button
+			editInventoryItemButton: null,			// html to use for edit inventory item button
 			deleteInventoryItemButton: null,		// html to use for delete inventory item button
 			
-			initialValues: null,			// initial values to display
-			items: [],						// currently loaded values
+			initialValues: null,					// initial values to display
+			items: [],								// currently loaded values
 			
+			itemsWithForms: {},						// item_ids for items with form opened
+			
+			counts: {},								// found/not found/not checked item counts
 			debug: true
 		}, options);
 		
@@ -97,6 +106,8 @@ var caUI = caUI || {};
 					that.addItemToInventory(v.row_id, v, false);
 				});
 			}
+			
+			that.inventoryFoundBundleProc = that.inventoryFoundBundle.replace(/\./, '_');
 			
 			that.refresh();
 		}
@@ -174,22 +185,80 @@ var caUI = caUI || {};
 		//
 		// Refresh item list display
 		//
-		that.refresh = function() {
+		that.refresh = function(form_item_id=null) {
 			jQuery('#' + that.inventoryItemListID).empty();
+			
 			jQuery.each(that.items, function(k, v) {
-				console.log(v);
 				// replace values in template
 				let item = jQuery('#' + that.container + ' textarea.' + that.itemTemplateClass).template(v);
-				jQuery('#' + that.inventoryItemListID).append(item);
 				
-				if(k==0) {
+				if((that.itemsWithForms[v['item_id']] === true) || (form_item_id && (form_item_id == v['item_id']))) {
 					let editor = jQuery('#' + that.container + ' textarea.' + that.editorTemplateClass).template(v);
-					//console.log(editor);
-					jQuery('#' + that.inventoryItemListID).append(editor);
+				
+					// set <select> elements
+					let selects = jQuery(editor).find("select").each(function(ksel, vsel) {
+						const id = jQuery(vsel).attr('id');
+						const fn = id.match(/^inventory_[\d]+_(.*)$/)[1] ?? null;
+						if(fn) {
+							jQuery(editor).find('#' + id + ' option[value="' + v[fn] + '"]').attr('selected','selected');
+						}
+					});
+					
+					jQuery(editor).find("input,select,textarea").on("change", function(e) {
+						console.log(that.inventoryFoundOptions);
+						const id = jQuery(this).attr('id');
+						const m = id.match(/^inventory_([\d]+)_(.*)$/);
+						const item_id = m[1];
+						const fld = m[2];
+						const v = jQuery(this).val();
+						
+						for(let i in that.items) {
+							if(that.items[i]['item_id'] == item_id) {
+								that.items[i][fld] = v;
+								if(fld == that.inventoryFoundBundleProc) {
+									that.items[i]['_INVENTORY_STATUS_'] = that.inventoryFoundOptions[v] ?? 'NOT_CHECKED';
+									that.updateCounts();
+								}
+								break;
+							}
+						}
+					});
+				
+					jQuery(item).append(editor);
+					that.itemsWithForms[form_item_id] = true;
+					
+				}
+				if(that.inventorySetStatusButtonClass) {
+					jQuery(item).find('.' + that.inventorySetStatusButtonClass).on('click', function(e) {
+						const id = jQuery(this).attr('id');
+						const item_id = id.match(/^inventory_([\d]+)/)[1] ?? null;
+						that.refresh(item_id);
+					});
 				}
 
+				jQuery('#' + that.inventoryItemListID).append(item);
 			});
-			
+			that.updateCounts();
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that.updateCounts = function(e) {
+			let count_list = [];
+			if(that.inventoryCountsID) {
+				that.counts = { 'FOUND': 0, 'NOT_FOUND': 0, 'NOT_CHECKED': 0 };
+				jQuery.each(that.items, function(k, v) {
+					that.counts[v['_INVENTORY_STATUS_']]++;
+				});
+				['FOUND', 'NOT_FOUND', 'NOT_CHECKED'].forEach(function(k) {
+					if(that.counts[k] > 0) { 
+						count_list.push(k + ": " +that.counts[k]); 
+					}
+				});
+				
+				jQuery('#' + that.inventoryCountsID).html(count_list.join(' - '));
+			}
 		}
 		// ------------------------------------------------------------------------------------
 		//

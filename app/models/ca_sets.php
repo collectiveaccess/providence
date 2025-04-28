@@ -2492,6 +2492,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}, $items);
 		
 		$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+		$found_options = is_array($editable_bundle_info['foundOptions']) ? $editable_bundle_info['foundOptions'] : [];
+		
 		$row_ids = array_map(function($v) {
 			return $v['item_id'];
 		}, $items);
@@ -2501,11 +2503,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$item_id = $qr->get('ca_set_items.item_id');
 					$acc = [];
 					foreach($editable_bundle_info['bundles'] as $f) {
-						$acc[$f] = $qr->get("ca_set_items.{$f}");
-						$acc["{$f}_display"] = $qr->get("ca_set_items.{$f}", ['convertCodesToDisplayText' => true]);
+						$sf = str_replace('.', '_', $f);
+						$acc[$sf] = $qr->get("ca_set_items.{$f}");
+						$acc["{$sf}_display"] = $qr->get("ca_set_items.{$f}", ['convertCodesToDisplayText' => true]);
 					}
 					
-					$acc["{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}_idno"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]);
+					$found_idno = $acc["{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}_idno"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]);
+					$acc["_INVENTORY_STATUS_"] = $found_options[$found_idno] ?? 'NOT_CHECKED';
 					$items[$item_id] = array_merge($items[$item_id], $acc);
 				}
 			}
@@ -2520,7 +2524,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$container_element_code = $this->getAppConfig()->get('inventory_container_element_code');
 		$bundles_to_edit = ["ca_set_items.{$container_element_code}"];
 		$found_bundle = $this->getAppConfig()->get('inventory_found_element_code');
-
+		$found_options = $this->getAppConfig()->get('inventory_found_options');
+	
 		$sub_fields = [];
 		$bundles_to_edit_proc = [];
 		$t_item = new ca_set_items();
@@ -2544,10 +2549,19 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			$bundles_to_edit_proc[] = $f;
 		}
+		
+		if($list_code = caGetListCode($z=ca_metadata_elements::getElementListID("{$found_bundle}"))) {
+			foreach($found_options as $k => $v) {
+				if($kk = caGetListItemID($list_code, $k)) {
+					$found_options[$kk] = $v;
+				}
+			}
+		}
 		return [
 			'bundles' => $bundles_to_edit_proc,
 			'foundElementCode' => $found_bundle,
-			'containerElementCode' => $container_element_code
+			'containerElementCode' => $container_element_code,
+			'foundOptions' => $found_options
 		];
 	}
 	# ------------------------------------------------------
@@ -2607,6 +2621,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_view->setVar('container_element_code', $editable_bundle_info['containerElementCode']);
 		$o_view->setVar('found_element_code', $editable_bundle_info['foundElementCode']);
 		$o_view->setVar('bundles_to_edit', $editable_bundle_info['bundles']);
+		$o_view->setVar('inventory_found_options', $editable_bundle_info['foundOptions']);
 	
 		$o_view->setVar('settings', $settings);
 		

@@ -60,7 +60,7 @@ $container_element_code = $this->getVar('container_element_code');
 $found_element_code = $this->getVar('found_element_code');
 
 $config = Configuration::load();
-$inventory_found_options = $config->get('inventory_found_options');
+$inventory_found_options = $this->getVar('inventory_found_options');
 
 ?>
  <div id="<?= $id_prefix; ?>">
@@ -74,6 +74,7 @@ $inventory_found_options = $config->get('inventory_found_options');
 		print _t("Sort by %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"]));
 ?>
 		<!--<a href="#" onclick='inventoryEditorOps.showGrid(); return false;'>Show Grid</a>-->
+		<div id="<?= $id_prefix; ?>inventoryCounts" class="inventoryCounts"></div>
 	</div>
 	<br style="clear: both">
 <?php
@@ -91,7 +92,9 @@ $inventory_found_options = $config->get('inventory_found_options');
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
 			{representation_tag}
-			{displayTemplate}
+			{displayTemplate} Status: {_INVENTORY_STATUS_}
+			
+			<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton">Set status</a>
 		</div>
 	</textarea>
 	
@@ -100,7 +103,7 @@ $inventory_found_options = $config->get('inventory_found_options');
 	foreach($bundles_to_edit_proc as $f) {
 		print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
 		"<br/>".
-		$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".$f."}", 'width' =>'525px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
+		$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'525px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
 	}
 ?>
 	</textarea>
@@ -118,6 +121,7 @@ $inventory_found_options = $config->get('inventory_found_options');
 			
 			inventoryItemListID: '<?= $id_prefix; ?>inventoryItemList',
 			inventoryItemAutocompleteID: '<?= $id_prefix; ?>inventoryItemAutocompleter',
+			inventoryCountsID: '<?= $id_prefix; ?>inventoryCounts',
 			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
 			lookupURL: '<?= $lookup_urls['search']; ?>',
 			itemInfoURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
@@ -131,6 +135,10 @@ $inventory_found_options = $config->get('inventory_found_options');
 			
 			editSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>,
 			deleteSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>,
+			
+			inventorySetStatusButtonClass: 'inventorySetStatusButton',
+			inventoryFoundOptions: <?= json_encode($inventory_found_options); ?>,
+			inventoryFoundBundle: <?= json_encode("{$container_element_code}.{$found_element_code}"); ?>,
 			
 			displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
 			sorts: <?= json_encode($this->getVar('sorts')); ?>
