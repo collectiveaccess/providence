@@ -25,16 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
-AssetLoadManager::register('sortableUI');
+AssetLoadManager::register('inventoryEditorUI');
 
 $settings 			= $this->getVar('settings');
 $is_batch			= $this->getVar('batch');
 
-$force_values = $this->getVar('forceValues');
+$force_values 		= $this->getVar('forceValues');
 
 $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 
-$t_set 			= $this->getVar('t_set');		// set
+$t_set 				= $this->getVar('t_set');		// set
+$set_id 			= $t_set->getPrimaryKey();
 
 $t_item 			= $this->getVar('t_item');			// ca_set_item
 $t_row				= $this->getVar('t_item');
@@ -57,125 +58,82 @@ $errors = $failed_inserts = [];
 $bundles_to_edit_proc = $this->getVar('bundles_to_edit');
 $container_element_code = $this->getVar('container_element_code');
 $found_element_code = $this->getVar('found_element_code');
+
+$config = Configuration::load();
+$inventory_found_options = $config->get('inventory_found_options');
+
 ?>
  <div id="<?= $id_prefix; ?>">
- 	<div class="bundleContainer"> </div>
-
-<?php
-	$qr = $t_set->getItemsAsSearchResult();
-	$count = $qr ? $qr->numHits() : 0;
-	
-	$found  = $not_found = $in_part = $not_checked = 0;
-	
-	if($qr && ($count > 0)) {
-		while($qr->nextHit()) {
-			switch($qr->get('ca_set_items.inventory_cont.found_object', ['convertCodesToIdno' => true])) {
-				case 'located':
-					$found++;
-					break;
-				case 'not_located':
-					$not_found++;
-					break;
-				default:
-					$not_checked++;
-					break;
-			}
-		}
-	}
-	
-	//
-	// Template to generate display for existing items
-	//
-?>
-	
-	<div class="bundleContainer">
-<?php
+<?php	
 	if(is_array($initial_values) && sizeof($initial_values)) {
 ?>
-	    <div class='bundleSubLabel inventoryStats' style='text-align: center;'>
+	<div class='bundleSubLabel inventoryStats' style='text-align: center;'>
 <?php
-		if(is_array($initial_values) && sizeof($initial_values)) {
-			print "<div style='float:right; '>".caEditorPrintSetItemsControls($this)."</div>";
-		}
+		print "<div style='float:right; '>".caEditorPrintSetItemsControls($this)."</div>";
+		
+		print _t("Sort by %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"]));
 ?>
-			<?= _t('<a href="#" class="inventoryItemShowFound">Found</a>: %1 (%2%)', $found, sprintf("%3.1f", $found/$count * 100));?> - 
-			<?= _t('<a href="#" class="inventoryItemShowNotFound">Not found</a>: %1 (%2%)', $not_found, sprintf("%3.1f", $not_found/$count * 100));?> - 
-			<?= _t('<a href="#" class="inventoryItemShowNotChecked">Not checked</a>: %1 (%2%)', $not_checked, sprintf("%3.1f", $not_checked/$count * 100));?>
-			<?= _t('<a href="#" class="inventoryItemShowAll">All</a>: %1', $count);?>
-		</div>
-		<br style="clear: both">
+		<!--<a href="#" onclick='inventoryEditorOps.showGrid(); return false;'>Show Grid</a>-->
+	</div>
+	<br style="clear: both">
 <?php
 	}
 	
 ?>
-		<hr>
-		<div class="caItemList">
+ 	<div id="<?= $id_prefix; ?>inventoryItemEditor"> 
+ 		<div id="<?= $id_prefix; ?>inventoryItemList" class="inventoryList"> </div>
+ 	</div>
+
+	<div class="inventoryItemEditorOverlay" id="<?= $id_prefix; ?>inventoryItemEditorOverlay">
+		Grid here
+	</div>
+	
+	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
+		<div class="inventoryItem">
+			{representation_tag}
+			{displayTemplate}
+		</div>
+	</textarea>
+	
+	<textarea class="<?= $id_prefix; ?>inventoryEditorTemplate" style="display: none;">
 <?php
-	foreach($initial_values as $item_id => $item) {
-?>
-		<table style="margin: 15px 5px 15px 5px; width: 100%; border-bottom: 1px dotted #aaa;" class="inventoryItem inventoryItem_<?= $item["{$container_element_code}.{$found_element_code}_idno"] ?: 'not_checked'; ?>">
-			<tr>
-				<td colspan="2" class='inventoryTitle'><?= $item['displayTemplate']; ?></td>
-			</tr>
-			<tr valign="top">
-				<td style="width: 125px;"><?= $item['representation_tag']; ?></td>
-				<td style="position: relative;">
-<?php
-		
-			if($item["{$container_element_code}.{$found_element_code}"] ?? null) {
-?>
-<div style='font-size: 10px; font-weight: normal; font-style: italic;'>
-<?php
-				foreach($bundles_to_edit_proc as $f) {
-					print $t_item->getDisplayLabel("ca_set_items.{$f}").": ".$item["{$f}_display"]."<br>\n";
-				}
-?>
-</div>
-<?php
-			} else {
-				foreach($bundles_to_edit_proc as $f) {
-					print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
-					"<br/>".
-					$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{$item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{$item_id}_{$f}"), 'value' => $item[$f], 'width' =>'525px', 'height' => 1])."</div>\n";
-				}
-			}
-?>
-					<div style="position: absolute; right: 10px; bottom: 5px;"><?= caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, "20px"), '' , 'ca_set_items', $item_id); ?></div>
-				</td>
-			</tr>
-		</table>
-<?php	
+	foreach($bundles_to_edit_proc as $f) {
+		print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
+		"<br/>".
+		$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".$f."}", 'width' =>'525px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
 	}
 ?>
-		</div>
-
-	</div>
+	</textarea>
 </div>
 
 <script>
-	function caFilterInventoryByFoundStatus(s, e) {
-		if(s) {
-			jQuery('.inventoryItem').hide(0);
-			jQuery('.inventoryItem_' + s).show(0);
-		} else {
-			jQuery('.inventoryItem').show(0);
-		}
-		jQuery('.inventoryItemShowFound, .inventoryItemShowNotFound, .inventoryItemShowNotChecked, .inventoryItemShowAll').removeClass('inventoryItemShowSelected');
-		if(e) { jQuery(e.target).addClass('inventoryItemShowSelected'); }
-	}
-	
+	var inventoryEditorOps = null;
 	jQuery(document).ready(function() {
-		jQuery('.inventoryItemShowFound').on('click', function(e) {
-			caFilterInventoryByFoundStatus('located', e);
-		});
-		jQuery('.inventoryItemShowNotFound').on('click', function(e) {
-			caFilterInventoryByFoundStatus('not_located', e);
-		});
-		jQuery('.inventoryItemShowNotChecked').on('click', function(e) {
-			caFilterInventoryByFoundStatus('not_checked', e);
-		});
-		jQuery('.inventoryItemShowAll').on('click', function(e) {
-			caFilterInventoryByFoundStatus(null);
+		inventoryEditorOps = caUI.inventoryeditor({
+			container: '<?= $id_prefix; ?>',
+			inventoryID: <?= (int)$set_id; ?>,
+			table_num: <?= (int)$t_set->get('table_num'); ?>,
+			fieldNamePrefix: '<?= $id_prefix; ?>',
+			initialValues: <?= json_encode(array_values($initial_values)); ?>,
+			
+			inventoryItemListID: '<?= $id_prefix; ?>inventoryItemList',
+			inventoryItemAutocompleteID: '<?= $id_prefix; ?>inventoryItemAutocompleter',
+			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
+			lookupURL: '<?= $lookup_urls['search']; ?>',
+			itemInfoURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
+			itemListURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemList', ['placement_id' => $this->getVar('placement_code')]); ?>',
+			
+			itemTemplateClass: '<?= $id_prefix; ?>inventoryItemTemplate',
+			editorTemplateClass: '<?= $id_prefix; ?>inventoryEditorTemplate',
+			
+			editSetItemsURL: '<?= caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit', ['set_id' => $set_id]); ?>',
+			editSetItemToolTip: <?= json_encode(_t('Edit inventory item information')); ?>,
+			
+			editSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>,
+			deleteSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>,
+			
+			displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
+			sorts: <?= json_encode($this->getVar('sorts')); ?>
 		});
 	});
 </script>

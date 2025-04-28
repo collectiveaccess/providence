@@ -2200,6 +2200,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if ($sort) {
 			$qr_sort = caMakeSearchResult($t_rel_table->tableName(), $row_ids, ['sort' => $sort, 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
+			
 			$sorted_row_ids = $qr_sort->getAllFieldValues($t_rel_table->primaryKey());
 			$sorted_items = [];
 			$pk = $t_rel_table->primaryKey();
@@ -2455,49 +2456,74 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getInventoryListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $settings=null) {
-		if ($this->getItemCount() > 50) {
-			$vs_thumbnail_version = 'tiny';
-		} else {
-			$vs_thumbnail_version = "thumbnail";
-		}
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+	public function getInventoryList(?array $options=[]) : array {
+		global $AUTH_CURRENT_USER_ID;
 		
-		$o_view->setVar('t_set', $this);	
-		$o_view->setVar('t_item', $t_item = new ca_set_items());		
-		$o_view->setVar('id_prefix', $ps_form_name);	
-		$o_view->setVar('placement_code', $ps_placement_code);		
-		$o_view->setVar('request', $po_request);
-		
+		$items = [];
 		if ($this->getPrimaryKey()) {
-			$vs_set_table_name = Datamodel::getTableName($this->get('table_num'));
-			if (!($vs_template = caGetOption("{$vs_set_table_name}_display_template", $settings, null))) {		// display template by table
-				if (!($vs_template = caGetOption('display_template', $settings, null))) {						// try the old non-table-specific template?
-					$vs_template = $this->getAppConfig()->get("{$vs_set_table_name}_set_item_display_template");			// use default in app.conf
+			$set_table_name = Datamodel::getTableName($this->get('table_num'));
+			if (!($template = caGetOption("{$set_table_name}_display_template", $options, null))) {		// display template by table
+				if (!($template = caGetOption('display_template', $options, null))) {						// try the old non-table-specific template?
+					$template = $this->getAppConfig()->get("{$set_table_name}_set_item_display_template");			// use default in app.conf
 				}
 			} 
 		
-			$va_items = caExtractValuesByUserLocale($this->getItems(array(
-				'thumbnailVersion' => $vs_thumbnail_version,
-				'user_id' => $po_request->getUserID(),
-				'template' => $vs_template,
-				'setItemTemplate' => caGetOption("ca_set_items_display_template", $settings, null)
-			)), null, null, array());
-			$va_items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $va_items);
-			$o_view->setVar('initialValues', $va_items);
-		} else {
-			$o_view->setVar('initialValues', []);
+			$items = caExtractValuesByUserLocale($this->getItems([
+				'start' => caGetOption('start', $options, null), 'limit' => caGetOption('limit', $options, null),
+				'thumbnailVersion' => caGetOption('thumbnailVersion', $options, 'icon'),
+				'user_id' => $AUTH_CURRENT_USER_ID,
+				'template' => $template,
+				'setItemTemplate' => caGetOption("ca_set_items_display_template", $options, null),
+				'sort' => caGetOption('sort', $options, null),
+				'sortDirection' => caGetOption('sortDirection', $options, 'ASC')
+			]), null, null, []);
+			$items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $items);
 		}
 		
-		$container_element_code = $this->getAppConfig()->get('inventory_container_element_code');
+		// Filter values to include only what we actually need for inventory
+		$items = array_map(function($v) {
+			return array_filter($v, function($iv) {
+				return in_array($iv, [
+					'item_id', 'row_id', 'label', 'name', 'idno', 'displayTemplate', 
+					'representation_tag', 'representation_count', 'rank', 'access'
+					
+				]);
+			}, ARRAY_FILTER_USE_KEY);
+		}, $items);
 		
+		$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+		$row_ids = array_map(function($v) {
+			return $v['item_id'];
+		}, $items);
+		if(sizeof($row_ids)) {
+			if($qr = caMakeSearchResult('ca_set_items', $row_ids)) {
+				while($qr->nextHit()) {
+					$item_id = $qr->get('ca_set_items.item_id');
+					$acc = [];
+					foreach($editable_bundle_info['bundles'] as $f) {
+						$acc[$f] = $qr->get("ca_set_items.{$f}");
+						$acc["{$f}_display"] = $qr->get("ca_set_items.{$f}", ['convertCodesToDisplayText' => true]);
+					}
+					
+					$acc["{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}_idno"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]);
+					$items[$item_id] = array_merge($items[$item_id], $acc);
+				}
+			}
+		}
+		return $items;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getInventoryEditableBundleInfo(?array $options=null) {
+		$container_element_code = $this->getAppConfig()->get('inventory_container_element_code');
 		$bundles_to_edit = ["ca_set_items.{$container_element_code}"];
 		$found_bundle = $this->getAppConfig()->get('inventory_found_element_code');
-		
-		//$bundles_to_edit = caGetOption('showBundlesForEditing', $settings, [], ['castTo' => 'array']);
-		
+
 		$sub_fields = [];
 		$bundles_to_edit_proc = [];
+		$t_item = new ca_set_items();
 		foreach($bundles_to_edit as $i => $f) {
 			$tmp = explode('.', $f);
 			$sf = array_pop($tmp);
@@ -2518,36 +2544,71 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			$bundles_to_edit_proc[] = $f;
 		}
-		$o_view->setVar('container_element_code', $container_element_code);
-		$o_view->setVar('found_element_code', $found_bundle);
-		$o_view->setVar('bundles_to_edit', $bundles_to_edit_proc);
-		
-		$row_ids = array_map(function($v) {
-			return $v['item_id'];
-		}, $va_items);
-		if(sizeof($row_ids)) {
-			if($qr = caMakeSearchResult('ca_set_items', $row_ids)) {
-				while($qr->nextHit()) {
-					$item_id = $qr->get('ca_set_items.item_id');
-					$acc = [];
-					foreach($bundles_to_edit_proc as $f) {
-						$acc[$f] = $qr->get("ca_set_items.{$f}");
-						$acc["{$f}_display"] = $qr->get("ca_set_items.{$f}", ['convertCodesToDisplayText' => true]);
-					}
-					
-					$acc["{$container_element_code}.{$found_bundle}_idno"] = $qr->get("ca_set_items.{$container_element_code}.{$found_bundle}", ['convertCodesToIdno' => true]);
-					$va_items[$item_id] = array_merge($va_items[$item_id], $acc);
-				}
-			}
-			$o_view->setVar('initialValues', $va_items);
+		return [
+			'bundles' => $bundles_to_edit_proc,
+			'foundElementCode' => $found_bundle,
+			'containerElementCode' => $container_element_code
+		];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of inventory items in the currently loaded set
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getInventoryListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $settings=null) {
+		if ($this->getItemCount() > 50) {
+			$vs_thumbnail_version = 'tiny';
+		} else {
+			$vs_thumbnail_version = "thumbnail";
 		}
-		$o_view->setVar('settings', $settings);
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
+		$o_view->setVar('t_set', $this);	
+		$o_view->setVar('t_item', $t_item = new ca_set_items());		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+
+		$sorts = [];
 		if ($t_row = $this->getItemTypeInstance()) {
 			$o_view->setVar('t_row', $t_row);
 			$o_view->setVar('type_singular', $t_row->getProperty('NAME_SINGULAR'));
 			$o_view->setVar('type_plural', $t_row->getProperty('NAME_PLURAL'));
+		
+			// Set up sort list
+			$sorts_config = $this->getAppConfig()->getAssoc('inventory_sorts');
+			if(is_array($sorts_config[$t_row->tableName()])) {
+				$sorts = array_flip($sorts_config[$t_row->tableName()]);
+			} else {
+				$sorts = caGetAvailableSortFields($t_row->tableName(), null, []);
+			}
 		}
+		$o_view->setVar('sorts', $sorts);
+		
+		$sort_flds = array_values($sorts);
+		$default_sort = array_shift($sort_flds);
+		
+		if ($this->getPrimaryKey()) {
+			$items = $this->getInventoryList(array_merge($settings, [
+				'sort' => $default_sort, 'sortDirection' => 'ASC',
+				'thumbnailVersion' => $vs_thumbnail_version
+			]));
+			$o_view->setVar('initialValues', $items);
+		} else {
+			$o_view->setVar('initialValues', []);
+		}
+		
+		$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+		
+		$o_view->setVar('container_element_code', $editable_bundle_info['containerElementCode']);
+		$o_view->setVar('found_element_code', $editable_bundle_info['foundElementCode']);
+		$o_view->setVar('bundles_to_edit', $editable_bundle_info['bundles']);
+	
+		$o_view->setVar('settings', $settings);
 		
 		return $o_view->render('inventory_list.php');
 	}

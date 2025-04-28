@@ -5119,7 +5119,7 @@ if (!$vb_batch) {
 					// This bundle is only available ca_sets in inventory type
 					case 'inventory_list':
 						if ($vb_batch) { break; } // not supported in batch mode
-						// @TODO: check that this is a set of inventory type
+						if(!caIsInventory($this)) { break; }
 						
 						$container_fld = $this->getAppConfig()->get('inventory_container_element_code');
 						$found_fld = $this->getAppConfig()->get('inventory_found_element_code');

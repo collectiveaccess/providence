@@ -139,6 +139,51 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
+	public function GetItemList() {
+		$set_id = $this->request->getParameter('set_id', pInteger);
+		$start = $this->request->getParameter('start', pInteger) ?? 0;
+		$limit = $this->request->getParameter('limit', pInteger) ?? null;
+		$sort = $this->request->getParameter('sort', pString) ?? null;
+		$sort_direction = $this->request->getParameter('sortDirection', pString) ?? null;
+		
+		$settings = [];
+		
+		$t_set = new ca_sets($set_id);
+		if (!$t_set->getPrimaryKey()) {
+			$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);
+			return;
+		}
+		
+		// Does user have edit access to set?
+		if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, ['request' => $this->request])) {
+			$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
+			$this->Edit();
+			return;
+		}
+		
+		$set_table_name = Datamodel::getTableName($t_set->get('table_num'));
+		
+		$placement_id = $this->request->getParameter('placement_id', pString) ?? null;
+		if(preg_match('!^P([\d]+)$!', $placement_id, $m)) {
+			$placement_id = $m[1];
+			if($t_placement = ca_editor_ui_bundle_placements::findAsInstance($placement_id)) {
+				$settings = $t_placement->getSettings();
+			}
+		}
+		if(!($settings['display_template'] ?? null)) {
+			$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
+		}
+		
+		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction]));
+		
+		$this->response->setContentType('application/json');
+		$this->view->setVar('data', ['items' => $items, 'order' => array_keys($items)]);
+		$this->render('json.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function GetItemInfo() {
 		if ($pn_set_id = $this->request->getParameter('set_id', pInteger)) {
 			$t_set = new ca_sets($pn_set_id);

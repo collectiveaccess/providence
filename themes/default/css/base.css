@@ -8227,6 +8227,19 @@ span.anonymousAccessUrlLabel {
 /**
  * Inventory
  */
+div.inventoryList {
+	padding: 10px;
+	background-color: #fff;
+	
+}
+
+div.inventoryItem {
+	min-height: 100px;
+	background-color: #fff;
+	border-bottom: 1px dotted #aaa;
+	margin: 10px 0 10px 0;
+}
+ 
 td.inventoryTitle, td.inventoryTitle a {
 	font-size: 12px;
 	font-weight: normal;
@@ -8252,4 +8265,8 @@ div.inventoryStats {
 a.inventoryItemShowSelected, a.inventoryItemShowFound:hover, a.inventoryItemShowFound:hover, a.inventoryItemShowNotFound:hover, a.inventoryItemShowNotChecked:hover, a.inventoryItemShowAll:hover {
 	color: red;
 	text-decoration: underline;
+}
+
+.inventoryItemEditorOverlay {
+	display: none;
 }
