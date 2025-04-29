@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/manage/sets/ajax_set_item_info_json.php :
+ * themes/default/views/manage/sets/ajax_inventory_item_info_json.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,12 +35,12 @@ if (is_array($errors) && sizeof($errors)) {
 		'set_id' => $this->getVar('set_id'),
 		'row_id' => $this->getVar('row_id'),
 		'idno' => $this->getVar('idno'),
-		'idno_sort' => $this->getVar('idno_sort'),
 		'representation_tag' => $this->getVar('representation_tag'),
-		'representation_url' => $this->getVar('representation_url'),
-		'representation_width' => $this->getVar('representation_width'),
-		'representation_height' => $this->getVar('representation_height'),
-		'set_item_label' => $this->getVar('set_item_label'),
+		'label' => $this->getVar('label'),
+		'name' => $this->getVar('name'),
 		'displayTemplate' => $this->getVar('displayTemplate'),
+		'name' => $this->getVar('name'),
+		'rank' => $this->getVar('rank'),
+		'rank' => $this->getVar('rank'),
 	));
 }

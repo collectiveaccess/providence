@@ -2246,6 +2246,29 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									);
 								}
 								break;
+							case 'inventory_list':
+								$t_set = new ca_sets();
+								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
+								
+								$va_additional_settings = [
+									'displayTemplate' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "100px",
+										'label' => _t('Summary template'),
+										'description' => _t('Template for summary of inventory item.')
+									],
+									'ca_set_items_display_template' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "50px",
+										'label' => _t('Display template (%1)', _t('set items')),
+										'description' => _t('Layout for %1 inventory item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
+									]
+								];
+								break;
 							case 'ca_metadata_alert_rule_type_restrictions':
 								$va_additional_settings = [];
 								break;

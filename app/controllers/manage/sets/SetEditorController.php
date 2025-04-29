@@ -139,7 +139,7 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function GetItemList() {
+	public function GetInventoryItemList() {
 		$set_id = $this->request->getParameter('set_id', pInteger);
 		$start = $this->request->getParameter('start', pInteger) ?? 0;
 		$limit = $this->request->getParameter('limit', pInteger) ?? null;
@@ -175,9 +175,44 @@ class SetEditorController extends BaseEditorController {
 		}
 		
 		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction]));
+
+		$this->view->setVar('data', ['items' => $items, 'order' => array_keys($items)]);		
 		
 		$this->response->setContentType('application/json');
-		$this->view->setVar('data', ['items' => $items, 'order' => array_keys($items)]);
+		$this->render('json.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addItemToInventory() {
+		if ($set_id = $this->request->getParameter('set_id', pInteger)) {
+			$t_set = new ca_sets($set_id);
+
+			if (!$t_set->getPrimaryKey()) {
+				$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);
+				return;
+			}
+
+			// does user have edit access to set?
+			if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
+				$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
+				$this->Edit();
+				return;
+			}
+			$table_num = $t_set->get('table_num');
+		} else {
+			$table_num = $this->request->getParameter('table_num', pInteger);
+		}
+
+		$row_id = $this->request->getParameter('row_id', pInteger);
+		$t_row = Datamodel::getInstanceByTableNum($table_num, true);
+		
+		$item_id = $t_set->addItem($row_id);
+		
+		$this->view->setVar('data', ['set_id' => $set_id, 'item_id' => $item_id]);	
+		
+		$this->response->setContentType('application/json');
 		$this->render('json.php');
 	}
 	# -------------------------------------------------------

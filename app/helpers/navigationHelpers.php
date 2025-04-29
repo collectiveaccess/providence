@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,6 +111,10 @@
  	define('__CA_NAV_ICON_CHECKBOX__', 74);
  	define('__CA_NAV_ICON_TRASH__', 75);
  	define('__CA_NAV_ICON_RANDOM__', 76);
+
+ 	define('__CA_NAV_ICON_FOUND__', 77);
+ 	define('__CA_NAV_ICON_NOT_FOUND__', 78);
+ 	define('__CA_NAV_ICON_NOT_CHECKED__', 79); 	
  	
  	/**
  	 * Icon position constants
@@ -925,6 +929,15 @@
 				break;				
 			case __CA_NAV_ICON_TRASH__:
 				$vs_fa_class = 'fas fa-trash';
+				break;				
+			case __CA_NAV_ICON_FOUND__:
+				$vs_fa_class = 'fas fa-check-circle';
+				break;				
+			case __CA_NAV_ICON_NOT_FOUND__:
+				$vs_fa_class = 'fas fa-exclamation-circle';
+				break;				
+			case __CA_NAV_ICON_NOT_CHECKED__:
+				$vs_fa_class = 'fas fa-question-circle';
 				break;															
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";

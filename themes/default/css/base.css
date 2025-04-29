@@ -8227,6 +8227,10 @@ span.anonymousAccessUrlLabel {
 /**
  * Inventory
  */
+div.inventoryEditorContainer {
+	background-color: #fff;
+}
+
 div.inventoryList {
 	padding: 10px;
 	background-color: #fff;
@@ -8236,10 +8240,16 @@ div.inventoryList {
 }
 
 div.inventoryItem {
+	position: relative;
 	min-height: 100px;
 	background-color: #fff;
 	border-bottom: 1px dotted #aaa;
-	margin: 10px 0 10px 0;
+	padding: 10px 0 10px 0;
+}
+
+div.inventoryItemContent {	
+	display: flex;
+	flex-direction: row;
 }
  
 td.inventoryTitle, td.inventoryTitle a {
@@ -8253,11 +8263,31 @@ td.inventoryTitle:hover a {
 	text-decoration: underline;
 }
 
-div.inventoryStats, a.inventoryItemShowFound, a.inventoryItemShowNotFound, a.inventoryItemShowNotChecked, a.inventoryItemShowAll {
+div.inventoryControlPanel {
 	font-size: 14px;
-	font-weight: bold;
 	color: #000;
 	text-decoration: none;
+}
+
+div.inventoryStats {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	column-gap: 20px;
+	margin: 0 0 10px 0;
+}
+
+div.inventoryStats div a {
+	text-decoration: none;
+	color: #000;
+}
+
+div.inventoryControls {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	column-gap: 20px;
+	margin: 0 0 10px 0;
 }
 
 div.inventoryStats {
@@ -8271,4 +8301,35 @@ a.inventoryItemShowSelected, a.inventoryItemShowFound:hover, a.inventoryItemShow
 
 .inventoryItemEditorOverlay {
 	display: none;
+}
+
+a.inventorySetStatusButton {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+}
+
+div.inventoryItemDescription, div.inventoryItemEditor {
+	font-weight: normal;
+}
+
+div.inventoryItemEditorDoneButton {
+    float: none;
+    clear: both;
+    width: 100%;
+    text-align: center;
+    
+    cursor: pointer;
+}
+
+div.inventoryAddItemPanel{
+	font-size: 14px;
+	color: #000;
+	text-decoration: none;
+	
+	padding: 10px;
+	background-color: #fff;
+	
+	border-top: 1px dotted #aaa;
+	border-bottom: 1px dotted #aaa;
 }

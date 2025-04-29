@@ -26,6 +26,10 @@
  * ----------------------------------------------------------------------
  */
 AssetLoadManager::register('inventoryEditorUI');
+$config = Configuration::load();
+
+$type_singular 		= $this->getVar('type_singular');
+$type_plural 		= $this->getVar('type_plural');
 
 $settings 			= $this->getVar('settings');
 $is_batch			= $this->getVar('batch');
@@ -41,8 +45,7 @@ $t_item 			= $this->getVar('t_item');			// ca_set_item
 $t_row				= $this->getVar('t_item');
 $table_num 			= $t_set->get('ca_sets.table_num');
 
-$add_label 			= $this->getVar('add_label');
-
+$lookup_urls 		= $this->getVar('lookup_urls');
 $read_only			= (isset($settings['readonly']) && $settings['readonly']);
 $dont_show_add		= (isset($settings['dontShowAddButton']) && $settings['dontShowAddButton']);
 $dont_show_delete	= (isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton']);
@@ -59,29 +62,34 @@ $bundles_to_edit_proc = $this->getVar('bundles_to_edit');
 $container_element_code = $this->getVar('container_element_code');
 $found_element_code = $this->getVar('found_element_code');
 
-$config = Configuration::load();
 $inventory_found_options = $this->getVar('inventory_found_options');
-
+$inventory_found_option_display_text = $this->getVar('inventory_found_option_display_text');
+$inventory_found_icons = $this->getVar('inventory_found_icons');
 ?>
- <div id="<?= $id_prefix; ?>">
+<div id="<?= $id_prefix; ?>" class="inventoryEditorContainer">
 <?php	
 	if(is_array($initial_values) && sizeof($initial_values)) {
 ?>
-	<div class='bundleSubLabel inventoryStats' style='text-align: center;'>
-<?php
-		print "<div style='float:right; '>".caEditorPrintSetItemsControls($this)."</div>";
+	<div class='bundleSubLabel inventoryControlPanel' style='text-align: center;'>
+		<div style='float:right; '><?= caEditorPrintSetItemsControls($this); ?></div>
 		
-		print _t("Sort by %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"]));
-?>
-		<!--<a href="#" onclick='inventoryEditorOps.showGrid(); return false;'>Show Grid</a>-->
-		<div id="<?= $id_prefix; ?>inventoryCounts" class="inventoryCounts"></div>
+		<div class="inventoryControls">
+			<div><?= _t('Filter:'); ?><input type="text" size="20" name="inventoryFilter" id="<?= $id_prefix; ?>inventoryFilter"></div>
+			<div><?= _t("Sort: %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"])); ?></div>
+			<!--<a href="#" onclick='inventoryEditorOps.showGrid(); return false;'>Show Grid</a>-->
+		</div>
+		<div id="<?= $id_prefix; ?>inventoryCounts" class="inventoryStats"></div>
 	</div>
-	<br style="clear: both">
 <?php
 	}
 	
 ?>
- 	<div id="<?= $id_prefix; ?>inventoryItemEditor"> 
+	<div class="inventoryAddItemPanel" id="<?= $id_prefix; ?>addItemForm">
+		<?= _t('Add to inventory').': '; ?>
+		<input type="text" size="70" name="inventoryItemAutocompleter" id="<?= $id_prefix; ?>inventoryItemAutocompleter" class="lookupBg"/>
+	</div>
+	
+ 	<div id="<?= $id_prefix; ?>inventoryItemListContainer"> 
  		<div id="<?= $id_prefix; ?>inventoryItemList" class="inventoryList"> </div>
  	</div>
 
@@ -91,22 +99,32 @@ $inventory_found_options = $this->getVar('inventory_found_options');
 	
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
-			{representation_tag}
-			{displayTemplate} {_INVENTORY_STATUS_} {item_id}
-			
-			<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton"><?= caNavIcon(__CA_NAV_ICON_EDIT__, "20px"); ?></a>
+			<div class="inventoryItemContent">
+				<div style="width: 36px;">{n}</div>
+				<div style="width: 120px;">{representation_tag}</div>
+				<div style="width: 100%;" class="inventoryItemDescription">
+					{displayTemplate}
+					{displayTemplateDescription}
+				</div>
+				<div style="width: 100%; display: none;" class="inventoryItemEditorContainer">
+					
+				</div>
+				<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton">{_INVENTORY_STATUS_ICON_}</a>
+			</div>
 		</div>
 	</textarea>
 	
-	<textarea class="<?= $id_prefix; ?>inventoryEditorTemplate" style="display: none;">
-		<div id="inventoryEditor{item_id}" class="inventoryEditor">
+	<textarea class="<?= $id_prefix; ?>inventoryItemEditorTemplate" style="display: none;">
+		<div id="inventoryItemEditor{item_id}" class="inventoryItemEditor">
+			{displayTemplate}
 <?php
 			foreach($bundles_to_edit_proc as $f) {
 				print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
-				"<br/>".
-				$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'525px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
-			}
-?>
+				"<br>".
+				$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'425px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
+			}			
+?>				
+			<div class="inventoryItemEditorDoneButton"><?= caNavIcon(__CA_NAV_ICON_SAVE__, '20px');?> Done</div>
 		</div>
 	</textarea>
 </div>
@@ -126,22 +144,22 @@ $inventory_found_options = $this->getVar('inventory_found_options');
 			inventoryCountsID: '<?= $id_prefix; ?>inventoryCounts',
 			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
 			lookupURL: '<?= $lookup_urls['search']; ?>',
-			itemInfoURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
-			itemListURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemList', ['placement_id' => $this->getVar('placement_code')]); ?>',
+			addItemToInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'addItemToInventory'); ?>',
+			itemListURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetInventoryItemList', ['placement_id' => $this->getVar('placement_code')]); ?>',
 			
 			itemTemplateClass: '<?= $id_prefix; ?>inventoryItemTemplate',
-			editorTemplateClass: '<?= $id_prefix; ?>inventoryEditorTemplate',
+			editorTemplateClass: '<?= $id_prefix; ?>inventoryItemEditorTemplate',
 			
-			editSetItemsURL: '<?= caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit', ['set_id' => $set_id]); ?>',
-			editSetItemToolTip: <?= json_encode(_t('Edit inventory item information')); ?>,
-			
-			editSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_EDIT__, "20px")); ?>,
 			deleteSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>,
 			
 			inventorySetStatusButtonClass: 'inventorySetStatusButton',
 			inventoryFoundOptions: <?= json_encode($inventory_found_options); ?>,
+			inventoryFoundIcons: <?= json_encode($inventory_found_icons); ?>,
+			inventoryFoundOptionsDisplayText: <?= json_encode($inventory_found_option_display_text); ?>,
 			inventoryContainerElementCode: <?= json_encode($container_element_code); ?>,
 			inventoryFoundBundle: <?= json_encode("{$container_element_code}.{$found_element_code}"); ?>,
+			
+			inventoryFilterInputID: <?= json_encode("{$id_prefix}inventoryFilter"); ?>,
 			
 			displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
 			sorts: <?= json_encode($this->getVar('sorts')); ?>

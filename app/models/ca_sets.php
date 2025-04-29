@@ -2473,7 +2473,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				'thumbnailVersion' => caGetOption('thumbnailVersion', $options, 'icon'),
 				'user_id' => $AUTH_CURRENT_USER_ID,
 				'template' => $template,
-				'setItemTemplate' => caGetOption("ca_set_items_display_template", $options, null),
+				'templateDescription' => caGetOption("ca_set_items_display_template", $options, null),
 				'sort' => caGetOption('sort', $options, null),
 				'sortDirection' => caGetOption('sortDirection', $options, 'ASC')
 			]), null, null, []);
@@ -2484,7 +2484,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$items = array_map(function($v) {
 			return array_filter($v, function($iv) {
 				return in_array($iv, [
-					'item_id', 'row_id', 'label', 'name', 'idno', 'displayTemplate', 
+					'item_id', 'row_id', 'label', 'name', 'idno', 'displayTemplate', 'displayTemplateDescription',
 					'representation_tag', 'representation_count', 'rank', 'access'
 					
 				]);
@@ -2510,6 +2510,19 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					
 					$found_idno = $acc["{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}_idno"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]);
 					$acc["_INVENTORY_STATUS_"] = $found_options[$found_idno] ?? 'NOT_CHECKED';
+					$acc["_INVENTORY_STATUS_DISPLAY_"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToDisplayText' => true]);
+					
+					switch($acc["_INVENTORY_STATUS_"]) {
+						case 'FOUND':
+							$acc["_INVENTORY_STATUS_ICON_"] = caNavIcon(__CA_NAV_ICON_FOUND__, "20px");
+							break;
+						case 'NOT_FOUND':
+							$acc["_INVENTORY_STATUS_ICON_"] = caNavIcon(__CA_NAV_ICON_NOT_FOUND__, "20px");
+							break;
+						default:
+							$acc["_INVENTORY_STATUS_ICON_"] = caNavIcon(__CA_NAV_ICON_NOT_CHECKED__, "20px");
+							break;
+					}
 					$items[$item_id] = array_merge($items[$item_id], $acc);
 				}
 			}
@@ -2525,7 +2538,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$bundles_to_edit = ["ca_set_items.{$container_element_code}"];
 		$found_bundle = $this->getAppConfig()->get('inventory_found_element_code');
 		$found_options = $this->getAppConfig()->get('inventory_found_options');
+		$found_icons = $this->getAppConfig()->get('inventory_found_icons');
 	
+		foreach($found_icons as $code => $icon) {
+			$found_icons[$code] = caNavIcon(constant($icon), '20px');
+		}
 		$sub_fields = [];
 		$bundles_to_edit_proc = [];
 		$t_item = new ca_set_items();
@@ -2550,18 +2567,24 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$bundles_to_edit_proc[] = $f;
 		}
 		
-		if($list_code = caGetListCode($z=ca_metadata_elements::getElementListID("{$found_bundle}"))) {
+		$found_option_display_text['NOT_CHECKED'] = _t('Not checked');
+		
+		if($list_code = caGetListCode(ca_metadata_elements::getElementListID("{$found_bundle}"))) {
 			foreach($found_options as $k => $v) {
 				if($kk = caGetListItemID($list_code, $k)) {
 					$found_options[$kk] = $v;
+					$found_option_display_text[$v] = caGetListItemByIDForDisplay($kk);
 				}
 			}
 		}
+		
 		return [
 			'bundles' => $bundles_to_edit_proc,
 			'foundElementCode' => $found_bundle,
 			'containerElementCode' => $container_element_code,
-			'foundOptions' => $found_options
+			'foundOptions' => $found_options,
+			'foundOptionDisplayText' => $found_option_display_text,
+			'foundIcons' => $found_icons
 		];
 	}
 	# ------------------------------------------------------
@@ -2622,8 +2645,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_view->setVar('found_element_code', $editable_bundle_info['foundElementCode']);
 		$o_view->setVar('bundles_to_edit', $editable_bundle_info['bundles']);
 		$o_view->setVar('inventory_found_options', $editable_bundle_info['foundOptions']);
+		$o_view->setVar('inventory_found_icons', $editable_bundle_info['foundIcons']);
+		$o_view->setVar('inventory_found_option_display_text', $editable_bundle_info['foundOptionDisplayText']);
 	
 		$o_view->setVar('settings', $settings);
+		
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
+		
 		
 		return $o_view->render('inventory_list.php');
 	}

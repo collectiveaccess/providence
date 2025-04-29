@@ -49,13 +49,17 @@ var caUI = caUI || {};
 			
 			inventoryContainerElementCode: null,
 			inventoryFoundOptions: {},
+			inventoryFoundOptionsDisplayText: {},
+			inventoryFoundIcons: {},
 			inventoryFoundBundle: null,
+			
+			inventoryFilterInputID: null,
 			
 			sorts: null,
 			
 			lookupURL: null,
 			itemListURL: null,
-			itemInfoURL: null,
+			addItemToInventoryURL: null,
 			editInventoryItemsURL: null,			// url of inventory item editor (without item_id parameter key or value)
 			
 			editInventoryItemButton: null,			// html to use for edit inventory item button
@@ -67,9 +71,10 @@ var caUI = caUI || {};
 			itemsWithForms: {},						// item_ids for items with form opened
 			
 			counts: {},								// found/not found/not checked item counts
+			
+			currentFilters: {},
 			debug: true
 		}, options);
-		
 		
 		// ------------------------------------------------------------------------------------
 		//
@@ -82,12 +87,13 @@ var caUI = caUI || {};
 					source: that.lookupURL + "?quickadd=0&noInline=1&set_id=" + that.inventoryID,
 					minLength: 3, max: 50, html: true,
 					select: function(event, ui) {
-						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id, 'displayTemplate': that.displayTemplate} , 
+						jQuery.getJSON(that.addItemToInventoryURL, {'set_id': that.inventoryID, 'table_num': that.table_num, 'row_id': ui.item.id } , 
 							function(data) { 
 								if(data.status != 'ok') { 
-									alert("Error getting item information");
+									alert("Error adding item");
 								} else {
-									that.addItemToInventory(data.row_id, data, true, true);
+									
+									that.getItemList(0, 10000, null, null);
 									jQuery('#' + that.inventoryItemAutocompleteID).val('');
 								}
 							}
@@ -110,6 +116,17 @@ var caUI = caUI || {};
 			
 			that.inventoryFoundBundleProc = that.inventoryFoundBundle.replace(/\./, '_');
 			
+			if(that.inventoryFilterInputID) {
+				jQuery('#' + that.inventoryFilterInputID).on('keyup', function(e) {
+					const s = jQuery('#' + that.inventoryFilterInputID).val().trim();
+					if(s.length > 1) {
+						that.refresh(null, {'search': s});
+					} else if(s.length == 0) {
+						that.refresh()
+					}
+				});
+			}
+			
 			that.refresh();
 		}
 		// ------------------------------------------------------------------------------------
@@ -121,7 +138,6 @@ var caUI = caUI || {};
 				'set_id': that.inventoryID, 'start': start, 'length': length, 
 				'sort': sort, 'sortDirection': sortDirection
 			}, function(resp) {
-				//that.items = [];
 				let items = [];
 				for(let i in resp.data.order) {
 					let d = resp.data.items[resp.data.order[i]];
@@ -130,7 +146,7 @@ var caUI = caUI || {};
 						if(that.itemsWithForms[resp.data.order[i]] && (that.items[x]['item_id'] == resp.data.order[i])) {
 							const re = new RegExp('^' + that.inventoryContainerElementCode);
 							for(let k in that.items[x]) {
-								if(k.match(re) || (k === '_INVENTORY_STATUS_')) {
+								if(k.match(re) || (k === '_INVENTORY_STATUS_') || (k === '_INVENTORY_STATUS_ICON_')) {
 									d[k] = that.items[x][k];
 								}
 							}
@@ -201,10 +217,34 @@ var caUI = caUI || {};
 		//
 		// Refresh item list display
 		//
-		that.refresh = function(form_item_id=null) {
+		that.refresh = function(form_item_id=null, filters=null) {
 			jQuery('#' + that.inventoryItemListID).empty();
 			
+			let c = 1;
 			jQuery.each(that.items, function(k, v) {
+				v['n'] = c;
+				
+				// filter display
+				that.currentFilters = filters;
+				if(filters) {
+					if(filters['status'] && (Array.isArray(filters['status'])) && (filters['status'].length > 0)) {
+						if(!filters['status'].includes(v['_INVENTORY_STATUS_'])) {
+							return;
+						}
+					}
+					if(filters['search']) {
+						filters['search'] = filters['search'].toLowerCase();
+						let found = false;
+						for(let kx in v) {
+							if((typeof v[kx] === 'string') && (v[kx].toLowerCase().includes(filters['search']))) {
+								found = true;
+								break;
+							}
+						}
+						if(!found) { return; }
+					}
+				}
+			
 				// replace values in template
 				let item = jQuery('#' + that.container + ' textarea.' + that.itemTemplateClass).template(v);
 				
@@ -232,6 +272,7 @@ var caUI = caUI || {};
 								that.items[i][fld] = v;
 								if(fld == that.inventoryFoundBundleProc) {
 									that.items[i]['_INVENTORY_STATUS_'] = that.inventoryFoundOptions[v] ?? 'NOT_CHECKED';
+									that.items[i]['_INVENTORY_STATUS_ICON_'] = that.inventoryFoundIcons[that.items[i]['_INVENTORY_STATUS_']] ?? that.inventoryFoundIcons['NOT_CHECKED'];
 									that.updateCounts();
 								}
 								break;
@@ -239,23 +280,30 @@ var caUI = caUI || {};
 						}
 					});
 					
-					if(!(form_item_id && (form_item_id == v['item_id']))) {
-						jQuery(editor).hide();
-					}
-				
-					jQuery(item).append(editor);
-					that.itemsWithForms[form_item_id] = true;
+					// Editor "done" button
+					jQuery(editor).find('.inventoryItemEditorDoneButton').on('click', function(e) {
+						that.refresh(null, that.currentFilters);
+					});
 					
+					if(!(form_item_id && (form_item_id == v['item_id']))) {
+						jQuery(editor).find('.inventoryItemEditorContainer').hide();
+						jQuery(item).find('.inventoryItemDescription').show();
+					} else {
+						jQuery(item).find('.inventoryItemDescription').hide();
+						jQuery(item).find('.inventoryItemEditorContainer').append(editor).show();
+					}
+					that.itemsWithForms[form_item_id] = true;
 				}
 				if(that.inventorySetStatusButtonClass) {
 					jQuery(item).find('.' + that.inventorySetStatusButtonClass).on('click', function(e) {
 						const id = jQuery(this).attr('id');
 						const item_id = id.match(/^inventory_([\d]+)/)[1] ?? null;
-						that.refresh(item_id);
+						that.refresh(item_id, that.currentFilters);
 					});
 				}
 
 				jQuery('#' + that.inventoryItemListID).append(item);
+				c++;
 			});
 			that.updateCounts();
 		}
@@ -272,11 +320,17 @@ var caUI = caUI || {};
 				});
 				['FOUND', 'NOT_FOUND', 'NOT_CHECKED'].forEach(function(k) {
 					if(that.counts[k] > 0) { 
-						count_list.push(k + ": " +that.counts[k]); 
+						count_list.push("<div><a href='#' id='" + that.container + '_filter_' + k + "'>" + that.inventoryFoundIcons[k] + ' ' + that.inventoryFoundOptionsDisplayText[k] + '</a>: ' + that.counts[k] + "</div>"); 
 					}
 				});
 				
-				jQuery('#' + that.inventoryCountsID).html(count_list.join(' - '));
+				jQuery('#' + that.inventoryCountsID).html(count_list.join('  '));
+				
+				['FOUND', 'NOT_FOUND', 'NOT_CHECKED'].forEach(function(k) {
+					jQuery('#' + that.container + '_filter_' + k).on('click', function(e) {
+						that.refresh(null, {'status': [k], 'search': jQuery('#' + that.inventoryFilterInputID).val().trim()});
+					});
+				});
 			}
 		}
 		// ------------------------------------------------------------------------------------
