@@ -92,7 +92,6 @@ var caUI = caUI || {};
 								if(data.status != 'ok') { 
 									alert("Error adding item");
 								} else {
-									
 									that.getItemList(0, 10000, null, null);
 									jQuery('#' + that.inventoryItemAutocompleteID).val('');
 								}
@@ -190,23 +189,6 @@ var caUI = caUI || {};
 			return true;
 		}
 		// ------------------------------------------------------------------------------------
-		//
-		//
-		//
-		that.inventoryDeleteButton = function(rowID, itemID) {
-			// var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
-// 			jQuery('#' + that.fieldNamePrefix + "InventoryItemDelete" + itemID).click(
-// 				function() {
-// 					jQuery('#' + that.fieldNamePrefix + "InventoryItem" + rID).fadeOut(250, function() { 
-// 						jQuery('#' + that.fieldNamePrefix + "InventoryItem" + rID).remove(); 
-// 						that.refresh();
-// 					});
-// 					caUI.utils.showUnsavedChangesWarning(true);
-// 					return false;
-// 				}
-// 			);
-		}
-		// ------------------------------------------------------------------------------------
 		// Returns list of subject ids (Eg. if inventory is of objects, ids are object_ids)
 		//
 		that.getRowIDs = function() {
@@ -223,13 +205,16 @@ var caUI = caUI || {};
 			let c = 1;
 			jQuery.each(that.items, function(k, v) {
 				v['n'] = c;
+				v['fieldNamePrefix'] = that.fieldNamePrefix;
 				
 				// filter display
 				that.currentFilters = filters;
 				if(filters) {
 					if(filters['status'] && (Array.isArray(filters['status'])) && (filters['status'].length > 0)) {
-						if(!filters['status'].includes(v['_INVENTORY_STATUS_'])) {
-							return;
+						if(!filters['status'].includes('ALL')) {
+							if(!filters['status'].includes(v['_INVENTORY_STATUS_'])) {
+								return;
+							}
 						}
 					}
 					if(filters['search']) {
@@ -283,14 +268,15 @@ var caUI = caUI || {};
 					// Editor "done" button
 					jQuery(editor).find('.inventoryItemEditorDoneButton').on('click', function(e) {
 						that.refresh(null, that.currentFilters);
+						e.preventDefault();
 					});
 					
 					if(!(form_item_id && (form_item_id == v['item_id']))) {
-						jQuery(editor).find('.inventoryItemEditorContainer').hide();
+						jQuery(item).find('.inventoryItemEditorContainer').append(editor).hide();
 						jQuery(item).find('.inventoryItemDescription').show();
 					} else {
-						jQuery(item).find('.inventoryItemDescription').hide();
 						jQuery(item).find('.inventoryItemEditorContainer').append(editor).show();
+						jQuery(item).find('.inventoryItemDescription').hide();
 					}
 					that.itemsWithForms[form_item_id] = true;
 				}
@@ -299,6 +285,7 @@ var caUI = caUI || {};
 						const id = jQuery(this).attr('id');
 						const item_id = id.match(/^inventory_([\d]+)/)[1] ?? null;
 						that.refresh(item_id, that.currentFilters);
+						e.preventDefault();
 					});
 				}
 
@@ -318,18 +305,28 @@ var caUI = caUI || {};
 				jQuery.each(that.items, function(k, v) {
 					that.counts[v['_INVENTORY_STATUS_']]++;
 				});
+				let total = 0;
 				['FOUND', 'NOT_FOUND', 'NOT_CHECKED'].forEach(function(k) {
 					if(that.counts[k] > 0) { 
 						count_list.push("<div><a href='#' id='" + that.container + '_filter_' + k + "'>" + that.inventoryFoundIcons[k] + ' ' + that.inventoryFoundOptionsDisplayText[k] + '</a>: ' + that.counts[k] + "</div>"); 
+						total += that.counts[k];
 					}
 				});
-				
+				count_list.push("<div><a href='#' id='" + that.container + '_filter_' + 'ALL' + "'>" + that.inventoryFoundIcons['ALL'] + ' ' + that.inventoryFoundOptionsDisplayText['ALL'] + '</a>: ' + total + "</div>");
+			
 				jQuery('#' + that.inventoryCountsID).html(count_list.join('  '));
 				
-				['FOUND', 'NOT_FOUND', 'NOT_CHECKED'].forEach(function(k) {
+				['FOUND', 'NOT_FOUND', 'NOT_CHECKED', 'ALL'].forEach(function(k) {
 					jQuery('#' + that.container + '_filter_' + k).on('click', function(e) {
 						that.refresh(null, {'status': [k], 'search': jQuery('#' + that.inventoryFilterInputID).val().trim()});
+						e.preventDefault();
 					});
+					
+					if((k !== 'ALL') && that.currentFilters && that.currentFilters['status'] && (that.currentFilters['status'].includes(k))) {
+						jQuery('#' + that.container + '_filter_' + k).addClass('inventoryActiveFilter');
+					} else { 
+						jQuery('#' + that.container + '_filter_' + k).removeClass('inventoryActiveFilter');
+					}
 				});
 			}
 		}

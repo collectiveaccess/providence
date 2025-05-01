@@ -8277,11 +8277,6 @@ div.inventoryStats {
 	margin: 0 0 10px 0;
 }
 
-div.inventoryStats div a {
-	text-decoration: none;
-	color: #000;
-}
-
 div.inventoryControls {
 	display: flex;
 	flex-direction: row;
@@ -8332,4 +8327,14 @@ div.inventoryAddItemPanel{
 	
 	border-top: 1px dotted #aaa;
 	border-bottom: 1px dotted #aaa;
+}
+
+div.inventoryStats div a, div.inventoryStats div a i {
+	text-decoration: none;
+	color: #000;
+}
+
+div.inventoryStats div a.inventoryActiveFilter, div.inventoryStats div a.inventoryActiveFilter i {
+	color: #cc0000;
+	
 }

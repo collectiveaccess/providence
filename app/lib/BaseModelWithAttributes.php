@@ -2312,7 +2312,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				'class' => $pa_options['class'] ?? null,
 				'nullOption' => '-',
 				'value' => $vm_values,
-				'forSearch' => true,
+				'forSearch' => caGetOption('forSearch', $pa_options, true),
 				'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
 				'render' => $va_element['settings']['render'] ?? null,
 				'attributes' => $attributes

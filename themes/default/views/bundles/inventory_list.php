@@ -121,7 +121,7 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 			foreach($bundles_to_edit_proc as $f) {
 				print "<div style='font-size: 10px; font-weight: normal; font-style: italic;'>".$t_item->getDisplayLabel("ca_set_items.{$f}").
 				"<br>".
-				$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'425px', 'height' => 1, 'textAreaTagName' => 'textentry'])."</div>\n";
+				$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'425px', 'height' => 1, 'textAreaTagName' => 'textentry', 'forSearch' => false])."</div>\n";
 			}			
 ?>				
 			<div class="inventoryItemEditorDoneButton"><?= caNavIcon(__CA_NAV_ICON_SAVE__, '20px');?> Done</div>

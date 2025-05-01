@@ -2463,7 +2463,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if ($this->getPrimaryKey()) {
 			$set_table_name = Datamodel::getTableName($this->get('table_num'));
 			if (!($template = caGetOption("{$set_table_name}_display_template", $options, null))) {		// display template by table
-				if (!($template = caGetOption('display_template', $options, null))) {						// try the old non-table-specific template?
+				if (!($template = caGetOption(['display_template', 'displayTemplate'], $options, null))) {						// try the old non-table-specific template?
 					$template = $this->getAppConfig()->get("{$set_table_name}_set_item_display_template");			// use default in app.conf
 				}
 			} 
@@ -2577,6 +2577,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			}
 		}
+		$found_option_display_text['ALL'] = _t("All");
 		
 		return [
 			'bundles' => $bundles_to_edit_proc,

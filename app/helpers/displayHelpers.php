@@ -6351,11 +6351,11 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 /**
  *
  */
-function caIsInventory(BaseModel $t_set) : bool {
+function caIsInventory(BaseModel|SearchResult $t_set) : bool {
 	$config = Configuration::load();
 	if(!$config->get('enable_inventories')) { return false; }
-	if(!$t_set || !is_a($t_set, 'ca_sets')) { return false; }
-	if($t_set->getTypeCode() !== $config->get('inventory_set_type')) { return false; }
+	if(!$t_set || (!is_a($t_set, 'ca_sets') && !is_a($t_set, 'SetSearchResult'))) { return false; }
+	if($t_set->get('type_id', ['convertCodesToIdno' => true]) !== $config->get('inventory_set_type')) { return false; }
 	
 	if(in_array(Datamodel::getTableName($t_set->get('table_num')), $config->getList('inventory_types') ?? [], true)) { return true; }
 	

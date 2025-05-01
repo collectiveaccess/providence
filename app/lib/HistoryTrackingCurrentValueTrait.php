@@ -1053,6 +1053,62 @@ trait HistoryTrackingCurrentValueTrait {
 		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 	
 		$pb_show_child_history 		= caGetOption('showChildHistory', $options, false);
+		
+		if($pb_get_current_only && ($pn_limit == 1) && !$pb_no_cache && !caGetOption('force', $options, false)) {
+			if (
+				($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $table_num = $this->tableNum(), 'row_id' => $this->getPrimaryKey()], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))
+				&&
+				($t = Datamodel::getInstance($l->get('current_table_num'), false, $l->get('current_row_id')))
+			) {
+				$t = Datamodel::getInstance($l->get('current_table_num'), false, $l->get('current_row_id'));
+				$type_id = $l->get('current_type_id');
+				$type_info = $t->getTypeList(); 
+				$table = $t->tableName();
+				
+				$color = $type_info[$type_id]['color'] ?? null;
+				if (!$color || ($color == '000000')) {
+					$color = caGetOption("{$table}_{$type_info[$type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+				}
+				
+				$icon_url = '';
+				if($type_info[$type_id]['icon'] ?? null) {
+					$o_media_coder->setMedia($type_info[$type_id]['icon']);
+					$icon_url = $o_media_coder->getMediaTag('icon');
+				}
+				
+				$vs_default_display_template = "^{$table}.preferred_labels.name (^{$table}.idno)";
+				
+				$additional_templates = caGetOption(["{$table}_{$type_info[$type_id]['idno']}_additionalTemplates", "{$table}_".$t->get('ca_relationship_types.type_code')."_additionalTemplates", "{$table}_additionalTemplates"], $pa_bundle_settings, null);
+				if($use_template && isset($additional_templates[$use_template])) {
+					$vs_display_template = $additional_templates[$use_template];
+				} else {
+					$vs_display_template = $pb_display_label_only ? "" : caGetOption(["{$table}_{$type_info[$type_id]['idno']}_displayTemplate", "{$table}_".$t->get('ca_relationship_types.type_code')."_displayTemplate", "{$table}_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+				}
+				
+				$history[$l->get('value_date')][] = [
+					'type' => Datamodel::getTableName($l->get('current_table_num')),
+					'id' => $l->get('current_row_id'),
+					'display' => $t->getWithTemplate($vs_display_template, ['locale' => $locale]),
+					'color' => $color,
+					'icon_url' => $icon_url,
+					'typename_singular' => $typename = $type_info[$type_id]['name_singular'],
+					'typename_plural' => $type_info[$type_id]['name_plural'],
+					'type_id' => $type_id,
+					'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$color.'"><div class="caHistoryTrackingIcon">'.($icon_url ? $icon_url : '<div class="caHistoryTrackingIconText">'.$typename.'</div>').'</div></div>',
+					'date' => $l->get('value_date'),
+		
+					'table_num' => $table_num,
+					'row_id' => $row_id,
+					'current_table_num' => $l->get('current_table_num'),
+					'current_row_id' => $l->get('current_row_id'),
+					'tracked_table_num' => $l->get('tracked_table_num'),
+					'tracked_row_id' => $l->get('tracked_row_id'),
+					
+					'status' => 'CURRENT'
+				];
+				return $history;
+			}
+		}
 	
 		$vn_current_date = TimeExpressionParser::now();
 		

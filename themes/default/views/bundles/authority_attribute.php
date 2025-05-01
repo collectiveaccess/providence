@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-
 $vs_field_name_prefix 		= $this->getVar('field_name_prefix');
 $vs_quickadd_url 			= $this->getVar('quickadd_url');
 $vs_url 					= $this->getVar('lookup_url');
@@ -140,19 +138,19 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$vs_field_name_prefix
 					}
 				}
 				
-				jQuery('#<?= $vs_field_name_prefix; ?>_{n}').val(ui.item.id);
-				jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+				jQuery(this).parent().find('#<?= $vs_field_name_prefix; ?>_{n}').val(ui.item.id);
+				jQuery(this).parent().find('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
 <?php } else { ?>		
 				var label = jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, ''));
-				jQuery('#<?= $vs_field_name_prefix; ?>_{n}').val(label);
-				jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val(label);
+				jQuery(this).parent().find('#<?= $vs_field_name_prefix; ?>_{n}').val(label);
+				jQuery(this).parent().find('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val(label);
 <?php } ?>				
 				event.preventDefault();
 			},
 			change: function( event, ui ) {
 				// If nothing has been selected remove all content from  text input
-				if(!jQuery('#<?= $vs_field_name_prefix; ?>_{n}').val()) {
-					jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val('');
+				if(!jQuery(this).parent().find('#<?= $vs_field_name_prefix; ?>_{n}').val()) {
+					jQuery(this).parent().find('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val('');
 				}
 			}
 		}).click(function() { this.select(); });
