@@ -2540,7 +2540,7 @@ function caGetMediaDisplayInfo($ps_context, $ps_mimetype) {
  *
  * @return
  */
-function caGetMediaDisplayInfoForMimetype(string $context, string $mimetype) : ?array {
+function caGetMediaDisplayInfoForMimetype(string $context, ?string $mimetype) : ?array {
 	$o_config = Configuration::load();
 	$o_media_display_config = caGetMediaDisplayConfig();
 
@@ -5826,7 +5826,6 @@ function caEscapeFilenameForDownload(string $filename, ?array $options=null) : s
 	}
 	return $v;
 }
-
 # ------------------------------------------------------------------
 /**
  * Generate name for downloaded representation media file based upon app.conf 
