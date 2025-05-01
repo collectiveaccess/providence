@@ -94,6 +94,11 @@ var caUI = caUI || {};
 								} else {
 									that.getItemList(0, 10000, null, null);
 									jQuery('#' + that.inventoryItemAutocompleteID).val('');
+															
+									console.log(caUI);
+									if(caUI && caUI.initBundleUpdateManager) { that.bundleUpdateManager = caUI.initBundleUpdateManager(); console.log('zzz', that.bundleUpdateManager); }
+									
+			if(that.bundleUpdateManager) { console.log("update inspectir"); that.bundleUpdateManager.reloadInspector(); }
 								}
 							}
 						);
@@ -186,6 +191,8 @@ var caUI = caUI || {};
 				that.refresh(); 
 				caUI.utils.showUnsavedChangesWarning(true);
 			}
+			
+			console.log("try", that.bundleUpdateManager);
 			return true;
 		}
 		// ------------------------------------------------------------------------------------

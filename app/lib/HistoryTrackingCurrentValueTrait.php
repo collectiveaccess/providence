@@ -1056,7 +1056,7 @@ trait HistoryTrackingCurrentValueTrait {
 		
 		if($pb_get_current_only && ($pn_limit == 1) && !$pb_no_cache && !caGetOption('force', $options, false)) {
 			if (
-				($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $table_num = $this->tableNum(), 'row_id' => $this->getPrimaryKey()], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))
+				($l = ca_history_tracking_current_values::find(['policy' => $policy, 'table_num' => $table_num = $this->tableNum(), 'row_id' => $row_id], ['returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()]))
 				&&
 				($t = Datamodel::getInstance($l->get('current_table_num'), false, $l->get('current_row_id')))
 			) {

@@ -170,8 +170,8 @@ class SetEditorController extends BaseEditorController {
 				$settings = $t_placement->getSettings();
 			}
 		}
-		if(!($settings['display_template'] ?? null)) {
-			$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
+		if(!($settings['display_template'] ?? null) && !($settings['displayTemplate'] ?? null)) {
+		//	$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
 		}
 		
 		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction]));
