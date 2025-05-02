@@ -110,6 +110,8 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 					
 				</div>
 				<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton">{_INVENTORY_STATUS_ICON_}</a>
+				
+				<a href="#" id="inventory_{item_id}_delete" class="inventoryItemDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 		</div>
 	</textarea>
@@ -145,12 +147,12 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
 			lookupURL: '<?= $lookup_urls['search']; ?>',
 			addItemToInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'addItemToInventory'); ?>',
+			removeItemFromInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'removeItemFromInventory'); ?>',
+			
 			itemListURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetInventoryItemList', ['placement_id' => $this->getVar('placement_code')]); ?>',
 			
 			itemTemplateClass: '<?= $id_prefix; ?>inventoryItemTemplate',
 			editorTemplateClass: '<?= $id_prefix; ?>inventoryItemEditorTemplate',
-			
-			deleteSetItemButton: <?= json_encode(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, "20px")); ?>,
 			
 			inventorySetStatusButtonClass: 'inventorySetStatusButton',
 			inventoryFoundOptions: <?= json_encode($inventory_found_options); ?>,

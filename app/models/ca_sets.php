@@ -1556,7 +1556,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	public function removeItemByItemID($pn_item_id, $pn_user_id=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
-		if (!$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) { return false; }
+		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) { return false; }
 		
 		$t_item = new ca_set_items();
 		if ($t_item->load($pn_item_id)) {

@@ -8336,5 +8336,10 @@ div.inventoryStats div a, div.inventoryStats div a i {
 
 div.inventoryStats div a.inventoryActiveFilter, div.inventoryStats div a.inventoryActiveFilter i {
 	color: #cc0000;
-	
+}
+
+a.inventoryItemDeleteButton {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
 }

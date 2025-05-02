@@ -60,6 +60,7 @@ var caUI = caUI || {};
 			lookupURL: null,
 			itemListURL: null,
 			addItemToInventoryURL: null,
+			removeItemFromInventoryURL: null,
 			editInventoryItemsURL: null,			// url of inventory item editor (without item_id parameter key or value)
 			
 			editInventoryItemButton: null,			// html to use for edit inventory item button
@@ -94,11 +95,8 @@ var caUI = caUI || {};
 								} else {
 									that.getItemList(0, 10000, null, null);
 									jQuery('#' + that.inventoryItemAutocompleteID).val('');
-															
-									console.log(caUI);
-									if(caUI && caUI.initBundleUpdateManager) { that.bundleUpdateManager = caUI.initBundleUpdateManager(); console.log('zzz', that.bundleUpdateManager); }
-									
-			if(that.bundleUpdateManager) { console.log("update inspectir"); that.bundleUpdateManager.reloadInspector(); }
+														
+									if(caBundleUpdateManager) { caBundleUpdateManager.reloadInspector(); }
 								}
 							}
 						);
@@ -191,8 +189,6 @@ var caUI = caUI || {};
 				that.refresh(); 
 				caUI.utils.showUnsavedChangesWarning(true);
 			}
-			
-			console.log("try", that.bundleUpdateManager);
 			return true;
 		}
 		// ------------------------------------------------------------------------------------
@@ -287,6 +283,7 @@ var caUI = caUI || {};
 					}
 					that.itemsWithForms[form_item_id] = true;
 				}
+				
 				if(that.inventorySetStatusButtonClass) {
 					jQuery(item).find('.' + that.inventorySetStatusButtonClass).on('click', function(e) {
 						const id = jQuery(this).attr('id');
@@ -295,6 +292,26 @@ var caUI = caUI || {};
 						e.preventDefault();
 					});
 				}
+				
+				
+					
+					// Delete item button
+				jQuery(item).find('.inventoryItemDeleteButton').on('click', function(e) {
+						const id = jQuery(this).attr('id');
+						const item_id = id.match(/^inventory_([\d]+)/)[1] ?? null;
+						jQuery.getJSON(that.removeItemFromInventoryURL, {'set_id': that.inventoryID, 'table_num': that.table_num, 'item_id': item_id } , 
+							function(data) { 
+								if(data.status != 'ok') { 
+									alert("Error adding item");
+								} else {
+									that.getItemList(0, 10000, null, null);
+									jQuery('#' + that.inventoryItemAutocompleteID).val('');
+														
+									if(caBundleUpdateManager) { caBundleUpdateManager.reloadInspector(); }
+								}
+							}
+						);
+				});
 
 				jQuery('#' + that.inventoryItemListID).append(item);
 				c++;
