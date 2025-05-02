@@ -2191,9 +2191,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if($set_item_template) {
 				$va_row['displayTemplate'] .= array_shift($set_processed_templates);
 			}
-			if($ps_templateDescription) {
-				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
-			}
+			$va_row['displayTemplateDescription'] = $ps_templateDescription ? array_shift($va_processed_templates_description) : '';
 		
 			$va_items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
 		}

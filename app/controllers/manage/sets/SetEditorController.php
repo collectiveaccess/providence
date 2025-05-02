@@ -170,6 +170,7 @@ class SetEditorController extends BaseEditorController {
 				$settings = $t_placement->getSettings();
 			}
 		}
+		if(!is_array($settings)) { $settings = []; }
 		if(!($settings['display_template'] ?? null) && !($settings['displayTemplate'] ?? null)) {
 			$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
 		}
