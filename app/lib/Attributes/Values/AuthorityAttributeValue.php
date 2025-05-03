@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -317,6 +317,21 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 */
 	public function tableName() {
 		return $this->ops_table_name;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of additional values for display
+	 * to support additional interface elements on-screen for a value.
+	 *
+	 * Returns an empty array for attribute services that don't support additional values.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalDisplayValues() : array {
+		return [
+			'display' => $this->getDisplayValue(['output' => 'text']),
+			'id' => $this->getDisplayValue(['output' => 'idsOnly'])
+		];
 	}
 	# ------------------------------------------------------------------
 	/**

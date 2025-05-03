@@ -25,38 +25,40 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set_item = $this->getVar('t_subject');
-	$vn_item_id = $this->getVar('subject_id');
-	
-	$t_ui = $this->getVar('t_ui');
-	
-	$forced_values 		= $this->getVar('forced_values') ?? [];
-	
+$t_set_item = $this->getVar('t_subject');
+$item_id = $this->getVar('subject_id');
+$t_ui = $this->getVar('t_ui');
+$forced_values = $this->getVar('forced_values') ?? [];
+$bundle_list = [];
 ?>
 <div class="sectionBox">
 <?php
-	print $vs_control_box = caFormControlBox(
+	print $control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SetItemEditorForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/set_items', 'SetItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)), 
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/set_items', 'SetItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $item_id)), 
 		'', 
-		(intval($vn_item_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/set_items', 'SetItemEditor', 'Delete/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)) : ''
+		(intval($item_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/set_items', 'SetItemEditor', 'Delete/'.$this->request->getActionExtra(), array('item_id' => $item_id)) : ''
 	);
 ?>
 <?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$vn_item_id, 'SetItemEditorForm', null, 'POST', 'multipart/form-data');
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$item_id, 'SetItemEditorForm', null, 'POST', 'multipart/form-data');
 		
-		$va_form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+		$form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 								'request' => $this->request, 
 								'formName' => 'SetItemEditorForm',
-								'forcedValues' => $forced_values));
+								'forcedValues' => $forced_values), $bundle_list);
 										
-		print join("\n", $va_form_elements);
+		print join("\n", $form_elements);
 		
-		print $vs_control_box;
+		print $control_box;
 ?>
-		<input type='hidden' name='item_id' value='<?= $vn_item_id; ?>'/>
+		<input type='hidden' name='item_id' value='<?= $item_id; ?>'/>
 	</form>
-<?php
-	//print $vs_control_box;
-?>
 </div>
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?= caSetupEditorScreenOverlays($this->request, $t_set_item, $bundle_list); ?>
+
+
+
+

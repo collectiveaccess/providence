@@ -2502,10 +2502,17 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$acc = [];
 					foreach($editable_bundle_info['bundles'] as $f) {
 						$sf = str_replace('.', '_', $f);
-						$acc[$sf] = $qr->get("ca_set_items.{$f}");
-						$acc["{$sf}_display"] = $qr->get("ca_set_items.{$f}", ['convertCodesToDisplayText' => true]);
+						
+						$dt = ca_metadata_elements::getElementDatatype($f);
+						if(ca_metadata_elements::isAuthorityDatatype($dt)) {
+							$acc[$sf] = $qr->get("ca_set_items.{$f}", ['convertCodesToIdno' => true, 'output' => 'text', 'includeID' => false]);
+						} else {
+							$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
+						}
+						$acc["{$sf}_display"] = $qr->get("ca_set_items.{$f}.display", []);
+						$acc["{$sf}_id"] = $qr->get("ca_set_items.{$f}.id", []);
+						
 					}
-					
 					$found_idno = $acc["{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}_idno"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]);
 					$acc["_INVENTORY_STATUS_"] = $found_options[$found_idno] ?? 'NOT_CHECKED';
 					$acc["_INVENTORY_STATUS_DISPLAY_"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToDisplayText' => true]);
@@ -2596,11 +2603,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @return string Rendered HTML bundle for display
 	 */
 	public function getInventoryListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $settings=null) {
-		if ($this->getItemCount() > 50) {
-			$vs_thumbnail_version = 'tiny';
-		} else {
-			$vs_thumbnail_version = "thumbnail";
-		}
+		$vs_thumbnail_version = "thumbnail";
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_set', $this);	

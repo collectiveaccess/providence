@@ -32,9 +32,6 @@ $type_singular 		= $this->getVar('type_singular');
 $type_plural 		= $this->getVar('type_plural');
 
 $settings 			= $this->getVar('settings');
-$is_batch			= $this->getVar('batch');
-
-$force_values 		= $this->getVar('forceValues');
 
 $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 
@@ -74,44 +71,47 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 		<div style='float:right; '><?= caEditorPrintSetItemsControls($this); ?></div>
 		
 		<div class="inventoryControls">
-			<div><?= _t('Filter:'); ?><input type="text" size="20" name="inventoryFilter" id="<?= $id_prefix; ?>inventoryFilter"></div>
+			<div><?= _t('Filter: %1', caHTMLTextInput('inventoryFilter', ['id' => "{$id_prefix}inventoryFilter"], ["width" => "150px"])); ?></div>
 			<div><?= _t("Sort: %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"])); ?></div>
-			<!--<a href="#" onclick='inventoryEditorOps.showGrid(); return false;'>Show Grid</a>-->
 		</div>
 		<div id="<?= $id_prefix; ?>inventoryCounts" class="inventoryStats"></div>
 	</div>
 <?php
 	}
 	
+	if(!$dont_show_add) {
 ?>
 	<div class="inventoryAddItemPanel" id="<?= $id_prefix; ?>addItemForm">
 		<?= _t('Add to inventory').': '; ?>
 		<input type="text" size="70" name="inventoryItemAutocompleter" id="<?= $id_prefix; ?>inventoryItemAutocompleter" class="lookupBg"/>
 	</div>
-	
+<?php
+	}
+?>
  	<div id="<?= $id_prefix; ?>inventoryItemListContainer"> 
  		<div id="<?= $id_prefix; ?>inventoryItemList" class="inventoryList"> </div>
  	</div>
-
-	<div class="inventoryItemEditorOverlay" id="<?= $id_prefix; ?>inventoryItemEditorOverlay">
-		Grid here
-	</div>
 	
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
 			<div class="inventoryItemContent">
 				<div style="width: 36px;">{n}</div>
-				<div style="width: 120px;">{representation_tag}</div>
-				<div style="width: 100%;" class="inventoryItemDescription">
+				<div style="width: 140px;">{representation_tag}</div>
+				<div class="inventoryItemDescription">
 					{displayTemplate}
 					{displayTemplateDescription}
 				</div>
-				<div style="width: 100%; display: none;" class="inventoryItemEditorContainer">
+				<div style="display: none;" class="inventoryItemEditorContainer">
 					
 				</div>
 				<a href="#" id="inventory_{item_id}_set_status" class="inventorySetStatusButton">{_INVENTORY_STATUS_ICON_}</a>
-				
+<?php
+if(!$dont_show_delete) {
+?>				
 				<a href="#" id="inventory_{item_id}_delete" class="inventoryItemDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+<?php
+}
+?>
 			</div>
 		</div>
 	</textarea>

@@ -64,6 +64,8 @@ class BaseEditorController extends ActionController {
 	public function Edit($pa_values=null, $pa_options=null) {
 		AssetLoadManager::register('panel');
 		AssetLoadManager::register('imageScroller');
+		AssetLoadManager::register('bundleListEditorUI');
+
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 

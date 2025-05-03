@@ -45,7 +45,7 @@ print caHTMLTextInput(
 	array(
 		'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 		'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1,
-		'value' => '{{'.$pa_element_info['element_id'].'}}',
+		'value' => '{{'.$pa_element_info['element_id'].'_display}}',
 		'maxlength' => 512,
 		'id' => "{$vs_field_name_prefix}_autocomplete{n}",
 		'class' => $vs_class
@@ -54,7 +54,7 @@ print caHTMLTextInput(
 print caHTMLHiddenInput(
 	"{$vs_field_name_prefix}_{n}",
 	array(
-		'value' => '{{'.$pa_element_info['element_id'].'}}',
+		'value' => '{{'.$pa_element_info['element_id'].'_id}}',
 		'id' => "{$vs_field_name_prefix}_{n}"
 	)
 );
@@ -91,17 +91,6 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$vs_field_name_prefix
 			});
 		}
 <?php } ?>
-		var v = jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val();
-		v=v.replace(/(<\/?[^>]+>)/gi, function(m, p1, offset, val) {
-			jQuery('#<?= $vs_field_name_prefix; ?>_display{n}').html(p1);
-			return '';
-		});
-		v=v.replace(/\[([\d]+)\]$/gi, function(m, p1, offset, val) {
-			jQuery('#<?= $vs_field_name_prefix; ?>_{n}').val(parseInt(p1));
-			return '';
-		});
-		jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val(v.trim());
-
 		jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').autocomplete({
 			minLength: <?= (int)Configuration::load()->get(["{$table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 			source: function( request, response ) {
@@ -157,6 +146,7 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$vs_field_name_prefix
 		
 		jQuery('#<?= $vs_field_name_prefix; ?>_clear_{n}').on('click', function(e) {
 			jQuery('#<?= $vs_field_name_prefix; ?>_{n}').val('');
+			jQuery('#<?= $vs_field_name_prefix; ?>{n}').val('');
 			jQuery('#<?= $vs_field_name_prefix; ?>_autocomplete{n}').val('');
 		});
 	});

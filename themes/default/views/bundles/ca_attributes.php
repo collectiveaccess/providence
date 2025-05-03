@@ -88,7 +88,9 @@ $va_initial_values = array();
 $va_errors = array();
 $vs_bundle_preview = '';
 
-$va_template_tags = $va_element_ids;
+if(!is_array($va_template_tags = $va_element_ids)) {
+	$va_template_tags = [];
+}
 if(!($vs_display_template = trim(caGetOption('displayTemplate', $settings)))) {
 	$vs_display_template = caGetOption('displayTemplate', $va_element_settings, null);
 }
@@ -129,16 +131,14 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 				$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true, 'showMediaInfo' => true));
 			}
 			
-			switch($dt) {
-				case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-					// Emit display values for InformationService attributes that support additional 
-					// user interface elements beyond the value entry fields (Eg. Numishare)
-					// 
-					foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
-						if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $k; }
-						$va_initial_values[$vn_attr_id][$k] = $v;
-					}
-					break;	
+			if(method_exists($o_value, 'getAdditionalDisplayValues')) {
+				// Emit display values for attributes that support additional 
+				// user interface elements beyond the value entry fields (Eg. InformationService plugins such as Numishare)
+				// 
+				foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
+					if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $k; }
+					$va_initial_values[$vn_attr_id][$o_value->getElementID().'_'.$k] = $v;
+				}
 			}
 			
 			$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;

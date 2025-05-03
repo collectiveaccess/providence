@@ -57,6 +57,10 @@ class SetItemController extends ActionController {
 	 *
 	 */
 	public function Form($pa_values=null, $pa_options=null) {
+		AssetLoadManager::register('panel');
+		AssetLoadManager::register('imageScroller');
+		AssetLoadManager::register('bundleListEditorUI');
+		
 		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($pa_options ?? [], ['loadSubject' => true]));
 		$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
 		$vs_n = $this->request->getParameter('n', pString);

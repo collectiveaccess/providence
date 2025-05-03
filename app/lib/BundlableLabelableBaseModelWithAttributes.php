@@ -5128,10 +5128,10 @@ if (!$vb_batch) {
 							if(preg_match("!^inventory_([\d]+)_{$container_fld}_(.*)$!", $k, $m)) {
 								$acc[$m[1]][$m[2]] = $v;
 							}
-							//inventory_396220_inventory_cont_inventory_notes
 						}
+						print_R($acc);
 						foreach($acc as $item_id => $d) {
-							if(!$d[$found_fld]) { continue; } 
+							//if(!$d[$found_fld]) { continue; } 
 							if($s = ca_set_items::findAsInstance($item_id)) {
 								$s->replaceAttribute($d, $container_fld);
 								$s->update();

@@ -523,7 +523,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Return list of additional values for display for information services such as Numisgare (and perhaps others)
+	 * Return list of additional values for display for information services such as Numishare (and perhaps others)
 	 * to support additional interface elements on-screen for a value.
 	 *
 	 * Returns an empty array for attribute services that don't support additional values.

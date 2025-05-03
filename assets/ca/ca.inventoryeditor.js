@@ -162,19 +162,6 @@ var caUI = caUI || {};
 			});
 		}
 		// ------------------------------------------------------------------------------------
-		//
-		// Show full-window overlap editing interface
-		//
-		that.showGrid = function() {
-			//jQuery('#caResultsEditorPanel').empty();
-			jQuery('#caMediaPanel').show();
-			
-			jQuery.each(that.items, function(k, v) {
-				jQuery('#caMediaPanelContentArea').append('<div style="color: white;">' + v['set_item_label']+ '</div>');
-			});
-		}
-		
-		// ------------------------------------------------------------------------------------
 		// Adds item to inventory editor display
 		that.addItemToInventory = function(rowID, valueArray, isNew, prepend) {
 			if (isNew) { 
@@ -240,9 +227,11 @@ var caUI = caUI || {};
 					let editor = jQuery('#' + that.container + ' textarea.' + that.editorTemplateClass).template(v);
 				
 					// set <select> elements
+					console.log("@@@", jQuery(editor).find("select"));
 					let selects = jQuery(editor).find("select").each(function(ksel, vsel) {
 						const id = jQuery(vsel).attr('id');
 						const fn = id.match(/^inventory_[\d]+_(.*)$/)[1] ?? null;
+						console.log(id, fn, v, v[fn]);
 						if(fn) {
 							jQuery(editor).find('#' + id + ' option[value="' + v[fn] + '"]').attr('selected','selected');
 						}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2399,6 +2399,17 @@ class SearchResult extends BaseObject {
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$vs_auth_table_name = $o_value->tableName();
 						
+						if(sizeof($va_auth_spec) === 1) {
+							$r = null;
+							$extra_values = $o_value->getAdditionalDisplayValues();
+							switch($va_auth_spec[0]) {
+								case 'display':
+								case 'id':
+									$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $extra_values[$va_auth_spec[0]];
+									continue(2);
+							}
+						}
+						
 						$vb_has_field_spec = (is_array($va_auth_spec) && sizeof($va_auth_spec));
 						if (!$vb_has_field_spec) { $va_auth_spec = [Datamodel::primaryKey($vs_auth_table_name)]; }
 						array_unshift($va_auth_spec, $vs_auth_table_name);
@@ -2503,8 +2514,6 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-								//ca_objects.informationservice.ulan_container
-							
 								// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
 								if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
 									switch($va_path_components['subfield_name']) {

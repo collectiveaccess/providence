@@ -2344,6 +2344,10 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				//
 				// ... replace value
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
+				
+				// @TODO: generalize/cleanup
+				$vs_form_element = str_replace('{{'.$va_element['element_id'].'_id}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_id}', $vs_form_element);
+				$vs_form_element = str_replace('{{'.$va_element['element_id'].'_display}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_display}', $vs_form_element);
 			
 			
 				// escape any special characters in jQuery selectors
@@ -2355,8 +2359,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$vs_form_element
 				);
 				
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_',$f), $vs_form_element);
+				// @TODO: clean up - too many special cases and tagging variants here
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $f), $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'{n}', str_replace('.', '_', $f), $vs_form_element);
 				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_autocomplete{n}', str_replace('.', '_',$f).'_autocomplete', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_id{n}', str_replace('.', '_',$f).'_id', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_display{n}', str_replace('.', '_',$f).'_display', $vs_form_element);
 				if (caGetOption('removeTemplateNumberPlaceholders', $pa_options, true)) {
 					$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				}
@@ -2383,7 +2391,6 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if(caGetOption('elementsOnly', $pa_options, false)) {
 			return ['element_ids' => $va_element_ids, 'elements' => $va_elements_by_container];
 		}
-		
 		return $o_view->render(caGetOption('view', $pa_options, 'ca_search_form_attributes.php'));
 	}
 	# ------------------------------------------------------------------
