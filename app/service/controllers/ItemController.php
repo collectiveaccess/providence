@@ -25,18 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
+
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQLServices\Schemas\ItemSchema;
 use GraphQLServices\Helpers\Item;
 
-require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
-require_once(__CA_APP_DIR__.'/service/schemas/ItemSchema.php');
-require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
-require_once(__CA_APP_DIR__.'/service/helpers/ItemHelpers.php');
+require_once(__CA_LIB_DIR__ . '/Service/GraphQLServiceController.php');
+require_once(__CA_APP_DIR__ . '/service/schemas/ItemSchema.php');
+require_once(__CA_APP_DIR__ . '/service/helpers/ServiceHelpers.php');
+require_once(__CA_APP_DIR__ . '/service/helpers/ItemHelpers.php');
 
-class ItemController extends \GraphQLServices\GraphQLServiceController {
+class ItemController extends \GraphQLServices\GraphQLServiceController
+{
 	# -------------------------------------------------------
 	#
 	static $config = null;
@@ -44,14 +46,16 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 	/**
 	 *
 	 */
-	public function __construct(&$request, &$response, $view_paths) {
+	public function __construct(&$request, &$response, $view_paths)
+	{
 		parent::__construct($request, $response, $view_paths);
 	}
-	
+
 	/**
 	 *
 	 */
-	public function _default(){
+	public function _default()
+	{
 		$qt = new ObjectType([
 			'name' => 'Query',
 			'fields' => [
@@ -94,19 +98,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+
 						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
 						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
-						
+
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
-						
+
 						return [
-							'table' => $rec->tableName(), 
-							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 
+							'table' => $rec->tableName(),
+							'idno' => $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')),
+							'identifier' => $args['identifier'],
+							'id' => $rec->getPrimaryKey(),
 							'bundles' => $data,
-							'manifestUrl' => $rec->getAppConfig()->get('site_host').$rec->getAppConfig()->get('ca_url_root').'/service/IIIF/manifest/'.$args['table'].':'.$rec->getPrimaryKey()
+							'manifestUrl' => $rec->getAppConfig()->get('site_host') . $rec->getAppConfig()->get('ca_url_root') . '/service/IIIF/manifest/' . $args['table'] . ':' . $rec->getPrimaryKey()
 						];
 					}
 				],
@@ -149,19 +155,21 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+
 						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
 						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
-						
+
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
-						
+
 						return [
-							'table' => $rec->tableName(), 
-							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'identifier' => $args['identifier'], 'id' => $rec->getPrimaryKey(), 
+							'table' => $rec->tableName(),
+							'idno' => $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')),
+							'identifier' => $args['identifier'],
+							'id' => $rec->getPrimaryKey(),
 							'bundles' => $data,
-							'manifestUrl' => $rec->getAppConfig()->get('site_host').$rec->getAppConfig()->get('ca_url_root').'/service/IIIF/manifest/'.$args['table'].':'.$rec->getPrimaryKey()
+							'manifestUrl' => $rec->getAppConfig()->get('site_host') . $rec->getAppConfig()->get('ca_url_root') . '/service/IIIF/manifest/' . $args['table'] . ':' . $rec->getPrimaryKey()
 						];
 					}
 				],
@@ -265,21 +273,24 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+
 						$resolve_to_related = $args['resolveRelativeToRelated'];
-						
+
 						// TODO: add explicit parameter for idno and id (to handle case where numeric idnos are used) 
 						$opts = [];
 						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
 						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
-						
+
 						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
-						
+
 						$targets = [];
-						if(is_array($args['targets'])) {
-							$targets = $args['targets'];
-						} elseif($target = $args['target']) {
+						if (is_array($args['targets'])) {
+							$targets[] = array_map(function ($obj) {
+								$obj->checkAccess = $check_access ?? null;
+								return $obj;
+							}, $args['targets']);
+						} elseif ($target = $args['target']) {
 							$targets[] = [
 								'table' => $target,
 								'restrictToTypes' => $args['restrictToTypes'] ?? null,
@@ -290,21 +301,22 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'includeMedia' => $args['includeMedia'] ?? null,
 								'mediaVersions' => $args['mediaVersions'] ?? null,
 								'mediaBundles' => $args['mediaBundles'] ?? null,
-								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null,
+								'checkAccess' => $check_access ?? null
 							];
 						} else {
 							throw new \ServiceException(_t('No target specified'));
 						}
-						
+
 						$rels_by_target = [];
-						foreach($targets as $t) {
+						foreach ($targets as $t) {
 							$rels_by_target[] = \GraphQLServices\Helpers\Item\processTarget($rec, $table, $t, ['resolveRelativeToRelated' => $resolve_to_related]);
 						}
 						return [
-							'table' => $rec->tableName(), 
-							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 
-							'identifier' => $args['identifier'], 
-							'id' => $rec->getPrimaryKey(), 
+							'table' => $rec->tableName(),
+							'idno' => $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')),
+							'identifier' => $args['identifier'],
+							'id' => $rec->getPrimaryKey(),
 							'targets' => $rels_by_target,
 							'relationships' => $rels_by_target[0]['relationships'] ?? null
 						];
@@ -410,21 +422,24 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+
 						$resolve_to_related = $args['resolveRelativeToRelated'];
-						
+
 						// TODO: add explicit parameter for idno and id (to handle case where numeric idnos are used) 
 						$opts = [];
 						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
 						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
-						
+
 						$check_access = \GraphQLServices\Helpers\filterAccessValues($args['checkAccess']);
-						
+
 						$targets = [];
-						if(is_array($args['targets'])) {
-							$targets = $args['targets'];
-						} elseif($target = $args['target']) {
+						if (is_array($args['targets'])) {
+							$targets[] = array_map(function ($obj) {
+								$obj->checkAccess = $check_access ?? null;
+								return $obj;
+							}, $args['targets']);
+						} elseif ($target = $args['target']) {
 							$targets[] = [
 								'table' => $target,
 								'restrictToTypes' => $args['restrictToTypes'] ?? null,
@@ -435,21 +450,22 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'includeMedia' => $args['includeMedia'] ?? null,
 								'mediaVersions' => $args['mediaVersions'] ?? null,
 								'mediaBundles' => $args['mediaBundles'] ?? null,
-								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null,
+								'checkAccess' => $check_access ?? null
 							];
 						} else {
 							throw new \ServiceException(_t('No target specified'));
 						}
-						
+
 						$rels_by_target = [];
-						foreach($targets as $t) {
+						foreach ($targets as $t) {
 							$rels_by_target[] = \GraphQLServices\Helpers\Item\processTarget($rec, $table, $t, ['resolveRelativeToRelated' => $resolve_to_related]);
 						}
 						return [
-							'table' => $rec->tableName(), 
-							'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 
-							'identifier' => $args['identifier'], 
-							'id' => $rec->getPrimaryKey(), 
+							'table' => $rec->tableName(),
+							'idno' => $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')),
+							'identifier' => $args['identifier'],
+							'id' => $rec->getPrimaryKey(),
 							'targets' => $rels_by_target,
 							'relationships' => $rels_by_target[0]['relationships'] ?? null
 						];
@@ -534,39 +550,39 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = self::authenticate($args['jwt']);
-						
+
 						list($identifier, $opts) = \GraphQLServices\Helpers\resolveParams($args);
 						$rec = self::resolveIdentifier($table = $args['table'], $identifier, null, $opts);
 						$rec_pk = $rec->primaryKey();
-						
+
 						$target = caGetOption('target', $opts, 'ca_object_representations');
-						
+
 						$start = caGetOption('start', $args, 0);
 						$limit = caGetOption('limit', $args, null);
-						
+
 						$media_list = [];
-						if($target === 'ca_object_representations') {
+						if ($target === 'ca_object_representations') {
 							$reps = $rec->getRelatedItems('ca_object_representations', [
-								'returnAs' => 'array', 
+								'returnAs' => 'array',
 								'filterNonPrimaryRepresentations' => false,
-								'checkAccess' => caGetOption('checkAccess', $args, null), 
-								'restrictToTypes' => caGetOption('restrictToTypes', $args, null), 
+								'checkAccess' => caGetOption('checkAccess', $args, null),
+								'restrictToTypes' => caGetOption('restrictToTypes', $args, null),
 								'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $args, null)
 							]);
-							if(is_array($reps)) {
-								if($start || $limit) {
+							if (is_array($reps)) {
+								if ($start || $limit) {
 									$reps = array_slice($reps, $start, $limit);
 								}
-								
-								$qr_reps = caMakeSearchResult('ca_object_representations', array_map(function($v) {
+
+								$qr_reps = caMakeSearchResult('ca_object_representations', array_map(function ($v) {
 									return $v['representation_id'];
 								}, $reps));
-								
-								while($qr_reps->nextHit()) {
+
+								while ($qr_reps->nextHit()) {
 									$rinfo = array_shift($reps);
 									$versions = [];
 									$media_versions = caGetOption('mediaVersions', $args, $qr_reps->getMediaVersions('media'));
-									foreach($media_versions as $media_version) {
+									foreach ($media_versions as $media_version) {
 										$media_info = $qr_reps->getMediaInfo('media', $media_version);
 										$version = [
 											'version' => $media_version,
@@ -580,12 +596,12 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 											'filesize' => $media_info['PROPERTIES']['filesize'] ?? null,
 											'md5' => $media_info['MD5']
 										];
-										
+
 										$versions[] = $version;
 									}
-									
+
 									$bundle_data = null;
-									if(is_array($bundles = \GraphQLServices\Helpers\extractBundleNames($t_rep = $qr_reps->getInstance(), $args))) {
+									if (is_array($bundles = \GraphQLServices\Helpers\extractBundleNames($t_rep = $qr_reps->getInstance(), $args))) {
 										$bundle_data = \GraphQLServices\Helpers\fetchDataForBundles($t_rep, $bundles, []);
 									}
 									$media_list[] = [
@@ -605,16 +621,15 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 									];
 								}
 							}
-						} elseif($t_rec->elementExists($target)) {
-						
+						} elseif ($t_rec->elementExists($target)) {
 						} else {
 							throw new \ServiceException(_t('Invalid target specified'));
 						}
-						
+
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
 						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
-						
-						return ['table' => $rec->tableName(), 'idno'=> $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'id' => $rec->getPrimaryKey(), 'media' => $media_list];
+
+						return ['table' => $rec->tableName(), 'idno' => $rec->get($rec->getProperty('ID_NUMBERING_ID_FIELD')), 'id' => $rec->getPrimaryKey(), 'media' => $media_list];
 					}
 				],
 				// ------------------------------------------------------------
@@ -701,14 +716,12 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 				// ------------------------------------------------------------
 			]
 		]);
-		
+
 		$mt = new ObjectType([
 			'name' => 'Mutation',
-			'fields' => [
-			
-			]
+			'fields' => []
 		]);
-		
+
 		return self::resolve($qt, $mt);
 	}
 	# -------------------------------------------------------
