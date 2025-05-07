@@ -272,7 +272,10 @@ function processItemRelationships(string $table, array $identifer, ?array $optio
 	
 	$targets = [];
 	if(is_array($args['targets'])) {
-		$targets = $args['targets'];
+		$targets = array_map(function ($obj) {
+			$obj->checkAccess = $check_access ?? null;
+			return $obj;
+		}, $args['targets']);
 	} elseif($target = $args['target']) {
 		$targets[] = [
 			'table' => $target,
