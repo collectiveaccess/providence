@@ -1536,6 +1536,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Header display template'),
 								'description' => _t('Layout for item in hierarchy browser header. The template is evaluated relative to item being edited.')
 							];
+							$va_additional_settings['restrict_to_search'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "475px", 'height' => 1,
+								'label' => _t('Restrict to search expression'),
+								'description' => _t('Restricts display to items matching the given search expression. Leave empty for no restriction.')
+							];
+							$va_additional_settings['restrict_to_access_point'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => 'basic',
+								'width' => "475px", 'height' => 1,
+								'label' => _t('Restrict to access point'),
+								'description' => _t('Restricts display to items matching the given search expression in the specified access point. Leave empty to search in all fields.')
+							];
 						}
 					} else {
 						switch($bundle) {

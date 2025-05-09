@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,6 +95,12 @@ if ($t_subject->getProperty('HIERARCHY_ID_FLD') && ($hier_id = (int)$t_subject->
 }
 if (isset($bundle_settings['restrict_to_types'])) {
 	$va_search_lookup_extra_params['types'] = $bundle_settings['restrict_to_types'];
+}
+if (isset($bundle_settings['restrict_to_access_point'])) {
+	$va_search_lookup_extra_params['restrictToAccessPoint'] = $bundle_settings['restrict_to_access_point'];
+}
+if (isset($bundle_settings['restrict_to_search'])) {
+	$va_search_lookup_extra_params['restrictToSearch'] = $bundle_settings['restrict_to_search'];
 }
 
 if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_x_collections_hierarchy_enabled) {
