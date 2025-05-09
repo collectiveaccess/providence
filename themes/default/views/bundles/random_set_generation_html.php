@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 AssetLoadManager::register("panel");
+
 $t_item = $this->getVar('t_item');
 $t_content = $t_item->getItemTypeInstance();
 $t_type = $t_item->getTypeInstance();
@@ -37,9 +38,14 @@ $default_count = caGetOption('random_generation_size', $settings, 5);
 	<div id="caRandomSetGenerationPanelContentArea">
 		<?= caFormTag($this->request, 'randomSetGeneration', 'caRandomSetGenetationForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]); ?>
 			<p><?= _t('Add %1 random %2 to this set', caHTMLTextInput('count', ['value' => $default_count], ['width' => '22px']), $t_content->getProperty('NAME_PLURAL')); ?></p>
+<?php
+	if(!caIsInventory($t_item, ['inventoryTypesAreSet' => true])) {
+?>
 			<p><?= _t('Limit selection to<br/>%1', $t_content->getTypeListAsHTMLFormElement('type_id[]', ['multiple' => true, 'height' => 10, 'id' => 'caRandomSetGenetationFormTypeID', 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true]));
 			?></p>
-	
+<?php
+	}
+?>	
 			<div id="caRandomSetGenerationPanelControlButtons">
 				<table>
 					<tr>

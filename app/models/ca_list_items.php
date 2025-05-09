@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
@@ -744,7 +743,7 @@ $_ca_list_items_settings = array(
 			'options' => array(
 				_t('disabled') => 0,
 				_t('select from all records') => 1,
-				_t('select from records not already in a set') => 2
+				_t('select from records not already in a set of the same type') => 2
 			),
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,

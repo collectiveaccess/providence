@@ -8592,7 +8592,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vn_max_pixel_width <= 0) { $vn_max_pixel_width = null; }
 		
 		if (!isset($pa_options["maxOptionLength"]) && isset($vn_display_width)) {
-			$pa_options["maxOptionLength"] = isset($vn_display_width) ? $vn_display_width : null;
+			$pa_options["maxOptionLength"] = isset($vn_display_width) ? caParseFormElementDimension($vn_display_width, ['returnAs' => 'characters']) : null;
 		}
 		
 		$vs_text_area_tag_name = 'textarea';
@@ -12048,85 +12048,134 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Return set of random rows (up to $pn_limit) subject to access restriction in $pn_access
-	 * Set $pn_access to null or omit to return items regardless of access control status
+	 * Return set of random rows (up to $pn_limit) subject to access restriction and other constraints in $options.
 	 *
-	 * @param int $pn_limit Limit list to the specified number of items. Defaults to 10 if not specified.
-	 * @param array $pa_options Supported options are:
+	 * @param int $limit Limit list to the specified number of items. Defaults to 10 if not specified.
+	 * @param array $options Supported options are:
 	 *		restrictToTypes = array of type names or type_ids to restrict to. Only items with a type_id in the list will be returned.
 	 *		hasRepresentations = if set when model is for ca_objects views are only returned when the object has at least one representation.
 	 *		checkAccess = an array of access values to filter only. Items will only be returned if the item's access setting is in the array.
 	 *		restrictByIntrinsic = an associative array of intrinsic fields and values to sort returned records on
 	 *		notInSetOfType = omit items that are in at least one set with the specified type. [Default is null]
-	 * @return bool True on success, false on error
+	 *		returnAs = return as array of item data ("arrays"), ids ("ids") or search result ("searchResult". [Default is arrays]
+	 *
+	 * @return array|SearchResult 
 	 */
-	public function getRandomItems($pn_limit=10, $pa_options=null) {
+	public function getRandomItems($limit=10, $options=null) {
 		$o_db = $this->getDb();
 		
-		if($not_in_set_of_type = caGetOption('notInSetOfType', $pa_options, null)) {
+		if($not_in_set_of_type = caGetOption('notInSetOfType', $options, null)) {
 			$not_in_set_of_type = caMakeTypeIDList('ca_sets', [$not_in_set_of_type]);
 		}
 		
-		$vs_limit_sql = '';
-		if ($pn_limit > 0) {
-			$vs_limit_sql = "LIMIT ".intval($pn_limit);
+		$limit_sql = '';
+		if ($limit > 0) {
+			$limit_sql = "LIMIT ".intval($limit);
 		}
 		
-		$vs_primary_key = $this->primaryKey();
-		$vs_table_name = $this->tableName();
+		$primary_key = $this->primaryKey();
+		$table_name = $this->tableName();
 		
-		$va_wheres = array();
-		if (is_array($pa_options['checkAccess'] ?? null) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
-			$va_wheres[] = $vs_table_name.'.access IN ('.join(',', $pa_options['checkAccess']).')';
+		$wheres = array();
+		if (is_array($options['checkAccess'] ?? null) && sizeof($options['checkAccess']) && ($this->hasField('access'))) {
+			$wheres[] = $table_name.'.access IN ('.join(',', $options['checkAccess']).')';
 		}
-		if(is_array($pa_options['restrictByIntrinsic'] ?? null) && sizeof($pa_options['restrictByIntrinsic'])){
-			foreach($pa_options['restrictByIntrinsic'] as $vs_intrinsic_field => $vs_intrinsic_value){
-				$va_wheres[] = $vs_table_name.'.'.$vs_intrinsic_field.' = '.$vs_intrinsic_value;
+		if(is_array($options['restrictByIntrinsic'] ?? null) && sizeof($options['restrictByIntrinsic'])){
+			foreach($options['restrictByIntrinsic'] as $intrinsic_field => $intrinsic_value){
+				$wheres[] = $table_name.'.'.$intrinsic_field.' = '.$intrinsic_value;
 			}
 		}
 		
-		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = "({$vs_table_name}.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR {$vs_table_name}.{$vs_type_field_name} IS NULL" : '').')';
+		if (method_exists($this, 'getTypeFieldName') && ($type_field_name = $this->getTypeFieldName())) {
+			$type_ids = caMergeTypeRestrictionLists($this, $options);
+			if (is_array($type_ids) && sizeof($type_ids)) {
+				$wheres[] = "({$table_name}.{$type_field_name} IN (".join(',', $type_ids).')'.($this->getFieldInfo($type_field_name, 'IS_NULL') ? " OR {$table_name}.{$type_field_name} IS NULL" : '').')';
 			}
 		}
 		
-		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
-			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
-			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
-				$va_wheres[] = $vs_table_name.'.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
+		if (method_exists($this, 'getSourceFieldName') && ($source_id_field_name = $this->getSourceFieldName())) {
+			$source_ids = caMergeSourceRestrictionLists($this, $options);
+			if (is_array($source_ids) && sizeof($source_ids)) {
+				$wheres[] = $table_name.'.'.$source_id_field_name.' IN ('.join(',', $source_ids).')';
 			}
 		}
 		
-		$vs_join_sql = '';
-		if (isset($pa_options['hasRepresentations']) && $pa_options['hasRepresentations'] && ($this->tableName() == 'ca_objects')) {
-			$vs_join_sql = ' INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.object_id = '.$vs_table_name.'.object_id';
+		$join_sql = '';
+		if (isset($options['hasRepresentations']) && $options['hasRepresentations'] && ($this->tableName() == 'ca_objects')) {
+			$join_sql = ' INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.object_id = '.$table_name.'.object_id';
 		}
 		
 		if ($this->hasField('deleted')) {
-			$va_wheres[] = "{$vs_table_name}.deleted = 0";
+			$wheres[] = "{$table_name}.deleted = 0";
 		}
 		
-		$vs_sql = "
-			SELECT {$vs_table_name}.* 
-			FROM {$vs_table_name}
-			INNER JOIN (SELECT CEIL(RAND() * (SELECT MAX({$vs_primary_key}) FROM {$vs_table_name})) AS id) AS x 
-			{$vs_join_sql}
-			WHERE {$vs_table_name}.{$vs_primary_key} >= x.id 
-			".(sizeof($va_wheres) ? " AND " : "").join(" AND ", $va_wheres)."
-			ORDER BY {$vs_table_name}.{$vs_primary_key} ASC 
-			{$vs_limit_sql}
-		";
+		$ids = [];
 		
-		$qr_res = $o_db->query($vs_sql);
+		$tries = 0;
+		do {
+			$tries++;
+			$sql = "
+				SELECT {$table_name}.{$primary_key}
+				FROM {$table_name}
+				{$join_sql}
+				WHERE rand() < 0.001
+				".(sizeof($wheres) ? " AND " : "").join(" AND ", $wheres)."
+				ORDER BY rand()
+				{$limit_sql}
+			";
+			if(!($qr_res = $o_db->query($sql))) {
+				return null;
+			}
+			
+			if(!$qr_res->numRows()) { 
+				if($tries > 10) { break; }
+				continue;
+			}
+			
+			$ids = array_unique(array_merge($ids, $qr_res->getAllFieldValues($primary_key)));
+			
+			// filter on set membership?
+			if($not_in_set_of_type) {
+				$qr_setfilter = $o_db->query("
+					SELECT si.row_id
+					FROM ca_set_items si
+					INNER JOIN ca_sets AS s ON s.set_id = si.set_id
+					WHERE si.table_num = ? AND si.row_id IN (?) AND s.type_id IN (?) AND s.deleted = 0
+				", [$this->tableNum(), $ids, $not_in_set_of_type]);
+				
+				if($qr_setfilter) {
+					$in_set_ids = $qr_setfilter->getAllFieldValues('row_id');
+					$ids = array_diff($ids, $in_set_ids);
+				}
+			}
+			
+		} while(($limit > 0) && (sizeof($ids) < $limit) && ($tries < 10));
+		if($limit > 0) { $ids = array_slice($ids, 0, $limit); }
 		
-		$va_random_items = array();
-		
-		while($qr_res->nextRow()) {
-			$va_random_items[$qr_res->get($this->primaryKey())] = $qr_res->getRow();
+		switch(caGetOption('returnAs', $options, null)) {
+			case 'searchResult':				
+				return caMakeSearchResult($table_name, $ids);
+				break;
+			case 'ids':
+				return $ids;
+				break;
+			default: 				
+				$sql = "
+					SELECT *
+					FROM {$table_name}
+					WHERE {$primary_key} IN (?)
+				";
+				if(!($qr_res = $o_db->query($sql, [$ids])) || !$qr_res->numRows()) {
+					return null;
+				}
+				
+				$random_items = [];
+				while($qr_res->nextRow()) {
+					$random_items[$qr_res->get($this->primaryKey())] = $qr_res->getRow();
+				}
+				return $random_items;
+				break;
 		}
-		return $va_random_items;
 	}
 	# --------------------------------------------------------------------------------------------
 	# Change log display

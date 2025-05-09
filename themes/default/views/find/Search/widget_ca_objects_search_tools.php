@@ -131,7 +131,7 @@ if($vo_result) {
 
 	print $this->render('Search/search_sets_html.php');
 	
-	if($this->request->config->get('enable_inventories')) {
+	if($this->request->config->get('enable_inventories') && ($this->request->user->canDoAction('can_create_inventories') || $this->request->user->canDoAction('can_edit_inventories'))) {
 		print $this->render('Search/inventory_html.php');
 	}
 }

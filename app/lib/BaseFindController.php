@@ -669,147 +669,169 @@ class BaseFindController extends ActionController {
 	 * Add items to inventory
 	 */ 
 	public function addToInventory() {
-		$vn_added_items_count = $vn_dupe_item_count = 0;
-		
-		if ($this->request->user->canDoAction('can_edit_sets')) {
-			$ps_rows = $this->request->getParameter('item_ids', pString);
-			$pa_row_ids = explode(';', $ps_rows);
-			
-			if (is_array($pa_row_ids) && sizeof($pa_row_ids)) {
-				if($qr = caMakeSearchResult($this->ops_tablename, $pa_row_ids)) {
-					$filtered_rows = [];
-					while($qr->nextHit()) {
-						if($qr->get('type_id', ['convertCodesToIdno' => true]) === 'artwork') {
-							$filtered_rows[] = $qr->getPrimaryKey();
-						}
-					}
-					$pa_row_ids = $filtered_rows;
-				}
-			}
-		
-	
-			if (!$ps_rows || !sizeof($pa_row_ids)) { 
-				$this->view->setVar('error', _t('No inventory items were selected'));
-			} else {
-				$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
-			
-				$pn_set_id = $this->request->getParameter('set_id', pInteger);
-				$t_set = new ca_sets($pn_set_id);
-				
-				if ($t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__) && ($t_set->getTypeCode() === 'inventory')) {
-					$this->view->setVar('set_id', $pn_set_id);
-					$this->view->setVar('set_name', $t_set->getLabelForDisplay());
-					$this->view->setVar('error', '');
-			
-					if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_instance->tableNum())) {
-						$va_item_ids = $t_set->getItemRowIDs(array('user_id' => $this->request->getUserID()));
-				
-						$va_row_ids_to_add = array();
-						foreach($pa_row_ids as $vn_row_id) {
-							if (!$vn_row_id) { continue; }
-							if (isset($va_item_ids[$vn_row_id])) { $vn_dupe_item_count++; continue; }
-						
-							$va_item_ids[$vn_row_id] = 1;
-							$va_row_ids_to_add[$vn_row_id] = 1;
-							$vn_added_items_count++;
-					
-						}
-			
-						if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
-							$this->view->setVar('error', join('; ', $t_set->getErrors()));
-						}
-				
-					} else {
-						$this->view->setVar('error', _t('Invalid set'));
-					}
-				} else {
-					$this->view->setVar('error', _t('Access denied'));
-				}
-			}
-		} else {
-			$this->view->setVar('error', _t('You cannot edit sets'));
-		}
-		$this->view->setVar('num_items_added', (int)$vn_added_items_count);
-		$this->view->setVar('num_items_already_in_set', (int)$vn_dupe_item_count);
-		
-		$this->response->setContentType('application/json');
-		$this->render('Results/ajax_add_to_set_json.php');
-	}
-	# ------------------------------------------------------------------
-	/**
-	 * Add items to specified set
-	 */ 
-	 public function createInventoryFromResult() {
-	 	global $g_ui_locale_id;
+		global $g_ui_locale_id;
 		
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 			throw new ApplicationException(_t('CSRF check failed'));
 			return;
 		}
-		$vs_set_name = $vs_set_code = null;
-		$vn_added_items_count = 0;
+		$t_set = new ca_sets();
+		$added_items_count = $dupe_item_count = $original_count = $filtered_count = 0;
+		$set_name = $set_code = null;
+		$inventory_types = $this->request->getAppConfig()->get('inventory_types') ?? [];
 		
-		if ($this->request->user->canDoAction('can_create_sets')) {
-			$vs_mode = $this->request->getParameter('mode', pString);
-			if ($vs_mode == 'from_checked') {
-				$va_row_ids = explode(";", $this->request->getParameter('item_ids', pString));
-			} else {
-				$va_row_ids = $this->opo_result_context->getResultList();
-			}
-			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
-				if($qr = caMakeSearchResult($this->ops_tablename, $va_row_ids)) {
-					$filtered_rows = [];
-					while($qr->nextHit()) {
-						if($qr->get('type_id', ['convertCodesToIdno' => true]) === 'artwork') {
-							$filtered_rows[] = $qr->getPrimaryKey();
+		$mode = $this->request->getParameter('mode', pString);
+		$source = $this->request->getParameter('source', pString);
+		$limit = (int)$this->request->getParameter('limit', pString);
+		$exclude_inventoried = (bool)$this->request->getParameter('excludePreviouslyInventoried', pInteger);
+		switch($source) {
+			case 'from_checked':
+				$row_ids = array_filter(explode(";", $this->request->getParameter('item_ids', pString)), 'strlen');
+				break;
+			case 'from_random':
+				$row_ids = $this->opo_result_context->getResultList();
+				shuffle($row_ids);
+				break;
+			case 'from_results':
+				$row_ids = $this->opo_result_context->getResultList();
+				break;
+			default:
+				throw new ApplicationException(_t('Invalid source'));
+				break;
+		}
+		if (is_array($row_ids) && sizeof($row_ids)) {
+			$original_count = sizeof($row_ids);
+			$num_already_inventoried = $num_wrong_type = 0;
+			if($qr = caMakeSearchResult($this->ops_tablename, $row_ids)) {
+				$filtered_rows = [];
+				while($qr->nextHit()) {
+					if(in_array($qr->get('type_id', ['convertCodesToIdno' => true]), $inventory_types[$this->ops_tablename] ?? [], true)) {
+						if($exclude_inventoried) {
+							$inventories = $t_set->getSetsForItem($this->ops_tablename, $qr->getPrimaryKey(), ['restrictToTypes' => ['inventory']]);
+							if(is_array($inventories) && sizeof($inventories)) {
+								$num_already_inventoried++;
+								continue;
+							}
 						}
+						$filtered_rows[] = $qr->getPrimaryKey();
+					} else {
+						$num_wrong_type++;
 					}
-					$va_row_ids = $filtered_rows;
+					if(($source === 'from_random') && ($limit > 0) && (sizeof($filtered_rows) >= $limit)) {
+						break;
+					}
 				}
+				$filtered_count = sizeof($filtered_rows);
+				$row_ids = $filtered_rows;
 			}
-		
-			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
-				$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
-				$vs_set_name = $this->request->getParameter('set_name', pString);
-				if (!$vs_set_name) { $vs_set_name = $this->opo_result_context->getSearchExpression(); }
-		
-				$t_set = new ca_sets();
-				$t_set->set('type_id', 'inventory');
-				
-				$t_set->set('user_id', $this->request->getUserID());
-				$t_set->set('table_num', $t_instance->tableNum());
-				$t_set->set('set_code', $vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
-		
-				$t_set->insert();
-			
-				if ($t_set->numErrors()) {
-					$this->view->setVar('error', join("; ", $t_set->getErrors()));
-				}
-		
-				if(!$t_set->addLabel(['name' => $vs_set_name], $g_ui_locale_id, null, true)) {
-					$this->view->setVar('error', _t('Could not add label to inventory'));
-				}
-		
-				$vn_added_items_count = $t_set->addItems($va_row_ids, ['user_id' => $this->request->getUserID()]);
-			
-				$this->view->setVar('set_id', $t_set->getPrimaryKey());
-				$this->view->setVar('t_set', $t_set);
-
-				if ($t_set->numErrors()) {
-					$this->view->setVar('error', join("; ", $t_set->getErrors()));
-				}
-			}
-		} else {
-			$this->view->setVar('error', _t('You cannot create inventories'));
 		}
 	
-		$this->view->setVar('set_name', $vs_set_name);
-		$this->view->setVar('set_code', $vs_set_code);
-		$this->view->setVar('num_items_added', $vn_added_items_count);
+		$this->view->setVar('num_items_wrong_type', $num_wrong_type);
+		$this->view->setVar('num_items_previously_inventoried', $num_already_inventoried);
+	
+		if (!$original_count || !$filtered_count) { 
+			if($original_count == 0) {
+				$msg =  _t('No inventory items were selected');
+			} else {
+				$msg = _t('Selected items cannot be inventoried');
+				
+				$acc = [];
+				if($num_wrong_type > 0) { $acc[] = _t('%1 are incorrect type', $num_wrong_type); }
+				if($num_already_inventoried > 0) { $acc[] = _t('%1 are already inventoried', $num_already_inventoried); }
+				if(sizeof($acc) > 0) { $msg .= ' ('.join('; ', $acc).')'; }
+			}
+			$this->view->setVar('error', $msg);
+		} else {
+			switch($mode) {
+				case 'I':
+					if (!$this->request->user->canDoAction('can_create_inventories')) {
+						$this->view->setVar('error', _t('You cannot create inventories'));
+						break;
+					}
+					$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
+					$set_name = $this->request->getParameter('set_name', pString);
+					if (!$set_name) { $set_name = $this->opo_result_context->getSearchExpression(); }
+			
+					$t_set->set('type_id', 'inventory');
+					
+					$t_set->set('user_id', $this->request->getUserID());
+					$t_set->set('table_num', $t_instance->tableNum());
+					$t_set->set('set_code', $set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $set_name), 0, 100));
+			
+					$t_set->insert();
+				
+					if ($t_set->numErrors()) {
+						$this->view->setVar('error', join("; ", $t_set->getErrors()));
+					}
+			
+					if(!$t_set->addLabel(['name' => $set_name], $g_ui_locale_id, null, true)) {
+						$this->view->setVar('error', _t('Could not add label to inventory'));
+					}
+			
+					$added_items_count = $t_set->addItems($row_ids, ['user_id' => $this->request->getUserID()]);
+				
+					$this->view->setVar('set_id', $t_set->getPrimaryKey());
+					$this->view->setVar('t_set', $t_set);
+	
+					if ($t_set->numErrors()) {
+						$this->view->setVar('error', join("; ", $t_set->getErrors()));
+					}
+					break;
+				case 'U':
+					if (!$this->request->user->canDoAction('can_edit_inventories')) {
+						$this->view->setVar('error', _t('You cannot edit inventories'));
+						break;
+					}
+					$t_instance = Datamodel::getInstanceByTableName($this->ops_tablename, true);
+				
+					$set_id = $this->request->getParameter('set_id', pInteger);
+					$t_set = new ca_sets($set_id);
+					$set_name = $t_set->getLabelForDisplay();
+					$set_code = $t_set->get('ca_sets.set_code');
+					
+					if ($t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__) && ($t_set->getTypeCode() === 'inventory')) {
+						$this->view->setVar('set_id', $set_id);
+						$this->view->setVar('set_name', $set_name);
+						$this->view->setVar('error', '');
+				
+						if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_instance->tableNum())) {
+							$item_ids = $t_set->getItemRowIDs(['user_id' => $this->request->getUserID()]);
+					
+							$row_ids_to_add = array();
+							foreach($row_ids as $row_id) {
+								if (!$row_id) { continue; }
+								if (isset($item_ids[$row_id])) { $dupe_item_count++; continue; }
+							
+								$item_ids[$row_id] = 1;
+								$row_ids_to_add[$row_id] = 1;
+								$added_items_count++;
+							}
+				
+							if (($added_items_count = $t_set->addItems(array_keys($row_ids_to_add), ['user_id' => $this->request->getUserID()])) === false) {
+								$this->view->setVar('error', join('; ', $t_set->getErrors()));
+							}
+					
+						} else {
+							$this->view->setVar('error', _t('Invalid inventory'));
+						}
+					} else {
+						$this->view->setVar('error', _t('Access denied'));
+					}
+					break;
+				default:
+					throw new ApplicationException(_t('Invalid mode'));
+					break;
+			}
+		}
+		
+		$this->view->setVar('num_items_added', (int)$added_items_count);
+		$this->view->setVar('num_items_already_in_inventory', (int)$dupe_item_count);
+		$this->view->setVar('set_name', $set_name);
+		$this->view->setVar('set_code', $set_code);
 		
 		$this->response->setContentType('application/json');
-		$this->render('Results/ajax_create_set_from_result_json.php');
-	 }
+		$this->render('Results/ajax_add_to_inventory_json.php');
+	}
 	# ------------------------------------------------------------------
 	/**
 	 * Add items to specified set

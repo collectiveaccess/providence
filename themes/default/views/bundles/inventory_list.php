@@ -97,7 +97,7 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 			<div class="inventoryItemContent">
 				<div style="width: 36px;">{n}</div>
 				<div style="width: 140px;">{representation_tag}</div>
-				<div class="inventoryItemDescription">
+				<div class="inventoryItemDescription" style="width: 394px;">
 					{displayTemplate}
 					{displayTemplateDescription}
 				</div>

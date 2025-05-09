@@ -1,14 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
  * themes/default/views/find/results/ajax_create_set_from_result_json.php :
- * 		basic object search form view script 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,17 +24,15 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	if ($vs_error = $this->getVar('error')) {
-		print json_encode(array('status' => 'error', 'error' => $vs_error));
-	} else {
-		print json_encode(array(
-			'status' 						=> 'ok', 
-			'set_id' 						=> $this->getVar('set_id'), 
-			'set_name' 						=> $this->getVar('set_name'),
-			'set_code' 						=> $this->getVar('set_code'), 
-			'num_items_added' 				=> $this->getVar('num_items_added')
-		));
-	}
-?>
+ */ 
+if ($error = $this->getVar('error')) {
+	print json_encode(['status' => 'error', 'error' => $error]);
+} else {
+	print json_encode([
+		'status' 						=> 'ok', 
+		'set_id' 						=> $this->getVar('set_id'), 
+		'set_name' 						=> $this->getVar('set_name'),
+		'set_code' 						=> $this->getVar('set_code'), 
+		'num_items_added' 				=> $this->getVar('num_items_added')
+	]);
+}

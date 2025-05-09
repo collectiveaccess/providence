@@ -101,7 +101,7 @@ class SetController extends ActionController {
 		// get content types for sets
 		if($is_inventory) {
 			$table_list = [];
-			if(is_array($ctables = $config->get('inventory_types'))) {
+			if(is_array($ctables = $config->get('inventory_tables'))) {
 				foreach($ctables as $t) {
 					$table_list[Datamodel::getTableProperty($t, 'NAME_PLURAL')] = Datamodel::getTableNum($t);	
 				}

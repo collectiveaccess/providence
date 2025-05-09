@@ -29,98 +29,129 @@ $t_subject 			= $this->getVar('t_subject');
 $o_result_context 	= $this->getVar('result_context');
 $t_list 			= new ca_lists();
 
-$vb_show_add_checked_to_set = (bool)(is_array($va_sets = $this->getVar('inventories')) && sizeof($va_sets) && $this->request->user->canDoAction('can_edit_sets'));
-$vb_show_create_set_from_checked = (bool)$this->request->user->canDoAction('can_create_sets');
+$can_edit_inventories = (bool)(is_array($inventories = $this->getVar('inventories')) && sizeof($inventories) && $this->request->user->canDoAction('can_edit_inventories'));
+$can_create_inventories = (bool)$this->request->user->canDoAction('can_create_inventories');
 
-if ($vb_show_add_checked_to_set || $vb_show_create_set_from_checked) {
+// Source list
+$source_select = caHTMLSelect('source', 
+	[
+		_t('Add all') => 'from_results',
+		_t('Add checked') => 'from_checked',
+		_t('Add random') => 'from_random'
+	], 
+	[
+		'id' => 'caInventorySource', 'class' => 'searchSetsSelect setSource', 
+		'onChange' => 'return caInventoryUpdateForm();'
+	],
+	['value' => null]
+);
+
+// Existing inventory list
+$options = [];
+foreach($inventories as $set_id => $set_info) {
+	$options[$set_info['name']] = $set_id;
+}
+$set_list = $can_edit_inventories ? caHTMLSelect('set_id', 
+	$options, 
+	['id' => 'caInventoryList', 'class' => 'searchSetsSelect setSource'], 
+	['value' => null]
+) : '';
+
+// Text entry for new set
+$new_set_input = $can_create_inventories ? caHTMLTextInput('set_name', 
+	[
+		'id' => 'caNewInventoryInput', 
+		'style' => $can_edit_inventories ? 'display: none;' : '',
+		'class' => 'searchSetsTextInput setSource', 
+		'value' => '', 
+		'placeholder' => _t('New inventory name')
+	], 
+	[]
+) : '';
+
+if ($can_edit_inventories || $can_create_inventories) {
 ?>
 <div class='inventoryTools'>
-	<a href="#" id='searchInventoryToolsShow' onclick="$('.inventoryTools').hide(); return caShowSearchInventoryTools();"><?= caNavIcon(__CA_NAV_ICON_SETS__, 2).' '._t("Inventory"); ?></a>
+	<a href="#" id='searchInventoryToolsShow' onclick="$('.inventoryTools').hide(); return caShowSearchInventoryTools(true);"><?= caNavIcon(__CA_NAV_ICON_INVENTORY__, 2).' '._t("Inventory"); ?></a>
 </div><!-- end inventoryTools -->
 
 <div id="searchInventoryTools">
-<?php
-	if ($vb_show_add_checked_to_set) {
-?>	
 	<div class="col">
-<?php
-		print "<span class='header'>"._t("Add checked to inventory").":</span><br/>";
+		<span class='header'>
+			<?= _t("Add to inventory"); ?>:
+			<?= caBusyIndicatorIcon($this->request, ['id' => 'caInventoryRequestIndicator']); ?>
+		</span>
+		<br>
+		<form id="caCreateInventoryFromResults">
+			<?= _t("%1 to %2", 
+				$source_select,
+				($can_edit_inventories ? $set_list : '').($can_create_inventories ? $new_set_input : '')
+			).
+			caHTMLHiddenInput('mode', ['value' => 'U', 'id' => 'caInventorySaveMode']); ?>
+			<div class="inventoryControlBlock">
+<?php 
+	if($can_create_inventories && $can_edit_inventories) { 
 ?>
-		<form id="caAddToInventory">
-<?php
-		$va_options = array();
-		foreach($va_sets as $vn_set_id => $va_set_info) {
-			$va_options[$va_set_info['name']] = $vn_set_id;
-		}
-		
-		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToInventoryID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '100px'));
-?>
-			<a href='#' onclick="return caAddItemsToInventory();" class="button"><?= caNavIcon(__CA_NAV_ICON_ADD__, 1, ['aria-description' => _t('Add to inventory')]); ?></a>
-			<a href="#" onclick="return caToggleAddToInventory();" class="searchSetsToggle"><?= caNavIcon(__CA_NAV_ICON_CHECKBOX__, 1, ['aria-description' => _t('Toggle checked')]); ?></a>
-			<?= caBusyIndicatorIcon($this->request, array('id' => 'caAddToInventoryIDIndicator'))."\n"; ?>
-			
-		</form>
-			
-	</div>
-	<br class="clear"/>
+				<a href='#' onclick="return caToggleNewSetControl(true);" id="caShowNewInventoryInput" class="button"><?= _t('%1 Create inventory', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Create inventory')])); ?></a>
+				<a href='#' onclick="return caToggleNewSetControl(false);" id="caShowInventoryList" class="button" style="display: none;",><?= _t('%1 Choose inventory', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Add to existing inventory')])); ?></a>
 <?php
 	}
-	
-	if($vb_show_create_set_from_checked) {
 ?>
-		<div class="col">
-<?php
-			print "<span class='header'>"._t("Create inventory").":</span><br/>";
-?>
-			<form id="caCreateInventoryFromResults">
-<?php
-				print caHTMLTextInput('set_name', array('id' => 'caCreateInventoryFromResultsInput', 'class' => 'searchSetsTextInput', 'value' => $o_result_context->getSearchExpression()), array('width' => '150px'));
-				print " ";
-				print caHTMLSelect('set_create_mode', 
-					array(
-						_t('from results') => 'from_results',
-						_t('from checked') => 'from_checked'
-					), 
-					array('id' => 'caCreateInventoryFromResultsMode', 'class' => 'searchSetsSelect'),
-					array('value' => null, 'width' => '100px')
-				);
-				print caBusyIndicatorIcon($this->request, array('id' => 'caCreateInventoryFromResultsIndicator'))."\n";
-?>
-				<a href='#' onclick="return caCreateInventoryFromResults();" class="button"><?= caNavIcon(__CA_NAV_ICON_ADD__, 1, ['aria-description' => _t('Create inventory')]); ?></a>
-<?php		
-			if ($this->request->user->canDoAction('can_batch_edit_'.$t_subject->tableName())) {
-				print '<div class="searchSetsBatchEdit">'.caHTMLCheckboxInput('batch_edit', array('id' => 'caCreateInventoryBatchEdit', 'value' => 1))." "._t('Open set for batch editing')."</div>\n";
-			}
-?>
-			</form>
-		</div>
-<?php
-		}
-?>
+			</div>
+			<div class="inventoryControlBlock" id="caInventoryLimitInput"><?= _t('Limit to %1 %2', caHTMLTextInput("limit", ['id' => 'caInventoryResultsLimit', 'value' => 25], ['width' => '25px']), $t_subject->getProperty('NAME_PLURAL')); ?></div>
+			<div class="inventoryControlBlock" id="caInventoryExcludeInput"><?= _t('%1 Exclude inventoried', caHTMLCheckboxInput("excludePreviouslyInventoried", ['id' => 'caExcludePreviouslyInventoried', 'class' => 'inventoryExclude', 'checked' => '1', 'value' => 1])); ?></div>
+			<div class="inventorySaveBlock">
+				<a href='#' onclick="return caCreateInventoryFromResults();" class="button"><?= _t('%1 Save', caNavIcon(__CA_NAV_ICON_SAVE__, 2, ['aria-description' => _t('Save to inventory')])); ?></a>
+			</div>
+		</form>
+	</div>
 
-		<a href='#' id='hideSets' onclick='caHideSearchInventoryTools(); $(".inventoryTools").slideDown(250);'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
-		<br/>
-		<div class="clear">&nbsp;</div>
+	<a href='#' id='hideSets' onclick='caShowSearchInventoryTools(false); $(".inventoryTools").slideDown(250);'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+	<br/>
+	<div class="clear">&nbsp;</div>
 </div><!-- end searchInventoryTools -->
 <?php
 	}
 ?>
 <script type="text/javascript">
-	function caShowSearchInventoryTools() {
-		jQuery('#searchInventoryToolsShow').hide();
-		jQuery("#searchInventoryTools").slideDown(250);
-		
-		jQuery("input.addItemToSetControl").show(); 
+	function caShowSearchInventoryTools(show=true) {
+		if(show) {
+			jQuery('.inventoryTools').hide();
+			jQuery("#searchInventoryTools").slideDown(250);
+			
+			jQuery('.setTools').show();
+			jQuery("#searchSetTools").slideUp(250);
+			
+			jQuery("input.addItemToSetControl").show(); 
+		} else {		
+			jQuery('.inventoryTools').show();
+			jQuery("#searchInventoryTools").slideUp(250);
+			
+			jQuery("input.addItemToSetControl").hide(); 
+		}
+	}
+	
+	function caToggleNewSetControl(show) {
+		if(show) {
+			jQuery('#caNewInventoryInput, #caShowInventoryList').show();
+			jQuery('#caInventoryList, #caShowNewInventoryInput').hide();
+			jQuery('#caInventorySaveMode').val('I');
+		} else {
+			jQuery('#caNewInventoryInput, #caShowInventoryList').hide();
+			jQuery('#caInventoryList, #caShowNewInventoryInput').show();
+			jQuery('#caInventorySaveMode').val('U');
+		}
 		return false;
 	}
 	
-	function caHideSearchInventoryTools() {
-	
-		jQuery('#searchInventoryToolsShow').show();
-		jQuery("#searchInventoryTools").slideUp(250);
+	function caInventoryUpdateForm() {
+		const m = jQuery('#caInventorySource').val();
 		
-		jQuery("input.addItemToSetControl").hide(); 
-		return false;
+		if(m === 'from_random') {
+			jQuery('#caInventoryLimitInput').show();
+		} else {
+			jQuery('#caInventoryLimitInput').hide();
+		}
 	}
 	
 	//
@@ -143,92 +174,84 @@ if ($vb_show_add_checked_to_set || $vb_show_create_set_from_checked) {
 		});
 		return false;
 	}
-	
-	function caAddItemsToInventory() {
-		jQuery("#caAddToInventoryIDIndicator").show();
+	function caCreateInventoryFromResults() {
+		jQuery("#caInventoryRequestIndicator").show();
+		
+		const is_update = (jQuery('#caInventorySaveMode').val() === 'U');
 		jQuery.post(
 			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToInventory'); ?>', 
 			{ 
-				set_id: jQuery('#caAddToInventoryID').val(), 
+				set_id: jQuery('#caInventoryList').val(), 
+				set_name: !is_update ? jQuery('#caNewInventoryInput').val() : null,
+				mode: jQuery('#caInventorySaveMode').val(),
+				source: jQuery('#caInventorySource').val(),
+				limit: jQuery('#caInventoryResultsLimit').val(),
+				excludePreviouslyInventoried: jQuery('#caExcludePreviouslyInventoried').is(':checked') ? 1 : 0,
 				item_ids: caGetSelectedItemIDsToAddToInventory().join(';'),
 				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>
 			}, 
 			function(res) {
-				jQuery("#caAddToInventoryIDIndicator").hide();
+				jQuery("#caInventoryRequestIndicator").hide();
+				
+				const header = is_update ? <?= json_encode(_t('Add to inventory')); ?> : <?= json_encode(_t('Create inventory')); ?>;
+					
 				if (res['status'] === 'ok') { 
-					var item_type_name;
+					let item_type_name;
 					if (res['num_items_added'] == 1) {
-						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
+						item_type_name = <?= json_encode($t_subject->getProperty('NAME_SINGULAR')); ?>;
 					} else {
-						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
+						item_type_name = <?= json_encode($t_subject->getProperty('NAME_PLURAL')); ?>;
 					}
-					var msg = '<?= addslashes(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>';
-					msg = msg.replace('^num_items', res['num_items_added']);
-					msg = msg.replace('^item_type_name', item_type_name);
-					msg = msg.replace('^set_name', res['set_name']);
-					
-					if (res['num_items_already_in_set'] > 0) { 
-						msg += '<?= addslashes(_t('<br/>(^num_dupes were already in the set.)')); ?>';
-						msg = msg.replace('^num_dupes', res['num_items_already_in_set']);
-					}
-					
-					jQuery.jGrowl(msg, { header: '<?= addslashes(_t('Add to inventory')); ?>' }); 
-					jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
-				} else { 
-					jQuery.jGrowl(res['error'], { header: '<?= addslashes(_t('Add to inventory')); ?>' });
-				};
-			},
-			'json'
-		);
-		return false;
-	}
+					let msg = is_update ? <?= json_encode(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>
+										: <?= json_encode(_t('Created inventory <i>^set_name</i> with ^num_items ^item_type_name'));?>;
 	
-	function caCreateInventoryFromResults() {
-		jQuery("#caCreateInventoryFromResultsIndicator").show();
-		jQuery.post(
-			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createInventoryFromResult'); ?>', 
-			{ 
-				set_name: jQuery('#caCreateInventoryFromResultsInput').val(),
-				mode: jQuery('#caCreateInventoryFromResultsMode').val(),
-				item_ids: caGetSelectedItemIDsToAddToInventory().join(';'),
-				set_type_id: 'inventory',
-				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>
-			}, 
-			function(res) {
-				jQuery("#caCreateInventoryFromResultsIndicator").hide();
-				if (res['status'] === 'ok') { 
-					var item_type_name;
-					if (res['num_items_added'] == 1) {
-						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
-					} else {
-						item_type_name = '<?= addslashes($t_subject->getProperty('NAME_PLURAL')); ?>';
-					}
-					var msg = '<?= addslashes(_t('Created set <i>^set_name</i> with ^num_items ^item_type_name'));?>';
+					
 					msg = msg.replace('^num_items', res['num_items_added']);
 					msg = msg.replace('^item_type_name', item_type_name);
 					msg = msg.replace('^set_name', res['set_name']);
 					
-					if (jQuery('#caCreateInventoryBatchEdit').prop('checked')) {
-						window.location = '<?= caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/id/ca_sets:' + res['set_id'];
-					} else {
-						jQuery.jGrowl(msg, { header: '<?= addslashes(_t('Create inventory')); ?>' }); 
+					if(!is_update) {
 						// add new set to "add to inventory" list
-						jQuery('#caAddToInventoryID').append($("<option/>", {
+						jQuery('#caInventoryList').append($("<option/>", {
 							value: res['set_id'],
 							text: res['set_name'],
 							selected: 1
 						}));
 						// add new set to search by set drop-down
-						jQuery("select.searchSetSelect").append($("<option/>", {
+						jQuery("form.caSearchSetsForm select.searchSetSelect").append($("<option/>", {
 							value: 'set:"' + res['set_code'] + '"',
 							text: res['set_name']
 						}));
+						jQuery("select.caInventoryList").append($("<option/>", {
+							value: res['set_id'],
+							text: res['set_name']
+						}));
 					}
+					
+					if (res['num_items_already_in_inventory'] > 0) { 
+						msg += <?= json_encode(_t('<br/>(^num_dupes were already in the inventory.)')); ?>;
+						msg = msg.replace('^num_dupes', res['num_items_already_in_inventory']);
+					}
+					if(res['num_items_wrong_type'] > 0) {
+						sg += <?= json_encode(_t('<br/>(^num_wrong_type were incorrect type for inventory.)')); ?>;
+						msg = msg.replace('^num_wrong_type', res['num_items_wrong_type']);
+					}
+					if(res['num_items_previously_inventoried'] > 0) {
+						sg += <?= json_encode(_t('<br/>(^num_previously_inventoried were previously inventoried.)')); ?>;
+						msg = msg.replace('^num_previously_inventoried', res['num_items_previously_inventoried']);
+					}
+					
+					jQuery.jGrowl(msg, { header: header }); 
+					jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
 				} else { 
-					jQuery.jGrowl(res['error'], { header: '<?= addslashes(_t('Create inventory')); ?>' });
+					jQuery.jGrowl(res['error'], { header: header });
 				};
 			},
 			'json'
 		);
 	}
+	
+	jQuery(document).ready(function() {
+		caInventoryUpdateForm();
+	});
 </script>

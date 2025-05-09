@@ -377,7 +377,7 @@ div.clear {
 	padding-left: unset !important;
 	line-height: unset !important;
 }
-#leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
+#leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton, #leftNav #inspectorRandomButton {
 	margin-top:8px;
 } 
 #leftNav .button.info {
@@ -617,7 +617,7 @@ div.inspectorCheckedOut {
 }
 
 h3.searchHistory div {
-    margin-left: 3px;
+    margin-left: 0px;
     margin-top: 1px;
 }
 
@@ -1540,6 +1540,10 @@ div.formLabelUploadSizeNote {
 }
 
 /*** Button styles ***/
+.iconSmall {
+	vertical-align: 0px;
+}
+
 div.button{
     padding-left:10px;
     font-size: 11px;
@@ -2514,7 +2518,7 @@ select.searchToolsSelect {
 	margin: 10px;
 	padding: 10px;
 }
-#searchSetTools .col, #searchInventoryTools .col, #batchTools .col {
+#batchTools .col {
 	margin-bottom:15px;
 }
 #searchSetTools .header, #searchInventoryTools .header, #batchTools .header {
@@ -2533,7 +2537,7 @@ select.searchToolsSelect {
 	text-decoration: none;
 }
 
-#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator, #caAddToInventoryIDIndicator, #caCreateInventoryFromResultsIndicator {
+#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator, #caInventoryRequestIndicator {
 	display: none;
 }
 
@@ -8342,4 +8346,28 @@ a.inventoryItemDeleteButton {
 	position: absolute;
 	bottom: 5px;
 	right: 5px;
+}
+
+input.setSource, select.setSource {
+	box-sizing: border-box !important;
+	width: 150px;
+	padding-bottom: 4px
+}
+
+input.inventoryExclude {
+	padding: 0px;
+	margin: 0px;
+}
+
+input.searchSetsTextInput {
+	display: none;
+}
+
+div.inventoryControlBlock {
+	margin-top: 3px;
+}
+
+div.inventorySaveBlock {
+	text-align: center; 
+	margin-top: 10px;
 }

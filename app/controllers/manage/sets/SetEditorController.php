@@ -532,11 +532,19 @@ class SetEditorController extends BaseEditorController {
 	 */
 	public function randomSetGeneration() {
 		$set_id = $this->request->getParameter('set_id', pInteger);
-		$type_ids = $this->request->getParameter('type_id', pArray);
 		$item_count = $this->request->getParameter('count', pInteger);
 		
 		if(!$t_set = ca_sets::findAsInstance($set_id)) {
 			throw new ApplicationException(_t('Invalid set'));
+		}
+		
+		if(caIsInventory($t_set)) {
+			$set_table = Datamodel::getTableName($t_set->get('table_num'));
+			$inventory_types_by_table = $this->request->getAppConfig()->get('inventory_types');
+			$inventory_types = isset($inventory_types_by_table[$set_table]) && is_array($inventory_types_by_table[$set_table]) ? $inventory_types_by_table[$set_table] : null;
+			$type_ids = is_array($inventory_types) && sizeof($inventory_types) ? $inventory_types : $this->request->getParameter('type_id', pArray);
+		} else {
+			$type_ids = $this->request->getParameter('type_id', pArray);
 		}
 		$t_subject = $t_set->getItemTypeInstance();
 		$t_set_type = $t_set->getTypeInstance();
@@ -556,7 +564,7 @@ class SetEditorController extends BaseEditorController {
    				$options['notInSetOfType'] = null;
    				break;
    			case 2:
-   				$options['notInSetOfType'] = 'inventory';
+   				$options['notInSetOfType'] = $t_set->getTypeCode();
    				break;
    			default:
    				// don't add
@@ -564,12 +572,20 @@ class SetEditorController extends BaseEditorController {
    				return;
    		}
    		
+   		// Don't include deaccessioned items in inventory sets
+   		if(caIsInventory($t_set) && $t_subject->hasField('is_deaccessioned')) {
+   			$options['restrictByIntrinsic'] = ['is_deaccessioned' => 0];
+   		}
+   		
    		$ids = [];
    		if(is_null($error)) {
-   			$items = $t_subject->getRandomItems($item_count, $options);
-			$ids = array_keys($items);
-			if(!$t_set->addItems($ids)) {
-				$error = _t('Could not add random items to set: %1', join('; ', $t_set->getErrors()));
+   			if(!is_array($items = $t_subject->getRandomItems($item_count, $options))) { 
+   				$error = _t('Could get not random items');
+   			} else {
+				$ids = array_keys($items);
+				if(!$t_set->addItems($ids)) {
+					$error = _t('Could not add random items to set: %1', join('; ', $t_set->getErrors()));
+				}
 			}
    		}
    		
