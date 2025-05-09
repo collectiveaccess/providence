@@ -116,6 +116,8 @@
  	define('__CA_NAV_ICON_NOT_FOUND__', 78);
  	define('__CA_NAV_ICON_NOT_CHECKED__', 79); 	
  	define('__CA_NAV_ICON_CIRCLE_DOT__', 80);
+ 	define('__CA_NAV_ICON_INVENTORY__', 81);
+ 	define('__CA_NAV_ICON_LIST__', 82);
  	
  	/**
  	 * Icon position constants
@@ -942,9 +944,15 @@
 				break;		
 			case __CA_NAV_ICON_CIRCLE_DOT__:
 				$vs_fa_class = 'fas fa-dot-circle';
-				break;													
+				break;		
+			case __CA_NAV_ICON_INVENTORY__:
+				$vs_fa_class = 'fas fa-warehouse';
+				break;						
+			case __CA_NAV_ICON_LIST__:
+				$vs_fa_class = 'fas fa-list';
+				break;												
 			default:
-				print "INVALID CONSTANT $pn_type<br>\n";
+				print "INVALID CONSTANT {$pn_type}<br>\n";
 				return null;
 				break;
 		}
