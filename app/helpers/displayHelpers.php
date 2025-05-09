@@ -1585,6 +1585,17 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 		}
+		
+		$t_set_type = $t_item->getTypeInstance();		
+		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
+		if(caGetOption('random_generation_mode', $type_settings, 0) > 0) {
+			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";
+
+			$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$random_set_view->setVar('t_item', $t_item);
+			FooterManager::add($random_set_view->render("random_set_generation_html.php"));
+			TooltipManager::add('#inspectorRandomButton', _t("Add random items"));
+		}
 
 		if(sizeof($tools) > 0) {
 			$buf .= "<div id='toolIcons'>".join(" ", $tools)."</div><!--End tooIcons-->";
@@ -1794,17 +1805,7 @@ jQuery(document).ready(function() {
 			$vs_set_table_name = Datamodel::getTableName($vn_set_table_num);
 			if ($t_item->getPrimaryKey()) {
 				$buf .= "<div><strong>"._t("Contents")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."</div>\n";				
-				$t_set_type = $t_item->getTypeInstance();
-				$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
-				if(caGetOption('random_generation_mode', $type_settings, 0) > 0) {
-					$buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
-					$buf .= _t('Add random')." <a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random content')])."</a>";
-
-					$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
-					$random_set_view->setVar('t_item', $t_item);
-
-					FooterManager::add($random_set_view->render("random_set_generation_html.php"));
-				}
+				
 				if(!$is_inventory && !(bool)$view->request->config->get('ca_sets_disable_duplication_of_items') && $view->request->user->canDoAction('can_duplicate_items_in_sets') && $view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 					$buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					$buf .= caFormTag($view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true));
@@ -6349,15 +6350,33 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 }
 # ------------------------------------------------------------------
 /**
+ * Check is set is for use as inventory.
  *
+ * @param BaseModel|SearchResult $t_set
+ * @param array $options Options include:
+ *		inventoryTypesAreSet = return true only if set is inventory and types for specific inventory table are set. [Default is false]
+ *
+ * return bool
  */
-function caIsInventory(BaseModel|SearchResult $t_set) : bool {
+function caIsInventory(BaseModel|SearchResult $t_set, ?array $options=null) : bool {
 	$config = Configuration::load();
 	if(!$config->get('enable_inventories')) { return false; }
 	if(!$t_set || (!is_a($t_set, 'ca_sets') && !is_a($t_set, 'SetSearchResult'))) { return false; }
 	if($t_set->get('type_id', ['convertCodesToIdno' => true]) !== $config->get('inventory_set_type')) { return false; }
 	
-	if(in_array(Datamodel::getTableName($t_set->get('table_num')), $config->getList('inventory_types') ?? [], true)) { return true; }
+	$set_table = Datamodel::getTableName($t_set->get('table_num'));
+	$inventory_type_config = $config->get('inventory_types');
+	if(
+		caGetOption('inventoryTypesAreSet', $options, false) && 
+		(
+			!isset($inventory_type_config[$set_table]) || 
+			!is_array($inventory_type_config[$set_table]) || 
+			!sizeof($inventory_type_config[$set_table])
+		)
+	) {
+		return false;
+	}
+	if(in_array(Datamodel::getTableName($t_set->get('table_num')), $config->getList('inventory_tables') ?? [], true)) { return true; }
 	
 	return false;
 }
