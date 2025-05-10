@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,106 +29,133 @@ $t_subject 			= $this->getVar('t_subject');
 $o_result_context 	= $this->getVar('result_context');
 $t_list 			= new ca_lists();
 
-$show_add_checked_to_set = (bool)(is_array($sets = $this->getVar('available_editable_sets')) && sizeof($sets) && $this->request->user->canDoAction('can_edit_sets'));
-$show_create_set_from_checked = (bool)$this->request->user->canDoAction('can_create_sets');
+$can_edit_sets = (bool)(is_array($sets = $this->getVar('available_editable_sets')) && sizeof($sets) && $this->request->user->canDoAction('can_edit_sets'));
+$can_create_sets = (bool)$this->request->user->canDoAction('can_create_sets');
 
-if ($show_add_checked_to_set || $show_create_set_from_checked) {
+// Source list
+$source_select = caHTMLSelect('source', 
+	[
+		_t('Add all') => 'from_results',
+		_t('Add checked') => 'from_checked',
+		_t('Add random') => 'from_random'
+	], 
+	[
+		'id' => 'caSetSource', 'class' => 'searchSetsSelect setSource', 
+		'onChange' => 'return caSetUpdateForm();'
+	],
+	['value' => null]
+);
+
+// Existing set list
+$options = [];
+foreach($sets as $set_id => $set_info) {
+	$options[$set_info['name']] = $set_id;
+}
+$set_list = $can_edit_sets ? caHTMLSelect('set_id', 
+	$options, 
+	['id' => 'caSetList', 'class' => 'searchSetsSelect setSource'], 
+	['value' => null]
+) : '';
+
+// Text entry for new set
+$new_set_input = $can_create_sets ? caHTMLTextInput('set_name', 
+	[
+		'id' => 'caNewSetInput', 
+		'style' => $can_edit_sets ? 'display: none;' : '',
+		'class' => 'searchSetsTextInput setSource', 
+		'value' => '', 
+		'placeholder' => _t('New set name')
+	], 
+	[]
+) : '';
+
+if ($can_edit_sets || $can_create_sets) {
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?= caNavIcon(__CA_NAV_ICON_SETS__, 2).' '._t("Set Tools"); ?></a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools(true);"><?= caNavIcon(__CA_NAV_ICON_SETS__, 2).' '._t("Set"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">
-<?php
-	if ($show_add_checked_to_set) {
-?>	
 	<div class="col">
-		<span class='header'><?= _t("Add checked to set"); ?>:</span><br/>
-		<form id="caAddToSet">
-<?php
-		$options = array();
-		foreach($sets as $set_id => $set_info) {
-			$options[$set_info['name']] = $set_id;
-		}
-		
-		print caHTMLSelect('set_id', $options, array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '100px'));
+		<span class='header'>
+			<?= _t("Add to set"); ?>:
+			<?= caBusyIndicatorIcon($this->request, ['id' => 'caSetRequestIndicator']); ?>
+		</span>
+		<br>
+		<form id="caCreateSetyFromResults">
+			<?= _t("%1 to %2", 
+				$source_select,
+				($can_edit_sets ? $set_list : '').($can_create_sets ? $new_set_input : '')
+			).
+			caHTMLHiddenInput('mode', ['value' => 'U', 'id' => 'caSetSaveMode']); ?>
+			<div class="setControlBlock">
+<?php 
+	if($can_create_sets && $can_edit_sets) { 
 ?>
-			<a href='#' onclick="return caAddItemsToSet();" class="button"><?= caNavIcon(__CA_NAV_ICON_ADD__, 1, ['aria-description' => _t('Add to set')]); ?></a>
-			<a href="#" onclick="return caToggleAddToSet();" class="searchSetsToggle"><?= caNavIcon(__CA_NAV_ICON_CHECKBOX__, 1, ['aria-description' => _t('Toggle checked')]); ?></a>
-			<?= caBusyIndicatorIcon($this->request, array('id' => 'caAddToSetIDIndicator'))."\n"; ?>
-			
-		</form>
-			
-	</div>
-	<br class="clear"/>
+				<a href='#' onclick="return caToggleNewSetControl(true);" id="caShowNewSetInput" class="button"><?= _t('%1 Create set', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Create set')])); ?></a>
+				<a href='#' onclick="return caToggleNewSetControl(false);" id="caShowSetList" class="button" style="display: none;",><?= _t('%1 Choose set', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Add to existing set')])); ?></a>
 <?php
 	}
-	
-	if($show_create_set_from_checked) {
 ?>
-		<div class="col">
-<?php
-			print "<span class='header'>"._t("Create set").":</span><br/>";
-?>
-			<form id="caCreateSetFromResults">
-<?php
-				print caHTMLTextInput('set_name', array('id' => 'caCreateSetFromResultsInput', 'class' => 'searchSetsTextInput', 'value' => $o_result_context->getSearchExpression()), array('width' => '150px'));
-				print " ";
-				print caHTMLSelect('set_create_mode', 
-					array(
-						_t('from results') => 'from_results',
-						_t('from checked') => 'from_checked'
-					), 
-					array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
-					array('value' => null, 'width' => '100px')
-				);
-				if($t_list->getAppConfig()->get('enable_set_type_controls')) {
-					print $t_list->getListAsHTMLFormElement(
-						'set_types',
-						'set_type',
-						array('id' => 'caCreateSetTypeID', 'class' => 'searchSetsSelect'),
-						array('value' => null, 'width' => '140px')
-					);
-				}
-				print caBusyIndicatorIcon($this->request, array('id' => 'caCreateSetFromResultsIndicator'))."\n";
-?>
-				<a href='#' onclick="return caCreateSetFromResults();" class="button"><?= caNavIcon(__CA_NAV_ICON_ADD__, 1, ['aria-description' => _t('Create set')]); ?></a>
+			</div>
+			<div class="setControlBlock" id="caSetLimitInput"><?= _t('Limit to %1 %2', caHTMLTextInput("limit", ['id' => 'caSetResultsLimit', 'value' => 25], ['width' => '25px']), $t_subject->getProperty('NAME_PLURAL')); ?></div>
 <?php		
 			if ($this->request->user->canDoAction('can_batch_edit_'.$t_subject->tableName())) {
-				print '<div class="searchSetsBatchEdit">'.caHTMLCheckboxInput('batch_edit', array('id' => 'caCreateSetBatchEdit', 'value' => 1))." "._t('Open set for batch editing')."</div>\n";
+				print '<div class="setControlBlock">'.caHTMLCheckboxInput('batch_edit', ['id' => 'caCreateSetBatchEdit', 'class' => 'inventoryExclude', 'value' => 1])." "._t('Open for batch editing')."</div>\n";
 			}
 ?>
-			</form>
-		</div>
-<?php
-		}
-?>
+			<div class="setSaveBlock">
+				<a href='#' onclick="return caCreateSetFromResults();" class="button"><?= _t('%1 Save', caNavIcon(__CA_NAV_ICON_SAVE__, 2, ['aria-description' => _t('Save to set')])); ?></a>
+			</div>
+		</form>
+	</div>
 
-		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250);'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
-		<br/>
-		<div class="clear">&nbsp;</div>
+	<a href='#' id='hideSets' onclick='caShowSearchSetTools(false); $(".setTools").slideDown(250);'><?= caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+	<br/>
+	<div class="clear">&nbsp;</div>
 </div><!-- end searchSetTools -->
 <?php
 	}
 ?>
 <script type="text/javascript">
-	function caShowSearchSetTools() {
-		jQuery('.setTools').hide();
-		jQuery("#searchSetTools").slideDown(250);
-		
-		jQuery('.inventoryTools').show();
-		jQuery("#searchInventoryTools").slideUp(250);
-		
-		jQuery("input.addItemToSetControl").show(); 
+	function caShowSearchSetTools(show=true) {
+		if(show) {
+			jQuery('.inventoryTools').show();
+			jQuery("#searchInventoryTools").slideUp(250);
+			
+			jQuery('.setTools').hide();
+			jQuery("#searchSetTools").slideDown(250);
+			
+			jQuery("input.addItemToSetControl").show(); 
+		} else {		
+			jQuery('.setTools').hide();
+			jQuery("#searchSetTools").slideUp(250);
+			
+			jQuery("input.addItemToSetControl").hide(); 
+		}
+	}
+	
+	function caToggleNewSetControl(show) {
+		if(show) {
+			jQuery('#caNewSetInput, #caShowSetList').show();
+			jQuery('#caSetList, #caShowNewSetInput').hide();
+			jQuery('#caSetSaveMode').val('I');
+		} else {
+			jQuery('#caNewSetInput, #caShowSetList').hide();
+			jQuery('#caSetList, #caShowNewSetInput').show();
+			jQuery('#caSetSaveMode').val('U');
+		}
 		return false;
 	}
 	
-	function caHideSearchSetTools() {
-		jQuery('.setTools').show();
-		jQuery("#searchSetTools").slideUp(250);
+	function caSetUpdateForm() {
+		const m = jQuery('#caSetSource').val();
 		
-		jQuery("input.addItemToSetControl").hide(); 
-		return false;
+		if(m === 'from_random') {
+			jQuery('#caSetLimitInput').show();
+		} else {
+			jQuery('#caSetLimitInput').hide();
+		}
 	}
 	
 	//
@@ -151,92 +178,78 @@ if ($show_add_checked_to_set || $show_create_set_from_checked) {
 		});
 		return false;
 	}
-	
-	function caAddItemsToSet() {
-		jQuery("#caAddToSetIDIndicator").show();
+	function caCreateSetFromResults() {
+		jQuery("#caSetRequestIndicator").show();
+		
+		const is_update = (jQuery('#caSetSaveMode').val() === 'U');
 		jQuery.post(
 			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
 			{ 
-				set_id: jQuery('#caAddToSetID').val(), 
+				set_id: jQuery('#caSetList').val(), 
+				set_name: !is_update ? jQuery('#caNewSetInput').val() : null,
+				mode: jQuery('#caSetSaveMode').val(),
+				source: jQuery('#caSetSource').val(),
+				limit: jQuery('#caSetResultsLimit').val(),
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
 				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>
 			}, 
 			function(res) {
-				jQuery("#caAddToSetIDIndicator").hide();
+				jQuery("#caSetRequestIndicator").hide();
+				
+				const header = is_update ? <?= json_encode(_t('Add to set')); ?> : <?= json_encode(_t('Create set')); ?>;
+					
 				if (res['status'] === 'ok') { 
-					var item_type_name;
-					if (res['num_items_added'] == 1) {
-						item_type_name = <?= json_encode($t_subject->getProperty('NAME_SINGULAR')); ?>;
+					if (jQuery('#caCreateSetBatchEdit').prop('checked')) {
+						window.location = '<?= caNavUrl($this->request, 'batch', 'Editor', 'Edit', []); ?>/id/ca_sets:' + res['set_id'];
 					} else {
-						item_type_name = <?= json_encode($t_subject->getProperty('NAME_PLURAL')); ?>;
+						let item_type_name;
+						if (res['num_items_added'] == 1) {
+							item_type_name = <?= json_encode($t_subject->getProperty('NAME_SINGULAR')); ?>;
+						} else {
+							item_type_name = <?= json_encode($t_subject->getProperty('NAME_PLURAL')); ?>;
+						}
+						let msg = is_update ? <?= json_encode(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>
+											: <?= json_encode(_t('Created set <i>^set_name</i> with ^num_items ^item_type_name'));?>;
+		
+						if (res['num_items_already_present'] > 0) { 
+							msg += <?= json_encode(_t('<br/>(^num_dupes were already in the set.)')); ?>;
+							msg = msg.replace('^num_dupes', res['num_items_already_present']);
+						}
+						
+						msg = msg.replace('^num_items', res['num_items_added']);
+						msg = msg.replace('^item_type_name', item_type_name);
+						msg = msg.replace('^set_name', res['set_name']);
+						
+						if(!is_update) {
+							// add new set to "add to set" list
+							jQuery('#caSetList').append($("<option/>", {
+								value: res['set_id'],
+								text: res['set_name'],
+								selected: 1
+							}));
+							// add new set to search by set drop-down
+							jQuery("form.caSearchSetsForm select.searchSetSelect").append($("<option/>", {
+								value: 'set:"' + res['set_code'] + '"',
+								text: res['set_name']
+							}));
+							jQuery("select.caSetList").append($("<option/>", {
+								value: res['set_id'],
+								text: res['set_name']
+							}));
+						}
+						
+						jQuery.jGrowl(msg, { header: header }); 
+						jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
 					}
-					var msg = <?= json_encode(_t('Added ^num_items ^item_type_name to <i>^set_name</i>'));?>;
-					msg = msg.replace('^num_items', res['num_items_added']);
-					msg = msg.replace('^item_type_name', item_type_name);
-					msg = msg.replace('^set_name', res['set_name']);
-					
-					if (res['num_items_already_in_set'] > 0) { 
-						msg += <?= json_encode(_t('<br/>(^num_dupes were already in the set.)')); ?>;
-						msg = msg.replace('^num_dupes', res['num_items_already_in_set']);
-					}
-					
-					jQuery.jGrowl(msg, { header: <?= json_encode(_t('Add to set')); ?> }); 
-					jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
 				} else { 
-					jQuery.jGrowl(res['error'], { header: <?= json_encode(_t('Add to set')); ?> });
+					jQuery.jGrowl(res['error'], { header: header });
 				};
 			},
 			'json'
 		);
-		return false;
 	}
 	
-	function caCreateSetFromResults() {
-		jQuery("#caCreateSetFromResultsIndicator").show();
-		jQuery.post(
-			'<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createSetFromResult'); ?>', 
-			{ 
-				set_name: jQuery('#caCreateSetFromResultsInput').val(),
-				mode: jQuery('#caCreateSetFromResultsMode').val(),
-				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
-				set_type_id: jQuery('#caCreateSetTypeID').val(),
-				csrfToken: <?= json_encode(caGenerateCSRFToken($this->request)); ?>
-			}, 
-			function(res) {
-				jQuery("#caCreateSetFromResultsIndicator").hide();
-				if (res['status'] === 'ok') { 
-					var item_type_name;
-					if (res['num_items_added'] == 1) {
-						item_type_name = <?= json_encode($t_subject->getProperty('NAME_SINGULAR')); ?>;
-					} else {
-						item_type_name = <?= json_encode($t_subject->getProperty('NAME_PLURAL')); ?>;
-					}
-					var msg = <?= json_encode(_t('Created set <i>^set_name</i> with ^num_items ^item_type_name'));?>;
-					msg = msg.replace('^num_items', res['num_items_added']);
-					msg = msg.replace('^item_type_name', item_type_name);
-					msg = msg.replace('^set_name', res['set_name']);
-					
-					if (jQuery('#caCreateSetBatchEdit').prop('checked')) {
-						window.location = '<?= caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/id/ca_sets:' + res['set_id'];
-					} else {
-						jQuery.jGrowl(msg, { header: <?= json_encode(_t('Create set')); ?> }); 
-						// add new set to "add to set" list
-						jQuery('#caAddToSetID').append($("<option/>", {
-							value: res['set_id'],
-							text: res['set_name'],
-							selected: 1
-						}));
-						// add new set to search by set drop-down
-						jQuery("select.searchSetSelect").append($("<option/>", {
-							value: 'set:"' + res['set_code'] + '"',
-							text: res['set_name']
-						}));
-					}
-				} else { 
-					jQuery.jGrowl(res['error'], { header: <?= json_encode(_t('Create set')); ?> });
-				};
-			},
-			'json'
-		);
-	}
+	jQuery(document).ready(function() {
+		caSetUpdateForm();
+	});
 </script>

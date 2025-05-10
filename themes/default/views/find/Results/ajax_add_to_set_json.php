@@ -1,14 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
  * themes/default/views/find/results/ajax_add_to_set_json.php :
- * 		basic object search form view script 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,13 +26,16 @@
  * ----------------------------------------------------------------------
  */ 
 if ($error = $this->getVar('error')) {
-	print json_encode(array('status' => 'error', 'error' => $error));
+	print json_encode(['status' => 'error', 'error' => $error]);
 } else {
-	print json_encode(array(
+	print json_encode([
 		'status' 						=> 'ok', 
 		'set_id' 						=> $this->getVar('set_id'), 
 		'set_name' 						=> $this->getVar('set_name'), 
-		'num_items_added' 				=> $this->getVar('num_items_added'),
-		'num_items_already_in_set' 		=> $this->getVar('num_items_already_in_set')
-	));
+		'set_code' 						=> $this->getVar('set_code'), 
+		'num_items_added' 				=> $this->getVar('num_items_added') ?? 0,
+		'num_items_already_present' 	=> $this->getVar('num_items_already_present') ?? 0,
+		'num_items_wrong_type' 			=> $this->getVar('num_items_wrong_type') ?? null,
+		'num_items_previously_inventoried' => $this->getVar('num_items_previously_inventoried') ?? null
+	]);
 }

@@ -72,7 +72,7 @@ $new_set_input = $can_create_inventories ? caHTMLTextInput('set_name',
 if ($can_edit_inventories || $can_create_inventories) {
 ?>
 <div class='inventoryTools'>
-	<a href="#" id='searchInventoryToolsShow' onclick="$('.inventoryTools').hide(); return caShowSearchInventoryTools(true);"><?= caNavIcon(__CA_NAV_ICON_INVENTORY__, 2).' '._t("Inventory"); ?></a>
+	<a href="#" id='searchInventoryToolsShow' onclick="return caShowSearchInventoryTools(true);"><?= caNavIcon(__CA_NAV_ICON_INVENTORY__, 2).' '._t("Inventory"); ?></a>
 </div><!-- end inventoryTools -->
 
 <div id="searchInventoryTools">
@@ -92,8 +92,8 @@ if ($can_edit_inventories || $can_create_inventories) {
 <?php 
 	if($can_create_inventories && $can_edit_inventories) { 
 ?>
-				<a href='#' onclick="return caToggleNewSetControl(true);" id="caShowNewInventoryInput" class="button"><?= _t('%1 Create inventory', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Create inventory')])); ?></a>
-				<a href='#' onclick="return caToggleNewSetControl(false);" id="caShowInventoryList" class="button" style="display: none;",><?= _t('%1 Choose inventory', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Add to existing inventory')])); ?></a>
+				<a href='#' onclick="return caToggleNewInventoryControl(true);" id="caShowNewInventoryInput" class="button"><?= _t('%1 Create inventory', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Create inventory')])); ?></a>
+				<a href='#' onclick="return caToggleNewInventoryControl(false);" id="caShowInventoryList" class="button" style="display: none;",><?= _t('%1 Choose inventory', caNavIcon(__CA_NAV_ICON_DOT__, 1, ['class' => 'iconSmall', 'aria-description' => _t('Add to existing inventory')])); ?></a>
 <?php
 	}
 ?>
@@ -131,7 +131,7 @@ if ($can_edit_inventories || $can_create_inventories) {
 		}
 	}
 	
-	function caToggleNewSetControl(show) {
+	function caToggleNewInventoryControl(show) {
 		if(show) {
 			jQuery('#caNewInventoryInput, #caShowInventoryList').show();
 			jQuery('#caInventoryList, #caShowNewInventoryInput').hide();
@@ -228,9 +228,9 @@ if ($can_edit_inventories || $can_create_inventories) {
 						}));
 					}
 					
-					if (res['num_items_already_in_inventory'] > 0) { 
+					if (res['num_items_already_present'] > 0) { 
 						msg += <?= json_encode(_t('<br/>(^num_dupes were already in the inventory.)')); ?>;
-						msg = msg.replace('^num_dupes', res['num_items_already_in_inventory']);
+						msg = msg.replace('^num_dupes', res['num_items_already_present']);
 					}
 					if(res['num_items_wrong_type'] > 0) {
 						sg += <?= json_encode(_t('<br/>(^num_wrong_type were incorrect type for inventory.)')); ?>;

@@ -2537,7 +2537,7 @@ select.searchToolsSelect {
 	text-decoration: none;
 }
 
-#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator, #caInventoryRequestIndicator {
+#caCreateSetFromResultsIndicator, #caSetRequestIndicator, #caInventoryRequestIndicator {
 	display: none;
 }
 
@@ -8363,11 +8363,11 @@ input.searchSetsTextInput {
 	display: none;
 }
 
-div.inventoryControlBlock {
+div.inventoryControlBlock, div.setControlBlock {
 	margin-top: 3px;
 }
 
-div.inventorySaveBlock {
+div.inventorySaveBlock, div.setSaveBlock {
 	text-align: center; 
 	margin-top: 10px;
 }
