@@ -2660,10 +2660,10 @@ class BaseEditorController extends ActionController {
 		$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 
 		$vn_table_num = Datamodel::getTableNum($this->ops_table_name);
-		if ($t_attr->get('table_num') !=  $vn_table_num) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
+		// if ($t_attr->get('table_num') !=  $vn_table_num) {
+// 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+// 			return;
+// 		}
 		$t_element = new ca_metadata_elements($t_attr->get('element_id'));
 		$this->request->setParameter(Datamodel::primaryKey($vn_table_num), $t_attr->get('row_id'));
 

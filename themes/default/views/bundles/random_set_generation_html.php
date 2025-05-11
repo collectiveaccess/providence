@@ -34,15 +34,19 @@ $settings = $t_type->getSettings();
 $default_count = caGetOption('random_generation_size', $settings, 5);
 ?>
 <div id="caRandomSetGenerationPanel" class="caRandomSetGenerationPanel"> 
-	<div class='dialogHeader'><?= _t('Add random to set'); ?></div>
+	<div class='dialogHeader'><?= _t('Add random to %1', mb_strtolower($t_type->get('ca_list_items.preferred_labels.name_singular'))); ?></div>
 	<div id="caRandomSetGenerationPanelContentArea">
 		<?= caFormTag($this->request, 'randomSetGeneration', 'caRandomSetGenetationForm', null, 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true]); ?>
-			<p><?= _t('Add %1 random %2 to this set', caHTMLTextInput('count', ['value' => $default_count], ['width' => '22px']), $t_content->getProperty('NAME_PLURAL')); ?></p>
+			<div class="inventoryControlBlock"><?= _t('Add %1 random %2 to this %3', caHTMLTextInput('count', ['value' => $default_count], ['width' => '22px']), $t_content->getProperty('NAME_PLURAL'), mb_strtolower($t_type->get('ca_list_items.preferred_labels.name_singular'))); ?></div>
 <?php
+if($this->getVar('userCanSetExclusion')) {
+?>
+			<div class="inventoryControlBlock" id="caInventoryExcludeInput"><?= _t('%1 Exclude items in previous %2', caHTMLCheckboxInput("excludePreviouslyIncluded", ['id' => 'caExcludePreviouslyIncluded', 'class' => '', 'checked' => '1', 'value' => 1]), mb_strtolower($t_type->get('ca_list_items.preferred_labels.name_plural'))); ?></div>			
+<?php
+	}
 	if(!caIsInventory($t_item, ['inventoryTypesAreSet' => true])) {
 ?>
-			<p><?= _t('Limit selection to<br/>%1', $t_content->getTypeListAsHTMLFormElement('type_id[]', ['multiple' => true, 'height' => 10, 'id' => 'caRandomSetGenetationFormTypeID', 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true]));
-			?></p>
+			<div class="inventoryControlBlock"><?= _t('Limit selection to<br/>%1', $t_content->getTypeListAsHTMLFormElement('type_id[]', ['multiple' => true, 'height' => 10, 'id' => 'caRandomSetGenetationFormTypeID', 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true])); ?></div>
 <?php
 	}
 ?>	

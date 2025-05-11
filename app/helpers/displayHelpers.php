@@ -1588,11 +1588,12 @@ function caEditorInspector($view, $options=null) {
 		
 		$t_set_type = $t_item->getTypeInstance();		
 		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
-		if(caGetOption('random_generation_mode', $type_settings, 0) > 0) {
+		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {
 			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";
 
 			$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 			$random_set_view->setVar('t_item', $t_item);
+			$random_set_view->setVar('userCanSetExclusion', ((int)$t_set_type->getSetting('random_generation_mode') === 3));
 			FooterManager::add($random_set_view->render("random_set_generation_html.php"));
 			TooltipManager::add('#inspectorRandomButton', _t("Add random items"));
 		}

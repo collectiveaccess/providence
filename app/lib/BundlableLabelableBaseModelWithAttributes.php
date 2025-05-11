@@ -5129,11 +5129,16 @@ if (!$vb_batch) {
 								$acc[$m[1]][$m[2]] = $v;
 							}
 						}
-						print_R($acc);
+						$original_name = null;
+						foreach($_FILES as $k => $v) {
+							if(preg_match("!^inventory_([\d]+)_{$container_fld}_(.*)$!", $k, $m)) {
+								$acc[$m[1]][$m[2]] = $v['tmp_name'];
+								$original_name = $v['name'] ??  null;
+							}
+						}
 						foreach($acc as $item_id => $d) {
-							//if(!$d[$found_fld]) { continue; } 
 							if($s = ca_set_items::findAsInstance($item_id)) {
-								$s->replaceAttribute($d, $container_fld);
+								$s->replaceAttribute($d, $container_fld, null, ['original_name' => $original_name]);
 								$s->update();
 							}
 						}

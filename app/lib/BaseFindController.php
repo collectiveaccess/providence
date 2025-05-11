@@ -684,7 +684,7 @@ class BaseFindController extends ActionController {
 					$row_ids = $filtered_rows;
 				}
 			} else {
-				if(($limit > 0) && (sizeof($row_ids) >= $limit)) {
+				if(($source === 'from_random') && ($limit > 0) && (sizeof($row_ids) >= $limit)) {
 					$row_ids = array_slice($row_ids, 0, $limit);
 				}
 				$filtered_count = sizeof($row_ids);

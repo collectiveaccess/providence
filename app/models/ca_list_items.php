@@ -743,7 +743,8 @@ $_ca_list_items_settings = array(
 			'options' => array(
 				_t('disabled') => 0,
 				_t('select from all records') => 1,
-				_t('select from records not already in a set of the same type') => 2
+				_t('select from records not already in a set of the same type') => 2,
+				_t('select from records; allow user to specify inclusion of records already in a set of the same type') => 3
 			),
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,

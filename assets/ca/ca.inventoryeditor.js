@@ -225,13 +225,11 @@ var caUI = caUI || {};
 				
 				if((that.itemsWithForms[v['item_id']] === true) || (form_item_id && (form_item_id == v['item_id']))) {
 					let editor = jQuery('#' + that.container + ' textarea.' + that.editorTemplateClass).template(v);
-				
+					console.log(editor, v);
 					// set <select> elements
-					console.log("@@@", jQuery(editor).find("select"));
 					let selects = jQuery(editor).find("select").each(function(ksel, vsel) {
 						const id = jQuery(vsel).attr('id');
 						const fn = id.match(/^inventory_[\d]+_(.*)$/)[1] ?? null;
-						console.log(id, fn, v, v[fn]);
 						if(fn) {
 							jQuery(editor).find('#' + id + ' option[value="' + v[fn] + '"]').attr('selected','selected');
 						}
@@ -354,8 +352,6 @@ var caUI = caUI || {};
 			
 			that.getItemList(0, 10000, sortBundle, sortDirection);
 		}
-		// ------------------------------------------------------------------------------------
-		
 		// ------------------------------------------------------------------------------------
 		
 		that.initInventoryEditor();

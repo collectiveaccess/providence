@@ -2502,13 +2502,26 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$acc = [];
 					foreach($editable_bundle_info['bundles'] as $f) {
 						$sf = str_replace('.', '_', $f);
+						$tmp = explode('.', $f);
 						
-						$dt = ca_metadata_elements::getElementDatatype($f);
-						if(ca_metadata_elements::isAuthorityDatatype($dt)) {
-							$acc[$sf] = $qr->get("ca_set_items.{$f}", ['convertCodesToIdno' => true, 'output' => 'text', 'includeID' => false]);
-						} else {
-							$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
+						$dt = ca_metadata_elements::getElementDatatype(array_pop($tmp));
+						switch($dt) {
+							case __CA_ATTRIBUTE_VALUE_MEDIA__:
+								// @TODO: make media version configurable?
+								$acc[$sf] = $qr->get("ca_set_items.{$f}.icon", []);
+								break;
+							case __CA_ATTRIBUTE_VALUE_FILE__:
+								$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
+								break;
+							default:
+								if(ca_metadata_elements::isAuthorityDatatype($dt)) {
+									$acc[$sf] = $qr->get("ca_set_items.{$f}", ['convertCodesToIdno' => true, 'output' => 'text', 'includeID' => false]);
+								} else {
+									$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
+								}
+								break;
 						}
+						$acc["{$sf}_value_id"] = $qr->get("ca_set_items.{$f}.value_id", []);
 						$acc["{$sf}_display"] = $qr->get("ca_set_items.{$f}.display", []);
 						$acc["{$sf}_id"] = $qr->get("ca_set_items.{$f}.id", []);
 						

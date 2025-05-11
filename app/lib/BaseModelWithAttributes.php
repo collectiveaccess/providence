@@ -2348,6 +2348,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				// @TODO: generalize/cleanup
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'_id}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_id}', $vs_form_element);
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'_display}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_display}', $vs_form_element);
+				$vs_form_element = str_replace('{{'.$va_element['element_id'].'_value_id}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_value_id}', $vs_form_element);
 			
 			
 				// escape any special characters in jQuery selectors

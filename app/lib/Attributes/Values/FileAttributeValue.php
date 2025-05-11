@@ -258,6 +258,10 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 		$vs_element = '<div '._caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, null)]).'>';
 		$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
 		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeFileDownloadControl">'._t("Set file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
+
+		if(caGetOption('forSimpleForm', $pa_options, false)) {
+			$vs_element .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => "{{".$pa_element_info['element_id']."_value_id}}"), array('class' => 'attributeDownloadButton')))."</div>";
+		}
 		$vs_element .= '</div>';
 		return $vs_element;
 	}

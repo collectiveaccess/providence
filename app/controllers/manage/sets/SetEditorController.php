@@ -566,6 +566,9 @@ class SetEditorController extends BaseEditorController {
    			case 2:
    				$options['notInSetOfType'] = $t_set->getTypeCode();
    				break;
+   			case 3:
+   				$options['notInSetOfType'] = $this->request->getParameter('', pInteger) ? $t_set->getTypeCode() : null;
+   				break;
    			default:
    				// don't add
    				$error = _t('Random items cannot be added to sets of this type');
