@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@ class OAIController extends BaseServiceController {
 		$this->service = new OAIPMHService($this->request, $ps_provider);
 		$this->view->setVar('oaiData', $this->service->dispatch());
 		
+		$this->response->setContentType("application/xml");
 		$this->render('oai/oai_xml.php');
 	}
 	# -------------------------------------------------------
