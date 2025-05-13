@@ -2514,7 +2514,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 								$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
 								break;
 							default:
-								if(ca_metadata_elements::isAuthorityDatatype($dt)) {
+								if(($dt !== __CA_ATTRIBUTE_VALUE_LIST__) && ca_metadata_elements::isAuthorityDatatype($dt)) {
 									$acc[$sf] = $qr->get("ca_set_items.{$f}", ['convertCodesToIdno' => true, 'output' => 'text', 'includeID' => false]);
 								} else {
 									$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
