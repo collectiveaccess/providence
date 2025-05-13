@@ -110,13 +110,13 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 		'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList'),
 		'sortSave' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'SetSortOrder')
 	);
-	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	
 	$edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
 	$init_id = $subject_table."-".$id;
 } else {
 	$lookup_urls 			= caJSONLookupServiceUrl($this->request, $subject_table, $va_search_lookup_extra_params);
-	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	$edit_url = caEditorUrl($this->request, $subject_table);
 	$init_id = $id;
 }
