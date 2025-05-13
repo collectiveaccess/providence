@@ -233,11 +233,11 @@ if ($can_edit_inventories || $can_create_inventories) {
 						msg = msg.replace('^num_dupes', res['num_items_already_present']);
 					}
 					if(res['num_items_wrong_type'] > 0) {
-						sg += <?= json_encode(_t('<br/>(^num_wrong_type were incorrect type for inventory.)')); ?>;
+						msg += <?= json_encode(_t('<br/>(^num_wrong_type were incorrect type for inventory.)')); ?>;
 						msg = msg.replace('^num_wrong_type', res['num_items_wrong_type']);
 					}
 					if(res['num_items_previously_inventoried'] > 0) {
-						sg += <?= json_encode(_t('<br/>(^num_previously_inventoried were previously inventoried.)')); ?>;
+						msg += <?= json_encode(_t('<br/>(^num_previously_inventoried were previously inventoried.)')); ?>;
 						msg = msg.replace('^num_previously_inventoried', res['num_items_previously_inventoried']);
 					}
 					

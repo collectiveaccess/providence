@@ -73,6 +73,7 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 		<div class="inventoryControls">
 			<div><?= _t('Filter: %1', caHTMLTextInput('inventoryFilter', ['id' => "{$id_prefix}inventoryFilter"], ["width" => "150px"])); ?></div>
 			<div><?= _t("Sort: %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"])); ?></div>
+			<div class="inventoryUnsavedChanges" id='<?= $id_prefix; ?>unsavedChanges'><?= _t("%1 Unsaved changes", caNavIcon(__CA_NAV_ICON_ALERT__, '20px')); ?></div>
 		</div>
 		<div id="<?= $id_prefix; ?>inventoryCounts" class="inventoryStats"></div>
 	</div>
@@ -145,6 +146,7 @@ if(!$dont_show_delete) {
 			inventoryItemAutocompleteID: '<?= $id_prefix; ?>inventoryItemAutocompleter',
 			inventoryCountsID: '<?= $id_prefix; ?>inventoryCounts',
 			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
+			unsavedChangesID: '<?= $id_prefix; ?>unsavedChanges',
 			lookupURL: '<?= $lookup_urls['search']; ?>',
 			addItemToInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'addItemToInventory'); ?>',
 			removeItemFromInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'removeItemFromInventory'); ?>',

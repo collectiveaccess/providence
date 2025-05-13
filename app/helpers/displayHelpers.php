@@ -1442,8 +1442,8 @@ function caEditorInspector($view, $options=null) {
 
 		// list of sets in which item is a member
 		$t_set = new ca_sets();
-		if (is_array($va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($t_item->tableNum(), $t_item->getPrimaryKey(), array('user_id' => $view->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__)))) && sizeof($va_sets)) {
-			$va_links = array();
+		if (is_array($va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($t_item->tableNum(), $t_item->getPrimaryKey(), ['excludeInventories' => true, 'user_id' => $view->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__]))) && sizeof($va_sets)) {
+			$va_links = [];
 
 			$last_set_id = Session::getVar('last_set_id');
 			foreach($va_sets as $vn_set_id => $va_set) {
@@ -1451,6 +1451,16 @@ function caEditorInspector($view, $options=null) {
 				$va_links[] = "<a {$class} href='".caEditorUrl($view->request, 'ca_sets', $vn_set_id)."'>".$va_set['name']."</a>";
 			}
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
+		}
+		if ($view->request->getAppConfig()->get('enable_inventories') &&  is_array($va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($t_item->tableNum(), $t_item->getPrimaryKey(), ['inventoriesOnly' => true, 'user_id' => $view->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__]))) && sizeof($va_sets)) {
+			$va_links = [];
+
+			$last_set_id = Session::getVar('last_set_id');
+			foreach($va_sets as $vn_set_id => $va_set) {
+				$class = ($last_set_id == $vn_set_id) ? "class='currentSet'" : "";
+				$va_links[] = "<a {$class} href='".caEditorUrl($view->request, 'ca_sets', $vn_set_id)."'>".$va_set['name']."</a>";
+			}
+			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In inventory") : _t("In inventories"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
 		$creation = $t_item->getCreationTimestamp();
 		$last_change = $t_item->getLastChangeTimestamp();
