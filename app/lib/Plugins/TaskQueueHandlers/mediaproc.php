@@ -520,7 +520,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						'startAtTime' => $o_config->get('video_preview_start_at'),
 						'endAtTime' => $o_config->get('video_preview_end_at'),
 						'startAtPage' => $o_config->get('document_preview_start_page'),
-						'outputDirectory' => __CA_APP_DIR__.'/tmp'
+						'outputDirectory' => __CA_TEMP_DIR__
 					)
 				);
 				if (is_array($va_preview_frame_list)) {

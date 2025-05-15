@@ -147,7 +147,7 @@
 			
 			if (isset($pa_options['cleanCache']) && $pa_options['cleanCache']) {
 				// Clean cache
-				caRemoveDirectory(__CA_APP_DIR__.'/tmp', false);
+				caRemoveDirectory(__CA_TEMP_DIR__, false);
 			}
 		
 			return $va_messages;
