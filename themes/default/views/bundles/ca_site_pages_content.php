@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,33 +25,32 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject					= $this->getVar('t_subject');
-	$settings 					= $this->getVar('settings');
+$id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+$table_num 				= $this->getVar('table_num');
 
-	$vb_read_only				= (isset($settings['readonly']) && $settings['readonly']);
-	
-	$va_history 				= $this->getVar('checkout_history');
-	$vn_checkout_count 			= $this->getVar('checkout_count');
-	$va_client_list 			= $this->getVar('client_list');
-	$vn_client_count 			= $this->getVar('client_count');
-	
-	$t_page						= $this->getVar('t_page');
-	$t_template 				= $this->getVar('t_template');
-	
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+$t_subject				= $this->getVar('t_subject');
+$settings 				= $this->getVar('settings');
+
+$read_only				= (isset($settings['readonly']) && $settings['readonly']);
+
+$history 				= $this->getVar('checkout_history');
+$checkout_count 		= $this->getVar('checkout_count');
+$client_list 			= $this->getVar('client_list');
+$client_count 			= $this->getVar('client_count');
+
+$t_page					= $this->getVar('t_page');
+$t_template 			= $this->getVar('t_template');
+
+print caEditorBundleShowHideControl($this->request, $id_prefix);
 ?>
-<div id="<?= $vs_id_prefix; ?>">
+<div id="<?= $id_prefix; ?>">
 	<div class="bundleContainer">
-		<div class="caItemList">
+		<div class="caSitePageContents">
 			<div class="labelInfo">		
 <?php
-	if(is_array($va_fields = $t_page->getHTMLFormElements(['tagnamePrefix' => $vs_id_prefix, 'lookupUrls' => $this->getVar('lookup_urls'), 'contentUrl' => caNavUrl($this->request, '*', '*', 'getMediaList', ['page_id' => $t_subject->getPrimaryKey()])]))) {
-		foreach($va_fields as $vs_field => $va_element_info) {
-			print $va_element_info['element_with_label']."\n";
+	if(is_array($fields = $t_page->getHTMLFormElements(['tagnamePrefix' => $id_prefix, 'lookupUrls' => $this->getVar('lookup_urls'), 'contentUrl' => caNavUrl($this->request, '*', '*', 'getMediaList', ['page_id' => $t_subject->getPrimaryKey()])]))) {
+		foreach($fields as $field => $element_info) {
+			print $element_info['element_with_label']."\n";
 		}
 	}
 ?>
