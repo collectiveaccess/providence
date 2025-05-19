@@ -440,11 +440,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									maxHeight: '1500px'
 								}
 							} ).then(editor => {
-								// Don't let CKEditor pollute the top-level DOM with editor bits
-								const body = editor.ui.view.body._bodyCollectionContainer
-								body.remove()
-								editor.ui.view.element.appendChild(body);
-								
 								// Add current instance to list of initialized editors
 								if(!caUI) { caUI = {}; }
 								if(!caUI.ckEditors) { caUI.ckEditors = []; }
