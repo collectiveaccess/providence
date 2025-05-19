@@ -1774,6 +1774,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_snapshot = $qr_res->getRow();
 				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
 				$log_entries[] = [
+					'datetime' => time(),
 					'table' => 'ca_set_items',
 					'row_id' => $qr_res->get('ca_set_items.item_id'),
 					'user_id' => $pn_user_id,
@@ -1790,6 +1791,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
 					$log_entries[] = [
+						'datetime' => time(),
 						'table' => 'ca_sets',
 						'row_id' => $qr_res->get('ca_sets.set_id'),
 						'user_id' => $pn_user_id,
