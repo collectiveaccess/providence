@@ -1000,7 +1000,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('tableList');
 		list($subject_id, $t_subject) = $this->_initView($options);
 		
-		if(!caShowAccessControlScreen($t_subject)) { throw new ApplicationException(_t('ACL not enabled')); }
+		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1022,14 +1022,12 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
+		
 		$config = Configuration::load();
 		$save_access = $config->get('acl_show_public_access_controls');
-		
-		//if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
-		
 		$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_subject, ['forPawtucket' => true]);
 		
+		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1037,7 +1035,7 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 		
-		$can_save_acl = (!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL());
+		$can_save_acl = ((!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL())) || $pawtucket_only_acl_enabled;
 		
 		$subject_table = $t_subject->tableName();
 		$subject_pk = $t_subject->primaryKey();
@@ -1053,7 +1051,7 @@ class BaseEditorController extends ActionController {
 		
 		// Set Pawtucket access
 		$orig_access = $t_subject->get('access');
-		if(!is_null($this->request->parameterExists('access')) && $t_subject->hasField('access')) {
+		if($save_access && !is_null($this->request->parameterExists('access')) && $t_subject->hasField('access')) {
 			$t_subject->set('access', $this->request->getParameter('access', pInteger) );
 			$t_subject->update();
 		}
