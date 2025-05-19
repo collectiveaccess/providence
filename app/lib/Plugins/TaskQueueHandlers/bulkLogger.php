@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2024 Whirl-i-Gig
+ * Copyright 2024-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -119,7 +119,7 @@ class WLPlugTaskQueueHandlerbulkLogger Extends WLPlug Implements IWLPlugTaskQueu
 				$report['errors'][] = _t('Invalid table: %1', $table);
 				continue;
 			}
-			if($t_subject->logChange($entry['type'], $entry['user_id'] ?? null, ['row_id' => $row_id, 'snapshot' => $entry['snapshot']])) {
+			if($t_subject->logChange($entry['type'], $entry['user_id'] ?? null, ['datetime' => $entry['datetime'] ?? time(), 'row_id' => $row_id, 'snapshot' => $entry['snapshot']])) {
 				$c++;
 			}
 		}

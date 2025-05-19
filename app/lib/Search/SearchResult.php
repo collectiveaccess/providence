@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1073,7 +1073,7 @@ class SearchResult extends BaseObject {
 		$do_highlighting = caGetOption('highlighting', $pa_options, $this->do_highlighting);
 		
 		// Get system constant?
-		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__']) && defined($ps_field)) {
+		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__', '__CA_REPOSITORY__']) && defined($ps_field)) {
 			return ($vb_return_as_array || $vb_return_with_structure) ? [constant($ps_field)] : constant($ps_field);
 		}
 		
