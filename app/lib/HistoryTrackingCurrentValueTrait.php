@@ -1060,7 +1060,9 @@ trait HistoryTrackingCurrentValueTrait {
 				&&
 				($t = Datamodel::getInstance($l->get('current_table_num'), false, $l->get('current_row_id')))
 			) {
-				$t = Datamodel::getInstance($l->get('current_table_num'), false, $l->get('current_row_id'));
+				if(!($r = Datamodel::getInstance($l->get('tracked_table_num'), false, $l->get('tracked_row_id')))) {
+					$r = $t;
+				}
 				$type_id = $l->get('current_type_id');
 				$type_info = $t->getTypeList(); 
 				$table = $t->tableName();
@@ -1088,7 +1090,7 @@ trait HistoryTrackingCurrentValueTrait {
 				$history[$l->get('value_date')][] = [
 					'type' => Datamodel::getTableName($l->get('current_table_num')),
 					'id' => $l->get('current_row_id'),
-					'display' => $t->getWithTemplate($vs_display_template, ['locale' => $locale]),
+					'display' => $r->getWithTemplate($vs_display_template, ['locale' => $locale]),
 					'color' => $color,
 					'icon_url' => $icon_url,
 					'typename_singular' => $typename = $type_info[$type_id]['name_singular'],
