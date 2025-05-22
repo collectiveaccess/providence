@@ -2229,8 +2229,8 @@ class SearchResult extends BaseObject {
 					$vs_val_proc = $va_label[($va_path_components['subfield_name'] ?? null) ? $va_path_components['subfield_name'] : $pt_instance->getLabelDisplayField()];
 					
 					if($pa_options['stripEnclosingParagraphTags'] ?? true) {
-						$vs_val_proc = preg_replace("!^<p>!i", "", $vs_val_proc);
-						$vs_val_proc = preg_replace("!</p>$!i", "", $vs_val_proc);
+						$vs_val_proc = caStripEnclosingParagraphHTMLTags($vs_val_proc);
+						
 					}
 					switch($pa_options['output']) {
 						case 'text':
@@ -2399,6 +2399,17 @@ class SearchResult extends BaseObject {
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$vs_auth_table_name = $o_value->tableName();
 						
+						if(sizeof($va_auth_spec) === 1) {
+							$r = null;
+							$extra_values = $o_value->getAdditionalDisplayValues();
+							switch($va_auth_spec[0]) {
+								case 'display':
+								case 'id':
+									$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $extra_values[$va_auth_spec[0]];
+									continue(2);
+							}
+						}
+						
 						$vb_has_field_spec = (is_array($va_auth_spec) && sizeof($va_auth_spec));
 						if (!$vb_has_field_spec) { $va_auth_spec = [Datamodel::primaryKey($vs_auth_table_name)]; }
 						array_unshift($va_auth_spec, $vs_auth_table_name);
@@ -2503,8 +2514,6 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-								//ca_objects.informationservice.ulan_container
-							
 								// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
 								if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
 									switch($va_path_components['subfield_name']) {
@@ -2934,8 +2943,7 @@ class SearchResult extends BaseObject {
 						}
 						
 						if($pa_options['stripEnclosingParagraphTags'] ?? false) {
-							$vs_prop = preg_replace("!^<p>!i", "", $vs_prop);
-							$vs_prop = preg_replace("!</p>$!i", "", $vs_prop);
+							$vs_prop = caStripEnclosingParagraphHTMLTags($vs_prop);
 						}
 					
 						if ($pa_options['convertCodesToDisplayText'] ?? false) {
