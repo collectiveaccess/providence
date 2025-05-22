@@ -84,8 +84,8 @@ if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($v
 
 // generate list of inital form values; the bundle Javascript call will
 // use the template to generate the initial form
-$va_initial_values = array();
-$va_errors = array();
+$va_initial_values = [];
+$va_errors = [];
 $vs_bundle_preview = '';
 
 if(!is_array($va_template_tags = $va_element_ids)) {
@@ -128,7 +128,7 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 				// copy value from failed update into form (so user can correct it)
 				$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 			} else {
-				$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true, 'showMediaInfo' => true));
+				$vs_display_val = $o_value->getDisplayValue(['request' => $this->request, 'includeID' => true, 'showMediaInfo' => true]);
 			}
 			
 			if(method_exists($o_value, 'getAdditionalDisplayValues')) {
