@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017 Whirl-i-Gig
+ * Copyright 2017-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,53 +25,53 @@
  *
  * ----------------------------------------------------------------------
  */
-	AssetLoadManager::register('sortableUI');
-	
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// ca_site_page_media
-	$t_item_rel 		= $this->getVar('t_item_rel');
-	$t_subject 			= $this->getVar('t_subject');		// object
-	$vs_add_label 		= $this->getVar('add_label');
-	$settings 			= $this->getVar('settings');
+AssetLoadManager::register('sortableUI');
 
-	$vb_read_only		=	(isset($settings['readonly']) && $settings['readonly']);
+$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_instance 		= $this->getVar('t_instance');
+$t_item 			= $this->getVar('t_item');			// ca_site_page_media
+$t_item_rel 		= $this->getVar('t_item_rel');
+$t_subject 			= $this->getVar('t_subject');		// object
+$vs_add_label 		= $this->getVar('add_label');
+$settings 			= $this->getVar('settings');
 
-	
-	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
-	
-	
-	if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
-		$vs_default_upload_type = 'upload';
-	}
-	
-	// generate list of inital form values; the bundle Javascript call will
-	// use the template to generate the initial form
-	$va_errors = [];
-	
-	$vn_page_media_count = $t_subject->pageMediaCount($settings);
-	$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues('ca_site_page_media', $this->getVar('placement_code'), $settings, ['request' => $this->request]), ['removeNonCharacterData' => false]);
+$vb_read_only		=	(isset($settings['readonly']) && $settings['readonly']);
 
-	foreach($va_initial_values as $vn_media_id => $va_media) {
-		if(is_array($va_action_errors = $this->request->getActionErrors('ca_site_page_media', $vn_media_id))) {
-			foreach($va_action_errors as $o_error) {
-				$va_errors[$vn_media_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
-			}
+
+$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
+
+
+if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
+	$vs_default_upload_type = 'upload';
+}
+
+// generate list of inital form values; the bundle Javascript call will
+// use the template to generate the initial form
+$va_errors = [];
+
+$vn_page_media_count = $t_subject->pageMediaCount($settings);
+$va_initial_values = caSanitizeArray($t_subject->getBundleFormValues('ca_site_page_media', $this->getVar('placement_code'), $settings, ['request' => $this->request]), ['removeNonCharacterData' => false]);
+
+foreach($va_initial_values as $vn_media_id => $va_media) {
+	if(is_array($va_action_errors = $this->request->getActionErrors('ca_site_page_media', $vn_media_id))) {
+		foreach($va_action_errors as $o_error) {
+			$va_errors[$vn_media_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 		}
 	}
-	
-	$va_failed_inserts = [];
-	foreach($this->request->getActionErrorSubSources('ca_site_page_media') as $vs_error_subsource) {
-		if (substr($vs_error_subsource, 0, 4) === 'new_') {
-			$va_action_errors = $this->request->getActionErrors('ca_site_page_media', $vs_error_subsource);
-			foreach($va_action_errors as $o_error) {
-				$va_failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
-			}
+}
+
+$va_failed_inserts = [];
+foreach($this->request->getActionErrorSubSources('ca_site_page_media') as $vs_error_subsource) {
+	if (substr($vs_error_subsource, 0, 4) === 'new_') {
+		$va_action_errors = $this->request->getActionErrors('ca_site_page_media', $vs_error_subsource);
+		foreach($va_action_errors as $o_error) {
+			$va_failed_inserts[] = array('icon' => '', '_errors' => array(array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber())));
 		}
 	}
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $settings, (sizeof($va_initial_values) > 0), _t("Number of media: %1", sizeof($va_initial_values)));
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $settings);
+}
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $settings, (sizeof($va_initial_values) > 0), _t("Number of media: %1", sizeof($va_initial_values)));
+print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $settings);
 ?>
 <div id="<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php

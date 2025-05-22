@@ -405,6 +405,9 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			switch($use_editor) {
 				case 'ckeditor':
 					AssetLoadManager::register("ck5");
+					
+					$show_media_content_option = (isset($settings['referenceMediaIn']) && (bool)$settings['referenceMediaIn']);
+					
 					$element .= "
 					<script type=\"module\">
 						import {
@@ -416,7 +419,9 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 						} from 'ckeditor5';
 						
-						import { ResizableHeight} from 'ckresizeable';
+						import { ResizableHeight} from 'ckresizeable';						
+						import { CAMediaList } from 'ckcamedialist';					
+						import { CAItemLink } from 'ckcaitemlink';
 					
 						ClassicEditor
 							.create( document.querySelector( '#{fieldNamePrefix}{$element_info['element_id']}_{n}' ), {
@@ -427,7 +432,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
 									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
-									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
+									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, 
+									ResizableHeight, CAMediaList, CAItemLink
 								],
 								toolbar: {
 									items: ".json_encode(caGetCK5Toolbar()).",
@@ -438,6 +444,21 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									height: '{$height_w_suffix}',
 									minHeight: '50px',
 									maxHeight: '1500px'
+								},
+								CAMediaList: {
+									contentUrl: ".($show_media_content_option ? "'".caNavUrl($g_request, '*', '*', 'getMediaAttributeList', ['bundle' => $settings['referenceMediaIn'], $options['t_subject']->primaryKey() => $options['t_subject']->getPrimaryKey()])."'" : 'null').",
+									insertMediaRefs: true
+								},
+								CAItemLink: {
+									lookupUrls: ".json_encode(caGetLookupUrlsForTables())."
+								},
+								htmlSupport: {
+									allow: [{
+										name: 'iframe',
+										attributes: true,
+										classes: true,
+										styles: true
+									}]
 								}
 							} ).then(editor => {
 								// Add current instance to list of initialized editors

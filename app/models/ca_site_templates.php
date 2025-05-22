@@ -228,7 +228,7 @@ class ca_site_templates extends BundlableLabelableBaseModelWithAttributes {
 			$va_form_elements[] = [
 				'code' => $vs_tag,
 				'label' => ($vs_label = trim($va_tag_info['label'] ?? '')) ? $vs_label : $vs_tag,
-				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['id' => "{$vs_tagname_prefix}_{$vs_tag}", 'value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false), 'cktoolbar' => $vs_cktoolbar, 'contentUrl' => $vs_content_url, 'lookupUrls' => $va_lookup_urls]),
+				'element' => caHTMLTextInput("{$vs_tagname_prefix}_{$vs_tag}", ['id' => "{$vs_tagname_prefix}_{$vs_tag}", 'value' => $pa_values[$vs_tag]], ['width' => caGetOption('width', $va_tag_info, '300px'), 'height' => caGetOption('height', $va_tag_info, '35px'), 'insertMediaRefs' => caGetOption('insertMediaRefs', $pa_options, false), 'usewysiwygeditor' => caGetOption('usewysiwygeditor', $va_tag_info, false), 'cktoolbar' => $vs_cktoolbar, 'contentUrl' => $vs_content_url, 'lookupUrls' => $va_lookup_urls]),
 				'value' => $pa_values[$vs_tag]
 			];
 			

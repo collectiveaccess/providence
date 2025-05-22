@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/BaseEditorController.php");
 
 class SitePageEditorController extends BaseEditorController {
@@ -50,6 +49,7 @@ class SitePageEditorController extends BaseEditorController {
 		$t_page = new ca_site_pages($pn_page_id);
 		$this->view->setVar('media_list', $t_page->getPageMedia(['icon']));
 		
+		$this->response->setContentType('application/json');
 		$this->render('media_list_html.php');
 	}
 	# -------------------------------------------------------

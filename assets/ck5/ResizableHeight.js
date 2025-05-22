@@ -10,7 +10,7 @@ export class ResizableHeight extends Plugin {
                 .ck.resizable-mode .ck.ck-editor__main {
                     resize: vertical;
                     overflow: auto;
-                    height: 54.8px;
+                    height: auto;
                     min-height: 54.8px;
                     max-height: 100vh;
                 }

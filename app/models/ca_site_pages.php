@@ -290,7 +290,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_template = new ca_site_templates($vn_template_id);
 		
-		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, array_merge($options, ['addTooltips' => true, 'contentUrl' => caGetOption('contentUrl', $options, null)]));
+		$va_element_defs = $t_template->getHTMLFormElements($va_page_content, array_merge($options, ['addTooltips' => true, 'insertMediaRefs' => caGetOption('insertMediarefs', $options, false), 'contentUrl' => caGetOption('contentUrl', $options, null)]));
 		
 		$va_form_elements = [];
 		foreach($va_element_defs as $va_element_def) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017 Whirl-i-Gig
+ * Copyright 2017-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-$va_media_list = $this->getVar('media_list');
-
-?>
-    <ul>
-<?php
-foreach($va_media_list as $va_item) {
-?>
-    <li class='mediaItem' data-idno='<?= $va_item['idno']; ?>'>
-        <div style='float:left;'><?= $va_item['tags']['icon']; ?></div>
-        <div>
-            <em><?= $va_item['title']; ?></em> (<?= $va_item['idno']; ?>)<br/>
-            <?= $va_item['caption']; ?>
-        </div><br style='clear:both;'/>
-    </li>
-<?php
-}
-?>
-    </ul>
+print json_encode($this->getVar('media_list'));

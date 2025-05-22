@@ -136,6 +136,7 @@ function caHTMLSelect($ps_name, $pa_content, $pa_attributes=null, $pa_options=nu
  * 		usewysiwygeditor = Use rich text editor (QuillJS or CKEditor5) for text element. Only available when the height of the text element is multi-line. [Default is false]
  *      cktoolbar = app.conf directive name to pull CKEditor toolbar spec from. [Default is wysiwyg_editor_toolbar]
  *      contentUrl = URL to use to load content when CKEditor is use with CA-specific plugins. [Default is null]
+ *		insertMediaRefs = 
  *		textAreaTagName = 
  * @return string
  */
@@ -144,6 +145,8 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	$va_styles = array();
 	
 	$tag_name = caGetOption('textAreaTagName', $options, 'textarea');
+	$content_url = caGetOption('contentUrl', $options, null);
+	$insert_media_refs = (bool)caGetOption('insertMediaRefs', $options, true);
 	
 	if(isset($attributes['style']) && $attributes['style']) {
 		$va_styles[] = $attributes['style'];
@@ -221,6 +224,10 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 					 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
 					 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 					} from 'ckeditor5';
+						
+					import { ResizableHeight} from 'ckresizeable';						
+					import { CAMediaList } from 'ckcamedialist';					
+					import { CAItemLink } from 'ckcaitemlink';
 				
 					ClassicEditor
 						.create( document.querySelector( '#{$name}' ), {
@@ -231,11 +238,33 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 								SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
 								SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
-								Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+								Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage,
+								ResizableHeight, CAMediaList, CAItemLink
 							],
 							toolbar: {
 								items: ".json_encode($toolbar).",
 								shouldNotGroupWhenFull: true
+							},							
+							ResizableHeight: {
+								resize: true,
+								height: '{$height_w_suffix}',
+								minHeight: '50px',
+								maxHeight: '1500px'
+							},
+							CAMediaList: {
+								contentUrl: ".json_encode($content_url).",
+								insertMediaRefs: ".($insert_media_refs ? 1 : 0)."
+							},
+							CAItemLink: {
+								lookupUrls: ".json_encode(caGetLookupUrlsForTables())."
+							},
+							htmlSupport: {
+								allow: [{
+									name: 'iframe',
+									attributes: true,
+									classes: true,
+									styles: true
+								}]
 							}
 						} )
 						.catch((e) => console.log('Error initializing CKEditor: ' + e));
@@ -243,7 +272,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 							
 				
 				$attr_string = _caHTMLMakeAttributeString($attributes, $options);			
-				$element .= "<div id=\"{$name}_container\" style='width: {$width}px; height: {$height}px; overflow-y: auto;'>
+				$element .= "<div id=\"{$name}_container\" style='width: {$width}px; overflow-y: auto;'>
 					<{$tag_name} name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</{$tag_name}></div>
 <style>
 #{$name}_container .ck-editor__editable_inline {
