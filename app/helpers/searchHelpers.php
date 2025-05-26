@@ -1171,7 +1171,7 @@ function caGetDisplayValueForBundle(?string $bundle, string $value) {
 			default:
 				if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
 					return $value;
-				} elseif($t_instance->hasElement($va_tmp[1])) {	// metadata element
+				} elseif(method_exists($t_instance, 'hasElement') && $t_instance->hasElement($va_tmp[1])) {	// metadata element
 					if($t_element = ca_metadata_elements::getInstance($va_tmp[1])) {
 						switch(ca_metadata_elements::getElementDatatype($va_tmp[1])) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
