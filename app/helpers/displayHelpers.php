@@ -115,13 +115,16 @@ function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) 
  * @param $pa_locale_rules - Associative array defining which locales to extract, and how to fall back to alternative locales should your preferred locales not exist in $pa_values
  * @param $pa_values - Associative array keyed by unique item_id and then locale code (eg. en_US) or locale_id; the values can be anything - string, numbers, objects, arrays, etc.
  * @param $pa_options [optional] - Associative array of options; available options are:
- *									'returnList' = return an indexed array of found values rather than an associative array keys on unique item_id [default is false]
- *									'debug' = print debugging information [default is false]
+ *		returnList = return an indexed array of found values rather than an associative array keys on unique item_id. [Default is false]
+ *		debug = print debugging information. [Default is false]
+ *		noFallback = don't use fallback locales. [Default is false
  * @return Array - an array of found values keyed by unique item_id; or an indexed list of found values if option 'returnList' is passed in $pa_options
  */
 function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 	if (!is_array($pa_values)) { return array(); }
 	$va_locales = ca_locales::getLocaleList();
+	
+	$no_fallback = isset($pa_options['noFallback']) && (bool)$pa_options['noFallback'];
 
 	if (!is_array($pa_options)) { $pa_options = array(); }
 	if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
@@ -130,7 +133,7 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 	$va_values = array();
 	foreach($pa_values as $vm_id => $va_value_list_by_locale) {
 		if(!is_array($va_value_list_by_locale)) { continue; }
-		if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
+		if ((sizeof($va_value_list_by_locale) == 1) && (!$no_fallback || (in_array(ca_locales::idToCode(array_key_first($va_value_list_by_locale)), array_keys($pa_locale_rules['preferred']))))) {		// Don't bother looking if there's just a single value
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
 		}
@@ -149,13 +152,15 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 				break;
 			}
 
-			// try fallback locales
-			if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
-				$va_values[$vm_id] = $vm_value;
+			if(!$no_fallback) {
+				// try fallback locales
+				if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
+					$va_values[$vm_id] = $vm_value;
+				}
 			}
 		}
 
-		if (!isset($va_values[$vm_id])) {
+		if (!$no_fallback && !isset($va_values[$vm_id])) {
 			// desperation mode: pick an available locale
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 		}
