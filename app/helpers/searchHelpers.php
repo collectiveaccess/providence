@@ -1017,7 +1017,7 @@ function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 				}
 				
 				$vs_field_disp = caGetLabelForBundle($vs_field);
-				$va_query[] = ($vs_field_disp && !$pb_omit_field_names ? "{$vs_field_disp}: \"" : "").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
+				$va_query[] = ($vs_field_disp && !$pb_omit_field_names ? "{$vs_field_disp}: \"" : "\"").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
 				break;
 			case 'Zend_Search_Lucene_Index_Term':
 				$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
