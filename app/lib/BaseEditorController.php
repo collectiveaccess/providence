@@ -279,7 +279,6 @@ class BaseEditorController extends ActionController {
 		// relate existing records via Save() link
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
-				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 				if(!$t_subject->relationshipExists($vs_rel_table, $vn_rel_id, $vn_rel_type_id)) { 
 					$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
 				}
@@ -359,7 +358,6 @@ class BaseEditorController extends ActionController {
 				// relate newly created record if requested
 				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 					if(Datamodel::tableExists($vs_rel_table)) {
-						Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 						$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id);
 					}
 				}

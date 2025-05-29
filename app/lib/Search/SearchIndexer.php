@@ -410,10 +410,8 @@ class SearchIndexer extends SearchBase {
 
 		if(isset($va_cache_data[$ps_subject_table]) && is_array($va_cache_data[$ps_subject_table])) { /* cache hit */
 			/* return data from cache */
-			//Debug::msg("Got table dependency array for table {$ps_subject_table} from external cache");
 			return $va_cache_data[$ps_subject_table];
 		} else { /* cache miss */
-			//Debug::msg("Cache miss for {$ps_subject_table}");
 			/* build dependency graph, store it in cache and return it */
 			$va_deps = $this->_getDependencies($ps_subject_table);
 			$va_cache_data[$ps_subject_table] = $va_deps;
