@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 use Com\Tecnick\Barcode;
-use Zend\Stdlib\Glob;
+use Laminas\Stdlib\Glob;
 
 require_once(__CA_LIB_DIR__."/Print/PDFRenderer.php");
 
