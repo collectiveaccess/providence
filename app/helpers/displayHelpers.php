@@ -981,7 +981,7 @@ function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, 
  */
 function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_f', function() {
 			caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 			caEditorFieldList.onOpenCallback = function(){
@@ -1023,7 +1023,7 @@ function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_option
 function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
 	$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_h', function() {
 			caEditorFieldList.hidePanel({dontCloseMask:1});
 
