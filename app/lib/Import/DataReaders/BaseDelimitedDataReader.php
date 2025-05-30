@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,6 +65,16 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	protected $ops_source = null;
 	
+	/**
+	 * Column headers
+	 */
+	private $headers;
+	
+	/** 
+	 * Maximum number of columns in file
+	 */
+	private $max_columns = 512;
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -94,6 +104,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		
 		$this->opn_current_row = 0;
 		
+		$this->headers = null;
+		
 		if($this->opo_parser->parse($ps_source)) {
 			$this->opn_num_rows = $this->opo_parser->numRows();
 			
@@ -118,6 +130,32 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		$this->opa_row_buf = $this->opo_parser->getRow();
 		array_unshift($this->opa_row_buf, null);		// make one-based
 		$this->opn_current_row++;
+		
+		if(is_null($this->headers) && is_array($this->opa_row_buf)) {
+			// Extract column headings?
+			$this->headers = [];
+			$col = 1;
+			
+			$headers = [];
+			foreach ($this->opa_row_buf as $v) {
+				$headers[] = str_replace("\\0", '/0', $v);
+					
+				$col++;
+				if ($col > $this->max_columns) { break; }
+			}
+			$headers = array_map(function($v) { return mb_strtolower($v); }, $headers);
+
+			if(sizeof(array_filter($headers, function($v) { $v = trim($v); return !(!strlen($v) || preg_match('!^[a-z0-9_\-\.:\/]+$!', $v)); })) === 0) {
+				// looks like headers
+				$this->headers = $headers;
+			}
+		}
+		if(is_array($this->headers) && sizeof($this->headers)) {
+			foreach($this->headers as $i => $h) {
+				if($i == 0) { continue; }
+				$this->opa_row_buf[$h] = $this->opa_row_buf[$i];	
+			}
+		}
 		return true;
 	}
 	# -------------------------------------------------------
@@ -152,7 +190,9 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
-		
+		if(is_array($this->headers) && (($i = array_search($ps_spec, $this->headers, true)) >= 0)) {
+			$ps_spec = $i;
+		}
 		$vs_value = $this->opo_parser->getRowValue($ps_spec);
 	
 		if ($vb_return_as_array) { return array($vs_value); }

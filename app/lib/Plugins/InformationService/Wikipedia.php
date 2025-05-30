@@ -189,12 +189,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		// the top two levels are 'query' and 'pages'
 		$va_results = $va_content['query']['pages'];
 
-		if(sizeof($va_results) > 1) {
-			Debug::msg('[Wikipedia] Found multiple results for page title '.self::getPageTitleFromURI($ps_url));
-		}
-
 		if(sizeof($va_results) == 0) {
-			Debug::msg('[Wikipedia] Couldnt find any results for page title '.self::getPageTitleFromURI($ps_url));
 			return null;
 		}
 

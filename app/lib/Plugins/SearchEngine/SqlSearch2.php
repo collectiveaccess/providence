@@ -1208,8 +1208,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 *
 	 */
 	public function startRowIndexing(int $subject_tablenum, int $subject_row_id) : void {
-		if ($this->debug) { Debug::msg("[SqlSearchDebug] startRowIndexing: {$subject_tablenum}/{$subject_row_id}"); }
-
 		$this->indexing_subject_tablenum = $subject_tablenum;
 		$this->indexing_subject_row_id = $subject_row_id;
 		$this->indexing_field_index = 0;
@@ -1235,8 +1233,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if($boost < 0) { $boost = 0; }
 		if($boost > 255) { $boost = 255; }
 		
-		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $content_tablenum/$content_fieldname [$content_row_id] =&gt; $content"); }
-	
 		if (in_array('DONT_TOKENIZE', array_values($options), true)) { 
 			$options['DONT_TOKENIZE'] = true;  
 		} elseif (!isset($options['DONT_TOKENIZE'])) { 
@@ -1341,7 +1337,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$this->db->query($this->insert_word_index_sql."\n".join(",", array_splice($this->doc_content_buffer, 0, $vn_max_word_segment_size)));
 				}
 			}
-			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}
 	
 		// clean up
@@ -1528,7 +1523,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$fi = 0;
 		foreach($pa_subject_row_ids as $vn_row_id) {
 			if (!$vn_row_id) { 
-				if ($this->debug) { Debug::msg("[SqlSearchDebug] Cannot index row because row id is missing!"); }
 				continue; 
 			}
 			$seq = 0;
@@ -1562,7 +1556,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (sizeof($va_row_insert_sql)) {
 			$vs_sql = $this->insert_word_index_sql."\n".join(",", $va_row_insert_sql);
 			$this->db->query($vs_sql);
-			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}				
 	}
 	# -------------------------------------------------

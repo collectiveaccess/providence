@@ -6572,6 +6572,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 	 *		row_id = Force logging for specified row_id. [Default is to use id from currently loaded row]
 	 *		snapshot = Row snapshot array to use for logging. [Default is to use snapshot from currently loaded row]
 	 * 		log_id = Force logging using a specific log_id. [Default is to use next available log_id]
+	 *		datetime = Unix timestamp of log entry. If not specified current time is used. [Default is current time]
 	 */
 	public function logChange($change_type, $user_id=null, $options=null) {
 		if (defined('__CA_DONT_LOG_CHANGES__') || !$this->logChanges()) { return null; }
@@ -6777,7 +6778,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			$snapshot = caSerializeForDatabase($snapshot, true);
 			// Create primary log entry
 			$this->opqs_change_log->execute(
-				$log_id, time(), $user_id, $unit_id, $change_type,
+				$log_id, caGetOption('datetime', $options, time()), $user_id, $unit_id, $change_type,
 				$this->tableNum(), $row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			
@@ -9350,8 +9351,8 @@ $pa_options["display_form_field_tips"] = true;
 				case(FT_FILE):
 					$post_max_size = caFormatFileSize(caReturnValueInBytes(ini_get( 'post_max_size' )));
 					$upload_max_filesize = caFormatFileSize(caReturnValueInBytes(ini_get( 'upload_max_filesize' )));
-
-					$vs_element = '<div class="formLabelUploadSizeNote"><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/><br/>'._t("Maximum upload size: %1", $post_max_size) . '</div>';
+					$class_attr = _caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, 'formLabelUploadSizeNote')]);
+					$vs_element = '<div '.$class_attr.'><input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/>'._t("Maximum upload size is %1", $post_max_size) . '</div>';
 
 					// show current media icon
 					if ($vs_version = (array_key_exists('displayMediaVersion', $pa_options)) ? $pa_options['displayMediaVersion'] : 'icon') {

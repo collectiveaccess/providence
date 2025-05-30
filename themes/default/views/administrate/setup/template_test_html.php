@@ -25,11 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $t_item = $this->getVar('t_subject');
-
 ?>
-
 <div style="width:100%">
 	<div class="title"><?= _t('Display template debugger'); ?>&colon;</div>
 	<table style="width:100%">
@@ -58,7 +55,6 @@ $t_item = $this->getVar('t_subject');
 
 	jQuery('#displayTemplate').keyup(function() {
 		delay(function(){
-			console.log("x", jQuery('#displayTemplate').val());
 			caRunTemplate(jQuery('#displayTemplate').val()); return false;
 		}, 300 );
 	});

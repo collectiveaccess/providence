@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@ $form_name = "ObjectComponentAddForm";
 	</div>
 <?php
 	if ($can_edit) {
-		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Save"), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "caSave{$form_name}{$field_name_prefix}{$n}(event);"))
+		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Save"), "{$form_name}{$field_name_prefix}{$n}", ["onclick" => "jQuery('#{$form_name}{$field_name_prefix}{$n}').submit();"])
 		.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "jQuery(\"#{$form_name}{$field_name_prefix}{$n}\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
 	}
 ?>
@@ -84,10 +84,15 @@ $form_name = "ObjectComponentAddForm";
 		<input type='hidden' name='types' value='<?= htmlspecialchars(is_array($restrict_to_types) ? join(',', $restrict_to_types) : ''); ?>'/>
 		
 		<script type="text/javascript">
-			function caSave<?= $form_name.$field_name_prefix.$n; ?>(e) {
+			jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").on('submit', function(e) {
+				// Force CKEditor text into form elements where we can grab it
+				if(caUI.ckEditors) { 
+					jQuery.each(caUI.ckEditors, function(k, instance) {
+						instance.updateSourceElement();
+					});
+				}
 				jQuery.post('<?= caNavUrl($this->request, "editor/objects", "ObjectComponent", "Save"); ?>', jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
-						
 						// Reload inspector and components bundle in parent form
 						if(caBundleUpdateManager) { 
 							caBundleUpdateManager.reloadBundle('ca_objects_components_list'); 
@@ -116,8 +121,10 @@ $form_name = "ObjectComponentAddForm";
 							clearInterval(componentAddClearErrorInterval);
 						}, 3000);
 					}
-				}, "json");
-			}
+				}, "json");	
+				e.preventDefault();
+			});
+			
 			function caSwitchTypeComponentForm<?= $field_name_prefix.$n; ?>() {
 				jQuery("#<?= $form_name.$field_name_prefix.$n; ?> input[name=type_id]").val(jQuery("#<?= $form_name; ?>TypeID<?= $field_name_prefix.$n; ?>").val());
 				var data = jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").serialize();
