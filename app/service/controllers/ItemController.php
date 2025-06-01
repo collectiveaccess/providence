@@ -278,7 +278,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						
 						$targets = [];
 						if(is_array($args['targets'])) {
-							$targets = array_map(function ($obj) {
+							$targets = array_map(function ($obj) use($check_access) {
 								$obj['checkAccess'] = $check_access ?? null;
 								return $obj;
 							}, $args['targets']);
@@ -427,7 +427,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						
 						$targets = [];
 						if(is_array($args['targets'])) {
-							$targets = array_map(function ($obj) {
+							$targets = array_map(function ($obj) use($check_access) {
 								$obj['checkAccess'] = $check_access ?? null;
 								return $obj;
 							}, $args['targets']);
