@@ -37,7 +37,8 @@ class ExpressionHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testAgeCalculation() {
 		// this test will fail on my father's birthday every year. Nie vergessen.
-		$this->assertEquals(93, caCalculateAgeInYears('1929/10/07', "now"));
+		$this->assertEquals(95, caCalculateAgeInYears('1929/10/07', "now"));
+		$this->assertEquals(88, caCalculateAgeInYears('1937/05/02', "now"));
 
 		// Alan Turing, pre-Unix time
 		$this->assertEquals(41, caCalculateAgeInYears('23 June 1912', '7 June 1954'));

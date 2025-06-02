@@ -47,7 +47,6 @@ class CompositeCache {
 		}
 
 		if(ExternalCache::contains($ps_key, $ps_namespace)) {
-			//Debug::msg("[CompositeCache] got {$ps_namespace}:{$ps_key} from external cache");
 			// copy data into 'L1' cache so that subsequent fetch() and contain() calls are fast
 			$vm_data = ExternalCache::fetch($ps_key, $ps_namespace);
 			MemoryCache::save($ps_key, $vm_data, $ps_namespace);
@@ -97,7 +96,6 @@ class CompositeCache {
 	 * @return bool success state
 	 */
 	public static function delete($ps_key, $ps_namespace='default') {
-		//Debug::msg("[CompositeCache] delete {$ps_namespace}:{$ps_key}");
 		MemoryCache::delete($ps_key, $ps_namespace);
 		ExternalCache::delete($ps_key, $ps_namespace);
 

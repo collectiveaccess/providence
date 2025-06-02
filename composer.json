@@ -14,12 +14,12 @@
     "easyrdf/easyrdf": "0.9.*",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
-    "guzzlehttp/guzzle": "7.5.*",
-    "guzzlehttp/psr7": "2.4.*",
+    "guzzlehttp/guzzle": "7.9.*",
+    "guzzlehttp/psr7": "2.7.*",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
     "knplabs/github-api": "^3.14",
-    "laminas/laminas-stdlib": "*",
+    "laminas/laminas-stdlib": "3.20",
     "laminas/laminas-escaper": "*",
     "league/climate": ">=1.0.0",
     "league/flysystem": ">=1.1.4",
@@ -28,17 +28,15 @@
     "league/flysystem-webdav": ">=1.0.0",
     "league/flysystem-ziparchive": ">=1.0.0",
     "magento/zendframework1": "~1.15",
-    "maximebf/debugbar": ">=1.0.0",
     "monolog/monolog": "~3.7",
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
+    "phpoffice/phppresentation": "1.0.0",
     "phpoffice/phpspreadsheet": "v1.29.8",
     "phpoffice/phpword": "v0.18.*",
-    "phpoffice/phppresentation": "dev-master",
-    "phpunit/phpunit": "^9.5",
+    "phpunit/phpunit": "^11.0",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
     "webonyx/graphql-php": "^14.1",
-    "zendframework/zend-stdlib": "^3.2",
     "ext-iconv": "*",
     "ext-simplexml": "*",
     "phpseclib/phpseclib": ">=2.0.47",
@@ -71,7 +69,8 @@
     "discard-changes": true,
     "allow-plugins" : {
       "php-http/discovery": false,
-      "simplesamlphp/composer-module-installer": true
+      "simplesamlphp/composer-module-installer": true,
+      "oat-sa/composer-npm-bridge": true
     }
   }
 }

@@ -62,7 +62,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 		}
 		$ip_to_ua[$ip] = $request_useragent;
 		if(sizeof($ip_to_ua) > 10000) {
-			$ip_to_ua = array_slice(0, 7500);
+			$ip_to_ua = array_slice($ip_to_ua, 0, 7500);
 		}
 		ExternalCache::save('ip_to_ua', $ip_to_ua);
 		
