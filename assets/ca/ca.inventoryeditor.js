@@ -38,6 +38,8 @@ var caUI = caUI || {};
 			inventoryNoItemWarningID: 'inventoryNoItemsWarning',
 			inventoryItemAutocompleteID: 'inventoryItemAutocompleter',
 			sortControlID: 'inventorySortControl',
+			unsavedChangesID: 'unsavedChanges',
+			unsavedChangesMessage: 'Unsaved changes!', 
 			inventoryCountsID: 'inventoryCounts',
 			
 			itemTemplateClass: "{idno}",
@@ -183,7 +185,7 @@ var caUI = caUI || {};
 			
 			if (isNew) { 
 				that.refresh(); 
-				caUI.utils.showUnsavedChangesWarning(true);
+				that._setUnsavedWarning(true);
 			}
 			return true;
 		}
@@ -261,6 +263,8 @@ var caUI = caUI || {};
 								break;
 							}
 						}
+						
+						that._setUnsavedWarning(true);
 					});
 					
 					// Editor "done" button
@@ -287,10 +291,8 @@ var caUI = caUI || {};
 						e.preventDefault();
 					});
 				}
-				
-				
 					
-					// Delete item button
+				// Delete item button
 				jQuery(item).find('.inventoryItemDeleteButton').on('click', function(e) {
 						const id = jQuery(this).attr('id');
 						const item_id = id.match(/^inventory_([\d]+)/)[1] ?? null;
@@ -312,6 +314,21 @@ var caUI = caUI || {};
 				c++;
 			});
 			that.updateCounts();
+		}
+		
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that._setUnsavedWarning = function(show=true) {
+			if(caUI.utils.showUnsavedChangesWarning) { caUI.utils.showUnsavedChangesWarning(show);}
+			if(that.unsavedChangesMessage) { 
+				if(show) {
+					jQuery('#' + that.unsavedChangesID).show();
+				} else {
+					jQuery('#' + that.unsavedChangesID).hide();
+				}
+			}
 		}
 		// ------------------------------------------------------------------------------------
 		//

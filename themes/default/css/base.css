@@ -8371,3 +8371,12 @@ div.inventorySaveBlock, div.setSaveBlock {
 	text-align: center; 
 	margin-top: 10px;
 }
+
+div.inventoryUnsavedChanges {
+	display: none;
+	color: #cc0000;
+	
+	position: absolute;
+	right: 5px;
+	bottom: 0px;
+}

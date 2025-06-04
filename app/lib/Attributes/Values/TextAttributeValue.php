@@ -361,6 +361,10 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		if (isset($options['forSearch']) && $options['forSearch']) {
 			unset($settings['usewysiwygeditor']);
 		}
+		if($settings['suggestExistingValues'] ?? false) {
+			unset($settings['usewysiwygeditor']);
+			$options['height'] = 1;
+		}
 		
 		$width = trim((isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth']);
 		$height = trim((isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight']);
@@ -553,7 +557,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		if ($settings['suggestExistingValues'] && $lookup_url && $bundle_name) { 
 			$element .= "<script type='text/javascript'>
-				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').autocomplete( 
+				const sel = '{fieldNamePrefix}".$element_info['element_id']."_{n}';
+				jQuery('#' + sel).autocomplete( 
 					{ 
 						source: '{$lookup_url}',
 						minLength: 3, delay: 800

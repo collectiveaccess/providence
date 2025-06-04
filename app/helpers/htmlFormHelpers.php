@@ -181,7 +181,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 			$va_styles[] = "height: ".($height = $va_dim['dimension'])."px;";
 			unset($attributes['height']);
 			unset($attributes['rows']);
-			$is_textarea = true;
+			$is_textarea = ($height > 14);
 		} else {
 			// height is in characters
 			if (($attributes['rows'] = $va_dim['dimension']) > 1) {

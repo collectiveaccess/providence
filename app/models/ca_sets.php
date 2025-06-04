@@ -565,6 +565,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *          codes = 
 	 *          includeItems = 
 	 *          item_id = Get set that contains specified item_id
+	 *			restrictToTypes = 
+	 *			inventoriesOnly = 
+	 *			excludeInventories = 
 	 *
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
@@ -582,6 +585,17 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if ($codes && !is_array($codes)) { $codes = [$codes]; }
 		
 		$include_items = caGetOption('includeItems', $pa_options, false);
+		
+		if($this->getAppConfig()->get('enable_inventories') && ($inventory_set_type = $this->getAppConfig()->get('inventory_set_type'))) {
+			if(caGetOption('inventoriesOnly', $pa_options, false)) {
+				$pa_options['restrictToTypes'] = [$inventory_set_type];
+				unset($pa_options['restrict_to_types']);
+			} elseif(caGetOption('excludeInventories', $pa_options, false)) {
+				$pa_options['excludeTypes'] = [$inventory_set_type];
+				unset($pa_options['exclude_types']);
+			}
+		}
+		
 		
 		$pb_by_user = caGetOption('byUser', $pa_options, null);
 		
@@ -726,6 +740,26 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(sizeof($va_restrict_to_type_ids)) {
 				$va_sql_wheres[] = "(cs.type_id IN (?))";
 				$va_sql_params[] = $va_restrict_to_type_ids;
+			}
+		}
+		if($exclude_types = caGetOption(['exclude_types', 'excludeTypes'], $pa_options, false)) {
+			if(!is_array($exclude_types)) { $exclude_types = [$exclude_types]; }
+			$exclude_type_ids = [];
+			foreach($exclude_types as $vm_type) {
+				if(is_numeric($vm_type)){
+					$exclude_type_ids[] = (int)$vm_type;
+				} else {
+					# --- look up code of set type
+					$vn_type_id = caGetListItemID('set_types', $vm_type);
+					if($vn_type_id){
+						$exclude_type_ids[] = (int) $vn_type_id;
+					}
+				}
+			}
+
+			if(sizeof($exclude_type_ids)) {
+				$va_sql_wheres[] = "(cs.type_id NOT IN (?))";
+				$va_sql_params[] = $exclude_type_ids;
 			}
 		}
 		
@@ -1799,6 +1833,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_snapshot = $qr_res->getRow();
 				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
 				$log_entries[] = [
+					'datetime' => time(),
 					'table' => 'ca_set_items',
 					'row_id' => $qr_res->get('ca_set_items.item_id'),
 					'user_id' => $pn_user_id,
@@ -1815,6 +1850,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
 					$log_entries[] = [
+						'datetime' => time(),
 						'table' => 'ca_sets',
 						'row_id' => $qr_res->get('ca_sets.set_id'),
 						'user_id' => $pn_user_id,
