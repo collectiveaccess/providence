@@ -179,7 +179,7 @@ class PortfolioDataReader extends BaseXMLDataReader {
 			return false;
 		}
 		$row_with_labels['id'][] = $id[0]->nodeValue;
-		$row_with_labels['type'][] = $o_row_clone->getAttribute('type');
+		$row_with_labels['_recordtype_'][] = $o_row_clone->getAttribute('type');
 		
 		$data = $this->opo_handle_xpath->query('field', $o_node);
 		foreach($data as $n) {

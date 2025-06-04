@@ -63,11 +63,13 @@ class BaseFindController extends ActionController {
 	 *
 	 */
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		AssetLoadManager::register("timelineJS");
-		AssetLoadManager::register('panel');
-		AssetLoadManager::register("tableview");
-		AssetLoadManager::register("bundleableEditor");
-		AssetLoadManager::register("bundleListEditorUI");
+		if(!$po_request->isAjax()) {
+			AssetLoadManager::register("timelineJS");
+			AssetLoadManager::register('panel');
+			AssetLoadManager::register("tableview");
+			AssetLoadManager::register("bundleableEditor");
+			AssetLoadManager::register("bundleListEditorUI");
+		}
 		
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		

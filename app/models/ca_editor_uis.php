@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -461,10 +461,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					)
 					AND
 					ceus.screen_id NOT IN (
-						SELECT screen_id FROM ca_editor_ui_screens_x_roles
+						SELECT screen_id FROM ca_editor_ui_screens_x_roles WHERE role_id IN (?)
 					)
 				)
 			)";
+			$va_params[] = array_keys($va_roles);
 			$va_wheres[] = $vs_access_sql;
 		}
 		
@@ -656,9 +657,13 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					WHERE
 						role_id IN (?) AND screen_id = ?", array(array_keys($va_roles), $vn_screen_id));
 						
-				while ($qr_roles->nextRow()) {
-					$uacc = (int)$qr_roles->get('access');
-					if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
+				if($qr_roles->numRows() > 0) {
+					while ($qr_roles->nextRow()) {
+						$uacc = (int)$qr_roles->get('access');
+						if(($uacc > $acc) || is_null($acc)) { $acc = $uacc; }
+					}
+				} else {
+					$acc = __CA_BUNDLE_ACCESS_EDIT__;
 				}
 			}	
 			if(!is_null($acc)) { return $acc; }	
