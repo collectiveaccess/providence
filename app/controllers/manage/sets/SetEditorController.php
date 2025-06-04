@@ -144,6 +144,7 @@ class SetEditorController extends BaseEditorController {
 		$start = $this->request->getParameter('start', pInteger) ?? 0;
 		$limit = $this->request->getParameter('limit', pInteger) ?? null;
 		$sort = $this->request->getParameter('sort', pString) ?? null;
+		$ids_only = $this->request->getParameter('idsOnly', pInteger) ?? false;
 		$sort_direction = $this->request->getParameter('sortDirection', pString) ?? null;
 		
 		$settings = [];
@@ -175,9 +176,9 @@ class SetEditorController extends BaseEditorController {
 			$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
 		}
 		
-		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction]));
+		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'idsOnly' => $ids_only]));
 
-		$this->view->setVar('data', ['items' => $items, 'order' => array_keys($items)]);		
+		$this->view->setVar('data', ['items' => $items, 'order' => $ids_only ? $items : array_keys($items)]);		
 		
 		$this->response->setContentType('application/json');
 		$this->render('json.php');

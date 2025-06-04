@@ -458,7 +458,7 @@ class BaseFindEngine extends BaseObject {
 	 */
 	public function doSort(array $hits, string $table, string $sort_field, string $sort_direction='asc', array $options=null) {
 		if(!sizeof($hits)) { return []; }
-		if (!$t_table = Datamodel::getInstanceByTableName($table, true)) { return null; } // invalid table
+		if (!$t_table = Datamodel::getInstanceByTableName($table, false)) { return null; } // invalid table
 		if (!is_array($hits) || !sizeof($hits)) { return $hits; } // Don't try to sort empty results
 		$start = caGetOption('start', $options, 0);
 		$limit = caGetOption('limit', $options, null);
@@ -467,7 +467,7 @@ class BaseFindEngine extends BaseObject {
 		$table_num = $t_table->tableNum();
 		list($sort_field, $sort_filter) = array_pad(explode('|', $sort_field), 2, null);
 		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
-		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, true))) { 
+		if (!($t_bundle = Datamodel::getInstanceByTableName($sort_table, false))) { 
 			return $hits;
 		}
 		

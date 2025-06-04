@@ -82,6 +82,7 @@ var caUI = caUI || {};
 			placementID: null,
 			interstitialPrimaryTable: null,	/* table and id for record from which interstitial was launched */
 			interstitialPrimaryID: null,
+			interstitialKey: "relation_id",
 
 			sortInitialValuesBy: null,
 			firstItemColor: null,
@@ -380,9 +381,9 @@ var caUI = caUI || {};
 				if (!this.readonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
 					jQuery("#" +this.itemID + templateValues.n).find("." + this.interstitialButtonClassName).on('click', null,  {}, function(e) {
 						// Trigger interstitial edit panel
-						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
+						var u = options.interstitialUrl + "/" + options.interstitialKey + "/" + (initialValues[options.interstitialKey] ?? null) + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
 						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
-							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID;
+							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID + "/key/" + that.interstitialKey;
 						}
 						options.interstitialPanel.showPanel(u);
 						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);

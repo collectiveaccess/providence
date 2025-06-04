@@ -1933,6 +1933,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$sort = caGetOption('sort', $pa_options, null);
 		$class = caGetOption('class', $pa_options, null);
+		$ids_only = caGetOption('idsOnly', $pa_options, null);
 		
 		$t_rel_label_table = null;
 		if (!($t_rel_table = Datamodel::getInstanceByTableNum($this->get('table_num'), true))) { return null; }
@@ -2074,29 +2075,30 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				casi.`rank` ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
-
-		$set_processed_templates = $va_processed_templates = null;
-		if($ps_template = caGetOption('template', $pa_options, null)) {
-			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
-		if($set_item_template = caGetOption('setItemTemplate', $pa_options, null)) {
-			$set_processed_templates = caProcessTemplateForIDs($set_item_template, 'ca_set_items', $qr_res->getAllFieldValues('set_item_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
-
-		if($ps_templateDescription = caGetOption('templateDescription', $pa_options, null)) {
-			$va_processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
 		
-		if ($vs_rep_join_sql) {
-			$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
-			$va_alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
-		$va_items = array();
-		$row_ids = [];
+		if(!$ids_only) {
+			$set_processed_templates = $va_processed_templates = null;
+			if($ps_template = caGetOption('template', $pa_options, null)) {
+				$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}
+			if($set_item_template = caGetOption('setItemTemplate', $pa_options, null)) {
+				$set_processed_templates = caProcessTemplateForIDs($set_item_template, 'ca_set_items', $qr_res->getAllFieldValues('set_item_id'), array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}
+	
+			if($ps_templateDescription = caGetOption('templateDescription', $pa_options, null)) {
+				$va_processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}
+			
+			if ($vs_rep_join_sql) {
+				$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
+				$va_alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}	
+		} 
+		$items = $row_ids = [];
 
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
@@ -2105,17 +2107,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			unset($va_row['media']);
 			
 			if (
-				!$sort 
-				&&
 				((isset($pa_options['returnRowIdsOnly']) && ($pa_options['returnRowIdsOnly']))
 				||
-				(isset($pa_options['idsOnly']) && ($pa_options['idsOnly'])))
+				($ids_only))
 			) {
-				$va_items[$qr_res->get('row_id')] = true;
+				$items[$qr_res->get('row_id')] = true;
 				continue;
 			}
 			if (!$sort && isset($pa_options['returnItemIdsOnly']) && ($pa_options['returnItemIdsOnly'])) {
-				$va_items[$qr_res->get('set_item_id')] = true;
+				$items[$qr_res->get('set_item_id')] = true;
 				continue;
 			}
 			
@@ -2193,35 +2193,39 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			$va_row['displayTemplateDescription'] = $ps_templateDescription ? array_shift($va_processed_templates_description) : '';
 		
-			$va_items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
+			$items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
 		}
 		
 		if ($sort) {
 			$qr_sort = caMakeSearchResult($t_rel_table->tableName(), $row_ids, ['sort' => $sort, 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
 			
 			$sorted_row_ids = $qr_sort->getAllFieldValues($t_rel_table->primaryKey());
-			$sorted_items = [];
-			$pk = $t_rel_table->primaryKey();
-			foreach($sorted_row_ids as $r) {
-				foreach($va_items as $k => $v) {
-					$locale_id = array_shift(array_keys($v));
-					if ($v[$locale_id][$pk] == $r) {
-						$sorted_items[$k] = $v;
-						break;
+			if($ids_only) {
+				$items = array_flip($sorted_row_ids);
+			} else {
+				$sorted_items = [];
+				$pk = $t_rel_table->primaryKey();
+				foreach($sorted_row_ids as $r) {
+					foreach($items as $k => $v) {
+						$locale_id = array_shift(array_keys($v));
+						if ($v[$locale_id][$pk] == $r) {
+							$sorted_items[$k] = $v;
+							break;
+						}
 					}
 				}
+				$items = $sorted_items;
 			}
-			$va_items = $sorted_items;
 		}
 		
 		if(caGetOption('shuffle', $pa_options, false)) {
-			$va_items = caShuffleArray($va_items);
+			$items = caShuffleArray($items);
 		}
 		
-		if (caGetOption('idsOnly', $pa_options, false)) {
-			return array_keys($va_items);
+		if ($ids_only) {
+			return array_keys($items);
 		}
-		return $va_items;
+		return $items;
 	}
 	# ------------------------------------------------------
 	/**
@@ -2457,6 +2461,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getInventoryList(?array $options=[]) : array {
 		global $AUTH_CURRENT_USER_ID;
 		
+		$ids_only = caGetOption('idsOnly', $options, false);
+		
 		$items = [];
 		if ($this->getPrimaryKey()) {
 			$set_table_name = Datamodel::getTableName($this->get('table_num'));
@@ -2466,16 +2472,23 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			} 
 		
-			$items = caExtractValuesByUserLocale($this->getItems([
+			$items = $this->getItems([
 				'start' => caGetOption('start', $options, null), 'limit' => caGetOption('limit', $options, null),
 				'thumbnailVersion' => caGetOption('thumbnailVersion', $options, 'icon'),
 				'user_id' => $AUTH_CURRENT_USER_ID,
 				'template' => $template,
 				'templateDescription' => caGetOption("ca_set_items_display_template", $options, null),
 				'sort' => caGetOption('sort', $options, null),
-				'sortDirection' => caGetOption('sortDirection', $options, 'ASC')
-			]), null, null, []);
-			$items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $items);
+				'sortDirection' => caGetOption('sortDirection', $options, 'ASC'),
+				'idsOnly' => $ids_only
+			]);
+			
+			if(!$ids_only) {
+				$items = caExtractValuesByUserLocale($items, null, null, []);
+				$items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $items);
+			} else {
+				return $items;
+			}
 		}
 		
 		// Filter values to include only what we actually need for inventory

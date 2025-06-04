@@ -135,27 +135,36 @@ var caUI = caUI || {};
 		//
 		// Load items via ajax call
 		//
-		that.getItemList = function(start, length, sort='', sortDirection='') {
+		that.getItemList = function(start, length, sort='', sortDirection='', reSortOnly=false) {
 			jQuery.getJSON(that.itemListURL, {
 				'set_id': that.inventoryID, 'start': start, 'length': length, 
-				'sort': sort, 'sortDirection': sortDirection
+				'sort': sort, 'sortDirection': sortDirection, 'idsOnly': reSortOnly ? 1 : 0
 			}, function(resp) {
 				let items = [];
 				for(let i in resp.data.order) {
-					let d = resp.data.items[resp.data.order[i]];
-					// preserve form data if defined
-					for(let x in that.items) {
-						if(that.itemsWithForms[resp.data.order[i]] && (that.items[x]['item_id'] == resp.data.order[i])) {
-							const re = new RegExp('^' + that.inventoryContainerElementCode);
-							for(let k in that.items[x]) {
-								if(k.match(re) || (k === '_INVENTORY_STATUS_') || (k === '_INVENTORY_STATUS_ICON_')) {
-									d[k] = that.items[x][k];
-								}
+					if(reSortOnly) {
+						let id = resp.data.order[i];
+						for(let x in that.items) {
+							if(that.items[x]['row_id'] == id) {
+								items.push(that.items[x]);
 							}
-							break;
 						}
+					} else {
+						let d = resp.data.items[resp.data.order[i]];
+						// preserve form data if defined
+						for(let x in that.items) {
+							if(that.itemsWithForms[resp.data.order[i]] && (that.items[x]['item_id'] == resp.data.order[i])) {
+								const re = new RegExp('^' + that.inventoryContainerElementCode);
+								for(let k in that.items[x]) {
+									if(k.match(re) || (k === '_INVENTORY_STATUS_') || (k === '_INVENTORY_STATUS_ICON_')) {
+										d[k] = that.items[x][k];
+									}
+								}
+								break;
+							}
+						}
+						items.push(d);
 					}
-					items.push(d);
 				}
 				that.items = items;
 				that.refresh();
@@ -225,7 +234,6 @@ var caUI = caUI || {};
 				
 				if((that.itemsWithForms[v['item_id']] === true) || (form_item_id && (form_item_id == v['item_id']))) {
 					let editor = jQuery('#' + that.container + ' textarea.' + that.editorTemplateClass).template(v);
-					console.log(editor, v);
 					// set <select> elements
 					let selects = jQuery(editor).find("select").each(function(ksel, vsel) {
 						const id = jQuery(vsel).attr('id');
@@ -350,7 +358,7 @@ var caUI = caUI || {};
 			let sortDirection = 'asc';
 			if(that.debug) { console.log("[DEBUG] Sort set to ", sortBundle, sortDirection); }
 			
-			that.getItemList(0, 10000, sortBundle, sortDirection);
+			that.getItemList(0, 10000, sortBundle, sortDirection, true);
 		}
 		// ------------------------------------------------------------------------------------
 		

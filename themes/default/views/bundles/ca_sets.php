@@ -104,7 +104,7 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 <?php
 	}
 ?>
-			<a href="#" onclick='editSetItem("{set_id}", "{item_id}");' class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?>
+			<a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a>
 			
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
@@ -199,6 +199,16 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 </div>
 <?php } ?>
 
+<div id="caRelationEditorPanel<?= $id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationEditorPanel<?= $id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?= _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+		
+	</div>
+	
+	<textarea class='caBundleDisplayTemplate' style='display: none;'>
+		<?= caGetRelationDisplayString($this->request, 'ca_entities', array(), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type)); ?>
+	</textarea>
+</div>
 <script type="text/javascript">
 	var caSetItemEditPanel<?= $id_prefix; ?>;
 	var caRelationBundle<?= $id_prefix; ?>;
@@ -245,7 +255,21 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 					}
 				}
 			});
-			console.log("feh", caSetItemEditPanel<?= $id_prefix; ?>);
+			caRelationEditorPanel<?= $id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationEditorPanel<?= $id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationEditorPanel<?= $id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+				jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
 		}
 <?php } ?>		
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= $id_prefix; ?>', {
@@ -274,6 +298,13 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
 			
+			interstitialButtonClassName: 'caInterstitialEditButton',
+			interstitialPanel: caRelationEditorPanel<?= $id_prefix; ?>,
+			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', ['t' => 'ca_set_items']); ?>',
+			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
+			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
+			interstitialKey: "item_id",
+			
 			itemColor: '<?= $color; ?>',
 			firstItemColor: '<?= $first_color; ?>',
 			lastItemColor: '<?= $last_color; ?>',
@@ -298,8 +329,7 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 	function editSetItem(set_id, item_id) {
 		let setItemEditorBaseUrl = '<?= caNavUrl($this->request, 'manage/set_items', 'SetItemEditor', 'Edit'); ?>'
     	var u = setItemEditorBaseUrl + '/set_id/' + set_id + '/item_id/' + item_id; 
-    	console.log(caSetItemEditPanel<?= $id_prefix; ?>);
-       	caSetItemEditPanel<?= $id_prefix; ?>.showPanel(u);
+     	caSetItemEditPanel<?= $id_prefix; ?>.showPanel(u);
 	}
 </script>
 

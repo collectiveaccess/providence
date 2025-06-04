@@ -3410,6 +3410,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if(is_array($va_items) && sizeof($va_items)) {
 				foreach($va_items as $vn_id => $va_item) {
 					$va_item['_display'] = caProcessTemplateForIDs($vs_template, 'ca_set_items', array($va_item['item_id']));
+					$va_item['hasInterstitialUI'] = true;
 					$va_vals[$vn_id] = $va_item;
 				}
 			}

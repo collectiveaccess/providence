@@ -39,10 +39,11 @@ $q				= caUcFirstUTF8Safe($this->getVar('q'), true);
 $can_edit	 	= true; //$t_subject->isSaveable($this->request);
 
 $form_name = "InterstitialEditorForm";
-	
 $t_left= $t_subject->getLeftTableInstance();
 $t_right= $t_subject->getRightTableInstance();
 $rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName()."</em>";
+$key = $this->getVar('key') ?? 'relation_id';
+
 ?>		
 <form action="#" name="<?= $form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $form_name.$field_name_prefix.$n; ?>">
 	<div class='dialogHeader quickAddDialogHeader'><?php 
@@ -80,7 +81,7 @@ $rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName
 		<input type='hidden' name='_formName' value='<?= $form_name.$field_name_prefix.$n; ?>'/>
 		<input type='hidden' name='screen' value='<?= htmlspecialchars($this->getVar('screen')); ?>'/>
 		<input type='hidden' name='t' value='<?= $t_subject->tableName(); ?>'/>
-		<input type='hidden' name='relation_id' value='<?= $t_subject->getPrimaryKey(); ?>'/>
+		<input type='hidden' name='<?= $key; ?>' value='<?= $t_subject->getPrimaryKey(); ?>'/>
 		<input type='hidden' name='primary' value='<?= $this->getVar('primary_table'); ?>'/>
 		<input type='hidden' name='primary_id' value='<?= $this->getVar('primary_id'); ?>'/>
 		<input type='hidden' name='type_id' value='<?= $t_subject->get('type_id'); ?>'/>
