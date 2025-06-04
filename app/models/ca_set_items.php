@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-20245Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -598,6 +598,177 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_instance->load($this->get('row_id'));
 		return $t_instance;
+	}
+		# ------------------------------------------------------
+	# Relationship emulation methods
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+	 *
+	 * @return string
+	 */
+	public function getLeftTableName() {
+		return 'ca_sets';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "right" table (by convention the table mentioned second in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "right" name is ca_entities)
+	 *
+	 * @return string
+	 */
+	public function getRightTableName() {
+		return Datamodel::getTableName($this->get('table_num'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the table in the relationship that is not the specified one.
+	 * (eg. if the table name passed is ca_objects and the relationship is ca_objects_x_entities then the "other" name is ca_entities)
+	 *
+	 * @param string $ps_tablename A table name that is part of the relationship the model represents
+	 * @return string The name of the table in the relationship that is not the specified table. If the specified table is not part of the relationship null is returned.
+	 */
+	public function getOtherTableName($ps_tablename) {
+		if (!in_array($ps_tablename, array($this->getLeftTableName(), $this->getRightTableName()))) { return null; }
+		return ($ps_tablename == $this->getLeftTableName()) ? $this->getRightTableName() : $this->getLeftTableName();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns table number of the "left" table (by convention the table mentioned first in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "left" number corresponds to ca_objects)
+	 *
+	 * @return int
+	 */
+	public function getLeftTableNum() {
+		return Datamodel::getTableNum($this->getLeftTableName());
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns table number of the "right" table (by convention the table mentioned second in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "right" number corresponds to ca_entities)
+	 *
+	 * @return int
+	 */
+	public function getRightTableNum() {
+		return Datamodel::getTableNum($this->getRightTableName());
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name) field name
+	 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+	 *
+	 * @return string
+	 */
+	public function getLeftTableFieldName() {
+		return 'set_id';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "right" table (by convention the table mentioned first in the relationship table name) field name
+	 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+	 *
+	 * @return string
+	 */
+	public function getRightTableFieldName() {
+		return 'row_id';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the foreign key pointing to ca_relationship_types (typically = 'type_id')
+	 *
+	 * @return string
+	 */
+	public function getTypeFieldName() {
+		return 'type_id';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns true if model is a relationship
+	 *
+	 * @return bool
+	 */
+	public function isRelationship() {
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getLeftTableInstance() {
+		$t_left = Datamodel::getInstanceByTableName($this->getLeftTableName(), false);
+		if ($t_left) {
+			$t_left->load($this->get($this->getLeftTableFieldName()));
+		}
+		return $t_left;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getRightTableInstance() {
+		$t_right = Datamodel::getInstanceByTableName($this->getRightTableName(). false);
+		if ($t_right) {
+			$t_right->load($this->get($this->getRightTableFieldName()));
+		}
+		return $t_right;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns relationship type name for the currently loaded row. Directionality of the type name can be controlled using the $ps_direction parameter.
+	 *
+	 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
+	 * @return string Type name or null if no row is loaded.
+	 */
+	public function getRelationshipTypename($direction='ltor', $type_id=null) {
+		if (($type_id) || ($type_id = $this->getTypeID())) {
+			$t_item = new ca_list_items($type_id);
+			return $t_item->get('ca_list_item.preferred_labels.name_plural');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns relationship type code for the currently loaded row.
+	 *
+	 * @return string The relationship type code
+	 */
+	public function getRelationshipTypeCode() {
+		if ($type_id = $this->get('type_id')) {
+			$t_rel_type = new ca_list_items($type_id);
+			return $t_rel_type->get('ca_list_items.idno');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get name for related table opposite the one specified by $pm_tablename_or_num.
+	 * For example, if the relationship is ca_objects_x_entities, passing $pm_tablename_or_num = ca_objects will
+	 * result in "ca_entities" being returned. If $pm_tablename_or_num is not referenced by the relationship 
+	 * null is returned.
+	 *
+	 * @param mixed $pm_tablename_or_num Table name of number
+	 * @return string
+	 */
+	public function getOppositeTableName($pm_tablename_or_num) {
+		if ($t_one_side = Datamodel::getInstanceByTableName($pm_tablename_or_num, true)) {
+			if ($this->getLeftTableName() == $t_one_side->tableName()) {
+				// other side is right
+				return $this->getRightTableName();
+			} elseif ($this->getRightTableName() == $t_one_side->tableName()) {
+				// other side is left
+				return $this->getLeftTableName();
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getTypeID($id = NULL) {
+		$t_set = new ca_sets($id ? $id : $this->get('set_id'));
+		return $t_set->get('type_id');
 	}
 	# ----------------------------------------
 }
