@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,13 @@ $va_role_list = $t_item->getRoleList();
 	</textarea>
 	
 	<div class="bundleContainer">
+		<div class='bundleSubLabel'>
+			<div class='editorBundleSortControl' style='float: right;'>	
+				<?= _t('Set access: '); ?>
+				<a href="#" id='<?= $vs_id_prefix; ?>ToggleEdit'><?= _t('All'); ?></a>
+				<a href="#" id='<?= $vs_id_prefix; ?>ToggleNoAccess'><?= _t('None'); ?></a>
+			</div>
+		</div>
 		<div class="caItemList">
 		
 		</div>
@@ -96,5 +103,15 @@ $va_role_list = $t_item->getRoleList();
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',
 		readonly: <?= $vb_read_only ? "true" : "false"; ?>
+	});
+	jQuery(document).ready(function() {
+		jQuery('#<?= $vs_id_prefix; ?>ToggleEdit').on('click', function(e) {
+			jQuery('#<?= $vs_id_prefix; ?> select').val(2);
+			e.preventDefault();
+		});
+		jQuery('#<?= $vs_id_prefix; ?>ToggleNoAccess').on('click', function(e) {
+			jQuery('#<?= $vs_id_prefix; ?> select').val(0);
+			e.preventDefault();
+		});
 	});
 </script>
