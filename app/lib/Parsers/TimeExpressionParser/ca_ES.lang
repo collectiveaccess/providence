@@ -1,48 +1,46 @@
 # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
 # List month names; used whenever name of month needs to be displayed
-monthList = [enero, febrero, Marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
+monthList = [gener, febrer, març, abril, maig, juny, juliol, agost, setembre, octubre, novembre, desembre]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
-monthListDisplay = [Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
+monthListDisplay = [Gener, Febrer, Març, Abril, Maig, Juny, Juliol, Agost, Setembre, Octubre, Novembre, Desembre]
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 monthTable = {
-	jan = enero, jan. = enero,
-	feb = febrero, feb. = febrero,
-	mar = marzo, mar. = marzo,
-	apr = abril, apr. = abril,
-	ma = mayo,
-	jun = junio, jun. = junio,
-	jul = julio, jul. = julio,
-	aug = agosto, aug. = agosto,
-	sep = septiembre, sep. = septiembre,
+	gen = gener, gen. = gener,
+	febr = febrer, febr. = febrer,
+	abr = abril, abr. = abril,
+	jul = juliol, jul. = juliol,
+	ag = agost, ag. = agost,
+	set = setembre, set. = setembre,
 	oct = octubre, oct. = octubre,
-	nov = noviembre, nov. = noviembre,
-	dec = diciembre, dec. = diciembre
+	nov = novembre, nov. = novembre,
+	des = desembre, des. = desembre
 }
 
+
 # List of day names, starting with Sunday
-dayListDisplay = [Domingo, Lunes, Martes, Miércoles, Jueves, Viernes, Sabado]
+dayListDisplay = [diumenge, dilluns, dimarts, dimecres, dijous, divendres, dissabte]
 
-rangePreConjunctions = [de, entre]
-rangeConjunctions = [–, -, y, ..]
+rangePreConjunctions = [entre]
+rangeConjunctions = [–, -, i, ..]
 
-dateTimeConjunctions = [at, @, a]
+dateTimeConjunctions = [a les, @]
 
 dateDelimiters = [/,-,.]
 timeDelimiters = [:,.]
 
-timeAMMeridian = am
-timePMMeridian = pm
+timeAMMeridian = a. m.
+timePMMeridian = p. m.
 
 meridianTable = {
-	a.m. = am,
-	p.m. = pm
+	a.m. = a. m.,
+	p.m. = p. m.
 }
 
 dateCircaIndicator = [circa, hacia, c, c., ca, ca.]
-dateProbablyIndicator = [probablemente]
+dateProbablyIndicator = [probablement]
 dateUncertaintyIndicator = [~]
 dateUncertaintyYearIndicator = [a,y]
 dateUncertaintyDayIndicator = [d]
@@ -60,31 +58,31 @@ ADBCTable = {
 	b.c. = bc
 }
 
-nowDate = [ahora, now]
-todayDate = [hoy]
-yesterdayDate = [ayer]
-tomorrowDate = [mañana]
+nowDate = [ara]
+todayDate = [avui]
+yesterdayDate = [ahir]
+tomorrowDate = [demà]
 undatedDate = [undated, unknown]
 
-presentDate = [presente, ?, ??, ???, ????]
-beforeQualifier = [antes]
-earlyQualifier = [early]
-midQualifier = [mid, middle]
-lateQualifier = [late]
-diedQualifier = [morir, d, d.]
-afterQualifier = [después]
-bornQualifier = [nació, b, b.]
+presentDate = [aquí, ?, ??, ???, ????]
+beforeQualifier = [abans]
+earlyQualifier = [d'hora]
+midQualifier = [mig]
+lateQualifier = [tard]
+diedQualifier = [mort]
+afterQualifier = [després]
+bornQualifier = [né]
 
 # Text to indicate century (as in "20th century")
-centuryIndicator = [Centuria, cent]
+centuryIndicator = [segle]
 
 # Text to indicate decdae (as in "1920s")
 decadeIndicator = [s]
 
 # list of numeric suffixes, starting with the one for zero
 # (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
-ordinalSuffixes = []
-ordinalSuffixDefault = 
+ordinalSuffixes = [è, r, n, r, t]
+ordinalSuffixDefault = è
 
 # in delimited dates (ex. 12/10/2009) is the first number a month or a day?
 # set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
@@ -96,13 +94,13 @@ monthComesFirstInDelimitedDate = 0
 daySuffix = 
 
 # Definite articles
-definiteArticles = [el, la, los, las]
+definiteArticles = [el, la, les, els]
 
 # Indefinite articles
 indefiniteArticles = [un, una]
 
 # Seasons
-winterSeason = [winter]
-springSeason = [spring]
-summerSeason = [summer]
-autumnSeason = [autumn, fall]
+winterSeason = [hivern]
+springSeason = [primavera]
+summerSeason = [estiu]
+autumnSeason = [tardor]
