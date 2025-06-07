@@ -439,6 +439,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$va_roles = $t_user->getUserRoles();
+			$role_limit_sql = null;
 			if (is_array($va_roles) && sizeof($va_roles)) {
 				$vs_access_sql .= " OR (ceus.screen_id IN 
 					(
@@ -448,6 +449,13 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 							role_id IN (?) AND (access > 0)
 					)
 				)";
+				$va_params[] = array_keys($va_roles);
+				
+				$role_limit_sql = "
+					AND
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_roles WHERE role_id IN (?)
+					)";
 				$va_params[] = array_keys($va_roles);
 			}
 			$vs_access_sql .= "
@@ -459,13 +467,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					ceus.screen_id NOT IN (
 						SELECT screen_id FROM ca_editor_ui_screens_x_user_groups
 					)
-					AND
-					ceus.screen_id NOT IN (
-						SELECT screen_id FROM ca_editor_ui_screens_x_roles WHERE role_id IN (?)
-					)
+					{$role_limit_sql}
 				)
 			)";
-			$va_params[] = array_keys($va_roles);
 			$va_wheres[] = $vs_access_sql;
 		}
 		
