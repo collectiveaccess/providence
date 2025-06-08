@@ -93,7 +93,6 @@ $key = $this->getVar('key') ?? 'relation_id';
 				if(!caUI) { caUI = {}; }
 				if(!caUI.ckEditors) { caUI.ckEditors = []; }
 				for(let c in caUI.ckEditors) {
-					console.log('c', c, caUI.ckEditors[c]);
 					caUI.ckEditors[c].updateSourceElement();
 				}
 				var fdata = new FormData(jQuery('#<?= $form_name.$field_name_prefix.$n; ?>')[0]);   

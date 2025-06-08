@@ -1023,8 +1023,6 @@ if (!$pb_omit_editing_info) {
 			return CompositeCache::fetch($cache_key);
 		}
 		
-		$t_subject = Datamodel::getInstance($pm_table_name_or_num, true);
-		
 		$vb_show_tooltips = (isset($options['no_tooltips']) && (bool)$options['no_tooltips']) ? false : true;
 		$vs_format = (isset($options['format']) && in_array($options['format'], array('simple', 'full'))) ? $options['format'] : 'full';
 		
@@ -1703,96 +1701,98 @@ if (!$pb_omit_editing_info) {
 			}
 		}
 		
-		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
-			// get object representations (objects only, of course)
-			if (is_a($t_subject, 'RepresentableBaseModel')) {
-				$va_additional_settings = array(
-					'display_mode' => array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'width' => 35, 'height' => 1,
-						'takesLocale' => false,
-						'default' => '',
-						'options' => array(
-							_t('Media') => 'media',
-							_t('URL') => 'url'
-						),
-						'label' => _t('Output mode'),
-						'description' => _t('Determines if value used is URL of media or the media itself.')
+		if (
+			(caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__)
+			&&
+			(is_a($t_instance, 'RepresentableBaseModel'))
+		) {
+			// get object representations
+			$va_additional_settings = array(
+				'display_mode' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'options' => array(
+						_t('Media') => 'media',
+						_t('URL') => 'url'
 					),
-					'show_nonprimary' => array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'width' => 35, 'height' => 1,
-						'takesLocale' => false,
-						'default' => 0,
-						'options' => array(
-							_t('Yes') => 1,
-							_t('No') => 0
-						),
-						'label' => _t('Include non-primary media'),
-						'description' => _t('Includes non-primary media in display.')
-					),					
-                    'delimiter' => array(
-                        'formatType' => FT_TEXT,
-                        'displayType' => DT_FIELD,
-                        'width' => 35, 'height' => 1,
-                        'takesLocale' => false,
-                        'default' => '',
-                        'label' => _t('Delimiter'),
-                        'description' => _t('Text to place in-between repeating values.')
-                    )
-				);
+					'label' => _t('Output mode'),
+					'description' => _t('Determines if value used is URL of media or the media itself.')
+				),
+				'show_nonprimary' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => 0,
+					'options' => array(
+						_t('Yes') => 1,
+						_t('No') => 0
+					),
+					'label' => _t('Include non-primary media'),
+					'description' => _t('Includes non-primary media in display.')
+				),					
+				'delimiter' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Delimiter'),
+					'description' => _t('Text to place in-between repeating values.')
+				)
+			);
+
+			$o_media_settings = new MediaProcessingSettings('ca_object_representations', 'media');
+			$va_versions = $o_media_settings->getMediaTypeVersions('*');
 			
-				$o_media_settings = new MediaProcessingSettings('ca_object_representations', 'media');
-				$va_versions = $o_media_settings->getMediaTypeVersions('*');
+			foreach($va_versions as $vs_version => $va_version_info) {
+				$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
+				if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+	
+				$vs_bundle = 'ca_object_representations.media.'.$vs_version;
+				$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
+				$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+					'bundle' => $vs_bundle,
+					'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+					'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
+					'settingsForm' => $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0']),
+					'settings' => $va_additional_settings
+				);
 				
-				foreach($va_versions as $vs_version => $va_version_info) {
-					$t_placement = new ca_bundle_display_placements(null, null, $va_additional_settings);
-					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+				if ($vb_show_tooltips) {
+					TooltipManager::add(
+						"#bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}",
+						$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+					);
+				}
+			}
+			
+			$t_rep = new ca_object_representations();
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 		
-					$vs_bundle = 'ca_object_representations.media.'.$vs_version;
-					$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
-					$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-						'bundle' => $vs_bundle,
-						'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
-						'description' => $vs_description = $t_instance->getDisplayDescription($vs_bundle),
-						'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-						'settings' => $va_additional_settings
-					);
-					
-					if ($vb_show_tooltips) {
-						TooltipManager::add(
-							"#bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}",
-							$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
-						);
-					}
-				}
+			unset($va_additional_settings['display_mode']);
+			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
+			foreach(['mimetype', 'md5', 'original_filename'] as $vs_rep_field) {
+				$vs_bundle = 'ca_object_representations.'.$vs_rep_field;
+				$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_{$vs_rep_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_rep->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_rep->getDisplayLabel($vs_bundle))."</div>";
 				
-				$t_rep = new ca_object_representations();
-				if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
-				
-				foreach(array('mimetype', 'md5', 'original_filename') as $vs_rep_field) {
-					$vs_bundle = 'ca_object_representations.'.$vs_rep_field;
-					$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_{$vs_rep_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_rep->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_rep->getDisplayLabel($vs_bundle))."</div>";
-					
-					$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-						'bundle' => $vs_bundle,
-						'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
-						'description' => $vs_description = $t_rep->getDisplayDescription($vs_bundle),
-						'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-						'settings' => []
-					);
-				}
-				
+				$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+					'bundle' => $vs_bundle,
+					'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+					'description' => $vs_description = $t_rep->getDisplayDescription($vs_bundle),
+					'settingsForm' => $t_placement->getHTMLSettingForm(['id' => $vs_bundle.'_0']),
+					'settings' => $va_additional_settings
+				);
 			}
 		}
 		
 		// get related items
-		
-		foreach(array(
+		foreach([
 			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items', 'ca_object_representations'
-		) as $vs_related_table) {
+		] as $vs_related_table) {
 			if ($this->getAppConfig()->get($vs_related_table.'_disable') && !(($vs_related_table == 'ca_object_representations') && (!$this->getAppConfig()->get('ca_objects_disable')))) { continue; }			
 			if (caGetBundleAccessLevel($vs_table, $vs_related_table) == __CA_BUNDLE_ACCESS_NONE__) { continue; }
 			
@@ -2095,6 +2095,9 @@ if (!$pb_omit_editing_info) {
 		
 		$placements_in_display = [];
 		foreach($placements as $placement_id => $va_placement) {
+			$tmp = explode('.',  $va_placement['bundle_name']);
+			if(!($t = Datamodel::getInstance($tmp[0], true))) { $t = $t_instance; }
+			
 			$vs_label = ($vs_label = $t_instance->getDisplayLabel($va_placement['bundle_name'])) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings'] ?? null) && is_array($va_placement['settings']['label'] ?? null)){
 				$tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label'] ?? null));
@@ -2102,7 +2105,7 @@ if (!$pb_omit_editing_info) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 				}
 			}
-			$vs_display = "<div id='bundleDisplayEditor_{$placement_id}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
+			$vs_display = "<div id='bundleDisplayEditor_{$placement_id}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t->getProperty('NAME_SINGULAR'))."</span> {$vs_label}</div>";
 			$va_placement['display'] = ($vs_format == 'simple') ? $vs_label : $vs_display;
 			$va_placement['bundle'] = $va_placement['bundle_name']; // we used 'bundle' in the arrays, but the database field is called 'bundle_name' and getPlacements() returns data directly from the database
 			unset($va_placement['bundle_name']);

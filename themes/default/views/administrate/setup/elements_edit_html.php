@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -231,7 +231,6 @@ endif;
 		if (!opts) { opts = {}; }
 		opts['datatype'] = jQuery("#datatype").val();
 		opts['element_id'] = <?= (int)$vn_element_id; ?>;
-		console.log('opts', opts);
 		jQuery("#elementSettingsForm").load('<?= caNavUrl($this->request, 'administrate/setup', 'Elements', 'getElementSettingsForm'); ?>', opts, function() {
 		
 			// list drop-down is only enabled when datatype is set to list (datatype=3)

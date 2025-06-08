@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
-	$t_display				= $this->getVar('t_display');
-	$vn_display_id	 		= $this->getVar('display_id');
-	$va_display_list 		= $this->getVar('display_list');
-	
-	$va_columns		 		= $this->getVar('columns');
-	$va_column_headers 		= $this->getVar('column_headers');
+$t_display			= $this->getVar('t_display');
+$display_id	 		= $this->getVar('display_id');
+$display_list 		= $this->getVar('display_list');
 
+$columns		 	= $this->getVar('columns');
+$column_headers 	= $this->getVar('column_headers');
 ?>
 <div id="caResultsEditorWrapper">
 	<div class='caResultsEditorStatusBar'>
@@ -50,7 +49,6 @@
 	</div>
 </div>
 
-
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		caUI.initTableView('#caResultsEditorWrapper', {
@@ -61,8 +59,8 @@
 			rowHeaders: true,
 			dataEditorID: 'caResultsComplexDataEditorPanel',
 			
-			colHeaders: <?= json_encode($va_column_headers); ?>,
-			columns: <?= json_encode($va_columns); ?>,
+			colHeaders: <?= json_encode($column_headers); ?>,
+			columns: <?= json_encode($columns); ?>,
 			
 			rowCount: <?= (int)$this->getVar('num_rows'); ?>
 		});

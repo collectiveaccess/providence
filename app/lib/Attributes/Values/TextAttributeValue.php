@@ -300,6 +300,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$element_info, 
 			['minChars', 'maxChars', 'regex', 'mustBeUnique', 'moveArticles']
 		);
+		$value = caStripEnclosingParagraphHTMLTags($value);
 		$strlen = mb_strlen($value);
 		if ($strlen < $settings['minChars']) {
 			// text is too short
