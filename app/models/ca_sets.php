@@ -2240,11 +2240,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$items = array_flip($sorted_row_ids);
 			} else {
 				$sorted_items = [];
-				$pk = $t_rel_table->primaryKey();
 				foreach($sorted_row_ids as $r) {
 					foreach($items as $k => $v) {
 						$locale_id = array_shift(array_keys($v));
-						if ($v[$locale_id][$pk] == $r) {
+						if ($v[$locale_id]['row_id'] == $r) {
 							$sorted_items[$k] = $v;
 							break;
 						}
