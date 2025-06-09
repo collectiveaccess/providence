@@ -4078,7 +4078,7 @@ class SearchResult extends BaseObject {
 			return strlen($b) <=> strlen($a);
 		});
 		
-		$content = $g_highlight_cache[$content] = preg_replace("/(?<= |^)(".preg_quote(join('|', $highlight_text), '/').")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<= |^)(".join('|', array_map(function($v) { return preg_quote($v, '/'); },$highlight_text, )).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}
