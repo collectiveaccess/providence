@@ -535,6 +535,7 @@ class DataMigrationUtils {
 	 *		displaynameFormat = surnameCommaForename, surnameCommaForenameMiddlename, forenameCommaSurname, forenameSurname, forenamemiddlenamesurname, original [Default = original]
 	 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 	 *		type = entity type, used to determine organization vs. individual format. If omitted individual is assumed. [Default is null]
+	 *		parseDateSuffix = Extract trailing dates on name and return as suffix and special purpose '_date' key
 	 *
 	 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 	 */
@@ -623,6 +624,12 @@ class DataMigrationUtils {
 				$text = str_replace($matches[1], '', $text);
 			}
 		}
+		// check for trailing year or years
+		$date = null;
+		if (caGetOption('parseDateSuffix', $options, true) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
+			$date = $matches[1];
+			$text = trim(str_replace($matches[0], '', $text));
+		}
 		
 		// check for suffixes
 		$suffix_for_name = null;
@@ -633,7 +640,11 @@ class DataMigrationUtils {
 			$is_corporation = $n['is_corporation'] ?? false;
 		}
 		$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
-	
+		
+		if($date) {
+			if(!($name['suffix'] ?? null)) { $name['suffix'] = $date; }
+			$name['_date'] = $date;
+		}
 		if($class === 'ORG') {
 			$name['displayname'] = $name['surname'] = $text;
 			$name['suffix'] = mb_substr($suffix_for_name, 0, 100);
