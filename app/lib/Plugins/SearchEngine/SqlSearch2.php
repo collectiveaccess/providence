@@ -432,7 +432,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$field = $term->field;
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);
-	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
+	 	if (in_array($field_elements[0], ['created', 'modified', _t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $term);
 	 	}
 	 	$ap = $field ? $this->_getElementIDForAccessPoint($subject_tablenum, $field) : null;
@@ -636,7 +636,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$field = $term->field;
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);
-	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
+	 	if (in_array($field_elements[0], ['created', 'modified', _t('created'), _t('modified')])) {
 	 		return $this->_processQueryChangeLog($subject_tablenum, $query);
 	 	}
 	 	
@@ -810,7 +810,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 	$text = str_replace('*', '', $text);	// strip wildcards
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);
-	 	if (in_array($field_elements[0], [_t('created'), _t('modified')])) {
+	 	if (in_array($field_elements[0], ['created', 'modified', _t('created'), _t('modified')])) {
 	 		if (!$this->tep->parse($text)) { return []; }
 	 		$range = $this->tep->getUnixTimestamps();
 			$user_id = null;
@@ -833,6 +833,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 
 			switch($field_elements[0]) { 
 				case _t('created'):
+				case 'created':
 					$qr_res = $this->db->query("
 							SELECT ccl.logged_row_id row_id, 1 boost
 							FROM ca_change_log ccl
@@ -846,6 +847,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						", [(int)$range['start'], (int)$range['end'], $subject_tablenum]);
 					break;
 				case _t('modified'):
+				case 'modified':
 					$qr_res = $this->db->query("
 							SELECT '_change_log_' as index_id, ccl.logged_row_id row_id, 1 boost
 							FROM ca_change_log ccl

@@ -1949,6 +1949,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				) {
 					$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
 					$vs_label_val = $va_label_val['displayname'];
+					if($va_label_val['_date'] ?? null) {
+						$va_row['__entity_label_date__'] = $va_raw_row['__entity_label_date__'] = $va_label_val['_date'];
+					}
 				}
 				
 				if($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['applyRegularExpressions'] ?? null) {
@@ -3091,6 +3094,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												$va_group_buf[$c]['_relationship_type'] = join($rel_type_delimiter, $rel_types);
 											}
 										}
+										$va_group_buf[$c]['_displaynameFormat'] = $va_item['settings']["{$vs_refinery}_displaynameFormat"] ?? $default_displayname_format;
 
 										if ( ( $vs_target_table == $vs_subject_table_name )
 										     && ( ( $vs_k
