@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2020 Whirl-i-Gig
+ * Copyright 2000-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-
 /**
  * Parses and provides access to application configuration files.
  *
@@ -433,7 +427,7 @@ class Configuration {
 									$vb_escape_set = false;
 									$vn_state = -1;
 								} else { # keep going to next line
-									$vs_scalar_value .= $vs_token;
+									$vs_scalar_value .= rtrim($vs_token, "\n");
 									$vn_state = 20;
 								}
 								break;

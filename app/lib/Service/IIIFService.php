@@ -128,6 +128,10 @@ class IIIFService {
 					$highlight_region_tmp[1] -= 200;
 					$highlight_region_tmp[2] += 400;
 					$highlight_region_tmp[3] += 400;
+					
+					if($highlight_region_tmp[0] < 0) { $highlight_region_tmp[0] = 0; }
+					if($highlight_region_tmp[1] < 0) { $highlight_region_tmp[1] = 0; }
+					
 					$ps_region = join(',', $highlight_region_tmp);
 				}
 			}

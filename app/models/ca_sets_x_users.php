@@ -102,7 +102,7 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_users'] = array(
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
-			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Display settings')
+			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Share settings')
 		),
 		'effective_date' => array(
 			'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -231,6 +231,11 @@ class ca_sets_x_users extends BaseRelationshipModel {
 		];
 				
 		$this->setAvailableSettings($settings);
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions($options=null) {
+		parent::initLabelDefinitions($options);
+		$this->BUNDLES['settings'] = ['type' => 'special', 'repeating' => false, 'label' => _t('Share settings')];
 	}
 	# ------------------------------------------------------
 }

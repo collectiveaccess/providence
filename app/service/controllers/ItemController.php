@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2024 Whirl-i-Gig
+ * Copyright 2021-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -278,7 +278,10 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						
 						$targets = [];
 						if(is_array($args['targets'])) {
-							$targets = $args['targets'];
+							$targets = array_map(function ($obj) use($check_access) {
+								$obj['checkAccess'] = $check_access ?? null;
+								return $obj;
+							}, $args['targets']);
 						} elseif($target = $args['target']) {
 							$targets[] = [
 								'table' => $target,
@@ -290,7 +293,8 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'includeMedia' => $args['includeMedia'] ?? null,
 								'mediaVersions' => $args['mediaVersions'] ?? null,
 								'mediaBundles' => $args['mediaBundles'] ?? null,
-								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null,
+								'checkAccess' => $check_access ?? null
 							];
 						} else {
 							throw new \ServiceException(_t('No target specified'));
@@ -423,7 +427,10 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						
 						$targets = [];
 						if(is_array($args['targets'])) {
-							$targets = $args['targets'];
+							$targets = array_map(function ($obj) use($check_access) {
+								$obj['checkAccess'] = $check_access ?? null;
+								return $obj;
+							}, $args['targets']);
 						} elseif($target = $args['target']) {
 							$targets[] = [
 								'table' => $target,
@@ -435,7 +442,8 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 								'includeMedia' => $args['includeMedia'] ?? null,
 								'mediaVersions' => $args['mediaVersions'] ?? null,
 								'mediaBundles' => $args['mediaBundles'] ?? null,
-								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null
+								'restrictMediaToTypes' => $args['restrictMediaToTypes'] ?? null,
+								'checkAccess' => $check_access ?? null
 							];
 						} else {
 							throw new \ServiceException(_t('No target specified'));

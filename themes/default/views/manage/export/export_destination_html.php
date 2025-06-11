@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : $vn_id);
 $va_destinations = $this->getVar('exporter_alternate_destinations');
 $vs_tmp_file = "File: ".$this->getVar('export_file');
@@ -71,8 +70,6 @@ print $vs_tmp_file;
 			window.location.href = "<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>?file_name=" + encodeURIComponent(file_name) + "&destination=file_download";
 		} else { // for other destinations like github, load async
 			jQuery('#caExporterDestinationFeedback').html("<?= caBusyIndicatorIcon($this->request); ?>");
-			console.log(file_name);
-			console.log(dest_code);
 			jQuery("#caExporterDestinationFeedback").load('<?= caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });
 		}
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1023,6 +1023,7 @@ class SearchResult extends BaseObject {
 	 *			sort = Array list of bundles to sort returned values on. Currently sort is only supported when getting related values via simple related <table_name> and <table_name>.related bundle specifiers. Eg. from a ca_objects results you can sort when fetching 'ca_entities', 'ca_entities.related', 'ca_objects.related', etc.. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You can also sort on attributes if returnWithStructure is set. [Default is null]
 	 *			stripTags = Remove HTML/XML tags from returned values. [Default is false]
 	 *			locale = Locale to return values in. If omitted the user's default locale is used. [Default is null]
+	 *			noLocaleFallback = Don't fallback to alternative locales when content for requested locale is not defined. [Default is false]
 	 *
 	 *		[Formatting for strings only]
  	 *			toUpper = Force all values to upper case. [Default is false]
@@ -1070,10 +1071,12 @@ class SearchResult extends BaseObject {
 		}
 		
 		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		$locale_no_fallback = $pa_options['noLocaleFallback'] ?? false;
+		
 		$do_highlighting = caGetOption('highlighting', $pa_options, $this->do_highlighting);
 		
 		// Get system constant?
-		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__']) && defined($ps_field)) {
+		if(in_array($ps_field, ['__CA_APP_NAME__', '__CA_APP_DISPLAY_NAME__', '__CA_SITE_HOSTNAME__', '__CA_REPOSITORY__']) && defined($ps_field)) {
 			return ($vb_return_as_array || $vb_return_with_structure) ? [constant($ps_field)] : constant($ps_field);
 		}
 		
@@ -1445,7 +1448,7 @@ class SearchResult extends BaseObject {
 				
 					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
-					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null); }
+					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null, ['noFallback' => $locale_no_fallback]); }
 				
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
@@ -2158,6 +2161,7 @@ class SearchResult extends BaseObject {
 		$pa_check_access		= $pa_options['checkAccess'];
 		
 		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		$locale_no_fallback = $pa_options['noLocaleFallback'] ?? false;
 		
 		$va_restrict_to_type_ids = null;
 		if (
@@ -2229,8 +2233,8 @@ class SearchResult extends BaseObject {
 					$vs_val_proc = $va_label[($va_path_components['subfield_name'] ?? null) ? $va_path_components['subfield_name'] : $pt_instance->getLabelDisplayField()];
 					
 					if($pa_options['stripEnclosingParagraphTags'] ?? true) {
-						$vs_val_proc = preg_replace("!^<p>!i", "", $vs_val_proc);
-						$vs_val_proc = preg_replace("!</p>$!i", "", $vs_val_proc);
+						$vs_val_proc = caStripEnclosingParagraphHTMLTags($vs_val_proc);
+						
 					}
 					switch($pa_options['output']) {
 						case 'text':
@@ -2267,7 +2271,7 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
+		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null, ['noFallback' => $locale_no_fallback]); } 	
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : array(); 
 		}
@@ -2305,6 +2309,7 @@ class SearchResult extends BaseObject {
 		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		
 		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		$locale_no_fallback = $pa_options['noLocaleFallback'] ?? false;
 		
 		$va_return_values = [];
 		$vb_return_value_id = null;
@@ -2398,6 +2403,17 @@ class SearchResult extends BaseObject {
 									
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$vs_auth_table_name = $o_value->tableName();
+						
+						if(sizeof($va_auth_spec) === 1) {
+							$r = null;
+							$extra_values = $o_value->getAdditionalDisplayValues();
+							switch($va_auth_spec[0]) {
+								case 'display':
+								case 'id':
+									$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][] = $extra_values[$va_auth_spec[0]];
+									continue(2);
+							}
+						}
 						
 						$vb_has_field_spec = (is_array($va_auth_spec) && sizeof($va_auth_spec));
 						if (!$vb_has_field_spec) { $va_auth_spec = [Datamodel::primaryKey($vs_auth_table_name)]; }
@@ -2503,8 +2519,6 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-								//ca_objects.informationservice.ulan_container
-							
 								// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
 								if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
 									switch($va_path_components['subfield_name']) {
@@ -2646,7 +2660,7 @@ class SearchResult extends BaseObject {
 			}
 		}
 		
-		if (!($pa_options['returnAllLocales'] ?? null) && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
+		if (!($pa_options['returnAllLocales'] ?? null) && !$vb_return_value_id) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null, ['noFallback' => $locale_no_fallback]); } 	
 		
 		if ($pa_options['returnWithStructure'] ?? null) { 
 			return is_array($va_return_values) ? $va_return_values : []; 
@@ -2686,6 +2700,7 @@ class SearchResult extends BaseObject {
 		$vs_pk 					= $pa_options['primaryKey'];
 		
 		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
+		$locale_no_fallback = $pa_options['noLocaleFallback'] ?? false;
 	
 		$vs_table_name = $pt_instance->tableName();
 		
@@ -2934,8 +2949,7 @@ class SearchResult extends BaseObject {
 						}
 						
 						if($pa_options['stripEnclosingParagraphTags'] ?? false) {
-							$vs_prop = preg_replace("!^<p>!i", "", $vs_prop);
-							$vs_prop = preg_replace("!</p>$!i", "", $vs_prop);
+							$vs_prop = caStripEnclosingParagraphHTMLTags($vs_prop);
 						}
 					
 						if ($pa_options['convertCodesToDisplayText'] ?? false) {
@@ -2952,7 +2966,7 @@ class SearchResult extends BaseObject {
 				break;
 		}	
 		
-		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null); } 	
+		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values, null, $locale ? [$locale] : null, ['noFallback' => $locale_no_fallback]); } 	
 		if ($pa_options['returnWithStructure']) { 
 			return is_array($va_return_values) ? $va_return_values : array(); 
 		}
@@ -4064,7 +4078,7 @@ class SearchResult extends BaseObject {
 			return strlen($b) <=> strlen($a);
 		});
 		
-		$content = $g_highlight_cache[$content] = preg_replace("/(?<= |^)(".preg_quote(join('|', $highlight_text), '/').")/i", "<span class=\"highlightText\">\\1</span>", $content);
+		$content = $g_highlight_cache[$content] = preg_replace("/(?<= |^)(".join('|', array_map(function($v) { return preg_quote($v, '/'); },$highlight_text, )).")/i", "<span class=\"highlightText\">\\1</span>", $content);
 		
 		return $content;
 	}

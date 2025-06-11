@@ -57,6 +57,8 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 		$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 		$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 		$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
+		$ps_restrict_to_access_point = trim($this->request->getParameter('restrictToAccessPoint', pString));
+		$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
 
 		$t_object = new ca_objects();
 		$t_collection = new ca_collections();
@@ -132,18 +134,30 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			if (($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
 				$o_object_search->addResultFilter('ca_objects.hier_object_id', '=', (int)$vn_restrict_to_hier_id);
 			}
+			
+			$ps_query_proc = $ps_query;
 
 			if (!$pb_exact) {
 				$o_search_config = caGetSearchConfig();
-				$ps_query = join(' ', caTokenizeString($ps_query));
+				$ps_query_proc = join(' ', caTokenizeString($ps_query_proc));
 			}
 
 			if (!(is_array($va_object_sort = $o_config->getList('ca_objects_lookup_sort'))) || !sizeof($va_object_sort)) {
 				$va_object_sort = array('ca_objects.idno_sort');
 			}
+			
+			$vs_restrict_to_access_point = '';
+			if((strlen($ps_restrict_to_access_point) > 0) && $ps_query_proc) {
+				$ps_query_proc = $ps_restrict_to_access_point.":\"".str_replace('"', '', $ps_query_proc)."\"";
+			}
+		
+			$vs_restrict_to_search = '';
+			if(strlen($ps_restrict_to_search) > 0) {
+				$vs_restrict_to_search .= ' AND ('.$ps_restrict_to_search.')';
+			}
 
 			$qr_res = $o_object_search->search(
-				'('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params,
+				'('.$ps_query_proc.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_restrict_to_search.$vs_additional_query_params,
 				array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $va_object_sort)
 			);
 
@@ -155,19 +169,13 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$va_objects[$vn_object_id]['id'] = 'ca_objects-'.$va_objects[$vn_object_id]['id'];
 				}
 			}
-
-			//if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
-			//$o_collection_search->addResultFilter('ca_collections.hier_collection_id', '=', (int)$vn_restrict_to_hier_id);
-
-			// How to restrict objects?
-			//}
-
+			
 			if (!(is_array($va_col_sort = $o_config->getList('ca_collections_lookup_sort'))) || !sizeof($va_col_sort)) {
 				$va_col_sort = array('ca_collections.idno_sort');
 			}
 
 			$qr_res = $o_collection_search->search(
-				'('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params,
+				'('.$ps_query_proc.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_restrict_to_search.$vs_additional_query_params,
 				array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $va_col_sort)
 			);
 

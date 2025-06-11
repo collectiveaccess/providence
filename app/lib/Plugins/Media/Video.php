@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2024 Whirl-i-Gig
+ * Copyright 2004-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1053,10 +1053,11 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$controls = 		caGetOption("controls", $options, ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'fullscreen'], ['castTo' => 'array']);
 				
 				$autoplay =			caGetOption("autoplay", $options, false);
+				$muted =			caGetOption("muted", $options, false);
 				ob_start();
 ?>
 			<div class="<?= $class; ?> video-responsive" style="width: <?= $width; ?>; height:<?= $height; ?>;">
-				<video class="plyr__video-embed" preload="metadata" <?= $autoplay ? 'autoplay="1"' : ''; ?> id="<?= $id; ?>" playsinline="1" controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
+				<video class="plyr__video-embed" preload="metadata" <?= $autoplay ? 'autoplay="1"' : ''; ?> <?= $muted ? 'muted="1"' : ''; ?> id="<?= $id; ?>" playsinline="1" controls data-poster="<?= $poster_frame_url; ?>" width="<?= $width; ?>" height="<?= $height; ?>" style="object-fit: contain;">
 				  <source src="<?= $url; ?>" type="<?= $properties["mimetype"]; ?>" />
 <?php
 						if(is_array($captions)) {

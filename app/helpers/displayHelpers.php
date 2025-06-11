@@ -115,13 +115,16 @@ function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) 
  * @param $pa_locale_rules - Associative array defining which locales to extract, and how to fall back to alternative locales should your preferred locales not exist in $pa_values
  * @param $pa_values - Associative array keyed by unique item_id and then locale code (eg. en_US) or locale_id; the values can be anything - string, numbers, objects, arrays, etc.
  * @param $pa_options [optional] - Associative array of options; available options are:
- *									'returnList' = return an indexed array of found values rather than an associative array keys on unique item_id [default is false]
- *									'debug' = print debugging information [default is false]
+ *		returnList = return an indexed array of found values rather than an associative array keys on unique item_id. [Default is false]
+ *		debug = print debugging information. [Default is false]
+ *		noFallback = don't use fallback locales. [Default is false
  * @return Array - an array of found values keyed by unique item_id; or an indexed list of found values if option 'returnList' is passed in $pa_options
  */
 function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 	if (!is_array($pa_values)) { return array(); }
 	$va_locales = ca_locales::getLocaleList();
+	
+	$no_fallback = isset($pa_options['noFallback']) && (bool)$pa_options['noFallback'];
 
 	if (!is_array($pa_options)) { $pa_options = array(); }
 	if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
@@ -130,7 +133,7 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 	$va_values = array();
 	foreach($pa_values as $vm_id => $va_value_list_by_locale) {
 		if(!is_array($va_value_list_by_locale)) { continue; }
-		if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
+		if ((sizeof($va_value_list_by_locale) == 1) && (!$no_fallback || (in_array(ca_locales::idToCode(array_key_first($va_value_list_by_locale)), array_keys($pa_locale_rules['preferred']))))) {		// Don't bother looking if there's just a single value
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
 		}
@@ -149,13 +152,15 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 				break;
 			}
 
-			// try fallback locales
-			if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
-				$va_values[$vm_id] = $vm_value;
+			if(!$no_fallback) {
+				// try fallback locales
+				if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
+					$va_values[$vm_id] = $vm_value;
+				}
 			}
 		}
 
-		if (!isset($va_values[$vm_id])) {
+		if (!$no_fallback && !isset($va_values[$vm_id])) {
 			// desperation mode: pick an available locale
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 		}
@@ -976,7 +981,7 @@ function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, 
  */
 function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_f', function() {
 			caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 			caEditorFieldList.onOpenCallback = function(){
@@ -1018,7 +1023,7 @@ function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_option
 function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
 	$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_h', function() {
 			caEditorFieldList.hidePanel({dontCloseMask:1});
 
@@ -1551,15 +1556,6 @@ function caEditorInspector($view, $options=null) {
 				}
 				$components_tools[] = "<div><strong>"._t('Components').":</strong> {$component_count_link}</div>";
 			}
-	
-			if ($can_add_component) {
-				$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
-	
-				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
-				$change_type_view->setVar('t_item', $t_item);
-	
-				FooterManager::add($change_type_view->render("create_component_html.php"));
-			}
 			
 			// Component hierarchy tools
 			if(($table_name === 'ca_objects') && $view->request->config->get("ca_objects_component_allow_merge_unmerge") && (($takes_components && isset($object_component_types[0])) || in_array($t_item->getTypeCode(), $object_component_types))) {
@@ -1574,6 +1570,26 @@ function caEditorInspector($view, $options=null) {
 					TooltipManager::add('#inspectorHierarchySplit', _t("Split media in this %1 into %2 with component %3", $container_type_name, $container_target_type_name, $component_type_name));
 				}
 			}
+		}	
+		if ($can_add_component) {
+			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
+
+			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$change_type_view->setVar('t_item', $t_item);
+
+			FooterManager::add($change_type_view->render("create_component_html.php"));
+		}
+		
+		$t_set_type = $t_item->getTypeInstance();		
+		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
+		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {
+			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";
+
+			$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$random_set_view->setVar('t_item', $t_item);
+			$random_set_view->setVar('userCanSetExclusion', ((int)$t_set_type->getSetting('random_generation_mode') === 3));
+			FooterManager::add($random_set_view->render("random_set_generation_html.php"));
+			TooltipManager::add('#inspectorRandomButton', _t("Add random items"));
 		}
 
 		if(sizeof($tools) > 0) {
@@ -2540,7 +2556,7 @@ function caGetMediaDisplayInfo($ps_context, $ps_mimetype) {
  *
  * @return
  */
-function caGetMediaDisplayInfoForMimetype(string $context, string $mimetype) : ?array {
+function caGetMediaDisplayInfoForMimetype(string $context, ?string $mimetype) : ?array {
 	$o_config = Configuration::load();
 	$o_media_display_config = caGetMediaDisplayConfig();
 
@@ -4633,8 +4649,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 
 			$filtered_rep_ids = [];
 			while($qr_reps->nextHit()) {
-				if(!$qr_reps->get('ca_object_representations.media')) { continue; }
-				$mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype');
+				if(!($mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype'))) { continue; }
 				if($show_only_media_types && !caMimetypeIsValid($mimetype, $show_only_media_types)) { continue; }
 
 				if($show_only_media_types_when_present_reduced && !caMimetypeIsValid($mimetype, $show_only_media_types_when_present_reduced)) { continue; }
@@ -5826,7 +5841,6 @@ function caEscapeFilenameForDownload(string $filename, ?array $options=null) : s
 	}
 	return $v;
 }
-
 # ------------------------------------------------------------------
 /**
  * Generate name for downloaded representation media file based upon app.conf 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -181,7 +181,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 			$va_styles[] = "height: ".($height = $va_dim['dimension'])."px;";
 			unset($attributes['height']);
 			unset($attributes['rows']);
-			$is_textarea = true;
+			if($height > 20) { $is_textarea = true; }
 		} else {
 			// height is in characters
 			if (($attributes['rows'] = $va_dim['dimension']) > 1) {
@@ -561,24 +561,25 @@ $vs_tag = "
 /**
   * Create string for use in HTML tags out of attribute array. 
   * 
-  * @param array $pa_attributes
-  * @param array $pa_options Optional array of options. Supported options are:
+  * @param array $attributes
+  * @param array $options Optional array of options. Supported options are:
   *			dontConvertAttributeQuotesToEntities = if true, attribute values are not passed through htmlspecialchars(); if you set this be sure to only use single quotes in your attribute values or escape all double quotes since double quotes are used to enclose tem
   */
-function _caHTMLMakeAttributeString($pa_attributes, $pa_options=null) {
-	$va_attr_settings = array();
-	if (is_array($pa_attributes)) {
-		foreach($pa_attributes as $vs_attr => $vs_attr_val) {
-			if (is_array($vs_attr_val)) { $vs_attr_val = join(" ", $vs_attr_val); }
-			if (is_object($vs_attr_val)) { continue; }
-			if (isset($pa_options['dontConvertAttributeQuotesToEntities']) && $pa_options['dontConvertAttributeQuotesToEntities']) {
-				$va_attr_settings[] = $vs_attr.'="'.$vs_attr_val.'"';
+function _caHTMLMakeAttributeString($attributes, $options=null) {
+	$attr_settings = array();
+	if (is_array($attributes)) {
+		foreach($attributes as $attr => $attr_val) {
+			if (is_array($attr_val)) { $attr_val = join(" ", $attr_val); }
+			if($attr === 'class') { $attr_val = join(' ', array_map('trim', explode(',', $attr_val))); }
+			if (is_object($attr_val)) { continue; }
+			if (isset($options['dontConvertAttributeQuotesToEntities']) && $options['dontConvertAttributeQuotesToEntities']) {
+				$attr_settings[] = $attr.'="'.$attr_val.'"';
 			} else {
-				$va_attr_settings[] = $vs_attr.'=\''.htmlspecialchars($vs_attr_val, ENT_QUOTES, 'UTF-8').'\'';
+				$attr_settings[] = $attr.'=\''.htmlspecialchars($attr_val, ENT_QUOTES, 'UTF-8').'\'';
 			}
 		}
 	}
-	return join(' ', $va_attr_settings);
+	return join(' ', $attr_settings);
 }
 # ------------------------------------------------------------------------------------------------
 /**

@@ -3209,16 +3209,17 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($qr_users = $this->makeSearchResult('ca_users', $va_user_ids)) {
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_users, new ca_users(), array('stripTags' => true));
 		} else {
-			$va_initial_values = array();
+			$va_initial_values = [];
 		}
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$va_row = array();
-			foreach(array('user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
+			foreach(['user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access'] as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
 			
 			$va_row['settings'] = caUnserializeForDatabase($qr_res->get('settings'));
+			$va_row['downloads'] = $va_row['settings']['download_versions'] ?? null;
 			
 			if ($vb_supports_date_restrictions) {
 				$o_tep->init();
@@ -3234,7 +3235,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				$va_users[(int)$qr_res->get('user_id')] = $va_row;
 			}
 		}
-		
 		return $va_users;
 	}
 	# ------------------------------------------------------------------
@@ -3285,7 +3285,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				$t_rel->set('effective_date', $pa_effective_dates[$vn_user_id] ?? null);
 			}
 			
-			if(is_array($settings[$vn_user_id] ?? null)) {
+			if(is_array($settings[$vn_user_id] ?? null) && method_exists($t_rel, 'setSetting')) {
 				foreach($settings[$vn_user_id] as $setting => $setting_value) {
 					$t_rel->setSetting($setting, $setting_value);
 				}
@@ -3318,7 +3318,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				}
 			}
 			if (!$this->removeUsers($va_user_ids_to_remove)) { return false; }
-			if (!$this->addUsers($pa_user_ids, $pa_effective_dates)) { return false; }
+			if (!$this->addUsers($pa_user_ids, $pa_effective_dates, $settings)) { return false; }
 		}
 		return true;
 	}
@@ -3397,7 +3397,18 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
-		$o_view->setVar('initialValues', $this->getUsers(array('returnAsInitialValuesForBundle' => true)));
+		
+		if(!($t = Datamodel::getTableName($this->get('editor_type'))) && !($t = Datamodel::getTableName($this->get('table_num')))) { return null; }
+		$downloads = method_exists($t_rel, 'setSetting') ? caGetPawtucketLightboxDownloadVersions($t) : null;
+		$o_view->setVar('downloads', $downloads);
+		
+		$initial_values = $this->getUsers(array('returnAsInitialValuesForBundle' => true));
+		foreach($initial_values as $i => $iv) {
+			foreach($downloads as $d => $di) {
+				$initial_values[$i]["download_{$d}"] = in_array($d, $iv['downloads'] ?: []) ? 'CHECKED="1"' : '';
+			}
+		}
+		$o_view->setVar('initialValues', $initial_values);
 		
 		return $o_view->render('ca_users.php');
 	}

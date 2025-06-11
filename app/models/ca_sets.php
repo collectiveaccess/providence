@@ -1774,6 +1774,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_snapshot = $qr_res->getRow();
 				$va_set_ids[$qr_res->get('ca_set_items.set_id')] = 1;
 				$log_entries[] = [
+					'datetime' => time(),
 					'table' => 'ca_set_items',
 					'row_id' => $qr_res->get('ca_set_items.item_id'),
 					'user_id' => $pn_user_id,
@@ -1790,6 +1791,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				while($qr_res->nextRow()) {
 					$va_snapshot = $qr_res->getRow();
 					$log_entries[] = [
+						'datetime' => time(),
 						'table' => 'ca_sets',
 						'row_id' => $qr_res->get('ca_sets.set_id'),
 						'user_id' => $pn_user_id,
@@ -3113,7 +3115,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check source restrictions
-		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+		if (caSourceAccessControlIsEnabled($this)) {
 			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
 			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
@@ -3539,7 +3541,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$row = [];
-			foreach(['name', 'guid', 'sdatetime', 'edatetime', 'access'] as $f) {
+			foreach(['relation_id', 'name', 'guid', 'sdatetime', 'edatetime', 'access'] as $f) {
 				$row[$f] = $qr_res->get($f);
 			}
 			$o_tep->init();

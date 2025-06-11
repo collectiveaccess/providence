@@ -138,6 +138,8 @@ create table ca_list_items
    idno_sort_num                  bigint                         not null default 0,
    item_value                     varchar(255)                   not null,
    `rank`                           int unsigned              not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    is_enabled                     tinyint unsigned               not null default 0,
@@ -389,6 +391,8 @@ create table ca_entities
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                         int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    submission_user_id             int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id           int unsigned                   null,
@@ -558,6 +562,8 @@ create table ca_storage_locations
    home_location_id               int unsigned null,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    is_enabled                     tinyint unsigned               not null default 1,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
@@ -642,6 +648,8 @@ create table ca_object_lots
    source_info                    longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
@@ -727,6 +735,8 @@ create table ca_object_representations
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    submission_user_id             int unsigned                   null,
@@ -919,6 +929,8 @@ create table ca_occurrences
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
@@ -1044,6 +1056,7 @@ create table ca_collections
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
    acl_inherit_from_parent        tinyint unsigned               not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
@@ -1177,6 +1190,8 @@ create table ca_places
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    floorplan                      longblob                       not null,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
@@ -1332,6 +1347,8 @@ create table ca_loans (
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
@@ -1435,6 +1452,8 @@ create table ca_movements (
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    `rank`                           int unsigned                   not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    submission_user_id               int unsigned                   null,
    submission_group_id            int unsigned                   null,
    submission_status_id              int unsigned                   null,
@@ -5001,12 +5020,14 @@ create table ca_set_items (
     type_id     int unsigned not null,
 	`rank`		int unsigned not null default 0,
 	vars        longtext not null,
+	checked     tinyint unsigned not null default 0,
 	deleted     tinyint unsigned not null default 0,
 	
 	primary key (item_id),
 	key i_set_id (set_id, deleted),
 	key i_type_id (type_id),
 	key i_row_id (row_id),
+	key i_checked_id (set_id, checked),
 	key i_row_key (row_id, representation_id, annotation_id),
 	key i_table_num (table_num),
 	
@@ -7008,9 +7029,9 @@ create index i_field_table_num on ca_sql_search_word_index(field_table_num);
 create index i_field_num on ca_sql_search_word_index(field_num);
 CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
 CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
-CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost);
+CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost, field_index);
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
-CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost);
+CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost, field_index);
 CREATE INDEX i_field_word on ca_sql_search_word_index(field_num, field_table_num, table_num, word_id, row_id);
 
 /*==========================================================================*/
@@ -7930,4 +7951,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (201, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (203, unix_timestamp());
