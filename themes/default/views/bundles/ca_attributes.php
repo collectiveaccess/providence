@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -184,7 +184,9 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 	// set labels for replacement in blank lookups	
 	if (is_array($va_element_ids)) {
 		foreach($va_element_ids as $vn_element_id) {
+			$va_template_tags[] = "{$vn_element_id}_id";
 			$va_template_tags[] = "{$vn_element_id}_label";
+			$va_template_tags[] = "{$vn_element_id}_display";
 		}
 	}
 	
