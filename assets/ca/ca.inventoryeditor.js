@@ -32,6 +32,9 @@ var caUI = caUI || {};
 			container: null,
 			inventoryID: null,
 			table_num: null,
+			numPerPage: 10,
+			itemCount: 0,
+			
 			fieldNamePrefix: null,
 			inventoryEditorID: 'inventoryItemEditor',
 			inventoryItemListID: 'inventoryItemList',	
@@ -41,6 +44,9 @@ var caUI = caUI || {};
 			unsavedChangesID: 'unsavedChanges',
 			unsavedChangesMessage: 'Unsaved changes!', 
 			inventoryCountsID: 'inventoryCounts',
+			inventoryToDeleteID: 'inventoryToDeleteID',
+			
+			loadingMessage: 'Loading...',
 			
 			itemTemplateClass: "{idno}",
 			
@@ -58,6 +64,8 @@ var caUI = caUI || {};
 			inventoryFilterInputID: null,
 			
 			sorts: null,
+			currentSort: null,
+			currentSortDirection: null,
 			
 			lookupURL: null,
 			itemListURL: null,
@@ -76,6 +84,9 @@ var caUI = caUI || {};
 			counts: {},								// found/not found/not checked item counts
 			
 			currentFilters: {},
+			
+			isLoading: false,
+			
 			debug: true
 		}, options);
 		
@@ -128,8 +139,11 @@ var caUI = caUI || {};
 					} else if(s.length == 0) {
 						that.refresh()
 					}
+					jQuery('#' + that.inventoryItemListID).scrollTop(0);
 				});
 			}
+			
+			that.initScroll(that.inventoryItemListID);
 			
 			that.refresh();
 		}
@@ -137,18 +151,28 @@ var caUI = caUI || {};
 		//
 		// Load items via ajax call
 		//
-		that.getItemList = function(start, length, sort='', sortDirection='', reSortOnly=false) {
+		that.getItemList = function(start, limit, sort='', sortDirection='', reSortOnly=false) {
+			that.isLoading = true;
 			jQuery.getJSON(that.itemListURL, {
-				'set_id': that.inventoryID, 'start': start, 'length': length, 
-				'sort': sort, 'sortDirection': sortDirection, 'idsOnly': reSortOnly ? 1 : 0
+				'set_id': that.inventoryID, 'start': start, 'limit': limit, 
+				'sort': sort, 'sortDirection': sortDirection,
+				'returnFullOrderIndex': reSortOnly ? 1 : 0
 			}, function(resp) {
-				let items = [];
+				let items = reSortOnly ? [] : that.items;
+				console.log("[DEBUG] Loaded " + resp.data.order.length + " items", start, limit, sort, sortDirection, reSortOnly);
 				for(let i in resp.data.order) {
+					let index = parseInt(i);
 					if(reSortOnly) {
 						let id = resp.data.order[i];
-						for(let x in that.items) {
-							if(that.items[x]['row_id'] == id) {
-								items.push(that.items[x]);
+						
+						if(resp.data.items[id]) {
+							items.push(resp.data.items[id]);
+						} else {
+							for(let x in that.items) {
+								if(that.items[x]['item_id'] == id) {
+									items.push(that.items[x]);
+									break;
+								}
 							}
 						}
 					} else {
@@ -165,11 +189,19 @@ var caUI = caUI || {};
 								break;
 							}
 						}
-						items.push(d);
+						items[start + index] = d;
 					}
 				}
 				that.items = items;
-				that.refresh();
+				that.items = that._filterDeletedItems();
+				
+				that.refresh(null, that.currentFilters);
+				
+				if(reSortOnly) {
+					jQuery('#' + that.inventoryItemListID).scrollTop(0);
+				}
+				
+				that.isLoading = false;
 			});
 		}
 		// ------------------------------------------------------------------------------------
@@ -232,6 +264,8 @@ var caUI = caUI || {};
 				}
 			
 				// replace values in template
+				v['loadingMessage'] = v['name'] ? '' : that.loadingMessage;
+				
 				let item = jQuery('#' + that.container + ' textarea.' + that.itemTemplateClass).template(v);
 				
 				if((that.itemsWithForms[v['item_id']] === true) || (form_item_id && (form_item_id == v['item_id']))) {
@@ -296,26 +330,56 @@ var caUI = caUI || {};
 				jQuery(item).find('.inventoryItemDeleteButton').on('click', function(e) {
 						const id = jQuery(this).attr('id');
 						const item_id = id.match(/^inventory_([\d]+)/)[1] ?? null;
-						jQuery.getJSON(that.removeItemFromInventoryURL, {'set_id': that.inventoryID, 'table_num': that.table_num, 'item_id': item_id } , 
-							function(data) { 
-								if(data.status != 'ok') { 
-									alert("Error adding item");
-								} else {
-									that.getItemList(0, 10000, null, null);
-									jQuery('#' + that.inventoryItemAutocompleteID).val('');
-														
-									if(caBundleUpdateManager) { caBundleUpdateManager.reloadInspector(); }
-								}
-							}
-						);
+						that._deleteItem(item_id);
+						
+						that.refresh();
+						e.preventDefault();
 				});
-
+				jQuery(item).find('div').data('index', k);	// item index set on first <div>
 				jQuery('#' + that.inventoryItemListID).append(item);
 				c++;
 			});
+			if(that.items.length < that.itemCount) {
+				if(that.debug) { console.log("[DEBUG] " + (that.itemCount - that.items.length) + " more items to load"); }
+				jQuery('#' + that.inventoryItemListID).append("<a href='#' id='" + that.container + "_next'>-</a>");
+				
+			}
+			that.loadVisibleItems(that.inventoryItemListID);
 			that.updateCounts();
 		}
-		
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that._getDeletedItemIDs = function() {
+			const v = jQuery('#' + that.inventoryToDeleteID).val();
+			const vx = v.length ? v.split(/;/) : [];
+			
+			return vx;
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that._filterDeletedItems = function() {
+			const deleted_item_ids = that._getDeletedItemIDs();
+			return that.items.filter((x) => !deleted_item_ids.includes(x['item_id']));
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that._deleteItem = function(item_id) {
+			let deleted_item_ids = that._getDeletedItemIDs();
+			deleted_item_ids.push(item_id);
+			jQuery('#' + that.inventoryToDeleteID).val(deleted_item_ids.join(';'));
+			
+			// filter out any delete item
+			that.items = this._filterDeletedItems();
+			
+			that._setUnsavedWarning(true);
+			return true;
+		}
 		// ------------------------------------------------------------------------------------
 		//
 		//
@@ -355,6 +419,7 @@ var caUI = caUI || {};
 				['FOUND', 'NOT_FOUND', 'NOT_CHECKED', 'ALL'].forEach(function(k) {
 					jQuery('#' + that.container + '_filter_' + k).on('click', function(e) {
 						that.refresh(null, {'status': [k], 'search': jQuery('#' + that.inventoryFilterInputID).val().trim()});
+						jQuery('#' + that.inventoryItemListID).scrollTop(0); // force list to top
 						e.preventDefault();
 					});
 					
@@ -375,7 +440,43 @@ var caUI = caUI || {};
 			let sortDirection = 'asc';
 			if(that.debug) { console.log("[DEBUG] Sort set to ", sortBundle, sortDirection); }
 			
-			that.getItemList(0, 10000, sortBundle, sortDirection, true);
+			that.currentSort = sortBundle;
+			that.currentSortDirection = sortDirection;
+			
+			that.getItemList(0, that.numPerPage, sortBundle, sortDirection, true);
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that.initScroll = function(id) {
+			$('#' + id).scroll(function() {
+				that.loadVisibleItems(id);
+			});
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that.loadVisibleItems = function(id) {
+			if(that.isLoading) { return; }
+			const targetElement = jQuery('#' + that.container + ' .inventoryItemContent'); 
+			if(!targetElement || !targetElement.length) { return; }
+			const scrollPosition = jQuery('#' + id).scrollTop();
+			const listHeight = jQuery('#' + id).height();
+			const triggerOffset = 10; // Trigger 100px before the link hits the top
+			
+			jQuery(targetElement).each(function(k, v) {
+				const targetPosition = jQuery(v).parent().position().top;
+				if ((targetPosition > triggerOffset) && (targetPosition < listHeight)) {
+					let index =  jQuery(v).data('index');
+					if(that.items[index] && !('name' in that.items[index])) {
+						that.getItemList(index, that.numPerPage, that.currentSort, that.currentSortDirection, false);
+						//console.log('[DEGUG] Found unloaded item', k,  that.numPerPage, v, scrollPosition, listHeight, targetPosition, triggerOffset, jQuery(v).offsetParent());
+						return false;
+					}
+				}
+			});
 		}
 		// ------------------------------------------------------------------------------------
 		

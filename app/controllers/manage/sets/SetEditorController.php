@@ -143,6 +143,7 @@ class SetEditorController extends BaseEditorController {
 		$set_id = $this->request->getParameter('set_id', pInteger);
 		$start = $this->request->getParameter('start', pInteger) ?? 0;
 		$limit = $this->request->getParameter('limit', pInteger) ?? null;
+		$return_full_order_index = $this->request->getParameter('returnFullOrderIndex', pInteger) ?? null;
 		$sort = $this->request->getParameter('sort', pString) ?? null;
 		$ids_only = $this->request->getParameter('idsOnly', pInteger) ?? false;
 		$sort_direction = $this->request->getParameter('sortDirection', pString) ?? null;
@@ -176,9 +177,14 @@ class SetEditorController extends BaseEditorController {
 			$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
 		}
 		
-		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'idsOnly' => $ids_only]));
-
-		$this->view->setVar('data', ['items' => $items, 'order' => $ids_only ? $items : array_keys($items)]);		
+		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction]));
+		
+		if($return_full_order_index) {
+			$item_ids = $t_set->getInventoryList(['sort' => $sort, 'sortDirection' => $sort_direction, 'idsOnly' => true]);
+		} else {
+			$item_ids = array_keys($items);
+		}
+		$this->view->setVar('data', ['items' => $items, 'order' => $item_ids]);		
 		
 		$this->response->setContentType('application/json');
 		$this->render('json.php');
@@ -214,41 +220,6 @@ class SetEditorController extends BaseEditorController {
 		
 		$this->view->setVar('data', ['set_id' => $set_id, 'item_id' => $item_id]);	
 		
-		$this->response->setContentType('application/json');
-		$this->render('json.php');
-	}
-	# -------------------------------------------------------
-	/**
-	 *
-	 */
-	public function removeItemFromInventory() {
-		if ($set_id = $this->request->getParameter('set_id', pInteger)) {
-			$t_set = new ca_sets($set_id);
-
-			if (!$t_set->getPrimaryKey()) {
-				$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);
-				return;
-			}
-
-			// does user have edit access to set?
-			if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
-				$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
-				$this->Edit();
-				return;
-			}
-			$table_num = $t_set->get('table_num');
-		} else {
-			$table_num = $this->request->getParameter('table_num', pInteger);
-		}
-
-		$item_id = $this->request->getParameter('item_id', pInteger);
-		$t_row = Datamodel::getInstanceByTableNum($table_num, true);
-		
-		if($t_set->removeItemByItemID($item_id, $this->request->getUserID())) {
-			$this->view->setVar('data', ['set_id' => $set_id, 'item_id' => $item_id]);	
-		} else {
-			$this->view->setVar('data', ['errors' => [_t('Could not remove item: %1', join('; ', $t_set->getErrors()))], 'set_id' => $set_id, 'item_id' => $item_id]);	
-		}
 		$this->response->setContentType('application/json');
 		$this->render('json.php');
 	}

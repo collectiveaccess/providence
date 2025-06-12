@@ -5122,6 +5122,13 @@ if (!$vb_batch) {
 						if ($vb_batch) { break; } // not supported in batch mode
 						if(!caIsInventory($this)) { break; }
 						
+						// Delete items
+						if(is_array($item_ids_to_delete = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}inventoryToDelete", pString)))) {
+							foreach($item_ids_to_delete as $item_id_to_delete) {
+								$this->removeItemByItemID($item_id_to_delete);
+							}
+						}
+						
 						$container_fld = $this->getAppConfig()->get('inventory_container_element_code');
 						$found_fld = $this->getAppConfig()->get('inventory_found_element_code');
 						$acc = [];

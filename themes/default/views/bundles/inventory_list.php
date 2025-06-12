@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-AssetLoadManager::register('inventoryEditorUI');
 $config = Configuration::load();
 
 $type_singular 		= $this->getVar('type_singular');
@@ -48,6 +47,7 @@ $dont_show_add		= (isset($settings['dontShowAddButton']) && $settings['dontShowA
 $dont_show_delete	= (isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton']);
 
 $num_per_page 		= caGetOption('numPerPage', $settings, 10);
+$item_count			= $this->getVar('itemCount');
 $initial_values 	= caSanitizeArray($this->getVar('initialValues'), ['removeNonCharacterData' => false]);
 
 // Dyamically loaded sort ordering
@@ -89,16 +89,19 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 <?php
 	}
 ?>
+	<input type="hidden" name="<?= $id_prefix; ?>inventoryToDelete" id="<?= $id_prefix; ?>inventoryToDelete"/>
+	
  	<div id="<?= $id_prefix; ?>inventoryItemListContainer"> 
  		<div id="<?= $id_prefix; ?>inventoryItemList" class="inventoryList"> </div>
  	</div>
 	
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
-			<div class="inventoryItemContent">
+			<div class="inventoryItemContent" id="inventoryItemContent_{n}">
 				<div style="width: 36px;">{n}</div>
 				<div style="width: 140px;">{representation_tag}</div>
 				<div class="inventoryItemDescription" style="width: 394px;">
+					{loadingMessage}
 					{displayTemplate}
 					{displayTemplateDescription}
 				</div>
@@ -141,6 +144,13 @@ if(!$dont_show_delete) {
 			table_num: <?= (int)$t_set->get('table_num'); ?>,
 			fieldNamePrefix: '<?= $id_prefix; ?>',
 			initialValues: <?= json_encode(array_values($initial_values)); ?>,
+			numPerPage: <?= (int)$num_per_page; ?>,
+			itemCount: <?= (int)$item_count; ?>,
+			
+			currentSort: <?= json_encode($this->getVar('currentSort')); ?>,
+			currentSortDirection: <?= json_encode($this->getVar('currentSortDirection')); ?>,
+			
+			inventoryToDeleteID: '<?= $id_prefix; ?>inventoryToDelete',
 			
 			inventoryItemListID: '<?= $id_prefix; ?>inventoryItemList',
 			inventoryItemAutocompleteID: '<?= $id_prefix; ?>inventoryItemAutocompleter',
@@ -155,6 +165,8 @@ if(!$dont_show_delete) {
 			
 			itemTemplateClass: '<?= $id_prefix; ?>inventoryItemTemplate',
 			editorTemplateClass: '<?= $id_prefix; ?>inventoryItemEditorTemplate',
+			
+			loadingMessage: <?= json_encode(_t('%1 Loading...', caBusyIndicatorIcon($this->request))); ?>,
 			
 			inventorySetStatusButtonClass: 'inventorySetStatusButton',
 			inventoryFoundOptions: <?= json_encode($inventory_found_options); ?>,
