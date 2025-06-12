@@ -521,7 +521,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_decimal1';
+		return 'value_sortable';
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -552,7 +552,15 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	public function sortableValue(?string $value) {
 		if(DateRangeAttributeValue::$o_tep->parse($value)) { 
 			$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
-			return $dates[0].'/'.$dates[1];
+			$start = explode('.', $dates[0]);
+			$end = explode('.', $dates[1]);
+			if($start[0] == -2000000000) {
+				return str_pad($end[0], 11, '0', STR_PAD_LEFT).'.'.$end[1];
+			} elseif($end[0] == 2000000000) {
+				return str_pad($start[0], 11, '0', STR_PAD_LEFT).'.'.$start[1];
+			} else {
+				return str_pad($start[0], 11, '0', STR_PAD_LEFT).'.'.$start[1];
+			}
 		}
 		return null;
 	}
