@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2023 Whirl-i-Gig
+ * Copyright 2006-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -226,7 +226,7 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 			$va_rules 			= $o_media_proc_settings->getMediaTransformationRule($vs_rule);
 			$va_volume_info 	= $o_media_volumes->getVolumeInformation($va_version_settings['VOLUME']);
 			
-			if (sizeof($va_rules) == 0) { 
+			if (!is_array($va_rules) || (sizeof($va_rules) == 0)) { 
 				$vs_output_mimetype = $vs_input_mimetype; 
 				#
 				# don't process this media, just copy the file

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,60 +25,64 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
- 	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
- 	
- 
- 	class LCSHController extends ActionController {
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		# AJAX handlers
- 		# -------------------------------------------------------
-		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			if (!($ps_query = $this->request->getParameter('q', pString))) {
-				$ps_query = $this->request->getParameter('term', pString);
-			}
-			$ps_type = $this->request->getParameter('type', pString);
-			$va_vocs = array();
-			$vs_voc_query = '';
-			if ($vn_element_id = $this->request->getParameter('element_id', pInteger)) {
-				$t_element = new ca_metadata_elements($vn_element_id);
-				if ($vs_voc = $t_element->getSetting('vocabulary')) {
-					$vs_voc_query .= '&q='.rawurlencode($vs_voc);
-				}
-			}
-			$vo_conf = Configuration::load();
-			$va_items = array();
-			if (mb_strlen($ps_query) >= 3) {
-				try {
-					$vs_data = caQueryExternalWebservice('http://id.loc.gov/search/?q='.urlencode($ps_query).'&format=atom&count=150'.$vs_voc_query);
+require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
+require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 
-					if ($vs_data) {
-						$o_xml = @simplexml_load_string($vs_data);
-	
-						if ($o_xml) {
-							$o_entries = $o_xml->{'entry'};
-							if ($o_entries && sizeof($o_entries)) {
-								foreach($o_entries as $o_entry) {
-									$o_links = $o_entry->{'link'};
-									$va_attr = $o_links[0]->attributes();
-									$vs_url = (string)$va_attr->{'href'};
-									$va_items[] = array('label' => (string)$o_entry->{'title'}, 'idno' => (string)$o_entry->{'id'}, 'url' => $vs_url);
-								}
+class LCSHController extends ActionController {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct($request, $response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
+	}
+	# -------------------------------------------------------
+	# AJAX handlers
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function Get($additional_query_params=null, $options=null) {
+		if (!($query = $this->request->getParameter('q', pString))) {
+			$query = $this->request->getParameter('term', pString);
+		}
+		$type = $this->request->getParameter('type', pString);
+		$vocs = [];
+		$voc_query = '';
+		if ($element_id = $this->request->getParameter('element_id', pInteger)) {
+			$t_element = new ca_metadata_elements($element_id);
+			if ($voc = $t_element->getSetting('vocabulary')) {
+				$voc_query .= '&q='.rawurlencode(str_replace("cs:https://", "cs:http://", $voc));
+			}
+		}
+		$conf = Configuration::load();
+		$items = [];
+		if (mb_strlen($query) >= 3) {
+			try {
+				$data = caQueryExternalWebservice('https://id.loc.gov/search/?q='.urlencode($query).'&format=atom&count=150'.$voc_query);
+
+				if ($data) {
+					$o_xml = @simplexml_load_string($data);
+
+					if ($o_xml) {
+						$o_entries = $o_xml->{'entry'};
+						if ($o_entries && sizeof($o_entries)) {
+							foreach($o_entries as $o_entry) {
+								$o_links = $o_entry->{'link'};
+								$attr = $o_links[0]->attributes();
+								$url = (string)$attr->{'href'};
+								$items[] = array('label' => (string)$o_entry->{'title'}, 'idno' => (string)$o_entry->{'id'}, 'url' => $url);
 							}
 						}
 					}
-				} catch (Exception $e) {
-					$va_items['error'] = array('displayname' => _t('ERROR').':'.$e->getMessage(), 'idno' => '');
 				}
+			} catch (Exception $e) {
+				$items['error'] = array('displayname' => _t('ERROR').':'.$e->getMessage(), 'idno' => '');
 			}
-			
-			$this->view->setVar('lcsh_list', $va_items);
- 			return $this->render('ajax_lcsh_list_html.php');
 		}
-		# -------------------------------------------------------
- 	}
- ?>
+		
+		$this->view->setVar('lcsh_list', $items);
+		return $this->render('ajax_lcsh_list_html.php');
+	}
+	# -------------------------------------------------------
+}
