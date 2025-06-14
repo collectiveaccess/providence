@@ -153,23 +153,23 @@ $_ca_attribute_settings['LCSHAttributeValue'] = array(		// global
 		'description' => _t('Selects which vocabulary will be searched.'),
 		'options' => array(
 			_t('All vocabularies') => '',
-			_t('LC Subject Headings') => 'cs:https://id.loc.gov/authorities/subjects',
-			_t('LC Name Authority File') => 'cs:https://id.loc.gov/authorities/names',
-			_t('LC Subject Headings for Children') => 'cs:https://id.loc.gov/authorities/childrensSubjects',
-			_t('LC Genre/Forms File') => 'cs:https://id.loc.gov/authorities/genreForms',
-			_t('LC Classifications') => 'cs:https://id.loc.gov/authorities/classification',
-			_t('Thesaurus of Graphic Materials') => 'cs:https://id.loc.gov/vocabulary/graphicMaterials',
-			_t('Preservation Events') => 'cs:https://id.loc.gov/vocabulary/preservationEvents',
-			_t('Preservation Level Role') => 'cs:https://id.loc.gov/vocabulary/preservationLevelRole',
-			_t('Cryptographic Hash Functions') => 'cs:https://id.loc.gov/vocabulary/cryptographicHashFunctions',
-			_t('Controlled Vocabulary for Rare Materials Cataloging') => 'cs:https://id.loc.gov/vocabulary/rbmscv',
-			_t('MARC Relators') => 'cs:https://id.loc.gov/vocabulary/relators',
-			_t('MARC Countries') => 'cs:https://id.loc.gov/vocabulary/countries',
-			_t('MARC Geographic Areas') => 'cs:https://id.loc.gov/vocabulary/geographicAreas',
-			_t('MARC Languages') => 'cs:https://id.loc.gov/vocabulary/languages',
-			_t('ISO639-1 Languages') => 'cs:https://id.loc.gov/vocabulary/iso639-1',
-			_t('ISO639-2 Languages') => 'cs:https://id.loc.gov/vocabulary/iso639-2',
-			_t('ISO639-5 Languages') => 'cs:https://id.loc.gov/vocabulary/iso639-5',
+			_t('LC Subject Headings') => 'cs:http://id.loc.gov/authorities/subjects',
+			_t('LC Name Authority File') => 'cs:http://id.loc.gov/authorities/names',
+			_t('LC Subject Headings for Children') => 'cs:http://id.loc.gov/authorities/childrensSubjects',
+			_t('LC Genre/Forms File') => 'cs:http://id.loc.gov/authorities/genreForms',
+			_t('LC Classifications') => 'cs:http://id.loc.gov/authorities/classification',
+			_t('Thesaurus of Graphic Materials') => 'cs:http://id.loc.gov/vocabulary/graphicMaterials',
+			_t('Preservation Events') => 'cs:http://id.loc.gov/vocabulary/preservationEvents',
+			_t('Preservation Level Role') => 'cs:http://id.loc.gov/vocabulary/preservationLevelRole',
+			_t('Cryptographic Hash Functions') => 'cs:http://id.loc.gov/vocabulary/cryptographicHashFunctions',
+			_t('Controlled Vocabulary for Rare Materials Cataloging') => 'cs:http://id.loc.gov/vocabulary/rbmscv',
+			_t('MARC Relators') => 'cs:http://id.loc.gov/vocabulary/relators',
+			_t('MARC Countries') => 'cs:http://id.loc.gov/vocabulary/countries',
+			_t('MARC Geographic Areas') => 'cs:http://id.loc.gov/vocabulary/geographicAreas',
+			_t('MARC Languages') => 'cs:http://id.loc.gov/vocabulary/languages',
+			_t('ISO639-1 Languages') => 'cs:http://id.loc.gov/vocabulary/iso639-1',
+			_t('ISO639-2 Languages') => 'cs:http://id.loc.gov/vocabulary/iso639-2',
+			_t('ISO639-5 Languages') => 'cs:http://id.loc.gov/vocabulary/iso639-5',
 		)
 	)
 );
@@ -335,7 +335,7 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 					
 					$feed_url = "https://id.loc.gov/search/?q=".rawurlencode($value)."&start=1&format=atom";
 					if ($voc = $settings['vocabulary']) {
-						$feed_url .= '&q='.rawurlencode($voc);
+						$feed_url .= '&q='.rawurlencode(str_replace("cs:https://", "cs:http://", $voc));
 					}
 				
 					$feed = new SimpleXMLElement(file_get_contents($feed_url, false, stream_context_create([
