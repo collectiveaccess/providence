@@ -464,16 +464,8 @@ class MediaImportController extends ActionController {
 			if ($ps_directory[0] == '/') { $vn_level--; }
 			
 			if (!$ps_directory) { 
-				$va_level_data["{$vs_k}|{$vn_level}"] = array('/' => 
-						array(
-							'item_id' => '/',
-							'name' => 'Root',
-							'type' => 'DIR',
-							'children' => 1
-						)
-				);
-				$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
-				$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = 1;
+				$this->request->setParameter('init', 1);
+				return $this->GetDirectoryLevel();
 			} else {
 				$va_tmp = explode('/', $ps_directory);
 				$vs_k = array_pop($va_tmp);
@@ -573,7 +565,7 @@ class MediaImportController extends ActionController {
 		$deleted_paths = $error_paths = [];
 		$files_deleted = 0;
 		foreach($to_delete as $d) {
-			if(!($path = caIsValidMediaImportDirectory($d, ['user_id' => $this->request->getUserID(), 'userDirectoryOnly' => true, 'allowFiles' => true]))) {
+			if(!($path = caIsValidMediaImportDirectory($d, ['user_id' => $this->request->getUserID(), 'userDirectoryOnly' => false, 'allowFiles' => true]))) {
 				continue;
 			}
 			if($c = caRemoveDirectory($path, true, ['allowFiles' => true])) {

@@ -253,7 +253,7 @@ class EditorController extends ActionController {
 			$restrictions = $t_ui->getTypeRestrictions();
 			$type_ids = array_map(function($v) {
 				return $v['type_id'] ?? null;
-			}, $restrictions);
+			}, $restrictions ?? []);
 			if(is_array($type_ids) && sizeof($type_ids) && !in_array($t_subject->getTypeID(), $type_ids)) {
 				$types_in_set = array_keys($t_set->getTypesForItems());
 				if(!($t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, array_shift($types_in_set)))) {

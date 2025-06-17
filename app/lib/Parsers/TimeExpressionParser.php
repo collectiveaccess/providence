@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2023 Whirl-i-Gig
+ * Copyright 2006-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3772,6 +3772,7 @@ class TimeExpressionParser {
 		}
 		
 		if (
+			$pa_start_pieces['year'] == $pa_end_pieces['year']  &&
 			$pa_start_pieces['hours'] == 0 && $pa_start_pieces['minutes'] == 0 && $pa_start_pieces['seconds'] == 0 &&
 			$pa_end_pieces['hours'] == 23 && $pa_end_pieces['minutes'] == 59 && $pa_end_pieces['seconds'] == 59
 		) {

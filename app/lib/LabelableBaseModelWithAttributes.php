@@ -3285,7 +3285,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 				$t_rel->set('effective_date', $pa_effective_dates[$vn_user_id] ?? null);
 			}
 			
-			if(is_array($settings[$vn_user_id] ?? null)) {
+			if(is_array($settings[$vn_user_id] ?? null) && method_exists($t_rel, 'setSetting')) {
 				foreach($settings[$vn_user_id] as $setting => $setting_value) {
 					$t_rel->setSetting($setting, $setting_value);
 				}
@@ -3398,8 +3398,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
 		
-		if(!($t = Datamodel::getTableName($this->get('editor_type')))) { return null; }
-		$downloads = caGetPawtucketLightboxDownloadVersions($t);
+		if(!($t = Datamodel::getTableName($this->get('editor_type'))) && !($t = Datamodel::getTableName($this->get('table_num')))) { return null; }
+		$downloads = method_exists($t_rel, 'setSetting') ? caGetPawtucketLightboxDownloadVersions($t) : null;
 		$o_view->setVar('downloads', $downloads);
 		
 		$initial_values = $this->getUsers(array('returnAsInitialValuesForBundle' => true));

@@ -229,7 +229,6 @@ class SearchEngine extends SearchBase {
 		if (!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $options))) {
 			$vn_created_on = $o_cache->getParameter('created_on');
 			if((time() - $vn_created_on) < $vn_cache_timeout) {
-				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
 				$result_desc = $this->opo_search_config->get('return_search_result_description_data') ? $o_cache->getRawResultDesc() : [];
 				
@@ -241,14 +240,11 @@ class SearchEngine extends SearchBase {
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $result_desc, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
-				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
 				$o_cache->remove();
 			}
 		}
 
 		if(!$vb_from_cache) {
-			Debug::msg('SEARCH cache miss for '.$vs_cache_key);
-			
 			$o_query_parser = new LuceneSyntaxParser();
 			$o_query_parser->setEncoding('UTF-8');
 			$o_query_parser->setDefaultOperator(LuceneSyntaxParser::B_AND);

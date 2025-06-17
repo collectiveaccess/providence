@@ -552,6 +552,7 @@ class ca_acl extends BaseModel {
 					$log_entries = [];
 					foreach($ids as $id) {
 						$log_entries[] = [
+							'datetime' => time(),
 							'table' => $subject_table,
 							'row_id' => $id,
 							'user_id' => $AUTH_CURRENT_USER_ID,
@@ -625,6 +626,7 @@ class ca_acl extends BaseModel {
 						$log_entries = [];
 						foreach($ids as $id) {
 							$log_entries[] = [
+								'datetime' => time(),
 								'table' => 'ca_objects',
 								'row_id' => $id,
 								'user_id' => $AUTH_CURRENT_USER_ID,
@@ -905,6 +907,7 @@ class ca_acl extends BaseModel {
 								$log_entries = [];
 								foreach($ids as $id) {
 									$log_entries[] = [
+										'datetime' => time(),
 										'table' => 'ca_objects',
 										'row_id' => $id,
 										'user_id' => $AUTH_CURRENT_USER_ID,
@@ -960,6 +963,7 @@ class ca_acl extends BaseModel {
 					$log_entries = [];
 					foreach($ids as $id) {
 						$log_entries[] = [
+							'datetime' => time(),
 							'table' => 'ca_objects',
 							'row_id' => $id,
 							'user_id' => $AUTH_CURRENT_USER_ID,

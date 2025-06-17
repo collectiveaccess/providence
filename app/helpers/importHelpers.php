@@ -821,7 +821,6 @@ function caProcessRefineryRelated($po_refinery_instance, $ps_related_table, $pa_
 function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 	global $g_ui_locale_id;
 	$pa_source_data['PARENT_IDNO'] = '';
-	
 	$po_refinery_instance->setReturnsMultipleValues(true);
 	
 	$o_log = caGetOption('log', $pa_options, null);

@@ -26,7 +26,7 @@
  */
  
 var caUI = caUI || {};
-var caBundleUpdateManager = null;
+var caBundleUpdateManager = caBundleUpdateManager || null;
 (function ($) {
 	caUI.initBundleUpdateManager = function(options) {
 		// --------------------------------------------------------------------------------
@@ -79,7 +79,6 @@ var caBundleUpdateManager = null;
 				jQuery.each(b, function(k, v) {
 					var loadURL = that.url + "/" + that.key + "/" + that.id;
 					var data = { "bundle": v.bundle, "placement_id": v.placement_id };
-					console.log("load", loadURL, data);
 					if (options) { 
 						for(var k in options) {
 							//loadURL += "/" + k + "/" + options[k];

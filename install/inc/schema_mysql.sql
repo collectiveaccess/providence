@@ -7029,9 +7029,9 @@ create index i_field_table_num on ca_sql_search_word_index(field_table_num);
 create index i_field_num on ca_sql_search_word_index(field_num);
 CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
 CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
-CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost);
+CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id, access, boost, field_index);
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
-CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost);
+CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost, field_index);
 CREATE INDEX i_field_word on ca_sql_search_word_index(field_num, field_table_num, table_num, word_id, row_id);
 
 /*==========================================================================*/
@@ -7951,4 +7951,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (202, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (203, unix_timestamp());

@@ -92,7 +92,6 @@ $rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName
 				if(!caUI) { caUI = {}; }
 				if(!caUI.ckEditors) { caUI.ckEditors = []; }
 				for(let c in caUI.ckEditors) {
-					console.log('c', c, caUI.ckEditors[c]);
 					caUI.ckEditors[c].updateSourceElement();
 				}
 				var fdata = new FormData(jQuery('#<?= $form_name.$field_name_prefix.$n; ?>')[0]);   

@@ -451,15 +451,17 @@ class ca_change_log extends BaseModel {
 								$vs_table_name = Datamodel::getTableName(ca_attributes::getTableNumForAttribute($va_snapshot['attribute_id']));
 							
 								// Skip elements not in include list, when a list is provided for the current table
-								if ($vs_table_name && is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code])) {
-									$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => "element_id {$vs_code}/{$vm_val} not in white list for {$vs_table_name}"]);
+								if (!$vs_table_name || (is_array($pa_include_metadata[$vs_table_name]) && !isset($pa_include_metadata[$vs_table_name][$vs_code]))) {
+									if(($va_row['changetype'] !== 'D')) { $va_snapshot = ['SKIP' => true]; }
 									continue(2);
 								}
 							
 								// Skip elements present in the exclude list
 								if (is_array($pa_exclude_metadata[$vs_table_name]) && isset($pa_exclude_metadata[$vs_table_name][$vs_code])) {
-									$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'element_id in in_exclude_list']);
-									$skipped[$vs_guid] = true;
+									if($va_row['changetype'] !== 'D') { 
+										$va_snapshot = ['SKIP' => true];
+										$skipped[$vs_guid] = true;
+									}
 									continue(2);
 								}
 							}
@@ -477,6 +479,15 @@ class ca_change_log extends BaseModel {
 						case 'value_id':
 							if(($vs_val_guid = ca_attribute_values::getGUIDByPrimaryKey($vm_val)) && !isset($skipped[$vs_val_guid])) {
 								$va_snapshot['value_guid'] = $vs_val_guid;
+								
+								// Is this an authority value?
+								// If so, translate to guid
+								if($va_snapshot['element_id'] ?? null) {
+									$dt = ca_metadata_elements::getElementDatatype($va_snapshot['element_id']);
+									if(($a = AuthorityAttributeValue::elementTypeToInstance($dt)) && (($t = $a->tableName()) !== 'ca_list_items')) {
+										$va_snapshot['value_longtext1_guid'] = $t::getGUIDByPrimaryKey($va_snapshot['value_longtext1']);
+									}
+								}
 							} else {
 								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'value_id']);
 								if($vs_val_guid) { $skipped[$vs_val_guid] = true; }
