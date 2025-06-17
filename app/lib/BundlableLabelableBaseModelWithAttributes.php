@@ -5297,7 +5297,7 @@ if (!$vb_batch) {
 							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_access_([\d]+)$!", $vs_key, $va_matches)) {
 								$vn_role_id = $va_matches[1];
 								$vn_access = $po_request->getParameter($vs_key, pInteger);
-								if ($vn_access > 0) {
+								if (($vn_access > 0) || (in_array($this->tableName(), ['ca_editor_uis', 'ca_editor_ui_screens']))) {
 									$va_roles_to_set[$vn_role_id] = $vn_access;
 								} else {
 									$va_roles_to_remove[$vn_role_id] = true;
@@ -8308,12 +8308,40 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Checks if model supports ACL item-based access control
 	 *
+	 * @param array $options Options include:
+	 *		
+	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
-	public function supportsACL() {
+	public function supportsACL(?array $options=null) {
 		if(defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
 		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
-		if(!$this->getAppConfig()->get('perform_item_level_access_checking') || $this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
+		$type_code = $this->isLoaded() ? $this->getTypeCode() : null;
+
+		$supports_acl = true; 
+		$keys = ['perform_item_level_access_checking'];
+		$nkeys = [$this->tableName().'_dont_do_item_level_access_control'];
+		if($this->isLoaded()) {
+			array_unshift($keys, $this->tableName().'_perform_item_level_access_checking');
+			array_unshift($keys, $this->tableName().'_'.$this->getTypeCode().'_perform_item_level_access_checking');
+			array_unshift($nkeys, $this->tableName().'_'.$this->getTypeCode().'_dont_do_item_level_access_control');
+		}
+		
+		$config = $this->getAppConfig();
+		foreach($keys as $a) {
+			if($config->exists($a)) { 
+				$supports_acl = (bool)$config->get($a); 
+				break;
+			}
+		}
+		foreach($nkeys as $a) {
+			if($config->get($a)) { 
+				$supports_acl = false;
+				break;
+			}
+		}
+		
+		if(!$supports_acl) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
 	# --------------------------------------------------------------------------------------------	

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,6 +96,12 @@ if ($t_subject->getProperty('HIERARCHY_ID_FLD') && ($hier_id = (int)$t_subject->
 if (isset($bundle_settings['restrict_to_types'])) {
 	$va_search_lookup_extra_params['types'] = $bundle_settings['restrict_to_types'];
 }
+if (isset($bundle_settings['restrict_to_access_point'])) {
+	$va_search_lookup_extra_params['restrictToAccessPoint'] = $bundle_settings['restrict_to_access_point'];
+}
+if (isset($bundle_settings['restrict_to_search'])) {
+	$va_search_lookup_extra_params['restrictToSearch'] = $bundle_settings['restrict_to_search'];
+}
 
 if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_x_collections_hierarchy_enabled) {
 	$lookup_urls_for_move = $lookup_urls = array(
@@ -104,13 +110,13 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 		'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList'),
 		'sortSave' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'SetSortOrder')
 	);
-	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	
 	$edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
 	$init_id = $subject_table."-".$id;
 } else {
 	$lookup_urls 			= caJSONLookupServiceUrl($this->request, $subject_table, $va_search_lookup_extra_params);
-	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	$edit_url = caEditorUrl($this->request, $subject_table);
 	$init_id = $id;
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -287,6 +287,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 							{
 								source: '<?= caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1, 'noSymbols' => 1, 'lists' => is_array($settings['restrict_to_lists'] ?? null) ? join(';', $settings['restrict_to_lists']) : "")); ?>', 
 								minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_list_items_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
+								position: { my: "left top", at: "left bottom", collision: "fit flip" },
 								select: function(event, ui) {
 									if (parseInt(ui.item.id) > 0) {
 										<?= $id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item

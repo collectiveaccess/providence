@@ -890,7 +890,8 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	
 	if(($options['forPawtucket'] ?? false) || ($options['anywhere'] ?? false)) { 
 		if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
-		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')));
+		
+		$paw_only = caGetAccessConfigOption($t_item, 'pawtucket_only_acl');
 		if(($options['anywhere'] ?? false) && $paw_only) { 	
 			return true; 
 		} elseif($options['forPawtucket'] ?? false) {
@@ -898,10 +899,11 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 		}
 	}
 	
-	if(!$config->get('perform_item_level_access_checking')) { return false; } 
-	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
+	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, false); }
 	if($t_item && method_exists($t_item, "supportsACL")) {
-		return (bool)$t_item->supportsACL();
+		return (bool)$t_item->supportsACL($options);
+	} else {
+		if(!$config->get('perform_item_level_access_checking')) { return false; } 
 	}
 	return true;
 }
@@ -943,5 +945,26 @@ function caSourceAccessControlIsEnabled($t_item=null, ?array $options=null) : bo
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
 	if($config->get($t_item->tableName().'_dont_do_source_access_control')) { return false; } 
 	return true;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config_opt, ?array $options=null) : mixed {
+	$config = Configration::load();
+	
+	$keys = [$config_opt];
+	if(is_a($t_item, 'BaseModelWithAttributes')) {
+		array_unshift($keys, $t_item->tableName().'_'.$config_opt);
+		array_unshift($keys, $t_item->tableName().'_'.$t_item->getTypeCode().'_'.$config_opt);
+	}
+	$ret = null;
+	foreach($keys as $a) {
+		if($config->exists($a)) { 
+			$ret = (bool)$config->get($a); 
+			break;
+		}
+	}
+	return $ret;
 }
 # ---------------------------------------------------------------------------------------------

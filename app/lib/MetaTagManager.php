@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -180,10 +180,16 @@ class MetaTagManager {
 	 * @param array $highlight_text List of strings to highlight
 	 * @param array $options Options include:
 	 *		persist = Persist highlight text in session. [Default is true]
+	 *		removeWildcards = Strip asterisks from highlight text. [Default is true]
 	 * @return bool Always returns true
 	 */
 	static function setHighlightText(?array $highlight_text, ?array $options=null) : bool {
 		global $g_highlight_text;
+		if(is_array($highlight_text) && caGetOption('removeWildcards', $options, true)) {
+			$highlight_text = array_map(function($v) { 
+				return str_replace('*', '', $v);
+			}, $highlight_text);
+		}
 		$g_highlight_text = $highlight_text;
 		
 		if(caGetOption('persist', $options, true)) {

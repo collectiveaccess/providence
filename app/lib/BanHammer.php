@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2024 Whirl-i-Gig
+ * Copyright 2019-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,26 @@ class BanHammer {
 	 */
 	static public function verdict($request, $options=null) {
 		self::init();
+		
+		$module = $request ? $request->getModulePath() : null;
+		$controller = $request ? $request->getController() : null;
+		$action = $request ? $request->getAction() : null;
+		
+		$exclude = BanHammer::$config->get('exclude');
+		$k = ($module ? "{$module}/" : "").$controller;
+		
+		if(is_array($exclude) && isset($exclude[$k])) {
+			if(
+				(is_array($exclude[$k]) && in_array($action, $exclude[$k]))
+				||
+				($exclude[$k] == '*')
+				||
+				($exclude[$k] == $action)
+			) {
+				return true;
+			}
+		}
+		
 		if($request && $request->isLoggedIn()) { return true; }
 		if (!self::$config->get('enabled')) { return true; }
 		if (ca_ip_whitelist::isWhitelisted($options)) { return true; }
@@ -85,8 +105,6 @@ class BanHammer {
 		
 		$use_plugin = caGetOption('usePlugin', $options, null);
 		
-		$module = $request->getModulePath();
-		$controller = $request->getController();
 		if ((strtolower($module) === 'system') && (strtolower($controller) === 'error')) { return true; }
 		if (($module === '') && (strtolower($controller) === 'media')) { return true; }
 		if ($request->isAjax()) { return true; }

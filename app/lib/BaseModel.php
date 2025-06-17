@@ -6572,6 +6572,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 	 *		row_id = Force logging for specified row_id. [Default is to use id from currently loaded row]
 	 *		snapshot = Row snapshot array to use for logging. [Default is to use snapshot from currently loaded row]
 	 * 		log_id = Force logging using a specific log_id. [Default is to use next available log_id]
+	 *		datetime = Unix timestamp of log entry. If not specified current time is used. [Default is current time]
 	 */
 	public function logChange($change_type, $user_id=null, $options=null) {
 		if (defined('__CA_DONT_LOG_CHANGES__') || !$this->logChanges()) { return null; }
@@ -6777,7 +6778,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			$snapshot = caSerializeForDatabase($snapshot, true);
 			// Create primary log entry
 			$this->opqs_change_log->execute(
-				$log_id, time(), $user_id, $unit_id, $change_type,
+				$log_id, caGetOption('datetime', $options, time()), $user_id, $unit_id, $change_type,
 				$this->tableNum(), $row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			

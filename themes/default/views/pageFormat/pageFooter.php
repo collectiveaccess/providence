@@ -25,13 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-//
-// Output HTML for debug bar
-//
-if(Debug::isEnabled()) {
-	print Debug::$bar->getJavascriptRenderer()->render();
-}
-
 $footer_color = $this->request->config->get('footer_color');
 ?>
 					<div style="clear:both;"><!-- EMPTY --></div>

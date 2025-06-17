@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/Plugins/WLPlug.php');
@@ -373,13 +372,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
 	public function search(int $pn_subject_tablenum, string $ps_search_expression, array $pa_filters, $po_rewritten_query) {
-		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
-		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
-
 		$o_query = new ElasticSearch\Query($pn_subject_tablenum, $ps_search_expression, $po_rewritten_query, $pa_filters);
 		$vs_query = $o_query->getSearchExpression();
-
-		Debug::msg("[ElasticSearch] actual search query sent to ES: {$vs_query}");
 
 		$va_search_params = array(
 			'index' => $this->getIndexName($pn_subject_tablenum),
@@ -410,7 +404,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 		
-		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($va_additional_filters, true));
 		try {
 			$va_results = $this->getClient()->search($va_search_params);
 		} catch(\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {

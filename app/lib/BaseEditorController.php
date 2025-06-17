@@ -279,7 +279,6 @@ class BaseEditorController extends ActionController {
 		// relate existing records via Save() link
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
-				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 				if(!$t_subject->relationshipExists($vs_rel_table, $vn_rel_id, $vn_rel_type_id)) { 
 					$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
 				}
@@ -359,7 +358,6 @@ class BaseEditorController extends ActionController {
 				// relate newly created record if requested
 				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 					if(Datamodel::tableExists($vs_rel_table)) {
-						Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 						$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id);
 					}
 				}
@@ -1000,7 +998,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('tableList');
 		list($subject_id, $t_subject) = $this->_initView($options);
 		
-		if(!caShowAccessControlScreen($t_subject)) { throw new ApplicationException(_t('ACL not enabled')); }
+		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1022,14 +1020,12 @@ class BaseEditorController extends ActionController {
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
+		
 		$config = Configuration::load();
 		$save_access = $config->get('acl_show_public_access_controls');
-		
-		//if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
-		
 		$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_subject, ['forPawtucket' => true]);
 		
+		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1037,7 +1033,7 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 		
-		$can_save_acl = (!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL());
+		$can_save_acl = ((!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL())) || $pawtucket_only_acl_enabled;
 		
 		$subject_table = $t_subject->tableName();
 		$subject_pk = $t_subject->primaryKey();
@@ -1053,7 +1049,7 @@ class BaseEditorController extends ActionController {
 		
 		// Set Pawtucket access
 		$orig_access = $t_subject->get('access');
-		if(!is_null($this->request->parameterExists('access')) && $t_subject->hasField('access')) {
+		if($save_access && !is_null($this->request->parameterExists('access')) && $t_subject->hasField('access')) {
 			$t_subject->set('access', $this->request->getParameter('access', pInteger) );
 			$t_subject->update();
 		}

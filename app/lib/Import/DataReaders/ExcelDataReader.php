@@ -34,20 +34,49 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
 class ExcelDataReader extends BaseDataReader {
 	# -------------------------------------------------------
+	/**
+	 * Excel reader object
+	 */
 	private $opo_handle = null;
+	
+	/**
+	 * Index of currently read worksheet
+	 */
 	private $sheet_num = 0;
-	private $opo_rows = null;
-	private $opa_row_buf = array();
+	
+	/**
+	 * Array containing data for current row
+	 */
+	private $opa_row_buf = [];
+	
+	/**
+	 * Index of current row
+	 */
 	private $opn_current_row = 0;
+	
+	/**
+	 * Maximum number of columns in file
+	 */
 	private $opn_max_columns = 512;
+	
+	/**
+	 * Currently set timezone; use to restore timezone setting from UTC when decoding date/times
+	 */
 	private $current_timezone = null;
-	private $headers = [];
+	
+	/**
+	 * Column headers
+	 */
+	private $headers = null;
 	# -------------------------------------------------------
 	/**
-	 *
+	 * @param string $source Path to file
+	 * @param array $options Options include:
+	 *		headers = use first row as column headers. [Default is false]
+	 *		dataset = number of worksheet to read [Default=0]
 	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
+	public function __construct($source=null, $options=null){
+		parent::__construct($source, $options);
 		
 		$this->current_timezone = date_default_timezone_get();
 		
@@ -58,27 +87,33 @@ class ExcelDataReader extends BaseDataReader {
 		$this->opa_formats     = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
 		$config                = Configuration::load();
 		$this->opn_max_columns = $config->get('ca_max_columns_delimited_files')?: 512;
+		$this->opa_properties['read_headers'] = isset($options['headers']) ? (bool)$options['headers'] : false;
 	}
 	# -------------------------------------------------------
 	/**
 	 * 
 	 * 
-	 * @param string $ps_source
-	 * @param array $pa_options Options include
+	 * @param string $source
+	 * @param array $options Options include
+	 *		headers = use first row as column headers. [Default is false]
 	 *		dataset = number of worksheet to read [Default=0]
 	 * @return bool
 	 */
-	public function read($ps_source, $pa_options=null) {
-		parent::read($ps_source, $pa_options);
+	public function read($source, $options=null) {
+		parent::read($source, $options);
+		
+		$this->headers = null;
+		if(isset($options['headers'])) { $this->opa_properties['read_headers'] = (bool)$options['headers']; }
+		
 		try {
-			$this->opo_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($ps_source);
-			$this->opo_handle->setActiveSheetIndex($this->sheet_num = caGetOption('dataset', $pa_options, 0));
+			$this->opo_handle = \PhpOffice\PhpSpreadsheet\IOFactory::load($source);
+			$this->opo_handle->setActiveSheetIndex($this->sheet_num = caGetOption('dataset', $options, 0));
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
 			$this->opn_current_row = 0;
 			
 			// Extract column headings?
-			if($o_row = $this->opo_rows->current()) {
+			if(($this->opa_properties['read_headers'] ?? false) && ($o_row = $this->opo_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 			
@@ -93,11 +128,8 @@ class ExcelDataReader extends BaseDataReader {
 				}
 				$headers = array_map(function($v) { return mb_strtolower($v); }, $headers);
 
-				if(caGetOption('headers', $pa_options, false) || (sizeof(array_filter($headers, function($v) { $v = trim($v); return !(!strlen($v) || preg_match('!^[a-z0-9_\-\.:\/]+$!', $v)); })) === 0)) {
-					// looks like headers
-					array_unshift($headers, ''); // 1-based
-					$this->headers = $headers;
-				}
+				array_unshift($headers, ''); // 1-based
+				$this->headers = $headers;
 			}
 		} catch (Exception $e) {
 			return false;
@@ -109,8 +141,8 @@ class ExcelDataReader extends BaseDataReader {
 	/**
 	 * 
 	 * 
-	 * @param string $ps_source
-	 * @param array $pa_options
+	 * @param string $source
+	 * @param array $options
 	 * @return bool
 	 */
 	public function nextRow() {
@@ -130,6 +162,11 @@ class ExcelDataReader extends BaseDataReader {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 			
+				// PhpSpreadsheet will automatically adjust times in date/time columns to the current timezone, assuming
+				// that the time encoded in the file is UTC. This means, if your timezone is, say, UTC -5 (aka. New York)
+				// your date/times will be skewed by five hours. This is never good, but especially noticable on date-only values
+				// which get pulled back into the previous day. To address this we use the in-elegant hack of temporarily setting
+				// the default timezone to UTC while processing the row
 				date_default_timezone_set('UTC');
 				$vn_col = 1;
 				foreach ($o_cells as $o_cell) {
@@ -146,7 +183,7 @@ class ExcelDataReader extends BaseDataReader {
 						$this->opa_row_buf[] = $vs_val = str_replace("\\0", '/0', trim((string)self::getCellAsHTML($o_cell)));
 					}
 					
-					if(sizeof($this->headers) && isset($this->headers[$vn_col])) {
+					if(is_array($this->headers) && sizeof($this->headers) && isset($this->headers[$vn_col])) {
 						$this->opa_row_buf[$this->headers[$vn_col]] = $this->opa_row_buf[str_replace('/', '', $this->headers[$vn_col])] = $this->opa_row_buf['/'.$this->headers[$vn_col]] = $vs_val;	
 					}
 
@@ -168,7 +205,7 @@ class ExcelDataReader extends BaseDataReader {
 	 * Row numbers are 1-based.
 	 * 
 	 * @param int $pn_row_num
-	 * @param array $pa_options
+	 * @param array $options
 	 *
 	 * @return bool
 	 */
@@ -182,11 +219,11 @@ class ExcelDataReader extends BaseDataReader {
 	 * 
 	 * 
 	 * @param mixed $pn_col
-	 * @param array $pa_options
+	 * @param array $options
 	 * @return mixed
 	 */
-	public function get($pn_col, $pa_options=null) {
-		$return_as_array = caGetOption('returnAsArray', $pa_options, false);
+	public function get($pn_col, $options=null) {
+		$return_as_array = caGetOption('returnAsArray', $options, false);
 		
 		switch($pn_col) {
 			case '__sheetname__':
@@ -199,7 +236,7 @@ class ExcelDataReader extends BaseDataReader {
 				return $return_as_array ? [$num] : $num;
 				break;
 		}
-		if ($vm_ret = parent::get($pn_col, $pa_options)) { return $vm_ret; }
+		if ($vm_ret = parent::get($pn_col, $options)) { return $vm_ret; }
 		
 		if(!is_numeric($pn_col)) {
 			$pn_col = str_replace('/', '', mb_strtolower($pn_col));
@@ -226,7 +263,7 @@ class ExcelDataReader extends BaseDataReader {
 	 * 
 	 * @return mixed
 	 */
-	public function getRow($pa_options=null) {
+	public function getRow($options=null) {
 		if (is_array($this->opa_row_buf)) {
 			return $this->opa_row_buf;
 		}
