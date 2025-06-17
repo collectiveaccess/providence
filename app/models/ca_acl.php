@@ -885,7 +885,7 @@ class ca_acl extends BaseModel {
 		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
 		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
 		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
-		if(!($rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) { return null; }
+		//if(!($rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) { return null; }
 		
 		$db = $subject->getDb() ?? new Db();
 		
@@ -898,7 +898,8 @@ class ca_acl extends BaseModel {
 			
 				if ($t_link = $t_coll->getRelationshipInstance('ca_objects')) {
 					if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
-						if($qr_res = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'searchResult', 'limit' => 50000])) {
+						//if($qr_res = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'searchResult', 'limit' => 50000])) {
+						if($qr_res = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult', 'limit' => 50000])) {
 							$ids_to_set = [];
 							while($qr_res->nextHit()) {						
 								$cv = $qr_res->get('access_inherit_from_parent');
@@ -1036,7 +1037,7 @@ class ca_acl extends BaseModel {
 		global $AUTH_CURRENT_USER_ID;
 		
 		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
-		if(!($rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) { return null; }
+		//if(!($rel_type = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) { return null; }
 		if($subject->tableName() !== 'ca_collections') { return false; }
 		$db = $subject->getDb() ?? new Db();
 		
@@ -1050,7 +1051,8 @@ class ca_acl extends BaseModel {
 		
 				if ($t_link = $t_coll->getRelationshipInstance('ca_objects')) {
 					if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
-						if(is_array($ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
+						//if(is_array($ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => [$rel_type], 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
+						if(is_array($ids = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
 							$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?) AND access_inherit_from_parent = 1 AND deleted = 0", [$access, $ids]);
 							
 							$o_tq = new TaskQueue(['transaction' => $t_coll->getTransaction()]);
