@@ -483,6 +483,7 @@ class DisplayTemplateParser {
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
 						'locale' => caGetOption('locale', $pa_options, null),
+						'noLocaleFallback' => caGetOption('noLocaleFallback', $pa_options, null),
 						'filterNonPrimaryRepresentations' => $filter_non_primary_reps
 					];
 					
@@ -646,9 +647,9 @@ class DisplayTemplateParser {
 					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
 					$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_reps;
 
-					$locale = caGetOption('locale', $o_node->locale, null);
 					if($o_node->locale) {
-						$va_get_options['locale'] = $locale = $o_node->locale;
+						$va_get_options['locale'] = $o_node->locale;
+						$va_get_options['noLocaleFallback'] = $o_node->noLocaleFallback;
 					}
 					
 					if ($o_node->sort) {
@@ -702,7 +703,7 @@ class DisplayTemplateParser {
 							case 'nonpreferred_labels':
 								/** @var LabelableBaseModelWithAttributes $t_instance */
 								$ps_tablename = $t_instance->getLabelTableName();
-								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['restrictToTypes' => $va_get_options['restrictToTypes'], 'returnAsArray' => true]);
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['restrictToTypes' => $va_get_options['restrictToTypes'], 'returnAsArray' => true, 'locale' => $va_get_options['locale'] ?? null, 'returnAllLocales' => (isset($va_get_options['locale']) && $va_get_options['locale'])]);
 								break;
 							default:
 								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
@@ -769,7 +770,8 @@ class DisplayTemplateParser {
 									'aggregateUnique' => $vb_aggregate_unique,
 									'checkAccess' => $va_get_options['checkAccess'],
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
-									'locale' => $locale
+									'locale' => $va_get_options['locale'] ?? null,
+									'noLocaleFallback' => $va_get_options['noLocaleFallback'] ?? null
 								]
 							)
 						);
@@ -971,7 +973,8 @@ class DisplayTemplateParser {
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
 									'primaryIDs' => $va_get_options['primaryIDs'] ?? null,
 									'checkAccess' => $va_get_options['checkAccess'],
-									'locale' => $locale
+									'locale' => $va_get_options['locale'] ?? null,
+									'noLocaleFallback' => $va_get_options['noLocaleFallback'] ?? null
 								]
 							)
 						);
@@ -1679,6 +1682,8 @@ class DisplayTemplateParser {
 	 *		delimiter = value to string together template values with when returnAsArray is false. Default is ';' (semicolon)
 	 *		sort = optional list of tag values to sort repeating values within a label template on. The tag must reference a label field. You can specify more than one tag by separating the tags with semicolons.
 	 *		sortDirection = the direction of the sort of repeating values within a label template. May be either ASC (ascending) or DESC (descending). [Default is ASC]
+	 *		locale = 
+	 *		noLocaleFallback = 
 	 * @return array
 	 */
 	public static function _processLabelTemplate($t_instance, $ps_template, array $pa_row_ids, array $pa_options) {
@@ -1691,6 +1696,11 @@ class DisplayTemplateParser {
 		$sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
 		if(!in_array($sort_direction, array('ASC', 'DESC'))) { $sort_direction = 'ASC'; }
 
+		$locale = caGetOption('locale', $pa_options, null);
+		$locale_id = $locale ? (is_numeric($locale) ? $locale : ca_locales::codeToId($locale)) : null;
+		$no_fallback = caGetOption('noLocaleFallback', $pa_options, false);
+		
+		$rules = caGetUserLocaleRules($locale, null, ['noFallback' => true]);
 
 		$va_tags = caGetTemplateTags($ps_template);
 		if(!is_array($va_tags) || (sizeof($va_tags) < 1)) { return []; }
@@ -1699,6 +1709,8 @@ class DisplayTemplateParser {
 		$sort_map = [];
 		foreach($pa_row_ids as $vn_row_id) {
 			if(!$t_instance->load($vn_row_id)) { continue; }
+			
+			if($no_fallback && $locale_id && ($t_instance->get('locale_id') != $locale_id)) { continue; }
 
 			$pb_is_preferred = (bool) ($t_instance->hasField('is_preferred') ? $t_instance->get('is_preferred') : false);
 
@@ -1729,6 +1741,8 @@ class DisplayTemplateParser {
 				$sort_map[$vn_row_id] = join('', $sort_keys);
 			}
 			$va_return[$vn_row_id] = caProcessTemplate($ps_template, $va_tag_values);
+			
+			if($locale && ($rules['preferred'][$locale] ?? null)) { break; }
 		}
 		
 		if(sizeof($sort_map)) {

@@ -1215,23 +1215,15 @@ class BrowseEngine extends BaseFindEngine {
 				$vb_results_cached = true;
 				$this->opo_ca_browse_cache->setParameter('created_on', time() + $vn_cache_timeout);
 				$vb_need_to_save_in_cache = true;
-
-				Debug::msg("Cache hit for {$vs_cache_key}");
 			} else {
 				$va_criteria = $this->getCriteria();
-				//$this->opo_ca_browse_cache->remove();
-				//$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
 
 				$vb_need_to_save_in_cache = true;
 				$vb_need_to_cache_facets = true;
-
-				Debug::msg("Cache expire for {$vs_cache_key}");
 			}
 		} else {
 			$va_criteria = $this->getCriteria();
 			$vb_need_to_save_in_cache = true;
-
-			Debug::msg("Cache miss for {$vs_cache_key}");
 		}
 		if (!$vb_results_cached) {
 			$this->opo_ca_browse_cache->setParameter('sort', null);

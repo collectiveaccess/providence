@@ -5198,3 +5198,21 @@ function caFileIsIncludable($ps_file) {
 		return $app->getResponse();
 	}
 	# ----------------------------------------
+	/**
+	 * Remove enclosing <p> tags from text, when text is single paragraph
+	 * 
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	function caStripEnclosingParagraphHTMLTags(?string $text) : ?string { 
+		if(is_null($text)) { return null; }
+		$l = strlen($text);
+		if($l > 8192) { $l = 8192; }
+		if(preg_match("!^<p>!i", $text) && ((substr_count($text, "<p>", 0, $l) == 1) || (substr_count($text, "<P>", 0, $l) == 1))) {
+			$text = preg_replace("!^<p>!i", "", $text);
+			$text = preg_replace("!</p>$!i", "", $text);
+		}
+		return $text;
+	}
+	# ----------------------------------------

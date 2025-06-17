@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,14 +43,14 @@ class CSVDelimitedDataReader extends BaseDelimitedDataReader {
 	/**
 	 *
 	 */
-	public function __construct($ps_source=null, $pa_options=null){
-		parent::__construct($ps_source, $pa_options);
+	public function __construct($source=null, $options=null){
+		parent::__construct($source, $options);
 		
 		$this->ops_title = _t('Comma Delimited (CSV) Data Reader');
 		$this->ops_display_name = _t('Comma Delimited (CSV)');
 		$this->ops_description = _t('Reads comma delimited (CSV) text files');
 		
-		$this->opa_formats = array('csvdelimited', 'csv');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = ['csvdelimited', 'csv'];	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
