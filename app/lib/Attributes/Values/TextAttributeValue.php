@@ -558,8 +558,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		if ($settings['suggestExistingValues'] && $lookup_url && $bundle_name) { 
 			$element .= "<script type='text/javascript'>
-				const sel = '{fieldNamePrefix}".$element_info['element_id']."_{n}';
-				jQuery('#' + sel).autocomplete( 
+				const sel{fieldNamePrefix} = '{fieldNamePrefix}".$element_info['element_id']."_{n}';
+				jQuery('#' + sel{fieldNamePrefix}).autocomplete( 
 					{ 
 						source: '{$lookup_url}',
 						minLength: 3, delay: 800
