@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -355,6 +355,9 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 				//$qr_children->seek($vn_start);
 				$va_item_ids = [];
 				
+				
+				$object_collection_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
+				
 				$qr_children = caMakeSearchResult($vs_table, array_slice($qr_children->getAllFieldValues($vs_pk), $vn_start, $vn_max_items_per_page));
 				while($qr_children->nextHit()) {
 					$va_tmp = array(
@@ -372,7 +375,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$va_tmp['children'] = sizeof($qr_children->get("{$vs_table}.children.{$vs_pk}", ['returnAsArray' => true]));
 
 					if ($t_item->tableName() == 'ca_collections') {
-						$va_tmp['children'] += $qr_children->get('ca_objects.object_id', ['returnAsCount' => true, 'restrictToRelationshipTypes' => [$vs_object_collection_rel_type]]);
+						$va_tmp['children'] += $qr_children->get('ca_objects.object_id', ['returnAsCount' => true, 'restrictToRelationshipTypes' => $object_collection_rel_types]);
 					}
 
 					if (is_array($va_sorts)) {
@@ -417,7 +420,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 						$vs_object_sort_dir = 'asc';
 					}
 
-					$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
+					$object_collection_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
 					
 					$vn_count = 0;
 					$va_cross_table_items = $t_item->getRelatedItems(
@@ -425,7 +428,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 						array(
 							'sort' => $va_object_sorts,
 							'sortDirection' => $vs_object_sort_dir,
-							'restrictToRelationshipTypes' => array($vs_object_collection_rel_type),
+							'restrictToRelationshipTypes' => $object_collection_rel_types,
 							'start' => $vn_start,
 							'limit' => $vn_max_items_per_page
 						), $vn_count
@@ -504,11 +507,11 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 		// get collections
 		if ($vs_table == 'ca_objects') {
 			$o_config = Configuration::load();
-			$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
+			$object_collection_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
 
 			$t_item->load($vn_top_id);
 			// try to pull related collections - the first one is considered the parent
-			$va_cross_table_items = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
+			$va_cross_table_items = $t_item->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $object_collection_rel_types]);
 
 			if(is_array($va_cross_table_items)) {
 				$t_collection = new ca_collections();

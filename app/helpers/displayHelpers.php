@@ -4410,7 +4410,9 @@ function caProcessBottomLineTemplateForPlacement($po_request, $pa_placement, $pr
  */
 function caRepresentationList($request, $subject, ?array $options=null) : ?array {
 	$detail_config = caGetDetailConfig()->get($subject->tableName());
-	$access_values = caGetUserAccessValues($request);
+	
+	// If item-level ACL is enabled rely upon ACL to do filtering
+	$access_values = caAclIsEnabled($subject) ? null : caGetUserAccessValues($request);
 	
 	$show_only_media_types = caGetOption('showOnlyMediaTypes', $options, null);
 	
@@ -4555,60 +4557,63 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
  * @see caGetMediaViewerHTML
  */
 # DEPRECATED: Still used by Pawtucket; will be removed in next version of Pawtucket
-function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=null) {
-	$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+function caRepresentationViewer($request, $data, $subject, $options=null) {
+	$o_view = new View($request, $request->getViewsDirectoryPath().'/bundles/');
 	
-	$va_detail_config = caGetDetailConfig()->get($po_data->tableName());
-	$va_access_values = caGetUserAccessValues($po_request);
+	$va_detail_config = caGetDetailConfig()->get($data->tableName());
+	
+	// If item-level ACL is enabled rely upon ACL to do filtering
+	$va_access_values = caAclIsEnabled($data) ? null : caGetUserAccessValues($request);
 
 	// options
-	$pb_primary_only 					= caGetOption('primaryOnly', $pa_options, false);
+	$pb_primary_only 					= caGetOption('primaryOnly', $options, false);
 	
-	$show_only_media_types 				= caGetOption('representationViewerShowOnlyMediaTypes', $pa_options, null);
+	$show_only_media_types 				= caGetOption('representationViewerShowOnlyMediaTypes', $options, null);
 	if(($show_only_media_types) && !is_array($show_only_media_types)) { $show_only_media_types = [$show_only_media_types]; }
 	
-	$show_only_media_types_when_present = caGetOption('representationViewerShowOnlyMediaTypesWhenPresent', $pa_options, null);
+	$show_only_media_types_when_present = caGetOption('representationViewerShowOnlyMediaTypesWhenPresent', $options, null);
 	if(($show_only_media_types_when_present) && !is_array($show_only_media_types_when_present)) { $show_only_media_types_when_present = [$show_only_media_types_when_present]; }
 
 	
-	$ps_active_representation_class 	= caGetOption('currentRepClass', $pa_options, 'active');
-	$pb_dont_show_placeholder 			= caGetOption('dontShowPlaceholder', $pa_options, false);
-	$ps_display_annotations	 			= caGetOption('displayAnnotations', $pa_options, false);
-	$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $pa_options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
-	$default_annotation_id		 		= caGetOption('defaultAnnotationID', $pa_options, null);
-	$start_timecode		 				= caGetOption('startTimecode', $pa_options, null);
-	$ps_display_type		 			= caGetOption('display', $pa_options, false);
-	$always_use_clover_viewer		 	= caGetOption('alwaysUseCloverViewer', $pa_options, false);
+	$ps_active_representation_class 	= caGetOption('currentRepClass', $options, 'active');
+	$pb_dont_show_placeholder 			= caGetOption('dontShowPlaceholder', $options, false);
+	$ps_display_annotations	 			= caGetOption('displayAnnotations', $options, false);
+	$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
+	$default_annotation_id		 		= caGetOption('defaultAnnotationID', $options, null);
+	$start_timecode		 				= caGetOption('startTimecode', $options, null);
+	$ps_display_type		 			= caGetOption('display', $options, false);
+	$always_use_clover_viewer		 	= caGetOption('alwaysUseCloverViewer', $options, false);
 
 	$vs_slides = '';
 	$slide_list = [];
 	
-	$t_instance = Datamodel::getInstanceByTableName($po_data->tableName(), true);
+	$t_instance = Datamodel::getInstanceByTableName($data->tableName(), true);
 	
 	$vo_data = null;
-	if(is_a($po_data, 'SearchResult') && ($t_instance) && (is_a($t_instance, 'RepresentableBaseModel'))) {
-		$vo_data = $po_data;
-	} elseif(is_a($po_data, 'ca_object_representations')) {
-		$vo_data = caMakeSearchResult('ca_object_representations', [$po_data->getPrimaryKey()]);
-	} elseif(is_a($po_data, 'RepresentableBaseModel')) {
-		$vo_data = caMakeSearchResult($po_data->tableName(), [$po_data->getPrimaryKey()]);
+	if(is_a($data, 'SearchResult') && ($t_instance) && (is_a($t_instance, 'RepresentableBaseModel'))) {
+		$vo_data = $data;
+	} elseif(is_a($data, 'ca_object_representations')) {
+		$vo_data = caMakeSearchResult('ca_object_representations', [$data->getPrimaryKey()]);
+	} elseif(is_a($data, 'RepresentableBaseModel')) {
+		$vo_data = caMakeSearchResult($data->tableName(), [$data->getPrimaryKey()]);
 	} else {
 		return _t('No media');
 	}
 	
-	$o_view->setVar('t_subject', $pt_subject);
+	$o_view->setVar('t_subject', $subject);
 	$o_view->setVar('active_representation_class', $ps_active_representation_class);
-	$o_view->setVar('context', ($vs_context = $po_request->getParameter('context', pString)) ? $vs_context : $vs_context = $po_request->getAction());
+	$o_view->setVar('context', ($vs_context = $request->getParameter('context', pString)) ? $vs_context : $vs_context = $request->getAction());
 
 	$va_rep_ids = array();
 	if (method_exists($vo_data, 'filterNonPrimaryRepresentations')) { $vo_data->filterNonPrimaryRepresentations(false); }
 	while($vo_data->nextHit()) {
 		if (!($vn_representation_id = $vo_data->get('ca_object_representations.representation_id', ['checkAccess' => $va_access_values, 'limit' => 1]))) { continue; }
+		
 		$t_instance->load($vo_data->getPrimaryKey());
 		if($t_instance->getPrimaryRepresentationId()){
 			$vn_representation_id = $t_instance->getPrimaryRepresentationId();
 		}
-		if($pn_representation_id = $po_request->getParameter("representation_id", pInteger)){
+		if($pn_representation_id = $request->getParameter("representation_id", pInteger)){
 			$vn_representation_id = $pn_representation_id;
 		}
 					
@@ -4628,7 +4633,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 		// Fetch representations for display
 		if(sizeof($va_rep_ids) > 0){
 			$qr_reps = caMakeSearchResult('ca_object_representations', $va_rep_ids);
-			$va_rep_tags = $qr_reps->getRepresentationViewerHTMLBundles($po_request, $pt_subject, array_merge($pa_options, ['context' => $vs_context]));
+			$va_rep_tags = $qr_reps->getRepresentationViewerHTMLBundles($request, $subject, array_merge($options, ['context' => $vs_context]));
 
 			$va_rep_info = array();
 
@@ -4659,7 +4664,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 				$vn_index = null;
 				if($vn_rep_id == $vn_primary_id){
 					$vn_index = 0;
-				}elseif (!($vn_index = (int)$qr_reps->get(RepresentableBaseModel::getRepresentationRelationshipTableName($pt_subject->tableName()).'.rank'))) {
+				}elseif (!($vn_index = (int)$qr_reps->get(RepresentableBaseModel::getRepresentationRelationshipTableName($subject->tableName()).'.rank'))) {
 					$vn_index = $qr_reps->get('ca_object_representations.representation_id');
 				}
 				$va_rep_info[$vn_index] = array("rep_id" => $vn_rep_id, "tag" => $va_rep_tags[$vn_rep_id]);
@@ -4686,7 +4691,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 				$vn_count++;
 			}
 		} elseif(!$pb_dont_show_placeholder) {
-			if(!$po_request->config->get("disable_lightbox")){
+			if(!$request->config->get("disable_lightbox")){
 				$o_lightbox_config = caGetLightboxConfig();
 
 				if(!($vs_lightbox_icon = $o_lightbox_config->get("addToLightboxIcon"))){
@@ -4696,15 +4701,15 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 				$vs_lightbox_displayname = $va_lightboxDisplayName["singular"];
 				$vs_lightbox_displayname_plural = $va_lightboxDisplayName["plural"];
 				$vs_tool_bar = "<div id='detailMediaToolbar'>";
-				if ($po_request->isLoggedIn()) {
-					$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Lightbox', 'addItemForm', array($pt_subject->primaryKey() => $pt_subject->getPrimaryKey()))."\"); return false;' aria-label='"._t("Add item to %1", $vs_lightbox_displayname)."' title='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
+				if ($request->isLoggedIn()) {
+					$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($request, '', 'Lightbox', 'addItemForm', array($subject->primaryKey() => $subject->getPrimaryKey()))."\"); return false;' aria-label='"._t("Add item to %1", $vs_lightbox_displayname)."' title='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
 				}else{
-					$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'LoginReg', 'LoginForm')."\"); return false;' aria-label='"._t("Login to add item to %1", $vs_lightbox_displayname)."' title='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
+					$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($request, '', 'LoginReg', 'LoginForm')."\"); return false;' aria-label='"._t("Login to add item to %1", $vs_lightbox_displayname)."' title='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
 				}
 				$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
 			}
 
-			$vs_placeholder = "<div class='detailMediaPlaceholder' aria-label='No media available'>".caGetPlaceholder($pt_subject->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
+			$vs_placeholder = "<div class='detailMediaPlaceholder' aria-label='No media available'>".caGetPlaceholder($subject->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
 		}
 	}	
 	
@@ -5288,7 +5293,7 @@ function caGetTooltipJS($pa_tooltips, $ps_class = 'tooltipFormat') {
 	$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
 
 	foreach($pa_tooltips as $vs_element_selector => $vs_tooltip_text) {
-		$vs_buf .= "jQuery('{$vs_element_selector}').css('cursor', 'pointer').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
+		$vs_buf .= "jQuery('{$vs_element_selector}').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
 	}
 
 	$vs_buf .= "});\n</script>\n";

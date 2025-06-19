@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -4171,7 +4171,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} elseif($config->get('ca_objects_x_collections_hierarchy_enabled') && ($parent_table == 'ca_collections') && ($child['_table'] == 'ca_objects')) {	// collection-object hierarchy
 				if (($id = DataMigrationUtils::getIDFor($child['_table'], $child['preferred_labels'], null, $child['_type'], 1, $attrs, $options)) && ($parent = Datamodel::getInstance($parent_table, true)) && $parent->load($parent_id)) {
 					if($trans) { $parent->setTransaction($trans); }
-					$parent->addRelationship('ca_objects', $id, $config->get('ca_objects_x_collections_hierarchy_relationship_type'));
+					$coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
+					if(!sizeof($coll_rel_types)) { 
+						if ($log) { $log->logInfo(_t('Could not create object-collection hierarchy child record relationship because no relationship type was configured')); }
+						continue;
+					}
+					$parent->addRelationship('ca_objects', $id, $coll_rel_types[0] ?? null);
 					
 					if($parent->numErrors() > 0) {
 						if ($log) { $log->logInfo(_t('Could not create object-collection hierarchy child record relationship: %1', join("; ", $parent->getErrors()))); }

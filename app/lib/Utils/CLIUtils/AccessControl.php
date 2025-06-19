@@ -303,22 +303,29 @@ trait CLIUtilsAccessControl {
 		
 		$table = (string)$po_opts->getOption('table');
 		
-		$tables = caGetPrimaryTables();
+		$tables = caGetPrimaryTables(false, ['ca_object_representations']);
 		if($table && isset($tables[$table])) { $tables = [$table => $tables[$table]]; }
 		
+		$access_to_acl_map = caGetACLItemLevelMap();
+	
 		foreach($tables as $table) {
 			$qr = $table::findAsSearchResult('*');
 			print CLIProgressBar::start($qr->numHits(), _t('Applying inheritance using %1', $qr->tableName()));
 	
+			$table_name = caUcFirstUTF8Safe(Datamodel::getTableProperty($table, 'NAME_PLURAL'));
 			while($qr->nextHit()) {
 				if(!($t_instance = $qr->getInstance())) { continue; }
-				if(!$t_instance->supportsACL()) { break; }
+				if(!$t_instance->supportsACL(['force' => true])) { break; }
 				ca_acl::applyACLInheritanceToChildrenFromRow($t_instance);
 				
 				if($table === 'ca_collections') { 
 					ca_acl::applyACLInheritanceToRelatedFromRow($t_instance, 'ca_objects');
 				}
-				print CLIProgressBar::next(1, _t("Applying inheritance for %1", $t_instance->get('idno')));
+				$orig_access = $t_instance->get('access');
+				$mapped_acl = $access_to_acl_map[$orig_access] ?? null;
+				$t_instance->setACLWorldAccess($mapped_acl); // TODO: set default is access is not mapped
+				
+				print CLIProgressBar::next(1, _t("[%1] Applying inheritance for %2", $table_name, $t_instance->get('idno')));
 			}
 			print CLIProgressBar::finish();
 			

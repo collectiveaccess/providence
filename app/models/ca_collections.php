@@ -550,12 +550,12 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		if (
 			$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
 			caGetOption('includeObjects', $pa_options, true) && 
-			($rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) &&
+			($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) &&
 			($ps_object_template = caGetOption('objectTemplate', $pa_options, $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings')))
 		) {
 			$va_collection_ids = array_map(function($v) { return $v['id']; }, $va_vals);
 			
-			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => $rel_type], ['returnAs' => 'searchResult']);
+			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => ['IN', $coll_rel_types]], ['returnAs' => 'searchResult']);
 			$va_objects_by_collection = [];
 			while($qr->nextHit()) {
 				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');

@@ -710,11 +710,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$config = $this->getAppConfig();
 		if (
 			$config->get('ca_objects_x_collections_hierarchy_enabled') && 
-			($coll_rel_type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) && 
+			($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) && 
 			(
 				$collection_id
 				||
-				($collection_id = (is_array($coll_ids = $this->get('ca_collections.collection_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$coll_rel_type]])) ? array_shift($coll_ids) : null))
+				($collection_id = (is_array($coll_ids = $this->get('ca_collections.collection_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => $coll_rel_types])) ? array_shift($coll_ids) : null))
 			)
 		) {
 			if($o_idno = $this->getIDNoPlugInInstance()) {

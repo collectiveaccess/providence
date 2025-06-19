@@ -889,23 +889,39 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	$config = Configuration::load();
 	
 	if(($options['forPawtucket'] ?? false) || ($options['anywhere'] ?? false)) { 
-		if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
-		
-		$paw_only = caGetAccessConfigOption($t_item, 'pawtucket_only_acl');
+		if(!is_a($t_item, 'BaseModel')) { 
+			if(is_a($t_item, 'SearchResult')) {
+				$t_item = Datamodel::getInstance($t_item->tableName(), true); 
+			} elseif(is_string($t_item) || is_numeric($t_item)) {
+				$t_item = Datamodel::getInstance($t_item, true); 
+			} else {
+				return false;
+			}
+		}
+		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')) || $config->get('perform_item_level_access_checking'));
 		if(($options['anywhere'] ?? false) && $paw_only) { 	
 			return true; 
 		} elseif($options['forPawtucket'] ?? false) {
 			return $paw_only;
 		}
 	}
+	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
 	
-	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, false); }
+	if(!$config->get('perform_item_level_access_checking') || ($t_item && $config->get($t_item->tableName().'_dont_do_item_level_access_control'))) { return false; } 
 	if($t_item && method_exists($t_item, "supportsACL")) {
-		return (bool)$t_item->supportsACL($options);
-	} else {
-		if(!$config->get('perform_item_level_access_checking')) { return false; } 
+		return (bool)$t_item->supportsACL();
 	}
 	return true;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ */
+function caGetACLItemLevelMap() : ?array {
+	$config = Configuration::load();
+	$map = $config->get('access_to_acl_item_access_level_map') ?? null;
+	return $map;
 }
 # ---------------------------------------------------------------------------------------------
 /**
@@ -931,6 +947,34 @@ function caShowAccessControlScreen($t_item=null, ?array $options=null) : bool {
 	return false;
 }
 # ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * 
+ * @return bool
+ */
+function caSuspendCheckAccessChecks($t_item) : bool {
+	$acl_is_enabled = caACLIsEnabled($t_item, ['forPawtucket' => true]);
+	return (caAppIsPawtucket() && $acl_is_enabled);
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * 
+ * @return bool
+ */
+function caDontEnforceACLForAdministrators(?ca_users $t_user) : bool {
+	$config = Configuration::load();
+	$bypass_enabled = $config->get('acl_dont_enforce_for_administrator');
+	if(!$bypass_enabled) { return false; }
+	
+	$is_admin = (is_a($t_user, 'ca_users') && $t_user->canDoAction('is_administrator'));
+	if($is_admin) { return true; }
+	
+	return false;
+}
+# ---------------------------------------------------------------------------------------------
 /*
  * Determine if source access control is enabled system wide, or for a specific row
  *
@@ -951,7 +995,7 @@ function caSourceAccessControlIsEnabled($t_item=null, ?array $options=null) : bo
  *
  */
 function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config_opt, ?array $options=null) : mixed {
-	$config = Configration::load();
+	$config = Configuration::load();
 	
 	$keys = [$config_opt];
 	if(is_a($t_item, 'BaseModelWithAttributes')) {

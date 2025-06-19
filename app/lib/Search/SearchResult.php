@@ -276,7 +276,7 @@ class SearchResult extends BaseObject {
 			$this->opo_db = $o_db;
 		}
 		
-		$this->errors = array();
+		$this->errors = [];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -367,6 +367,38 @@ class SearchResult extends BaseObject {
 		self::seek($vn_cur_row_index + 1);
 		
 		return $this->opa_row_ids_to_prefetch_cache[$pn_start.'/'.$pn_num_rows] = $va_row_ids;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function prefetchAclAccess(?int $start=0, ?int $num_rows=null, ?array $options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		if(!$num_rows) { $num_rows = $this->numHits(); }
+		$row_ids = $this->getRowIDsToPrefetch($start, $num_rows);
+		
+		$user_id = caGetOption('user_id', $options, $AUTH_CURRENT_USER_ID);
+		
+		$t_user = ca_users::findAsInstance($user_id);
+		return ca_acl::accessForRows($t_user, $this->opn_table_num, $row_ids);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function prefetchAclAccessForRelated(string $table, ?int $start=0, ?int $num_rows=null, ?array $options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		if(!$num_rows) { $num_rows = $this->numHits(); }
+		$row_ids = $this->getRowIDsToPrefetch($start, $num_rows);
+		
+		$user_id = caGetOption('user_id', $options, $AUTH_CURRENT_USER_ID);
+		
+		// Transform rows to related
+		$t_instance = Datamodel::getInstance($this->opn_table_num, true);
+		$rel_row_ids = $t_instance->getRelatedItems($table, ['row_ids' => $row_ids, 'idsOnly' => true]);
+	
+		$t_user = ca_users::findAsInstance($user_id);
+		return ca_acl::accessForRows($t_user, Datamodel::getTableNum($table), $rel_row_ids);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -510,7 +542,7 @@ class SearchResult extends BaseObject {
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
 		}
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+		if(!caACLIsEnabled($t_rel_instance, ['forPawtucket' => true]) && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 	
@@ -598,7 +630,7 @@ class SearchResult extends BaseObject {
 			$va_params[] = $va_type_ids;
 		}
 		
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+		if(!caACLIsEnabled($t_rel_instance, ['forPawtucket' => true]) && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_access_sql = " AND (p.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 		
@@ -752,14 +784,14 @@ class SearchResult extends BaseObject {
 		
 		$is_label = is_a($t_rel_instance, 'BaseLabel');
 		$dont_check_label_access = Configuration::load()->get('dont_check_label_access');		
-		if(!($is_label && $dont_check_label_access) && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+		if(!($is_label && $dont_check_label_access) && !caACLIsEnabled($t_rel_instance, ['forPawtucket' => true]) && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			if($t_rel_instance->hasField('is_preferred')) {
 				$vs_criteria_sql .= " AND ({$ps_tablename}.is_preferred = 1 OR ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) .") AND {$ps_tablename}.is_preferred = 0))";	
 			} else {
 				$vs_criteria_sql .= " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 			}
 		}
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_instance->hasField('access')) {
+		if(!caACLIsEnabled($t_rel_instance, ['forPawtucket' => true]) && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_instance->hasField('access')) {
 			$vs_criteria_sql .= " AND ({$this->ops_table_name}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 	
@@ -821,8 +853,6 @@ class SearchResult extends BaseObject {
 		
 		SearchResult::checkCacheSizeLimit($this->ops_table_name);
 		
-		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
-		
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
 		
 		$va_criteria = is_array($this->opa_tables[$ps_tablename] ?? null) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
@@ -852,8 +882,6 @@ class SearchResult extends BaseObject {
 		foreach($va_rel_items as $vs_key => $va_rel_item) {
 			self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
 		}
-		
-		//$this->prefetch($ps_tablename, $pn_start, $pn_num_rows);
 		
 		// Fill row_id values for which there is nothing to prefetch with an empty lists
 		// otherwise we'll try and prefetch these again later wasting time.
@@ -1060,6 +1088,8 @@ class SearchResult extends BaseObject {
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
+		if(caACLIsEnabled($this->ops_table_name, ['forPawtucket' => true])) { $pa_options['checkAccess'] = null; }
+		
 		$vb_return_as_count = isset($pa_options['returnAsCount']) ? (bool)$pa_options['returnAsCount'] : false;
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$vb_return_with_structure = isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
@@ -1157,7 +1187,7 @@ class SearchResult extends BaseObject {
 		$vn_remove_first_items 				= isset($pa_options['removeFirstItems']) ? (int)$pa_options['removeFirstItems'] : 0;
 		$vn_remove_last_items 				= isset($pa_options['removeLastItems']) ? (int)$pa_options['removeLastItems'] : 0;
 
-		$va_check_access 					= isset($pa_options['checkAccess']) ? (is_array($pa_options['checkAccess']) ? $pa_options['checkAccess'] : array($pa_options['checkAccess'])) : null;
+		$va_check_access 					= (isset($pa_options['checkAccess']) ? (is_array($pa_options['checkAccess']) ? $pa_options['checkAccess'] : array($pa_options['checkAccess'])) : null);
 		$vs_template 						= isset($pa_options['template']) ? (string)$pa_options['template'] : null;
 		
 		
@@ -1427,7 +1457,7 @@ class SearchResult extends BaseObject {
 									if (($va_path_components['table_name'] == 'ca_objects') && caGetOption('showCollectionObjectHierarchy', $pa_options, false) && ($config->get('ca_objects_x_collections_hierarchy_enabled'))) {
 									    if (($qr_bridge = caMakeSearchResult($va_path_components['table_name'], [$va_ancestor_ids[0]], $pa_options)) && $qr_bridge->nextHit()) {
                                             $t = explode('.', $vs_field_spec); $t[0] = 'ca_collections';
-                                            $collections = $qr_bridge->get(join('.', $t), ['returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'restrictToRelationshipTypes' => [$config->get('ca_objects_x_collections_hierarchy_relationship_type')]]);
+                                            $collections = $qr_bridge->get(join('.', $t), ['returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'], 'restrictToRelationshipTypes' => caGetObjectCollectionHierarchyRelationshipTypes()]);
                                             foreach($collections as $c) {
                                                 array_unshift($va_hier_item, $c);
                                             }
@@ -2035,7 +2065,6 @@ class SearchResult extends BaseObject {
 		
 		$vb_assume_display_field 	= isset($pa_options['assumeDisplayField']) ? (bool)$pa_options['assumeDisplayField'] : true;
 		
-		$pa_check_access		= $pa_options['checkAccess'] ?? null;
 		$pb_primary_only		= $pa_options['primaryOnly'] ?? false;
 		$pa_exclude_idnos		= $pa_options['excludeIdnos'] ?? null;
 		
@@ -2048,6 +2077,8 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (!($t_rel_instance instanceof BaseModel)) { return null; }
+		
+		$pa_check_access		= !caACLIsEnabled($t_rel_instance, ['forPawtucket' => true]) ? $pa_options['checkAccess'] ?? null : null;
 		
 		// Handle table-only case...
 		if (!$va_path_components['field_name']) {
@@ -2158,7 +2189,7 @@ class SearchResult extends BaseObject {
 		
 		$va_path_components			=& $pa_options['pathComponents'];
 		
-		$pa_check_access		= $pa_options['checkAccess'];
+		$pa_check_access			= !caACLIsEnabled($pt_instance, ['forPawtucket' => true]) ? $pa_options['checkAccess'] ?? null : null;
 		
 		$locale = isset($pa_options['locale']) ? ca_locales::codeToID($pa_options['locale']) : null;
 		$locale_no_fallback = $pa_options['noLocaleFallback'] ?? false;

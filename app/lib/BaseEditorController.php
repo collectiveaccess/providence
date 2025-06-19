@@ -1166,14 +1166,7 @@ class BaseEditorController extends ActionController {
 			if($pawtucket_only_acl_enabled) {
 				// Set world access to public access value in "front-end only" mode
 				
-				// @TODO: make configurable
-				$access_to_acl_map = [
-					0 => __CA_ACL_NO_ACCESS__,
-					1 => __CA_ACL_READONLY_ACCESS__,
-					2 => __CA_ACL_NO_ACCESS__,
-					4 => __CA_ACL_READONLY_ACCESS__,
-					5 => __CA_ACL_NO_ACCESS__
-				];
+				$access_to_acl_map = caGetACLItemLevelMap();
 				$t_subject->setACLWorldAccess($access_to_acl_map[$this->request->getParameter('access', pInteger) ?? 0], ['preserveInherited' => $preserve_inherited]);
 			} else {
 				$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
@@ -1895,7 +1888,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
-					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
+					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => caGetObjectCollectionHierarchyRelationshipTypes())))) {
 						$this->view->setVar('object_collection_collection_ancestors', $va_collections);
 					}
 				}

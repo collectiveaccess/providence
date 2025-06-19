@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -210,7 +210,7 @@ class BaseFindEngine extends BaseObject {
 		if (!($t_table = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
 
 		$t_user = new ca_users($pn_user_id);
-		if ($t_user->canDoAction('is_administrator')) { return $pa_hits; }
+		if (caDontEnforceACLForAdministrators($t_user)) { return $pa_hits; }
 		if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
 			$va_group_ids = array_keys($va_groups);
 			$vs_group_sql = 'OR (ca_acl.group_id IN ('.join(',',$va_group_ids).'))';

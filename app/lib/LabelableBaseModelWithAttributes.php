@@ -1537,15 +1537,14 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 					}
 					
 					// TODO: this should really be in a model subclass
-					if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
-						require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+					if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes())) {
 						if ($this->getPrimaryKey() == $vn_top_id) {
 							$t_object = $this;
 						} else {
 							$t_object = new ca_objects($vn_top_id);
 						}
 						
-						if (is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => $vs_coll_rel_type)))) {
+						if (is_array($va_collections = $t_object->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $coll_rel_types]))) {
 							require_once(__CA_MODELS_DIR__.'/ca_collections.php');
 							$t_collection = new ca_collections();
 							foreach($va_collections as $vn_i => $va_collection) {
