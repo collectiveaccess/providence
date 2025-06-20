@@ -1657,7 +1657,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @param array $pa_options An optional array of options. Supported options are:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
-	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" â€“ a combination of the row_id and the set item_id (row_id + "_" + item_id) â€“ are guaranteed to be unique. [Default=false]
+	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" Ğ a combination of the row_id and the set item_id (row_id + "_" + item_id) Ğ are guaranteed to be unique. [Default=false]
 	 * @return array Array keyed on row_id with values set to ranks for each item. If the set contains duplicate row_ids then the list will only have the largest rank. If you have sets with duplicate rows use getItemRanks() instead
 	 */
 	public function getRowIDRanks($pa_options=null) {
@@ -1681,7 +1681,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @param int $pn_set_id
 	 * @param array $pa_options An optional array of options. Supported options are:
-	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" â€“ a combination of the row_id and the set item_id (row_id + "_" + item_id) â€“ are guaranteed to be unique. [Default=false]
+	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" Ğ a combination of the row_id and the set item_id (row_id + "_" + item_id) Ğ are guaranteed to be unique. [Default=false]
 	 * @return array ray keyed on row_id with values set to ranks for each item. If the set contains duplicate row_ids then the list will only have the largest rank.
 	 */
 	static public function getRowIDRanksForSet($pn_set_id, $pa_options=null) {
@@ -1705,7 +1705,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $pa_row_ids A list of row_ids in the set, in the order in which they should be displayed in the set
 	 * @param array $pa_options An optional array of options. Supported options include:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
-	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" â€“ a combination of the row_id and the set item_id (row_id + "_" + item_id) â€“ are guaranteed to be unique. [Default=false]
+	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" Ğ a combination of the row_id and the set item_id (row_id + "_" + item_id) Ğ are guaranteed to be unique. [Default=false]
 	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  [Default is false]
 	 *			checked = array key'ed with rIDs; values indicate whether set item is checked. [Default is null]
 	 * @return array An array of errors. If the array is empty then no errors occurred
@@ -2161,7 +2161,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 	
 			if($ps_templateDescription = caGetOption('templateDescription', $options, null)) {
-				$processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, $t_rel_table->tableName(), $row_ids, array('returnAsArray' => true));
+				$set_item_ids = $qr_res->getAllFieldValues('set_item_id');
+				$processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, 'ca_set_items', ($set_item_ids), array('returnAsArray' => true));
 				$qr_res->seek(0);
 			}
 			
