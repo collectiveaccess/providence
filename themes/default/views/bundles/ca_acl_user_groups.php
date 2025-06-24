@@ -34,7 +34,6 @@ $add_label 		= $this->getVar('add_label') ?? _t("Add group exception");
 
 $pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucket' => true]);
 
-//$read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
 $read_only = false;
 
 $t_acl = new ca_acl();
@@ -56,6 +55,7 @@ if (!is_array($initial_values)) { $initial_values = []; }
 						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => "{$id_prefix}_access_{n}", 'id' => "{$id_prefix}_access_{n}", 'value' => '{{access}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]); ?>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
+						<div class="inheritName">{inheritance_link}</div>
 					</td>
 					<td>
 <?php

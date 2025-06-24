@@ -6180,6 +6180,7 @@ span.accessName {
 div.inheritName {
     font-size: 9px; 
     font-style: italic;
+    font-weight: normal;
 }
 
 .titleTd td{
