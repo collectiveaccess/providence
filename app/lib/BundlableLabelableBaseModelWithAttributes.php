@@ -7783,7 +7783,7 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('id_prefix', $ps_form_name);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
-		$o_view->setVar('initialValues', $this->getACLUsers(array('returnAsInitialValuesForBundle' => true)));
+		$o_view->setVar('initialValues', $this->getACLUsers(['returnAsInitialValuesForBundle' => true]));
 		
 		return $o_view->render('ca_acl_users.php');
 	}
@@ -7803,6 +7803,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return array List of user-base ACL entries associated with the currently loaded row
 	 */ 
 	public function getACLUsers(?array $options=null) {
+		global $g_request;
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
 		if (!is_array($options)) { $options = []; }
@@ -7818,18 +7819,20 @@ $pa_options["display_form_field_tips"] = true;
 				acl.table_num = ? AND acl.row_id = ? AND acl.user_id IS NOT NULL
 		", $this->tableNum(), $vn_id);
 		
-		$inherited_from = $qr_res->getAllFieldValues(["inherited_from_table_num", "inherited_from_row_id"]);
-		$inherited_from_by_table = [];
-		foreach($inherited_from['inherited_from_table_num'] as $i => $table_num) {
-			if(!$inherited_from['inherited_from_row_id'][$i]) { continue; }
-			$inherited_from_by_table[$table_num][] = $inherited_from['inherited_from_row_id'][$i];
+		$acc = [];
+		while($qr_res->nextRow()) {
+			if($table_num = $qr_res->get('inherited_from_table_num')) {
+				$acc[$table_num][$qr_res->get('inherited_from_row_id')] = true;
+			}
 		}
 		
-		$inheritance_names = [];
-		foreach($inherited_from_by_table as $table_num => $row_ids) {
-			if(!is_array($row_ids) || !sizeof($row_ids)) { continue; }
-			$t_inherit = Datamodel::getInstance($table_num, true);
-			$inheritance_names[$table_num] = $t_inherit->getPreferredDisplayLabelsForIDs($row_ids);
+		foreach($acc as $table_num => $ids) {
+			if(!($t_instance = Datamodel::getInstance($table_num, true))) { continue; }
+			$ids = array_keys($ids);
+			
+			$labels = $t_instance->getPreferredDisplayLabelsForIDs($ids);
+			$identifiers = $t_instance->getFieldValuesForIDs($ids, ['idno']);
+			$acc[$table_num] = ['ids' => $ids, 'labels' => $labels, 'idno' => $identifiers, 'table' => $t_instance->tableName()];
 		}
 		
 		$va_users = [];
@@ -7858,6 +7861,17 @@ $pa_options["display_form_field_tips"] = true;
 				$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'];
 				$va_row['id'] = $va_row['user_id'];
 				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
+				
+				$label = $acc[$va_row['inherited_from_table_num']]['labels'][$va_row['inherited_from_row_id']] ?? null;
+				$idno = $acc[$va_row['inherited_from_table_num']]['idno'][$va_row['inherited_from_row_id']] ?? null;
+				
+				$va_row['inheritance_display'] = $label ? 
+					_t('Inherited from %1 (%2)', $label, $idno)
+					:
+					null;
+				$va_row['inheritance_link'] = ($va_row['inheritance_display'] && $g_request) ? _t('Inherited from %1 (%2)', caEditorLink($g_request, $label, '', $va_row['inherited_from_table_num'], $va_row['inherited_from_row_id']), $idno) : null;
+				
+				
 				$va_users[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_users[(int)$qr_res->get('user_id')] = $va_row;
@@ -8006,7 +8020,7 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('id_prefix', $ps_form_name);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_group', $t_group);
-		$o_view->setVar('initialValues', $this->getACLUserGroups(array('returnAsInitialValuesForBundle' => true)));
+		$o_view->setVar('initialValues', $this->getACLUserGroups(['returnAsInitialValuesForBundle' => true]));
 		
 		return $o_view->render('ca_acl_user_groups.php');
 	}
@@ -8025,6 +8039,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return array List of user group ACL-entries associated with the currently loaded row
 	 */ 
 	public function getACLUserGroups(?array $options=null) {
+		global $g_request;
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
 		if (!is_array($options)) { $options = []; }
@@ -8053,9 +8068,26 @@ $pa_options["display_form_field_tips"] = true;
 		$t_acl->setTransaction($this->getTransaction());
 		
 		$qr_res->seek(0);
+		$acc = [];
+		while($qr_res->nextRow()) {
+			if($table_num = $qr_res->get('inherited_from_table_num')) {
+				$acc[$table_num][$qr_res->get('inherited_from_row_id')] = true;
+			}
+		}
+		
+		foreach($acc as $table_num => $ids) {
+			if(!($t_instance = Datamodel::getInstance($table_num, true))) { continue; }
+			$ids = array_keys($ids);
+			
+			$labels = $t_instance->getPreferredDisplayLabelsForIDs($ids);
+			$identifiers = $t_instance->getFieldValuesForIDs($ids, ['idno']);
+			$acc[$table_num] = ['ids' => $ids, 'labels' => $labels, 'idno' => $identifiers, 'table' => $t_instance->tableName()];
+		}
+		
+		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$va_row = [];
-			foreach(array('group_id', 'name', 'code', 'description', 'access') as $vs_f) {
+			foreach(['group_id', 'name', 'code', 'description', 'access'] as $vs_f) {
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
 			
@@ -8067,6 +8099,14 @@ $pa_options["display_form_field_tips"] = true;
 				$va_row['id'] = $va_row['group_id'];
 				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 				
+				$label = $acc[$va_row['inherited_from_table_num']]['labels'][$va_row['inherited_from_row_id']] ?? null;
+				$idno = $acc[$va_row['inherited_from_table_num']]['idno'][$va_row['inherited_from_row_id']] ?? null;
+				
+				$va_row['inheritance_display'] = $label ? 
+					_t('Inherited from %1 (%2)', $label, $idno)
+					:
+					null;
+				$va_row['inheritance_link'] = ($va_row['inheritance_display'] && $g_request) ? _t('Inherited from %1 (%2)', caEditorLink($g_request, $label, '', $va_row['inherited_from_table_num'], $va_row['inherited_from_row_id']), $idno) : null;
 				$va_groups[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_groups[(int)$qr_res->get('group_id')] = $va_row;

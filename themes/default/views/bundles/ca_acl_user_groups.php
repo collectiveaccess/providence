@@ -94,7 +94,7 @@ if (!is_array($initial_values)) { $initial_values = []; }
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?= $id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['label', 'effective_date', 'access', 'id'],
+			templateValues: ['label', 'effective_date', 'access', 'id', 'inheritance_link'],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			itemID: '<?= $id_prefix; ?>Item_',

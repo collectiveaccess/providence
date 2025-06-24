@@ -727,6 +727,9 @@ class ca_acl extends BaseModel {
 		$subject_id = (int)$subject->getPrimaryKey();
 		if (!$subject_id) { return false; }
 		
+		$object_collections_hier_enabled = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
+		$object_collections_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
+		
 		$subject_pk = (string)$subject->primaryKey();
 		$subject_table = (string)$subject->tableName();
 		$subject_table_num = (int)$subject->tableNum();
@@ -740,26 +743,51 @@ class ca_acl extends BaseModel {
 		$ids = $subject->getHierarchyAsList($subject_id, ['idsOnly' => true, 'includeSelf' => true]);
 		if(!is_array($ids) || !sizeof($ids)) { return true; }
 		
+		$colls = null;
+		if($object_collections_hier_enabled && ($subject_table == 'ca_objects')) {
+			$colls = $subject->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'returnAs' => 'modelInstances']);
+		}
+		
 		$qr = caMakeSearchResult($subject_table, $ids);
 		while($qr->nextHit()) {
 			$t_child = $qr->getInstance();
 			ca_acl::applyACLInheritanceToChildrenFromRow($t_child);
 			
-			if($subject_table === 'ca_collections') {
-				ca_acl::applyACLInheritanceToRelatedFromRow($t_child, 'ca_objects');
+			if($object_collections_hier_enabled) {
+				switch($subject_table) {
+					case 'ca_collections':
+						ca_acl::applyACLInheritanceToRelatedFromRow($t_child, 'ca_objects', ['restrictToRelationshipTypes' => $object_collections_rel_types]);
+						break;
+					case 'ca_objects':
+						if(is_array($colls)) {
+							foreach($colls as $coll) {
+								ca_acl::applyACLInheritanceToRelatedFromRow($coll, 'ca_objects', ['limitToIDs' => [$subject_id], 'restrictToRelationshipTypes' => $object_collections_rel_types]);
+							}
+						}
+						break;
+				}
 			}
 		}
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Apply ACL entries from subject to related records in target table. 
 	 *
+	 * @param BaseModel $subject
+	 * @param string $target
+	 * @param array $options Options include:
+	 *		restrictToRelationshipTypes = Restrict related rows to those with listed relationship types. If omitted all related rows are processed. [Default is null]
+	 *		limitToIDs = List of target primary key values. ACL inheritance will only be applied to rows in the list. All other rows will be skipped. [Default is null] 
 	 */
-	public static function applyACLInheritanceToRelatedFromRow($subject, $target) {
-		$db = is_object($subject) ? $subject->getDb() : new Db();
+	public static function applyACLInheritanceToRelatedFromRow(BaseModel $subject, string $target, ?array $options=null) {
+		$db = $subject->getDb();
 		
 		if ($t_link = $subject->getRelationshipInstance($target)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($target, false)) {
+				$restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null);
+				$limit_to_ids = caGetOption('limitToIDs', $options, null);
+			
 				$path = array_keys(Datamodel::getPath($cur_table = $subject->tableName(), $target));
 				$table = array_shift($path);
 				
@@ -773,23 +801,57 @@ class ca_acl extends BaseModel {
 				$subject_table_num = (int)$subject->tableNum();
 				$subject_id = (int)$subject->getPrimaryKey();
 				
+				$params = [$subject_id];
+				$relationship_type_sql = null;
 				foreach($path as $join_table) {
+					if(!($t_rel = Datamodel::getInstance($join_table, true))) { throw new ApplicationException(_t('Invalid join table: %1', $join_table)); }
+					
 					$rel_info = Datamodel::getRelationships($cur_table, $join_table);
 					$joins[] = 'INNER JOIN '.$join_table.' ON '.$cur_table.'.'.$rel_info[$cur_table][$join_table][0][0].' = '.$join_table.'.'.$rel_info[$cur_table][$join_table][0][1]."\n";
 					$cur_table = $join_table;
+					
+					if(is_array($restrict_to_relationship_types) && sizeof($restrict_to_relationship_types) && $t_rel->isRelationship() && $t_rel->hasField('type_id')) {
+						$restrict_to_relationship_type_ids = caMakeRelationshipTypeIDList($join_table, $restrict_to_relationship_types);
+						if(is_array($restrict_to_relationship_type_ids) && sizeof($restrict_to_relationship_type_ids)) {
+							$relationship_type_sql = " AND ({$join_table}.type_id IN (?))";
+							$params[] = $restrict_to_relationship_type_ids;
+						}
+					}
 				}
 				
 				// Delete existing inherited rows
-				$qr_del = $db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", array((int)$subject_table_num, (int)$subject_id, (int)$target_table_num));
+				$qr_del = $db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", [(int)$subject_table_num, (int)$subject_id, (int)$target_table_num]);
 				
 				$qr_res = $db->query("
 					SELECT {$target}.{$target_pk}
 					FROM {$subject_table}
 					".join("\n", $joins)."
-					WHERE ({$subject_table}.{$subject_pk} = ?) AND {$target}.acl_inherit_from_{$subject_table} = 1", (int)$subject->getPrimaryKey());
-			
+					WHERE 
+						({$subject_table}.{$subject_pk} = ?) AND 
+						({$target}.acl_inherit_from_{$subject_table} = 1) 
+						{$relationship_type_sql}
+					", $params);
 				while($qr_res->nextRow()) {
 					$target_id = $qr_res->get($target_pk);
+					if(is_array($limit_to_ids) && sizeof($limit_to_ids) && !in_array($target_id, $limit_to_ids)) { continue; }
+					
+					// Remove existing non-inherited ACL entries that conflict with inherited entries
+					$qr_clean = $db->query("
+						SELECT group_id, user_id, access, notes
+						FROM ca_acl
+						WHERE
+							table_num = ? AND row_id = ? 
+					", (int)$subject_table_num, (int)$subject_id);
+					while($qr_clean->nextRow()) {
+						$user_id = $qr_clean->get('user_id');
+						$group_id = $qr_clean->get('group_id');
+						
+						if($user_id) {
+							$qr_del = $db->query("DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND user_id = ?", [(int)$target_table_num, (int)$target_id, $user_id]);
+						} elseif($group_id) {
+							$qr_del = $db->query("DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND group_id = ?", [(int)$target_table_num, (int)$target_id, $group_id]);
+						}
+					}
 					$qr_clone = $db->query("
 						INSERT IGNORE INTO ca_acl
 						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
