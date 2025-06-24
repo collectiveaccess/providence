@@ -1179,6 +1179,11 @@ class BrowseEngine extends BaseFindEngine {
 	public function execute($pa_options=null) {
 		$this->searched_terms = [];
 		$this->seach_result_desc = [];
+		$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
+		
+		if(caACLIsEnabled($t_item, ['forPawtucket' => true])) {
+			unset($pa_options['checkAccess']);
+		}
 		
 		global $AUTH_CURRENT_USER_ID;
 		if (!is_array($this->opa_browse_settings)) { return null; }
@@ -3338,6 +3343,10 @@ class BrowseEngine extends BaseFindEngine {
 	 */
 	public function getFacetContent($ps_facet_name, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
+		$t_subject = $this->getSubjectInstance();
+		if(caACLIsEnabled($t_subject, ['forPawtucket' => true])) {
+			unset($pa_options['checkAccess']);
+		}
 
 		$vs_browse_table_name = $this->ops_browse_table_name;
 		$vs_browse_table_num = $this->opn_browse_table_num;

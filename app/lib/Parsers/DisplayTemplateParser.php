@@ -227,8 +227,11 @@ class DisplayTemplateParser {
 			if ($vb_check_deleted && ($qr_res->get("{$ps_tablename}.deleted") !== '0')) { continue; }
 			
 			// check access
-			if ($pa_check_access && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
+			$acl_is_enabled = caACLIsEnabled($qr_res, ['forPawtucket' => true]);
+			if (caAppIsPawtucket() && !$acl_is_enabled && is_array($pa_check_access) && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			
+			$check_access_for_row = (caAppIsPawtucket() && $acl_is_enabled) ? null : $pa_check_access;
+
 			// check if we skip this row because of skipIfExpression
 			if(strlen($ps_skip_if_expression) > 0) {
 				$va_expression_vars = [];
@@ -242,7 +245,7 @@ class DisplayTemplateParser {
 			}
 			
 			if ($pa_options['relativeToContainer'] ?? false) {
-				$va_vals = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), $pa_options);
+				$va_vals = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), array_merge($pa_options, ['checkAccess' => $check_access_for_row]));
 				if(isset($pa_options['sort'])&& is_array($pa_options['sort'])) {
 					$va_vals = caSortArrayByKeyInValue($va_vals, array('__sort__'), $pa_options['sortDirection'], array('dontRemoveKeyPrefixes' => true));
 				}
@@ -255,7 +258,7 @@ class DisplayTemplateParser {
 							// noop
 						}
 					
-						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false])) : '';
+						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row])) : '';
 						if ($pb_index_with_ids) {
 							$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 						} else {
@@ -263,18 +266,18 @@ class DisplayTemplateParser {
 						}
 					}
 				} elseif(sizeof($va_template['units']) > 0) {
-					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false]));
+					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 				}
 			} else {
-			    $va_val_list = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), $pa_options);
+			    $va_val_list = DisplayTemplateParser::_getValues($qr_res, array_merge($va_template['tags'], array_flip(caGetTemplateTags($ps_skip_when))), array_merge($pa_options, ['checkAccess' => $check_access_for_row]));
 			    
 			    try {
 			        if ($ps_skip_when && ExpressionParser::evaluate($ps_skip_when, $va_val_list)) { continue; }
 			    } catch (Exception $e) {
 			        // noop
 			    }
-				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, $o=array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false]));
+				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, $o=array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
 			
 				if ($pb_index_with_ids) {
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
@@ -307,7 +310,7 @@ class DisplayTemplateParser {
 			$va_proc_templates = caCreateLinksFromText(
 				$va_proc_templates, $ps_tablename, $pa_row_ids,
 				null, caGetOption('linkTarget', $pa_options, null),
-				array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options)
+				array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options, ['checkAccess' => $check_access_for_row])
 			);
 		}
 		
