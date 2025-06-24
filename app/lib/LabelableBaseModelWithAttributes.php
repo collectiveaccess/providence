@@ -620,6 +620,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			
 		$pa_check_access 			= caGetOption('checkAccess', $pa_options, null);
 		
+		$acl_is_enabled = caACLIsEnabled($t_instance, ['forPawtucket' => true]);
+		if (caAppIsPawtucket() && $acl_is_enabled) { $pa_check_access = null; }
+			
+		
 		$vb_purify_with_fallback 	= caGetOption('purifyWithFallback', $pa_options, false);
 		$vb_purify 					= $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
 		
