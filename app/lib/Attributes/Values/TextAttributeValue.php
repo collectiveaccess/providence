@@ -451,7 +451,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 								caUI.ckEditors.push(editor);
 								
 								editor.model.document.on('change:data', () => {
-									console.log('xxx');
 									if(caUI.utils.showUnsavedChangesWarning) { console.log('set'); caUI.utils.showUnsavedChangesWarning(true); }
 								});
 							}).catch((e) => console.log('Error initializing CKEditor: ' + e));
