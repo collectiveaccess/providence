@@ -105,7 +105,7 @@ print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$bundle_name}
 								&&
 								($t_instance->tableName() === 'ca_objects')
 								&&
-								($t_instance->getRelatedItems('ca_collections', ['returnAs' => 'count', 'restrictToRelationshipTypes' => $objects_x_collections_hierarchy_relationship_types) > 0)
+								($t_instance->getRelatedItems('ca_collections', ['returnAs' => 'count', 'restrictToRelationshipTypes' => $objects_x_collections_hierarchy_relationship_types]) > 0)
 							)
 						)
 					) {
