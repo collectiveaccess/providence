@@ -1039,13 +1039,13 @@ class BaseEditorController extends ActionController {
 		$subject_pk = $t_subject->primaryKey();
 		$form_prefix = $this->request->getParameter('_formName', pString);
 
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
+		$this->opo_app_plugin_manager->hookBeforeSaveItem([
 			'id' => $subject_id,
 			'table_num' => $t_subject->tableNum(),
 			'table_name' => $subject_table, 
 			'instance' => &$t_subject,
-			'is_insert' => false)
-		);
+			'is_insert' => false
+		]);
 		
 		// Set Pawtucket access
 		$orig_access = $t_subject->get('access');
