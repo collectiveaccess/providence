@@ -237,7 +237,12 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								items: ".json_encode($toolbar).",
 								shouldNotGroupWhenFull: true
 							}
-						} )
+						} ).then(editor => {
+								// Add current instance to list of initialized editors
+								if(!caUI) { caUI = {}; }
+								if(!caUI.ckEditors) { caUI.ckEditors = []; }
+								caUI.ckEditors.push(editor);
+							})
 						.catch((e) => console.log('Error initializing CKEditor: ' + e));
 				</script>\n";
 							
