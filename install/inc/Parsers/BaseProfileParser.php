@@ -70,7 +70,7 @@ abstract class BaseProfileParser {
 	 * @param string $profile Name (with or without extension) of profile to parse
 	 */
 	public function __construct(?string $directory=null, ?string $profile=null) {
-		$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
+		$this->log = new \KLogger(__CA_LOG_DIR__, \KLogger::DEBUG);
 		$this->notices = $this->warnings = $this->errors = [];
 		$this->debug = true;
 		if($profile) {

@@ -34,7 +34,7 @@ class pawtucketMediaImportPlugin extends BaseApplicationPlugin {
 	public function __construct($ps_plugin_path) {
 		$this->description = _t('Pawtucket Media Import Processor');
 		$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'plugin.conf');
-		$this->opo_log = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log']);
+		$this->opo_log = caGetLogger(['logDirectory' => __CA_LOG_DIR__]);
 		parent::__construct();
 	}
 	# -------------------------------------------------------
