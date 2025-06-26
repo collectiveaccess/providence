@@ -2126,7 +2126,7 @@ itemOutput:
 		global $g_ui_locale_id;
 		$locale_id = (isset($options['locale_id']) && (int)$options['locale_id']) ? (int)$options['locale_id'] : $g_ui_locale_id;
 
-        $log_dir = caGetOption('logDirectory', $options, __CA_APP_DIR__."/log");
+        $log_dir = caGetOption('logDirectory', $options, __CA_LOG_DIR__);
 		if(!file_exists($log_dir) || !is_writable($log_dir)) {
 			$log_dir = caGetTempDirPath();
 		}

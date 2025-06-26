@@ -156,8 +156,8 @@ final class ConfigurationCheck {
 		//
 		// Check app/log
 		//
-		if (!is_writeable(__CA_APP_DIR__.'/log')) {
-			self::addError(_t('The CollectiveAccess <i>app/log</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_APP_DIR__.'/log'));
+		if (!is_writeable(__CA_LOG_DIR__)) {
+			self::addError(_t('The CollectiveAccess log directory (default <i>app/log</i>) is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_LOG_DIR__));
 		}
 
 		//
@@ -321,7 +321,7 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function logDirQuickCheck() {
-		$vs_log_path = __CA_APP_DIR__."/log";
+		$vs_log_path = __CA_LOG_DIR__;
 		if(!file_exists($vs_log_path) || !is_writable($vs_log_path)){
 			self::addError(_t("It looks like the log directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$vs_log_path));
 		}
