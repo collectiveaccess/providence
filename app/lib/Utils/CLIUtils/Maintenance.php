@@ -509,8 +509,8 @@ trait CLIUtilsMaintenance {
 			chmod($vs_path, 0770);
 		}
 		
-		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the log directory (app/log) for ownership by \"%1\"...", $vs_user)); }
-		$va_files = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/log', true, true, false, true, ['includeRoot' => true]);
+		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the log directory for ownership by \"%1\"...", $vs_user)); }
+		$va_files = caGetDirectoryContentsAsList(__CA_LOG_DIR__, true, true, false, true, ['includeRoot' => true]);
 
 		foreach($va_files as $vs_path) {
 			chown($vs_path, $vs_user);
