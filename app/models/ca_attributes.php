@@ -599,6 +599,7 @@ class ca_attributes extends BaseModel {
 	 * @return boolean Always return true
 	 */
 	static public function prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, $pa_element_ids, $pa_options=null) {
+		$pa_row_ids = array_filter($pa_row_ids, 'intval');
 		if(!sizeof($pa_row_ids)) { return true; }
 		if(!is_array($pa_element_ids) || !sizeof($pa_element_ids)) { return true; }
 		
