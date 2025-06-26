@@ -60,6 +60,11 @@ if (!defined("__CA_CONF_DIR__")) {
 	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 }
 
+# Path to CollectiveAccess 'temp' directory
+if (!defined("__CA_TEMP_DIR__")) {
+	define("__CA_TEMP_DIR__", __CA_APP_DIR__."/tmp");
+}
+
 # --------------------------------------------------------------------------------------------
 # Caching configuration
 # The default file-based caching should work fine in most setups
@@ -77,7 +82,7 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 # File path for file-based caching. The default works but in some setups you may want to move this
 # to the fastest available storage (in terms of random access time), like an SSD
 if (!defined('__CA_CACHE_FILEPATH__')) { 
-	define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+	define('__CA_CACHE_FILEPATH__', __CA_TEMP_DIR__);
 }
 
 # Time-to-live for cache items (in seconds)

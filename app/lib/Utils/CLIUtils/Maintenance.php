@@ -482,8 +482,8 @@ trait CLIUtilsMaintenance {
 			return false;
 		}
 
-		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the temporary directory (app/tmp) for ownership by \"%1\"...", $vs_user)); }
-		$va_files = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, true, false, true, ['includeRoot' => true]);
+		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the temporary directory (\"%2\") for ownership by \"%1\"...", $vs_user, __CA_TEMP_DIR__)); }
+		$va_files = caGetDirectoryContentsAsList(__CA_TEMP_DIR__, true, true, false, true, ['includeRoot' => true]);
 
 		foreach($va_files as $vs_path) {
 			chown($vs_path, $vs_user);
@@ -559,7 +559,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function fix_permissionsHelp() {
-		return _t("CollectiveAccess must have both read and write access to the temporary storage directory (app/tmp), media directory (media) and HTMLPurifier definition cache (app/lib/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache). A run-time error will be displayed if any of these locations is not accessible to the application. To change these permissions to allow CollectiveAccess to run normally run this command while logged in with administrative/root privileges. You are currently logged in as %1 (uid %2). You can specify which user will be given ownership of the directories using the --user option. If you do not specify a user, the web server user for your server will be automatically determined and used.", caGetProcessUserName(), caGetProcessUserID());
+		return _t("CollectiveAccess must have both read and write access to the temporary storage directory (%3), media directory (media) and HTMLPurifier definition cache (app/lib/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache). A run-time error will be displayed if any of these locations is not accessible to the application. To change these permissions to allow CollectiveAccess to run normally run this command while logged in with administrative/root privileges. You are currently logged in as %1 (uid %2). You can specify which user will be given ownership of the directories using the --user option. If you do not specify a user, the web server user for your server will be automatically determined and used.", caGetProcessUserName(), caGetProcessUserID(), __CA_TEMP_DIR__);
 	}
 	# -------------------------------------------------------
 	/**
