@@ -143,6 +143,7 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 		}
 ?>
 		</p>
+	</div>
 <?php
 	}
 
@@ -269,6 +270,9 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 			}
 		}
 	}
+?>
+	</div>
+<?php
 }
 ?>
 	</form>	

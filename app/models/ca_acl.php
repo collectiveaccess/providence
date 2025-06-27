@@ -348,6 +348,536 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
+	public static function getACLValuesForRow($subject, int $row_id) : ?array {
+		$db = is_object($subject) ? $subject->getDb() : new Db();
+		
+		if(!($subject_table_num = Datamodel::getTableNum($subject))) { return null; }
+		
+		$current_acl = ['group' => [], 'user' => [], 'world' => null];
+		$qr_current = $db->query("
+				SELECT group_id, user_id, access, notes
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ?
+			", [$subject_table_num, $row_id]);
+		
+		while($qr_current->nextRow()) {
+			$row = $qr_current->getRow();
+			if($row['group_id'] > 0) {
+				$current_acl['group'][$row['group_id']] = $row['access'];
+			}
+			if($row['user_id'] > 0) {
+				$current_acl['user'][$row['user_id']] = $row['access'];
+			}
+			if(!$row['group_id'] && !$row['user_id']) {
+				$current_acl['world'] = $row['access'];
+			}
+		}
+		return $current_acl;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function copyACL(BaseModel $subject, string $target, int $target_id) {
+		$db = $subject->getDb() ?? new Db();
+		
+		if ($t_target = Datamodel::getInstanceByTableName($target, false)) {
+			$subject_table_num = $subject->tableNum();
+			$subject_id = $subject->getPrimaryKey();
+			$target_table_num = $t_target->tableNum();
+			
+			$qr = $db->query("
+				SELECT group_id, user_id, access, notes
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ?
+			", [$target_table_num, (int)$target_id]);
+			$existing_group_ids = $existing_user_ids = [];
+			while($qr->nextRow()) {
+				$row = $qr->getRow();
+				
+				if($row['group_id']) {
+					$existing_group_ids[$row['group_id']]++;
+				}
+				if($row['user_id']) {
+					$existing_user_ids[$row['user_id']]++;
+				}
+			}
+			
+			$qr = $db->query("
+				SELECT group_id, user_id, access, notes, inherited_from_table_num, inherited_from_row_id
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ?
+			", [$subject_table_num, (int)$subject_id]);
+			
+			$acl_data = [];
+			while($qr->nextRow()) {
+				$row = $qr->getRow();
+				if(isset($existing_group_ids[$row['group_id']])) { continue; }
+				if(isset($existing_user_ids[$row['user_id']])) { continue; }
+				
+				$group_id = ((int)$row['group_id'] ?: 'null');
+				$user_id = ((int)$row['user_id'] ?: 'null');
+				$access = ((int)$row['access'] ?: 0);
+				$inherited_from_table_num = ((int)$row['inherited_from_table_num'] ?: 'null');
+				$inherited_from_row_id = ((int)$row['inherited_from_row_id'] ?: 'null');
+				
+				$acl_data[] = "({$group_id}, {$user_id}, {$target_table_num}, {$target_id}, {$access}, '', {$inherited_from_table_num}, {$inherited_from_row_id})";
+			}
+			
+			if(sizeof($acl_data) > 0) {
+				return $db->query("
+					INSERT INTO ca_acl
+					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+					VALUES 
+					".join(", ", $acl_data)."
+				");
+			} else {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getStatisticsForRow($subject, int $row_id) : ?array {
+		$db = is_object($subject) ? $subject->getDb() : new Db();
+		if(!($subject_table_num = is_object($subject) ? $subject->tableNum() : Datamodel::getTableNum($subject))) { return null; }
+		
+		$subject = is_object($subject) ? $subject : Datamodel::getInstance($subject_table_num, false, $row_id);
+		if(!$subject->isLoaded()) { return null; }
+		
+		$statistics = [
+			'subRecordCount' => 0,
+			'inheritingSubRecordCount' => 0,
+			'inheritingAccessSubRecordCount' => 0,
+			'relatedObjectCount' => 0,
+			'inheritingRelatedObjectCount' => 0,
+			'inheritingAccessRelatedObjectCount' => 0,
+			'potentialInheritingRelatedObjectCount' => 0,
+			'potentialInheritingAccessRelatedObjectCount' => 0,
+		];
+		
+		// Number of sub-records and inherited entries
+		
+		if($qr_sub_records = $subject->getHierarchy($row_id, [])) {
+			$statistics['subRecordCount'] = $qr_sub_records->numRows()-1;
+			$c = $x = 0;
+			while($qr_sub_records->nextRow()) {
+				if($qr_sub_records->get($subject->primaryKey()) == $row_id) { continue; }
+				if((bool)$qr_sub_records->get('acl_inherit_from_parent')) { $c++; }
+				if((bool)$qr_sub_records->get('access_inherit_from_parent')) { $x++; }
+			}
+			$statistics['inheritingSubRecordCount'] = $c;
+			$statistics['inheritingAccessSubRecordCount'] = $x;
+		}
+		
+		// Number of related objects and inherited entries
+		if($subject->tableName() === 'ca_collections') {
+			if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
+				while($qr_sub_records->nextRow()) {
+					$is_root = ($qr_sub_records->get('collection_id') == $row_id);
+					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
+					
+					$statistics['relatedObjectCount'] += ($c = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000]));
+					
+					if($is_root || (bool)$t_coll->get('acl_inherit_from_parent')) {
+						$statistics['inheritingRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
+						$statistics['potentialInheritingRelatedObjectCount'] += $c;
+					}
+					if($is_root || (bool)$t_coll->get('access_inherit_from_parent')) {
+						$statistics['inheritingAccessRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.access_inherit_from_parent']]);
+						$statistics['potentialInheritingAccessRelatedObjectCount'] += $c;
+					}
+				}
+			}
+		}
+		return $statistics;
+	}
+	# --------------------------------------------------------------------------------------------		
+	# ACL world access
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public static function setACLWorldAccess($subject, $world_access, ?array $options=null) {
+		if (!($id = (int)$subject->getPrimaryKey())) { return null; }
+		
+		$table_num = $subject->tableNum();
+		
+		$t_acl = new ca_acl();	
+		$t_acl->setTransaction($subject->getTransaction());
+		
+		$t_acl->load(['group_id' => null, 'user_id' => null, 'table_num' => $table_num, 'row_id' => $id]);		// try to load existing record
+		
+		$t_acl->set('table_num', $table_num);
+		$t_acl->set('row_id', $id);
+		$t_acl->set('user_id', null);
+		$t_acl->set('group_id', null);
+		$t_acl->set('access', $world_access);
+		
+		if ($t_acl->getPrimaryKey()) {
+			$t_acl->update();
+		} else {
+			$t_acl->insert();
+		}
+		if ($t_acl->numErrors()) {
+			$subject->errors = $t_acl->errors;
+			return false;
+		}
+		
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public static function setACLWorldAccessForRows($table, array $row_ids, int $world_access, ?array $options=null) {
+		if(!($subject = Datamodel::getInstance($table))) {
+			print caPrintStackTrace();
+			throw new ApplicationException(_t('Invalid table: %1', $table));
+		}
+		$table_num = (int)$subject->tableNum();
+		
+		$row_ids = array_filter(array_map(function($v) { return (int)$v; }, $row_ids), function($v) { return $v > 0; });
+		
+		$trans = caGetOption('transaction', $options, null);
+		$db = $trans ? $trans->getDb() : $subject->getDb();
+		
+		$acc = [];
+		while(sizeof($row_ids) > 0) {
+			$ids = array_splice($row_ids, 0, 500);
+			
+			$acc = array_map(function($id) use ($table_num, $world_access) {
+				$id = (int)$id;
+				return "(null, null, {$table_num}, {$id}, {$world_access}, '')";
+			}, $ids);
+			
+			if(sizeof($acc) > 0) {
+				$db->query("DELETE FROM ca_acl WHERE group_id IS NULL AND user_id IS NULL AND table_num = ? AND row_id IN (?)", [$table_num, $ids]);
+				if(!$db->query("INSERT INTO ca_acl (group_id, user_id, table_num, row_id, access, notes) VALUES ".join(', ', $acc))) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove duplicate ACL entries, leaving the entry granting the most access. The inheritance process
+	 * can create duplicate entries when combined with user-specific entries. 
+	 *
+	 * @param Db $db 
+	 *
+	 * @return bool
+	 */
+	public static function setGlobalEntries(string $subject, Db $db) : bool {
+		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true))) { return null; }
+		
+		$o_config = Configuration::load();
+		$default_item_access_level = (int)$o_config->get('default_item_access_level');
+		
+		$subject_table = $subject->tableName();
+		$subject_table_num = $subject->tableNum();
+		$subject_pk = $subject->primaryKey();
+		
+		$new_entries = [];
+		if($qr = $db->query("
+			SELECT t.{$subject_pk}, a.*
+			FROM {$subject_table} t
+			LEFT JOIN ca_acl AS a ON t.{$subject_pk} = a.row_id AND (a.table_num = {$subject_table_num} OR a.table_num IS NULL) and a.user_id IS NULL and a.group_id IS NULL
+		")) {
+			while($qr->nextRow()) {
+				$row = $qr->getRow();
+				
+				if(!($row['acl_id'] ?? null)) {
+					$new_entries[] = "(NULL, NULL, {$subject_table_num}, {$row[$subject_pk]}, {$default_item_access_level}, '', NULL, NULL)";
+				}
+			}
+			if(sizeof($new_entries)) {
+				$db->query("INSERT IGNORE INTO ca_acl 
+					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+					VALUES
+					".join(",", $new_entries)."
+				");
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	# ACL entry management
+	# ------------------------------------------------------
+	/**
+	 * Delete all existng ACL settings inherited from specified row
+	 *
+	 * @param BaseModel $subject 
+	 *
+	 * @return ?bool True on success, false on error, null if table does not exist 
+	 */
+	public static function removeACLValuesInheritedFromRow(BaseModel $subject) : ?bool {
+		$db = $subject->getDb();
+		
+		$subject_table_num = $subject->tableNum();
+		$subject_id = $subject->getPrimaryKey();
+		
+		return (bool)$db->query(
+			"DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", 
+				[$subject_table_num, $subject_id, $subject_table_num]);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Delete all existng ACL settings on specified row
+	 *
+	 * @param BaseModel $subject 
+	 * @param array $options Options include:
+	 *		onlyInherited = Only remove inherited entries. [Default is false]
+	 *
+	 * @return ?bool True on success, false on error, null if table does not exist 
+	 */
+	public static function removeACLValuesForRow(BaseModel $subject, ?array $options=null) : ?bool {
+		$only_inherited = caGetOption('onlyInherited', $options, false);
+		
+		$db = $subject->getDb();
+		
+		$subject_table_num = $subject->tableNum();
+		$subject_id = $subject->getPrimaryKey();
+		
+		if($only_inherited) {
+			return (bool)$db->query(
+			"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND inherited_from_table_num IS NOT NULL", 
+				[$subject_table_num, $subject_id]);
+		}
+		return (bool)$db->query(
+			"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ?", 
+				[$subject_table_num, $subject_id]);
+
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove duplicate ACL entries, leaving the entry granting the most access. The inheritance process
+	 * can create duplicate entries when combined with user-specific entries. 
+	 *
+	 * @param Db $db 
+	 *
+	 * @return bool
+	 */
+	public static function removeRedundantACLEntries(Db $db) : bool {
+		// 
+		if(!($temp_table = ca_acl::_createTempTableForRedundantACL($db))) {
+			throw new ApplicationException(_t('Cannot create temporary table for removal of redundant ACL entries'));
+		}
+		
+		// Clean up users
+		$db->query("
+			INSERT IGNORE INTO {$temp_table} 
+			SELECT table_num, row_id, user_id, NULL, max(access) FROM ca_acl 
+			WHERE
+				user_id IS NOT NULL
+			GROUP BY table_num, row_id, user_id 
+			HAVING (count(*) > 1)
+		");
+		
+		$db->query("
+			DELETE a.* FROM ca_acl a 
+			INNER JOIN {$temp_table} AS t ON a.table_num = t.table_num AND a.row_id = t.row_id AND a.user_id = t.user_id
+			WHERE a.access < t.access AND a.user_id IS NOT NULL
+		");
+		
+		// Clean up groups
+		$db->query("
+			INSERT IGNORE INTO {$temp_table} 
+			SELECT table_num, row_id, NULL, group_id, max(access) FROM ca_acl 
+			WHERE
+				group_id IS NOT NULL
+			GROUP BY table_num, row_id, group_id 
+			HAVING (count(*) > 1)
+		");
+		
+		$db->query("
+			DELETE a.* FROM ca_acl a 
+			INNER JOIN {$temp_table} AS t ON a.table_num = t.table_num AND a.row_id = t.row_id AND a.group_id = t.group_id
+			WHERE a.access < t.access AND a.group_id IS NOT NULL
+		");
+		
+		// Clean up world
+		$db->query("
+			INSERT IGNORE INTO {$temp_table} 
+			SELECT table_num, row_id, NULL, NULL, max(access) FROM ca_acl 
+			WHERE
+				user_id IS NULL AND group_id IS NULL
+			GROUP BY table_num, row_id, user_id, group_id 
+			HAVING (count(*) > 1)
+		");
+		
+		$db->query("
+			DELETE a.* FROM ca_acl a 
+			INNER JOIN {$temp_table} AS t ON a.table_num = t.table_num AND a.row_id = t.row_id
+			WHERE a.access < t.access AND a.user_id IS NULL AND a.group_id IS NULL
+		");
+		ca_acl::_dropTempTable($db, $temp_table);
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	# ACL inheritance
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function setACLInheritanceSettingForAllChildRows($subject, int $row_id, bool $set_all) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		
+		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
+		$subject_table = $subject->tableName();
+		$subject_pk = $subject->primaryKey();
+		
+		$db = is_object($subject) ? $subject->getDb() : new Db();
+		
+		$ret = true;
+		$ids_to_set = [];
+		if(sizeof(($child_ids = $subject->getHierarchy($row_id, ['idsOnly' => true])) ?? [])) {
+			if($qr_res = caMakeSearchResult($subject_table, $child_ids)) {
+				while($qr_res->nextHit()) {
+					$cv = $qr_res->get('acl_inherit_from_parent');
+					if($cv && $set_all) { continue; }
+					if(!$cv && !$set_all) { continue; }
+					
+					// @TODO: do we only allow setting of ACL for rows that the user has write access to?
+					// Right now we assume that if the user has the can_change_acl_* priv they can set it on anything
+					$ids_to_set[] = $qr_res->getPrimaryKey();
+				}
+			}
+		}
+		
+		// Apply changes to ids. There can potentially be *a lot* of rows to update. We try to do it as quickly
+		// as possible by directly executing SQL UPDATE queries on batches of 500 records.
+		$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
+		if(sizeof($ids_to_set)) {
+			while(sizeof($ids_to_set)) {
+				$ids = array_splice($ids_to_set, 0, 500);
+				
+				// @TODO: for performance reasons we don't attempt to log changes to affected rows. Rather we just apply
+				// the change directly in the database. This means these changes don't appear in the log and won't
+				// be transmitted to replicated systems. Might be a problem for someone someday, so we should consider ways
+				// to enable logging (via background processing?)
+				if(!$db->query("UPDATE {$subject_table} SET acl_inherit_from_parent = ? WHERE {$subject_pk} IN (?)", [$set_all ? 1 : 0, $ids])) {
+					$ret = false;
+				} else {
+					$k = "{$subject_table}::".$subject->getPrimaryKey();
+					
+					$log_entries = [];
+					foreach($ids as $id) {
+						$log_entries[] = [
+							'datetime' => time(),
+							'table' => $subject_table,
+							'row_id' => $id,
+							'user_id' => $AUTH_CURRENT_USER_ID,
+							'type' => 'U',
+							'snapshot' => [
+								'acl_inherit_from_parent' => $set_all ? 1 : 0
+							]
+						];
+					}
+					if (!$o_tq->addTask(
+						'bulkLogger',
+						[
+							"logEntries" => $log_entries,
+						],
+						["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+					{
+						// Error adding queue item
+						throw new ApplicationException(_t('Could not add logging tasks to queue'));
+					}
+				}
+			}
+		}
+	
+		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function setACLInheritanceSettingForRelatedObjects($subject, int $row_id, bool $set_all) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		
+		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
+		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
+		
+		$db = is_object($subject) ? $subject->getDb() : new Db();
+		
+		$ret = true;
+		if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
+			$ids_to_set = [];
+			while($qr_sub_records->nextRow()) {
+				if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
+				if($qr_res = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult', 'limit' => 50000])) {
+					
+					while($qr_res->nextHit()) {
+						$cv = $qr_res->get('acl_inherit_from_ca_collections');
+						if($cv && $set_all) { continue; }
+						if(!$cv && !$set_all) { continue; }
+						
+						// @TODO: do we only allow setting of ACL for rows that the user has write access to?
+						// Right now we assume that if the user has the can_change_acl_* priv they can set it on anything
+						$ids_to_set[] = $qr_res->getPrimaryKey();
+					}
+				}
+			}
+			
+			// Apply changes to ids. There can potentially be *a lot* of rows to update. We try to do it as quickly
+			// as possible by directly executing SQL UPDATE queries on batches of 500 records.
+			// @TODO: this may well still be too slow for very large collections; we might consider investigating other ways
+			// to apply these changes, esp when the batch size is very large. Maybe background processing?
+			if(sizeof($ids_to_set)) {
+				$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
+				while(sizeof($ids_to_set)) {
+					$ids = array_splice($ids_to_set, 0, 500);
+					
+					if(!$db->query("UPDATE ca_objects SET acl_inherit_from_ca_collections = ? WHERE object_id IN (?)", [$set_all ? 1 : 0, $ids])) {
+						$ret = false;
+					} else {
+						$k = "ca_objects::".$subject->getPrimaryKey();
+						
+						$log_entries = [];
+						foreach($ids as $id) {
+							$log_entries[] = [
+								'datetime' => time(),
+								'table' => 'ca_objects',
+								'row_id' => $id,
+								'user_id' => $AUTH_CURRENT_USER_ID,
+								'type' => 'U',
+								'snapshot' => [
+									'acl_inherit_from_ca_collections' => $set_all ? 1 : 0
+								]
+							];
+						}
+						if (!$o_tq->addTask(
+							'bulkLogger',
+							[
+								"logEntries" => $log_entries,
+							],
+							["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+						{
+							// Error adding queue item
+							throw new ApplicationException(_t('Could not add logging tasks to queue'));
+						}
+					}
+				}
+				SearchResult::clearCaches();
+			}
+		}
+		return $ret;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public static function applyACLInheritanceToChildrenFromRow($subject) : bool {
 		if (!$subject->isHierarchical()) { return false; }
 		
@@ -355,7 +885,8 @@ class ca_acl extends BaseModel {
 		if (!$subject_id) { return false; }
 		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
-		$ids = $subject->getHierarchyAsList($subject_id, ['idsOnly' => true, 'includeSelf' => false]);
+		$ids = ca_acl::getACLInheritanceHierarchy($subject);
+	
 		if(!sizeof($ids)) { return false; }
 		
 		$subject_pk = (string)$subject->primaryKey();
@@ -369,7 +900,7 @@ class ca_acl extends BaseModel {
 		$current_acl = ca_acl::getACLValuesForRow($subject_table_num, $subject_id);
 		
 		// Delete existing inherited rows
-		ca_acl::removeACLValuesForRow($subject_table_num, $subject_id);
+		ca_acl::removeACLValuesInheritedFromRow($subject, ['onlyInherited' => true]);
 			
 		// Apply rows to all
 		while($qr->nextHit()) {
@@ -466,263 +997,6 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function getACLValuesForRow($subject, int $row_id) : ?array {
-		$db = is_object($subject) ? $subject->getDb() : new Db();
-		
-		if(!($subject_table_num = Datamodel::getTableNum($subject))) { return null; }
-		
-		$current_acl = ['group' => [], 'user' => [], 'world' => null];
-		$qr_current = $db->query("
-				SELECT group_id, user_id, access, notes
-				FROM ca_acl
-				WHERE
-					table_num = ? AND row_id = ?
-			", [$subject_table_num, $row_id]);
-		
-		while($qr_current->nextRow()) {
-			$row = $qr_current->getRow();
-			if($row['group_id'] > 0) {
-				$current_acl['group'][$row['group_id']] = $row['access'];
-			}
-			if($row['user_id'] > 0) {
-				$current_acl['user'][$row['user_id']] = $row['access'];
-			}
-			if(!$row['group_id'] && !$row['user_id']) {
-				$current_acl['world'] = $row['access'];
-			}
-		}
-		return $current_acl;
-	}
-	
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function getStatisticsForRow($subject, int $row_id) : ?array {
-		$db = is_object($subject) ? $subject->getDb() : new Db();
-		if(!($subject_table_num = is_object($subject) ? $subject->tableNum() : Datamodel::getTableNum($subject))) { return null; }
-		
-		$subject = is_object($subject) ? $subject : Datamodel::getInstance($subject_table_num, false, $row_id);
-		if(!$subject->isLoaded()) { return null; }
-		
-		$statistics = [
-			'subRecordCount' => 0,
-			'inheritingSubRecordCount' => 0,
-			'inheritingAccessSubRecordCount' => 0,
-			'relatedObjectCount' => 0,
-			'inheritingRelatedObjectCount' => 0,
-			'inheritingAccessRelatedObjectCount' => 0,
-			'potentialInheritingRelatedObjectCount' => 0,
-			'potentialInheritingAccessRelatedObjectCount' => 0,
-		];
-		
-		// Number of sub-records and inherited entries
-		
-		if($qr_sub_records = $subject->getHierarchy($row_id, [])) {
-			$statistics['subRecordCount'] = $qr_sub_records->numRows()-1;
-			$c = $x = 0;
-			while($qr_sub_records->nextRow()) {
-				if($qr_sub_records->get($subject->primaryKey()) == $row_id) { continue; }
-				if((bool)$qr_sub_records->get('acl_inherit_from_parent')) { $c++; }
-				if((bool)$qr_sub_records->get('access_inherit_from_parent')) { $x++; }
-			}
-			$statistics['inheritingSubRecordCount'] = $c;
-			$statistics['inheritingAccessSubRecordCount'] = $x;
-		}
-		
-		// Number of related objects and inherited entries
-		if($subject->tableName() === 'ca_collections') {
-			if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
-				while($qr_sub_records->nextRow()) {
-					$is_root = ($qr_sub_records->get('collection_id') == $row_id);
-					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
-					
-					$statistics['relatedObjectCount'] += ($c = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000]));
-					
-					if($is_root || (bool)$t_coll->get('acl_inherit_from_parent')) {
-						$statistics['inheritingRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
-						$statistics['potentialInheritingRelatedObjectCount'] += $c;
-					}
-					if($is_root || (bool)$t_coll->get('access_inherit_from_parent')) {
-						$statistics['inheritingAccessRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.access_inherit_from_parent']]);
-						$statistics['potentialInheritingAccessRelatedObjectCount'] += $c;
-					}
-				}
-			}
-		}
-		return $statistics;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function setInheritanceSettingForAllChildRows($subject, int $row_id, bool $set_all) : ?bool {
-		global $AUTH_CURRENT_USER_ID;
-		
-		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
-		$subject_table = $subject->tableName();
-		$subject_pk = $subject->primaryKey();
-		
-		$db = is_object($subject) ? $subject->getDb() : new Db();
-		
-		$ret = true;
-		$ids_to_set = [];
-		if(sizeof(($child_ids = $subject->getHierarchy($row_id, ['idsOnly' => true])) ?? [])) {
-			if($qr_res = caMakeSearchResult($subject_table, $child_ids)) {
-				while($qr_res->nextHit()) {
-					$cv = $qr_res->get('acl_inherit_from_parent');
-					if($cv && $set_all) { continue; }
-					if(!$cv && !$set_all) { continue; }
-					
-					// @TODO: do we only allow setting of ACL for rows that the user has write access to?
-					// Right now we assume that if the user has the can_change_acl_* priv they can set it on anything
-					$ids_to_set[] = $qr_res->getPrimaryKey();
-				}
-			}
-		}
-		
-		// Apply changes to ids. There can potentially be *a lot* of rows to update. We try to do it as quickly
-		// as possible by directly executing SQL UPDATE queries on batches of 500 records.
-		$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
-		if(sizeof($ids_to_set)) {
-			while(sizeof($ids_to_set)) {
-				$ids = array_splice($ids_to_set, 0, 500);
-				
-				// @TODO: for performance reasons we don't attempt to log changes to affected rows. Rather we just apply
-				// the change directly in the database. This means these changes don't appear in the log and won't
-				// be transmitted to replicated systems. Might be a problem for someone someday, so we should consider ways
-				// to enable logging (via background processing?)
-				if(!$db->query("UPDATE {$subject_table} SET acl_inherit_from_parent = ? WHERE {$subject_pk} IN (?)", [$set_all ? 1 : 0, $ids])) {
-					$ret = false;
-				} else {
-					$k = "{$subject_table}::".$subject->getPrimaryKey();
-					
-					$log_entries = [];
-					foreach($ids as $id) {
-						$log_entries[] = [
-							'datetime' => time(),
-							'table' => $subject_table,
-							'row_id' => $id,
-							'user_id' => $AUTH_CURRENT_USER_ID,
-							'type' => 'U',
-							'snapshot' => [
-								'acl_inherit_from_parent' => $set_all ? 1 : 0
-							]
-						];
-					}
-					if (!$o_tq->addTask(
-						'bulkLogger',
-						[
-							"logEntries" => $log_entries,
-						],
-						["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
-					{
-						// Error adding queue item
-						throw new ApplicationException(_t('Could not add logging tasks to queue'));
-					}
-				}
-			}
-		}
-	
-		return $ret;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function setInheritanceSettingForRelatedObjects($subject, int $row_id, bool $set_all) : ?bool {
-		global $AUTH_CURRENT_USER_ID;
-		
-		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
-		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
-		
-		$db = is_object($subject) ? $subject->getDb() : new Db();
-		
-		$ret = true;
-		if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
-			$ids_to_set = [];
-			while($qr_sub_records->nextRow()) {
-				if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
-				if($qr_res = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'searchResult', 'limit' => 50000])) {
-					
-					while($qr_res->nextHit()) {
-						$cv = $qr_res->get('acl_inherit_from_ca_collections');
-						if($cv && $set_all) { continue; }
-						if(!$cv && !$set_all) { continue; }
-						
-						// @TODO: do we only allow setting of ACL for rows that the user has write access to?
-						// Right now we assume that if the user has the can_change_acl_* priv they can set it on anything
-						$ids_to_set[] = $qr_res->getPrimaryKey();
-					}
-				}
-			}
-			
-			// Apply changes to ids. There can potentially be *a lot* of rows to update. We try to do it as quickly
-			// as possible by directly executing SQL UPDATE queries on batches of 500 records.
-			// @TODO: this may well still be too slow for very large collections; we might consider investigating other ways
-			// to apply these changes, esp when the batch size is very large. Maybe background processing?
-			if(sizeof($ids_to_set)) {
-				$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
-				while(sizeof($ids_to_set)) {
-					$ids = array_splice($ids_to_set, 0, 500);
-					
-					if(!$db->query("UPDATE ca_objects SET acl_inherit_from_ca_collections = ? WHERE object_id IN (?)", [$set_all ? 1 : 0, $ids])) {
-						$ret = false;
-					} else {
-						$k = "ca_objects::".$subject->getPrimaryKey();
-						
-						$log_entries = [];
-						foreach($ids as $id) {
-							$log_entries[] = [
-								'datetime' => time(),
-								'table' => 'ca_objects',
-								'row_id' => $id,
-								'user_id' => $AUTH_CURRENT_USER_ID,
-								'type' => 'U',
-								'snapshot' => [
-									'acl_inherit_from_ca_collections' => $set_all ? 1 : 0
-								]
-							];
-						}
-						if (!$o_tq->addTask(
-							'bulkLogger',
-							[
-								"logEntries" => $log_entries,
-							],
-							["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
-						{
-							// Error adding queue item
-							throw new ApplicationException(_t('Could not add logging tasks to queue'));
-						}
-					}
-				}
-				SearchResult::clearCaches();
-			}
-		}
-		return $ret;
-	}
-	# ------------------------------------------------------
-	/**
-	 * Delete all existng ACL settings inherited from specified row
-	 *
-	 * @param mixed $subject Table name or number
-	 * @param int $row_id ID of row
-	 *
-	 * @return ?bool True on success, false on error, null if table does not exist 
-	 */
-	public static function removeACLValuesForRow($subject, int $row_id) : ?bool {
-		$db = is_object($subject) ? $subject->getDb() : new Db();
-		
-		if(!($subject_table_num = Datamodel::getTableNum($subject))) { return null; }
-		
-		return (bool)$db->query(
-			"DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", 
-				[$subject_table_num, $row_id, $subject_table_num]);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
 	public static function updateACLInheritanceForRow($subject) : bool {
 		$subject_id = (int)$subject->getPrimaryKey();
 		if (!$subject_id) { return false; }
@@ -740,7 +1014,7 @@ class ca_acl extends BaseModel {
 			}
 		}
 		
-		$ids = $subject->getHierarchyAsList($subject_id, ['idsOnly' => true, 'includeSelf' => true]);
+		$ids = ca_acl::getACLInheritanceHierarchy($subject);
 		if(!is_array($ids) || !sizeof($ids)) { return true; }
 		
 		$colls = null;
@@ -869,255 +1143,7 @@ class ca_acl extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Remove duplicate ACL entries, leaving the entry granting the most access. The inheritance process
-	 * can create duplicate entries when combined with user-specific entries. 
-	 *
-	 * @param Db $db 
-	 *
-	 * @return bool
-	 */
-	public static function removeRedundantACLEntries(Db $db) : bool {
-		// 
-		if(!($temp_table = ca_acl::_createTempTableForRedundantACL($db))) {
-			throw new ApplicationException(_t('Cannot create temporary table for removal of redundant ACL entries'));
-		}
-		
-		// Clean up users
-		$db->query("
-			INSERT IGNORE INTO {$temp_table} 
-			SELECT table_num, row_id, user_id, NULL, max(access) FROM ca_acl 
-			WHERE
-				user_id IS NOT NULL
-			GROUP BY table_num, row_id, user_id 
-			HAVING (count(*) > 1)
-		");
-		
-		$db->query("
-			DELETE a.* FROM ca_acl a 
-			INNER JOIN {$temp_table} AS t ON a.table_num = t.table_num AND a.row_id = t.row_id AND a.user_id = t.user_id
-			WHERE a.access < t.access AND a.user_id IS NOT NULL
-		");
-		
-		// Clean up groups
-		$db->query("
-			INSERT IGNORE INTO {$temp_table} 
-			SELECT table_num, row_id, NULL, group_id, max(access) FROM ca_acl 
-			WHERE
-				group_id IS NOT NULL
-			GROUP BY table_num, row_id, group_id 
-			HAVING (count(*) > 1)
-		");
-		
-		$db->query("
-			DELETE a.* FROM ca_acl a 
-			INNER JOIN {$temp_table} AS t ON a.table_num = t.table_num AND a.row_id = t.row_id AND a.group_id = t.group_id
-			WHERE a.access < t.access AND a.group_id IS NOT NULL
-		");
-		
-		// Clean up world
-		$db->query("
-			INSERT IGNORE INTO {$temp_table} 
-			SELECT table_num, row_id, NULL, NULL, max(access) FROM ca_acl 
-			WHERE
-				user_id IS NULL AND group_id IS NULL
-			GROUP BY table_num, row_id, user_id, group_id 
-			HAVING (count(*) > 1)
-		");
-		
-		$db->query("
-			DELETE a.* FROM ca_acl a 
-			INNER JOIN {$temp_table} AS t ON a.table_num = t.table_num AND a.row_id = t.row_id
-			WHERE a.access < t.access AND a.user_id IS NULL AND a.group_id IS NULL
-		");
-		ca_acl::_dropTempTable($db, $temp_table);
-		
-		return true;
-	}
-	# ------------------------------------------------------
-	/**
-	 * Remove duplicate ACL entries, leaving the entry granting the most access. The inheritance process
-	 * can create duplicate entries when combined with user-specific entries. 
-	 *
-	 * @param Db $db 
-	 *
-	 * @return bool
-	 */
-	public static function setGlobalEntries(string $subject, Db $db) : bool {
-		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true))) { return null; }
-		
-		$o_config = Configuration::load();
-		$default_item_access_level = (int)$o_config->get('default_item_access_level');
-		
-		$subject_table = $subject->tableName();
-		$subject_table_num = $subject->tableNum();
-		$subject_pk = $subject->primaryKey();
-		
-		$new_entries = [];
-		if($qr = $db->query("
-			SELECT t.{$subject_pk}, a.*
-			FROM {$subject_table} t
-			LEFT JOIN ca_acl AS a ON t.{$subject_pk} = a.row_id AND (a.table_num = {$subject_table_num} OR a.table_num IS NULL) and a.user_id IS NULL and a.group_id IS NULL
-		")) {
-			while($qr->nextRow()) {
-				$row = $qr->getRow();
-				
-				if(!($row['acl_id'] ?? null)) {
-					$new_entries[] = "(NULL, NULL, {$subject_table_num}, {$row[$subject_pk]}, {$default_item_access_level}, '', NULL, NULL)";
-				}
-			}
-			if(sizeof($new_entries)) {
-				$db->query("INSERT IGNORE INTO ca_acl 
-					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
-					VALUES
-					".join(",", $new_entries)."
-				");
-			}
-		}
-		return true;
-	}
-	# ------------------------------------------------------
-	/**
-	 *	
-	 */
-	public static function setAccessInheritanceSettingToRelatedObjectsFromCollection($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
-		global $AUTH_CURRENT_USER_ID;
-		
-		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
-		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
-		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
-		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { return null; }
-		
-		$db = $subject->getDb() ?? new Db();
-		
-		$ret = true;
-		if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
-			$ids_to_set = [];
-			while($qr_sub_records->nextRow()) {
-				if(($qr_sub_records->get('collection_id') != $row_id) && !$qr_sub_records->get('access_inherit_from_parent')) { continue; }
-				if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
-			
-				if ($t_link = $t_coll->getRelationshipInstance('ca_objects')) {
-					if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
-						if($qr_res = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'searchResult', 'limit' => 50000])) {
-							$ids_to_set = [];
-							while($qr_res->nextHit()) {						
-								$cv = $qr_res->get('access_inherit_from_parent');
-								if($cv && $set_all) { continue; }
-								if(!$cv && !$set_all) { continue; }
-								
-								// @TODO: do we only allow setting of ACL for rows that the user has write access to?
-								// Right now we assume that if the user has the can_change_acl_* priv they can set it on anything
-								$ids_to_set[] = $qr_res->getPrimaryKey();
-							}
-							
-							if(sizeof($ids_to_set)) {
-								while(sizeof($ids_to_set)) {
-									$ids = array_splice($ids_to_set, 0, 500);
-									
-									if(!$db->query("UPDATE ca_objects SET access_inherit_from_parent = ? WHERE object_id IN (?)", [$set_all ? 1 : 0, $ids])) {
-										$ret = false;
-									} else {
-										$o_tq = new TaskQueue(['transaction' => $t_coll->getTransaction()]);
-										$k = 'ca_collections::'.$t_coll->getPrimaryKey();
-										
-										$log_entries = [];
-										foreach($ids as $id) {
-											$log_entries[] = [
-												'datetime' => time(),
-												'table' => 'ca_objects',
-												'row_id' => $id,
-												'user_id' => $AUTH_CURRENT_USER_ID,
-												'type' => 'U',
-												'snapshot' => [
-													'access_inherit_from_parent' => $set_all ? 1 : 0
-												]
-											];
-										}
-										if (!$o_tq->addTask(
-											'bulkLogger',
-											[
-												"logEntries" => $log_entries,
-											],
-											["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
-										{
-											// Error adding queue item
-											throw new ApplicationException(_t('Could not add logging tasks to queue'));
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		SearchResult::clearCaches();
-		
-		return $ret;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public static function applyAccessInheritanceToRelatedObjectsFromCollection($subject, ?array $options=null) : ?bool {
-		global $AUTH_CURRENT_USER_ID;
-		
-		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
-		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { return null; }
-		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return false; }
-		$db = $subject->getDb() ?? new Db();
-		
-		$access = (int)$subject->get('access');
-		
-		if ($t_link = $subject->getRelationshipInstance('ca_objects')) {
-			if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
-				if(is_array($ids = $subject->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
-					$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?)", [$access, $ids]);
-					
-					$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
-					$k = 'ca_collections::'.$subject->getPrimaryKey();
-					
-					$log_entries = [];
-					foreach($ids as $id) {
-						$log_entries[] = [
-							'datetime' => time(),
-							'table' => 'ca_objects',
-							'row_id' => $id,
-							'user_id' => $AUTH_CURRENT_USER_ID,
-							'type' => 'U',
-							'snapshot' => [
-								'access' => $access
-							]
-						];
-					}
-					if (!$o_tq->addTask(
-						'bulkLogger',
-						[
-							"logEntries" => $log_entries,
-						],
-						["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
-					{
-						// Error adding queue item
-						throw new ApplicationException(_t('Could not add logging tasks to queue'));
-					}
-					
-					$map = caGetACLItemLevelMap();
-					$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
-					
-					ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
-				} else {
-					print_R($ids);
-					die("!!");
-				}
-				
-			}
-		}
-		
-		return true;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
+	 * Set ACL inheritance for specific row, subject to acl_inherit_from_<table> values
 	 */
 	public static function applyACLInheritanceToRelatedRowFromRow($subject, $subject_id, $target, $target_id, $options=null) {
 		$db = $subject->getDb() ?? new Db();
@@ -1164,19 +1190,277 @@ class ca_acl extends BaseModel {
 		return true;
 	}
 	# ------------------------------------------------------
+	# "Access" inheritance
+	# ------------------------------------------------------
 	/**
-	 *
+	 *	Set access_inherit_from_parent value for children of row
 	 */
-	public static function applyAccessInheritanceToChildrenFromRow($subject) : bool {
+	public static function setAccessInheritanceSettingForChildrenFromRow($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
 		global $AUTH_CURRENT_USER_ID;
 		
-		if (!$subject->isHierarchical()) { return false; }
+		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
+		if(!$subject->hasField('access_inherit_from_parent')) { return null; }
+		
+		$db = $subject->getDb() ?? new Db();
+		
+		$subject_pk = $subject->primaryKey();
+		$subject_table = $subject->tableName();
+		
+		$ret = true;
+		$inherit = (int)$subject->get('access_inherit_from_parent');
+		$access = (int)$subject->get('access');
+		
+		$set_inherit = $set_all ? 1 : $inherit;
+		
+		$snapshot = [
+			'access_inherit_from_parent' => $set_inherit
+		];
+		if($set_inherit) { $snapshot['access'] = $access; }
+		$sql = $set_inherit ? 
+			"UPDATE {$subject_table} SET access_inherit_from_parent = ?, access = ? WHERE {$subject_pk} IN (?)" 
+			:
+			"UPDATE {$subject_table} SET access_inherit_from_parent = ? WHERE {$subject_pk} IN (?)"
+		;
+		$params = $set_inherit ? [$set_inherit, $access] : [$set_inherit];
+		if(is_array($ids_to_set = $subject->getHierarchy($row_id, ['includeSelf' => true, 'idsOnly' => true])) && sizeof($ids_to_set)) {
+			while(sizeof($ids_to_set)) {
+				$ids = array_splice($ids_to_set, 0, 500);
+				
+				if(!$db->query($sql, array_merge($params, [$ids]))) {
+					$ret = false;
+				} else {
+					$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
+					$k = "{$subject_table}::".$subject->getPrimaryKey();
+					
+					$log_entries = [];
+					foreach($ids as $id) {
+						$log_entries[] = [
+							'datetime' => time(),
+							'table' => $subject_table,
+							'row_id' => $id,
+							'user_id' => $AUTH_CURRENT_USER_ID,
+							'type' => 'U',
+							'snapshot' => $snapshot
+						];
+					}
+					if (!$o_tq->addTask(
+						'bulkLogger',
+						[
+							"logEntries" => $log_entries,
+						],
+						["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+					{
+						// Error adding queue item
+						throw new ApplicationException(_t('Could not add logging tasks to queue'));
+					}
+				}
+			}
+		}
+		SearchResult::clearCaches();
+		
+		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 *	Set access_inherit_from_parent value for objects related to a collection.
+	 */
+	public static function setAccessInheritanceSettingToRelatedObjectsFromCollection($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		
+		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
+		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
+		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
+		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { return null; }
+		
+		$db = $subject->getDb() ?? new Db();
+		
+		$access = (int)$subject->get('access_inherit_from_parent');
+		$ret = true;
+		if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
+			$ids_to_set = [];
+			while($qr_sub_records->nextRow()) {
+				if(($qr_sub_records->get('collection_id') != $row_id) && !$qr_sub_records->get('access_inherit_from_parent')) { continue; }
+				if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
+			
+				if ($t_link = $t_coll->getRelationshipInstance('ca_objects')) {
+					if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
+						if($qr_res = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'searchResult', 'limit' => 50000])) {
+							$ids_to_set = [];
+							while($qr_res->nextHit()) {						
+								$cv = $qr_res->get('access_inherit_from_parent');
+								if($cv && $set_all) { continue; }
+								if(!$cv && !$set_all) { continue; }
+								
+								// @TODO: do we only allow setting of ACL for rows that the user has write access to?
+								// Right now we assume that if the user has the can_change_acl_* priv they can set it on anything
+								$ids_to_set[] = $qr_res->getPrimaryKey();
+							}
+							
+							if(sizeof($ids_to_set)) {
+								while(sizeof($ids_to_set)) {
+									$ids = array_splice($ids_to_set, 0, 500);
+									
+									if(!$db->query("UPDATE ca_objects SET access_inherit_from_parent = ? WHERE object_id IN (?)", [$set_all ? 1 : $access, $ids])) {
+										$ret = false;
+									} else {
+										$o_tq = new TaskQueue(['transaction' => $t_coll->getTransaction()]);
+										$k = 'ca_collections::'.$t_coll->getPrimaryKey();
+										
+										$log_entries = [];
+										foreach($ids as $id) {
+											$log_entries[] = [
+												'datetime' => time(),
+												'table' => 'ca_objects',
+												'row_id' => $id,
+												'user_id' => $AUTH_CURRENT_USER_ID,
+												'type' => 'U',
+												'snapshot' => [
+													'access_inherit_from_parent' => $set_all ? 1 : 0
+												]
+											];
+										}
+										if (!$o_tq->addTask(
+											'bulkLogger',
+											[
+												"logEntries" => $log_entries,
+											],
+											["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+										{
+											// Error adding queue item
+											throw new ApplicationException(_t('Could not add logging tasks to queue'));
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		SearchResult::clearCaches();
+		
+		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Apply parent's access inheritance to subject. Supports inheritance of access for objects
+	 * from parent collection when object-collection hierarchies are enabled.
+	 *
+	 * @param BaseModel $t_subject
+	 *
+	 * @return ?bool False or null on failure; true on success
+	 */
+	public static function applyAccessInheritance($subject) : ?bool {
+		if(!$subject->getAppConfig()->get($subject->tableName().'_allow_access_inheritance')) { return null; }
+		if(!$subject->hasField('access_inherit_from_parent')) { return null; }
+		if(!$subject->get('access_inherit_from_parent')) { return false; }
+		
+		$object_collections_hier_enabled = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
+		$object_collections_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
+		
+		$subject_table = $subject->tableName();
+		if($parent_id = $subject->get('parent_id')) {
+			$parent = $subject_table::find($parent_id, ['returnAs' => 'arrays']);
+			if(is_array($parent) && (sizeof($parent) > 0)) {
+				$parent = array_shift($parent);
+			} else {
+				$parent = ['access' => 0];
+			}
+			$subject->set('access', $parent['access']);
+			return (bool)$subject->update();
+		} elseif(($subject_table == 'ca_objects') && $object_collections_hier_enabled && is_array($object_collections_rel_types) && sizeof($object_collections_rel_types)) {
+			if($coll = $subject->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'returnAs' => 'firstModelInstance'])) {
+				$subject->set('access', $coll->get('access'));
+				return (bool)$subject->update();
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access value for objects related to a collection, subject to collection and object access inheritance settings
+	 *
+	 * @param BaseModel $subject A ca_collections model instance
+	 * @param array $options No options currently supported
+	 *
+	 * @return ?bool
+	 */
+	public static function applyAccessInheritanceToRelatedObjectsFromCollection(BaseModel $subject, ?array $options=null) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		
+		if(!$subject->getAppConfig()->get('ca_collections_allow_access_inheritance')) { return null; }
+		if(!$subject->getAppConfig()->get('ca_objects_allow_access_inheritance')) { return null; }
+		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
+		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { return null; }
+		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return false; }
+		$db = $subject->getDb() ?? new Db();
+		
+		$access = (int)$subject->get('access');
+		$subject_id = $subject->getPrimaryKey();
+		
+		// get sub-collections
+		
+		if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
+			$collection_ids = ca_acl::getAccessInheritanceHierarchy($subject);
+
+			if(is_array($ids = $subject->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'row_ids' => $collection_ids, 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
+				$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?) AND access_inherit_from_parent = 1", [$access, $ids]);
+				
+				$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
+				$k = 'ca_collections::'.$subject->getPrimaryKey();
+				
+				$log_entries = [];
+				foreach($ids as $id) {
+					$log_entries[] = [
+						'datetime' => time(),
+						'table' => 'ca_objects',
+						'row_id' => $id,
+						'user_id' => $AUTH_CURRENT_USER_ID,
+						'type' => 'U',
+						'snapshot' => [
+							'access' => $access
+						]
+					];
+				}
+				if (!$o_tq->addTask(
+					'bulkLogger',
+					[
+						"logEntries" => $log_entries,
+					],
+					["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+				{
+					// Error adding queue item
+					throw new ApplicationException(_t('Could not add logging tasks to queue'));
+				}
+				
+				$map = caGetACLItemLevelMap();
+				$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
+				
+				ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
+			} 
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access values set on subject on child records with access inheritance set
+	 *
+	 * @param BaseModel $subject
+	 * @param array $options No options currently supported
+	 *
+	 * @return bool
+	 */
+	public static function applyAccessInheritanceToChildrenFromRow(BaseModel $subject, ?array $options=null) : ?bool {
+		global $AUTH_CURRENT_USER_ID;
+		if(!$subject->getAppConfig()->get($subject->tableName().'_allow_access_inheritance')) { return null; }
+		if (!$subject->isHierarchical()) { return null; }
 		
 		$subject_id = (int)$subject->getPrimaryKey();
 		if (!$subject_id) { return false; }
 		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
-		$ids = $subject->getHierarchyAsList($subject_id, ['idsOnly' => true, 'includeSelf' => false]);
+		$ids = ca_acl::getAccessInheritanceHierarchy($subject);
 		if(!sizeof($ids)) { return false; }
 		
 		$subject_pk = (string)$subject->primaryKey();
@@ -1194,7 +1478,7 @@ class ca_acl extends BaseModel {
 			$ids_to_set[] = $id;
 		}
 		
-		$access = $subject->get('access');
+		$access = $subject->get("{$subject_table}.access");
 		
 		$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
 		if(sizeof($ids_to_set)) {
@@ -1205,7 +1489,7 @@ class ca_acl extends BaseModel {
 				// the change directly in the database. This means these changes don't appear in the log and won't
 				// be transmitted to replicated systems. Might be a problem for someone someday, so we should consider ways
 				// to enable logging (via background processing?)
-				if(!$db->query("UPDATE {$subject_table} SET access = ? WHERE {$subject_pk} IN (?)", [$access, $ids])) {
+				if(!$db->query("UPDATE {$subject_table} SET access = ? WHERE {$subject_pk} IN (?) AND access_inherit_from_parent = 1", [$access, $ids])) {
 					return false;
 				} else {
 					$k = "{$subject_table}::".$subject->getPrimaryKey();
@@ -1245,158 +1529,115 @@ class ca_acl extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * For regeneration of ACL inherited rules 
 	 *
+	 * @param BaseModel $subject
+	 *
+	 * @return bool
 	 */
-	public static function applyAccessInheritance($subject) : ?bool {
-		if(!$subject->hasField('access_inherit_from_parent')) { return null; }
-		if(!$subject->get('access_inherit_from_parent')) { return false; }
-		
-		$object_collections_hier_enabled = $subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
-		$object_collections_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
-		
-		$subject_table = $subject->tableName();
-		if($parent_id = $subject->get('parent_id')) {
-			$parent = $subject_table::find($parent_id, ['returnAs' => 'array']);
-			$subject->set('access', $parent['access']);
-			return $subject->update();
-		} elseif(($subject_table == 'ca_objects') && $object_collections_hier_enabled && is_array($object_collections_rel_types) && sizeof($object_collections_rel_types)) {
-			if($coll = $subject->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'returnAs' => 'firstModelInstance'])) {
-				$subject->set('access', $coll->get('access'));
-				return $subject->update();
+	public static function forceACLInheritanceUpdateForRow(BaseModel $subject) {
+		if(ca_acl::removeACLValuesForRow($subject, ['onlyInherited' => true])) {
+			if(ca_acl::updateACLInheritanceForRow($subject)) {
+				if(ca_acl::applyACLInheritanceToChildrenFromRow($subject)) {
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 	# ------------------------------------------------------
 	/**
+	 * 
 	 *
+	 * @param BaseModel $subject
+	 * @param array $options No options currently supported
+	 *
+	 * @return bool
 	 */
-	public static function copyACL(BaseModel $subject, string $target, int $target_id) {
-		$db = $subject->getDb() ?? new Db();
-		
-		if ($t_target = Datamodel::getInstanceByTableName($target, false)) {
-			$subject_table_num = $subject->tableNum();
-			$subject_id = $subject->getPrimaryKey();
-			$target_table_num = $t_target->tableNum();
-			
-			$qr = $db->query("
-				SELECT group_id, user_id, access, notes
-				FROM ca_acl
-				WHERE
-					table_num = ? AND row_id = ?
-			", [$target_table_num, (int)$target_id]);
-			$existing_group_ids = $existing_user_ids = [];
-			while($qr->nextRow()) {
-				$row = $qr->getRow();
-				
-				if($row['group_id']) {
-					$existing_group_ids[$row['group_id']]++;
+	public static function forceAccessInheritanceUpdate(BaseModel $subject) : ?bool {
+		if(ca_acl::applyAccessInheritance($subject)) {
+			if(ca_acl::applyAccessInheritanceToChildrenFromRow($subject)) {
+				if(ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($subject)) {
+					return true;
 				}
-				if($row['user_id']) {
-					$existing_user_ids[$row['user_id']]++;
-				}
-			}
-			
-			$qr = $db->query("
-				SELECT group_id, user_id, access, notes, inherited_from_table_num, inherited_from_row_id
-				FROM ca_acl
-				WHERE
-					table_num = ? AND row_id = ?
-			", [$subject_table_num, (int)$subject_id]);
-			
-			$acl_data = [];
-			while($qr->nextRow()) {
-				$row = $qr->getRow();
-				if(isset($existing_group_ids[$row['group_id']])) { continue; }
-				if(isset($existing_user_ids[$row['user_id']])) { continue; }
-				
-				$group_id = ((int)$row['group_id'] ?: 'null');
-				$user_id = ((int)$row['user_id'] ?: 'null');
-				$access = ((int)$row['access'] ?: 0);
-				$inherited_from_table_num = ((int)$row['inherited_from_table_num'] ?: 'null');
-				$inherited_from_row_id = ((int)$row['inherited_from_row_id'] ?: 'null');
-				
-				$acl_data[] = "({$group_id}, {$user_id}, {$target_table_num}, {$target_id}, {$access}, '', {$inherited_from_table_num}, {$inherited_from_row_id})";
-			}
-			
-			if(sizeof($acl_data) > 0) {
-				return $db->query("
-					INSERT INTO ca_acl
-					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
-					VALUES 
-					".join(", ", $acl_data)."
-				");
-			} else {
-				return true;
 			}
 		}
 		return false;
 	}
-	# --------------------------------------------------------------------------------------------		
+	# -------------------------------------------------------
+	# Utilities
+	# -------------------------------------------------------
 	/**
-	 * 
+	 * Get hierarchy under subject row returning only children having access inheritance set
 	 */
-	public static function setACLWorldAccess($subject, $world_access, ?array $options=null) {
-		if (!($id = (int)$subject->getPrimaryKey())) { return null; }
-		
-		$table_num = $subject->tableNum();
-		
-		$t_acl = new ca_acl();	
-		$t_acl->setTransaction($subject->getTransaction());
-		
-		$t_acl->load(['group_id' => null, 'user_id' => null, 'table_num' => $table_num, 'row_id' => $id]);		// try to load existing record
-		
-		$t_acl->set('table_num', $table_num);
-		$t_acl->set('row_id', $id);
-		$t_acl->set('user_id', null);
-		$t_acl->set('group_id', null);
-		$t_acl->set('access', $world_access);
-		
-		if ($t_acl->getPrimaryKey()) {
-			$t_acl->update();
-		} else {
-			$t_acl->insert();
-		}
-		if ($t_acl->numErrors()) {
-			$subject->errors = $t_acl->errors;
-			return false;
-		}
-		
-		return true;
+	private static function getAccessInheritanceHierarchy(BaseModel $subject) {
+		return ca_acl::getInheritanceHierarchy($subject, ['mode' => 'access']);
 	}
-	# --------------------------------------------------------------------------------------------		
+	# -------------------------------------------------------
 	/**
-	 * 
+	 * Get hierarchy under subject row returning only children having ACL inheritance set
 	 */
-	public static function setACLWorldAccessForRows($table, array $row_ids, int $world_access, ?array $options=null) {
-		if(!($subject = Datamodel::getInstance($table))) {
-			print caPrintStackTrace();
-			throw new ApplicationException(_t('Invalid table: %1', $table));
+	private static function getACLInheritanceHierarchy(BaseModel $subject) {
+		return ca_acl::getInheritanceHierarchy($subject, ['mode' => 'acl']);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get hierarchy under subject row returning only children having inheritance set and all ancestors 
+	 * uo to the subject having inheritance set. Will check for access or ACL inheritance depending upon
+	 * the value of the 'mode' option. 
+	 *
+	 * @param BaseMode $subject
+	 * @param array $options Options include:
+	 *		mode = Type in inheritance to filter on. Valid values are 'access' and 'acl'. [Default is 'acl']
+	 *
+	 * return @array List of ids in hierarchy meeting inheritance requirements
+	 */
+	private static function getInheritanceHierarchy(BaseModel $subject, ?array $options=null) : array {
+		$subject_id = $subject->getPrimaryKey();
+		$subject_table = $subject->tableName();
+		
+		switch($mode = caGetOption('mode', $options, 'acl')) {
+			case 'access':
+				$key = 'access_inherit_from_parent';
+				break;
+			case 'acl':
+				$key = 'acl_inherit_from_parent';
+				break;
+			default:
+				throw new ApplicationException(_t('Invalid mode: %1', $mode));
+				break;
 		}
-		$table_num = (int)$subject->tableNum();
 		
-		$row_ids = array_filter(array_map(function($v) { return (int)$v; }, $row_ids), function($v) { return $v > 0; });
 		
-		$trans = caGetOption('transaction', $options, null);
-		$db = $trans ? $trans->getDb() : $subject->getDb();
+		$ids = $subject->getHierarchy(null, ['idsOnly' => true, 'includeSelf' => true]);
+		$qr = caMakeSearchResult($subject_table, $ids);
 		
-		$acc = [];
-		while(sizeof($row_ids) > 0) {
-			$ids = array_splice($row_ids, 0, 500);
+		$items = [];
+		while($qr->nextHit()) {
+			$id = $qr->getPrimaryKey();
+			$items[$id] = ['id' => $id, 'parent_id' => $qr->get('parent_id'), 'inherit' => $qr->get($key), 'access' => $qr->get('access')];
+		}
+		$hier = [];
+		foreach($items as $c) {
+			if(!$c['inherit'] && ($c['id'] != $subject_id)) { continue; }
+			if($c['id'] == $subject_id) { $hier[] = $subject_id; continue; }
 			
-			$acc = array_map(function($id) use ($table_num, $world_access) {
-				$id = (int)$id;
-				return "(null, null, {$table_num}, {$id}, {$world_access}, '')";
-			}, $ids);
-			
-			if(sizeof($acc) > 0) {
-				$db->query("DELETE FROM ca_acl WHERE group_id IS NULL AND user_id IS NULL AND table_num = ? AND row_id IN (?)", [$table_num, $ids]);
-				if(!$db->query("INSERT INTO ca_acl (group_id, user_id, table_num, row_id, access, notes) VALUES ".join(', ', $acc))) {
-					return false;
+			$in_hier = true;
+			$i = $c['id'];
+			do {
+				if($items[$i] && $items[$i]['parent_id'] && $items[$i]['inherit']) {
+					$i = $items[$i]['parent_id'];
+				} else {
+					$in_hier = false;
+					break;
 				}
+			} while($items[$i] && ($items[$i]['id'] != $subject_id));
+			
+			if($in_hier) {
+				$hier[] = $c['id'];
 			}
 		}
-		return true;
+		return $hier;
 	}
 	# -------------------------------------------------------
 	/**

@@ -248,7 +248,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ((bool)$this->get('access_inherit_from_parent') && (($vn_parent_id = $this->get('parent_id')) > 0)) {
 					$t_parent = Datamodel::getInstanceByTableNum($this->tableNum(), false);
 					if ($t_parent->load($vn_parent_id)) {
-						$this->set('access', $t_parent->set('access'));
+						$this->set('access', $t_parent->get('access'));
 					}
 				}
 			}
@@ -385,19 +385,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Process "access_inherit_from_parent" flag where supported
+		$update_access_inheritance = false;
+		$parent_changed = $this->changed('parent_id');
+		$access_changed = $this->changed('access');
 		if ((bool)$this->getAppConfig()->get($this->tableName().'_allow_access_inheritance') && $this->hasField('access_inherit_from_parent')) {
-			// Child record with inheritance set
-			if ((bool)$this->get('access_inherit_from_parent') && (($vn_parent_id = $this->get('parent_id')) > 0)) {
-				$t_parent = Datamodel::getInstanceByTableNum($this->tableNum(), false);
-				if ($t_parent->load($vn_parent_id)) {
-					$this->set('access', $t_parent->set('access'));
-				}
-			}
-			
-			// Parent record for which access is changing
-			if ($this->changed('access')) {
-				ca_acl::applyAccessInheritanceToChildrenFromRow($this);
-				ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($this);
+			if($access_changed || $parent_changed) {
+				$update_access_inheritance = true;
 			}
 		}
 	
@@ -429,6 +422,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$orig_access = $this->get('access');
 			$mapped_acl = $access_to_acl_map[$orig_access] ?? $this->getAppConfig()->get('default_item_access_level');
 			$this->setACLWorldAccess($mapped_acl);
+		}
+		
+		// Update inherited ACL values for item as location in hierarchy has changed
+		if($parent_changed && caACLIsEnabled($this, ['anywhere' => true])) {
+			ca_acl::forceACLInheritanceUpdateForRow($this);
+		}
+		if($update_access_inheritance) {
+			ca_acl::forceAccessInheritanceUpdate($this);
 		}
 		return $vn_rc;
 	}	

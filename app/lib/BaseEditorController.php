@@ -1075,7 +1075,7 @@ class BaseEditorController extends ActionController {
 		if($can_save_acl) {
 			// Force all?
 			if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-				if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				if(!ca_acl::setACLInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 					$t_subject->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
 				}
 				$_REQUEST['form_timestamp'] = time();
@@ -1085,7 +1085,7 @@ class BaseEditorController extends ActionController {
 				&&
 				($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
 			) {
-				if(!ca_acl::setInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+				if(!ca_acl::setACLInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 					$t_subject->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 				}
 				$_REQUEST['form_timestamp'] = time();
@@ -1095,7 +1095,7 @@ class BaseEditorController extends ActionController {
 		if(
 			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
 		) {
-			if(!ca_acl::setAccessInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setAccessInheritanceSettingForChildrenFromRow($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
 				$t_subject->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
 			}
 			$_REQUEST['form_timestamp'] = time();
@@ -1176,10 +1176,11 @@ class BaseEditorController extends ActionController {
 		}
 		
 		
+		ca_acl::applyAccessInheritance($t_subject);
+		ca_acl::applyAccessInheritanceToChildrenFromRow($t_subject);
 		if($t_subject->tableName() === 'ca_collections') {
 			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
 		}
-		ca_acl::applyAccessInheritance($t_subject);
 		
 
 		$this->opo_app_plugin_manager->hookSaveItem(
