@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
 
 (function ($) {
@@ -37,6 +36,7 @@ var caUI = caUI || {};
 		}, options);
 
 		that.showUnsavedChangesWarningFlag = false;
+		caUI.unsavedChangesWarningHandler = null;
 		caUI.utils = {};
 		//
 		// Unsaved change warning methods
@@ -68,12 +68,15 @@ var caUI = caUI || {};
 			};
 			
 			// init event handler
-			window.addEventListener("beforeunload", function (e) {
-				if (!caUI.utils.getDisableUnsavedChangesWarning() && caUI.utils.shouldShowUnsavedChangesWarning()) {
-					e.returnValue = caUI.utils.getUnsavedChangesWarningMessage();     // Gecko, Trident, Chrome 34+
-					return caUI.utils.getUnsavedChangesWarningMessage(); // Gecko, WebKit, Chrome <34
-				}
-			});
+			if(!caUI.unsavedChangesWarningHandler) { caUI.unsavedChangesWarningHandler = function (e) {
+                    if (!caUI.utils.getDisableUnsavedChangesWarning() && caUI.utils.shouldShowUnsavedChangesWarning()) {
+                        e.preventDefault();
+                        e.returnValue = caUI.utils.getUnsavedChangesWarningMessage();     // Gecko, Trident, Chrome 34+
+                        return true;
+                    }
+                }
+            };
+			window.addEventListener("beforeunload", caUI.unsavedChangesWarningHandler);
 			
 			// ------------------------------------------------------------------------------------
 			

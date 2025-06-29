@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2024 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -132,7 +132,6 @@ class AttributeValue extends Base {
 		$va_snapshot = $this->getSnapshot();
 
 		foreach($va_snapshot as $vs_field => $vm_val) {
-
 			if($vs_field == 'element_id') {
 				if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
 					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
@@ -179,8 +178,12 @@ class AttributeValue extends Base {
 						}
 					}
 				}
+			} elseif(($vs_field == 'value_longtext1') && ($va_snapshot['value_longtext1_guid'] ?? null)) {		// authority value
+				if(is_array($info = \ca_guids::getInfoForGUID($va_snapshot['value_longtext1_guid']))) {
+					$this->getModelInstance()->set('value_longtext1', $info['row_id']);
+					$this->getModelInstance()->set('value_integer1', $info['row_id']);
+				}
 			}
 		}
 	}
-
 }

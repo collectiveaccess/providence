@@ -847,7 +847,7 @@ class XMLProfileParser extends BaseProfileParser {
 
 						$source_level_access_control[] = [
 							'table' => $permission_table,
-							'bundle' => $permission_bundle,
+							'source' => $permission_bundle,
 							'access' => $permission_access,
 							'default' => $permission_default
 						];

@@ -1245,6 +1245,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$tokenize = $options['DONT_TOKENIZE'] ? false : true;
 		
 		$rel_type_id = (isset($options['relationship_type_id']) && ($options['relationship_type_id'] > 0)) ? (int)$options['relationship_type_id'] : 0;
+		if($rel_type_id > 65535) { $rel_type_id = 0; } // disregard if out of bound; can happen with set items where rel_type_id isn't really relevant
 		$container_id = (isset($options['container_id']) && ($options['container_id'] > 0)) ? (int)$options['container_id'] : 'NULL';
 		
 		if (!isset($options['PRIVATE'])) { $options['PRIVATE'] = 0; }
@@ -1513,7 +1514,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$vn_private = $pa_options['PRIVATE'] ? 1 : 0;
 		
 		$vn_rel_type_id = (int)caGetOption('relationship_type_id', $pa_options, 0);
-		
+		if($vn_rel_type_id > 65535) { $vn_rel_type_id = 0; } // disregard if out of bound; can happen with set items where rel_type_id isn't really relevant
 		$va_row_insert_sql = array();
 		
 		$subject_tablenum = (int)$subject_tablenum;
