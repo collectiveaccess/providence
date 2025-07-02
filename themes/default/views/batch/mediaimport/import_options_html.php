@@ -670,9 +670,13 @@ print $vs_control_box = caFormControlBox(
 
 	<script type="text/javascript">
 		function caShowConfirmBatchExecutionPanel() {
-			var msg = <?= json_encode(_t("You are about to import files from <em>%1</em>")); ?>;
-			var dir = jQuery('#caDirectoryValue').val();
-			msg = msg.replace("%1", dir ? dir : <?= json_encode('the import root'); ?>);
+			let msg = <?= json_encode(_t("You are about to import files from <em>%1</em>")); ?>;
+			const dir = jQuery('#caDirectoryValue').val();
+			const files = dir.split(/;/);
+			
+			let filelist = (files.length > 4) ? files[0] + <?= json_encode(_t(' + %1 more')); ?> : files.join('; ');
+			filelist = filelist.replace('%1', files.length - 1);
+			msg = msg.replace('%1', filelist ? filelist : <?= json_encode('the import root'); ?>);
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}
