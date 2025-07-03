@@ -444,7 +444,8 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function getStatisticsForRow($subject, int $row_id) : ?array {
+	public static function getStatisticsForRow($subject, ?int $row_id) : ?array {
+		if(!$row_id) { return null; }
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		if(!($subject_table_num = is_object($subject) ? $subject->tableNum() : Datamodel::getTableNum($subject))) { return null; }
 		
