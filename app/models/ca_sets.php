@@ -1657,7 +1657,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @param array $pa_options An optional array of options. Supported options are:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
-	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" Ð a combination of the row_id and the set item_id (row_id + "_" + item_id) Ð are guaranteed to be unique. [Default=false]
+	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" â€“ a combination of the row_id and the set item_id (row_id + "_" + item_id) â€“ are guaranteed to be unique. [Default=false]
 	 * @return array Array keyed on row_id with values set to ranks for each item. If the set contains duplicate row_ids then the list will only have the largest rank. If you have sets with duplicate rows use getItemRanks() instead
 	 */
 	public function getRowIDRanks($pa_options=null) {
@@ -1665,7 +1665,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
-		
 		$va_items = caExtractValuesByUserLocale($this->getItems($pa_options));
 		$va_ranks = array();
 		foreach($va_items as $vn_item_id => $va_item) {
@@ -1681,7 +1680,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *
 	 * @param int $pn_set_id
 	 * @param array $pa_options An optional array of options. Supported options are:
-	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" Ð a combination of the row_id and the set item_id (row_id + "_" + item_id) Ð are guaranteed to be unique. [Default=false]
+	 *			treatRowIDsAsRIDs = use combination row_id/item_id indices in returned array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" â€“ a combination of the row_id and the set item_id (row_id + "_" + item_id) â€“ are guaranteed to be unique. [Default=false]
 	 * @return array ray keyed on row_id with values set to ranks for each item. If the set contains duplicate row_ids then the list will only have the largest rank.
 	 */
 	static public function getRowIDRanksForSet($pn_set_id, $pa_options=null) {
@@ -1705,7 +1704,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $pa_row_ids A list of row_ids in the set, in the order in which they should be displayed in the set
 	 * @param array $pa_options An optional array of options. Supported options include:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
-	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" Ð a combination of the row_id and the set item_id (row_id + "_" + item_id) Ð are guaranteed to be unique. [Default=false]
+	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" â€“ a combination of the row_id and the set item_id (row_id + "_" + item_id) â€“ are guaranteed to be unique. [Default=false]
 	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  [Default is false]
 	 *			checked = array key'ed with rIDs; values indicate whether set item is checked. [Default is null]
 	 * @return array An array of errors. If the array is empty then no errors occurred
@@ -2146,10 +2145,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				casi.`rank` ASC
 			{$limit_sql}
 		", [(int)$set_id]);
-		
 		$set_processed_templates = $processed_templates = $row_ids = null;
 		if(!$ids_only && !($options['returnItemIdsOnly'] ?? null) && !($options['returnRowIdsOnly'] ?? null) && !$simple_data_only) {
 			$row_ids = $qr_res->getAllFieldValues('row_id');
+			$qr_res->seek(0);
 			if($ps_template = caGetOption('template', $options, null)) {
 				$processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $row_ids, array('returnAsArray' => true));
 				$qr_res->seek(0);
@@ -2274,7 +2273,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			
 			$items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $row;
 		}
-		
 		if ($sort && is_array($sorted_row_ids) && sizeof($sorted_row_ids)) {
 			$sorted_items = [];
 			foreach($sorted_row_ids as $r) {
