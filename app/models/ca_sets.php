@@ -3806,13 +3806,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	/**
 	 *
 	 */
-	public function getAutoDeleteInfo(ca_users $t_user) : ?array {
-		if(!$this->getPrimaryKey()) { return null; }
+	public static function getAutoDeleteInfo($t_set, $t_user) : ?array {
+		if(!$t_set->getPrimaryKey()) { return null; }
 		
 		$enabled = $t_user->getPreference('autodelete_sets');
 		if(!$enabled) { return null; }
 		
-		if(!$this->get('autodelete')) { return null; }
+		if(!$t_set->get('autodelete')) { return null; }
 		
 		$threshold = $t_user->getPreference('autodelete_sets_age_threshold'); // in days
 		$threshold_in_seconds = $threshold * 24 * 60 * 60; 
@@ -3820,10 +3820,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		switch($mode) {
 			case 'creation':
-				$base = $this->get('ca_sets.created.timestamp');
+				$base = $t_set->get('ca_sets.created.timestamp');
 				break;
 			case 'last_use':
-				$base = $this->get('ca_sets.last_used');
+				$base = $t_set->get('ca_sets.last_used');
 			default:
 				break;
 		}
@@ -3843,6 +3843,57 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$ret['message'] = $msg;
 		
 		return $ret;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Check for sets to autodelete subject to set owner's preferences.
+	 *
+	 * @param array $options Options include:
+	 *		dryrun = Only check for sets for auto-delete, but skip deletion. [Default is false]
+	 *
+	 * @return int Returns number of sets deleted, or null on error.
+	 */
+	public static function autodeleteSets(?array $options=null) : ?int {
+		$qr = ca_sets::findAsSearchResult(['autodelete' => 1]);
+		if(!$qr) { return null; }
+		
+		$dryrun = caGetOption('dryrun', $options, false);
+		
+		$log = caGetLogger();
+		
+		$user_pref_cache = [];
+		$delete_count = 0;
+		while($qr->nextHit()) {
+			$user_id = $qr->get('ca_sets.user_id');
+			if(!$user_id) { continue; }
+			if(!isset($user_pref_cache[$user_id])) {
+				if(!($t_user = ca_users::find($user_id))) { continue; }
+				$user_pref_cache[$user_id] = [
+					'user' => $t_user,
+					'enabled' => $t_user->getPreference('autodelete_sets'),
+					'threshold' => $threshold = $t_user->getPreference('autodelete_sets_age_threshold'),
+					'threshold_in_seconds' => $threshold * 24 * 60 * 60,
+					'mode' => $t_user->getPreference('autodelete_sets_age_mode')
+				];
+			}
+			if(!$user_pref_cache[$user_id]['enabled']) { continue; }
+			$info = ca_sets::getAutoDeleteInfo($qr,	$user_pref_cache[$user_id]['user']);
+			if($info['should_autodelete'] ?? false) {
+				if($dryrun) {
+					$log->logInfo(_t('Found set to auto-deleted in dryrun mode. Set is %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
+					$delete_count++;
+					continue;
+				}
+				$t_set = $qr->getInstance();
+				if($t_set->delete(true)) {
+					$delete_count++;
+					$log->logInfo(_t('Auto-deleted set %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
+				} else {
+					$log->logError(_t('Could not auto-delete set %1 (%2) [Set id %3]: %4', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id'), join('; ', $t_set->getErrors())));
+				}
+			}
+		}
+		return $delete_count;
 	}
 	# ---------------------------------------------------------------
 	/**

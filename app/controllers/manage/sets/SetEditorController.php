@@ -442,6 +442,9 @@ class SetEditorController extends BaseEditorController {
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView();
+		if($t_subject->tableName() !== 'ca_sets') {
+			throw new ApplicationException(_t('Invalid action'));
+		}
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
@@ -461,7 +464,7 @@ class SetEditorController extends BaseEditorController {
 
 		$this->view->setVar('errors', $errors);
 		
-		$info = $t_subject->getAutoDeleteInfo($this->request->user);
+		$info = ca_sets::getAutoDeleteInfo($t_subject, $this->request->user);
 		$this->view->setVar('message', $info['message'] ?? null);
 
 		$this->response->setContentType('application/json');

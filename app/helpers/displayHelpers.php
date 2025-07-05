@@ -1470,10 +1470,10 @@ function caEditorInspector($view, $options=null) {
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
 		
-		if(($table_name === 'ca_sets')) {
-			if(is_array($autodelete_info = $t_item->getAutoDeleteInfo($view->request->user))) {
-				$more_info .= "<div id='inspectorAutoDeleteMessage' class='inspectorAutodeleteSet'>{$autodelete_info['message']}</div>\n";
-			}
+		if(($table_name === 'ca_sets') && ($view->request->user->getPreference('autodelete_sets'))) {
+			$autodelete_info = ca_sets::getAutoDeleteInfo($t_item, $view->request->user);
+			$msg = $autodelete_info['message'] ?? null;
+			$more_info .= "<div id='inspectorAutoDeleteMessage' class='inspectorAutodeleteSet'>{$msg}</div>\n";
 		}
 		
 		$creation = $t_item->getCreationTimestamp();
