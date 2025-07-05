@@ -8,6 +8,7 @@
 
 ALTER TABLE ca_sets ADD COLUMN last_used int unsigned null;
 ALTER TABLE ca_sets ADD COLUMN autodelete tinyint unsigned not null default 0;
+UPDATE ca_sets SET last_used = unix_timestamp();
 
 /*==========================================================================*/
 

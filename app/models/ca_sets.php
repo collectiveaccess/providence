@@ -3820,10 +3820,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		switch($mode) {
 			case 'creation':
-				$base = $t_set->get('ca_sets.created.timestamp');
+				$base = (int)$t_set->get('ca_sets.created.timestamp');
 				break;
 			case 'last_use':
-				$base = $t_set->get('ca_sets.last_used');
+				$base = (int)$t_set->get('ca_sets.last_used');
 			default:
 				break;
 		}
