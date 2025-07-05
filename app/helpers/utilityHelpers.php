@@ -5221,12 +5221,13 @@ function caFileIsIncludable($ps_file) {
 	 */
 	 function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
+	 	
+	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
+	 		return [$type];
+	 	}
 	 	if(($types = $config->get('ca_objects_x_collections_hierarchy_relationship_types')) && is_array($types) && sizeof($types)) {
 	 		$types = array_filter($types, 'strlen');
 	 		if(sizeof($types)) { return $types; }
-	 	}
-	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
-	 		return [$type];
 	 	}
 	 	return null;
 	 }
