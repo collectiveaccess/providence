@@ -78,6 +78,7 @@ class DisplayTemplateParser {
 						$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
 						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
+						$va_get_options['restrictToSources'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 						
 						$va_get_options['allDescendants'] = (int) $o_node->allDescendants ?: null;
 						if ($o_node->sort) {
@@ -473,6 +474,7 @@ class DisplayTemplateParser {
 					$va_exclude_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
+					$va_restrict_to_sources = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
 					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
@@ -485,6 +487,7 @@ class DisplayTemplateParser {
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
+						'restrictToSources' => $va_restrict_to_sources,
 						'locale' => caGetOption('locale', $pa_options, null),
 						'noLocaleFallback' => caGetOption('noLocaleFallback', $pa_options, null),
 						'filterNonPrimaryRepresentations' => $filter_non_primary_reps
@@ -644,14 +647,16 @@ class DisplayTemplateParser {
 					$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
 					$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
+					$va_get_options['restrictToSources'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 					$va_get_options['hierarchyDirection'] = (string)$o_node->hierarchyDirection ?: null;
 					$va_get_options['maxLevelsFromTop'] = (int)$o_node->maxLevelsFromTop ?: null;
 					$va_get_options['maxLevelsFromBottom'] = (int)$o_node->maxLevelsFromBottom ?: null;
 					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
 					$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_reps;
 
+					$locale = caGetOption('locale', $o_node->locale, null);
 					if($o_node->locale) {
-						$va_get_options['locale'] = $o_node->locale;
+						$va_get_options['locale'] = $locale;
 						$va_get_options['noLocaleFallback'] = $o_node->noLocaleFallback;
 					}
 					
@@ -763,6 +768,7 @@ class DisplayTemplateParser {
 									'placeholderPrefix' => (string)$o_node->relativeTo,
 									'restrictToTypes' => $va_get_options['restrictToTypes'] ?? null,
 									'excludeTypes' => $va_get_options['excludeTypes'] ?? null,
+									'restrictToSources' => $va_get_options['restrictToSources'] ?? null,
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
@@ -811,6 +817,9 @@ class DisplayTemplateParser {
 							}
 							if (!is_array($va_get_options['excludeTypes']) || !sizeof($va_get_options['excludeTypes'])) {
 								$va_get_options['excludeTypes'] = $pa_options['excludeTypes'] ?? null;
+							}
+							if (!is_array($va_get_options['restrictToSources']) || !sizeof($va_get_options['restrictToSources'])) {
+								$va_get_options['restrictToSources'] = $pa_options['restrictToSources'] ?? null;
 							}
 						}
 						
@@ -963,6 +972,7 @@ class DisplayTemplateParser {
 									'placeholderPrefix' => (string)$o_node->relativeTo,
 									'restrictToTypes' => $va_get_options['restrictToTypes'] ?? null,
 									'excludeTypes' => $va_get_options['excludeTypes'] ?? null,
+									'restrictToSources' => $va_get_options['restrictToSources'] ?? null,
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
