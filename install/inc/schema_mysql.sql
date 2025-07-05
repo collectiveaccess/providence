@@ -4963,6 +4963,8 @@ create table ca_sets (
     deleted     tinyint unsigned not null default 0,
     `rank`      int unsigned not null default 0,
     source_id   int unsigned,
+    last_used   int unsigned null,
+    autodelete  tinyint unsigned not null default 0,
     
 	primary key (set_id),
       
@@ -4976,6 +4978,7 @@ create table ca_sets (
 	key i_table_num (table_num),
 	key i_source_id (source_id),
 	key i_set_code_sort (set_code_sort),
+	key i_last_used (last_used),
       
    constraint fk_ca_sets_parent_id foreign key (parent_id)
       references ca_sets (set_id) on delete restrict on update restrict,
@@ -7951,4 +7954,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (203, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (204, unix_timestamp());
