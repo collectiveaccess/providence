@@ -1445,7 +1445,7 @@ class ca_acl extends BaseModel {
 				$map = caGetACLItemLevelMap();
 				$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
 				
-				ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
+				ca_acl::setACLWorldAccessForRows('ca_objects', $ids, $acl_access);
 			} 
 		}
 		
