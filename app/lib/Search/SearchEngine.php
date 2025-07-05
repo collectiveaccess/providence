@@ -924,7 +924,7 @@ class SearchEngine extends SearchBase {
 			if (!$vn_type_id) { return false; }
 			
 			if (isset($va_type_list[$vn_type_id]) && $va_type_list[$vn_type_id]) {	// is valid type for this subject
-				if (caGetOption('includeSubtypes', $options, true) && !caGetOption('dontExpandTypesHierarchically', $options, false)) {
+				if (caGetOption('includeSubtypes', $options, true) && !caGetOption(['dontExpandTypesHierarchically', 'dontExpandHierarchically'], $options, false)) {
 					// See if there are any child types
 					$t_item = new ca_list_items($vn_type_id);
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));

@@ -361,9 +361,9 @@ abstract class IDNumber implements IIDNumbering {
 		$format = mb_strtolower($format);
 		$type = mb_strtolower($type);
 		if ($format && $type) {
+			$elements = [];
 			if (is_array($this->formats[$format][$type]['elements'] ?? null)) {
 				$is_child = $this->isChild();
-				$elements = [];
 				foreach($this->formats[$format][$type]['elements'] as $k => $element_info) {
 					if (!$is_child && (bool)($element_info['child_only'] ?? false)) { continue; }
 					if($is_child && ($element_info['root_only'] ?? false)) { continue; }
