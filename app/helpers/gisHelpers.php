@@ -670,3 +670,116 @@ function caGetStateList($country=null) {
 	return array();
 }
 # --------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caGetCoordinateDataFromResult($data, string $bundle, ?array $options=null) : ?array {
+	$tmp = explode('.', $bundle);
+	$t_georef_instance = Datamodel::getInstance($tmp[0], true);
+	$field_name = array_pop($tmp);
+	$container_field_name = array_pop($tmp);
+	
+	$chk_related_for_access = null;
+	if ($is_related = ($t_georef_instance && ($t_georef_instance->tableName() !== $data->tableName()))) {
+		if($t_georef_instance->hasField('access')) { $chk_related_for_access = $t_georef_instance->tableName().".access"; }
+	}
+	
+	if (is_subclass_of($data, 'BaseModel')) {
+		// Convert instance to search result
+		$data = caMakeSearchResult($data->tableName(), [$data->getPrimaryKey()]);
+	}
+	
+	if (is_subclass_of($data, 'SearchResult')) {
+		// If pulling coordinates from a related record (Eg. pulling coordinates from ca_places record related to ca_objects records)
+		// then then attempt here to shift the context from the subject to the relationship. If we leave context on subject
+		// then we're get labels for all places attached to a given object tagged on each coordinate, rather than having
+		// each label linked to its specific coordinate.
+					
+		$t_instance = $data->getResultTableInstance();
+		$table = $t_instance->tableName();
+		$pk = $t_instance->primaryKey();
+	   
+		if($is_related && is_array($path = Datamodel::getPath($t_georef_instance->tableName(), $data->tableName())) && (sizeof($path) === 3)) {
+			$path = array_keys($path);
+			
+			$rel_ids = [];
+			while($data->nextHit()) {
+				if(is_array($rel_ids_for_row = $data->get($path[1].".relation_id", ['returnAsArray' => true]))) {
+				   $rel_ids = array_merge($rel_ids, $rel_ids_for_row);
+				}
+			}
+			if (sizeof($rel_ids)) {
+				$data = caMakeSearchResult($path[1], $rel_ids);
+			}
+		}
+		
+		$access_values = null;
+		if (isset($options['checkAccess']) && is_array($options['checkAccess']) && sizeof($options['checkAccess'])) {
+			$access_values = $options['checkAccess'];
+		}
+		
+		$georef_list = [];
+		while($data->nextHit()) {
+			if (is_array($access_values) && !in_array($data->get($chk_related_for_access ? $chk_related_for_access : "{$table}.access"), $access_values)) {
+				continue;
+			}
+			if ($coordinates = $data->get($bundle, ['coordinates' => true, 'returnWithStructure' => true, 'returnAllLocales' => false])) {
+				$id = $data->get("{$table}.{$pk}");
+				
+				foreach($coordinates as $element_id => $coord_list) {
+					foreach($coord_list as $attribute_id => $geoname) {
+						if(isset($geoname[$field_name])) {
+							$coordinate = $geoname[$field_name];
+						} elseif(isset($geoname[$container_field_name])) {
+							$coordinate =  $geoname[$container_field_name];
+						} else {
+							$coordinate = $geoname;
+						}
+					
+						$label = $content = $ajax_content = null;
+						
+						if (strlen($info_template = caGetOption('infoTemplate', $options, null))) {
+							$info = caProcessTemplateForIDs($info_template, $table, [$id], []);
+						} else {
+							$info = '';
+						}
+						
+						$ajax_content = null; // @TODO
+									
+						$path_items = preg_split("/[:]/", $coordinate['path']);
+					
+						foreach($path_items as $path_item) {
+							$radius = $angle = null;
+							
+							$path = preg_split("/[;]/", $path_item);
+							if (sizeof($path) > 1) {
+								$coordinate_pairs = [];
+								foreach($path as $pair) {
+									$pair = explode(',', $pair);
+									$coordinate_pairs[] = ['latitude' => $pair[0], 'longitude' => $pair[1]];
+								}
+							   
+								$georef_list[] = ['coordinates' => $coordinate_pairs, 'info' => $info, 'ajaxContentUrl' => $ajax_content, 'ajaxContentID' => $id,  'group' => $group];
+							} else {
+								$coord = explode(',', $path[0]);
+								list($lng, $radius) = explode('~', $coord[1]);
+								if (!$radius) { list($lng, $angle) = explode('*', $coord[1]); }
+								
+								if($fuzz > 0) { $coord[0] = ''.round($coord[0], $fuzz); $lng = ''.round($lng, $fuzz); }
+						 
+								$d = ['latitude' => $coord[0], 'longitude' => $lng, 'info' => $info, 'ajaxContentUrl' => $ajax_content, 'ajaxContentID' => $id, 'group' => $group];
+								if ($radius) { $d['radius'] = $radius; }
+								if ($angle) { $d['angle'] = $angle; }
+							   $georef_list[] = $d;
+							}
+						}
+					}
+					$item_count++;
+				}
+			}
+		}	
+		return ['coordinates' => $georef_list];
+	}
+	return null;
+}
+# --------------------------------------------------------------------------------------------
