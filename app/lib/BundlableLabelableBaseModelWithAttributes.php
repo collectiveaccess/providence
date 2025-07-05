@@ -322,7 +322,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Override update() to generate sortable version of user-defined identifier field
 	 *
 	 * @param array $pa_options Options include:
-	 *		bulkMode = don't abort transaction on error [Default is false]
+	 *		bulkMode = don't abort transaction on error. [Default is false]
+	 *		skipACLInheritance = Don't apply ACL inheritance rules after update. [Default is false]
 	 */ 
 	public function update($pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -334,6 +335,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		$bulk = caGetOption('bulkMode', $pa_options, false);
+		$skip_acl_inheritance = caGetOption('skipACLInheritance', $pa_options, false);
 
 		$this->opo_app_plugin_manager->hookBeforeBundleUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
 
@@ -417,19 +419,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			);
 		}
 		
-		if(method_exists($this, 'setACLWorldAccess') && $this->hasField('access') && caACLIsEnabled($this, ['anywhere' => true])) {
-			$access_to_acl_map = caGetACLItemLevelMap();
-			$orig_access = $this->get('access');
-			$mapped_acl = $access_to_acl_map[$orig_access] ?? $this->getAppConfig()->get('default_item_access_level');
-			$this->setACLWorldAccess($mapped_acl);
-		}
-		
-		// Update inherited ACL values for item as location in hierarchy has changed
-		if($parent_changed && caACLIsEnabled($this, ['anywhere' => true])) {
-			ca_acl::forceACLInheritanceUpdateForRow($this);
-		}
-		if($update_access_inheritance) {
-			ca_acl::forceAccessInheritanceUpdate($this);
+		if(!$skip_acl_inheritance) {
+			if(method_exists($this, 'setACLWorldAccess') && $this->hasField('access') && caACLIsEnabled($this, ['anywhere' => true])) {
+				$access_to_acl_map = caGetACLItemLevelMap();
+				$orig_access = $this->get('access');
+				$mapped_acl = $access_to_acl_map[$orig_access] ?? $this->getAppConfig()->get('default_item_access_level');
+				$this->setACLWorldAccess($mapped_acl);
+			}
+			
+			// Update inherited ACL values for item as location in hierarchy has changed
+			if($parent_changed && caACLIsEnabled($this, ['anywhere' => true])) {
+				ca_acl::forceACLInheritanceUpdateForRow($this);
+			}
+			if($update_access_inheritance) {
+				ca_acl::forceAccessInheritanceUpdate($this);
+			}
 		}
 		return $vn_rc;
 	}	
@@ -8245,11 +8249,11 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$preserve_inherited_acl_sql = '';
 		if((is_array($preserve_inherited_acl) && sizeof($preserve_inherited_acl))) {
-			$preserve_inherited_acl_sql = " AND inherited_from_table_num NOT IN (?)";
+			$preserve_inherited_acl_sql = " AND (inherited_from_table_num NOT IN (?) OR inherited_from_table_num IS NULL)";
 			$params[] = $preserve_inherited_acl;
 		}
 		
-		$qr_res = $o_db->query("
+		$qr_res = $o_db->query($z="
 			DELETE FROM ca_acl
 			WHERE
 				table_num = ? AND row_id = ? AND group_id IS NOT NULL {$preserve_inherited_acl_sql}
