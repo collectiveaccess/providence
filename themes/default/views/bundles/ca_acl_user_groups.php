@@ -32,7 +32,7 @@ $t_subject 		= $this->getVar('t_subject');
 $settings 		= $this->getVar('settings');
 $add_label 		= $this->getVar('add_label') ?? _t("Add group exception");
 
-$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucket' => true]);
+$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucketOnly' => true]);
 
 $read_only = false;
 

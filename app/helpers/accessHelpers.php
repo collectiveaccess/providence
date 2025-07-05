@@ -879,7 +879,9 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
  * @param array $options Array of options. Options include:
  *		dontFilterByACL = If set to true then ACL will be returned as disabled even if configured to be active. [Default is false]
- *		forPawtucket = Check if ACL is enabled for front-end only use. Will return true if set, even if back-end ACL is disabled. [Default is false]
+ *		forPawtucket = Check if ACL is enabled for front-end use. Will return true if set, even if back-end ACL is disabled. [Default is false]
+ *		forPawtucketOnly = Check if ACL is enabled for front-end use only. [Default is false]
+ *		forProvidenceOnly = Check if ACL is enabled for back-end use only. [Default is false]
  * 		anywhere = Check if ACL is enabled for front-end or back-end use. [Default is false]
  * @return bool
  */
@@ -888,7 +890,12 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	if($options['dontFilterByACL'] ?? false) { return false; }
 	$config = Configuration::load();
 	
-	if(($options['forPawtucket'] ?? false) || ($options['anywhere'] ?? false)) { 
+	$for_pawtucket = ($options['forPawtucket'] ?? false);
+	$for_pawtucket_only = ($options['forPawtucketOnly'] ?? false);
+	$for_providence_only = ($options['forProvidenceOnly'] ?? false);
+	$anywhere = ($options['anywhere'] ?? false);
+	
+	if($for_pawtucket || $for_pawtucket_only || $for_providence_only || $anywhere) { 
 		if(!is_a($t_item, 'BaseModel')) { 
 			if(is_a($t_item, 'SearchResult')) {
 				$t_item = Datamodel::getInstance($t_item->tableName(), true); 
@@ -898,10 +905,12 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 				return false;
 			}
 		}
-		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')) || $config->get('perform_item_level_access_checking'));
-		if(($options['anywhere'] ?? false) && $paw_only) { 	
+		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')) || (!$for_pawtucket_only && $config->get('perform_item_level_access_checking')));
+		if($anywhere && $paw_only) { 	
 			return true; 
-		} elseif($options['forPawtucket'] ?? false) {
+		} elseif($for_providence_only && !$paw_only) {
+			return true;
+		} elseif($for_pawtucket || $for_pawtucket_only) {
 			return $paw_only;
 		}
 	}
