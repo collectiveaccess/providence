@@ -120,8 +120,8 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 	public function hookPeriodicTask(&$params) {
 		self::init($request, $options);
 		$config = self::$config ? self::$config->get('plugins.UserAgent') : [];
-		if(!$config['use_useragent_list']) { return false; }
-		if(!$config['useragent_list_url']) { return false; }
+		if(!$config['use_useragent_list']) { return true; }
+		if(!$config['useragent_list_url']) { return true; }
 		$appvars = new ApplicationVars();
 		
 		$log = self::getLogger();
@@ -141,7 +141,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 				$data = json_decode(file_get_contents($config['useragent_list_url']), true);
 			 	if(!is_array($data)) {
 			 		$log->logError(_t('[BanHammer::UserAgent] Could not load user agent list from URL "%1"', $config['useragent_list_url']));
-			 		return false;
+			 		return true;
 			 	}
 				$user_agents = array_map(function ($v) {
 					return $v['pattern'];
