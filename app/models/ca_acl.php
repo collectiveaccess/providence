@@ -1024,9 +1024,17 @@ class ca_acl extends BaseModel {
 		}
 		
 		$qr = caMakeSearchResult($subject_table, $ids);
+		
+		// Update children in current hierarchy
 		while($qr->nextHit()) {
 			$t_child = $qr->getInstance();
 			ca_acl::applyACLInheritanceToChildrenFromRow($t_child);
+		}
+		
+		// Update children on opposite end of collection-object hierarchy gap
+		$qr->seek(0);
+		while($qr->nextHit()) {
+			$t_child = $qr->getInstance();
 			
 			if($object_collections_hier_enabled) {
 				switch($subject_table) {
