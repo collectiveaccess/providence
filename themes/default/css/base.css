@@ -361,6 +361,12 @@ div.clear {
     width: 130px;
     font-size: 9px;
 }
+
+.inspectorAutodeleteSet {
+    color: #cc0000;
+    font-weight: bold !important;
+}
+
 #leftNav #toolIcons {
     display: flex;
     justify-content: space-between;

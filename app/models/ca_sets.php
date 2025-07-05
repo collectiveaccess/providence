@@ -367,8 +367,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Overrides default implementation with code to ensure consistency of set contents
 	 */
 	public function insert($pa_options=null) {
+		global $g_request;
+		
 		$this->_setUniqueIdno(['noUpdate' => true]);
 		$this->set('last_used', _t('now'));
+		
+		if($g_request && $g_request->isLoggedIn() && $g_request->user) {
+			if($g_request->user->getPreference('autodelete_sets_default') === 'autodelete') {
+				$this->set('autodelete', 1);
+			}
+		}
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
@@ -3793,6 +3801,48 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return true;
 		}
 		return false;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getAutoDeleteInfo(ca_users $t_user) : ?array {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		$enabled = $t_user->getPreference('autodelete_sets');
+		if(!$enabled) { return null; }
+		
+		if(!$this->get('autodelete')) { return null; }
+		
+		$threshold = $t_user->getPreference('autodelete_sets_age_threshold'); // in days
+		$threshold_in_seconds = $threshold * 24 * 60 * 60; 
+		$mode = $t_user->getPreference('autodelete_sets_age_mode');
+		
+		switch($mode) {
+			case 'creation':
+				$base = $this->get('ca_sets.created.timestamp');
+				break;
+			case 'last_use':
+				$base = $this->get('ca_sets.last_used');
+			default:
+				break;
+		}
+		
+		$ret = [
+			'base' => $base,
+			'mode' => $mode, 'threshold' => $threshold, 'threshold_in_seconds' => $threshold_in_seconds,
+			'should_autodelete' => (time() - $base) >= $threshold_in_seconds
+		];
+		
+		if($ret['should_autodelete']) {
+			$msg = _t('Set will be autodeleted');	
+		} else {
+			$interval = caFormatInterval($interval_in_seconds = ($threshold_in_seconds - (time() - $base)), 2, ' ');
+			$msg = _t('Set will be autodeleted in %1, on %2', $interval, caGetLocalizedDate(time() + $interval_in_seconds, ['timeOmit' => true]));
+		}
+		$ret['message'] = $msg;
+		
+		return $ret;
 	}
 	# ---------------------------------------------------------------
 	/**

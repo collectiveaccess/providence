@@ -30,5 +30,5 @@ $errors = $this->getVar('errors');
 if (sizeof($errors)) {
 	print json_encode(['status' => 'error', 'errors' => $errors]);
 } else {
-	print json_encode(['status' => 'ok', 'state' => $this->getVar('state')]);
+	print json_encode(['status' => 'ok', 'state' => $this->getVar('state'), 'message' => $this->getVar('message')]);
 }

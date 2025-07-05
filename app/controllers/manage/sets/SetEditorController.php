@@ -441,7 +441,7 @@ class SetEditorController extends BaseEditorController {
 	    	throw new ApplicationException(_t('CSRF check failed'));
 	    	return;
 	    }
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
@@ -460,6 +460,9 @@ class SetEditorController extends BaseEditorController {
 		}
 
 		$this->view->setVar('errors', $errors);
+		
+		$info = $t_subject->getAutoDeleteInfo($this->request->user);
+		$this->view->setVar('message', $info['message'] ?? null);
 
 		$this->response->setContentType('application/json');
 		$this->render('ajax_toggle_autodelete_json.php');
