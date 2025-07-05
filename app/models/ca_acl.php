@@ -1367,11 +1367,11 @@ class ca_acl extends BaseModel {
 				$parent = ['access' => 0];
 			}
 			$subject->set('access', $parent['access']);
-			return (bool)$subject->update();
+			return (bool)$subject->update(['skipACLInheritance' => true]);
 		} elseif(($subject_table == 'ca_objects') && $object_collections_hier_enabled && is_array($object_collections_rel_types) && sizeof($object_collections_rel_types)) {
 			if($coll = $subject->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'returnAs' => 'firstModelInstance'])) {
 				$subject->set('access', $coll->get('access'));
-				return (bool)$subject->update();
+				return (bool)$subject->update(['skipACLInheritance' => true]);
 			}
 		}
 		return false;
@@ -1550,7 +1550,6 @@ class ca_acl extends BaseModel {
 	 * 
 	 *
 	 * @param BaseModel $subject
-	 * @param array $options No options currently supported
 	 *
 	 * @return bool
 	 */
