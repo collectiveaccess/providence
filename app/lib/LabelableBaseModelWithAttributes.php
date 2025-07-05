@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3403,9 +3403,11 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('downloads', $downloads);
 		
 		$initial_values = $this->getUsers(array('returnAsInitialValuesForBundle' => true));
-		foreach($initial_values as $i => $iv) {
-			foreach($downloads as $d => $di) {
-				$initial_values[$i]["download_{$d}"] = in_array($d, $iv['downloads'] ?: []) ? 'CHECKED="1"' : '';
+		if(is_array($initial_values)) {
+			foreach($initial_values as $i => $iv) {
+				foreach($downloads as $d => $di) {
+					$initial_values[$i]["download_{$d}"] = in_array($d, $iv['downloads'] ?: []) ? 'CHECKED="1"' : '';
+				}
 			}
 		}
 		$o_view->setVar('initialValues', $initial_values);
