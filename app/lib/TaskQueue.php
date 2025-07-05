@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2024 Whirl-i-Gig
+ * Copyright 2004-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -725,6 +725,7 @@ class TaskQueue extends BaseObject {
 		if(!is_array($tasks = caGetOption('limit-to-tasks', $options, null)) && strlen($tasks)) { 
 			$options['limit-to-tasks'] = preg_split('![,;]+!', $tasks);
 		}
+		if(is_array($options['limit-to-tasks'])) { $options['limit-to-tasks'] = array_filter($options['limit-to-tasks'], 'strlen'); }
 
 		if(caGetOption('restart', $options, false))  { $tq->resetUnfinishedTasks(); }
 
