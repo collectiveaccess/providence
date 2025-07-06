@@ -1024,7 +1024,6 @@ class BaseEditorController extends ActionController {
 		$config = Configuration::load();
 		$save_access = $config->get('acl_show_public_access_controls');
 		$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_subject, ['forPawtucket' => true]);
-		
 		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
@@ -1034,7 +1033,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$can_save_acl = ((!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL())) || $pawtucket_only_acl_enabled;
-		
+	
 		$subject_table = $t_subject->tableName();
 		$subject_pk = $t_subject->primaryKey();
 		$form_prefix = $this->request->getParameter('_formName', pString);
@@ -1053,7 +1052,6 @@ class BaseEditorController extends ActionController {
 			$t_subject->set('access', $this->request->getParameter('access', pInteger) );
 			$t_subject->update();
 		}
-		
 		if($pawtucket_only_acl_enabled) {
 			$set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger);
 			$this->request->setParameter('set_all_acl_inherit_from_parent', $set_all);
@@ -1091,7 +1089,6 @@ class BaseEditorController extends ActionController {
 				$_REQUEST['form_timestamp'] = time();
 			}
 		}
-
 		if(
 			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
 		) {
@@ -1110,7 +1107,6 @@ class BaseEditorController extends ActionController {
 			}
 			$_REQUEST['form_timestamp'] = time();
 		}
-		
 		// Set ACL-related intrinsic fields
 		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent') || $t_subject->hasField('access_inherit_from_parent')) {
 			if($can_save_acl) {
@@ -1130,7 +1126,6 @@ class BaseEditorController extends ActionController {
 			//	$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
 			//}
 		}
-		
 		if($can_save_acl) {
 			$preserve_inherited = [];
 			if($t_subject->hasField('acl_inherit_from_ca_collections') && $t_subject->get('acl_inherit_from_ca_collections')) { $preserve_inherited[] = 13; }
@@ -1175,14 +1170,14 @@ class BaseEditorController extends ActionController {
 			ca_acl::updateACLInheritanceForRow($t_subject);
 		}
 		
-		
+		SearchResult::clearCaches();
 		ca_acl::applyAccessInheritance($t_subject);
+		SearchResult::clearCaches();
 		ca_acl::applyAccessInheritanceToChildrenFromRow($t_subject);
+		SearchResult::clearCaches();
 		if($t_subject->tableName() === 'ca_collections') {
 			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
 		}
-		
-
 		$this->opo_app_plugin_manager->hookSaveItem(
 			[
 				'id' => $subject_id,
@@ -1195,7 +1190,7 @@ class BaseEditorController extends ActionController {
 		);
 
 		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
-
+		ca_acl::removeRedundantACLEntries($t_subject->getDb());
 		$this->Access();
 	}
 	# -------------------------------------------------------

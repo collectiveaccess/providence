@@ -1039,12 +1039,12 @@ class ca_acl extends BaseModel {
 			if($object_collections_hier_enabled) {
 				switch($subject_table) {
 					case 'ca_collections':
-						ca_acl::applyACLInheritanceToRelatedFromRow($t_child, 'ca_objects', ['restrictToRelationshipTypes' => $object_collections_rel_types]);
+						ca_acl::applyACLInheritanceToRelatedFromRow($t_child, 'ca_objects', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'skipRedundantEntryRemoval' => true]);
 						break;
 					case 'ca_objects':
 						if(is_array($colls)) {
 							foreach($colls as $coll) {
-								ca_acl::applyACLInheritanceToRelatedFromRow($coll, 'ca_objects', ['limitToIDs' => [$subject_id], 'restrictToRelationshipTypes' => $object_collections_rel_types]);
+								ca_acl::applyACLInheritanceToRelatedFromRow($coll, 'ca_objects', ['limitToIDs' => [$subject_id], 'restrictToRelationshipTypes' => $object_collections_rel_types, 'skipRedundantEntryRemoval' => true]);
 							}
 						}
 						break;
@@ -1062,6 +1062,7 @@ class ca_acl extends BaseModel {
 	 * @param array $options Options include:
 	 *		restrictToRelationshipTypes = Restrict related rows to those with listed relationship types. If omitted all related rows are processed. [Default is null]
 	 *		limitToIDs = List of target primary key values. ACL inheritance will only be applied to rows in the list. All other rows will be skipped. [Default is null] 
+	 *		skipRedundantEntryRemoval = Skip check for and removal over redundant ACL entries created by the inheritance process. [Default is false]
 	 */
 	public static function applyACLInheritanceToRelatedFromRow(BaseModel $subject, string $target, ?array $options=null) {
 		$db = $subject->getDb();
@@ -1144,8 +1145,9 @@ class ca_acl extends BaseModel {
 							table_num = ? AND row_id = ? 
 					", (int)$subject_table_num, (int)$subject_id);
 				}
-					
-				ca_acl::removeRedundantACLEntries($db);
+				if(!caGetOption('skipRedundantEntryRemoval', $options, false)) {
+					ca_acl::removeRedundantACLEntries($db);
+				}
 			}
 		}
 		return true;
@@ -1153,6 +1155,15 @@ class ca_acl extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 * Set ACL inheritance for specific row, subject to acl_inherit_from_<table> values
+	 *
+	 * @param BaseModel $subjevt
+	 * @param int $subject_id
+	 * @param string $target
+	 * @param int $target_id
+	 * @param array $options Options include:
+	 *		skipRedundantEntryRemoval = Skip check for and removal over redundant ACL entries created by the inheritance process. [Default is false]
+	 *
+	 * @return bool
 	 */
 	public static function applyACLInheritanceToRelatedRowFromRow($subject, $subject_id, $target, $target_id, $options=null) {
 		$db = $subject->getDb() ?? new Db();
@@ -1191,7 +1202,9 @@ class ca_acl extends BaseModel {
 							table_num = ? AND row_id = ? 
 					", (int)$subject_table_num, (int)$subject_id);
 					
-					ca_acl::removeRedundantACLEntries($db);
+					if(!caGetOption('skipRedundantEntryRemoval', $options, false)) {
+						ca_acl::removeRedundantACLEntries($db);
+					}
 				}
 		
 			}
@@ -1445,7 +1458,7 @@ class ca_acl extends BaseModel {
 				$map = caGetACLItemLevelMap();
 				$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
 				
-				ca_acl::setACLWorldAccessForRows('ca_objects', $ids, $acl_access);
+				ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
 			} 
 		}
 		
