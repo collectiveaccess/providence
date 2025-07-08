@@ -187,11 +187,13 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function get($spec, $options=null) {
 		if ($vm_ret = parent::get($spec, $options)) { return $vm_ret; }
-		
 		$vb_return_as_array = caGetOption('returnAsArray', $options, false);
 		$vs_delimiter = caGetOption('delimiter', $options, ';');
 		if(is_array($this->headers) && (($i = array_search($spec, $this->headers, true)) >= 0)) {
 			$spec = $i;
+		}
+		if(!strlen($spec) || !is_numeric($spec)) {
+			return null;
 		}
 		$vs_value = $this->opo_parser->getRowValue($spec);
 	

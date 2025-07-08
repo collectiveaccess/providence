@@ -181,20 +181,19 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 } else {
 	$va_template_tags[] = 'value_source';
 	
-	// set labels for replacement in blank lookups	
-	if (is_array($va_element_ids)) {
-		foreach($va_element_ids as $vn_element_id) {
-			$va_template_tags[] = "{$vn_element_id}_id";
-			$va_template_tags[] = "{$vn_element_id}_label";
-			$va_template_tags[] = "{$vn_element_id}_display";
-		}
-	}
-	
 	// Set element errors an unsaved/new elements
 	if(is_array($va_action_errors = $this->request->getActionErrors($vs_error_source_code))) {
 		foreach($va_action_errors as $o_error) {
 			$va_errors['new_0'][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 		}
+	}
+}
+// set labels for replacement in blank lookups	
+if (is_array($va_element_ids)) {
+	foreach($va_element_ids as $vn_element_id) {
+		$va_template_tags[] = "{$vn_element_id}_id";
+		$va_template_tags[] = "{$vn_element_id}_label";
+		$va_template_tags[] = "{$vn_element_id}_display";
 	}
 }
 
