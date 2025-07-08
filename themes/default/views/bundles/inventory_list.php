@@ -104,6 +104,7 @@ $inventory_found_icons = $this->getVar('inventory_found_icons');
 					{loadingMessage}
 					{displayTemplate}
 					{displayTemplateDescription}
+					{violations}
 				</div>
 				<div style="display: none;" class="inventoryItemEditorContainer">
 					

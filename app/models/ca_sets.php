@@ -2023,7 +2023,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		// list items happen to have the same primary key name as set items, which leads to weird side-effects
 		// in the code below. so instead of getting rel.* we explicitly list the fields for ca_list_items and
 		// rename cli.item_id to list_item_id so that any get('item_id') calls below refer to the set item id
-		if (($t_rel_table->tableName() === 'ca_list_items')) {
+		$rel_table = $t_rel_table->tableName();
+		if (($rel_table === 'ca_list_items')) {
 			$rel_field_list = array();
 			foreach($t_rel_table->getFields() as $rel_field) {
 				if($rel_field == $t_rel_table->primaryKey()) {
@@ -2043,12 +2044,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				SELECT 
 					casi.item_id, casi.row_id
 				FROM ca_set_items casi
-				INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+				INNER JOIN {$rel_table} AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 				WHERE
 					casi.set_id = ? {$access_sql} {$deleted_sql} {$item_ids_sql} {$row_ids_sql} AND casi.deleted = 0
 			", [(int)$set_id]);
 			
-			if($qr_sort = caMakeSearchResult($t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), ['sort' => $sort, 'sortDirection' => $sort_direction])) {
+			if($qr_sort = caMakeSearchResult($rel_table, $qr_res->getAllFieldValues('row_id'), ['sort' => $sort, 'sortDirection' => $sort_direction])) {
 				$sorted_row_ids = $qr_sort->getAllFieldValues($t_rel_table->primaryKey());
 				if(($start > 0) || ($limit > 0)) {
 					$sorted_row_ids = array_slice($sorted_row_ids, $start, $limit);
@@ -2075,9 +2076,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if(!$simple_data_only) {
 			if(is_a($t_rel_table, 'RepresentableBaseModel') && (isset($options['thumbnailVersion']) || isset($options['thumbnailVersions']))) {
-				if(is_array($path = Datamodel::getPath($t_rel_table->tableName(), 'ca_object_representations')) && (sizeof($path) === 3)) {
+				if(is_array($path = Datamodel::getPath($rel_table, 'ca_object_representations')) && (sizeof($path) === 3)) {
 					$path = array_keys($path);
-					$rel_table = $t_rel_table->tableName();
 					$rel_pk = $t_rel_table->primaryKey();
 					
 					$rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
@@ -2112,7 +2112,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.checked,
 					rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 				FROM ca_set_items casi
-				INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+				INNER JOIN {$rel_table} AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 				{$label_join_sql}
 				WHERE
 					casi.set_id = ? {$access_sql} {$deleted_sql} {$item_ids_sql} {$row_ids_sql} AND casi.deleted = 0
@@ -2137,7 +2137,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				{$rep_select}
 			FROM ca_set_items casi
 			LEFT JOIN ca_set_item_labels AS casil ON casi.item_id = casil.item_id
-			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+			INNER JOIN {$rel_table} AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 			{$label_join_sql}
 			{$rep_join_sql}
 			WHERE
@@ -2147,11 +2147,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			{$limit_sql}
 		", [(int)$set_id]);
 		
-		$set_processed_templates = $processed_templates = $row_ids = null;
+		$set_processed_templates = $processed_templates = $violations = $row_ids = null;
 		if(!$ids_only && !($options['returnItemIdsOnly'] ?? null) && !($options['returnRowIdsOnly'] ?? null) && !$simple_data_only) {
 			$row_ids = $qr_res->getAllFieldValues('row_id');
 			if($ps_template = caGetOption('template', $options, null)) {
-				$processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $row_ids, array('returnAsArray' => true));
+				$processed_templates = caProcessTemplateForIDs($ps_template, $rel_table, $row_ids, array('returnAsArray' => true));
 				$qr_res->seek(0);
 			}
 			if($set_item_template = caGetOption('setItemTemplate', $options, null)) {
@@ -2166,9 +2166,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res->seek(0);
 			}
 			
+			$violations = (method_exists($rel_table, 'getMetadataDictionaryRuleViolationsForIds')) ? $rel_table::getMetadataDictionaryRuleViolationsForIds($row_ids) : []; 
+		
 			if ($rep_join_sql) {
-				$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
-				$alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $row_ids, array('returnAsArray' => true));
+				$alt_text_template = Configuration::load()->get("{$rel_table}_alt_text_template");
+				$alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^{$rel_table}.preferred_labels", $rel_table, $row_ids, array('returnAsArray' => true));
 				$qr_res->seek(0);
 			}	
 		} 
@@ -2217,7 +2219,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 							$row['representation_tag_'.$version] = $qr_res->getMediaTag('media', $version, ["class" => $class, "alt" => $alt_text]);
 							if(!defined('__CA_IS_SERVICE_REQUEST__')) {
 								global $g_request;
-								$row['representation_tag_'.$version.'_as_link'] = caDetailLink($g_request, $qr_res->getMediaTag('media', $version, array("alt" => $alt_text)), '', $t_rel_table->tableName(), $qr_res->get("ca_set_items.row_id"));
+								$row['representation_tag_'.$version.'_as_link'] = caDetailLink($g_request, $qr_res->getMediaTag('media', $version, array("alt" => $alt_text)), '', $rel_table, $qr_res->get("ca_set_items.row_id"));
 							}
 							$row['representation_url_'.$version] = $qr_res->getMediaUrl('media', $version);
 							$row['representation_path_'.$version] = $qr_res->getMediaPath('media', $version);
@@ -2228,7 +2230,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					}				
 				}
 				
-				if (($t_rel_table->tableName() === 'ca_objects')) {
+				if (($rel_table === 'ca_objects')) {
 					if (isset($vars['selected_services'])) {
 						$row['selected_services'] = array_keys($vars['selected_services']);
 					} else {
@@ -2243,6 +2245,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					
 					$row['representation_count'] = (int)($representation_counts[$qr_res->get('row_id')] ?? 0);
 				}	
+				
+				$row['violations'] = null;
+				if(isset($violations[$row['row_id']])) {
+					$acc = [];
+					foreach($violations[$row['row_id']] as $violation_id => $violation) {
+						$acc[] = _t('[%1] For %2: %3', $violation['levelDisplay'], $t_rel_table->getDisplayLabel($violation['bundle_name']), $violation['violationMessage']);
+					}
+					$row['violations'] = $acc;
+				}
 				
 				if (is_array($labels[$item_id = $qr_res->get('set_item_id')])) {
 					$row = array_merge($row, $labels[$item_id]);
@@ -2602,7 +2613,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$items = array_map(function($v) {
 			return array_filter($v, function($iv) {
 				return in_array($iv, [
-					'item_id', 'row_id', 'label', 'name', 'idno', 'displayTemplate', 'displayTemplateDescription',
+					'item_id', 'row_id', 'label', 'name', 'idno', 'displayTemplate', 'displayTemplateDescription', 'violations',
 					'representation_tag', 'representation_count', 'rank', 'access'
 					
 				]);
@@ -2612,11 +2623,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
 		$found_options = is_array($editable_bundle_info['foundOptions']) ? $editable_bundle_info['foundOptions'] : [];
 		
-		$row_ids = array_map(function($v) {
+		$item_ids = array_map(function($v) {
 			return $v['item_id'];
 		}, $items);
-		if(sizeof($row_ids)) {
-			if($qr = caMakeSearchResult('ca_set_items', $row_ids)) {
+		if(sizeof($item_ids)) {
+			if($qr = caMakeSearchResult('ca_set_items', $item_ids)) {
 				while($qr->nextHit()) {
 					$item_id = $qr->get('ca_set_items.item_id');
 					$acc = [];
@@ -2662,6 +2673,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 							break;
 					}
 					$items[$item_id] = array_merge($items[$item_id], $acc);
+					
+					// rewrite violations
+					if(isset($items[$item_id]['violations'])) {
+						$items[$item_id]['violations'] = "<ul>".join("\n", array_map(function($v) {
+							return "<li>{$v}</li>";
+						}, $items[$item_id]['violations']))."</ul>";
+					}
 				}
 			}
 		}
@@ -2738,6 +2756,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function getInventoryListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $settings=null) {
 		AssetLoadManager::register('inventoryEditorUI');
 		
+		$is_inventory = caIsInventory($this);
+		
 		$thumbnail_version = "thumbnail";
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
@@ -2794,6 +2814,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 		
+		
+		if($is_inventory && $t_row && $this->getPrimaryKey()) {
+			$row_ids = array_values(array_map(function($v) { return $v['row_id']; }, $items));
+			$rc = new ResultContext($po_request, $t_row->tableName(), 'inventory');
+			$rc->setParameter('set_id', $this->getPrimaryKey());
+			$rc->setParameter('bundle', 'inventory_list');
+			$rc->setResultList($row_ids);
+			$rc->saveContext();
+			$rc->setAsLastFind();
+		}
 		
 		return $o_view->render('inventory_list.php');
 	}
