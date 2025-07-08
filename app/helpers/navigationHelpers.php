@@ -118,6 +118,8 @@
  	define('__CA_NAV_ICON_CIRCLE_DOT__', 80);
  	define('__CA_NAV_ICON_INVENTORY__', 81);
  	define('__CA_NAV_ICON_LIST__', 82);
+ 	define('__CA_NAV_ICON_AUTO_DELETE__', 83);
+ 	define('__CA_NAV_ICON_NO_AUTO_DELETE__', 84);
  	
  	/**
  	 * Icon position constants
@@ -932,7 +934,7 @@
 				break;				
 			case __CA_NAV_ICON_TRASH__:
 				$vs_fa_class = 'fas fa-trash';
-				break;				
+				break;	
 			case __CA_NAV_ICON_FOUND__:
 				$vs_fa_class = 'fas fa-check-circle';
 				break;				
@@ -950,7 +952,13 @@
 				break;						
 			case __CA_NAV_ICON_LIST__:
 				$vs_fa_class = 'fas fa-list';
-				break;												
+				break;				
+			case __CA_NAV_ICON_AUTO_DELETE__:
+				$vs_fa_class = 'fas fa-recycle caIconRed';
+				break;				
+			case __CA_NAV_ICON_NO_AUTO_DELETE__:
+				$vs_fa_class = 'fas fa-recycle';
+				break;		
 			default:
 				print "INVALID CONSTANT {$pn_type}<br>\n";
 				return null;

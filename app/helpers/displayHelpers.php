@@ -1442,6 +1442,28 @@ function caEditorInspector($view, $options=null) {
 
 			TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 		}
+	
+		// Auto-delete set?
+		if(($table_name == 'ca_sets') && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
+			$autodelete = "<div class='inspectorActionButton'><div><a href='#' title='"._t('Set auto-deletion of set.')."' onclick='caToggleAutoDelete(); return false;' id='inspectorSetAutoDeleteButton'>".caNavIcon($t_item->willAutoDelete() ? __CA_NAV_ICON_AUTO_DELETE__ : __CA_NAV_ICON_NO_AUTO_DELETE__, '20px')."</a></div></div>";
+
+				$tools[] = "{$autodelete}\n<script type='text/javascript'>
+	function caToggleAutoDelete() {
+		var url = '".caNavUrl($view->request, $view->request->getModulePath(), $view->request->getController(), 'toggleAutoDelete', [$t_item->primaryKey() => $item_id])."';
+
+		jQuery.getJSON(url, {'csrfToken': ".json_encode(caGenerateCSRFToken($view->request))."}, function(data, status) {
+			if (data['status'] == 'ok') {
+				jQuery('#inspectorSetAutoDeleteButton').html((data['state'] == 'autodelete') ? ".json_encode(caNavIcon(__CA_NAV_ICON_AUTO_DELETE__, '20px'))." : ".json_encode(caNavIcon(__CA_NAV_ICON_NO_AUTO_DELETE__, '20px')).");
+				jQuery('#inspectorAutoDeleteMessage').html(data['message'] ?? '');
+			} else {
+				console.log('Error toggling autodelete status for item: ' + data['errors']);
+			}
+		});
+	}
+	</script>\n";
+			TooltipManager::add('#inspectorSetAutoDeleteButton', _t("Auto-delete set when older than %1 days?", 10));
+		}
+
 
 		$more_info = '';
 
@@ -1457,6 +1479,7 @@ function caEditorInspector($view, $options=null) {
 			}
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
+		
 		if ($view->request->getAppConfig()->get('enable_inventories') &&  is_array($va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($t_item->tableNum(), $t_item->getPrimaryKey(), ['inventoriesOnly' => true, 'user_id' => $view->request->getUserID(), 'access' => __CA_SET_READ_ACCESS__]))) && sizeof($va_sets)) {
 			$va_links = [];
 
@@ -1467,6 +1490,13 @@ function caEditorInspector($view, $options=null) {
 			}
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In inventory") : _t("In inventories"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
+		
+		if(($table_name === 'ca_sets') && ($view->request->user->getPreference('autodelete_sets'))) {
+			$autodelete_info = ca_sets::getAutoDeleteInfo($t_item, $view->request->user);
+			$msg = $autodelete_info['message'] ?? null;
+			$more_info .= "<div id='inspectorAutoDeleteMessage' class='inspectorAutodeleteSet'>{$msg}</div>\n";
+		}
+		
 		$creation = $t_item->getCreationTimestamp();
 		$last_change = $t_item->getLastChangeTimestamp();
 
