@@ -37,7 +37,7 @@ $t_ui = $this->getVar('t_ui');
 <?php
 print $control_box = caFormControlBox(
 	caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SetEditorForm').' '.
-	caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $set_id)).
+	caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), ['set_id' => $set_id, 'cancel' => 1]).
 	($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
 	'', 
 	((intval($set_id) > 0) && ($can_delete)) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteButton form-button', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $set_id)) : ''

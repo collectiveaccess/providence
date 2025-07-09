@@ -62,6 +62,12 @@ $found_element_code = $this->getVar('found_element_code');
 $inventory_found_options = $this->getVar('inventory_found_options');
 $inventory_found_option_display_text = $this->getVar('inventory_found_option_display_text');
 $inventory_found_icons = $this->getVar('inventory_found_icons');
+
+$unsaved_edit_data = $this->getVar('unsavedEditData');
+
+$unsaved_edit_list = $unsaved_edit_data['changes'] ?? [];
+$scroll_position = $unsaved_edit_data['scrollPosition'] ?? 0;
+print "ss=$scroll_position";
 ?>
 <div id="<?= $id_prefix; ?>" class="inventoryEditorContainer">
 <?php	
@@ -158,9 +164,9 @@ if(!$dont_show_delete) {
 			inventoryCountsID: '<?= $id_prefix; ?>inventoryCounts',
 			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
 			unsavedChangesID: '<?= $id_prefix; ?>unsavedChanges',
-			lookupURL: '<?= $lookup_urls['search']; ?>',
-			addItemToInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'addItemToInventory'); ?>',
-			removeItemFromInventoryURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'removeItemFromInventory'); ?>',
+			lookupURL: <?= json_encode($lookup_urls['search']); ?>,
+			addItemToInventoryURL: <?= json_encode(caNavUrl($this->request, 'manage/sets', 'SetEditor', 'addItemToInventory')); ?>,
+			removeItemFromInventoryURL: <?= json_encode(caNavUrl($this->request, 'manage/sets', 'SetEditor', 'removeItemFromInventory')); ?>,
 			
 			itemListURL: '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetInventoryItemList', ['placement_id' => $this->getVar('placement_code')]); ?>',
 			
@@ -175,11 +181,15 @@ if(!$dont_show_delete) {
 			inventoryFoundOptionsDisplayText: <?= json_encode($inventory_found_option_display_text); ?>,
 			inventoryContainerElementCode: <?= json_encode($container_element_code); ?>,
 			inventoryFoundBundle: <?= json_encode("{$container_element_code}.{$found_element_code}"); ?>,
+			inventoryContainerSubElementCodes: <?= json_encode($bundles_to_edit_proc); ?>,
 			
 			inventoryFilterInputID: <?= json_encode("{$id_prefix}inventoryFilter"); ?>,
 			
+			unsavedEditsPersistenceURL: <?= json_encode(caNavUrl($this->request, 'manage/sets', 'SetEditor', 'persistUnsavedEdits', ['bundle' => 'inventory_list', 'table' => 'ca_sets', 'id' => $t_set->getPrimaryKey()])); ?>,
+			unsavedEditData: <?= json_encode($unsaved_edit_data); ?>,
 			displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
-			sorts: <?= json_encode($this->getVar('sorts')); ?>
+			sorts: <?= json_encode($this->getVar('sorts')); ?>,
+			scrollPosition: <?= (int)$scroll_position; ?>
 		});
 	});
 </script>

@@ -68,6 +68,10 @@ class BaseEditorController extends ActionController {
 	public function Edit($pa_values=null, $pa_options=null) {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
+		
+		if($this->request->getParameter('cancel', pInteger)) {
+			ca_unsaved_edits::clearUnsavedEdits($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey());
+		}
 
 		if (!($vs_type_name = $t_subject->getTypeName())) {
 			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
@@ -498,6 +502,8 @@ class BaseEditorController extends ActionController {
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
 		$this->getView()->setVar('show_show_notifications', is_array($violations_to_prompt) && (sizeof($violations_to_prompt) > 0));
+		
+		ca_unsaved_edits::clearUnsavedEdits($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey());
 		
 		$this->render('screen_html.php');
 	}
@@ -3075,6 +3081,22 @@ class BaseEditorController extends ActionController {
 		$this->response->setContentType('application/json');
 		$this->view->setVar('response', $resp);
 		$this->render('../generic/return_to_home_locations.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function persistUnsavedEdits() {
+		$this->response->setContentType('application/json');
+		
+		$table = $this->request->getParameter('table', pString);
+		$row_id = $this->request->getParameter('id', pInteger);
+		$data = $this->request->getParameter('data', pArray);
+		
+		$ret = ca_unsaved_edits::saveForm($this->request, $table, $row_id, $data);
+	
+		$this->view->setVar('data', ['ret' => $ret ? $ret->getPrimaryKey():  false, 'data' => $ret->get('snapshot')]);	
+		$this->render('json.php');
 	}
 	# -------------------------------------------------------
 	/**

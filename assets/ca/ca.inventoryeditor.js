@@ -60,6 +60,7 @@ var caUI = caUI || {};
 			inventoryFoundOptionsDisplayText: {},
 			inventoryFoundIcons: {},
 			inventoryFoundBundle: null,
+			inventoryContainerSubElementCodes: [],
 			
 			inventoryFilterInputID: null,
 			
@@ -86,6 +87,9 @@ var caUI = caUI || {};
 			currentFilters: {},
 			
 			isLoading: false,
+			
+			unsavedItemsIDs: [],
+			scrollPosition: 0, 					// initial scroll position
 			
 			debug: true
 		}, options);
@@ -117,6 +121,9 @@ var caUI = caUI || {};
 				}
 			);
 			
+			
+			that.inventoryContainerSubElementCodes = that.inventoryContainerSubElementCodes.map((x) => x.replace(/\./, '_'));
+			
 			// Set up sort control
 			if(that.sortControlID) {
 				jQuery('#' + that.sortControlID).on('change', that.sort);
@@ -128,8 +135,13 @@ var caUI = caUI || {};
 					that.addItemToInventory(v.row_id, v, false);
 				});
 			}
-			
 			that.inventoryFoundBundleProc = that.inventoryFoundBundle.replace(/\./, '_');
+			
+			if(that.unsavedEditData && (that.unsavedEditData.length > 0)) { 
+				that._setUnsavedWarning(true, false); 
+			
+				that.unsavedItemsIDs = that.unsavedEditData.map((x) => x['item_id']);
+			}
 			
 			if(that.inventoryFilterInputID) {
 				jQuery('#' + that.inventoryFilterInputID).on('keyup', function(e) {
@@ -146,6 +158,10 @@ var caUI = caUI || {};
 			that.initScroll(that.inventoryItemListID);
 			
 			that.refresh();
+			
+			if(that.scrollPosition > 0) {
+				jQuery('#' + that.inventoryItemListID).scrollTop(that.scrollPosition);
+			}
 		}
 		// ------------------------------------------------------------------------------------
 		//
@@ -298,6 +314,7 @@ var caUI = caUI || {};
 							}
 						}
 						
+						that.unsavedItemsIDs.push(item_id);
 						that._setUnsavedWarning(true);
 					});
 					
@@ -384,7 +401,7 @@ var caUI = caUI || {};
 		//
 		//
 		//
-		that._setUnsavedWarning = function(show=true) {
+		that._setUnsavedWarning = function(show=true, save=true) {
 			if(caUI.utils.showUnsavedChangesWarning) { caUI.utils.showUnsavedChangesWarning(show);}
 			if(that.unsavedChangesMessage) { 
 				if(show) {
@@ -393,6 +410,59 @@ var caUI = caUI || {};
 					jQuery('#' + that.unsavedChangesID).hide();
 				}
 			}
+			
+			if(save) {			
+				that.persistUnsavedChanges();
+			}
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that.persistUnsavedChanges = function() {
+			let unsavedChanges = [];
+			for(let x in that.items) {
+				if(that.unsavedItemsIDs.includes(that.items[x]['item_id'])) {
+					let acc = {};
+					for(let y in that.items[x]) {
+						if(that.items[x].hasOwnProperty(y) && (that.inventoryContainerSubElementCodes.includes(y) || ['item_id', 'row_id'].includes(y))) {
+							acc[y] = that.items[x][y];
+						}
+					}
+					unsavedChanges.push(acc);
+				}
+			}
+			
+			// Save unsaved contents server-side
+			jQuery.ajax({
+				type: 'POST', 
+				url: that.unsavedEditsPersistenceURL,
+				data: {'data': { 'inventory_list': { 'changes': unsavedChanges, 'scrollPosition': jQuery('#' + that.inventoryItemListID).scrollTop() } } },
+				success: function(response) {
+					//console.log("Success:", response);
+				},
+				error: function(xhr, status, error) {
+					console.error("Error persisting unsaved changes: ", status, error);
+				}
+			});
+		}
+		// ------------------------------------------------------------------------------------
+		//
+		//
+		//
+		that.persistScrollPosition = function() {
+			// Save scroll position server-side
+			jQuery.ajax({
+				type: 'GET', 
+				url: that.unsavedEditsPersistenceURL,
+				data: {'data': { 'inventory_list': { 'scrollPosition': jQuery('#' + that.inventoryItemListID).scrollTop() } } },
+				success: function(response) {
+					//console.log("Success:", response);
+				},
+				error: function(xhr, status, error) {
+					console.error("Error persisting current scroll position: ", status, error);
+				}
+			});
 		}
 		// ------------------------------------------------------------------------------------
 		//
@@ -450,8 +520,17 @@ var caUI = caUI || {};
 		//
 		//
 		that.initScroll = function(id) {
-			$('#' + id).scroll(function() {
+			let scrollTimer = null;
+			jQuery('#' + id).scroll(function() {
 				that.loadVisibleItems(id);
+				
+				if (scrollTimer !== null) {
+					clearTimeout(scrollTimer);
+				}
+					
+				scrollTimer = setTimeout(function() {
+					that.persistScrollPosition();
+				}, 500); 
 			});
 		}
 		// ------------------------------------------------------------------------------------

@@ -2824,14 +2824,26 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$sort_flds = array_values($sorts);
 		$default_sort = array_shift($sort_flds);
-		
 		if ($this->getPrimaryKey()) {
+			$unsaved_edits = ca_unsaved_edits::getForm($po_request, 'ca_sets', $this->getPrimaryKey());
+		
+			$o_view->setVar('unsavedEditData', $unsaved_edits['inventory_list'] ?? null);
+		
 			$items = $this->getInventoryList(array_merge($settings, [
 				'sort' => $default_sort, 'sortDirection' => 'ASC',
 				'thumbnailVersion' => $thumbnail_version,
 				'start' => 0, 'limit' => $settings['numPerPage'] ?? 10,
 				'returnAll' => true
 			]));
+			if(($unsaved_edits['inventory_list'] ?? null) && ($unsaved_edits['inventory_list']['changes'] ?? null)) {
+				foreach($unsaved_edits['inventory_list']['changes'] as $unsaved_edit) {
+					foreach($items as $index => $item) {
+						if($item['item_id'] == $unsaved_edit['item_id']) {
+							$items[$index] = array_merge($items[$index], $unsaved_edit);
+						}
+					}
+				}
+			}
 			$o_view->setVar('initialValues', $items);
 		} else {
 			$o_view->setVar('initialValues', []);

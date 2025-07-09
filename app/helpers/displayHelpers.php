@@ -1475,7 +1475,7 @@ function caEditorInspector($view, $options=null) {
 			$last_set_id = Session::getVar('last_set_id');
 			foreach($va_sets as $vn_set_id => $va_set) {
 				$class = ($last_set_id == $vn_set_id) ? "class='currentSet'" : "";
-				$va_links[] = "<a {$class} href='".caEditorUrl($view->request, 'ca_sets', $vn_set_id)."'>".$va_set['name']."</a>";
+				$va_links[] = "<a {$class} href='".caEditorUrl($view->request, 'ca_sets', $vn_set_id, null, ['bundle' => 'ca_set_items'])."'>".$va_set['name']."</a>";
 			}
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
@@ -1486,7 +1486,7 @@ function caEditorInspector($view, $options=null) {
 			$last_set_id = Session::getVar('last_set_id');
 			foreach($va_sets as $vn_set_id => $va_set) {
 				$class = ($last_set_id == $vn_set_id) ? "class='currentSet'" : "";
-				$va_links[] = "<a {$class} href='".caEditorUrl($view->request, 'ca_sets', $vn_set_id)."'>".$va_set['name']."</a>";
+				$va_links[] = "<a {$class} href='".caEditorUrl($view->request, 'ca_sets', $vn_set_id, false, ['bundle' => 'inventory_list'])."'>".$va_set['name']."</a>";
 			}
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In inventory") : _t("In inventories"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
@@ -1629,19 +1629,7 @@ function caEditorInspector($view, $options=null) {
 
 			FooterManager::add($change_type_view->render("create_component_html.php"));
 		}
-		
-		$t_set_type = $t_item->getTypeInstance();		
-		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
-		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {
-			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";
-
-			$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
-			$random_set_view->setVar('t_item', $t_item);
-			$random_set_view->setVar('userCanSetExclusion', ((int)$t_set_type->getSetting('random_generation_mode') === 3));
-			FooterManager::add($random_set_view->render("random_set_generation_html.php"));
-			TooltipManager::add('#inspectorRandomButton', _t("Add random items"));
-		}
-		
+			
 		$t_set_type = $t_item->getTypeInstance();		
 		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
 		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {

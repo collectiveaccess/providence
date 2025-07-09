@@ -21,6 +21,25 @@ create table ca_application_vars
 
 
 /*==========================================================================*/
+create table ca_unsaved_edits
+(
+   edit_id                        int                         	 not null AUTO_INCREMENT,
+   edit_datetime                  int unsigned                   not null,
+   user_id                        int unsigned,
+   table_num                      tinyint unsigned               not null,
+   row_id                         int unsigned                   not null,
+   snapshot                       longblob                       not null,
+   
+   primary key (edit_id)
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+create index i_datetime on ca_unsaved_edits(edit_datetime);
+create index i_user_id on ca_unsaved_edits(user_id);
+create index i_edit on ca_unsaved_edits(row_id, table_num);
+create index i_table_num on ca_unsaved_edits(table_num);
+
+
+/*==========================================================================*/
 create table ca_change_log
 (
    log_id                         bigint                         not null AUTO_INCREMENT,
@@ -7954,4 +7973,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (204, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (205, unix_timestamp());
