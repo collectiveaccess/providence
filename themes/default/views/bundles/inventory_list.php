@@ -67,7 +67,6 @@ $unsaved_edit_data = $this->getVar('unsavedEditData');
 
 $unsaved_edit_list = $unsaved_edit_data['changes'] ?? [];
 $scroll_position = $unsaved_edit_data['scrollPosition'] ?? 0;
-print "ss=$scroll_position";
 ?>
 <div id="<?= $id_prefix; ?>" class="inventoryEditorContainer">
 <?php	
