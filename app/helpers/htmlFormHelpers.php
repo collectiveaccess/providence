@@ -214,28 +214,104 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 				$element .= "
 				<script type=\"module\">
 					import {
-					 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
-					 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
-					 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
-					 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
-					 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
-					 SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+						InlineEditor,
+					 	ClassicEditor, 
+						BlockQuote, 
+						BlockToolbar, 
+						Bold, 
+						Code, 
+						Essentials, 
+						FontBackgroundColor, 
+						Font, 
+						FontColor, 
+						FontFamily, 
+						FontSize, 
+					 	GeneralHtmlSupport, 
+						Heading, 
+						Highlight, 
+						HtmlComment, 
+					 	ImageBlock, 
+						ImageCaption, 
+						ImageEditing, 
+						ImageInline, 
+						ImageInsertViaUrl, 
+						ImageResize, 
+						ImageStyle, 
+						ImageTextAlternative, 
+						ImageToolbar, 
+					 	Indent, 
+						IndentBlock, 
+						Italic, 
+						Link, 
+						LinkImage, 
+						List, 
+						ListProperties, 
+						MediaEmbed, 
+						Paragraph, 
+						PasteFromOffice, 
+						RemoveFormat, 
+						SelectAll, 
+						SourceEditing, 
+						SpecialCharacters, 
+						SpecialCharactersArrows, 
+					 	SpecialCharactersCurrency, 
+						SpecialCharactersEssentials, 
+						SpecialCharactersLatin, 
+						SpecialCharactersMathematical, 
+						SpecialCharactersText, 
+						Strikethrough, 
+						Subscript, 
+						Superscript, 
+						TextTransformation, 
+						TodoList, 
+						Underline, 
+						Undo
 					} from 'ckeditor5';
 				
-					ClassicEditor
-						.create( document.querySelector( '#{$name}' ), {
-							plugins: [ 
-								BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
-								GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
-								ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
-								Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
-								SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
-								SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
-								Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
+					ClassicEditor.create( document.querySelector( '#{$name}' ), {
+						plugins: [ 
+							BlockQuote, 
+							BlockToolbar, 
+							Bold, 
+							Code, 
+							Essentials, 
+							FontBackgroundColor, 
+							Font, 
+							FontColor, 
+							FontFamily, 
+							FontSize, 
+							GeneralHtmlSupport, 
+							Heading, 
+							Highlight, 
+							HtmlComment, 
+							ImageBlock, 
+							ImageCaption, 
+							ImageEditing, 
+							ImageInline, 
+							ImageInsertViaUrl, 
+							ImageResize, 
+							ImageStyle, 
+							ImageTextAlternative, ImageToolbar, 
+								Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, MediaEmbed, 
+								Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
+								SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
+								SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo
 							],
 							toolbar: {
 								items: ".json_encode($toolbar).",
-								shouldNotGroupWhenFull: true
+								shouldNotGroupWhenFull: false
+							},
+							image: {
+								toolbar: [
+									'toggleImageCaption',
+									'imageTextAlternative',
+									'|',
+									'imageStyle:inline',
+									'imageStyle:wrapText',
+									'imageStyle:breakText',
+									'|',
+									'resizeImage'
+								]
 							}
 						} ).then(editor => {
 								// Add current instance to list of initialized editors
@@ -288,8 +364,8 @@ min-height: calc({$height}px - 100px);
 				break;
 		}
 		
-		$o_config = Configuration::load();
-		if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
+	//	$o_config = Configuration::load();
+	//	if(!is_array($va_toolbar_config = $o_config->getAssoc(caGetOption('cktoolbar', $options, 'wysiwyg_editor_toolbar')))) { $va_toolbar_config = []; }
 	} elseif ($is_textarea) {
 		$value = $attributes['value'] ?? null;
 		if ($attributes['size'] ?? null) { $attributes['cols'] = $attributes['size']; }

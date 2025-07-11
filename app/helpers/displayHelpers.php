@@ -6342,7 +6342,7 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		
 		'blockquote' => ['code' => 'blockQuote'],
 		'link' => ['code' => 'link'],
-		'image' => ['code' => 'linkImage'],
+		'image' => ['code' => 'insertImage'],
 		'video' => ['code' => 'mediaEmbed'],
 		'formula' => ['code' => 'formula'],
 		'align' => ['code' => 'alignment'],
@@ -6355,7 +6355,8 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		'source' => ['code' => 'sourceEditing'],
 	
 		'undo' => ['code' => 'undo'],	
-		'redo' => ['code' => 'redo']
+		'redo' => ['code' => 'redo'],
+		'-' => ['code' => '|']
 	];
 	
 	$toolbar = $config->get(strtolower((caGetOption('type', $options, 'editor') )!== 'content') ? 'wysiwyg_editor_toolbar' : 'wysiwyg_content_editor_toolbar');
