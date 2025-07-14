@@ -64,8 +64,6 @@ $inventory_found_option_display_text = $this->getVar('inventory_found_option_dis
 $inventory_found_icons = $this->getVar('inventory_found_icons');
 
 $unsaved_edit_data = $this->getVar('unsavedEditData');
-
-$unsaved_edit_list = $unsaved_edit_data['changes'] ?? [];
 $scroll_position = $unsaved_edit_data['scrollPosition'] ?? 0;
 ?>
 <div id="<?= $id_prefix; ?>" class="inventoryEditorContainer">
@@ -73,8 +71,13 @@ $scroll_position = $unsaved_edit_data['scrollPosition'] ?? 0;
 	if(is_array($initial_values) && sizeof($initial_values)) {
 ?>
 	<div class='bundleSubLabel inventoryControlPanel' style='text-align: center;'>
+<?php
+	if($settings['showExportOptions'] ?? true) {
+?>
 		<div style='float:right; '><?= caEditorPrintSetItemsControls($this); ?></div>
-		
+<?php
+	}
+?>		
 		<div class="inventoryControls">
 			<div><?= _t('Filter: %1', caHTMLTextInput('inventoryFilter', ['id' => "{$id_prefix}inventoryFilter"], ["width" => "150px"])); ?></div>
 			<div><?= _t("Sort: %1", caHTMLSelect('sort', $this->getVar('sorts'), ['id' => "{$id_prefix}inventorySortControl"])); ?></div>
@@ -103,7 +106,7 @@ $scroll_position = $unsaved_edit_data['scrollPosition'] ?? 0;
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
 			<div class="inventoryItemContent" id="inventoryItemContent_{n}">
-				<div style="width: 36px;">{n}</div>
+				<div class="inventoryItemNumber">{n}</div>
 				<div style="width: 140px;">{representation_tag}</div>
 				<div class="inventoryItemDescription" style="width: 394px;">
 					{loadingMessage}

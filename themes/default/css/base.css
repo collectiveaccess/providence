@@ -7605,8 +7605,7 @@ span.statisticsDashboardSelectedsite {
 
 /* Current set highlighting */
 a.currentSet {
-    font-weight: bold;
-    color: #333;
+    font-style: italic;
 }
 
 .dashboardWidgetContentContainer a.link {
@@ -8320,6 +8319,22 @@ div.inventoryItemDescription, div.inventoryItemEditor {
 	font-weight: normal;
 }
 
+div.inventoryItemViolationList {
+
+}
+
+div.inventoryItemViolationList h4 {
+	font-size: 13px;
+	padding: 0px;
+	margin: 10px 0 0 0 ;
+}
+
+div.inventoryItemViolationList ul {
+	margin-block-start: 3px;
+	padding-inline-start: 20px;
+	margin-block-end: 3px;
+}
+
 div.inventoryItemEditorDoneButton {
     float: none;
     clear: both;
@@ -8387,4 +8402,23 @@ div.inventoryUnsavedChanges {
 	position: absolute;
 	right: 5px;
 	bottom: 0px;
+}
+
+div.inventoryItemNumber {
+	min-width: 15px;
+	height: 15px;
+	background-color: #bbb;
+	
+	color: #fff;
+	border-radius: 6px;
+	padding: 6px 4px 1px 4px;
+	line-height:1em;
+	font-size:10px;
+	font-weight:normal;
+	margin: 7px 24px 0px 5px;
+	text-align:center;
+}
+
+div.inventoryItemHasUnsavedChanges {
+	background-color: #cc0000;
 }
