@@ -1437,14 +1437,14 @@ function caEditorInspector($view, $options=null) {
 		}
 		
 		// Download media in set
-		if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
+		if(($table_name == 'ca_sets') && !caIsInventory($t_item) && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 			$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
 
 			TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 		}
 	
 		// Auto-delete set?
-		if(($table_name == 'ca_sets') && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
+		if(($table_name == 'ca_sets') && !caIsInventory($t_item) && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
 			$autodelete = "<div class='inspectorActionButton'><div><a href='#' title='"._t('Set auto-deletion of set.')."' onclick='caToggleAutoDelete(); return false;' id='inspectorSetAutoDeleteButton'>".caNavIcon($t_item->willAutoDelete() ? __CA_NAV_ICON_AUTO_DELETE__ : __CA_NAV_ICON_NO_AUTO_DELETE__, '20px')."</a></div></div>";
 
 				$tools[] = "{$autodelete}\n<script type='text/javascript'>

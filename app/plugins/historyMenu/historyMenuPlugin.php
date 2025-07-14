@@ -163,7 +163,8 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 									'action:'.$priv_name => 'OR'
 								],
 								'parameters' => [
-									$editor_url_info['_pk'] => $id
+									$editor_url_info['_pk'] => $id,
+									'bundle' => 'inventory_list'
 								]
 							];
 						}

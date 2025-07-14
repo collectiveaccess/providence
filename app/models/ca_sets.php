@@ -642,11 +642,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vn_table_num = null;
 		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
 		
-		$va_extra_joins = array();
+		$va_extra_joins = [];
 		$o_db = $this->getDb();
 		
-		$va_sql_wheres = array("(cs.deleted = 0)");
-		$va_sql_params = array();
+		$va_sql_wheres = ["(cs.deleted = 0)", "(csi.deleted = 0)"];
+		$va_sql_params = [];
+		
 		if ($vn_table_num) {
 			$va_sql_wheres[] = "(cs.table_num = ?)";
 			$va_sql_params[] = (int)$vn_table_num;
@@ -730,7 +731,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if (isset($pn_item_id) && ($pn_item_id > 0)) {
-			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
 		    $va_sql_wheres[] = "(csi.item_id IN (?))";
 			$va_sql_params[] = is_array($pn_item_id) ? $pn_item_id : [$pn_item_id];
 		}
@@ -793,7 +793,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if ($pn_row_id > 0) {
 			$va_sql_wheres[] = "((csi.row_id = ?) AND (csi.table_num = ?))";
-			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
 			$va_sql_selects[] = 'csi.item_id';
 			$va_sql_params[] = (int)$pn_row_id;
 			$va_sql_params[] = (int)$vn_table_num;
@@ -850,6 +849,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
@@ -923,6 +923,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -936,6 +937,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -2290,7 +2292,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				if(isset($violations[$row['row_id']])) {
 					$acc = [];
 					foreach($violations[$row['row_id']] as $violation_id => $violation) {
-						$acc[] = _t('[%1] For %2: %3', $violation['levelDisplay'], $t_rel_table->getDisplayLabel($violation['bundle_name']), $violation['violationMessage']);
+						$acc[$violation['bundle_name']][] =  $violation['violationMessage'];
+					}
+					
+					foreach($acc as $b => $msgs) {
+						$label = $t_rel_table->getDisplayLabel($b);
+						$acc[$b] = _t('For <u>%1</u>: %2', mb_strtolower($label), join('; ', $msgs));
 					}
 					$row['violations'] = $acc;
 				}
@@ -2714,10 +2721,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$items[$item_id] = array_merge($items[$item_id], $acc);
 					
 					// rewrite violations
-					if(isset($items[$item_id]['violations'])) {
-						$items[$item_id]['violations'] = "<ul>".join("\n", array_map(function($v) {
+					if(isset($items[$item_id]['violations']) && sizeof($items[$item_id]['violations'])) {
+						$items[$item_id]['violations'] = "<div class='inventoryItemViolationList'><h4>"._t('Problems')."</h4><ul>".join("\n", array_map(function($v) {
 							return "<li>{$v}</li>";
-						}, $items[$item_id]['violations']))."</ul>";
+						}, $items[$item_id]['violations']))."</ul></div>";
+					} else {
+						$items[$item_id]['violations'] = null;
 					}
 				}
 			}

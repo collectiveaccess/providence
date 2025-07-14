@@ -88,6 +88,7 @@ var caUI = caUI || {};
 			
 			isLoading: false,
 			
+			unsavedEditData: null,
 			unsavedItemsIDs: [],
 			scrollPosition: 0, 					// initial scroll position
 			
@@ -136,11 +137,10 @@ var caUI = caUI || {};
 				});
 			}
 			that.inventoryFoundBundleProc = that.inventoryFoundBundle.replace(/\./, '_');
-			
-			if(that.unsavedEditData && (that.unsavedEditData.length > 0)) { 
+			if(that.unsavedEditData && that.unsavedEditData['changes'] && (that.unsavedEditData['changes'].length > 0)) { 
 				that._setUnsavedWarning(true, false); 
 			
-				that.unsavedItemsIDs = that.unsavedEditData.map((x) => x['item_id']);
+				that.unsavedItemsIDs = that.unsavedEditData['changes'].map((x) => x['item_id']);
 			}
 			
 			if(that.inventoryFilterInputID) {
@@ -193,6 +193,15 @@ var caUI = caUI || {};
 						}
 					} else {
 						let d = resp.data.items[resp.data.order[i]];
+						
+						if(that.unsavedItemsIDs.includes(d['item_id'])) {
+							let unsavedItem = that.unsavedEditData['changes'].find((x) => x['item_id'] == d['item_id']);
+							if(unsavedItem) {
+								d = { ...d, ...unsavedItem };
+							}
+							console.log("xxx", unsavedItem, d);
+						}
+						
 						// preserve form data if defined
 						for(let x in that.items) {
 							if(that.itemsWithForms[resp.data.order[i]] && (that.items[x]['item_id'] == resp.data.order[i])) {
@@ -353,7 +362,11 @@ var caUI = caUI || {};
 						e.preventDefault();
 				});
 				jQuery(item).find('div').data('index', k);	// item index set on first <div>
+				
 				jQuery('#' + that.inventoryItemListID).append(item);
+				if(that.unsavedItemsIDs && that.unsavedItemsIDs.includes(v['item_id'])) {
+					jQuery(item).find('div.inventoryItemNumber').addClass('inventoryItemHasUnsavedChanges');
+				}
 				c++;
 			});
 			if(that.items.length < that.itemCount) {
@@ -543,7 +556,7 @@ var caUI = caUI || {};
 			if(!targetElement || !targetElement.length) { return; }
 			const scrollPosition = jQuery('#' + id).scrollTop();
 			const listHeight = jQuery('#' + id).height();
-			const triggerOffset = 10; // Trigger 100px before the link hits the top
+			const triggerOffset = 0; // Trigger 3px before the link hits the top
 			
 			jQuery(targetElement).each(function(k, v) {
 				const targetPosition = jQuery(v).parent().position().top;

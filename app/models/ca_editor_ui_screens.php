@@ -2290,7 +2290,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "475px", 'height' => "50px",
 										'label' => _t('Display template (%1)', _t('set items')),
 										'description' => _t('Layout for %1 inventory item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
-									]
+									],
+									'showExportOptions' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '1',
+										'label' => _t('Show export options'),
+										'description' => _t('If checked export options will be showm.')
+									)
 								];
 								break;
 							case 'ca_metadata_alert_rule_type_restrictions':

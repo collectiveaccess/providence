@@ -120,6 +120,7 @@
  	define('__CA_NAV_ICON_LIST__', 82);
  	define('__CA_NAV_ICON_AUTO_DELETE__', 83);
  	define('__CA_NAV_ICON_NO_AUTO_DELETE__', 84);
+ 	define('__CA_NAV_ICON_UNSAVED_CHANGES__', 85);
  	
  	/**
  	 * Icon position constants
@@ -958,7 +959,10 @@
 				break;				
 			case __CA_NAV_ICON_NO_AUTO_DELETE__:
 				$vs_fa_class = 'fas fa-recycle';
-				break;		
+				break;				
+			case __CA_NAV_ICON_UNSAVED_CHANGES__:
+				$vs_fa_class = 'far fa-clipboard caIconRed';
+				break;
 			default:
 				print "INVALID CONSTANT {$pn_type}<br>\n";
 				return null;
@@ -1069,11 +1073,7 @@
 		
 		$action_extra = caGetOption('actionExtra', $pa_options, null);
 		if($bundle = caGetOption('bundle', $pa_options, null)) {
-			$t_table->load($pn_id);
-			$type_id = $t_table->getTypeID();
-			if($t_ui = ca_editor_uis::loadDefaultUI($ps_table, $po_request, $type_id)) {
-				$action_extra = $t_ui->getScreenWithBundle($bundle, $po_request, ['type_id' => $type_id]);
-			}
+			$pa_additional_parameters['bundle'] = $bundle;
 		}
 		
 		$vs_pk = $t_table->primaryKey();
