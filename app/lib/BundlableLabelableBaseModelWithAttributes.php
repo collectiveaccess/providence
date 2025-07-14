@@ -8785,6 +8785,7 @@ side. For many self-relations the direction determines the nature and display te
 	 */
 	public static function getMetadataDictionaryRuleViolationsForIds(array $ids, ?string$bundle_name=null, ?array $options=null) : ?array {
 	 	$limit_to_show_as_prompt = caGetOption('limitToShowAsPrompt', $options, false);
+	 	if(!sizeof($ids)) { return null; }
 	 	if(!($t_instance = Datamodel::getInstance(get_called_class(), false))) { return null; }
 	 	
 	 	$bundles_on_screen = null;
