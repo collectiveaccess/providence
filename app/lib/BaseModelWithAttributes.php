@@ -2362,6 +2362,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				}
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}', str_replace('.', '_',$f), $vs_form_element);
 			}
 			
 			$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
