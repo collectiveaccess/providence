@@ -48,53 +48,51 @@ $group = $this->getVar('group');
 		print $t_user->preferenceHtmlFormElement($pref, null, array());
 	}
 	
-	
-	
 	$available_items = $this->getVar('available_searches');
 	$to_display_items = $this->getVar('selected_searches');
 ?>
+	<h3><?= _t("Included searches"); ?></h3>
 	<div class="bundleDisplayPlacementEditorContainer">
-	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
-		<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
-		<table>
-			<tr valign="top">
-				<td>
-					<div class="preferenceColumnHeader"><?= _t("Available searches"); ?></div>
-		
-					<div id="bundleDisplayEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
-				</td>
-				<td>
-					<div class="preferenceColumnHeader"><?= _t("Searches to display"); ?></div>
-					
-					<div id="bundleDisplayEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
-				</td>
-			</tr>
-		</table>
-		
-		
-		<input type="hidden" id="displayBundleList" name="displayBundleList" value=""/>
-	</div>
+		<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
+			<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
+			<table>
+				<tr valign="top">
+					<td width="50%">
+						<div class="preferenceColumnHeader"><?= _t("Available searches"); ?></div>
+			
+						<div id="bundleDisplayEditorAvailableList" class="preferencePlacementList"><!-- empty --></div>
+					</td>
+					<td width="50%">
+						<div class="preferenceColumnHeader"><?= _t("Searches to display"); ?></div>
+						
+						<div id="bundleDisplayEditorToDisplayList" class="preferencePlacementList"><!-- empty --></div>
+					</td>
+				</tr>
+			</table>
 	
-	<script type="text/javascript">
-		var bundleDisplayOps = null;
-		jQuery(document).ready(function() {
-			bundleDisplayOps = caUI.bundlelisteditor({
-				availableListID: 'bundleDisplayEditorAvailableList',
-				toDisplayListID: 'bundleDisplayEditorToDisplayList',
-				
-				availableDisplayList: <?= json_encode($available_items); ?>,
-				initialDisplayList: 	<?= json_encode($to_display_items); ?>,
-				initialDisplayListOrder : <?= json_encode(array_keys($to_display_items)); ?>,
-				
-				displayBundleListID: 'displayBundleList',
-				
-				allowSettings: false,
-				settingsIcon: "<?= caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
-				saveSettingsIcon: "<?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
-			});		
-		});
-	</script>
-</div>
+			<input type="hidden" id="displayBundleList" name="displayBundleList" value=""/>
+		</div>
+	
+		<script type="text/javascript">
+			var bundleDisplayOps = null;
+			jQuery(document).ready(function() {
+				bundleDisplayOps = caUI.bundlelisteditor({
+					availableListID: 'bundleDisplayEditorAvailableList',
+					toDisplayListID: 'bundleDisplayEditorToDisplayList',
+					
+					availableDisplayList: <?= json_encode($available_items); ?>,
+					initialDisplayList: 	<?= json_encode($to_display_items); ?>,
+					initialDisplayListOrder : <?= json_encode(array_keys($to_display_items)); ?>,
+					
+					displayBundleListID: 'displayBundleList',
+					
+					allowSettings: false,
+					settingsIcon: "<?= caNavIcon(__CA_NAV_ICON_INFO__, 1); ?>",
+					saveSettingsIcon: "<?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?>"
+				});		
+			});
+		</script>
+	</div>
 	<div class='preferenceSectionDivider'><!-- empty --></div>
 	<input type="hidden" name="action" value="EditQuickSearchPrefs"/>
 </form>

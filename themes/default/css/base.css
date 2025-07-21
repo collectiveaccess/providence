@@ -5949,6 +5949,11 @@ div.preferenceColumnHeader {
     text-align: left;
 }
 
+div.preferencePlacementList {
+    min-height: 300px;
+    border: 1px dotted #ccc;
+}
+
 div.preferenceCheckBoxList {
     display: flex;
     flex-flow: row wrap;
