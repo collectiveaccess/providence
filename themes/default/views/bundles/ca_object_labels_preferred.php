@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@ $batch					= $this->getVar('batch');
 
 $show_effective_date 	= $this->getVar('show_effective_date');
 $show_access 			= $this->getVar('show_access');
+$show_notes				= $this->getVar('show_notes');
 $label_list 			= $this->getVar('label_type_list');
 $locale_list			= $this->getVar('locale_list');
 $show_source 			= $t_subject->getTypeSetting('show_source_for_preferred_labels');
@@ -68,7 +69,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $set
 			
 			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($settings, array('request' => $this->request, 'width' => '670px', 'name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only))); ?>
 			<div class="formLabel">
-				<?php if (Configuration::load()->get('ca_objects_user_settable_sortable_value')) { print $t_label->htmlFormElement('name_sort', "^LABEL<br/>^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_sort_{n}", 'id' => "{fieldNamePrefix}name_sort_{n}", "value" => "{{name_sort}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)))."<br/>\n"; } ?>
+				<?php if (Configuration::load()->get('ca_objects_user_settable_sortable_value')) { print $t_label->htmlFormElement('name_sort', "^LABEL<br>^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_sort_{n}", 'id' => "{fieldNamePrefix}name_sort_{n}", "value" => "{{name_sort}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)))."<br>\n"; } ?>
 			
 				<?= $locale_list; ?>	
 				<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
@@ -76,10 +77,17 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $set
 				<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
 			</div>
 <?php
+	if($show_notes) {
+?>					
+			<div class="formLabel">
+				<?= $t_label->htmlFormElement('notes', "^LABEL<br>^ELEMENT", array('classname' => 'labelnotes', 'id' => "{fieldNamePrefix}notes_{n}", 'name' => "{fieldNamePrefix}notes_{n}", "value" => "{notes}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+			</div>
+<?php
+	}	
 	if($show_source) {
 ?>					
 			<div class="formLabel">
-				<?= $t_label->htmlFormElement('source_info', "^LABEL<br/>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+				<?= $t_label->htmlFormElement('source_info', "^LABEL<br>^ELEMENT", array('classname' => 'labelSourceInfo', 'id' => "{fieldNamePrefix}source_info_{n}", 'name' => "{fieldNamePrefix}source_info_{n}", "value" => "{source_info}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
 			</div>
 <?php
 	}	
@@ -100,7 +108,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $set
 	caUI.initLabelBundle('#<?= $id_prefix; ?>Labels', {
 		mode: 'preferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['name', 'name_sort', 'locale_id', 'type_id', 'effective_date', 'access', 'source_info'],
+		templateValues: ['name', 'name_sort', 'locale_id', 'type_id', 'effective_date', 'access', 'notes', 'source_info'],
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		initialValues: <?= json_encode($initial_values); ?>,
 		labelID: 'Label_',
