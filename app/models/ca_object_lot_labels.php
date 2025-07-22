@@ -123,7 +123,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lot_labels'] = array(
 				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Notes', 'DESCRIPTION' => 'Notes on label'
+				'LABEL' => _t('Notes'), 'DESCRIPTION' => _t('Notes on label')
 		)
  	)
 );
