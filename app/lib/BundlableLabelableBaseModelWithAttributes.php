@@ -5547,6 +5547,36 @@ if (!$vb_batch) {
 								}
 							}
 						}
+						if (!caGetOption('hide_update_place_controls', $va_bundle_settings, false)) {
+							$vn_place_id = $vn_place_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_places_idnew_0", pInteger);
+							if ($vn_place_id) {
+								$t_loc = Datamodel::getInstance('ca_places', true);
+								
+								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+								if ($t_loc->load($vn_place_id)) {
+									if ($policy) {
+										$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_places', $t_loc->getTypeCode());
+										$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
+									}
+									
+									if ($vn_relationship_type_id) {
+										// is effective date set?
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_places__effective_datenew_0", pString);
+						
+										$t_item_rel = $this->addRelationship('ca_places', $vn_place_id, $vn_relationship_type_id, $vs_effective_date);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											ca_places::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_places', $t_item_rel, $vn_place_id, $processed_bundle_settings);							
+										}									
+								
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_places', $vn_place_id);
+										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+									}
+								}
+							}
+						}
 						
 						if (!caGetOption('hide_add_to_loan_controls', $va_bundle_settings, false)) {
 							// set loan
