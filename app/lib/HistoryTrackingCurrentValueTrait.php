@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -191,7 +191,7 @@ trait HistoryTrackingCurrentValueTrait {
 					}
 					foreach($tt as $t) {
 						if(!is_array($config)) { break; }
-						if ($table === 'ca_storage_locations') { 
+						if (in_array($table, ['ca_storage_locations', 'ca_places'], true)) { 
 							$bundle_settings["{$table}_setInterstitialElementsOnAdd"] = $config['setInterstitialElementsOnAdd'];
 							$bundle_settings["{$table}_useDatePicker"] = $config['useDatePicker'] ?? false;
 						} else {
@@ -290,7 +290,10 @@ trait HistoryTrackingCurrentValueTrait {
 						'always_create_new_loan', 'always_create_new_movement', 'always_create_new_occurrence',
 						
 						'hide_add_to_occurrence_controls', 'hide_include_child_history_controls', 'add_to_occurrence_types', 
-						'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 'hide_add_to_entity_controls', 'add_to_entity_types', 
+						'hide_add_to_collection_controls', 'add_to_collection_types', 'hide_add_to_object_controls', 
+						'hide_add_to_entity_controls', 'add_to_entity_types', 
+						'update_place_control_label', 'hide_update_place_controls',
+						
 						'ca_storage_locations_elements', 'sortDirection', 'setInterstitialElementsOnAdd',
 						'currentValueColor', 'pastValueColor', 'futureValueColor', 'hide_value_interstitial_edit', 'hide_value_delete'
 					) as $vs_key) {
@@ -922,14 +925,14 @@ trait HistoryTrackingCurrentValueTrait {
 	 *
 	 */
 	static public function tablesTakeHistoryTracking() {
-		return ['ca_objects', 'ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+		return ['ca_objects', 'ca_storage_locations', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	static public function historyTrackingBaseTables() {
-		return ['ca_storage_locations', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
+		return ['ca_storage_locations', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements'];
 	}
 	# ------------------------------------------------------
 	/**
@@ -2161,6 +2164,109 @@ trait HistoryTrackingCurrentValueTrait {
 				}
 			}
 		}
+		
+		// Places
+		if (is_array($path = Datamodel::getPath($table, 'ca_places')) && (sizeof($path) == 3) && ($path = array_keys($path)) && ($linking_table = $path[1])) {
+			$va_places = $qr->get("{$linking_table}.relation_id", ['returnAsArray' => true, 'restrictToRelationshipTypes' => caGetOption('ca_places_showRelationshipTypes', $pa_bundle_settings, null)]);
+
+			$va_child_places = [];
+			if(caGetOption('ca_places_includeFromChildren', $pa_bundle_settings, false)) {
+				$va_child_places = array_reduce($qr->getWithTemplate("<unit relativeTo='{$table}.children' delimiter=';'>^{$linking_table}.relation_id</unit>", ['returnAsArray' => true, 'locale' => $locale]), function($c, $i) { return array_merge($c, explode(';', $i)); }, []);
+				if ($pb_show_child_history) { $va_places = array_merge($va_places, $va_child_places); }
+			}
+			
+			if(is_array($va_place_types = caGetOption('ca_places_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_places)) {	
+				$t_place = new ca_places();
+				if ($this->inTransaction()) { $t_place->setTransaction($this->getTransaction()); }
+				$va_place_type_info = $t_place->getTypeList(); 
+		
+				$vs_name_singular = $t_place->getProperty('NAME_SINGULAR');
+				$vs_name_plural = $t_place->getProperty('NAME_PLURAL');
+		
+				$qr_places = caMakeSearchResult($linking_table, $va_places, ['transaction' => $this->getTransaction(), 'sort' => "{$linking_table}.relation_id", 'sortDirection' => 'desc']);
+		
+				$vs_default_display_template = '^ca_places.parent.preferred_labels.name ➜ ^ca_places.preferred_labels.name (^ca_places.idno)';
+				$vs_default_child_display_template = '^ca_places.parent.preferred_labels.name ➜ ^ca_places.preferred_labels.name (^ca_places.idno)<br/>[<em>^ca_objects.preferred_labels.name (^ca_objects.idno)</em>]';
+				
+				$vs_child_display_template = $pb_display_label_only ? $vs_default_child_display_template : caGetOption(['ca_places_childDisplayTemplate', 'ca_places_childTemplate'], $pa_bundle_settings, $vs_display_template);
+		
+				$loc_table_num = Datamodel::getTableNum('ca_places');
+				$rel_table_num = Datamodel::getTableNum($linking_table);
+			
+				$unsortable = [];
+				while($qr_places->nextHit()) {
+					if ((string)$qr_places->get('ca_places.deleted') !== '0') { continue; }	// filter out deleted
+					
+					$vn_type_id = $qr_places->get('ca_places.type_id');
+			
+					$vn_rel_row_id = $qr_places->get("{$linking_table}.{$pk}");
+					$vn_place_id = $qr_places->get("{$linking_table}.place_id");
+					$relation_id = $qr_places->get("{$linking_table}.relation_id");
+					$vn_rel_type_id = $qr_places->get("{$linking_table}.type_id");
+			
+					$additional_templates = caGetOption(["ca_places_".($va_place_type_info[$vn_type_id]['idno'] ?? '')."_additionalTemplates", "ca_places_".$qr_places->get('ca_relationship_types.type_code')."_additionalTemplates", "ca_places_additionalTemplates"], $pa_bundle_settings, null);
+					if($use_template && isset($additional_templates[$use_template])) {
+						$vs_display_template = $additional_templates[$use_template];
+					} else {
+						$vs_display_template = $pb_display_label_only ? "" : caGetOption(["ca_places_".($va_place_type_info[$vn_type_id]['idno'] ?? '')."_displayTemplate", "ca_places_".$qr_places->get('ca_relationship_types.type_code')."_displayTemplate", "ca_places_displayTemplate"], $pa_bundle_settings, $vs_default_display_template);
+					}
+					if($pb_date_mode) {
+						$va_date = $current_date_arr;
+					} else {
+						$va_date = array(
+							'sortable' => $qr_places->get("{$linking_table}.effective_date", array('getDirectDate' => true)),
+							'bounds' => explode("/", $qr_places->get("{$linking_table}.effective_date", array('sortable' => true))),
+							'display' => $qr_places->get("{$linking_table}.effective_date")
+						);
+					}
+
+					if (!$va_date['sortable']) { $va_date['sortable'] = 0; }
+					if (sizeof($va_place_types) && sizeof($va_place_types) && !in_array($vn_rel_type_id = $qr_places->get("{$linking_table}.type_id"), $va_place_types)) { continue; }
+					
+					if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
+					
+					$status = ($va_date['bounds'][0] > $vn_current_date) ? 'FUTURE' : 'PAST';
+			
+					$vs_color = $va_place_type_info[$vn_type_id]['color'] ?? null;
+					if (!$vs_color || ($vs_color == '000000')) {
+						$vs_color = caGetOption("ca_places_".($va_place_type_info[$vn_type_id]['idno'] ?? '')."_color", $pa_bundle_settings, 'ffffff');
+					}
+					$vs_color = str_replace("#", "", $vs_color);
+					
+					$vs_icon_url = '';
+					if($va_place_type_info[$vn_type_id]['icon'] ?? null) {
+						$o_media_coder->setMedia($va_place_type_info[$vn_type_id]['icon']);
+						$vs_icon_url = $o_media_coder->getMediaTag('icon');
+					}
+					$va_history[$va_date['sortable']][] = array(
+						'type' => 'ca_places',
+						'id' => $vn_place_id,
+						'relation_id' => $relation_id,
+						'display' => $qr_places->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
+						'color' => $vs_color,
+						'icon_url' => $vs_icon_url,
+						'typename_singular' => $vs_name_singular, 
+						'typename_plural' => $vs_name_plural, 
+						'type_id' => $vn_type_id,
+						'rel_type_id' => $vn_rel_type_id,
+						'icon' => '<div class="caHistoryTrackingIconContainer" style="background-color: #'.$vs_color.'"><div class="caHistoryTrackingIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caHistoryTrackingIconText">'.$vs_name_singular.'</div>').'</div></div>',
+						'date' => $va_date['display'],
+						'hasChildren' => sizeof($va_child_places) ? 1 : 0,
+					
+						'table_num' => $table_num,
+						'row_id' => $row_id,
+						'current_table_num' => $loc_table_num,
+						'current_row_id' => $vn_place_id,
+						'current_type_id' => $vn_type_id,
+						'tracked_table_num' => $rel_table_num,
+						'tracked_row_id' => $relation_id,
+						'tracked_type_id' => $vn_rel_type_id,
+						
+						'status' => $status
+					);
+				}
+			}
+		}
 	
 		// Deaccession (for ca_objects only)
 		if (($table === 'ca_objects') && ((caGetOption('showDeaccessionInformation', $pa_bundle_settings, false) || (caGetOption('deaccession_displayTemplate', $pa_bundle_settings, false))))) {
@@ -2583,6 +2689,21 @@ trait HistoryTrackingCurrentValueTrait {
 				
 				if(!is_array($bundle_config['ca_storage_locations_showRelationshipTypes'] ?? null)) { $bundle_config['ca_storage_locations_showRelationshipTypes'] = []; }
 				$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_storage_locations_showRelationshipTypes']])));
+			}
+		}
+		
+		//
+		// place update
+		//
+		$o_view->setVar('place_relationship_types', []);
+		$o_view->setVar('place_relationship_types_by_sub_type', []);
+		if (is_array($path = Datamodel::getPath($this->tableName(), 'ca_places')) && ($path = array_keys($path)) && (sizeof($path) === 3)) {
+			$linking_table = $path[1];
+			if ($t_place_rel = Datamodel::getInstance($linking_table, true)) {
+				$o_view->setVar('place_relationship_types', $t_place_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+				
+				if(!is_array($bundle_config['ca_places_showRelationshipTypes'] ?? null)) { $bundle_config['ca_places_showRelationshipTypes'] = []; }
+				$o_view->setVar('place_relationship_types_by_sub_type', $t_place_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($bundle_config, ['restrictToRelationshipTypes' => $bundle_config['ca_places_showRelationshipTypes']])));
 			}
 		}
 		

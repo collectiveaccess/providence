@@ -6258,10 +6258,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if (isset($this->FIELDS[$field])) {
 			
 			$fieldinfo = $this->FIELDS[$field];
+			$table = $this->tableName();
 			
 			$translations = $this->_TRANSLATIONS->getAssoc('fields');
-			if (isset($translations[$this->tableName()][$field]) && is_array($translations[$this->tableName()][$field])) {
-			    foreach($translations[$this->tableName()][$field] as $k => $v) {
+			if (isset($translations[$table][$field]) && is_array($translations[$table][$field])) {
+			    foreach($translations[$table][$field] as $k => $v) {
 			        $fieldinfo[$k] = $v;
 			    }
 			}

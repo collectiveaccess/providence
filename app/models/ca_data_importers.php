@@ -3137,6 +3137,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($displayname_format = caGetOption('displaynameFormat', $va_item['settings'], $default_displayname_format)) {
 									$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displayname_format;
 								}
+								if($vs_item_terminal == 'notes') {
+									$va_group_buf[ $vn_c ]['notes'] = $vm_val;
+								}
 							}
 
 							if ( isset( $va_item['settings']['mediaPrefix'] ) && $va_item['settings']['mediaPrefix'] ) {
@@ -3539,6 +3542,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vs_item_error_policy = null;
 										$displayname_format = null;
 									}
+									
+									if(($mapped_locale = caGetOption(['locale', 'locale_id'], $va_element_content, null)) && ($mapped_locale_id = ca_locales::codeToID($mapped_locale))) {
+										$vn_locale_id = $mapped_locale_id;
+									} 
 								
 									$t_subject->clearErrors();
 									switch($vs_element) {
@@ -3555,7 +3562,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
 												
 												$t_subject->replaceLabel(
-													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format]
+													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format, 'notes' => $va_element_content['notes'] ?? null]
 												);
 												if ($t_subject->numErrors() == 0) {
 													$vb_output_subject_preferred_label = true;
@@ -3586,7 +3593,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										case 'nonpreferred_labels':
 											if ($vb_skip_if_data_present && ($t_subject->getLabelCount(false, $vn_locale_id) > 0)) { continue(2); }
 											$t_subject->addLabel(
-												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format]
+												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format, 'notes' => $va_element_content['notes'] ?? null]
 											);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {

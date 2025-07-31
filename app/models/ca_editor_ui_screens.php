@@ -269,7 +269,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$table_name = Datamodel::getTableName($table_num = $this->getTableNum());
 		if (!($t_instance = Datamodel::getInstance($table_name, true))) { 
-			$this->postError(1100, _t("Could not created user interface placement: user interface table '%1' is not valid", $table_name), "ca_editor_ui_screens::addPlacement");
+			$this->postError(1100, _t("Could not create user interface placement: user interface table '%1' is not valid", $table_name), "ca_editor_ui_screens::addPlacement");
 			return false;
 		}
 		
@@ -290,7 +290,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('screen_id', $vn_screen_id);
 		$t_placement->set('bundle_name', $ps_bundle_name);
 		$t_placement->set('placement_code', $ps_placement_code);
@@ -2036,6 +2035,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('"Add to entity" control label text'),
 										'description' => _t('Text to label "Add to entity" control with. If omitted a default label will be used.')
 									),
+									'hide_update_place_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Update Place" controls'),
+										'hideOnSelect' => ['update_place_control_label'],
+										'description' => _t('Check this option if you want to hide the "Update Place" controls in this bundle placement.')
+									),
+									'update_place_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Update place" control label text'),
+										'description' => _t('Text to label "Update place" control with. If omitted a default label will be used.')
+									),
 									'hide_add_to_object_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -2753,8 +2770,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_available_bundles = $t_screen->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {
-				// get settings
-				
 				if (preg_match('!^(.*)_([\d]+)$!', $vs_bundle, $va_matches)) {
 					$vn_placement_id = (int)$va_matches[2];
 					$vs_bundle = $va_matches[1];
@@ -2789,7 +2804,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if($vn_placement_id === 0) {
-					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
+					$c = 0;
+					do {
+						$vn_i++;
+						$ret = $t_screen->addPlacement($vs_bundle, $vs_bundle.$vn_i, $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
+						$c++;
+					} while(!$ret || ($c > 50));
 					if ($t_screen->numErrors()) {
 						$this->errors = $t_screen->errors;
 						return false;

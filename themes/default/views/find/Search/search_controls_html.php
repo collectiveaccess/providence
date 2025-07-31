@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,18 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	$t_subject = 			$this->getVar('t_subject');
- 	$vs_table = 			$t_subject->tableName();
- 	$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));
- 	$vo_result_context =	$this->getVar('result_context');
- 	
- 	$vs_type_id_form_element = '';
-	if ($vn_type_id = intval($this->getVar('type_id'))) {
-		$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
-	}
-	if (!$this->request->isAjax()) {
-		if (!$this->getVar('uses_hierarchy_browser')) {
+$t_subject = 			$this->getVar('t_subject');
+$vs_table = 			$t_subject->tableName();
+$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));
+$vo_result_context =	$this->getVar('result_context');
+
+$vs_type_id_form_element = '';
+if ($vn_type_id = intval($this->getVar('type_id'))) {
+	$vs_type_id_form_element = '<input type="hidden" name="type_id" value="'.$vn_type_id.'"/>';
+}
+if (!$this->request->isAjax()) {
+	if (!$this->getVar('uses_hierarchy_browser')) {
 ?>
 		<?= caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); ?>
 <?php 
@@ -117,6 +116,8 @@
 						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						typeMenuID: 'browseTypeMenu',
 						disabledItems: 'full',
+						
+						dontAllowEditForFirstLevel: <?= in_array($t_subject->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]) ? '1': '0'; ?>,
 						
 						currentSelectionDisplayID: 'browseCurrentSelection'
 					});

@@ -116,6 +116,13 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_value_labels'] 
 				),
 				'LIST' => 'access_statuses',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
+		),
+		'notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Notes', 'DESCRIPTION' => 'Notes on label'
 		)
  	)
 );
