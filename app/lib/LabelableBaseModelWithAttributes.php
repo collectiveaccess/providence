@@ -113,6 +113,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		notes = Notes for label. [Default is null]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
 	 *		sourceInfo = Source for label. [Default is null]
+	 *		notes = Notes for label. [Default is null]
 	 *		skipExisting = Don't add labels that already exist on this record. [Default is true]
 	 *
 	 * @return int id for newly created label, false on error or null if no row is loaded
@@ -227,6 +228,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *		notes = Notes for label. [Default is null]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
 	 *		aourceInfo = Source for label. [Default is null]
+	 *		notes = Notes for label. [Default is null]
 	 * @return int id for the edited label, false on error or null if no row is loaded
 	 */
 	public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -2648,6 +2650,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_nonpreferred_label_show_effective_date"));			
 		$o_view->setVar('show_access', $po_request->config->get("{$table}_nonpreferred_label_show_access"));
+		$o_view->setVar('show_notes', $po_request->config->get("{$table}_nonpreferred_label_show_notes"));
 		
 		$o_view->setVar('label_type_list', $po_request->config->get("{$table}_nonpreferred_label_type_list"));
 		
