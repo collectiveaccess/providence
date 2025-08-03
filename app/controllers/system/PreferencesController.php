@@ -78,6 +78,15 @@ class PreferencesController extends ActionController {
 	/**
 	 *
 	 */
+	public function EditInventoryPrefs() {
+		$this->view->setVar('t_user', $this->request->user);
+		$this->view->setVar('group', 'inventory');
+		$this->render('preferences_inventory_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function EditFindPrefs() {
 		$this->view->setVar('t_user', $this->request->user);
 		$this->view->setVar('group', 'find');
@@ -309,6 +318,20 @@ class PreferencesController extends ActionController {
 					}
 				}
 				$vs_view_name = 'preferences_batch_html.php';
+				break;
+			case 'EditInventoryPrefs':
+				$vs_group = 'inventory';
+				
+				$va_ui_prefs = [];
+				foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+				
+					foreach($_REQUEST AS $vs_k => $vs_v) {
+						if (preg_match("!pref_{$vs_pref}!", $vs_k, $va_matches)) {
+							$this->request->user->setPreference($vs_pref, $vs_v);
+						}
+					}
+				}
+				$vs_view_name = 'preferences_inventory_html.php';
 				break;
 			case 'EditFindPrefs':
 				$vs_group = 'find';

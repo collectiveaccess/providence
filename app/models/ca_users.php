@@ -2230,7 +2230,6 @@ class ca_users extends BaseModel {
 							$table = $t_instance->tableName();
 							
 							$values = $this->getPreference($ps_pref);
-						//	print_R($vs_current_value);
 							if (!is_array($values)) { $values = []; }
 							if ($t_instance && method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
 								$output = '';
@@ -2268,6 +2267,24 @@ class ca_users extends BaseModel {
 									$output .= "</div></td></tr>\n";
 								}
 								$output .= "</table>";
+							}
+							break;
+						case 'FT_INVENTORY_BUNDLE_LIST':
+							if(caInventoryIsEnabled()) {
+								$config = Configuration::load();
+								$inventory_container_element_code = $config->get('inventory_container_element_code');
+								$inventory_found_element_code = $config->get('inventory_found_element_code');
+								if(is_array($md = ca_metadata_elements::getElementsForSet($inventory_container_element_code))) {
+									if(!is_array($vs_current_value)) { $vs_current_value = []; }
+									foreach($md as $e) {
+										if($e['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+										if($e['element_code'] === $inventory_found_element_code) { continue; }
+										
+										$opts = ['value' => $e['element_code']];
+										if(in_array($e['element_code'], $vs_current_value, true)) { $opts['CHECKED'] = 1; }
+										$output .= "<div>".caHTMLCheckboxInput("pref_{$ps_pref}[]", $opts, [])." ".$e['display_label']."</div>\n";
+									}
+								}
 							}
 							break;
 						default:

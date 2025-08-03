@@ -6425,4 +6425,14 @@ function caIsInventory(BaseModel|SearchResult $t_set, ?array $options=null) : bo
 	return false;
 }
 # ------------------------------------------------------------------
+/**
+ * Is inventory system eabled?
+ *
+ * return bool
+ */
+function caInventoryIsEnabled() : bool {
+	$config = Configuration::load();
+	return (bool)$config->get('enable_inventories');
+}
+# ------------------------------------------------------------------
 

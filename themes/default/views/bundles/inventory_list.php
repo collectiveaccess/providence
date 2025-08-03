@@ -187,6 +187,8 @@ if(!$dont_show_delete) {
 			
 			inventoryFilterInputID: <?= json_encode("{$id_prefix}inventoryFilter"); ?>,
 			
+			presetInventoryBundles: <?= json_encode($this->request->user ? $this->request->user->getPreference('inventory_preset_bundles') : []); ?>,
+			
 			unsavedEditsPersistenceURL: <?= json_encode(caNavUrl($this->request, 'manage/sets', 'SetEditor', 'persistUnsavedEdits', ['bundle' => 'inventory_list', 'table' => 'ca_sets', 'id' => $t_set->getPrimaryKey()])); ?>,
 			unsavedEditData: <?= json_encode($unsaved_edit_data); ?>,
 			displayTemplate: <?= (isset($settings['displayTemplate']) ? json_encode($settings['displayTemplate']) : 'null'); ?>,
