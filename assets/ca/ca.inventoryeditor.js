@@ -312,17 +312,19 @@ var caUI = caUI || {};
 				if(form_item_id && (form_item_id == v['item_id'])) {
 					// Preset form data?
 					if(!that.itemsWithForms[v['item_id']]) {
-						if(lastFormData && that.presetInventoryBundles && (that.presetInventoryBundles.length > 0)) {
+						if(lastFormData && that.presetInventoryBundles && (that.presetInventoryBundles.length > 0) && (v['_INVENTORY_STATUS_'] == 'NOT_CHECKED')) { 
 							jQuery.each(lastFormData, function(kx, vx) {
 								let regex = new RegExp("^" + that.inventoryContainerElementCode + "_(" + that.presetInventoryBundles.join('|') + ")[_a-z0-9]*$");
-								if(kx.match(regex)) { 
-									v[kx] = vx;
-									console.log("copy", kx, vx);
+								let r = kx.match(regex);
+								if(r) {
+									let bv = v[r[0]];
+									if(!bv || !bv.length) { 
+										v[kx] = vx;
+									}
 								}
-								console.log(v);
 							});
 						}
-					} 
+					}
 				}
 				
 				let item = jQuery('#' + that.container + ' textarea.' + that.itemTemplateClass).template(v);
