@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -333,25 +333,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'options' => array(
-				_t('none') => 'none',
-				_t('skip_on_idno') => 'skip_on_idno',
-				_t('merge_on_idno') => 'merge_on_idno',
-				_t('merge_on_idno_with_skip') => 'merge_on_idno_with_skip',
-				_t('merge_on_idno_with_replace') => 'merge_on_idno_with_replace',
-				_t('overwrite_on_idno') => 'overwrite_on_idno',
-				_t('skip_on_no_idno') => 'skip_on_no_idno',
-				_t('skip_on_preferred_labels') => 'skip_on_preferred_labels',
-				_t('merge_on_preferred_labels') => 'merge_on_preferred_labels',
-				_t('merge_on_preferred_labels_with_replace') => 'merge_on_preferred_labels_with_replace',
-				_t('overwrite_on_preferred_labels') => 'overwrite_on_preferred_labels',
-				_t('merge_on_idno_and_preferred_labels') => 'merge_on_idno_and_preferred_labels',
-				_t('merge_on_idno_and_preferred_labels_with_replace') => 'merge_on_idno_and_preferred_labels_with_replace',
-				_t('overwrite_on_idno_and_preferred_labels') => 'overwrite_on_idno_and_preferred_labels',
-				_t('skip_on_id') => 'skip_on_id',
-				_t('merge_on_id') => 'merge_on_id',
-				_t('merge_on_id_with_skip') => 'merge_on_id_with_skip',
-				_t('merge_on_id_with_replace') => 'merge_on_id_with_replace',
-				_t('overwrite_on_id') => 'overwrite_on_id'
+				'none' => 'none',
+				'skip_on_idno' => 'skip_on_idno',
+				'merge_on_idno' => 'merge_on_idno',
+				'merge_on_idno_with_skip' => 'merge_on_idno_with_skip',
+				'merge_on_idno_with_replace' => 'merge_on_idno_with_replace',
+				'overwrite_on_idno' => 'overwrite_on_idno',
+				'skip_on_no_idno' => 'skip_on_no_idno',
+				'skip_on_preferred_labels' => 'skip_on_preferred_labels',
+				'merge_on_preferred_labels' => 'merge_on_preferred_labels',
+				'merge_on_preferred_labels_with_replace' => 'merge_on_preferred_labels_with_replace',
+				'overwrite_on_preferred_labels' => 'overwrite_on_preferred_labels',
+				'merge_on_idno_and_preferred_labels' => 'merge_on_idno_and_preferred_labels',
+				'merge_on_idno_and_preferred_labels_with_replace' => 'merge_on_idno_and_preferred_labels_with_replace',
+				'overwrite_on_idno_and_preferred_labels' => 'overwrite_on_idno_and_preferred_labels',
+				'skip_on_id' => 'skip_on_id',
+				'merge_on_id' => 'merge_on_id',
+				'merge_on_id_with_skip' => 'merge_on_id_with_skip',
+				'merge_on_id_with_replace' => 'merge_on_id_with_replace',
+				'overwrite_on_id' => 'overwrite_on_id'
 			),
 			'label' => _t('Existing record policy'),
 			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
@@ -401,8 +401,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'options' => array(
-				_t('ignore') => "ignore",
-				_t('stop') => "stop"
+				'ignore' => "ignore",
+				'stop' => "stop"
 			),
 			'label' => _t('Error policy'),
 			'description' => _t('Determines how errors are handled for the import.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
@@ -1609,8 +1609,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$existing_record_policy_setting_info = $t_mapping->getSettingInfo('existingRecordPolicy');
 		
+		$vs_existing_record_policy = $t_mapping->getSetting('existingRecordPolicy');
+		
 		if (!in_array(	
-			$vs_existing_record_policy = $t_mapping->getSetting('existingRecordPolicy'),
+			$vs_existing_record_policy,
 			array_keys($existing_record_policy_setting_info['options'])
 		)) {
 			$vs_existing_record_policy = 'none';
