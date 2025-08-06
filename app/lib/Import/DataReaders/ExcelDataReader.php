@@ -121,7 +121,7 @@ class ExcelDataReader extends BaseDataReader {
 				
 				$headers = [];
 				foreach ($o_cells as $o_cell) {
-					$headers[] = str_replace("\\0", '/0', trim((string)self::getCellAsHTML($o_cell)));
+					$headers[] = str_replace("\\0", '/0', trim(strip_tags((string)self::getCellAsHTML($o_cell))));
 						
 					$col++;
 					if ($col > $this->opn_max_columns) { break; }
