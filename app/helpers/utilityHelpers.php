@@ -3877,61 +3877,78 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Generate a CSRF token and add to session CSRF store
 	 *
-	 * @param RequestHTTP $po_request Current request
+	 * @param RequestHTTP $request Current request
 	 * @return string
 	 */
-	function caGenerateCSRFToken($po_request=null){
-		$session_id = $po_request ? $po_request->getSessionID() : 'none';
+	function caGenerateCSRFToken($request=null){
+		$session_id = $request ? $request->getSessionID() : 'none';
 	    if(function_exists("random_bytes")) {           // PHP 7
-	        $vs_token = bin2hex(random_bytes(32));
+	        $token = bin2hex(random_bytes(32));
 	    } elseif (function_exists("openssl_random_pseudo_bytes")) {     // PHP 5.x with OpenSSL
-			$vs_token = bin2hex(openssl_random_pseudo_bytes(32));
+			$token = bin2hex(openssl_random_pseudo_bytes(32));
         } else {
-            $vs_token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
+            $token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
 	    }
-	    if ($po_request) {
-	        if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 2000) { 
-	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
+	    if ($request) {
+	        if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
+	        if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
+	    
+	    	foreach($used_tokens as $ut => $t) {
+	    		unset($tokens[$ut]);
 	    	}
 	    
-	        $va_tokens[$vs_token] = time();
+	        if (sizeof($tokens) > 255) { 
+	        	$tokens = array_filter($tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
+	    	}
+	    
+	        $tokens[$token] = time();
 	        
-	        PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
+	        PersistentCache::save("csrf_tokens_{$session_id}", $tokens, "csrf_tokens");
+	        
+	         if (sizeof($used_tokens) > 255) { 
+	        	$used_tokens = array_filter($used_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
+	    		PersistentCache::save("csrf_used_tokens_{$session_id}", $used_tokens, "csrf_tokens");
+	    	}
 	    }
-	    return $vs_token;
+	    return $token;
 	}
 	# ----------------------------------------
 	/**
 	 * Validate CSRF token using current session
 	 *
-	 * @param RequestHTTP $po_request Current request
-	 * @param string $ps_token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
-	 * @param array $pa_options Options include:
+	 * @param RequestHTTP $request Current request
+	 * @param string $token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
+	 * @param array $options Options include:
 	 *      remove = remove validated token from active token list. [Default is false]
 	 *      exceptions = throw exception if token is invalid. [Default is false]
 	 *      notifications = post notification if token is invalid. [Default is false]
 	 * @return bool
 	 * @throws ApplicationException
 	 */
-	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
-		$session_id = $po_request ? $po_request->getSessionID() : 'none';
-		
-	    if(!$ps_token) { $ps_token = $po_request->getParameter('csrfToken', pString); }
-	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
+	function caValidateCSRFToken(RequestHTTP $request, ?string $token=null, ?array $options=null) : ?bool {
+		$session_id = $request ? $request->getSessionID() : 'none';
+	    if(!$token) { $token = $request->getParameter('csrfToken', pString); }
 	    
-	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, false)) {
-	            unset($va_tokens[$ps_token]);
-	        	PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
+		if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
+	    if(isset($used_tokens[$token])) { return null; }	// ignore - token has already been used
+		
+	    if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
+	    
+	    if (isset($tokens[$token])) { 
+	        if (caGetOption('remove', $options, false)) {
+	            unset($tokens[$token]);
+	        	PersistentCache::save("csrf_tokens_{$session_id}", $tokens, "csrf_tokens");
 	        }
+	        
+	   		$used_tokens[$token] = time();
+	        PersistentCache::save("csrf_used_tokens_{$session_id}", $used_tokens, "csrf_tokens");
 	        return true;
 	    }
 	    
-	    if (caGetOption('exceptions', $pa_options, false)) {
+	    if (caGetOption('exceptions', $options, false)) {
 	        throw new ApplicationException(_t('CSRF token is not valid'));
 	    }
-	    if ($nm = caGetOption('notifications', $pa_options, false)) {
+	    if ($nm = caGetOption('notifications', $options, false)) {
 	    	$nm->addNotification(_t('CSRF token is not valid'), __NOTIFICATION_TYPE_ERROR__);
 	    }
 	    return false;   
@@ -4273,12 +4290,17 @@ function caFileIsIncludable($ps_file) {
 	 * Get list of (enabled) primary tables as table_num => table_name mappings
 	 * @param bool $pb_include_rel_tables Include relationship tables or not. Defaults to false
 	 * @param array $additional_tables Optional array of additional tables to include. [Default is null]
+	 * @param array $options Options include:
+	 		returnAllTables = Return all tables, regardless of configured availability. By default, only primary tables enabled for use in app.conf are returned. [Default is false]
 	 *
 	 * @return array
 	 */
-	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null) {
+	function caGetPrimaryTables($pb_include_rel_tables=false, ?array $additional_tables=null, ?array $options=null) {
 		$o_conf = Configuration::load();
 		$va_ret = [];
+		
+		$return_all_tables = caGetOption('returnAllTables', $options, false);
+		$enabled_primary_tables = [];
 		foreach([
 			'ca_objects' => 57,
 			'ca_object_lots' => 51,
@@ -4294,8 +4316,9 @@ function caFileIsIncludable($ps_file) {
 			'ca_tours' => 153,
 			'ca_tour_stops' => 155
 		] as $vs_table_name => $vn_table_num) {
-			if(!$o_conf->get($vs_table_name.'_disable')) {
+			if($return_all_tables || !$o_conf->get($vs_table_name.'_disable')) {
 				$va_ret[$vn_table_num] = $vs_table_name;
+				$enabled_primary_tables[$vs_table_name] = true;
 			}
 		}
 		if(is_array($additional_tables) && sizeof($additional_tables)) {
@@ -4306,11 +4329,14 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if($pb_include_rel_tables) {
-			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 			$t_rel = new ca_relationship_types();
 			$va_rels = $t_rel->getRelationshipsUsingTypes();
 
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
+				if(!($t_rel = Datamodel::getInstanceByTableName($va_rel_table_info['table']))) { continue; }
+				if(!isset($enabled_primary_tables[$t_rel->getLeftTableName()]) || !isset($enabled_primary_tables[$t_rel->getRightTableName()])) {
+					continue;
+				}
 				$va_ret[$vn_table_num] = $va_rel_table_info['table'];
 			}
 			if(isset($va_ret[56])) {

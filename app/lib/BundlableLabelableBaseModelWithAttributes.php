@@ -4418,10 +4418,11 @@ if (!$vb_batch) {
 									}
 									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_'.$va_label['label_id'], pString);
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_'.$va_label['label_id'], pInteger);
+									$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'notes_'.$va_label['label_id'], pString);
 									$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'checked_'.$va_label['label_id'], pInteger);
 									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'source_info_'.$va_label['label_id'], pString);
 							
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4528,10 +4529,11 @@ if (!$vb_batch) {
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
 							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_new_'.$vn_c, pString);
 							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_new_'.$vn_c, pInteger);
+							$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'notes_new_'.$vn_c, pString);
 							$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'checked_new_'.$vn_c, pInteger);
 							$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'source_info_new_'.$vn_c, pString);
 							
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 								$vb_error_inserting_pref_label = true;
@@ -4579,10 +4581,11 @@ if (!$vb_batch) {
 									
 									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_'.$va_label['label_id'], pString);
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_'.$va_label['label_id'], pInteger);
+									$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'notes_'.$va_label['label_id'], pString);
 									$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'checked_'.$va_label['label_id'], pInteger);
 									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_'.$va_label['label_id'], pString);
 
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4652,10 +4655,11 @@ if (!$vb_batch) {
 							$vn_new_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_new_'.$vn_c, pInteger);
 							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_new_'.$vn_c, pString);
 							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_new_'.$vn_c, pInteger);
+							$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'notes_new_'.$vn_c, pString);
 							$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'checked_new_'.$vn_c, pInteger);
 							$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_new_'.$vn_c, pString);
 							
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 						
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
@@ -5567,6 +5571,36 @@ if (!$vb_batch) {
 								
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_storage_locations', $vn_location_id);
+										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+									}
+								}
+							}
+						}
+						if (!caGetOption('hide_update_place_controls', $va_bundle_settings, false)) {
+							$vn_place_id = $vn_place_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_places_idnew_0", pInteger);
+							if ($vn_place_id) {
+								$t_loc = Datamodel::getInstance('ca_places', true);
+								
+								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+								if ($t_loc->load($vn_place_id)) {
+									if ($policy) {
+										$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_places', $t_loc->getTypeCode());
+										$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
+									}
+									
+									if ($vn_relationship_type_id) {
+										// is effective date set?
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_places__effective_datenew_0", pString);
+						
+										$t_item_rel = $this->addRelationship('ca_places', $vn_place_id, $vn_relationship_type_id, $vs_effective_date);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											ca_places::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_places', $t_item_rel, $vn_place_id, $processed_bundle_settings);							
+										}									
+								
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_places', $vn_place_id);
 										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
 									}
 								}

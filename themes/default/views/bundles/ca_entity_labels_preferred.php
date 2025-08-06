@@ -41,8 +41,9 @@ $batch						= $this->getVar('batch');
 
 $show_effective_date 		= $this->getVar('show_effective_date');
 $show_access 				= $this->getVar('show_access');
+$show_notes					= $this->getVar('show_notes');
 $label_list 				= $this->getVar('label_type_list');
-$locale_list			= $this->getVar('locale_list');
+$locale_list				= $this->getVar('locale_list');
 
 if ($batch) {
 	print caBatchEditorPreferredLabelsModeControl($t_label, $id_prefix);
@@ -111,7 +112,7 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 	}
 ?>
 							<tr>
-								<td>
+								<td colspan="2">
 									<table>
 										<tr>
 											<td>
@@ -126,6 +127,17 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 								</td>
 							</tr>
 <?php
+	if($show_notes) {
+?>					
+							<tr>
+								<td colspan="2">
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('notes', "^LABEL<br>^ELEMENT", array('classname' => 'labelnotes', 'id' => "{fieldNamePrefix}notes_{n}", 'name' => "{fieldNamePrefix}notes_{n}", "value" => "{notes}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}		
 	if($show_source) {
 ?>
 							<tr>
@@ -190,6 +202,17 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 							</tr>
 							
 <?php
+	if($show_notes) {
+?>					
+							<tr>
+								<td colspan="5">
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('notes', "^LABEL<br>^ELEMENT", array('classname' => 'labelnotes', 'id' => "{fieldNamePrefix}notes_{n}", 'name' => "{fieldNamePrefix}notes_{n}", "value" => "{notes}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}		
 	if($show_source) {
 ?>
 							<tr>
@@ -256,6 +279,17 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 								<?= $show_checked ? $t_label->htmlFormElement('checked', "<td><div class=\"formLabel\">^LABEL ^BUNDLECODE<br/>^ELEMENT</div></td>", array('classname' => 'labelOption', 'id' => "{fieldNamePrefix}checked_{n}", 'name' => "{fieldNamePrefix}checked_{n}", "value" => "{checked}", 'no_tooltips' => true)) : ''; ?>	
 							</tr>
 	<?php
+	if($show_notes) {
+?>					
+							<tr>
+								<td colspan="5">
+									<div class="formLabel">
+										<?= $t_label->htmlFormElement('notes', "^LABEL<br>^ELEMENT", array('classname' => 'labelnotes', 'id' => "{fieldNamePrefix}notes_{n}", 'name' => "{fieldNamePrefix}notes_{n}", "value" => "{notes}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
+									</div>
+								</td>
+							</tr>
+<?php
+	}	
 	if($show_source) {
 ?>
 							<tr>
@@ -293,7 +327,7 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 	caUI.initLabelBundle('#<?= $id_prefix; ?>Labels', {
 		mode: 'preferred',
 		fieldNamePrefix: '<?= $id_prefix; ?>',
-		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'locale_id', 'type_id', 'effective_date', 'access', 'checked', 'source_info', 'name_sort'],
+		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'locale_id', 'type_id', 'effective_date', 'access', 'notes', 'checked', 'source_info', 'name_sort'],
 		initialValues: <?= json_encode($initial_values); ?>,
 		forceNewValues: <?= json_encode($force_new_labels); ?>,
 		labelID: 'Label_',

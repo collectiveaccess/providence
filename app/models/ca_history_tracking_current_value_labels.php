@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2023 Whirl-i-Gig
+ * Copyright 2022-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_history_tracking_current_value_labels'] = array(
  	'NAME_SINGULAR' 	=> _t('object title'),
@@ -121,6 +116,13 @@ BaseModel::$s_ca_models_definitions['ca_history_tracking_current_value_labels'] 
 				),
 				'LIST' => 'access_statuses',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
+		),
+		'notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Notes', 'DESCRIPTION' => 'Notes on label'
 		)
  	)
 );

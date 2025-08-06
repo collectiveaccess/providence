@@ -2314,7 +2314,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				'value' => $vm_values,
 				'forSearch' => true,
 				'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
-				'render' => $va_element['settings']['render'] ?? null,
+				'render' => $pa_options['render'] ?? $va_element['settings']['render'] ?? null,
 				'attributes' => $attributes
 			], array_merge($pa_options, $va_override_options));
 			
@@ -2343,8 +2343,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				// prep element for use as search element
 				//
 				// ... replace value
-				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
-			
+				if(!is_array($vm_values)) {
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
+				}
 			
 				// escape any special characters in jQuery selectors
 				$f = (isset($pa_options['name']) && $pa_options['name']) ? $pa_options['name'] : $vs_fld_name;
@@ -2361,6 +2362,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				}
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}', str_replace('.', '_',$f), $vs_form_element);
 			}
 			
 			$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;

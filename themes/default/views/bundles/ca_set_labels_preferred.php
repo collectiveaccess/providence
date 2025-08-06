@@ -57,7 +57,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $set
 			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only))); ?>
 			<br/>
 
-			<?php print '<div class="formLabel">'.$locale_list.'</div>'; ?>	
+			<?= "<div class='formLabel'>{$locale_list}</div>"; ?>	
 		</div>
 	</textarea>
 	
@@ -82,7 +82,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $set
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
 		readonly: <?= $read_only ? "1" : "0"; ?>,
-		bundlePreview: <?php $cur = current($initial_values); print caEscapeForBundlePreview($cur['name']); ?>,
+		bundlePreview: <?php $cur = current($initial_values); print caEscapeForBundlePreview($cur['name'] ?? null); ?>,
 		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 define("__CA_ATTRIBUTE_VALUE_LIST__", 3);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -479,6 +478,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$t_item = new ca_list_items();
 		if($o_trans) { $t_item->setTransaction($o_trans); }
 
+		$ps_value = trim($ps_value);
 		foreach($va_match_on as $vs_match_on) {
 			switch($vs_match_on) {
 				case 'idno':
@@ -487,7 +487,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						break(2);
 					}
 					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
-						if ($vn_id = caGetListItemID($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+						if ($vn_id = caGetListItemID($pa_element_info['list_id'], trim(caSerializeCommaSeparatedName($ps_value)), $pa_options)) {
 							break(2);
 						}
 					}
@@ -499,7 +499,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						break(2);
 					}
 					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
-						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], trim(caSerializeCommaSeparatedName($ps_value)), $pa_options)) {
 							break(2);
 						}
 					}
@@ -568,7 +568,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'] ?? false)) ? false : (bool)($pa_element_info['settings']['requireValue'] ?? false);
 		
-		$render_as = $pa_element_info['settings']['render'] ?? null;
+        $for_search = caGetOption('forSearch', $pa_options, false);
+        $for_form = caGetOption('forForm', $pa_options, false);
+		$render_as =($for_search && !$for_form) ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		
 		if (($pa_element_info['parent_id']) && ($render_as == 'checklist')) { $render_as = ''; }	// checklists can only be top-level
 		
@@ -585,9 +587,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$vb_implicit_nulls = caGetOption('implicitNullOption', $pa_element_info['settings'], false);
 		$use_singular = caGetOption('useSingular', $pa_element_info['settings'], false);
 
-        $for_search = caGetOption('forSearch', $pa_options, false);
-
-		$vs_render = $for_search ? "" : caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
 		$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
 		
 		$current_selection_display_format = caGetOption('currentSelectionDisplayFormat', $pa_options, caGetOption('currentSelectionDisplayFormat', $pa_element_info['settings'], null));
@@ -610,7 +609,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			array_merge(
 				$pa_options,
 				[
-					'render' => $vs_render, 'maxColumns' => $vn_max_columns, 
+					'render' => $render_as, 'maxColumns' => $vn_max_columns, 
 					'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 
 					'implicitNullOption' => $vb_implicit_nulls, 'auto_shrink' => $vb_auto_shrink, 
 					'currentSelectionDisplayFormat' => $current_selection_display_format,

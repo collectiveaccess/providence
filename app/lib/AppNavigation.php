@@ -957,6 +957,13 @@ class AppNavigation extends BaseObject {
 					}
 					if($vb_not) { $vs_value = !$vs_value; }
 					break;
+				case 'function':
+					if ($vb_not = (substr($va_tmp[1], 0, 1) == '!') ? true : false) {
+						$va_tmp[1] = substr($va_tmp[1], 1);
+					}
+					$vs_value = call_user_func_array('caShowAccessControlScreen', array_slice($va_tmp, 2));
+					if($vb_not) { $vs_value = !$vs_value; }
+					break;
 				default:
 					$vs_value = $vs_value ? true : false;
 					break;
