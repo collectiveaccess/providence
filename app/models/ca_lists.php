@@ -1837,7 +1837,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						jQuery(document).ready(function() {
 							jQuery('#{$ps_name}_autocomplete').autocomplete({
 									source: '{$vs_url}', minLength: 3, delay: 800, html: true,
-									position: { my: 'left top'. at: 'left bottom', collision: 'fit flip' },
+									position: { my: 'left top', at: 'left bottom', collision: 'fit flip' },
 									select: function(event, ui) {
 										
 										if (parseInt(ui.item.id) > 0) {

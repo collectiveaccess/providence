@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -877,7 +877,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		// Reindex modified relationships
 		$si = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			$si->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
+			$si->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, ['type_id' => true], ['queueIndexing' => true]);
 		}
 		
 		return $vn_num_rows;

@@ -177,7 +177,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
-			'DEFAULT' => '',
+			'DEFAULT' => 0,
 			'LABEL' => _t('Transcribe?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
 		),
 		'home_location_id' => array(
@@ -491,6 +491,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
 		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
 		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
+		
+		$this->BUNDLES['submitted_by_user'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submitted by'), 'displayOnly' => true);
+		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
 		
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
