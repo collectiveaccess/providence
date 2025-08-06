@@ -5231,6 +5231,29 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					// [This generally should not happen]
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
 					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
+				} else {
+					$media_desc = [
+						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
+						"_CENTER" => [],
+						"_SCALE" => [],
+						"_SCALE_UNITS" => [],
+						"_START_AT_TIME" => null,
+						"_START_AT_PAGE" => null,
+						"INPUT" => [
+							"MIMETYPE" => $m->get("mimetype"),
+							"WIDTH" => $m->get("width"),
+							"HEIGHT" => $m->get("height"),
+							"MD5" => null,
+							"FILESIZE" => null,
+							"FETCHED_BY" => $vs_url_fetched_by,
+							"FETCHED_ORIGINAL_URL" => $vs_url_fetched_original_url,
+							"FETCHED_FROM" => $vs_url_fetched_from,
+							"FETCHED_ON" => $vn_url_fetched_on,
+							"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
+						 ]
+					];
+					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field] = $media_desc;
+					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
 
 				$this->_PROCESSED_FILES[$ps_field] = $this->_SET_FILES[$ps_field];
