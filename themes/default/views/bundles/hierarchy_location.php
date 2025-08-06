@@ -46,7 +46,7 @@ $bundle_preview	= '('.$items_in_hier. ') '. caProcessTemplateForIDs("^preferred_
 $record_set = $this->getVar('recordSet');
 
 $config = $t_subject->getAppConfig();
-
+$read_only		=	(($bundle_settings['readonly'] ?? false)  || ($this->request->user->getBundleAccessLevel($subject_table, 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
 
 if(!($min_autocomplete_search_length = (int)$config->get(["{$priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
 
@@ -58,6 +58,10 @@ if (!$id) {
 			$id = array_shift($record_ids);
 			if($id && ($t_rec = Datamodel::getInstance($subject_table, true, $id)) && ($parent_id = $t_rec->get("{$subject_table}.parent_id"))) {
 				$id = $parent_id;	
+			}
+			if(!$id && !$batch) { 
+				$id = $parent_id; 
+				$read_only = true;
 			}
 			if(!$id && ($t_subject = $subject_table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids']))) {
 				$id = $t_subject->getPrimaryKey();
@@ -129,8 +133,6 @@ $type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
 	['id' => "{$id_prefix}typeList"], 
 	['enforceStrictTypeHierarchy' => $strict_type_hierarchy]
 ));
-
-$read_only		=	((isset($bundle_settings['readonly']) && $bundle_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($subject_table, 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
 
 $show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
 $show_move = ((!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) && !$read_only);
@@ -647,7 +649,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				currentSelectionDisplayID: '<?= $id_prefix; ?>HierarchyBrowserSelectionMessage',
 				currentSelectionDisplayFormat: <?= json_encode($is_new ? _t('Will be placed under <em>^current</em> after save') : _t('Will be moved under <em>^current</em> after next save.')); ?>,
 				
-				allowExtractionFromHierarchy: <?= ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
+				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
 				extractFromHierarchyMessage: <?= json_encode(_t('Will be placed at the top of its own hierarchy after next save.')); ?>,
 				
