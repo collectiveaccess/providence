@@ -2924,22 +2924,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vs_old_type ) );
 							}
 
-							if ( $vn_idno_mapping_item_id && ( $vn_item_id == $vn_idno_mapping_item_id ) ) {
-								continue;
-							}
-							
-							
-							if(($va_item['destination'] === "{$vs_subject_table}.{$vs_idno_fld}")) {
+							if ($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) {
 								if(strlen($vm_val)) {
 									$vs_idno = $vm_val;
 								}
-								continue;
+								
+								if(!($va_item['settings']['allowIdnoReplacement'] ?? false)) {
+									continue;
+								}
 							}
 							
-							if ( is_null( $vm_val ) ) {
+							if (is_null($vm_val)) {
 								continue;
 							}
-
 
 							// Get mapping error policy
 							$vb_item_error_policy_is_default = false;
@@ -2973,7 +2970,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[$vn_c]['_add'] = $va_item['settings']['add'];
 							}
 							if ($va_item['settings']['replace'] ?? false) {
-								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
+								$va_group_buf[$vn_c]['_replace'] = ((bool)$va_item['settings']['replace']) ? 1 : 0;
 							}
 							
 							if ( isset( $va_item['settings']['replaceIfExpression'] )
@@ -3696,7 +3693,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													) && !$vb_force_add
 												)
 												||
-												$vb_force_replace
+												($vb_force_replace && !$va_elements_set_for_this_record[$vs_element])
 											) {
 												$t_subject->removeAttributes($vs_element, array('force' => true));
 											} 
