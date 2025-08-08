@@ -478,6 +478,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		$t_item = new ca_list_items();
 		if($o_trans) { $t_item->setTransaction($o_trans); }
 
+		$ps_value = trim($ps_value);
 		foreach($va_match_on as $vs_match_on) {
 			switch($vs_match_on) {
 				case 'idno':
@@ -486,7 +487,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						break(2);
 					}
 					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
-						if ($vn_id = caGetListItemID($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+						if ($vn_id = caGetListItemID($pa_element_info['list_id'], trim(caSerializeCommaSeparatedName($ps_value)), $pa_options)) {
 							break(2);
 						}
 					}
@@ -498,7 +499,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 						break(2);
 					}
 					if($serialize_comma_separated_values && strpos($ps_value, ',')) {
-						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], caSerializeCommaSeparatedName($ps_value), $pa_options)) {
+						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], trim(caSerializeCommaSeparatedName($ps_value)), $pa_options)) {
 							break(2);
 						}
 					}
