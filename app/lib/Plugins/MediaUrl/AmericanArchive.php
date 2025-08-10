@@ -73,7 +73,7 @@ class AmericanArchive Extends BaseMediaUrlPlugin {
 		
 		//Ex. We have an item whose url is https://americanarchive.org/catalog/cpb-aacip-138-42n5tg3t
  		//<iframe style='display: flex; flex-direction: column; min-height: 50vh; width: 100%;' src='https://americanarchive.org/embed/cpb-aacip-138-42n5tg3t?start=0&end=1910'></iframe>
- 		if(!preg_match('!\.americanarchive\.org$!', $parsed_url['host']) && !preg_match('!^americanarchive\.org$!', $parsed_url['host'])) { print "beh"; return false; }
+ 		if(!preg_match('!\.americanarchive\.org$!', $parsed_url['host']) && !preg_match('!^americanarchive\.org$!', $parsed_url['host'])) { return false; }
  		
  		// Is straight catalog URL?
  		if (preg_match('!^/catalog/([A-Za-z0-9_\-\.]+)!', $parsed_url['path'])) {
