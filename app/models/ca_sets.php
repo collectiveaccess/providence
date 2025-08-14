@@ -815,7 +815,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
-				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -2003,7 +2003,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
 	LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
-				$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
+				$vs_rep_where_sql = " AND ((coxor.is_primary = 1 OR coxor.is_primary IS NULL) AND cor.deleted = 0)";
 			
 				$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
 			

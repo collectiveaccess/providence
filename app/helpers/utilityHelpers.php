@@ -4275,8 +4275,12 @@ function caFileIsIncludable($ps_file) {
 		foreach(preg_split("![ \t]+!u", $display_value) as $t) {
 			if(is_numeric($t)) {
 				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
+			} elseif(preg_match("!^([A-Za-z]+)([\d]+)([A-Za-z]+)$!u", $t, $m)) {
+				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[3], 0, 4), 4, ' ', STR_PAD_LEFT);
 			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $t, $m)) {
 				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+			} elseif(preg_match("!^([A-Za-z]+)([\d]+)$!u", $t, $m)) {
+				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT);
 			} else {
 				$padded[] = str_pad(mb_substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}

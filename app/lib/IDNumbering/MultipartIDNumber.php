@@ -692,13 +692,19 @@ class MultipartIDNumber extends IDNumber {
 						$pad_len = $padding - mb_strlen($piece);
 
 						if ($pad_len >= 0) {
-							if (is_numeric($piece)) {
+							if(preg_match("!^([A-Za-z]+)([\d]+)([A-Za-z]+)$!u", $piece, $m)) {
+								$raw_output[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[3], 0, 4), 4, ' ', STR_PAD_LEFT);
+							} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $piece, $m)) {
+								$raw_output[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+							} elseif(preg_match("!^([A-Za-z]+)([\d]+)$!u", $piece, $m)) {
+								$raw_output[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT);
+							} elseif (is_numeric($piece)) {
 								$raw_output[] = str_repeat(' ', $pad_len).$matches[1];
 							} else {
 								$raw_output[] = $piece.str_repeat(' ', $pad_len);
 							}
 						} else {
-							$raw_output[] = $piece;
+							$raw_output[] = mb_substr($piece, 0, $padding);
 						}
 					}
 					$output[] = join('', $raw_output); 
