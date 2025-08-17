@@ -3309,11 +3309,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vn_first_id = array_shift($va_ids);
 			}
 		}
+
+		$type_id = $po_request->getParameter('type_id', pInteger);
+		
+		$id = ($pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		
+		if(!$id && $type_id) {
+			$this->get('type_id', $type_id);
+		}
 		
 		$o_view->setVar('batch', $pb_batch);
 		$o_view->setVar('parent_id', $vn_parent_id);
 		$o_view->setVar('ancestors', $va_ancestor_list);
-		$o_view->setVar('id', $pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		$o_view->setVar('id', $id);
+		$o_view->setVar('type_id', $type_id);
+		$o_view->setVar('t_type', $this->getTypeInstance());
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		return $o_view;
@@ -4300,6 +4310,8 @@ if (!$vb_batch) {
 					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
 						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
 					}
+				} elseif(!$this->getPrimaryKey() && ($vn_parent_id > 0)) {
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
 				}
 			}
 			break;

@@ -850,7 +850,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
 				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
-				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -2053,6 +2053,64 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if ($t_rel_table->hasField('deleted')) {
 			$deleted_sql = ' AND rel.deleted = 0';
 		}
+
+		$va_representation_counts = array();
+		
+		$vs_rep_join_sql = $vs_rep_where_sql = $vs_rep_select = '';
+		
+		if(is_a($t_rel_table, 'RepresentableBaseModel') && (isset($pa_options['thumbnailVersion']) || isset($pa_options['thumbnailVersions']))) {
+			if(is_array($path = Datamodel::getPath($t_rel_table->tableName(), 'ca_object_representations')) && (sizeof($path) === 3)) {
+				$path = array_keys($path);
+				$rel_table = $t_rel_table->tableName();
+				$rel_pk = $t_rel_table->primaryKey();
+				
+				$vs_rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
+	LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
+				$vs_rep_where_sql = " AND ((coxor.is_primary = 1 OR coxor.is_primary IS NULL) AND cor.deleted = 0)";
+			
+				$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
+			
+				// get representation counts
+				$qr_rep_counts = $o_db->query("
+					SELECT 
+						rel.{$rel_pk}, count(*) c
+					FROM ca_set_items casi
+					INNER JOIN {$rel_table} AS rel ON rel.{$rel_pk} = casi.row_id
+					INNER JOIN {$path[1]} AS coxor ON coxor.{$rel_pk} = rel.{$rel_pk}
+					WHERE
+						casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} AND casi.deleted = 0
+					GROUP BY
+						rel.{$rel_pk}
+				", (int)$vn_set_id);
+			
+				while($qr_rep_counts->nextRow()) {
+					$va_representation_counts[(int)$qr_rep_counts->get($rel_pk)] = (int)$qr_rep_counts->get('c');
+				}
+			}
+		}
+		
+		
+		// get row labels
+		$qr_res = $o_db->query("
+			SELECT 
+				casi.set_id, casi.item_id, casi.row_id, casi.`rank`,
+				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
+			FROM ca_set_items casi
+			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+			{$vs_label_join_sql}
+			WHERE
+				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
+			ORDER BY 
+				casi.`rank` ASC
+			{$vs_limit_sql}
+		", (int)$vn_set_id);
+		
+		$va_labels = array();
+		while($qr_res->nextRow()) {
+			$va_labels[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+		}
+		
+		$va_labels = caExtractValuesByUserLocale($va_labels);
 		
 		// get set items
 		$access_sql = '';
