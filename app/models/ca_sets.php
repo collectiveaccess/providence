@@ -2034,7 +2034,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
-			{$vs_label_join_sql}
+			{$label_join_sql}
 			WHERE
 				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
 			ORDER BY 
