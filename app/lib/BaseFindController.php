@@ -615,7 +615,7 @@ class BaseFindController extends ActionController {
 	public function addToSet(?array $options=null) {
 		global $g_ui_locale_id;
 		
-		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+		if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification]) === false) {
 			throw new ApplicationException(_t('CSRF check failed'));
 			return;
 		}
