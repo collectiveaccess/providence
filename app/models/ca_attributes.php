@@ -239,7 +239,13 @@ class ca_attributes extends BaseModel {
 		$this->set('element_id', $t_element->getPrimaryKey());
 		
 		// Force default of locale-less attributes to current user locale if possible
-		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if($t_element->isValidSetting('doesNotTakeLocale') && $t_element->getSetting('doesNotTakeLocale')) {
+			$pa_values['locale_id'] = null;
+		} elseif(!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { 
+			$pa_values['locale_id'] = $g_ui_locale_id; 
+		}
+		
+		
 		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
 		// @TODO: verify table_num/row_id combo
