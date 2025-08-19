@@ -670,7 +670,7 @@ class BaseFindController extends ActionController {
 							if($exclude_inventoried) {
 								$inventories = $t_set->getSetsForItem($this->ops_tablename, $qr->getPrimaryKey(), ['restrictToTypes' => [$inventory_set_type]]);
 								if(is_array($inventories) && sizeof($inventories)) {
-									$num_already_inventoried++;
+									if($source !== 'from_random') { $num_already_inventoried++; }
 									continue;
 								}
 							}
