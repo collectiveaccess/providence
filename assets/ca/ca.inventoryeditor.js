@@ -113,7 +113,7 @@ var caUI = caUI || {};
 								if(data.status != 'ok') { 
 									alert("Error adding item");
 								} else {
-									that.getItemList(0, 10000, null, null);
+									that.getItemList(0, 0, 10000, null, null);
 									jQuery('#' + that.inventoryItemAutocompleteID).val('');
 														
 									if(caBundleUpdateManager) { caBundleUpdateManager.reloadInspector(); }
@@ -135,6 +135,7 @@ var caUI = caUI || {};
 			// add initial items
 			if (that.initialValues) {
 				jQuery.each(that.initialValues, function(k, v) {
+					v['lindex'] = k;
 					that.addItemToInventory(v.row_id, v, false);
 				});
 			}
@@ -169,7 +170,7 @@ var caUI = caUI || {};
 		//
 		// Load items via ajax call
 		//
-		that.getItemList = function(start, limit, sort='', sortDirection='', reSortOnly=false) {
+		that.getItemList = function(displayIndex, start, limit, sort='', sortDirection='', reSortOnly=false) {
 			that.isLoading = true;
 			jQuery.getJSON(that.itemListURL, {
 				'set_id': that.inventoryID, 'start': start, 'limit': limit, 
@@ -215,7 +216,7 @@ var caUI = caUI || {};
 								break;
 							}
 						}
-						items[start + index] = d;
+						items[displayIndex + index] = d;
 					}
 				}
 				that.items = items;
@@ -448,7 +449,7 @@ var caUI = caUI || {};
 			deleted_item_ids.push(item_id);
 			jQuery('#' + that.inventoryToDeleteID).val(deleted_item_ids.join(';'));
 			
-			// filter out any delete item
+			// filter out any delete items
 			that.items = this._filterDeletedItems();
 			
 			that._setUnsavedWarning(true);
@@ -570,7 +571,7 @@ var caUI = caUI || {};
 			that.currentSort = sortBundle;
 			that.currentSortDirection = sortDirection;
 			
-			that.getItemList(0, that.numPerPage, sortBundle, sortDirection, true);
+			that.getItemList(0, 0, that.numPerPage, sortBundle, sortDirection, true);
 		}
 		// ------------------------------------------------------------------------------------
 		//
@@ -607,7 +608,7 @@ var caUI = caUI || {};
 				if ((targetPosition > triggerOffset) && (targetPosition < listHeight)) {
 					let index =  jQuery(v).data('index');
 					if(that.items[index] && !('name' in that.items[index])) {
-						that.getItemList(index, that.numPerPage, that.currentSort, that.currentSortDirection, false);
+						that.getItemList(index, that.items[index]['lindex'], that.numPerPage, that.currentSort, that.currentSortDirection, false);
 						//console.log('[DEGUG] Found unloaded item', k,  that.numPerPage, v, scrollPosition, listHeight, targetPosition, triggerOffset, jQuery(v).offsetParent());
 						return false;
 					}
