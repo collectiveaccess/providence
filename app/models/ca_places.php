@@ -33,6 +33,7 @@ require_once(__CA_LIB_DIR__."/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/RepresentableBaseModel.php");
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
+require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 
 BaseModel::$s_ca_models_definitions['ca_places'] = array(
  	'NAME_SINGULAR' 	=> _t('place'),
@@ -243,6 +244,11 @@ BaseModel::$s_ca_models_definitions['ca_places'] = array(
 );
 
 class ca_places extends RepresentableBaseModel implements IBundleProvider, IHierarchy {
+	/**
+	 * Update location of dependent objects when changing values
+	 */
+	use HistoryTrackingCurrentValueTrait;
+	
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
