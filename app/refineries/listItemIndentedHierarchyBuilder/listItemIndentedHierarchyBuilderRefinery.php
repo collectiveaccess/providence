@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,6 +137,14 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 			$description = BaseRefinery::parsePlaceholder($description_setting, $source_data, $item, 0, ['reader' => caGetOption('reader', $options, null), 'returnAsString' => true]);
 		}
 		
+		$npref_labels = null;
+		if($npref_label_settings = ($item['settings']['listItemIndentedHierarchyBuilder_nonPreferredLabels'] ?? null)) {
+			if(!is_array($npref_label_settings)) { $npref_label_settings = [$npref_label_settings]; }
+			$npref_labels = [];
+			foreach($npref_label_settings as $npref_label_setting) {
+				$npref_labels[] = BaseRefinery::parsePlaceholder($npref_label_setting, $source_data, $item, 0, ['reader' => caGetOption('reader', $options, null), 'returnAsString' => true]);
+			}
+		}
 		$max_level = 0;
 		$parent_id = null;
 		foreach($levels as $i => $level_placeholder) {
@@ -154,7 +162,13 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 					$type = isset($level_types[$i]) ? $level_types[$i] : null;
 					if ($item_id = DataMigrationUtils::getListItemID($list_code, strlen($idno) ? $idno : preg_replace("![^A-Za-z0-9_]+!", "_", $level_value), $type, $locale_id, 
 							['is_enabled' => 1, 'parent_id' => $parent_id, 'preferred_labels' => array('name_singular' => $level_value, 'name_plural' => $level_value, 'description' => $description)], 
-							['matchOnIdno' => true, 'log' => $o_log, 'transaction' => caGetOption('transaction', $options, null), 'importEvent' => caGetOption('event', $options, null), 'importEventSource' => 'listItemIndentedHierarchyBuilder']
+							[
+								'forceUpdate' => true,
+								'matchOnIdno' => true, 'log' => $o_log, 
+								'transaction' => caGetOption('transaction', $options, null), 
+								'importEvent' => caGetOption('event', $options, null), 
+								'importEventSource' => 'listItemIndentedHierarchyBuilder'
+							]
 						)
 					) {
 						$level_parent_ids[$i] = $parent_id;
@@ -162,12 +176,20 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 						
 						$parent_id = $item_id;
 						$level_values[$i] = $level_value;
-						$level_value_ids[$i] = $item_ids;
+						$level_value_ids[$i] = $item_id;
 						$max_level = $i;
 					
 					}	
 				}
 			} 
+		}
+		
+		if($npref_labels && $level_value_ids[$max_level] ?? null) {
+			if($t_item = ca_list_items::findAsInstance(['item_id' => $level_value_ids[$max_level]], ['transaction' => caGetOption('transaction', $options, null)])) {
+				foreach($npref_labels as $npref_label ){
+					$t_item->addLabel(['name_plural' => $npref_label, 'name_singular' => $npref_label], $locale_id, null, false, []);
+				}
+			}
 		}
 		listItemIndentedHierarchyBuilderRefinery::$level_values = array_slice($level_values, 0, $max_level + 1);
 		listItemIndentedHierarchyBuilderRefinery::$level_value_ids = array_slice($level_value_ids, 0, $max_level + 1);
@@ -276,5 +298,14 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		'default' => '',
 		'label' => _t('Description'),
 		'description' => _t('List item description')
+	),
+	'listItemIndentedHierarchyBuilder_nonPreferredLabels' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Non-preferred labels'),
+		'description' => _t('Non-preferred labels')
 	)
 );
