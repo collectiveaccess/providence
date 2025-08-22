@@ -604,7 +604,7 @@ class BaseBrowseController extends BaseFindController {
 								$vn_parent_id = $qr_res->get("{$vs_rel_table}.parent_id");
 								$vn_item_id = $qr_res->get("{$vs_rel_table}.{$vs_pk}");
 								
-								if (!isset($facet_ids[$vn_item_id]) && !in_array($vn_item_id, $va_ancestors)) { continue; } 
+								if (!isset($facet_ids[$vn_item_id]) && !isset($va_facet[$vn_item_id]) && !in_array($vn_item_id, $va_ancestors)) { continue; } 
 								
 								$va_item = [];
 								$va_item['item_id'] = $vn_item_id;
