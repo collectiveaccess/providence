@@ -106,7 +106,7 @@ $scroll_position = $unsaved_edit_data['scrollPosition'] ?? 0;
 	<textarea class="<?= $id_prefix; ?>inventoryItemTemplate" style="display: none;">
 		<div class="inventoryItem">
 			<div class="inventoryItemContent" id="inventoryItemContent_{n}">
-				<div class="inventoryItemNumber">{n}</div>
+				<div class="inventoryItemNumber">{lnum}</div>
 				<div style="width: 140px;">{representation_tag}</div>
 				<div class="inventoryItemDescription" style="width: 394px;">
 					{loadingMessage}

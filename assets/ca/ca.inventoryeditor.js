@@ -136,6 +136,7 @@ var caUI = caUI || {};
 			if (that.initialValues) {
 				jQuery.each(that.initialValues, function(k, v) {
 					v['lindex'] = k;
+					v['lnum'] = k + 1;
 					that.addItemToInventory(v.row_id, v, false);
 				});
 			}
@@ -216,6 +217,8 @@ var caUI = caUI || {};
 								break;
 							}
 						}
+						d['lindex'] = displayIndex + index;
+						d['lnum'] = d['lindex'] + 1;
 						items[displayIndex + index] = d;
 					}
 				}
@@ -284,13 +287,15 @@ var caUI = caUI || {};
 				v['n'] = c;
 				v['fieldNamePrefix'] = that.fieldNamePrefix;
 				
+				let filterThis = false;
+				
 				// filter display
 				that.currentFilters = filters;
 				if(filters) {
 					if(filters['status'] && (Array.isArray(filters['status'])) && (filters['status'].length > 0)) {
 						if(!filters['status'].includes('ALL')) {
 							if(!filters['status'].includes(v['_INVENTORY_STATUS_'])) {
-								return;
+								filterThis = true;
 							}
 						}
 					}
@@ -303,7 +308,7 @@ var caUI = caUI || {};
 								break;
 							}
 						}
-						if(!found) { return; }
+						if(!found) { filterThis = true; }
 					}
 				}
 			
@@ -400,8 +405,14 @@ var caUI = caUI || {};
 						e.preventDefault();
 				});
 				jQuery(item).find('div').data('index', k);	// item index set on first <div>
+									
+				if(filterThis && that.itemsWithForms[v['item_id']]) {
+					jQuery(item).first("div").hide();
+				}
 				
-				jQuery('#' + that.inventoryItemListID).append(item);
+				if(!filterThis || that.itemsWithForms[v['item_id']]) {
+					jQuery('#' + that.inventoryItemListID).append(item);
+				}
 				if(that.unsavedItemsIDs && that.unsavedItemsIDs.includes(v['item_id'])) {
 					jQuery(item).find('div.inventoryItemNumber').addClass('inventoryItemHasUnsavedChanges');
 				}
