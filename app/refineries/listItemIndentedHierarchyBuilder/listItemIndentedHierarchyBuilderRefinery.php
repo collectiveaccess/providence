@@ -191,7 +191,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		if($npref_labels && $level_value_ids[$max_level] ?? null) {
 			if($t_item = ca_list_items::findAsInstance(['item_id' => $level_value_ids[$max_level]], ['transaction' => caGetOption('transaction', $options, null)])) {
 				foreach($npref_labels as $npref_label ){
-					$t_item->addLabel(['name_plural' => $npref_label, 'name_singular' => $npref_label], $locale_id, null, false, []);
+					$t_item->addLabel(['name_plural' => $npref_label, 'name_singular' => $npref_label], $locale_id, null, false, ['skipExisting' => false]);
 				}
 			}
 		}
