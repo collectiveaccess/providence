@@ -5433,13 +5433,11 @@ a.dashboardRemoveWidget {
     padding: 5px 0px 5px 0px;
     margin-left:10px;
     list-style-position: inside;
-    list-style-image: url("../graphics/arrows/arrowList.gif");
 }
 .dashboardWidgetContentContainer ul li a{
     font-weight: normal;
 	font-size: 12px;
 }
-
 
 .dashboardWidgetScrollMedium {
     height: 300px;
