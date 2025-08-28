@@ -496,7 +496,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$table_name = Datamodel::getTableName($ps_table);
 		
-		$elements = ca_metadata_elements::getElementsAsList(true, $table_name, null, !$pb_no_cache, false, true);
+		$deleted_elements = ca_metadata_elements::getElementsAsList(true, $table_name, null, !$pb_no_cache, false, true, null, ['deletedOnly' => true]);
 		
 		
 		//if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
@@ -551,7 +551,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				
 				$bundle_proc = preg_replace("!^{$table_name}\.!", '', preg_replace('!^ca_attribute_!', '', $vs_bundle_name));
-				if(!isset($elements[$bundle_proc])) { continue; }	// skip deleted elements
+				if(isset($deleted_elements[$bundle_proc])) { continue; }	// skip deleted elements
 				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
