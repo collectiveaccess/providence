@@ -554,7 +554,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
  			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarachy')) {
                 foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
                     foreach($va_object_ids as $vn_object_id) {
-                        $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                        $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => caGetHierarchyBrowserSortValues('ca_objects', new ca_objects($vn_object_id)), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
                     }
                 }
             
@@ -576,7 +576,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
                 }
             } else {
                 foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
-                    $va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                    $va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => caGetHierarchyBrowserSortValues('ca_objects'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
                 }
             
                 $va_vals_proc = [];

@@ -283,7 +283,7 @@ class BaseLookupController extends ActionController {
 				}
 
 				$o_config = Configuration::load();
-				if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
+				if (!(is_array($va_sorts = caGetHierarchyBrowserSortValues($vs_table_name, $t_item))) || !sizeof($va_sorts)) { $va_sorts = array(); }
 				foreach($va_sorts as $vn_i => $vs_sort_fld) {
 					$va_tmp = explode(".", $vs_sort_fld);
 
@@ -599,7 +599,7 @@ class BaseLookupController extends ActionController {
 		
 			
 			
-		// Sort order must be "rank"
+			// Sort order must be "rank"
 			// first look in default sort field (if it exists)
 			$vb_has_sort_by_rank = false;
 			if ($vs_def_table_name && $t_def->hasField('default_sort')) {
@@ -609,7 +609,7 @@ class BaseLookupController extends ActionController {
 		
 			// then fallback to app.conf defaults
 			if (!$vb_has_sort_by_rank) {
-				$va_sort_values = $this->getRequest()->config->getList("{$this->ops_table_name}_hierarchy_browser_sort_values");
+				$va_sort_values = caGetHierarchyBrowserSortValues($this->ops_table_name);
 				if ((sizeof($va_sort_values) < 1) || ($va_sort_values[0] != "{$this->ops_table_name}.{$vs_rank_fld}")) {
 					throw new ApplicationException(_t('%1 must have sort configured to use rank', $t_item->getProperty('NAME_SINGULAR')));
 				}
