@@ -430,6 +430,46 @@ class SetEditorController extends BaseEditorController {
 		
 		$this->render("ajax_print_summary_options_form_html.php");
 	}
+	# ------------------------------------------------------------------
+	# Autodelete actions
+	# ------------------------------------------------------------------
+	/**
+	 *  Intended to be called via ajax, and JSON response is returned in the current view inherited from ActionController
+	 */
+	public function toggleAutoDelete() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
+		list($subject_id, $t_subject) = $this->_initView();
+		if($t_subject->tableName() !== 'ca_sets') {
+			throw new ApplicationException(_t('Invalid action'));
+		}
+
+		if(!$this->verifyAccess($t_subject)) { return; }
+
+		$errors = [];
+		$user_id =  $this->request->user->get("user_id");
+
+		if ($t_subject->willAutoDelete()) {
+			$t_subject->set('autodelete', 0);
+			$this->view->setVar('state', 'no_autodelete');
+		} else {
+			$t_subject->set('autodelete', 1);
+			$this->view->setVar('state', 'autodelete');
+		}
+		if(!$t_subject->update()) {
+			$errors = $t_subject->getErrors();
+		}
+
+		$this->view->setVar('errors', $errors);
+		
+		$info = ca_sets::getAutoDeleteInfo($t_subject, $this->request->user);
+		$this->view->setVar('message', $info['message'] ?? null);
+
+		$this->response->setContentType('application/json');
+		$this->render('ajax_toggle_autodelete_json.php');
+	}
 	# -------------------------------------------------------
 	# Sidebar info handler
 	# -------------------------------------------------------

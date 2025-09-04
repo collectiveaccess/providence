@@ -156,7 +156,7 @@ class MultipartIDNumber extends IDNumber {
 		$separator = $this->getSeparator();
 		if ($separator && $this->formatHas('PARENT', 0)) {
 			// starts with PARENT element so explode in reverse since parent value may include separators
-			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "_PARENT_", $value);
+			$v_proc = preg_replace("!^".preg_quote($this->getParentValue(), '!')."!", "^PARENT^", $value);
 			$element_vals = explode($separator, $v_proc);
 
 			$i = 0;
@@ -171,7 +171,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 				$i++;
 			}
-			$element_vals = array_map(function($v) { return preg_replace("!^_PARENT_!", '', $v); }, $element_vals);
+			$element_vals = array_map(function($v) { return preg_replace("!^\^PARENT\^!", '', $v); }, $element_vals);
 		} elseif ($separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$element_vals = explode($separator, $value);
@@ -692,13 +692,19 @@ class MultipartIDNumber extends IDNumber {
 						$pad_len = $padding - mb_strlen($piece);
 
 						if ($pad_len >= 0) {
-							if (is_numeric($piece)) {
+							if(preg_match("!^([A-Za-z]+)([\d]+)([A-Za-z]+)$!u", $piece, $m)) {
+								$raw_output[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[3], 0, 4), 4, ' ', STR_PAD_LEFT);
+							} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $piece, $m)) {
+								$raw_output[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+							} elseif(preg_match("!^([A-Za-z]+)([\d]+)$!u", $piece, $m)) {
+								$raw_output[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT);
+							} elseif (is_numeric($piece)) {
 								$raw_output[] = str_repeat(' ', $pad_len).$matches[1];
 							} else {
 								$raw_output[] = $piece.str_repeat(' ', $pad_len);
 							}
 						} else {
-							$raw_output[] = $piece;
+							$raw_output[] = mb_substr($piece, 0, $padding);
 						}
 					}
 					$output[] = join('', $raw_output); 

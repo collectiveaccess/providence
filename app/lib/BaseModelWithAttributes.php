@@ -368,7 +368,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					if(in_array((int)$o_attr->getAttributeID(), $removed_attr_ids)) { continue; }
 					if(in_array((int)$o_attr->getAttributeID(), $edited_attr_ids)) { continue; }
 					
-					if(isset($pa_values['locale_id']) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { $is_changed = true; }
+					if(isset($pa_values['locale_id']) && (strlen($pa_values['locale_id']) > 0) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { 
+						$is_changed = true; 
+					}
 					if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
 					foreach($o_attr->getValues() as $o_value) {
 						$vn_element_id = $o_value->getElementID();
@@ -2312,9 +2314,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				'class' => $pa_options['class'] ?? null,
 				'nullOption' => '-',
 				'value' => $vm_values,
-				'forSearch' => true,
+				'forSearch' => caGetOption('forSearch', $pa_options, true),
 				'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
-				'render' => $va_element['settings']['render'] ?? null,
+				'render' => $pa_options['render'] ?? $va_element['settings']['render'] ?? null,
 				'attributes' => $attributes
 			], array_merge($pa_options, $va_override_options));
 			
@@ -2343,8 +2345,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				// prep element for use as search element
 				//
 				// ... replace value
-				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
-			
+				if(!is_array($vm_values)) {
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
+				}
 			
 				// escape any special characters in jQuery selectors
 				$f = (isset($pa_options['name']) && $pa_options['name']) ? $pa_options['name'] : $vs_fld_name;
@@ -2361,6 +2364,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				}
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}', str_replace('.', '_',$f), $vs_form_element);
 			}
 			
 			$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;

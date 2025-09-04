@@ -3863,14 +3863,18 @@ class BrowseEngine extends BaseFindEngine {
 				}
 
 				if ($t_item->hasField('deleted')) {
-					$va_where_sql[] = "(".$vs_browse_table_name.".deleted = 0)";
+					$va_where_sql[] = "({$vs_browse_table_name}.deleted = 0)";
 					$vb_needs_join = true;
+				}
+				
+				if (in_array($t_item->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__])) {
+					$va_where_sql[] = "({$vs_browse_table_name}.parent_id IS NOT NULL)";
 				}
 
 				if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
 					$va_restrict_to_type_ids = caMakeTypeIDList($vs_browse_table_name, $va_restrict_to_types, array('dont_include_subtypes_in_type_restriction' => true));
 					if (is_array($va_restrict_to_type_ids) && sizeof($va_restrict_to_type_ids)) {
-						$va_where_sql[] = "(".$vs_browse_table_name.".".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids).")".($t_item->getFieldInfo('type_id', 'IS_NULL') ? " OR (".$vs_browse_table_name.'.'.$t_item->getTypeFieldName()." IS NULL)" : '').")";
+						$va_where_sql[] = "({$vs_browse_table_name}.".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids).")".($t_item->getFieldInfo('type_id', 'IS_NULL') ? " OR (".$vs_browse_table_name.'.'.$t_item->getTypeFieldName()." IS NULL)" : '').")";
 						$vb_needs_join = true;
 					}
 				}

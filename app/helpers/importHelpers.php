@@ -1429,7 +1429,9 @@ function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, 
 				if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 				if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 				if (isset($pa_options['ignoreType']) && $pa_options['ignoreType']) { $va_val['_ignoreType'] = 1; }
-				$va_vals[] = $va_val;
+				
+				if (!isset($va_val['_displaynameFormat'])) { $va_val['_displaynameFormat'] = $pa_item['settings']["{$ps_refinery_name}_displaynameFormat"] ?? $pa_options['defaultDisplayFormat'] ?? null; }
+ 				$va_vals[] = $va_val;
 			}
 		}
 	} else {

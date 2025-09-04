@@ -945,9 +945,9 @@ class DataMigrationUtils {
 									unset($va_v['_source']);
 								}
 								$pt_instance->addAttribute(
-									array_merge($va_v, array(
+									array_merge($va_v, [
 										'locale_id' => $locale_id
-									)), $vs_element, null, [
+									]), $vs_element, null, [
 										'source' => $source_value,
 										'skipExistingValues' => (
 											caGetOption('skipExistingValues', $options, true) 
@@ -966,10 +966,9 @@ class DataMigrationUtils {
 							} else {
 								$va_value = [$vs_element => $va_value];
 							}
-							$pt_instance->addAttribute(array(
-								'locale_id' => $locale_id,
-								$va_value
-							), $vs_element, null, [
+							$pt_instance->addAttribute(
+								array_merge(['locale_id' => $locale_id], $va_value),
+								$vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
 								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])

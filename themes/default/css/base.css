@@ -361,6 +361,12 @@ div.clear {
     width: 130px;
     font-size: 9px;
 }
+
+.inspectorAutodeleteSet {
+    color: #cc0000;
+    font-weight: bold !important;
+}
+
 #leftNav #toolIcons {
     display: flex;
     justify-content: space-between;
@@ -5427,13 +5433,11 @@ a.dashboardRemoveWidget {
     padding: 5px 0px 5px 0px;
     margin-left:10px;
     list-style-position: inside;
-    list-style-image: url("../graphics/arrows/arrowList.gif");
 }
 .dashboardWidgetContentContainer ul li a{
     font-weight: normal;
 	font-size: 12px;
 }
-
 
 .dashboardWidgetScrollMedium {
     height: 300px;
@@ -5941,6 +5945,11 @@ div.preferenceColumnHeader {
     padding-top: 5px;
     font-weight: bold;
     text-align: left;
+}
+
+div.preferencePlacementList {
+    min-height: 300px;
+    border: 1px dotted #ccc;
 }
 
 div.preferenceCheckBoxList {
@@ -6880,7 +6889,7 @@ div.caHistoryTrackingButtonBarDelete {
 	float: right;
 }
 
-.caChangeLocationButton, .caReturnToHomeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton, .caAddObjectButton, .caAddEntityButton, .caAddMovementButton, .caAddLoanButton {
+.caChangeLocationButton, .caReturnToHomeLocationButton, .caAddLoanButton, .caAddOccurrenceButton, .caAddCollectionButton, .caSetChildViewButton, .caAddObjectButton, .caAddEntityButton, .caChangePlaceButton, .caAddMovementButton, .caAddLoanButton {
 	margin-top: 5px;
 }
 

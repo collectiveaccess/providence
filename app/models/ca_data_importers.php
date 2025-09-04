@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -333,25 +333,25 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'options' => array(
-				_t('none') => 'none',
-				_t('skip_on_idno') => 'skip_on_idno',
-				_t('merge_on_idno') => 'merge_on_idno',
-				_t('merge_on_idno_with_skip') => 'merge_on_idno_with_skip',
-				_t('merge_on_idno_with_replace') => 'merge_on_idno_with_replace',
-				_t('overwrite_on_idno') => 'overwrite_on_idno',
-				_t('skip_on_no_idno') => 'skip_on_no_idno',
-				_t('skip_on_preferred_labels') => 'skip_on_preferred_labels',
-				_t('merge_on_preferred_labels') => 'merge_on_preferred_labels',
-				_t('merge_on_preferred_labels_with_replace') => 'merge_on_preferred_labels_with_replace',
-				_t('overwrite_on_preferred_labels') => 'overwrite_on_preferred_labels',
-				_t('merge_on_idno_and_preferred_labels') => 'merge_on_idno_and_preferred_labels',
-				_t('merge_on_idno_and_preferred_labels_with_replace') => 'merge_on_idno_and_preferred_labels_with_replace',
-				_t('overwrite_on_idno_and_preferred_labels') => 'overwrite_on_idno_and_preferred_labels',
-				_t('skip_on_id') => 'skip_on_id',
-				_t('merge_on_id') => 'merge_on_id',
-				_t('merge_on_id_with_skip') => 'merge_on_id_with_skip',
-				_t('merge_on_id_with_replace') => 'merge_on_id_with_replace',
-				_t('overwrite_on_id') => 'overwrite_on_id'
+				'none' => 'none',
+				'skip_on_idno' => 'skip_on_idno',
+				'merge_on_idno' => 'merge_on_idno',
+				'merge_on_idno_with_skip' => 'merge_on_idno_with_skip',
+				'merge_on_idno_with_replace' => 'merge_on_idno_with_replace',
+				'overwrite_on_idno' => 'overwrite_on_idno',
+				'skip_on_no_idno' => 'skip_on_no_idno',
+				'skip_on_preferred_labels' => 'skip_on_preferred_labels',
+				'merge_on_preferred_labels' => 'merge_on_preferred_labels',
+				'merge_on_preferred_labels_with_replace' => 'merge_on_preferred_labels_with_replace',
+				'overwrite_on_preferred_labels' => 'overwrite_on_preferred_labels',
+				'merge_on_idno_and_preferred_labels' => 'merge_on_idno_and_preferred_labels',
+				'merge_on_idno_and_preferred_labels_with_replace' => 'merge_on_idno_and_preferred_labels_with_replace',
+				'overwrite_on_idno_and_preferred_labels' => 'overwrite_on_idno_and_preferred_labels',
+				'skip_on_id' => 'skip_on_id',
+				'merge_on_id' => 'merge_on_id',
+				'merge_on_id_with_skip' => 'merge_on_id_with_skip',
+				'merge_on_id_with_replace' => 'merge_on_id_with_replace',
+				'overwrite_on_id' => 'overwrite_on_id'
 			),
 			'label' => _t('Existing record policy'),
 			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
@@ -401,8 +401,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'options' => array(
-				_t('ignore') => "ignore",
-				_t('stop') => "stop"
+				'ignore' => "ignore",
+				'stop' => "stop"
 			),
 			'label' => _t('Error policy'),
 			'description' => _t('Determines how errors are handled for the import.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
@@ -1609,8 +1609,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$existing_record_policy_setting_info = $t_mapping->getSettingInfo('existingRecordPolicy');
 		
+		$vs_existing_record_policy = $t_mapping->getSetting('existingRecordPolicy');
+		
 		if (!in_array(	
-			$vs_existing_record_policy = $t_mapping->getSetting('existingRecordPolicy'),
+			$vs_existing_record_policy,
 			array_keys($existing_record_policy_setting_info['options'])
 		)) {
 			$vs_existing_record_policy = 'none';
@@ -2170,7 +2172,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if($t_subject->isLoaded() && in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
 					$t_subject->delete(true, ['hard' => true]);
 					if ($t_subject->numErrors()) {
-						$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);
+						$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2: %3', $vs_idno, $vs_existing_record_policy, join('; ', $t_subject->getErrors())), $va_log_import_error_opts);
 						// Don't stop?
 					} else {
 						if ($log_erp) { $o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy)); }
@@ -2922,22 +2924,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vs_old_type ) );
 							}
 
-							if ( $vn_idno_mapping_item_id && ( $vn_item_id == $vn_idno_mapping_item_id ) ) {
-								continue;
-							}
-							
-							
-							if(($va_item['destination'] === "{$vs_subject_table}.{$vs_idno_fld}")) {
+							if ($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) {
 								if(strlen($vm_val)) {
 									$vs_idno = $vm_val;
 								}
-								continue;
+								
+								if(!($va_item['settings']['allowIdnoReplacement'] ?? false)) {
+									continue;
+								}
 							}
 							
-							if ( is_null( $vm_val ) ) {
+							if (is_null($vm_val)) {
 								continue;
 							}
-
 
 							// Get mapping error policy
 							$vb_item_error_policy_is_default = false;
@@ -2971,7 +2970,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_group_buf[$vn_c]['_add'] = $va_item['settings']['add'];
 							}
 							if ($va_item['settings']['replace'] ?? false) {
-								$va_group_buf[$vn_c]['_replace'] = $va_item['settings']['_replace'];
+								$va_group_buf[$vn_c]['_replace'] = ((bool)$va_item['settings']['replace']) ? 1 : 0;
 							}
 							
 							if ( isset( $va_item['settings']['replaceIfExpression'] )
@@ -3136,6 +3135,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								if ($displayname_format = caGetOption('displaynameFormat', $va_item['settings'], $default_displayname_format)) {
 									$va_group_buf[ $vn_c ]['_displaynameFormat'] = $displayname_format;
+								}
+								if($vs_item_terminal == 'notes') {
+									$va_group_buf[ $vn_c ]['notes'] = $vm_val;
 								}
 							}
 
@@ -3539,6 +3541,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$vs_item_error_policy = null;
 										$displayname_format = null;
 									}
+									
+									if(($mapped_locale = caGetOption(['locale', 'locale_id'], $va_element_content, null)) && ($mapped_locale_id = ca_locales::codeToID($mapped_locale))) {
+										$vn_locale_id = $mapped_locale_id;
+									} 
 								
 									$t_subject->clearErrors();
 									switch($vs_element) {
@@ -3555,7 +3561,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if ($vb_skip_if_data_present && ($t_subject->getLabelCount(true, $vn_locale_id) > 0)) { continue(2); }
 												
 												$t_subject->replaceLabel(
-													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format]
+													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format, 'notes' => $va_element_content['notes'] ?? null]
 												);
 												if ($t_subject->numErrors() == 0) {
 													$vb_output_subject_preferred_label = true;
@@ -3586,7 +3592,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										case 'nonpreferred_labels':
 											if ($vb_skip_if_data_present && ($t_subject->getLabelCount(false, $vn_locale_id) > 0)) { continue(2); }
 											$t_subject->addLabel(
-												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format]
+												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, ['truncateLongLabels' => $vb_truncate_long_labels, 'displaynameFormat' => $displayname_format, 'notes' => $va_element_content['notes'] ?? null]
 											);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
@@ -3687,7 +3693,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													) && !$vb_force_add
 												)
 												||
-												$vb_force_replace
+												($vb_force_replace && !$va_elements_set_for_this_record[$vs_element])
 											) {
 												$t_subject->removeAttributes($vs_element, array('force' => true));
 											} 

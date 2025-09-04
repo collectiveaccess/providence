@@ -837,6 +837,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $pa_data_types array Optional list of element data types to filter on.
 	 * @param $options Options include:
 	 *		useDisambiguationLabels = 
+	 *		deletedOnly = return deleted elements only. [Default is false
 	 *
 	 * @return array A List of elements. Each list item is an array with keys set to field names; there is one additional value added with key "display_label" set to the display label of the element in the current locale
 	 */
@@ -862,7 +863,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		$va_wheres = $va_where_params = [];
 		
-		$va_wheres[] = 'cme.deleted = 0';
+		if(caGetOption('deletedOnly', $options, false)) {
+			$va_wheres[] = 'cme.deleted = 1';
+		} else {
+			$va_wheres[] = 'cme.deleted = 0';
+		}
 		
 		if ($pb_root_elements_only) {
 			$va_wheres[] = 'cme.parent_id is NULL';

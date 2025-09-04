@@ -186,7 +186,23 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'LIST_CODE' => 'set_sources',
 				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of set. This value is often used to indicate the administrative sub-division or legacy database from which the set originates, but can also be re-tasked for use as a simple classification tool if needed.')
-		)
+		),
+		'last_used' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => null,
+				'LABEL' => _t('Last used on'), 'DESCRIPTION' => _t('Date/time of last use of set')
+		),
+		'autodelete' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Auto delete?'), 'DESCRIPTION' => _t('Indicates if the set should be deleted if unused for a period of time.'),
+				'BOUNDS_VALUE' => array(0,1),
+				'DONT_INCLUDE_IN_SEARCH_FORM' => true
+		),
  	)
 );
 
@@ -351,7 +367,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Overrides default implementation with code to ensure consistency of set contents
 	 */
 	public function insert($pa_options=null) {
+		global $g_request;
+		
 		$this->_setUniqueIdno(['noUpdate' => true]);
+		$this->set('last_used', _t('now'));
+		
+		if($g_request && $g_request->isLoggedIn() && $g_request->user) {
+			if($g_request->user->getPreference('autodelete_sets_default') === 'autodelete') {
+				$this->set('autodelete', 1);
+			}
+		}
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
@@ -360,6 +385,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	public function update($pa_options=null) {
 		$this->_setUniqueIdno(['noUpdate' => true]);
+		$this->set('last_used', _t('now'));
 		if ($vn_rc = parent::update($pa_options)) {
 			// make sure all items have the same type as the set
 			$this->getDb()->query("
@@ -500,6 +526,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		
 		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		
+		$this->setLastUse();
 		return $t_dupe;
 	}
 	# ------------------------------------------------------
@@ -787,7 +815,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
-				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -1318,6 +1346,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if ($vb_we_set_transaction) { $o_trans->commit();}
+		$this->setLastUse();
 		return (int)$t_item->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -1333,6 +1362,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	public function addItems($pa_row_ids, $pa_options = []) {
 		$vn_set_id = $this->getPrimaryKey();
+		$this->set('last_used', _t('now'));
+		$this->update();
+		
 		global $g_ui_locale_id;
 		if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 		if (!$vn_set_id) { return false; } 
@@ -1446,7 +1478,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 		}
-		
+		$this->setLastUse();
 		return sizeof($va_item_values);
 	}
 	# ------------------------------------------------------
@@ -1469,6 +1501,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				return false;
 			}
 		}
+		$this->setLastUse();
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1493,6 +1526,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			}
 		}
+		$this->setLastUse();
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1533,6 +1567,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			}
 		}
+		$this->setLastUse();
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1556,6 +1591,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			return true;
 		}
+		$this->setLastUse();
 		return true;
 	}
 	# ------------------------------------------------------
@@ -1582,6 +1618,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				if ($t_item->numErrors()) {
 					$this->errors = $t_item->errors;
 					return false;
+				}
+				if($t_set = ca_sets::findAsInstance($vn_set_id)) {
+					$t_set->setLastUse();
 				}
 			}	
 		}
@@ -1820,7 +1859,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		} else {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 		}
-		
+		$this->setLastUse();
 		return $va_errors;
 	}
 	# ------------------------------------------------------
@@ -1918,10 +1957,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		
-		$vs_label_join_sql = '';
+		$label_join_sql = '';
 		if ($t_rel_label_table) {
 			if ($t_rel_label_table->hasField("is_preferred")) { $vs_preferred_sql = " AND rel_label.is_preferred = 1 "; }
-			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
+			$label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
 		}
 		
 		
@@ -1964,7 +2003,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
 	LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
-				$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
+				$vs_rep_where_sql = " AND ((coxor.is_primary = 1 OR coxor.is_primary IS NULL) AND cor.deleted = 0)";
 			
 				$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
 			
@@ -1995,7 +2034,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
-			{$vs_label_join_sql}
+			{$label_join_sql}
 			WHERE
 				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
 			ORDER BY 
@@ -2042,7 +2081,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			FROM ca_set_items casi
 			LEFT JOIN ca_set_item_labels AS casil ON casi.item_id = casil.item_id
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
-			{$vs_label_join_sql}
+			{$label_join_sql}
 			{$vs_rep_join_sql}
 			WHERE
 				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
@@ -3204,7 +3243,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		$t_set_to_add_dupes_to->addItems($va_dupes);
-
+		$this->setLastUse();
 		return $t_set_to_add_dupes_to;
 	}
 	# ---------------------------------------------------------------
@@ -3751,6 +3790,118 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_view->setVar('initialValues', $initial_values);
 		
 		return $o_view->render('anonymous_access.php');
+	}
+	# ---------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function willAutoDelete() : bool {
+		if(!$this->getPrimaryKey()) { return false; }
+		if($this->get('autodelete')) {
+			return true;
+		}
+		return false;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getAutoDeleteInfo($t_set, $t_user) : ?array {
+		if(!$t_set->getPrimaryKey()) { return null; }
+		
+		$enabled = $t_user->getPreference('autodelete_sets');
+		if(!$enabled) { return null; }
+		
+		if(!$t_set->get('autodelete')) { return null; }
+		
+		$threshold = $t_user->getPreference('autodelete_sets_age_threshold'); // in days
+		$threshold_in_seconds = $threshold * 24 * 60 * 60; 
+		$mode = $t_user->getPreference('autodelete_sets_age_mode');
+		
+		switch($mode) {
+			case 'creation':
+				$base = (int)$t_set->get('ca_sets.created.timestamp');
+				break;
+			case 'last_use':
+				$base = (int)$t_set->get('ca_sets.last_used');
+			default:
+				break;
+		}
+		
+		$ret = [
+			'base' => $base,
+			'mode' => $mode, 'threshold' => $threshold, 'threshold_in_seconds' => $threshold_in_seconds,
+			'should_autodelete' => (time() - $base) >= $threshold_in_seconds
+		];
+		
+		if($ret['should_autodelete']) {
+			$msg = _t('Set will be autodeleted');	
+		} else {
+			$interval = caFormatInterval($interval_in_seconds = ($threshold_in_seconds - (time() - $base)), 2, ' ');
+			$msg = _t('Set will be autodeleted in %1, on %2', $interval, caGetLocalizedDate(time() + $interval_in_seconds, ['timeOmit' => true]));
+		}
+		$ret['message'] = $msg;
+		
+		return $ret;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Check for sets to autodelete subject to set owner's preferences.
+	 *
+	 * @param array $options Options include:
+	 *		dryrun = Only check for sets for auto-delete, but skip deletion. [Default is false]
+	 *
+	 * @return int Returns number of sets deleted, or null on error.
+	 */
+	public static function autodeleteSets(?array $options=null) : ?int {
+		$qr = ca_sets::findAsSearchResult(['autodelete' => 1]);
+		if(!$qr) { return null; }
+		
+		$dryrun = caGetOption('dryrun', $options, false);
+		
+		$log = caGetLogger();
+		
+		$user_pref_cache = [];
+		$delete_count = 0;
+		while($qr->nextHit()) {
+			$user_id = $qr->get('ca_sets.user_id');
+			if(!$user_id) { continue; }
+			if(!isset($user_pref_cache[$user_id])) {
+				if(!($t_user = ca_users::find($user_id))) { continue; }
+				$user_pref_cache[$user_id] = [
+					'user' => $t_user,
+					'enabled' => $t_user->getPreference('autodelete_sets'),
+					'threshold' => $threshold = $t_user->getPreference('autodelete_sets_age_threshold'),
+					'threshold_in_seconds' => $threshold * 24 * 60 * 60,
+					'mode' => $t_user->getPreference('autodelete_sets_age_mode')
+				];
+			}
+			if(!$user_pref_cache[$user_id]['enabled']) { continue; }
+			$info = ca_sets::getAutoDeleteInfo($qr,	$user_pref_cache[$user_id]['user']);
+			if($info['should_autodelete'] ?? false) {
+				if($dryrun) {
+					$log->logInfo(_t('Found set to auto-deleted in dryrun mode. Set is %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
+					$delete_count++;
+					continue;
+				}
+				$t_set = $qr->getInstance();
+				if($t_set->delete(true)) {
+					$delete_count++;
+					$log->logInfo(_t('Auto-deleted set %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
+				} else {
+					$log->logError(_t('Could not auto-delete set %1 (%2) [Set id %3]: %4', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id'), join('; ', $t_set->getErrors())));
+				}
+			}
+		}
+		return $delete_count;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function setLastUse() {
+		$this->set('last_used', _t('now'));
+		return $this->update();
 	}
 	# ---------------------------------------------------------------
 	/**

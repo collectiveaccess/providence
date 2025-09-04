@@ -303,7 +303,7 @@ function caConvertMeasurementToPoints($ps_value, $pa_options=null) {
 	
 	$vn_dpi = caGetOption('dpi', $pa_options, caGetOption('ppi', $pa_options, 72));
 
-	switch(strtolower($va_matches[2])) {
+	switch(strtolower(trim($va_matches[2]))) {
 		case 'in':
 			$ps_value_in_points = $va_matches[1] * $vn_dpi;
 			break;
