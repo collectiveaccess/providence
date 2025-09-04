@@ -1947,10 +1947,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					&&
 					($displayname_format = caGetOption('displaynameFormat', $va_mapping_items[$vn_preferred_label_mapping_id]['settings'], $default_displayname_format))
 				) {
-					$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
+					$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'parseDateSuffix' =>  $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['parseDateSuffix'], 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
 					$vs_label_val = $va_label_val['displayname'];
 					if($va_label_val['_date'] ?? null) {
-						$va_row['__entity_label_date__'] = $va_raw_row['__entity_label_date__'] = $va_label_val['_date'];
+						$va_row['__entity_label_date__'] = $va_raw_row['__entity_label_date__'] = $va_rule_set_values['__entity_label_date__'] = $va_label_val['_date'];
 					}
 				}
 				
@@ -2167,7 +2167,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if(!is_array($ids) || !sizeof($ids)) { $ids = [null]; }
 			foreach($ids as $id) {	
 				$t_subject->load($id);		
-				if(in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
+				if($t_subject->isLoaded() && in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
 					$t_subject->delete(true, ['hard' => true]);
 					if ($t_subject->numErrors()) {
 						$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy), $va_log_import_error_opts);

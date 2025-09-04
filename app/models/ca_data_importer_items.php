@@ -805,6 +805,22 @@ class ca_data_importer_items extends BaseModel {
 			'default' => false,
 			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
 		);
+		$settings['doNotParse'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Do not parse entity values for entity preferred labels.'),
+		);
+		$settings['parseDateSuffix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Parse trailing dates in entity preferred label values and make available as synthetic __entity_label_date__ mapping value.'),
+		);
 		
 		$this->setAvailableSettings($settings);
 	}
