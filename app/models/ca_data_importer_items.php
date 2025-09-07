@@ -801,6 +801,14 @@ class ca_data_importer_items extends BaseModel {
 			'default' => false,
 			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
 		);
+		$settings['doNotParse'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Do not parse entity values for entity preferred labels.')
+		);
 		$settings['allowIdnoReplacement'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -810,7 +818,14 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Allow replacement of existing idno values'),
 			'description' => _t('When set mappings to idno on existing records with idno values are applied. The default is to not apply idno mappings to existing records when an idno values already exists.')
 		);
-		
+		$settings['parseDateSuffix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Parse trailing dates in entity preferred label values and make available as synthetic __entity_label_date__ mapping value.'),
+		);
 		
 		$this->setAvailableSettings($settings);
 	}
