@@ -368,7 +368,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					if(in_array((int)$o_attr->getAttributeID(), $removed_attr_ids)) { continue; }
 					if(in_array((int)$o_attr->getAttributeID(), $edited_attr_ids)) { continue; }
 					
-					if(isset($pa_values['locale_id']) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { $is_changed = true; }
+					if(isset($pa_values['locale_id']) && (strlen($pa_values['locale_id']) > 0) && ((int)$o_attr->getLocaleID() != (int)$pa_values['locale_id'])) { 
+						$is_changed = true; 
+					}
 					if ($o_attr->getAttributeID() == $pn_attribute_id) { continue; }
 					foreach($o_attr->getValues() as $o_value) {
 						$vn_element_id = $o_value->getElementID();

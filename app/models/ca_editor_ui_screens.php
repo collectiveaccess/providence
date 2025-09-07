@@ -496,6 +496,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$table_name = Datamodel::getTableName($ps_table);
 		
+		$deleted_elements = ca_metadata_elements::getElementsAsList(true, $table_name, null, !$pb_no_cache, false, true, null, ['deletedOnly' => true]);
+		
+		
 		//if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 		//	return array();
 		//}
@@ -546,6 +549,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
+				
+				$bundle_proc = preg_replace("!^{$table_name}\.!", '', preg_replace('!^ca_attribute_!', '', $vs_bundle_name));
+				if(isset($deleted_elements[$bundle_proc])) { continue; }	// skip deleted elements
+				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
 				if (!$pb_settings_only) {
@@ -727,6 +734,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'attribute':
+					if(!isset($va_elements[$bundle_proc])) { continue(2); } // skip deleted elements
 					$va_additional_settings = array(
 						'sort' => array(
 							'formatType' => FT_TEXT,

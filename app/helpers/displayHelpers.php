@@ -5410,32 +5410,97 @@ function caDoTemplateTagSubstitution($po_view, $pm_subject, $ps_template_path, $
 /**
  * Check if hierarchy browser drag-and-drop sorting is enabled for the current user in the current table for a given item.
  *
- * @param RequestHTTP $pt_request The current request
- * @param string $ps_table The table being browsed
- * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items. If null then status is determined at the table level. [Default is null]
+ * @param RequestHTTP $request The current request
+ * @param string $table The table being browsed
+ * @param int $id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items. If null then status is determined at the table level. [Default is null]
  *
  * @return bool
  */
-function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id=null) {
+function caDragAndDropSortingForHierarchyEnabled(RequestHTTP $request, string $table, ?int $id=null) : ?bool {
 	$o_config = Configuration::load();
 
-	if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
+	if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return null; }
 
-	if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
+	if(!$request->isLoggedIn() || (!$request->user->canDoAction("can_edit_{$table}") && (($hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$request->user->canDoAction("can_edit_{$hier_table}") : false))) { return false; }
 	if (!$t_instance->isHierarchical()) { return false; }
-	if (!($vs_rank_fld = $t_instance->getProperty('RANK'))) { return false; }
-	if (!is_null($pn_id) && !$t_instance->load($pn_id)) { return false; }
+	if (!($rank_fld = $t_instance->getProperty('RANK'))) { return false; }
+	if (!is_null($id) && !$t_instance->load($id)) { return false; }
 
-	$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
-	$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
+	$def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
+	$def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
 
-	if ($vs_def_table_name && ($t_def = Datamodel::getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
+	if ($def_table_name && ($t_def = Datamodel::getInstanceByTableName($def_table_name, true)) && ($t_def->load($t_instance->get($def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
 		return true;
 	} else {
-		$va_sort_values = $o_config->getList("{$ps_table}_hierarchy_browser_sort_values");
-		if ((sizeof($va_sort_values) >= 1) && ($va_sort_values[0] === "{$ps_table}.{$vs_rank_fld}")) { return true; }
+		//$sort_values = $o_config->getList("{$table}_hierarchy_browser_sort_values");
+		$sort_values = caGetHierarchyBrowserSortValues($table, $t_instance);
+		if ((sizeof($sort_values) >= 1) && ($sort_values[0] === "{$table}.{$rank_fld}")) { return true; }
 	}
 	return false;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caGetHierarchyBrowserSortValues(string $table, ?BaseModel $t_instance) : ?array {
+	$o_config = Configuration::load();
+	$sort_value = null;
+	
+	if($t_instance && $t_instance->isLoaded() && ($sort_element = $o_config->get("{$table}_hierarchy_browser_use_for_sort"))){
+		$itable = $t_instance->tableName();
+		if(is_array($ancestor_ids = $t_instance->getHierarchyAncestors(null, ['idsOnly' => true, 'includeSelf' => true])) && sizeof($ancestor_ids)) {
+			// Try to find metadata-specified sort in parent record of passed instance
+			if($qr = caMakeSearchResult($t_instance->tableName(), $ancestor_ids)) {
+				while($qr->nextHit()) {
+					if(($sort_value = $qr->get("{$itable}.{$sort_element}", ['convertCodesToValue' => true]))) {
+						error_log("got $sort_value for $sort_element");
+						return [$sort_value];
+						break;
+					}
+				}
+			}
+			
+			if($o_config->get('ca_objects_x_collections_hierarchy_enabled')) {
+				// If sorting objects and:
+				//		1. instance is object
+				//		2. object has no parents
+				//		3. object-collection hierarchy is enabled
+				//		4. A metadata element for metadata-specified sort is configured
+				// then try to pull related collections and see if they define a sort for the objects list
+				if(
+					($table === 'ca_objects') && (($itable === 'ca_objects') && sizeof($ancestor_ids) === 1) && 
+					($sort_element = $o_config->get("ca_objects_hierarchy_browser_use_for_sort"))
+				) {
+					$types = caGetObjectCollectionHierarchyRelationshipTypes();
+					$coll_ids = $t_instance->getRelatedItems('ca_collections', ['idsOnly' => true, 'restrictToTypes' => $types]);
+					if(is_array($coll_ids) && sizeof($coll_ids)) {
+						if($qr = caMakeSearchResult('ca_collections', $coll_ids)) {
+							while($qr->nextHit()) {
+								if(($sort_value = $qr->get("ca_collections.{$sort_element}", ['convertCodesToValue' => true]))) {
+									return [$sort_value];
+									break;
+								}
+								$t_coll = $qr->getInstance();
+								if(is_array($ancestor_ids = $t_coll->getHierarchyAncestors(null, ['idsOnly' => true, 'includeSelf' => false])) && sizeof($ancestor_ids)) {
+									if($qr = caMakeSearchResult('ca_collections', $ancestor_ids)) {
+										while($qr->nextHit()) {
+											if(($sort_value = $qr->get($sort_element, ['convertCodesToValue' => true]))) {
+												return [$sort_value];
+												break;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	$sort_values = $o_config->getList("{$table}_hierarchy_browser_sort_values");
+	return $sort_values;
 }
 # ------------------------------------------------------------------
 /**

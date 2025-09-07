@@ -131,6 +131,7 @@ class QuickSearchController extends BaseFindController {
 		// did we find only a single result in a single table? If so, then redirect to that record instead of showing results
 		if ((!$multiple_results) && (sizeof($single_results) == 1)) {
 			foreach($single_results as $target => $id) {
+				Session::save();
 				$table_bits = explode("/", $target);
 				$this->response->setRedirect(caEditorUrl($this->request, $table_bits[0], $id));
 				return;
