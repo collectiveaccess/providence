@@ -40,7 +40,7 @@ $g_information_service_settings_fast = [
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
 		'options' => [
-			_t('All') => 'cql.all',
+			_t('All') => 'cql.any',
 			_t('Keywords in topical headings') => 'oclc.topic',
 			_t('Keywords in geographical headings') => 'oclc.geographic',
 			_t('Keywords in event headings') => 'oclc.eventName',
@@ -107,7 +107,7 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
    		$search_on = caGetOption('searchOn', $settings, 'cql.any');
    		
         $client = $this->getClient();
-        $response = $client->request("GET", $z=self::FAST_SERVICES_BASE_URL."/".self::FAST_LOOKUP."?maximumRecords=100&accept=application/xml&query=".urlencode("{$search_on}=\"{$search}\""), [
+        $response = $client->request("GET", self::FAST_SERVICES_BASE_URL."/".self::FAST_LOOKUP."?maximumRecords=100&accept=application/xml&query=".urlencode("{$search_on} = \"{$search}\""), [
             'headers' => [
                 'Accept' => 'application/xml'
             ]
