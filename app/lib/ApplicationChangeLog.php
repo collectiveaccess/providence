@@ -628,10 +628,12 @@ class ApplicationChangeLog {
 		$timestamps = [];
 		while ($qr_res->nextRow()) {
 			$timestamps[$qr_res->get('logged_row_id')] = array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
 				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
+				'user_id' => $qr_res->get('user_id'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime'),
 				'date' => caGetLocalizedDate($qr_res->get('log_datetime'), ['timeOmit' => true]),
@@ -718,9 +720,11 @@ class ApplicationChangeLog {
 			$row = $qr_res->getRow();
 			if(($row_id = ($map[$row['log_id']] ?? null)) && isset($timestamps[$row_id])) {
 				$timestamps[$row_id] = array_merge($timestamps[$row_id], [
+					'log_id' => $row['log_id'],
 					'fname' => $row['fname'],
 					'lname' => $row['lname'],
 					'user' => $row['fname'].' '.$row['lname'],
+					'user_id' => $row['user_id'],
 					'email' => $row['email']
 				]);
 			}
@@ -753,10 +757,12 @@ class ApplicationChangeLog {
 		$va_timestamps = [];
 		while ($qr_res->nextRow()) {
 			$va_timestamps[$qr_res->get('logged_row_id')] = array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
 				'user' => $qr_res->get('fname').' '.$qr_res->get('lname'),
+				'user_id' => $qr_res->get('user_id'),
 				'email' => $qr_res->get('email'),
 				'timestamp' => $qr_res->get('log_datetime')
 			);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -866,9 +866,8 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 
 		$this->assertIsArray($vm_ret);
 		$this->assertCount(1, $vm_ret);
-
-		$this->assertEquals("
-			<script type=\"text/javascript\">
+		
+		$this->assertEquals("<script type=\"text/javascript\">
 				jQuery(document).ready(function() {
 					/*
 					Carousel initialization
