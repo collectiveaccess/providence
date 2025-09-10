@@ -1532,18 +1532,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			
 			if($va_words) {
 				$wc = sizeof($va_words);
+				if($wc > 255) { $wc = 255; }
 				foreach($va_words as $i => $vs_word) {
 					if(is_null($vs_word))  { continue; }
 					if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
-					$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$i}, {$wc}, {$fi})";
+					$ii = ($i > 255) ? 255 : $i; 
+					$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$ii}, {$wc}, {$fi})";
 					$seq++;
 				}
 			
 				if (is_array($va_literal_content)) {
 					$wc = sizeof($va_literal_content);
+					if($wc > 255) { $wc = 255; }
 					foreach($va_literal_content as $i => $vs_literal) {
 						if (!($vn_word_id = $this->getWordID($vs_literal))) { continue; }
-						$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$i}, {$wc}, {$fi})";
+						$ii = ($i > 255) ? 255 : $i; 
+						$va_row_insert_sql[] = "({$subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', ".($pn_content_container_id ? $pn_content_container_id : 'NULL').", {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id}, {$ii}, {$wc}, {$fi})";
 						$seq++;
 					}
 				}
@@ -1552,7 +1556,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$seq++;
 			}
 			
-			$fi++;
+			if ($fi < 255) { $fi++; }
 		}
 		
 		// do insert

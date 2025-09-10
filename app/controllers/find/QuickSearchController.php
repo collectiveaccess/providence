@@ -95,7 +95,7 @@ class QuickSearchController extends BaseFindController {
 					$single_results[$target] = $found_item_ids[0];
 					if($result->nextHit()) {
 						if(
-							((strpos(mb_strtolower($result->get($result->tableName().'.'.Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD'))), mb_strtolower($search)) !== false)
+							(((mb_strtolower($result->get($result->tableName().'.'.Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD'))) === mb_strtolower($search)))
 )							&&
 							($this->request->user->getPreference('quicksearch_redirect_on_idno_match') == 1)
 						) {
@@ -103,8 +103,8 @@ class QuickSearchController extends BaseFindController {
 						}
 						$result->seek(0);
 					}
-				}else{
-					$multiple_results = 1;
+				} else {
+					$multiple_results++;
 				}
 			}
 		}
@@ -123,8 +123,7 @@ class QuickSearchController extends BaseFindController {
 				
 		$this->view->setVar('maxNumberResults', $this->opn_num_results_per_item_type);
 		
-		if($force_to) {
-			$multiple_results = null;
+		if($force_to && !$multiple_results) {
 			$single_results = [$force_to['table'] => $force_to['id']];
 		}
 		

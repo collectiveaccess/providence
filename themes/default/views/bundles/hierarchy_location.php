@@ -515,8 +515,8 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 ?>
 		</div>
 	</div>
-	<input type='text' name='<?= $id_prefix; ?>_new_parent_id' id='<?= $id_prefix; ?>_new_parent_id' value='<?= $parent_id; ?>'/>
-	<input type='text' name='<?= $id_prefix; ?>_move_selection' id='<?= $id_prefix; ?>_move_selection' value=''/>
+	<input type='hidden' name='<?= $id_prefix; ?>_new_parent_id' id='<?= $id_prefix; ?>_new_parent_id' value='<?= $parent_id; ?>'/>
+	<input type='hidden' name='<?= $id_prefix; ?>_move_selection' id='<?= $id_prefix; ?>_move_selection' value=''/>
 
 <script type="text/javascript">
 	jQuery(document).ready(function() {	

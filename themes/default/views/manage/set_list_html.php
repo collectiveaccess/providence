@@ -35,6 +35,8 @@ $table_list 				= $this->getVar('table_list');
 
 $user_id 					= $this->request->getUserID();
 $is_inventory				= (bool)$this->getVar('is_inventory');
+$can_delete					= $this->request->user->canDoAction("can_delete_sets") || $this->request->user->canDoAction("can_delete_own_sets");
+$can_delete_inventory		= $this->request->user->canDoAction("can_delete_inventories") || $this->request->user->canDoAction("can_delete_own_inventories");
 
 if (!$this->request->isAjax()) {
 	$set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
@@ -170,6 +172,7 @@ if (!$this->request->isAjax()) {
 					<div>
 <?php 	
 					if (!$is_inventory && ($set['item_count'] > 0) && ($this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($set['table_num'])))) {
+
 						print caNavButton($this->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'batchIcon', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
 						print $set['item_count']; 
 					} else {
@@ -189,7 +192,7 @@ if (!$this->request->isAjax()) {
 				</td>
 				<td class="listtableEditDelete">
 					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php ($t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__, $set['set_id'])) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
+					<?php (((!$is_inventory && $can_delete) || ($is_inventory && $can_delete_inventory)) && $t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__, $set['set_id'])) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>
 <?php

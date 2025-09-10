@@ -127,6 +127,7 @@ class SetEditorController extends BaseEditorController {
 		
 		// If users can delete own sets, and this set belongs to them, show Delete button
 		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+			$user_id = $t_subject->get('user_id');
 			if ($user_id == $this->request->getUserID()) {
 				$can_delete = true;
 			}

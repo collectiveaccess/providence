@@ -62,7 +62,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	 */
 	public function refine(&$destination_data, $group, $item, $source_data, $options=null) {
 		global $g_ui_locale_id;
-		$delimiter = caGetOption('delimiter', $options, null);
+		$delimiter = caGetOption('delimiter', $options, $item['settings']['listItemIndentedHierarchyBuilder_delimiter']);
 		
 		if(!($locale_id = ca_locales::getDefaultCataloguingLocaleID())) {
 			$locale_id = $g_ui_locale_id;
@@ -142,9 +142,13 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 			if(!is_array($npref_label_settings)) { $npref_label_settings = [$npref_label_settings]; }
 			$npref_labels = [];
 			foreach($npref_label_settings as $npref_label_setting) {
-				$npref_labels[] = BaseRefinery::parsePlaceholder($npref_label_setting, $source_data, $item, 0, ['reader' => caGetOption('reader', $options, null), 'returnAsString' => true]);
+				$npl_list = BaseRefinery::parsePlaceholder($npref_label_setting, $source_data, $item, null, ['delimiter' => $delimiter, 'reader' => caGetOption('reader', $options, null), 'returnAsString' => false]);
+				foreach($npl_list as $npl) {
+					$npref_labels[] = $npl;
+				}
 			}
 		}
+		
 		$max_level = 0;
 		$parent_id = null;
 		foreach($levels as $i => $level_placeholder) {
@@ -187,7 +191,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 		if($npref_labels && $level_value_ids[$max_level] ?? null) {
 			if($t_item = ca_list_items::findAsInstance(['item_id' => $level_value_ids[$max_level]], ['transaction' => caGetOption('transaction', $options, null)])) {
 				foreach($npref_labels as $npref_label ){
-					$t_item->addLabel(['name_plural' => $npref_label, 'name_singular' => $npref_label], $locale_id, null, false, []);
+					$t_item->addLabel(['name_plural' => $npref_label, 'name_singular' => $npref_label], $locale_id, null, false, ['skipExisting' => false]);
 				}
 			}
 		}
@@ -223,6 +227,15 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 }
 
  BaseRefinery::$s_refinery_settings['listItemIndentedHierarchyBuilder'] = array(	
+ 	'listItemIndentedHierarchyBuilder_delimiter' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Delimiter'),
+		'description' => _t('Sets the value of the delimiter to break on, separating data source values')
+	),
 	'listItemIndentedHierarchyBuilder_levels' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,

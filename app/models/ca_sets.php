@@ -645,7 +645,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_extra_joins = [];
 		$o_db = $this->getDb();
 		
-		$va_sql_wheres = ["(cs.deleted = 0)", "(csi.deleted = 0)"];
+		$va_sql_wheres = ["(cs.deleted = 0)", "(csi.deleted = 0 OR csi.deleted IS NULL)"];
 		$va_sql_params = [];
 		
 		if ($vn_table_num) {
@@ -832,7 +832,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res = $o_db->query("
 					SELECT cs.set_id, count(distinct row_id) item_count
 					FROM ca_sets cs
-					INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+					LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 					INNER JOIN ".$t_instance->tableName()." AS t ON t.".$t_instance->primaryKey()." = csi.row_id
 					".(sizeof($va_item_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_item_wheres)."
@@ -849,13 +849,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
-				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+				LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				LEFT JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
 				ORDER BY csl.name
 			", $va_sql_params);
+			
 			$va_sets = array();
 			$va_type_name_cache = array();
 
@@ -1163,7 +1164,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			", [$set_ids]);
 			while($qr_res->nextRow()) {
 				$set_id = $qr_res->get('set_id');
-				if(in_array($qr_res->get('type_id'), $inventory_type_ids)) {
+				if(in_array($qr_res->get('type_id'), $inventory_type_ids ?? [])) {
 					if($t_user->canDoAction('can_administrate_inventories')) { 
 						$ret[$set_id] = true;
 						continue;
@@ -3719,6 +3720,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
  		// Check actions
 		$is_inventory = caIsInventory($this);
+		if ($this->getPrimaryKey() && ($this->get('user_id') == $t_user->getPrimaryKey()) && $t_user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+ 			return true;
+ 		}
  		if (!$this->getPrimaryKey() || !$t_user->canDoAction($is_inventory ? 'can_delete_inventories': 'can_delete_sets')) {
  			return false;
  		}

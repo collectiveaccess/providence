@@ -1949,10 +1949,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					&&
 					($displayname_format = caGetOption('displaynameFormat', $va_mapping_items[$vn_preferred_label_mapping_id]['settings'], $default_displayname_format))
 				) {
-					$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
+					$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, ['displaynameFormat' => $displayname_format, 'parseDateSuffix' =>  $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['parseDateSuffix'], 'doNotParse' => $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['doNotParse']]);
 					$vs_label_val = $va_label_val['displayname'];
 					if($va_label_val['_date'] ?? null) {
-						$va_row['__entity_label_date__'] = $va_raw_row['__entity_label_date__'] = $va_label_val['_date'];
+						$va_row['__entity_label_date__'] = $va_raw_row['__entity_label_date__'] = $va_rule_set_values['__entity_label_date__'] = $va_label_val['_date'];
 					}
 				}
 				

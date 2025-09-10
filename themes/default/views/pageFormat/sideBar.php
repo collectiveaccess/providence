@@ -1,6 +1,7 @@
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		caResizeSideNav();
+		$("#leftNav").on("click", caResizeSideNav);
 	});
 	function caResizeSideNav() {
 		jQuery("#leftNavSidebar").animate({'height': (jQuery("#leftNav").height() - jQuery("#widgets").height() - 70) + "px"}, 300);

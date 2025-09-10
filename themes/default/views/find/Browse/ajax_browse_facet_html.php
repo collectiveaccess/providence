@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2017 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,57 +25,56 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
-	$va_facet = $this->getVar('grouped_facet');
-	$vs_facet_name = $this->getVar('facet_name');
-	$va_facet_info = $this->getVar('facet_info');
-	$vs_grouping_field = $this->getVar('grouping');
-	$vs_group_mode = $va_facet_info["group_mode"];
-	
-	$t_item = $this->getVar('t_item');
-	$t_subject = $this->getVar('t_subject');
-	
-	$va_types = $this->getVar('type_list');
-	$va_relationship_types = $this->getVar('relationship_type_list');
-	
-	$va_row_size = $this->request->config->get('browse_row_size');
-	$va_td_width = intval(100/$va_row_size);
-	
-	$vb_individual_group_display = (bool)$this->getVar('individual_group_display');
+$facet = $this->getVar('grouped_facet');
+$facet_name = $this->getVar('facet_name');
+$facet_info = $this->getVar('facet_info');
+$grouping_field = $this->getVar('grouping');
+$group_mode = $facet_info["group_mode"];
 
-	$va_service_urls = caJSONLookupServiceUrl($this->request, $va_facet_info['table'], array('noInline' => 1, 'noSymbols' => 1));
+$t_item = $this->getVar('t_item');
+$t_subject = $this->getVar('t_subject');
 
-	if (!$va_facet||!$vs_facet_name) { 
-		print _t('No options available'); 
-		return;
-	}
-	
-	$vb_multiple_selection_facet = caGetOption('multiple', $va_facet_info, false, ['castTo' => 'boolean']);
-	
-	$vm_modify_id = $this->getVar('modify') ? $this->getVar('modify') : '0';
+$types = $this->getVar('type_list');
+$relationship_types = $this->getVar('relationship_type_list');
+
+$row_size = $this->request->config->get('browse_row_size');
+$td_width = intval(100/$row_size);
+
+$individual_group_display = (bool)$this->getVar('individual_group_display');
+
+$service_urls = caJSONLookupServiceUrl($this->request, $facet_info['table'], array('noInline' => 1, 'noSymbols' => 1));
+
+if (!$facet||!$facet_name) { 
+	print _t('No options available'); 
+	return;
+}
+
+$multiple_selection_facet = caGetOption('multiple', $facet_info, false, ['castTo' => 'boolean']);
+
+$modify_id = $this->getVar('modify') ? $this->getVar('modify') : '0';
 ?>
 <script type="text/javascript">
 	function caUpdateFacetDisplay(grouping) {
-		caUIBrowsePanel.showBrowsePanel('<?= $vs_facet_name; ?>', <?= ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?= ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
+		caUIBrowsePanel.showBrowsePanel('<?= $facet_name; ?>', <?= ((intval($modify_id) > 0) ? 'true' : 'false'); ?>, <?= ((intval($modify_id) > 0) ?  $modify_id : 'null'); ?>, grouping);
 	}
 </script>
 
-<div class="browseSelectPanelContentArea <?= ($vb_multiple_selection_facet) ? "browseSelectMultiplePanelContentArea" : "" ?>" id="browseSelectPanelContentArea">
+<div class="browseSelectPanelContentArea <?= ($multiple_selection_facet) ? "browseSelectMultiplePanelContentArea" : "" ?>" id="browseSelectPanelContentArea">
 <?php
-	if ($vb_multiple_selection_facet) {
+	if ($multiple_selection_facet) {
 ?>
-		<div class='applyFacetContainer'><a href="#" id="facet_apply" data-facet="<?= $vs_facet_name; ?>" class="facetApply">Apply</a></div>
+		<div class='applyFacetContainer'><a href="#" id="facet_apply" data-facet="<?= $facet_name; ?>" class="facetApply">Apply</a></div>
 <?php
 	}
 
-	$va_grouped_items = array();
-	switch($va_facet_info['group_mode']) {
+	$grouped_items = array();
+	switch($facet_info['group_mode']) {
 		# ------------------------------------------------------------
 		case 'hierarchical';
 ?>
-	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
-	<div id="hierarchyBrowserContainer"><div id="<?= $vs_facet_name; ?>_facet_container">
+	<div id="hierarchyBrowserContainer"><div id="<?= $facet_name; ?>_facet_container">
 		<div id="hierarchyBrowser" class='hierarchyBrowser'>
 			<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 		</div>
@@ -101,10 +100,10 @@
 		jQuery(document).ready(function() {
 
 			oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
-				levelDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
-				initDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
+				levelDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $facet_name)); ?>',
+				initDataUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $facet_name)); ?>',
 
-				editUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
+				editUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $facet_name, 'id' => '')); ?>',
 				editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>",
 
 				initItemID: '<?= $this->getVar('browse_last_id'); ?>',
@@ -112,11 +111,11 @@
 
 				currentSelectionDisplayID: 'browseCurrentSelection',
 				
-				selectMultiple: <?= ($vb_multiple_selection_facet) ? 1 : 0; ?>
+				selectMultiple: <?= ($multiple_selection_facet) ? 1 : 0; ?>
 			});
 
 			jQuery('#hierarchyBrowserSearch').autocomplete({
-				source: '<?= $va_service_urls['search']; ?>',
+				source: '<?= $service_urls['search']; ?>',
 				minLength: 3,
 				delay: 800,
 				html: true,
@@ -135,32 +134,32 @@
 		# ------------------------------------------------------------
 		case 'none':
 ?>
-	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($facet_info['label_plural']); ?></h2>
 	<div class='clearDivide'></div>
 
 	<div class="browseSelectPanelList">
-		<table class='browseSelectPanelListTable' id='<?= $vs_facet_name; ?>_facet_container'>
+		<table class='browseSelectPanelListTable' id='<?= $facet_name; ?>_facet_container'>
 <?php
-			$va_row = array();
-			foreach($va_facet as $vn_i => $va_item) {
-				$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
+			$row = array();
+			foreach($facet as $vn_i => $item) {
+				$label = caGetLabelForDisplay($facet, $item, $facet_info);
 				
-				$vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
-				$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."{$vs_content_count}</td>";
+				$content_count = (isset($item['content_count']) && ($item['content_count'] > 0)) ? " (".$item['content_count'].")" : "";
+				$row[] = "<td class='browseSelectPanelListCell facetItem' width='{$td_width}%;' data-facet_item_id='{$item['id']}'>".caNavLink($this->request, html_entity_decode($label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $facet_name, 'id' => urlencode($item['id']), 'mod_id' => $modify_id))."{$content_count}</td>";
 				
-				if (sizeof($va_row) == $va_row_size) {
-					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
+				if (sizeof($row) == $row_size) {
+					print "<tr valign='top'>".join('', $row)."</tr>\n";
 					
-					$va_row = array();
+					$row = array();
 				}
 			}
-			if (sizeof($va_row) > 0) {
-				if (sizeof($va_row) < $va_row_size) {
-					for($vn_i = sizeof($va_row); $vn_i <= $va_row_size; $vn_i++) {
-						$va_row[] = '<td> </td>';
+			if (sizeof($row) > 0) {
+				if (sizeof($row) < $row_size) {
+					for($vn_i = sizeof($row); $vn_i <= $row_size; $vn_i++) {
+						$row[] = '<td> </td>';
 					}
 				}
-				print "<tr valign='top'>".join('', $va_row)."</tr>\n";
+				print "<tr valign='top'>".join('', $row)."</tr>\n";
 			}
 ?>
 		</table>
@@ -170,77 +169,77 @@
 		# ------------------------------------------------------------
 		case 'alphabetical';
 		default:
-			$va_groups = array_keys($va_facet);
+			$groups = array_keys($facet);
 ?>
 
 	<div class="browseSelectPanelHeader">
-	<h2 class='browse'><?= caUcFirstUTF8Safe($va_facet_info['label_plural']); ?></h2>
+	<h2 class='browse'><?= caUcFirstUTF8Safe($facet_info['label_plural']); ?></h2>
 
 <?php 
-	$vs_g = null;
-	if($vb_individual_group_display) {
-		if (!($vs_g = $this->getVar('only_show_group'))) { 
-			$va_tmp = array_keys($va_grouped_items);
-			$vs_g = array_shift($va_tmp);
+	$g = null;
+	if($individual_group_display) {
+		if (!($g = $this->getVar('only_show_group'))) { 
+			$tmp = array_keys($grouped_items);
+			$g = array_shift($tmp);
 		}
 	}
 		print "<div class='jumpToGroup'>";
 	
-		foreach($va_groups as $vs_group) {
-			if ($vb_individual_group_display) {
-				print " <a href='#' onclick='loadFacetGroup(\"".(($vs_group === '~') ? '~' : $vs_group)."\"); return false;' ".(($vs_g == $vs_group) ? "class='browseSelectPanelFacetGroupSelected'" : "class='browseSelectPanelFacetGroup'").">{$vs_group}</a> ";
+		foreach($groups as $group) {
+			if ($individual_group_display) {
+				print " <a href='#' onclick='loadFacetGroup(\"".(($group === '~') ? '~' : $group)."\"); return false;' ".(($g == $group) ? "class='browseSelectPanelFacetGroupSelected'" : "class='browseSelectPanelFacetGroup'").">{$group}</a> ";
 			} else {
-				print " <a href='#".(($vs_group === '~') ? '~' : $vs_group)."'>{$vs_group}</a> ";
+				print " <a href='#".(($group === '~') ? '~' : $group)."'>{$group}</a> ";
 			}
 		}
 ?>	
 		</div><!-- end jumpToGroup-->
-		<div style="float: right; clear:right;" id='browseFacetGroupingControls'>
+		<div id='browseFacetGroupingControls'>
 		<?php 
-			if (isset($va_facet_info['groupings']) && is_array($va_facet_info['groupings']) && sizeof($va_facet_info['groupings'] )) {
+			if (isset($facet_info['groupings']) && is_array($facet_info['groupings']) && sizeof($facet_info['groupings'] )) {
 				print _t('Group by').': '; 
 		
-				foreach($va_facet_info['groupings'] as $vs_grouping => $vs_grouping_label) {
-					print "<a href='#' onclick='caUpdateFacetDisplay(\"{$vs_grouping}\");' style='".(($vs_grouping == $vs_grouping_field) ? 'color:#333; text-decoration:underline;' : '')."'>{$vs_grouping_label}</a> ";
+				foreach($facet_info['groupings'] as $grouping => $grouping_label) {
+					print "<a href='#' onclick='caUpdateFacetDisplay(\"{$grouping}\");' style='".(($grouping == $grouping_field) ? 'color:#333; text-decoration:underline;' : '')."'>{$grouping_label}</a> ";
 				}
 			}
 		?>
 		</div>		
 	</div>
-	<div class="browseSelectPanelList" id="browseSelectPanelList"><div id='<?= $vs_facet_name; ?>_facet_container'>
+	<div class="browseSelectPanelList" id="browseSelectPanelList"><div id='<?= $facet_name; ?>_facet_container'>
 <?php
 			
-			if (($vs_g) && (isset($va_facet[$vs_g]))) {
-				$va_facet = array($vs_g => $va_facet[$vs_g]);
+			if (($g) && (isset($facet[$g]))) {
+				$facet = array($g => $facet[$g]);
 			}
-			foreach($va_facet as $vs_group => $va_items) {
-				$va_row = array();
-				if ($vs_group === '~') {
-					$vs_group = '~';
+			foreach($facet as $group => $items) {
+				$row = array();
+				if ($group === '~') {
+					$group = '~';
 				}
-				print "<div class='browseSelectPanelListGroupHeading'><a name='{$vs_group}' class='browseSelectPanelListGroupHeading'>{$vs_group}</a></div>\n";
+				print "<div class='browseSelectPanelListGroupHeading'><a name='{$group}' class='browseSelectPanelListGroupHeading'>{$group}</a></div>\n";
 ?>
 		<table class='browseSelectPanelListTable'>
 <?php
-				foreach($va_items as $va_item) {
-					$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
+				foreach($items as $item) {
+					$label = caGetLabelForDisplay($facet, $item, $facet_info);
 				
-				    $vs_content_count = (isset($va_item['content_count']) && ($va_item['content_count'] > 0)) ? " (".$va_item['content_count'].")" : "";
-					$va_row[] = "<td class='browseSelectPanelListCell facetItem' width='{$va_td_width}%;' data-facet_item_id='{$va_item['id']}'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))." {$vs_content_count}</td>";
+				    $content_count = (isset($item['content_count']) && ($item['content_count'] > 0)) ? " (".$item['content_count'].")" : "";
+					$row[] = "<td class='browseSelectPanelListCell facetItem' width='{$td_width}%;' data-facet_item_id='{$item['id']}'>".caNavLink($this->request, html_entity_decode($label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $facet_name, 'id' => urlencode($item['id']), 'mod_id' => $modify_id))." {$content_count}</td>";
 					
-					if (sizeof($va_row) == $va_row_size) {
-						print "<tr valign='top'>".join('', $va_row)."</tr>\n";
+					if (sizeof($row) == $row_size) {
+						print "<tr valign='top'>".join('', $row)."</tr>\n";
 						
-						$va_row = array();
+						$row = array();
 					}
 				}
-				if (sizeof($va_row) > 0) {
-					if (sizeof($va_row) < $va_row_size) {
-						for($vn_i = sizeof($va_row); $vn_i <= $va_row_size; $vn_i++) {
-							$va_row[] = '<td> </td>';
+				if (sizeof($row) > 0) {
+					if (sizeof($row) < $row_size) {
+						for($vn_i = sizeof($row); $vn_i <= $row_size; $vn_i++) {
+							$row[] = '<td> </td>';
 						}
 					}
-					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
+					print "<tr valign='top'>".join('', $row)."</tr>\n";
 				}
 ?>
 		</table>
@@ -257,13 +256,12 @@
 
 <script type="text/javascript">
 	function loadFacetGroup(g) {
-		jQuery('#browseSelectPanelContentArea').parent().load("<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $vs_facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
+		jQuery('#browseSelectPanelContentArea').parent().load("<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacet', array('facet' => $facet_name, 'grouping' => $this->getVar('grouping'), 'show_group' => '')); ?>" + escape(g));
 	}
 <?php
-if($vb_multiple_selection_facet){
+if($multiple_selection_facet){
 ?>	
 	jQuery(document).ready(function() {
-		
 		jQuery(".facetApply").hide();
 		
 		jQuery(".facetItem").on('click', function(e) { 
@@ -284,7 +282,7 @@ if($vb_multiple_selection_facet){
 		});
 		
 		jQuery(".facetApply").on('click', function(e) { 
-			var facet = '<?= $vs_facet_name; ?>';
+			var facet = '<?= $facet_name; ?>';
 			
 			var ids = [];
 			jQuery.each(jQuery("#" + facet + "_facet_container").find("[facet_item_selected=1]"), function(k,v) {
@@ -294,7 +292,7 @@ if($vb_multiple_selection_facet){
 			});
 
 			if(ids.length){
-				window.location = '<?= caNavUrl($this->request, 'find', $this->request->getController(),((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $vm_modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
+				window.location = '<?= caNavUrl($this->request, 'find', $this->request->getController(),((strlen($modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('mod_id' => $modify_id)); ?>/facet/' + facet + '/id/' + ids.join('|');
 			}
 			e.preventDefault();
 		});
