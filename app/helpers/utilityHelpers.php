@@ -2981,15 +2981,15 @@ function caFileIsIncludable($ps_file) {
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = null;
 			}
 		} catch (Zend_Locale_Exception $e){
