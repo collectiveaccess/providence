@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,15 +45,14 @@ class TGNInformationServiceAttributeValueTest extends TestCase {
 		$o_service = new WLPlugInformationServiceTGN();
 
 		$va_return = $o_service->lookup(array(), 'Brooklyn');
-		$this->assertEquals(97, sizeof($va_return['results']));
+		$this->assertEquals(98, sizeof($va_return['results']));
 
 		$va_labels = array();
 		foreach($va_return['results'] as $va_record) {
 			$va_labels[] = $va_record['label'];
 		}
-
 		$this->assertContains('[2034406] Brooklyn; Poweshiek, Iowa (inhabited places)', $va_labels);
-		$this->assertContains('[7015822] Brooklyn; New York, New York (boroughs)', $va_labels);
+		$this->assertContains('[7015822] Brooklyn (borough); New York, New York (boroughs)', $va_labels);
 		$this->assertContains('[2120816] Brooklyn; Green, Wisconsin (inhabited places)', $va_labels);
 	}
 
@@ -67,8 +66,8 @@ class TGNInformationServiceAttributeValueTest extends TestCase {
 		foreach($va_return['results'] as $va_record) {
 			$va_labels[] = $va_record['label'];
 		}
-
-		$this->assertContains('[7015849] Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
+		
+		$this->assertContains('[7015849] Coney Island; Brooklyn (borough), New York (neighborhoods)', $va_labels);
 		$this->assertContains('[2252267] Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
 		$this->assertContains('[7454829] Coney Island; Armagh City, Banbridge and Craigavon, United Kingdom (islands (landforms))', $va_labels);
 	}
