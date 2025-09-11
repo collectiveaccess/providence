@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -514,6 +514,9 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
 		$this->BUNDLES['history_tracking_current_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents'));
 		
+		$this->BUNDLES['submitted_by_user'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submitted by'), 'displayOnly' => true);
+		$this->BUNDLES['submission_group'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Submission group'), 'displayOnly' => true);
+		
 		$this->BUNDLES['generic'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display template'));
 	}
 	# ------------------------------------------------------
@@ -551,7 +554,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
  			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarachy')) {
                 foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
                     foreach($va_object_ids as $vn_object_id) {
-                        $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                        $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => caGetHierarchyBrowserSortValues('ca_objects', new ca_objects($vn_object_id)), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
                     }
                 }
             
@@ -573,7 +576,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
                 }
             } else {
                 foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
-                    $va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_values'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
+                    $va_objects[$vn_collection_id] = caProcessTemplateForIDs($ps_object_template, 'ca_objects', $va_object_ids, ['returnAsArray' => true, 'sort' => caGetHierarchyBrowserSortValues('ca_objects'), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
                 }
             
                 $va_vals_proc = [];

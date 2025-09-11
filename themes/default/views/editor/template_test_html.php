@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $t_item = $this->getVar('t_subject');
-
 ?>
-
 <div style="width:100%">
 	<div class="title"><?= _t('Display template debugger'); ?>&colon;</div>
 	<table style="width:100%">
@@ -58,7 +55,6 @@ $t_item = $this->getVar('t_subject');
 
 	jQuery('#displayTemplate').keyup(function() {
 		delay(function(){
-			console.log("x", jQuery('#displayTemplate').val());
 			caRunTemplate(jQuery('#displayTemplate').val()); return false;
 		}, 300 );
 	});

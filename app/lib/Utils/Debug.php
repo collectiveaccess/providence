@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,58 +29,44 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
-	use DebugBar\StandardDebugBar;
-	
-	class Debug {
-		# ----------------------------------------------------------------------
-		/**
-		 * Debug bar instance
-		 */
-		public static $bar;
+class Debug {
+	# ----------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public static $debugEnabled = null;
+	# ----------------------------------------------------------------------
+	/**
+	 * Log message to debug bar
+	 *
+	 * @param string $message
+	 */
+	public static function msg($message) {
+		$trace = debug_backtrace();
+		$line = array_shift($trace);
+		$line['file'] = str_replace(__CA_BASE_DIR__, "", $line['file']);
 		
-		/**
-		 *
-		 */
-		public static $debugEnabled = null;
-		# ----------------------------------------------------------------------
-		/**
-		 * Log message to debug bar
-		 *
-		 * @param string $ps_message
-		 */
-		public static function msg($ps_message) {
-			$va_trace = debug_backtrace();
-			$va_line = array_shift($va_trace);
-			$va_line['file'] = str_replace(__CA_BASE_DIR__, "", $va_line['file']);
-			Debug::$bar['messages']->addMessage("[".$va_line['file']."@".$va_line['line']."] {$ps_message}");
-		}
-		# ----------------------------------------------------------------------
-		/**
-		 * Log stacktrace + optional message to debug bar
-		 *
-		 * @param string $ps_message Optional message to prefix stacktrace with
-		 */
-		public static function trace($ps_message=null) {
-			Debug::$bar['messages']->addMessage($ps_message."\n".caPrintStackTrace(array('skip' => 1)));
-		}
-		# ----------------------------------------------------------------------
-		/**
-		 * Log stacktrace + optional message to debug bar
-		 *
-		 * @param string $ps_message Optional message to prefix stacktrace with
-		 */
-		public static function isEnabled() {
-			if (is_null(Debug::$debugEnabled)) {
-				Debug::$debugEnabled = (defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__);
-			}
-			return Debug::$debugEnabled;
-		}
-		# ----------------------------------------------------------------------
+		// noop 
 	}
-	
-	Debug::$bar = new StandardDebugBar(); 
+	# ----------------------------------------------------------------------
+	/**
+	 * Log stacktrace + optional message to debug bar
+	 *
+	 * @param string $message Optional message to prefix stacktrace with
+	 */
+	public static function trace($message=null) {
+		$msg = $message."\n".caPrintStackTrace(array('skip' => 1));
+		
+		// noop
+	}
+	# ----------------------------------------------------------------------
+	/**
+	 * Log stacktrace + optional message to debug bar
+	 *
+	 * @param string $message Optional message to prefix stacktrace with
+	 */
+	public static function isEnabled() {
+		return false;
+	}
+	# ----------------------------------------------------------------------
+}

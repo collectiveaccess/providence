@@ -257,7 +257,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'default' => 1,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Omit leading definite and indefinite articles when sorting'),
-		'description' => _t('Check this option to sort values wuthout definite and indefinite articles when they are at the beginning of the text.')
+		'description' => _t('Check this option to sort values without definite and indefinite articles when they are at the beginning of the text.')
 	),
 );
 
@@ -300,6 +300,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			$element_info, 
 			['minChars', 'maxChars', 'regex', 'mustBeUnique', 'moveArticles']
 		);
+		$value = caStripEnclosingParagraphHTMLTags($value);
 		$strlen = mb_strlen($value);
 		if ($strlen < $settings['minChars']) {
 			// text is too short
@@ -361,6 +362,10 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		if (isset($options['forSearch']) && $options['forSearch']) {
 			unset($settings['usewysiwygeditor']);
 		}
+		if($settings['suggestExistingValues'] ?? false) {
+			unset($settings['usewysiwygeditor']);
+			$options['height'] = 1;
+		}
 		
 		$width = trim((isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth']);
 		$height = trim((isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight']);
@@ -384,7 +389,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		];
 		$attributes = caGetOption('attributes', $options, null);
 		if(is_array($attributes)) { 
-			$attr = array_merge($attributes, $opts);
+			$attr = array_merge($attr, $attributes);
 		}
 			
 		if (caGetOption('readonly', $options, false)) { 
@@ -405,8 +410,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			switch($use_editor) {
 				case 'ckeditor':
 					AssetLoadManager::register("ck5");
-					
-					$toolbar = caGetCK5Toolbar();
 					$element .= "
 					<script type=\"module\">
 						import {
@@ -432,7 +435,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
 								toolbar: {
-									items: ".json_encode($toolbar).",
+									items: ".json_encode(caGetCK5Toolbar()).",
 									shouldNotGroupWhenFull: true
 								},
 								ResizableHeight: {
@@ -442,15 +445,14 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									maxHeight: '1500px'
 								}
 							} ).then(editor => {
-								// Don't let CKEditor pollute the top-level DOM with editor bits
-								const body = editor.ui.view.body._bodyCollectionContainer
-								body.remove()
-								editor.ui.view.element.appendChild(body);
-								
 								// Add current instance to list of initialized editors
 								if(!caUI) { caUI = {}; }
 								if(!caUI.ckEditors) { caUI.ckEditors = []; }
 								caUI.ckEditors.push(editor);
+								
+								editor.model.document.on('change:data', () => {
+									if(caUI.utils.showUnsavedChangesWarning) { console.log('set'); caUI.utils.showUnsavedChangesWarning(true); }
+								});
 							}).catch((e) => console.log('Error initializing CKEditor: ' + e));
 					</script>\n";
 									
@@ -560,7 +562,8 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		if ($settings['suggestExistingValues'] && $lookup_url && $bundle_name) { 
 			$element .= "<script type='text/javascript'>
-				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').autocomplete( 
+				const sel{fieldNamePrefix}{n} = '{fieldNamePrefix}".$element_info['element_id']."_{n}';
+				jQuery('#' + sel{fieldNamePrefix}{n}).autocomplete( 
 					{ 
 						source: '{$lookup_url}',
 						minLength: 3, delay: 800

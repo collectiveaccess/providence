@@ -123,10 +123,10 @@ class ExpressionParserTest extends TestCase {
 
 		// join strings
 		$this->assertEquals('piece1gluepiece2', ExpressionParser::evaluate('join("glue", "piece1", "piece2")'));
-		$this->expectException('Exception', 'Invalid number of arguments. Number of arguments passed: 0');
-		ExpressionParser::evaluate('join()');
-		$this->expectException('Exception', 'Invalid number of arguments. Number of arguments passed: 1');
-		ExpressionParser::evaluate('join("foo")');
+		$rc = ExpressionParser::evaluate('join()');
+		$this->assertNull($rc);
+		$rc = ExpressionParser::evaluate('join("foo")');
+		$this->assertNull($rc);
 
 		// trim strings
 		$this->assertEquals('spaces', ExpressionParser::evaluate('trim(" spaces ")'));

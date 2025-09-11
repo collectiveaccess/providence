@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,11 +63,13 @@ class BaseFindController extends ActionController {
 	 *
 	 */
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		AssetLoadManager::register("timelineJS");
-		AssetLoadManager::register('panel');
-		AssetLoadManager::register("tableview");
-		AssetLoadManager::register("bundleableEditor");
-		AssetLoadManager::register("bundleListEditorUI");
+		if(!$po_request->isAjax()) {
+			AssetLoadManager::register("timelineJS");
+			AssetLoadManager::register('panel');
+			AssetLoadManager::register("tableview");
+			AssetLoadManager::register("bundleableEditor");
+			AssetLoadManager::register("bundleListEditorUI");
+		}
 		
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		
@@ -857,10 +859,7 @@ class BaseFindController extends ActionController {
 								$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_name, 'representation_id' => $representation_id]);				
 
 								if($o_md_conf->get('do_metadata_embedding_for_search_result_media_download')) {
-									if ($path_with_embedding = caEmbedMediaMetadataIntoFile($path,
-										'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')),
-										$representation_id, $representation_type
-									)) {
+									if($path_with_embedding = caEmbedMediaMetadataIntoFile($qr_res, $version, ['path' => $path])) {
 										$path = $path_with_embedding;
 									}
 								}

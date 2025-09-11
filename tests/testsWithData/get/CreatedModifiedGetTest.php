@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -158,7 +158,7 @@ class CreatedModifiedGetTest extends BaseTestWithData {
 		$o_res = $this->_getSearchResult();
 		
 		$date = $o_res->get('ca_objects.created', ['returnWithStructure' => true]);
-		$this->assertCount(8, $date);
+		$this->assertCount(9, $date);
 		$this->assertGreaterThan(0, $date['timestamp']);
 		$this->assertEquals('CollectiveAccess', $date['fname']);
 		$this->assertEquals('Administrator', $date['lname']);
@@ -172,7 +172,7 @@ class CreatedModifiedGetTest extends BaseTestWithData {
 		$t = new ca_objects($this->test_object_id);
 		
 		$date = $t->get('ca_objects.created', ['returnWithStructure' => true]);
-		$this->assertCount(8, $date);
+		$this->assertCount(9, $date);
 		$this->assertGreaterThan(0, $date['timestamp']);
 		$this->assertEquals('CollectiveAccess', $date['fname']);
 		$this->assertEquals('Administrator', $date['lname']);
@@ -264,7 +264,7 @@ class CreatedModifiedGetTest extends BaseTestWithData {
 		$o_res = $this->_getSearchResult();
 		
 		$date = $o_res->get('ca_objects.lastModified', ['returnWithStructure' => true]);
-		$this->assertCount(8, $date);
+		$this->assertCount(9, $date);
 		$this->assertGreaterThan(0, $date['timestamp']);
 		$this->assertEquals('CollectiveAccess', $date['fname']);
 		$this->assertEquals('Administrator', $date['lname']);
@@ -278,7 +278,7 @@ class CreatedModifiedGetTest extends BaseTestWithData {
 		$t = new ca_objects($this->test_object_id);
 		
 		$date = $t->get('ca_objects.lastModified', ['returnWithStructure' => true]);
-		$this->assertCount(8, $date);
+		$this->assertCount(9, $date);
 		$this->assertGreaterThan(0, $date['timestamp']);
 		$this->assertEquals('CollectiveAccess', $date['fname']);
 		$this->assertEquals('Administrator', $date['lname']);

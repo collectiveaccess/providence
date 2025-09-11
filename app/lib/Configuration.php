@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2020 Whirl-i-Gig
+ * Copyright 2000-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-/**
- *
- */
-
-
 /**
  * Parses and provides access to application configuration files.
  *
@@ -433,7 +427,7 @@ class Configuration {
 									$vb_escape_set = false;
 									$vn_state = -1;
 								} else { # keep going to next line
-									$vs_scalar_value .= $vs_token;
+									$vs_scalar_value .= rtrim($vs_token, "\n");
 									$vn_state = 20;
 								}
 								break;
@@ -534,7 +528,7 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_assoc_key .= "=";
 								} else {
-									if (($vs_assoc_key = trim($this->_interpolateScalar($vs_assoc_key))) == '') {
+									if ((strlen($vs_assoc_key = trim($this->_interpolateScalar($vs_assoc_key)))) == '') {
 										$this->ops_error = "Associative key must not be empty";
 										fclose($r_file);
 
@@ -552,7 +546,7 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_assoc_key .= ",";
 								} else {
-									if ($vs_assoc_key) {
+									if (strlen($vs_assoc_key)) {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = trim($vs_assoc_key);
 									}
 									$vs_assoc_key = "";
@@ -568,14 +562,14 @@ class Configuration {
 									$vs_assoc_key .= "}";
 								} else {
 									if (sizeof($va_assoc_pointer_stack) > 1) {
-										if ($vs_assoc_key) {
+										if (strlen($vs_assoc_key)) {
 											$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = trim($vs_assoc_key);
 										}
 										array_pop($va_assoc_pointer_stack);
 
 										$vn_state = 40;
 									} else {
-										if ($vs_assoc_key) {
+										if (strlen($vs_assoc_key)) {
 											$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = trim($vs_assoc_key);
 										}
 										$vn_state = -1;
@@ -632,7 +626,7 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
-									if ($vs_assoc_key) {
+									if (strlen($vs_assoc_key)) {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = $this->_trimScalar($this->_interpolateScalar($vs_scalar_value));
 									}
 									$vs_assoc_key = "";
@@ -667,14 +661,14 @@ class Configuration {
 									$vs_scalar_value .= "}";
 								} else {
 									if (sizeof($va_assoc_pointer_stack) > 1) {
-										if ($vs_assoc_key) {
+										if (strlen($vs_assoc_key)) {
 											$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = $this->_trimScalar($this->_interpolateScalar($vs_scalar_value));
 										}
 										array_pop($va_assoc_pointer_stack);
 
 										$vn_state = 40;
 									} else {
-										if ($vs_assoc_key) {
+										if (strlen($vs_assoc_key)) {
 											$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = $this->_trimScalar($this->_interpolateScalar($vs_scalar_value));
 										}
 										$vn_state = -1;

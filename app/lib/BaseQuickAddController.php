@@ -105,7 +105,7 @@ class BaseQuickAddController extends ActionController {
 		// Is record from correct source?
 		// 
 		$va_restrict_to_sources = null;
-		if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+		if (caSourceAccessControlIsEnabled($t_subject)) {
 			$va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
 		
 			if (!$t_subject->get('source_id')) {
@@ -315,7 +315,7 @@ class BaseQuickAddController extends ActionController {
 		// Is record from correct source?
 		// 
 		$va_restrict_to_sources = null;
-		if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+		if (caSourceAccessControlIsEnabled($t_subject)) {
 			if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
 				if (
 					(!$t_subject->get('source_id'))

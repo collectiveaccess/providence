@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 /** @var ca_bundle_displays $t_display */
 $t_display				= $this->getVar('t_display');
 $va_display_list 		= $this->getVar('display_list');
@@ -115,7 +114,7 @@ $t_related_instance		= $this->getVar('relatedInstance');
 <?php
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-                        print "<td><span class=\"read-more\">";
+                        print "<td><div class='result-content'>";
 
 						// if there's a template, evaluate template against relationship
 						if($vs_template = $va_info['settings']['format']) {
@@ -131,7 +130,7 @@ $t_related_instance		= $this->getVar('relatedInstance');
 							print $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()));
 						}
 
-						print "</span></td>";
+						print "</div></td>";
                     }
 ?>	
 					<td style="width:10px">

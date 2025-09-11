@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -400,6 +400,8 @@ class PreferencesController extends ActionController {
 				$va_bundle_list = array_unique(array_map(function($v) { return preg_replace("!_[\d]+$!", "", $v); }, explode(';', $this->request->getParameter('displayBundleList', pString))));
 			
 				$this->request->user->setPreference("quicksearch_search_list", $va_bundle_list);
+				$this->request->user->setPreference("quicksearch_redirect_on_idno_match", $this->request->getParameter('pref_quicksearch_redirect_on_idno_match', pString));
+					
 				
 				$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
 				return $this->EditQuickSearchPrefs();

@@ -364,7 +364,7 @@ class BaseFindEngine extends BaseObject {
 		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
 		// Get all ids for each key value 
 		$row_ids_by_value = $this->_getRowIDsForValues($hits, $table, $primary_field, array_keys($values));
-	
+
 		// Sort rows for each value
 		$sorted_rows_by_value = [];	// only includes rows with frequency > 1
 		foreach($row_ids_by_value as $value => $row_ids) {
@@ -1167,11 +1167,11 @@ class BaseFindEngine extends BaseObject {
 		$join_sql = join("\n", $joins);
 		
 		$sql = "SELECT cav.value_sortable val
-					FROM {$table} pt
+					FROM {$table} t
 					{$join_sql}
-					LEFT JOIN ca_attributes AS a ON a.row_id = t.{$rel_table_pk} AND a.table_num = {$rel_table_num}
+					LEFT JOIN ca_attributes AS a ON a.row_id = s.{$rel_table_pk} AND a.table_num = {$rel_table_num}
 					LEFT JOIN ca_attribute_values AS cav ON cav.attribute_id = a.attribute_id
-					WHERE cav.element_id = ? AND pt.{$table_pk} IN (?)
+					WHERE cav.element_id = ? AND t.{$table_pk} IN (?)
 				ORDER BY val {$direction}
 					";
 		$qr_sort = $this->db->query($sql, [$element_id, $hits]);
@@ -1425,7 +1425,7 @@ class BaseFindEngine extends BaseObject {
 		$sort_keys = [];
 		while($qr_sort->nextRow()) {
 			$row = $qr_sort->getRow();
-			$sort_keys[$row['row_id']] = true;
+			$sort_keys[$row['val']][] = $row['row_id'];
 		}
 		return $sort_keys;
 	}

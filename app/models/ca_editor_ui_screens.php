@@ -269,7 +269,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$table_name = Datamodel::getTableName($table_num = $this->getTableNum());
 		if (!($t_instance = Datamodel::getInstance($table_name, true))) { 
-			$this->postError(1100, _t("Could not created user interface placement: user interface table '%1' is not valid", $table_name), "ca_editor_ui_screens::addPlacement");
+			$this->postError(1100, _t("Could not create user interface placement: user interface table '%1' is not valid", $table_name), "ca_editor_ui_screens::addPlacement");
 			return false;
 		}
 		
@@ -290,7 +290,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-		$t_placement->setMode(ACCESS_WRITE);
 		$t_placement->set('screen_id', $vn_screen_id);
 		$t_placement->set('bundle_name', $ps_bundle_name);
 		$t_placement->set('placement_code', $ps_placement_code);
@@ -497,6 +496,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$table_name = Datamodel::getTableName($ps_table);
 		
+		$deleted_elements = ca_metadata_elements::getElementsAsList(true, $table_name, null, !$pb_no_cache, false, true, null, ['deletedOnly' => true]);
+		
+		
 		//if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 		//	return array();
 		//}
@@ -547,6 +549,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
+				
+				$bundle_proc = preg_replace("!^{$table_name}\.!", '', preg_replace('!^ca_attribute_!', '', $vs_bundle_name));
+				if(isset($deleted_elements[$bundle_proc])) { continue; }	// skip deleted elements
+				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
 				if (!$pb_settings_only) {
@@ -728,6 +734,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'attribute':
+					if(!isset($va_elements[$bundle_proc])) { continue(2); } // skip deleted elements
 					$va_additional_settings = array(
 						'sort' => array(
 							'formatType' => FT_TEXT,
@@ -1003,7 +1010,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'takesLocale' => false,
 								'default' => '',
 								'label' => _t('Item color'),
-								'description' => _t('If set item that are not first or last in list will use this color.')
+								'description' => _t('If set items that are not first or last in list will use this color.')
 							),
 							'colorLastItem' => array(
 								'formatType' => FT_TEXT,
@@ -1240,7 +1247,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'multiple' => false,
 							'width' => "475px", 'height' => "1",
 							'label' => _t('Representation auto-complete lookup placeholder text'),
-							'description' => _t('Placeholder text to display in representation autocomplete search box when linking n existing representation to a record. (New UI only)')
+							'description' => _t('Placeholder text to display in representation autocomplete search box when linking an existing representation to a record. (New UI only)')
 						);
 						
 						$va_additional_settings['dontAllowRelationshipsToExistingRepresentations'] = array(
@@ -1535,6 +1542,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "475px", 'height' => "100px",
 								'label' => _t('Header display template'),
 								'description' => _t('Layout for item in hierarchy browser header. The template is evaluated relative to item being edited.')
+							];
+							$va_additional_settings['restrict_to_search'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "475px", 'height' => 1,
+								'label' => _t('Restrict to search expression'),
+								'description' => _t('Restricts display to items matching the given search expression. Leave empty for no restriction.')
+							];
+							$va_additional_settings['restrict_to_access_point'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => 'basic',
+								'width' => "475px", 'height' => 1,
+								'label' => _t('Restrict to access point'),
+								'description' => _t('Restricts display to items matching the given search expression in the specified access point. Leave empty to search in all fields.')
 							];
 						}
 					} else {
@@ -2001,6 +2024,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 1,
 										'label' => _t('"Add to entity" control label text'),
 										'description' => _t('Text to label "Add to entity" control with. If omitted a default label will be used.')
+									),
+									'hide_update_place_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Update Place" controls'),
+										'hideOnSelect' => ['update_place_control_label'],
+										'description' => _t('Check this option if you want to hide the "Update Place" controls in this bundle placement.')
+									),
+									'update_place_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Update place" control label text'),
+										'description' => _t('Text to label "Update place" control with. If omitted a default label will be used.')
 									),
 									'hide_add_to_object_controls' => array(
 										'formatType' => FT_NUMBER,
@@ -2671,8 +2712,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_available_bundles = $t_screen->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {
-				// get settings
-				
 				if (preg_match('!^(.*)_([\d]+)$!', $vs_bundle, $va_matches)) {
 					$vn_placement_id = (int)$va_matches[2];
 					$vs_bundle = $va_matches[1];
@@ -2707,7 +2746,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if($vn_placement_id === 0) {
-					$t_screen->addPlacement($vs_bundle, $vs_bundle.($vn_i + 1), $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
+					$c = 0;
+					do {
+						$vn_i++;
+						$ret = $t_screen->addPlacement($vs_bundle, $vs_bundle.$vn_i, $va_settings[$vn_placement_id] ?? null, $vn_i + 1, array('user_id' => $po_request->getUserID(), 'additional_settings' => $va_available_bundles[$vs_bundle]['settings'] ?? null));
+						$c++;
+					} while(!$ret || ($c > 50));
 					if ($t_screen->numErrors()) {
 						$this->errors = $t_screen->errors;
 						return false;

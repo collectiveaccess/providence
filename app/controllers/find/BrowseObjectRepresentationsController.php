@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@ class BrowseObjectRepresentationsController extends BaseBrowseController {
 	/** 
 	 * Number of items per results page
 	 */
-	protected $opa_items_per_page = array(10, 20, 30, 40, 50);
+	protected $opa_items_per_page = [8, 16, 24, 32];
 	 
 	/**
 	 * List of result views supported for this browse

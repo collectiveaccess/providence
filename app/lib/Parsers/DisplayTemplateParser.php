@@ -474,12 +474,16 @@ class DisplayTemplateParser {
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
 					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
 
+					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
+					$va_skip_if_expression_tags = caGetTemplateTags($vs_unit_skip_if_expression);
+					
 					$va_get_options = [
 						'returnAsCount' => true, 'checkAccess' => $check_access, 
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
 						'locale' => caGetOption('locale', $pa_options, null),
+						'noLocaleFallback' => caGetOption('noLocaleFallback', $pa_options, null),
 						'filterNonPrimaryRepresentations' => $filter_non_primary_reps
 					];
 					
@@ -493,9 +497,29 @@ class DisplayTemplateParser {
 					if (($vn_limit = ($vn_max > 0) ? $vn_max : $vn_min) == 0) { $vn_limit = 1; }
 					$vn_limit++;
 					foreach($va_codes as $vs_code) {
-						if($vs_filter_regex) {
-							$vals = $pr_res->get($vs_code, array_merge($va_get_options, ['returnAsCount' => false, 'returnAsArray' => true]));
-							$vals = array_filter($vals, function($v) use ($vs_filter_regex) { return preg_match($vs_filter_regex, $v); });
+						$tmp = explode('.', $vs_code);
+						$is_table = false;
+						if(Datamodel::tableExists($tmp[0]) && ((sizeof($tmp) === 1) || ($tmp[1] === 'related'))) {
+							$is_table = true;
+							$code = $tmp[0];
+						}
+						
+						if($vs_filter_regex || strlen($vs_unit_skip_if_expression)) {
+							if($is_table) {
+								$d = $pr_res->get($vs_code, ['returnWithStructure' => true]);
+								$qr_vals = caMakeSearchResult($vs_code, array_keys($d));
+								$vals = [];
+								if($qr_vals) {
+									while($qr_vals->nextHit()) {
+										if(!caEvaluateExpression($qr_vals, $vs_unit_skip_if_expression)) {
+											$vals[] = $qr_vals->getPrimaryKey();
+										}
+									}
+								}
+							} else {
+								$vals = $pr_res->get($vs_code, array_merge($va_get_options, ['returnAsCount' => false, 'returnAsArray' => true]));
+								if($vs_filter_regex) { $vals = array_filter($vals, function($v) use ($vs_filter_regex) { return preg_match($vs_filter_regex, $v); }); }
+							}
 							$vn_count = sizeof($vals);
 						} else {
 							$vn_count = (int)$pr_res->get($vs_code, $va_get_options);
@@ -623,9 +647,9 @@ class DisplayTemplateParser {
 					$va_get_options['allDescendants'] = (int)$o_node->allDescendants ?: null;
 					$va_get_options['filterNonPrimaryRepresentations'] = $filter_non_primary_reps;
 
-					$locale = caGetOption('locale', $o_node->locale, null);
 					if($o_node->locale) {
-						$va_get_options['locale'] = $locale = $o_node->locale;
+						$va_get_options['locale'] = $o_node->locale;
+						$va_get_options['noLocaleFallback'] = $o_node->noLocaleFallback;
 					}
 					
 					if ($o_node->sort) {
@@ -679,7 +703,7 @@ class DisplayTemplateParser {
 							case 'nonpreferred_labels':
 								/** @var LabelableBaseModelWithAttributes $t_instance */
 								$ps_tablename = $t_instance->getLabelTableName();
-								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['restrictToTypes' => $va_get_options['restrictToTypes'], 'returnAsArray' => true]);
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['restrictToTypes' => $va_get_options['restrictToTypes'], 'returnAsArray' => true, 'locale' => $va_get_options['locale'] ?? null, 'returnAllLocales' => (isset($va_get_options['locale']) && $va_get_options['locale'])]);
 								break;
 							default:
 								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
@@ -746,11 +770,11 @@ class DisplayTemplateParser {
 									'aggregateUnique' => $vb_aggregate_unique,
 									'checkAccess' => $va_get_options['checkAccess'],
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
-									'locale' => $locale
+									'locale' => $va_get_options['locale'] ?? null,
+									'noLocaleFallback' => $va_get_options['noLocaleFallback'] ?? null
 								]
 							)
 						);
-
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						
 						if($limit > 0) { 
@@ -764,7 +788,6 @@ class DisplayTemplateParser {
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
-						$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
@@ -948,7 +971,8 @@ class DisplayTemplateParser {
 									'filterNonPrimaryRepresentations' => $filter_non_primary_reps,
 									'primaryIDs' => $va_get_options['primaryIDs'] ?? null,
 									'checkAccess' => $va_get_options['checkAccess'],
-									'locale' => $locale
+									'locale' => $va_get_options['locale'] ?? null,
+									'noLocaleFallback' => $va_get_options['noLocaleFallback'] ?? null
 								]
 							)
 						);
@@ -984,11 +1008,16 @@ class DisplayTemplateParser {
 				case 't':
 					$vs_acc .= _t($o_node->getInnerText());
 					break;
+				case '~comment~':
+					// noop
+					break;
 				default:
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {
 						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
-					} else {
+					} elseif(trim($o_node->html())) {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
+					} else {
+						$vs_proc_template = '';
 					}
 					if (($vs_tag === 'l') && caGetOption('makeLink', $pa_options, true)) {
 						$vs_linking_context = $ps_tablename;
@@ -1651,6 +1680,8 @@ class DisplayTemplateParser {
 	 *		delimiter = value to string together template values with when returnAsArray is false. Default is ';' (semicolon)
 	 *		sort = optional list of tag values to sort repeating values within a label template on. The tag must reference a label field. You can specify more than one tag by separating the tags with semicolons.
 	 *		sortDirection = the direction of the sort of repeating values within a label template. May be either ASC (ascending) or DESC (descending). [Default is ASC]
+	 *		locale = 
+	 *		noLocaleFallback = 
 	 * @return array
 	 */
 	public static function _processLabelTemplate($t_instance, $ps_template, array $pa_row_ids, array $pa_options) {
@@ -1663,6 +1694,11 @@ class DisplayTemplateParser {
 		$sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
 		if(!in_array($sort_direction, array('ASC', 'DESC'))) { $sort_direction = 'ASC'; }
 
+		$locale = caGetOption('locale', $pa_options, null);
+		$locale_id = $locale ? (is_numeric($locale) ? $locale : ca_locales::codeToId($locale)) : null;
+		$no_fallback = caGetOption('noLocaleFallback', $pa_options, false);
+		
+		$rules = caGetUserLocaleRules($locale, null, ['noFallback' => true]);
 
 		$va_tags = caGetTemplateTags($ps_template);
 		if(!is_array($va_tags) || (sizeof($va_tags) < 1)) { return []; }
@@ -1671,6 +1707,8 @@ class DisplayTemplateParser {
 		$sort_map = [];
 		foreach($pa_row_ids as $vn_row_id) {
 			if(!$t_instance->load($vn_row_id)) { continue; }
+			
+			if($no_fallback && $locale_id && ($t_instance->get('locale_id') != $locale_id)) { continue; }
 
 			$pb_is_preferred = (bool) ($t_instance->hasField('is_preferred') ? $t_instance->get('is_preferred') : false);
 
@@ -1701,6 +1739,8 @@ class DisplayTemplateParser {
 				$sort_map[$vn_row_id] = join('', $sort_keys);
 			}
 			$va_return[$vn_row_id] = caProcessTemplate($ps_template, $va_tag_values);
+			
+			if($locale && ($rules['preferred'][$locale] ?? null)) { break; }
 		}
 		
 		if(sizeof($sort_map)) {

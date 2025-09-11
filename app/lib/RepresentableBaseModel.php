@@ -960,14 +960,16 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	private function _checkRepresentationReferences(string $table, string $type_code, BaseModel $t_rep) {
 		$always_remove_config = $this->getAppConfig()->getAssoc('always_delete_representation_when_relationship_removed_to');
+		$ignore_remove = $this->getAppConfig()->getAssoc('during_delete_representation_ignore_representation_relationships_to');
+		
 		if(is_array($always_remove_config) && isset($always_remove_config[$table]) && is_array($always_remove_config[$table]) && sizeof($always_remove_config[$table])) {
 			if(in_array($type_code, $always_remove_config[$table])) {
 				return [];	// trigger delete
 			}
 		}
 		
-		$rels = $t_rep->hasRelationships();
-
+		$rels = $t_rep->hasRelationships(['manyManyRelationshipsOnly' => true, 'excludeTypes' => $ignore_remove]);
+	
 		if(is_array($rels)) {
 			foreach($rels as $k => $v) {
 				switch($k) {
@@ -1346,13 +1348,14 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		
 		$start = caGetOption('start', $pa_options, 0);
 		$limit = caGetOption('limit', $pa_options, null);
-		unset($pa_options['start']);
-		unset($pa_options['limit']);
 		
 		$vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, Configuration::load()->get('ca_object_representations_default_editor_display_template'), ['defaultOnEmptyString' => true]);
 		$bundles_to_save = caGetOption('showBundlesForEditing', $pa_bundle_settings, null);
 		
 		$va_reps = $this->getRepresentations(['thumbnail', 'original'], null, $pa_options);
+		
+		unset($pa_options['start']);
+		unset($pa_options['limit']);	
 	
 		$t_item = new ca_object_representations();
 		$va_rep_type_list = $t_item->getTypeList();
@@ -1392,12 +1395,6 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			if($vs_bundle_template && ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) {
 				$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('filterNonPrimaryRepresentations' => false, 'start' => null, 'limit' => null, 'returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true, 'indexWithIDs' => true)));
 				$va_relation_ids = array_keys($va_display_template_values);
-			}
-			
-			if($limit > 0) {
-				$va_relation_ids = array_slice($va_relation_ids, $start, $limit);
-			} elseif($start > 0) {
-				$va_relation_ids = array_slice($va_relation_ids, $start);
 			}
 			
 			foreach ($va_relation_ids as $relation_id) {

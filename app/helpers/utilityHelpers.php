@@ -1513,7 +1513,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @param array $pa_options Options include:
 	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
-	 *      caseInsenstive = Sort case insensitively. [Default is true]
+	 *      caseInsensitive = Sort case insensitively. [Default is true]
 	 *      naturalSort = Sort case insensitively and only considers letters and numbers in sort, stripping punctuation and other characters. [Default is false]
 	 *		mode = PHP sort mode to use. [Default is null; use string sort]
 	 * @return array The sorted array
@@ -1671,7 +1671,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @return string The media class that includes the specified MIME type, or null if the MIME type does not belong to a class. Returned classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'
 	 */
-	function caGetMediaClass(string $mimetype, ?array $options=null) : ?string {
+	function caGetMediaClass(?string $mimetype, ?array $options=null) : ?string {
 		$tmp = explode("/", $mimetype);
 
 		$for_iiif = caGetOption('forIIIF', $options, false);
@@ -2039,6 +2039,24 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	  * Returns true if date expression is a current date
+	  *
+	  * @param string $date_expression Date expression
+	  * @return bool True if expression encompasses current date
+	  */
+	function caDateIsCurrent($date_expression) : bool {
+		if($date_expression) {
+			$ts = caDateToUnixTimestamps($date_expression);
+			$t = time();
+			if(is_array($ts) && (($ts['start'] <= $t) && ($ts['end'] >= $t))) {
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
+	# ---------------------------------------
+	/**
 	 *
 	 */
 	function caSeemsUTF8($str){
@@ -2401,7 +2419,7 @@ function caFileIsIncludable($ps_file) {
 	 *		defaultOnEmptyString = Force use of default value when option is set to an empty string). [Default is false]
 	 * @return mixed
 	 */
-	function caGetOption($pm_option, ?array $pa_options, $pm_default=null, ?array $pa_parse_options=null) {
+	function caGetOption($pm_option, $pa_options, $pm_default=null, ?array $pa_parse_options=null) {
 		if (is_object($pa_options) && is_a($pa_options, 'Zend_Console_Getopt')) {
 			$pa_options = array($pm_option => $pa_options->getOption($pm_option));
 		}
@@ -2963,15 +2981,15 @@ function caFileIsIncludable($ps_file) {
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = null;
 			}
 		} catch (Zend_Locale_Exception $e){
@@ -3859,61 +3877,78 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Generate a CSRF token and add to session CSRF store
 	 *
-	 * @param RequestHTTP $po_request Current request
+	 * @param RequestHTTP $request Current request
 	 * @return string
 	 */
-	function caGenerateCSRFToken($po_request=null){
-		$session_id = $po_request ? $po_request->getSessionID() : 'none';
+	function caGenerateCSRFToken($request=null){
+		$session_id = $request ? $request->getSessionID() : 'none';
 	    if(function_exists("random_bytes")) {           // PHP 7
-	        $vs_token = bin2hex(random_bytes(32));
+	        $token = bin2hex(random_bytes(32));
 	    } elseif (function_exists("openssl_random_pseudo_bytes")) {     // PHP 5.x with OpenSSL
-			$vs_token = bin2hex(openssl_random_pseudo_bytes(32));
+			$token = bin2hex(openssl_random_pseudo_bytes(32));
         } else {
-            $vs_token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
+            $token = md5(uniqid(rand(), TRUE));   // this is not very good, and is only used if one of the more secure options above is available (one of them should be in almost all cases)
 	    }
-	    if ($po_request) {
-	        if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
-	        if (sizeof($va_tokens) > 2000) { 
-	        	$va_tokens = array_filter($va_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
+	    if ($request) {
+	        if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
+	        if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
+	    
+	    	foreach($used_tokens as $ut => $t) {
+	    		unset($tokens[$ut]);
 	    	}
 	    
-	        $va_tokens[$vs_token] = time();
+	        if (sizeof($tokens) > 255) { 
+	        	$tokens = array_filter($tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
+	    	}
+	    
+	        $tokens[$token] = time();
 	        
-	        PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
+	        PersistentCache::save("csrf_tokens_{$session_id}", $tokens, "csrf_tokens");
+	        
+	         if (sizeof($used_tokens) > 255) { 
+	        	$used_tokens = array_filter($used_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
+	    		PersistentCache::save("csrf_used_tokens_{$session_id}", $used_tokens, "csrf_tokens");
+	    	}
 	    }
-	    return $vs_token;
+	    return $token;
 	}
 	# ----------------------------------------
 	/**
 	 * Validate CSRF token using current session
 	 *
-	 * @param RequestHTTP $po_request Current request
-	 * @param string $ps_token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
-	 * @param array $pa_options Options include:
+	 * @param RequestHTTP $request Current request
+	 * @param string $token CSRF token to validate. If omitted token in the "csrfToken" parameter is extracted from current request.
+	 * @param array $options Options include:
 	 *      remove = remove validated token from active token list. [Default is false]
 	 *      exceptions = throw exception if token is invalid. [Default is false]
 	 *      notifications = post notification if token is invalid. [Default is false]
 	 * @return bool
 	 * @throws ApplicationException
 	 */
-	function caValidateCSRFToken($po_request, $ps_token=null, $pa_options=null){
-		$session_id = $po_request ? $po_request->getSessionID() : 'none';
-		
-	    if(!$ps_token) { $ps_token = $po_request->getParameter('csrfToken', pString); }
-	    if (!is_array($va_tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $va_tokens = []; }
+	function caValidateCSRFToken(RequestHTTP $request, ?string $token=null, ?array $options=null) : ?bool {
+		$session_id = $request ? $request->getSessionID() : 'none';
+	    if(!$token) { $token = $request->getParameter('csrfToken', pString); }
 	    
-	    if (isset($va_tokens[$ps_token])) { 
-	        if (caGetOption('remove', $pa_options, false)) {
-	            unset($va_tokens[$ps_token]);
-	        	PersistentCache::save("csrf_tokens_{$session_id}", $va_tokens, "csrf_tokens");
+		if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
+	    if(isset($used_tokens[$token])) { return null; }	// ignore - token has already been used
+		
+	    if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
+	    
+	    if (isset($tokens[$token])) { 
+	        if (caGetOption('remove', $options, false)) {
+	            unset($tokens[$token]);
+	        	PersistentCache::save("csrf_tokens_{$session_id}", $tokens, "csrf_tokens");
 	        }
+	        
+	   		$used_tokens[$token] = time();
+	        PersistentCache::save("csrf_used_tokens_{$session_id}", $used_tokens, "csrf_tokens");
 	        return true;
 	    }
 	    
-	    if (caGetOption('exceptions', $pa_options, false)) {
+	    if (caGetOption('exceptions', $options, false)) {
 	        throw new ApplicationException(_t('CSRF token is not valid'));
 	    }
-	    if ($nm = caGetOption('notifications', $pa_options, false)) {
+	    if ($nm = caGetOption('notifications', $options, false)) {
 	    	$nm->addNotification(_t('CSRF token is not valid'), __NOTIFICATION_TYPE_ERROR__);
 	    }
 	    return false;   
@@ -4123,8 +4158,11 @@ function caFileIsIncludable($ps_file) {
 		$int = (int)($num / $pn_denom);
 		$num %= $pn_denom;
 
+		$display_units = $o_display_config->getAssoc('displayUnits');
+		$inch_dim = ($display_units['INCHES'] ?? 'in');
+		
 		if (!$num) {
-			return "{$int} in";
+			return "{$int} {$inch_dim}";
 		}
 
 		if ($pb_reduce) {
@@ -4192,7 +4230,7 @@ function caFileIsIncludable($ps_file) {
             $frac = "{$num}/{$pn_denom}";
         }
 
-        return ($int > 0) ? trim("{$int} {$frac} in") : trim("{$frac} in");
+        return ($int > 0) ? trim("{$int} {$frac} {$inch_dim}") : trim("{$frac} {$inch_dim}");
 	}
 	# ----------------------------------------
 	/**
@@ -4217,8 +4255,7 @@ function caFileIsIncludable($ps_file) {
 		$omit_article = caGetOption('omitArticle', $options, true);
 		$move_articles = caGetOption('moveArticles', $options, true);
 
-		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $text));
-		$display_value = preg_replace('![ ]+!u', ' ', $display_value);
+		$display_value = preg_replace('![ ]+!u', ' ', $text);
 		
 		if($locale && $move_articles) {
 			// Move articles to end of string
@@ -4231,14 +4268,19 @@ function caFileIsIncludable($ps_file) {
 				}
 			}
 		}
+		$display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $display_value));
 
 		// Left-pad numbers
 		$padded = [];
 		foreach(preg_split("![ \t]+!u", $display_value) as $t) {
 			if(is_numeric($t)) {
 				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
+			} elseif(preg_match("!^([A-Za-z]+)([\d]+)([A-Za-z]+)$!u", $t, $m)) {
+				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[3], 0, 4), 4, ' ', STR_PAD_LEFT);
 			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $t, $m)) {
 				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+			} elseif(preg_match("!^([A-Za-z]+)([\d]+)$!u", $t, $m)) {
+				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT);
 			} else {
 				$padded[] = str_pad(mb_substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
@@ -5176,4 +5218,38 @@ function caFileIsIncludable($ps_file) {
 		$app = AppController::getInstance();
 		return $app->getResponse();
 	}
+	# ----------------------------------------
+	/**
+	 * Remove enclosing <p> tags from text, when text is single paragraph
+	 * 
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	function caStripEnclosingParagraphHTMLTags(?string $text) : ?string { 
+		if(is_null($text)) { return null; }
+		$l = strlen($text);
+		if($l > 8192) { $l = 8192; }
+		if(preg_match("!^<p>!i", $text) && ((substr_count($text, "<p>", 0, $l) == 1) || (substr_count($text, "<P>", 0, $l) == 1))) {
+			$text = preg_replace("!^<p>!i", "", $text);
+			$text = preg_replace("!</p>$!i", "", $text);
+		}
+		return $text;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	 	$config = Configuration::load();
+	 	
+	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
+	 		return [$type];
+	 	}
+	 	if(($types = $config->get('ca_objects_x_collections_hierarchy_relationship_types')) && is_array($types) && sizeof($types)) {
+	 		$types = array_filter($types, 'strlen');
+	 		if(sizeof($types)) { return $types; }
+	 	}
+	 	return null;
+	 }
 	# ----------------------------------------

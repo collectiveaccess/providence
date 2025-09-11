@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
 var caUI = caUI || {};
 
 // Global panel count; provides for control of mask when nested panels are opened
-caUI.panelCount = 0;
+if(caUI.panelCount === undefined) { caUI.panelCount = 0; }
 
 (function ($) {
 	caUI.initPanel = function(options) {
@@ -68,7 +68,6 @@ caUI.panelCount = 0;
 		that.showPanel = function(url, onCloseCallback, clearOnClose, postData, callbackData) {
 			that.setZoom(that.allowMobileSafariZooming);
 			that.isChanging = true;
-			
 			caUI.panelCount++;
 			
 			// Set reference to panel in <div> being used

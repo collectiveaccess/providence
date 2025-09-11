@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 var caUI = caUI || {};
 
 (function ($) {
@@ -62,8 +61,9 @@ var caUI = caUI || {};
 
 			initItemID: null,		// if set, hierarchy opens with specified item_id selected
 			defaultItemID: null,	// set to default value to show when no initItemID is set; note that initItemID is an ID to open with *and select.* defaultItemID merely specifies an item to open with, but not select.
-			useAsRootID: null,		// if set to an item_id, that is used at the root of the display hierarchy
-
+			useAsRootID: null,		// if set to an item_id, that is used as the root of the display hierarchy
+			dontInit: false,		// don't init browser on load
+			
 			excludeItemIDs: [],		// Skip items with ids in this list
 
 			className: 'hierarchyBrowserLevel',
@@ -85,6 +85,7 @@ var caUI = caUI || {};
 			onSelection: null,		/* function to call whenever an item is selected; passed item_id, parent_id, name, formatted display string and type_id */
 
 			autoShrink: false,
+			autoShrinkMinHeightPx: 50,
 			autoShrinkMaxHeightPx: 180,
 			autoShrinkAnimateID: '',
 			
@@ -999,7 +1000,14 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		//
 		// Initialize before returning object
-		that.setUpHierarchy(that.initItemID ? that.initItemID : that.defaultItemID);
+		if(!that.dontInit) {
+			that.setUpHierarchy(that.initItemID ? that.initItemID : that.defaultItemID);
+		} else if((that.uiStyle == 'horizontal') && that.autoShrink && that.autoShrinkAnimateID) {
+			let container = jQuery('#' + that.autoShrinkAnimateID);
+			if(jQuery(container).is(':visible')) { // don't resize if the thing isn't visible
+				container.animate({ height: that.autoShrinkMinHeightPx + 'px'}, 0);
+			}
+		}
 
 		return that;
 		// --------------------------------------------------------------------------------

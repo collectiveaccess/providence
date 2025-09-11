@@ -279,7 +279,6 @@ class BaseEditorController extends ActionController {
 		// relate existing records via Save() link
 		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 			if(Datamodel::tableExists($vs_rel_table)) {
-				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 				if(!$t_subject->relationshipExists($vs_rel_table, $vn_rel_id, $vn_rel_type_id)) { 
 					$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
 				}
@@ -359,7 +358,6 @@ class BaseEditorController extends ActionController {
 				// relate newly created record if requested
 				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
 					if(Datamodel::tableExists($vs_rel_table)) {
-						Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
 						$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id);
 					}
 				}
@@ -1956,7 +1954,7 @@ class BaseEditorController extends ActionController {
 		// Is record from correct source?
 		//
 		$va_restrict_to_sources = null;
-		if ($subject->getAppConfig()->get('perform_source_access_checking') && $subject->hasField('source_id')) {
+		if (caSourceAccessControlIsEnabled($subject) && $subject->hasField('source_id')) {
 			if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__)))) {
 				if (is_array($va_restrict_to_sources) && $subject->get('source_id') && !in_array($subject->get('source_id'), $va_restrict_to_sources)) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
@@ -2596,10 +2594,7 @@ class BaseEditorController extends ActionController {
                     $t_rep = new ca_object_representations($va_rep['representation_id']);
                     if(!$t_rep->isReadable($this->request->user)) { continue; }
                     
-                    if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
-                        $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
-                        $t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
-                    ))) {
+                    if(!($vs_path = caEmbedMediaMetadataIntoFile($t_subject, $ps_version, ['path' => $t_rep->getMediaPath('media', $ps_version)]))) {
                         $vs_path = $va_rep['paths'][$ps_version];
                     }
                 } else {
@@ -3081,6 +3076,7 @@ class BaseEditorController extends ActionController {
 			$resp = ['ok' => false, 'errors' => $t_subject->getErrors(),'message' => _t('Could not update media: %1', join('; ', $t_subject->getErrors()))];
 		}
 		
+		$this->response->setContentType('application/json');
 		$this->view->setVar('response', $resp);
 		$this->render('../generic/return_to_home_locations.php');
 	}

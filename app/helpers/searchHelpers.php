@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2024 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,6 @@
  */
 require_once(__CA_LIB_DIR__.'/Search/Common/Parsers/LuceneSyntaxParser.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-
 
 # ---------------------------------------
 /**
@@ -1017,7 +1016,7 @@ function caGetDisplayStringForSearch($ps_search, $pa_options=null) {
 				}
 				
 				$vs_field_disp = caGetLabelForBundle($vs_field);
-				$va_query[] = ($vs_field_disp && !$pb_omit_field_names ? "{$vs_field_disp}: \"" : "").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
+				$va_query[] = ($vs_field_disp && !$pb_omit_field_names ? "{$vs_field_disp}: \"" : "\"").caGetDisplayValueForBundle($vs_field, join(" ", $va_terms))."\"";
 				break;
 			case 'Zend_Search_Lucene_Index_Term':
 				$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
@@ -1163,24 +1162,32 @@ function caGetDisplayValueForBundle(?string $bundle, string $value) {
 	$va_tmp = explode(".", $bundle);
 	
 	if ($t_instance = Datamodel::getInstanceByTableName($va_tmp[0], true)) {
-		if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
-			return $value;
-		} elseif($t_instance->hasElement($va_tmp[1])) {	// metadata element
-			if($t_element = ca_metadata_elements::getInstance($va_tmp[1])) {
-				switch(ca_metadata_elements::getElementDatatype($va_tmp[1])) {
-					case __CA_ATTRIBUTE_VALUE_LIST__:
-						if(is_numeric($value)) {
-							if(strlen($ret = caGetListItemByIDForDisplay((int)$value))) {
-								return $ret;
-							}
+		switch($va_tmp[1]) {
+			case 'preferred_labels':
+			case 'nonpreferred_labels':
+				return $value;
+				break;
+			default:
+				if ($t_instance->hasField($va_tmp[1])) {		// intrinsic
+					return $value;
+				} elseif(method_exists($t_instance, 'hasElement') && $t_instance->hasElement($va_tmp[1])) {	// metadata element
+					if($t_element = ca_metadata_elements::getInstance($va_tmp[1])) {
+						switch(ca_metadata_elements::getElementDatatype($va_tmp[1])) {
+							case __CA_ATTRIBUTE_VALUE_LIST__:
+								if(is_numeric($value)) {
+									if(strlen($ret = caGetListItemByIDForDisplay((int)$value))) {
+										return $ret;
+									}
+								}
+								return $value;
+								break;
+							default:
+								return $value;
+								break;
 						}
-						return $value;
-						break;
-					default:
-						return $value;
-						break;
+					}
 				}
-			}
+				break;
 		}
 	}
 	return $value;
@@ -1574,7 +1581,7 @@ function caGetAvailableSortFields($ps_table, $pn_type_id = null, $options=null) 
 					}
 					
 					if (isset($va_placement['settings']['label'])) {
-						if ($vs_label_tmp = isset($va_placement['settings']['label'][$g_ui_locale_id]) ? $va_placement['settings']['label'][$g_ui_locale_id] : array_shift($va_placement['settings']['label'])) {
+						if ($vs_label_tmp = isset($va_placement['settings']['label'][$g_ui_locale_id]) ? $va_placement['settings']['label'][$g_ui_locale_id] : (is_array($va_placement['settings']['label']) ? array_shift($va_placement['settings']['label']) : $va_placement['settings']['label'])) {
 							$ui_bundle_label_map[$vs_bundle_name] = $vs_label_tmp;
 						}
 					}
@@ -1758,7 +1765,12 @@ function caGetAvailableSortFields($ps_table, $pn_type_id = null, $options=null) 
 					$va_base_fields[$k] = $ui_bundle_label_map[$kp];
 				} elseif(sizeof($tmp = explode('.', $kp)) > 2) {
 					array_pop($tmp);
-					if (isset($ui_bundle_label_map[join('.', $tmp)])) { $va_base_fields[$k] = $ui_bundle_label_map[join('.', $tmp)]; }
+					if ($l = ($ui_bundle_label_map[join('.', $tmp)] ?? null)) { 
+						$vals = array_values($va_base_fields);
+						if(!in_array($l, $vals, true)) {	// don't rename two fields to the same label
+							$va_base_fields[$k] = $l; 
+						}
+					}
 				}
 			}
 		}

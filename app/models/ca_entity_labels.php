@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
 require_once(__CA_LIB_DIR__.'/Utils/DataMigrationUtils.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
  	'NAME_SINGULAR' 	=> _t('entity name'),
@@ -178,6 +172,13 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				),
 				'LIST' => 'access_statuses',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if label is accessible to the public or not.')
+		),
+		'notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "670px", 'DISPLAY_HEIGHT' => 3,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Notes'), 'DESCRIPTION' => _t('Notes on label')
 		)
  	)
 );
@@ -208,7 +209,7 @@ class ca_entity_labels extends BaseLabel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('displayname');
+	protected $LIST_FIELDS = array('displayname', 'access', 'notes', 'source_info');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.

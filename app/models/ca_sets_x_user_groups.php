@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 
@@ -73,6 +69,13 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_user_groups'] = array(
 			),
 			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates group&apos;s level of access to the set. ')
 		),
+		'settings' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Display settings')
+		),
 		'effective_date' => array(
 			'FIELD_TYPE' => FT_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
 			'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
@@ -85,6 +88,8 @@ BaseModel::$s_ca_models_definitions['ca_sets_x_user_groups'] = array(
 );
 
 class ca_sets_x_user_groups extends BaseRelationshipModel {
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -171,5 +176,33 @@ class ca_sets_x_user_groups extends BaseRelationshipModel {
 
 	protected $FIELDS;
 	
-	# ----------------------------------------
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct($id=null, ?array $options=null) {
+		parent::__construct($id, $options);
+		
+		$this->initSettings();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function initSettings() {
+		$settings = [
+			'download_versions' => [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_TEXT,
+				'width' => 4, 'height' => 1,
+				'takesLocale' => false,
+				'default' => null,
+				'label' => _t('Download versions'),
+				'description' => _t('Media versions available for download with this token')
+			]
+		];
+				
+		$this->setAvailableSettings($settings);
+	}
+	# ------------------------------------------------------
 }

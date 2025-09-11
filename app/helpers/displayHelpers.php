@@ -115,13 +115,16 @@ function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) 
  * @param $pa_locale_rules - Associative array defining which locales to extract, and how to fall back to alternative locales should your preferred locales not exist in $pa_values
  * @param $pa_values - Associative array keyed by unique item_id and then locale code (eg. en_US) or locale_id; the values can be anything - string, numbers, objects, arrays, etc.
  * @param $pa_options [optional] - Associative array of options; available options are:
- *									'returnList' = return an indexed array of found values rather than an associative array keys on unique item_id [default is false]
- *									'debug' = print debugging information [default is false]
+ *		returnList = return an indexed array of found values rather than an associative array keys on unique item_id. [Default is false]
+ *		debug = print debugging information. [Default is false]
+ *		noFallback = don't use fallback locales. [Default is false
  * @return Array - an array of found values keyed by unique item_id; or an indexed list of found values if option 'returnList' is passed in $pa_options
  */
 function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 	if (!is_array($pa_values)) { return array(); }
 	$va_locales = ca_locales::getLocaleList();
+	
+	$no_fallback = isset($pa_options['noFallback']) && (bool)$pa_options['noFallback'];
 
 	if (!is_array($pa_options)) { $pa_options = array(); }
 	if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
@@ -130,7 +133,7 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 	$va_values = array();
 	foreach($pa_values as $vm_id => $va_value_list_by_locale) {
 		if(!is_array($va_value_list_by_locale)) { continue; }
-		if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
+		if ((sizeof($va_value_list_by_locale) == 1) && (!$no_fallback || (in_array(ca_locales::idToCode(array_key_first($va_value_list_by_locale)), array_keys($pa_locale_rules['preferred']))))) {		// Don't bother looking if there's just a single value
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
 		}
@@ -149,13 +152,15 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 				break;
 			}
 
-			// try fallback locales
-			if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
-				$va_values[$vm_id] = $vm_value;
+			if(!$no_fallback) {
+				// try fallback locales
+				if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
+					$va_values[$vm_id] = $vm_value;
+				}
 			}
 		}
 
-		if (!isset($va_values[$vm_id])) {
+		if (!$no_fallback && !isset($va_values[$vm_id])) {
 			// desperation mode: pick an available locale
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 		}
@@ -976,7 +981,7 @@ function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, 
  */
 function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_f', function() {
 			caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 			caEditorFieldList.onOpenCallback = function(){
@@ -1018,7 +1023,7 @@ function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_option
 function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
 	$t_subject = Datamodel::getInstanceByTableName($ps_table, true);
 	$vs_buf = "<script type=\"text/javascript\">
-	jQuery(document).on('ready', function() {
+	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_h', function() {
 			caEditorFieldList.hidePanel({dontCloseMask:1});
 
@@ -1427,6 +1432,28 @@ function caEditorInspector($view, $options=null) {
 
 			TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 		}
+	
+		// Auto-delete set?
+		if(($table_name == 'ca_sets') && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
+			$autodelete = "<div class='inspectorActionButton'><div><a href='#' title='"._t('Set auto-deletion of set.')."' onclick='caToggleAutoDelete(); return false;' id='inspectorSetAutoDeleteButton'>".caNavIcon($t_item->willAutoDelete() ? __CA_NAV_ICON_AUTO_DELETE__ : __CA_NAV_ICON_NO_AUTO_DELETE__, '20px')."</a></div></div>";
+
+				$tools[] = "{$autodelete}\n<script type='text/javascript'>
+	function caToggleAutoDelete() {
+		var url = '".caNavUrl($view->request, $view->request->getModulePath(), $view->request->getController(), 'toggleAutoDelete', [$t_item->primaryKey() => $item_id])."';
+
+		jQuery.getJSON(url, {'csrfToken': ".json_encode(caGenerateCSRFToken($view->request))."}, function(data, status) {
+			if (data['status'] == 'ok') {
+				jQuery('#inspectorSetAutoDeleteButton').html((data['state'] == 'autodelete') ? ".json_encode(caNavIcon(__CA_NAV_ICON_AUTO_DELETE__, '20px'))." : ".json_encode(caNavIcon(__CA_NAV_ICON_NO_AUTO_DELETE__, '20px')).");
+				jQuery('#inspectorAutoDeleteMessage').html(data['message'] ?? '');
+			} else {
+				console.log('Error toggling autodelete status for item: ' + data['errors']);
+			}
+		});
+	}
+	</script>\n";
+			TooltipManager::add('#inspectorSetAutoDeleteButton', _t("Auto-delete set when older than %1 days?", 10));
+		}
+
 
 		$more_info = '';
 
@@ -1442,6 +1469,13 @@ function caEditorInspector($view, $options=null) {
 			}
 			$more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 		}
+		
+		if(($table_name === 'ca_sets') && ($view->request->user->getPreference('autodelete_sets'))) {
+			$autodelete_info = ca_sets::getAutoDeleteInfo($t_item, $view->request->user);
+			$msg = $autodelete_info['message'] ?? null;
+			$more_info .= "<div id='inspectorAutoDeleteMessage' class='inspectorAutodeleteSet'>{$msg}</div>\n";
+		}
+		
 		$creation = $t_item->getCreationTimestamp();
 		$last_change = $t_item->getLastChangeTimestamp();
 
@@ -1551,15 +1585,6 @@ function caEditorInspector($view, $options=null) {
 				}
 				$components_tools[] = "<div><strong>"._t('Components').":</strong> {$component_count_link}</div>";
 			}
-	
-			if ($can_add_component) {
-				$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
-	
-				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
-				$change_type_view->setVar('t_item', $t_item);
-	
-				FooterManager::add($change_type_view->render("create_component_html.php"));
-			}
 			
 			// Component hierarchy tools
 			if(($table_name === 'ca_objects') && $view->request->config->get("ca_objects_component_allow_merge_unmerge") && (($takes_components && isset($object_component_types[0])) || in_array($t_item->getTypeCode(), $object_component_types))) {
@@ -1574,6 +1599,26 @@ function caEditorInspector($view, $options=null) {
 					TooltipManager::add('#inspectorHierarchySplit', _t("Split media in this %1 into %2 with component %3", $container_type_name, $container_target_type_name, $component_type_name));
 				}
 			}
+		}	
+		if ($can_add_component) {
+			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
+
+			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$change_type_view->setVar('t_item', $t_item);
+
+			FooterManager::add($change_type_view->render("create_component_html.php"));
+		}
+		
+		$t_set_type = $t_item->getTypeInstance();		
+		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
+		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {
+			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";
+
+			$random_set_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$random_set_view->setVar('t_item', $t_item);
+			$random_set_view->setVar('userCanSetExclusion', ((int)$t_set_type->getSetting('random_generation_mode') === 3));
+			FooterManager::add($random_set_view->render("random_set_generation_html.php"));
+			TooltipManager::add('#inspectorRandomButton', _t("Add random items"));
 		}
 
 		if(sizeof($tools) > 0) {
@@ -2540,7 +2585,7 @@ function caGetMediaDisplayInfo($ps_context, $ps_mimetype) {
  *
  * @return
  */
-function caGetMediaDisplayInfoForMimetype(string $context, string $mimetype) : ?array {
+function caGetMediaDisplayInfoForMimetype(string $context, ?string $mimetype) : ?array {
 	$o_config = Configuration::load();
 	$o_media_display_config = caGetMediaDisplayConfig();
 
@@ -2778,12 +2823,15 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
 							break;
 					}
+					
+					if(preg_match("!\.[0]+[ ]+!", $vs_measure_conv)) { // remove trailing zero decimals
+						$vs_measure_conv = preg_replace("!\.[0]+[ ]+!", " ", $vs_measure_conv);
+					}
 
 					if ($vs_measure_conv) {
 						if ($pb_omit_units) { $vs_measure_conv = trim(preg_replace("![^\d\-\.\/ ]+!", "", $vs_measure_conv)); }
 						$ps_value = "{$vs_measure_conv}";
 					}
-					
 					if(is_array($pa_options['displayUnits'])) { 
 						foreach($pa_options['displayUnits'] as $b => $a) {
 							$ps_value = preg_replace("!".preg_quote($b, '!')."\.*$!u", $a, $ps_value);
@@ -4630,8 +4678,7 @@ function caRepresentationViewer($po_request, $po_data, $pt_subject, $pa_options=
 
 			$filtered_rep_ids = [];
 			while($qr_reps->nextHit()) {
-				if(!$qr_reps->get('ca_object_representations.media')) { continue; }
-				$mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype');
+				if(!($mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype'))) { continue; }
 				if($show_only_media_types && !caMimetypeIsValid($mimetype, $show_only_media_types)) { continue; }
 
 				if($show_only_media_types_when_present_reduced && !caMimetypeIsValid($mimetype, $show_only_media_types_when_present_reduced)) { continue; }
@@ -5363,32 +5410,97 @@ function caDoTemplateTagSubstitution($po_view, $pm_subject, $ps_template_path, $
 /**
  * Check if hierarchy browser drag-and-drop sorting is enabled for the current user in the current table for a given item.
  *
- * @param RequestHTTP $pt_request The current request
- * @param string $ps_table The table being browsed
- * @param int $pn_id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items. If null then status is determined at the table level. [Default is null]
+ * @param RequestHTTP $request The current request
+ * @param string $table The table being browsed
+ * @param int $id The primary key for the parent of the hierarchy level being browsed. Some tables (notably ca_list_items) can have different enabled statuses for different items. If null then status is determined at the table level. [Default is null]
  *
  * @return bool
  */
-function caDragAndDropSortingForHierarchyEnabled($pt_request, $ps_table, $pn_id=null) {
+function caDragAndDropSortingForHierarchyEnabled(RequestHTTP $request, string $table, ?int $id=null) : ?bool {
 	$o_config = Configuration::load();
 
-	if (!($t_instance = Datamodel::getInstanceByTableName($ps_table, true))) { return null; }
+	if (!($t_instance = Datamodel::getInstanceByTableName($table, true))) { return null; }
 
-	if(!$pt_request->isLoggedIn() || (!$pt_request->user->canDoAction("can_edit_{$ps_table}") && (($vs_hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$pt_request->user->canDoAction("can_edit_{$vs_hier_table}") : false))) { return false; }
+	if(!$request->isLoggedIn() || (!$request->user->canDoAction("can_edit_{$table}") && (($hier_table = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE')) ? !$request->user->canDoAction("can_edit_{$hier_table}") : false))) { return false; }
 	if (!$t_instance->isHierarchical()) { return false; }
-	if (!($vs_rank_fld = $t_instance->getProperty('RANK'))) { return false; }
-	if (!is_null($pn_id) && !$t_instance->load($pn_id)) { return false; }
+	if (!($rank_fld = $t_instance->getProperty('RANK'))) { return false; }
+	if (!is_null($id) && !$t_instance->load($id)) { return false; }
 
-	$vs_def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
-	$vs_def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
+	$def_table_name = $t_instance->getProperty('HIERARCHY_DEFINITION_TABLE');
+	$def_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD');
 
-	if ($vs_def_table_name && ($t_def = Datamodel::getInstanceByTableName($vs_def_table_name, true)) && ($t_def->load($t_instance->get($vs_def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
+	if ($def_table_name && ($t_def = Datamodel::getInstanceByTableName($def_table_name, true)) && ($t_def->load($t_instance->get($def_id_fld))) && ($t_def->hasField('default_sort')) && ((int)$t_def->get('default_sort') === __CA_LISTS_SORT_BY_RANK__)) {
 		return true;
 	} else {
-		$va_sort_values = $o_config->getList("{$ps_table}_hierarchy_browser_sort_values");
-		if ((sizeof($va_sort_values) >= 1) && ($va_sort_values[0] === "{$ps_table}.{$vs_rank_fld}")) { return true; }
+		//$sort_values = $o_config->getList("{$table}_hierarchy_browser_sort_values");
+		$sort_values = caGetHierarchyBrowserSortValues($table, $t_instance);
+		if ((sizeof($sort_values) >= 1) && ($sort_values[0] === "{$table}.{$rank_fld}")) { return true; }
 	}
 	return false;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caGetHierarchyBrowserSortValues(string $table, ?BaseModel $t_instance) : ?array {
+	$o_config = Configuration::load();
+	$sort_value = null;
+	
+	if($t_instance && $t_instance->isLoaded() && ($sort_element = $o_config->get("{$table}_hierarchy_browser_use_for_sort"))){
+		$itable = $t_instance->tableName();
+		if(is_array($ancestor_ids = $t_instance->getHierarchyAncestors(null, ['idsOnly' => true, 'includeSelf' => true])) && sizeof($ancestor_ids)) {
+			// Try to find metadata-specified sort in parent record of passed instance
+			if($qr = caMakeSearchResult($t_instance->tableName(), $ancestor_ids)) {
+				while($qr->nextHit()) {
+					if(($sort_value = $qr->get("{$itable}.{$sort_element}", ['convertCodesToValue' => true]))) {
+						error_log("got $sort_value for $sort_element");
+						return [$sort_value];
+						break;
+					}
+				}
+			}
+			
+			if($o_config->get('ca_objects_x_collections_hierarchy_enabled')) {
+				// If sorting objects and:
+				//		1. instance is object
+				//		2. object has no parents
+				//		3. object-collection hierarchy is enabled
+				//		4. A metadata element for metadata-specified sort is configured
+				// then try to pull related collections and see if they define a sort for the objects list
+				if(
+					($table === 'ca_objects') && (($itable === 'ca_objects') && sizeof($ancestor_ids) === 1) && 
+					($sort_element = $o_config->get("ca_objects_hierarchy_browser_use_for_sort"))
+				) {
+					$types = caGetObjectCollectionHierarchyRelationshipTypes();
+					$coll_ids = $t_instance->getRelatedItems('ca_collections', ['idsOnly' => true, 'restrictToTypes' => $types]);
+					if(is_array($coll_ids) && sizeof($coll_ids)) {
+						if($qr = caMakeSearchResult('ca_collections', $coll_ids)) {
+							while($qr->nextHit()) {
+								if(($sort_value = $qr->get("ca_collections.{$sort_element}", ['convertCodesToValue' => true]))) {
+									return [$sort_value];
+									break;
+								}
+								$t_coll = $qr->getInstance();
+								if(is_array($ancestor_ids = $t_coll->getHierarchyAncestors(null, ['idsOnly' => true, 'includeSelf' => false])) && sizeof($ancestor_ids)) {
+									if($qr = caMakeSearchResult('ca_collections', $ancestor_ids)) {
+										while($qr->nextHit()) {
+											if(($sort_value = $qr->get($sort_element, ['convertCodesToValue' => true]))) {
+												return [$sort_value];
+												break;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	$sort_values = $o_config->getList("{$table}_hierarchy_browser_sort_values");
+	return $sort_values;
 }
 # ------------------------------------------------------------------
 /**
@@ -5823,7 +5935,6 @@ function caEscapeFilenameForDownload(string $filename, ?array $options=null) : s
 	}
 	return $v;
 }
-
 # ------------------------------------------------------------------
 /**
  * Generate name for downloaded representation media file based upon app.conf 
@@ -6189,6 +6300,12 @@ function caGetFindViewList($table_name_or_num) : ?array {
 			return [
 				'list' => _t('list'),
 				'full' => _t('full'),
+				'thumbnail' => _t('thumbnails'),
+			];
+			break;
+		case 'ca_object_representations':
+			return [
+				'list' => _t('list'),
 				'thumbnail' => _t('thumbnails'),
 			];
 			break;

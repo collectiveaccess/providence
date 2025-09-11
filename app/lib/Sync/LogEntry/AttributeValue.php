@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2024 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,7 +85,9 @@ class AttributeValue extends Base {
 			if (
 				isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])
 			) {
-				$t_element = \ca_metadata_elements::getInstance($vs_element_code);
+				if(!$t_element = \ca_metadata_elements::getInstance($vs_element_code)) {
+					throw new InvalidLogEntryException(_t("Invalid element code %1", $vs_element_code));
+				}
 
 				if($vn_list_id = $t_element->get('list_id')) {
 				    if (isset($va_snapshot['item_id_guid']) && ($vs_item_id_guid = $va_snapshot['item_id_guid'])) {
@@ -132,7 +134,6 @@ class AttributeValue extends Base {
 		$va_snapshot = $this->getSnapshot();
 
 		foreach($va_snapshot as $vs_field => $vm_val) {
-
 			if($vs_field == 'element_id') {
 				if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
 					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
@@ -166,12 +167,14 @@ class AttributeValue extends Base {
                                 $this->getModelInstance()->set('item_id', $vn_item_id);
 								$this->getModelInstance()->set('value_longtext1', $vn_item_id);
                             }
-                        } elseif(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
+                        }
+                        if(!$this->getModelInstance()->get('item_id') && isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
 							if($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code)) {
 								$this->getModelInstance()->set('item_id', $vn_item_id);
 								$this->getModelInstance()->set('value_longtext1', $vn_item_id);
 							}
-						} elseif(isset($va_snapshot['item_label']) && ($vs_item_label = $va_snapshot['item_label'])) {
+						} 
+						if(!$this->getModelInstance()->get('item_id') && isset($va_snapshot['item_label']) && ($vs_item_label = $va_snapshot['item_label'])) {
 							if($vn_item_id = caGetListItemIDForLabel($vn_list_id, $vs_item_label)) {
 								$this->getModelInstance()->set('item_id', $vn_item_id);
 								$this->getModelInstance()->set('value_longtext1', $vn_item_id);
@@ -179,8 +182,12 @@ class AttributeValue extends Base {
 						}
 					}
 				}
+			} elseif(($vs_field == 'value_longtext1') && ($va_snapshot['value_longtext1_guid'] ?? null)) {		// authority value
+				if(is_array($info = \ca_guids::getInfoForGUID($va_snapshot['value_longtext1_guid']))) {
+					$this->getModelInstance()->set('value_longtext1', $info['row_id']);
+					$this->getModelInstance()->set('value_integer1', $info['row_id']);
+				}
 			}
 		}
 	}
-
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */ 
 require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
@@ -254,6 +250,16 @@ class EditorController extends ActionController {
 		$t_ui = new ca_editor_uis();
 		if (!isset($options['ui']) || !$options['ui']) {
 			$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
+			$restrictions = $t_ui->getTypeRestrictions();
+			$type_ids = array_map(function($v) {
+				return $v['type_id'] ?? null;
+			}, $restrictions ?? []);
+			if(is_array($type_ids) && sizeof($type_ids) && !in_array($t_subject->getTypeID(), $type_ids)) {
+				$types_in_set = array_keys($t_set->getTypesForItems());
+				if(!($t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, array_shift($types_in_set)))) {
+					$t_ui = new ca_editor_uis();
+				}
+			}
 		}
 		if (!$t_ui->getPrimaryKey() && isset($options['ui']['__all__']) && $options['ui']['__all__']) {
 			if (is_numeric($options['ui']['__all__'])) {
@@ -265,7 +271,7 @@ class EditorController extends ActionController {
 		}
 		
 		if (!$t_ui->getPrimaryKey()) {
-			$t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, $t_subject->getTypeID());
+			$t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, null);
 		}
 		
 		$this->view->setVar('id', $rs->ID());

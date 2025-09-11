@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-  /**
-  *
-  */
-
 require_once(__CA_LIB_DIR__.'/BaseModel.php');
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
@@ -46,6 +41,9 @@ class BaseLabel extends BaseModel {
 		$this->_generateSortableValue();	// populate sort field
 		// invalidate get() prefetch cache
 		SearchResult::clearResultCacheForTable($this->tableName());
+		
+		$this->set($this->LABEL_DISPLAY_FIELD, caStripEnclosingParagraphHTMLTags($this->get($this->LABEL_DISPLAY_FIELD)));
+
 		if($vn_rc = parent::insert($pa_options)) {
 			$this->setGUID($pa_options);
 		}
@@ -63,6 +61,8 @@ class BaseLabel extends BaseModel {
 		
 		// Unset label cache entry for modified label only
 		unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
+
+		$this->set($this->LABEL_DISPLAY_FIELD, caStripEnclosingParagraphHTMLTags($this->get($this->LABEL_DISPLAY_FIELD)));
 
 		return parent::update($pa_options);
 	}
@@ -241,6 +241,18 @@ class BaseLabel extends BaseModel {
 	 */
 	public static function normalizeLabel(array $label_values) : array {
 		return $label_values;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function get($field, $options=null) {
+		$v = parent::get($field, $options);
+		
+		if(caGetOption('stripEnclosingParagraphTags', $options, true)) {
+			$v = caStripEnclosingParagraphHTMLTags($v);
+		}
+		return $v;
 	}
 	# -------------------------------------------------------
 }
