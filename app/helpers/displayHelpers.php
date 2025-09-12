@@ -5442,7 +5442,7 @@ function caDragAndDropSortingForHierarchyEnabled(RequestHTTP $request, string $t
 /**
  *
  */
-function caGetHierarchyBrowserSortValues(string $table, ?BaseModel $t_instance) : ?array {
+function caGetHierarchyBrowserSortValues(string $table, ?BaseModel $t_instance=null) : ?array {
 	$o_config = Configuration::load();
 	$sort_value = null;
 	
