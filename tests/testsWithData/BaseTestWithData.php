@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/AbstractSearchQueryTest.php
+ * tests/testsWithData/AbstractSearchQueryTestClass.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

@@ -31,14 +31,14 @@
  */
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTestClass.php');
 require_once(__CA_LIB_DIR__."/Search/SearchIndexer.php");
 
 /**
  * Class RelatedAttributeValueSearchQueryTest
  * Note: Requires testing profile!
  */
-class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTest {
+class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTestClass {
 	# -------------------------------------------------------
 	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly

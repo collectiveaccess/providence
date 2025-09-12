@@ -32,7 +32,6 @@
 require_once(__CA_LIB_DIR__.'/Search/Common/Parsers/LuceneSyntaxParser.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
-
 # ---------------------------------------
 /**
  * Get search instance for given table name
@@ -1766,7 +1765,12 @@ function caGetAvailableSortFields($ps_table, $pn_type_id = null, $options=null) 
 					$va_base_fields[$k] = $ui_bundle_label_map[$kp];
 				} elseif(sizeof($tmp = explode('.', $kp)) > 2) {
 					array_pop($tmp);
-					if (isset($ui_bundle_label_map[join('.', $tmp)])) { $va_base_fields[$k] = $ui_bundle_label_map[join('.', $tmp)]; }
+					if ($l = ($ui_bundle_label_map[join('.', $tmp)] ?? null)) { 
+						$vals = array_values($va_base_fields);
+						if(!in_array($l, $vals, true)) {	// don't rename two fields to the same label
+							$va_base_fields[$k] = $l; 
+						}
+					}
 				}
 			}
 		}

@@ -784,7 +784,6 @@ class DisplayTemplateParser {
 								]
 							)
 						);
-
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						
 						if($limit > 0) { 
@@ -798,7 +797,6 @@ class DisplayTemplateParser {
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
-						$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);

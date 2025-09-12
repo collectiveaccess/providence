@@ -21,6 +21,25 @@ create table ca_application_vars
 
 
 /*==========================================================================*/
+create table ca_unsaved_edits
+(
+   edit_id                        int                         	 not null AUTO_INCREMENT,
+   edit_datetime                  int unsigned                   not null,
+   user_id                        int unsigned,
+   table_num                      tinyint unsigned               not null,
+   row_id                         int unsigned                   not null,
+   snapshot                       longblob                       not null,
+   
+   primary key (edit_id)
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+create index i_datetime on ca_unsaved_edits(edit_datetime);
+create index i_user_id on ca_unsaved_edits(user_id);
+create index i_edit on ca_unsaved_edits(row_id, table_num);
+create index i_table_num on ca_unsaved_edits(table_num);
+
+
+/*==========================================================================*/
 create table ca_change_log
 (
    log_id                         bigint                         not null AUTO_INCREMENT,
@@ -809,6 +828,7 @@ create table ca_object_representation_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    
@@ -996,6 +1016,7 @@ create table ca_occurrence_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_occurrence_labels_type_id foreign key (type_id)
@@ -1139,6 +1160,7 @@ create table ca_collection_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_collection_labels_type_id foreign key (type_id)
@@ -1263,6 +1285,7 @@ create table ca_place_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_place_labels_type_id foreign key (type_id)
@@ -1302,6 +1325,7 @@ create table ca_storage_location_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_storage_location_labels_locale_id foreign key (locale_id)
@@ -1414,6 +1438,7 @@ create table ca_loan_labels (
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    
@@ -1511,6 +1536,7 @@ create table ca_movement_labels (
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    
@@ -1885,6 +1911,7 @@ create table ca_object_lot_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_object_lot_labels_lot_id foreign key (lot_id)
@@ -2158,6 +2185,7 @@ create table ca_object_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_object_labels_type_id foreign key (type_id)
@@ -2946,6 +2974,7 @@ create table ca_entity_labels
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
    checked                        tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_entity_labels_type_id foreign key (type_id)
@@ -7819,6 +7848,7 @@ create table ca_history_tracking_current_value_labels
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    access                         tinyint unsigned               not null default 0,
+   notes                          text                           not null,
    
    primary key (label_id),
    constraint fk_ca_history_tracking_current_value_labels_type_id foreign key (type_id)
@@ -7954,4 +7984,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (204, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (206, unix_timestamp());

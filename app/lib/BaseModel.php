@@ -5231,6 +5231,29 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					// [This generally should not happen]
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
 					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
+				} else {
+					$media_desc = [
+						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
+						"_CENTER" => [],
+						"_SCALE" => [],
+						"_SCALE_UNITS" => [],
+						"_START_AT_TIME" => null,
+						"_START_AT_PAGE" => null,
+						"INPUT" => [
+							"MIMETYPE" => $m->get("mimetype"),
+							"WIDTH" => $m->get("width"),
+							"HEIGHT" => $m->get("height"),
+							"MD5" => null,
+							"FILESIZE" => null,
+							"FETCHED_BY" => $vs_url_fetched_by,
+							"FETCHED_ORIGINAL_URL" => $vs_url_fetched_original_url,
+							"FETCHED_FROM" => $vs_url_fetched_from,
+							"FETCHED_ON" => $vn_url_fetched_on,
+							"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
+						 ]
+					];
+					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field] = $media_desc;
+					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
 
 				$this->_PROCESSED_FILES[$ps_field] = $this->_SET_FILES[$ps_field];
@@ -6258,10 +6281,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if (isset($this->FIELDS[$field])) {
 			
 			$fieldinfo = $this->FIELDS[$field];
+			$table = $this->tableName();
 			
 			$translations = $this->_TRANSLATIONS->getAssoc('fields');
-			if (isset($translations[$this->tableName()][$field]) && is_array($translations[$this->tableName()][$field])) {
-			    foreach($translations[$this->tableName()][$field] as $k => $v) {
+			if (isset($translations[$table][$field]) && is_array($translations[$table][$field])) {
+			    foreach($translations[$table][$field] as $k => $v) {
 			        $fieldinfo[$k] = $v;
 			    }
 			}
@@ -7011,6 +7035,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				return $qr_res->get('log_datetime');
 			} 
 			return array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
@@ -7055,6 +7080,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if ($qr_res->nextRow()) {
 			$vn_last_change_timestamp = $qr_res->get('log_datetime');
 			$va_last_change_info = array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
