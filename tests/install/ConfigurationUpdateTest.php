@@ -217,6 +217,12 @@ class ConfigurationUpdateTest extends TestCase {
 		$t_element = new ca_metadata_elements();
 		$this->assertFalse($t_element->load(['element_code' => 'new_element_test', 'deleted' => 0]));
 		$this->assertFalse($t_element->load(['element_code' => 'dates_description', 'deleted' => 0]));
+		
+		// Cleanup
+		$t_element->load(['element_code' => 'new_element_test']);
+		$t_element->delete(true, ['hard' => true]);
+		$t_element->load(['element_code' => 'dates_description']);
+		$t_element->delete(true, ['hard' => true]);
 	}
 
 	public function testEditElementExistingContainer() {
