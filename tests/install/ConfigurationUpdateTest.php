@@ -52,7 +52,6 @@ class ConfigurationUpdateTest extends TestCase {
 		$this->assertGreaterThan(0, ($vn_locale_id = $t_locale->localeCodeToID('fk_FK')));
 
 		$t_locale->load($vn_locale_id);
-		$t_locale->setMode(ACCESS_WRITE);
 		$t_locale->delete();
 	}
 
@@ -68,7 +67,6 @@ class ConfigurationUpdateTest extends TestCase {
 		$t_locale->load($vn_locale_id);
 		$this->assertFalse((bool) $t_locale->get('dont_use_for_cataloguing'));
 
-		$t_locale->setMode(ACCESS_WRITE);
 		$t_locale->set('dont_use_for_cataloguing', 1);
 		$t_locale->update();
 		$this->assertTrue((bool) $t_locale->get('dont_use_for_cataloguing'));

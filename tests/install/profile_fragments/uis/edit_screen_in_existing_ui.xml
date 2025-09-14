@@ -13,7 +13,7 @@
         </label>
       </labels>
       <screens>
-        <screen idno="links" default="0">
+        <screen idno="links" default="0" rank="10">
           <labels>
             <label locale="en_US">
               <name>Edit old links screen</name>
