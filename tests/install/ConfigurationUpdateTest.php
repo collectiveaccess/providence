@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,7 +52,7 @@ class ConfigurationUpdateTest extends TestCase {
 		$this->assertGreaterThan(0, ($vn_locale_id = $t_locale->localeCodeToID('fk_FK')));
 
 		$t_locale->load($vn_locale_id);
-		$t_locale->delete();
+		$t_locale->delete(true, ['hard' => true]);
 	}
 
 	public function testUpdateLocale() {
@@ -83,7 +83,7 @@ class ConfigurationUpdateTest extends TestCase {
 		$t_item = new ca_list_items($vn_item_id);
 		$this->assertEquals('Test', $t_item->get('ca_list_items.preferred_labels'));
 		$t_item->setMode(ACCESS_WRITE);
-		$this->assertTrue($t_item->delete(true, array('hard' => true)));
+		$this->assertTrue($t_item->delete(true, ['hard' => true]));
 	}
 
 	public function testEditItemInExistingList() {
@@ -122,7 +122,7 @@ class ConfigurationUpdateTest extends TestCase {
 
 		$t_item = new ca_list_items($vn_item_id);
 		$t_item->setMode(ACCESS_WRITE);
-		$t_item->delete(true, array('hard'=>true));
+		$t_item->delete(true, ['hard'=>true]);
 
 		$this->assertGreaterThan(0, ($vn_item_id = caGetListItemID('diff_test_list', 'test_item_two', array('dontCache' => true))));
 	}
@@ -215,8 +215,8 @@ class ConfigurationUpdateTest extends TestCase {
 		$o_installer->processMetadataElements();
 
 		$t_element = new ca_metadata_elements();
-		$this->assertFalse($t_element->load(array('element_code' => 'new_element_test')));
-		$this->assertFalse($t_element->load(array('element_code' => 'dates_description')));
+		$this->assertFalse($t_element->load(['element_code' => 'new_element_test', 'deleted' => 0]));
+		$this->assertFalse($t_element->load(['element_code' => 'dates_description', 'deleted' => 0]));
 	}
 
 	public function testEditElementExistingContainer() {
@@ -272,7 +272,7 @@ class ConfigurationUpdateTest extends TestCase {
 		$this->assertEquals('Add another name', $va_label_placement['settings']['add_label']['en_US']);
 
 		$t_ui->setMode(ACCESS_WRITE);
-		$t_ui->delete(true, array('hard' => true));
+		$t_ui->delete(true, ['hard' => true]);
 	}
 
 	public function testAddScreenToExistingUI() {
@@ -300,7 +300,7 @@ class ConfigurationUpdateTest extends TestCase {
 
 		$this->assertEquals('Idno', $va_idno_placement['settings']['label']['en_US']);
 		$t_screen->setMode(ACCESS_WRITE);
-		$t_screen->delete(true, array('hard' => true));
+		$t_screen->delete(true, ['hard' => true]);
 	}
 
 	public function testEditScreenInExistingUI() {
