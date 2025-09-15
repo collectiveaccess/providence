@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -332,6 +332,18 @@ final class ConfigurationCheck {
 		$vs_media_root = self::$opo_config->get("ca_media_root_dir");
 		if(!file_exists($vs_media_root) || !is_writable($vs_media_root)){
 			self::addError(_t("It looks like the media directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$vs_media_root));
+		}
+		return true;
+	}
+	# -------------------------------------------------------
+	public static function fontDirQuickCheck() {
+		$font_path = __CA_APP_DIR__."/fonts";
+		$pdf = new PDFRenderer();
+		$renderer = $pdf->getCurrentRendererCode();
+		
+		// domPDF needs to write to app/fonts
+		if(($renderer === 'domPDF') && (!file_exists($font_path) || !is_writable($font_path))){
+			self::addError(_t("It looks like the font directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$font_path));
 		}
 		return true;
 	}

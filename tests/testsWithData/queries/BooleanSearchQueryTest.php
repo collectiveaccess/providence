@@ -31,13 +31,13 @@
  */
 use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTestClass.php');
 
 /**
  * Class BooleanSearchQueryTest
  * Note: Requires testing profile!
  */
-class BooleanSearchQueryTest extends AbstractSearchQueryTest {
+class BooleanSearchQueryTest extends AbstractSearchQueryTestClass {
 	# -------------------------------------------------------
 	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly

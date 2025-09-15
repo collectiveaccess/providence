@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,7 +57,6 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		$vn_locale_id = 1;
 
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 
 		$vn_item_id = 0;
 		foreach($va_object_types as $va_object_type) {
@@ -128,31 +127,25 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 	 * Prepopulate feature tests
 	 */
 	public function testPrepopulateFieldsSimple() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('test123', $vs_get, 'description must match idno after prepopulation');
 	}
 
 	public function testPrepopulateFieldsSimpleOverwriteValue() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
@@ -161,23 +154,21 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'description');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('test123', $vs_get, 'description should have been overwritten');
 	}
 
 	public function testPrepopulateFieldsSimpleSkipType() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'moving_image');
 		$t_object->set('idno', 'test123');
 
@@ -186,22 +177,20 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'description');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('a description', $vs_get, 'description must not change');
 	}
 
 	public function testPrepopulateFieldsSimpleSkipExpression() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'skipThis');
 
@@ -210,22 +199,20 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'description');
 
 		$t_object->insert();
-
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
+		
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
 		$this->assertEquals('a description', $vs_get, 'description must not change');
 	}
 
 	public function testPrepopulateFieldsDontOverwrite() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_dont_overwrite.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
@@ -234,26 +221,26 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'internal_notes');
 
 		$t_object->insert();
-
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_dont_overwrite.conf');
+		
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.internal_notes');
 		$this->assertEquals('a note', $vs_get, 'internal_notes must not change');
 	}
 
 	public function testPrepopulateFieldsIntrinsic() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_intrinsic.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_intrinsic.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
@@ -265,23 +252,21 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.idno');
 		$this->assertEquals('a label', $vs_get, 'label should populate idno');
 	}
 
 	public function testPrepopulateFieldsIntrinsicDontOverwrite() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_intrinsic.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
 		$t_object->insert();
-
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_intrinsic.conf');
+		
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 
@@ -292,18 +277,14 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.idno');
 		$this->assertEquals('test123', $vs_get, 'idno should not change');
 	}
 
 	public function testPrepopulateFieldsLabels() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 
 		$t_object->addAttribute(array(
@@ -311,21 +292,19 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'description');
 
 		$t_object->insert();
-
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels.conf');
+		
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('Description', $t_object->get('ca_objects.preferred_labels'), 'label must prepopulate with description');
 	}
 
 	public function testPrepopulateFieldsLabelsDontOverwrite() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 
 		$t_object->addAttribute(array(
@@ -333,6 +312,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'description');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
@@ -344,16 +325,12 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must not prepopulate because mode is addifempty');
 	}
 
 	public function testPrepopulateFieldsLabelsOverwrite() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels_overwrite.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 
 		$t_object->addAttribute(array(
@@ -361,6 +338,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'description');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels_overwrite.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
@@ -372,35 +351,29 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
 
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 		$this->assertEquals('Description', $t_object->get('ca_objects.preferred_labels'), 'label must overwrite');
 	}
 
 	public function testPrepopulateFieldsContainers() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate with idno');
 	}
 
 	public function testPrepopulateFieldsDontOverwriteContainers() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
@@ -410,22 +383,20 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'external_link');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('Wikipedia', $t_object->get('ca_objects.external_link.url_source'), 'url source must not change');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
 	}
 
 	public function testPrepopulateFieldsOverwritePartOfContainer() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
@@ -434,22 +405,20 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'external_link');
 
 		$t_object->insert();
+		
+		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
 	}
 
 	public function testPrepopulateFieldsOverwriteContainer() {
-		// load config
-		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container_overwrite.conf');
-
 		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
 		$t_object->set('type_id', 'image');
 		$t_object->set('idno', 'test123');
 
@@ -459,11 +428,13 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 		), 'external_link');
 
 		$t_object->insert();
+		
+		$prepopulate_options = ['instance' => &$t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container_overwrite.conf'];
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($t_object, $va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
@@ -480,7 +451,6 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 	protected function tearDown() : void {
 		foreach($this->opa_test_record_ids as $vs_table => $va_record_ids) {
 			$t_instance = Datamodel::getInstance($vs_table);
-			$t_instance->setMode(ACCESS_WRITE);
 
 			foreach($va_record_ids as $vn_record_id) {
 				$t_instance->load($vn_record_id);

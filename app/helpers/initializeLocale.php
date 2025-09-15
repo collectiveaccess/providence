@@ -71,7 +71,7 @@
 		
         // If the locale is valid, locale is set
         $_locale = new Zend_Locale($ps_locale);
-        Zend_Registry::set('Zend_Locale', $_locale);
+      //  Zend_Registry::set('Zend_Locale', $_locale);
             
         if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
             Zend_Translate::setCache($o_cache);

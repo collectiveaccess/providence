@@ -239,7 +239,9 @@ class MultipartIDNumber extends IDNumber {
 
 		$sep = $this->getSeparator();
 		$pv = $this->getParentValue();
-		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv.$sep, '!').'!u', $value)) {
+		$element_types = array_values(array_map(function($e) { return $e['type'] ?? null; }, $elements));
+		
+		if((strlen($pv) > 0) && preg_match('!^'.preg_quote($pv.$sep, '!').'!u', $value) && (in_array('PARENT', $element_types, true))) {
 			$npv  = preg_replace('!^'.preg_quote($pv.$sep, '!').'!u', '', $value);
 			$element_vals = $sep ? explode($sep, $npv) : [$npv];
 			array_unshift($element_vals, $pv);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,13 +59,11 @@ class LabelTest extends TestCase {
 			print "ERROR inserting object: ".join(" ",$this->object->getErrors())."\n";
 		}
 
-		
-
 		$this->assertInstanceOf('ca_objects', $this->object);
 	}
 	# -------------------------------------------------------
 	protected function tearDown() : void {
-		$this->object->delete(true);
+		$this->object->delete(true, ['hard' => true]);
 	}
 	# -------------------------------------------------------
 	public function testAddLabel(){

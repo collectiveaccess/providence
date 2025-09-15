@@ -2413,7 +2413,6 @@ select.searchSetSelect {
 	text-decoration: none;
 	font-weight: normal;
 	color: #333;
-	text-transform:capitalize;
 	margin-bottom: 8px;
 }
 a#hideRefine {
@@ -8207,4 +8206,8 @@ div.anonymousAccessUrl, div.anonymousAccessDownloads {
 span.anonymousAccessUrlLabel {
 	font-size: 12px;
 	font-weight: bold;
+}
+
+li p {
+	padding: 0 !important;
 }
