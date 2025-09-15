@@ -3147,7 +3147,7 @@
         <setting name="fieldHeight">4</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
-        <setting name="doesNotTakeLocale">1</setting>
+        <setting name="doesNotTakeLocale">0</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">

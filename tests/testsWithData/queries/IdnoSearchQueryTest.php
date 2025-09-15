@@ -90,8 +90,8 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTestClass {
 			'ca_objects.idno:"D.99/2-38"' => 1,
 			'ca_objects.idno:"D.99/2-39"' => 1,
 			'ca_objects.idno:"D.99/2-40"' => 0,
-			'ca_objects.idno:"D.99/2-"' => 0,
-			//'ca_objects.idno:D.99*' => 3, oops, this doesn't work in SqlSearch	
+			'ca_objects.idno:"D.99/2"' => 0,
+			'ca_objects.idno:D.99*' => 3, 
 			'ca_objects.idno:2016*' => 1,
 
 			'ca_objects.idno:"D.99"' => 3,
