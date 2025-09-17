@@ -247,7 +247,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			if(sizeof($va_tmp) == 3) { /// value is already in desired format (from autocomplete lookup)
 				if ($va_tmp[2]) {	// Skip if no url set (is "no match" message)
 					// get extra indexing info for this uri from plugin implementation
-					$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+					if(!($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) { 
+						continue; 
+					}
 					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_tmp[0]);
 					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_tmp[2]);
 					$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_tmp[2]);
