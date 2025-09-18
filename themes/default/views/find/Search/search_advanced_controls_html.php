@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2021 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 $vs_type_id_form_element = '';
 if ( $vn_type_id = intval( $this->getVar( 'type_id' ) ) ) {
 	$vs_type_id_form_element = '<input type="hidden" name="type_id" value="' . $vn_type_id . '"/>';
@@ -103,7 +102,6 @@ if ( ! $this->request->isAjax() ) {
 	<?php
 }
 ?>
-
 <script type="text/javascript">
 	function caSaveSearch(form_id, label, field_names) {
 		var vals = {};

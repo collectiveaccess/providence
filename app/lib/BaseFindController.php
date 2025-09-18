@@ -746,10 +746,10 @@ class BaseFindController extends ActionController {
 				$va_values[$vs_fld] = $this->request->getParameter(str_replace('.', '_', $vs_fld), pString);
 			}	
 		}
-		
 		$va_values['_label'] = $this->request->getParameter('_label', pString);
+		$va_values['search'] = $this->request->getParameter('search', pString);
 		$va_values['_form_id'] = $this->request->getParameter('_form_id', pString);
-		
+
 		if ($vs_md5 = $this->request->user->addSavedSearch($this->ops_tablename, $this->ops_find_type, $va_values)) {
 			$this->view->setVar('md5', $vs_md5);
 			$this->view->setVar('label', $va_values['_label']);
@@ -767,12 +767,12 @@ class BaseFindController extends ActionController {
 	 * 
 	 */ 
 	public function doSavedSearch() {
-		if ($va_saved_search = $this->request->user->getSavedSearchByKey($this->ops_tablename, $this->ops_find_type, $this->request->getParameter('saved_search_key', pString))) {
-			$vs_label = $va_saved_search['_label'];
-			unset($va_saved_search['_label']);
-			$vn_form_id = $va_saved_search['_form_id'];
-			unset($va_saved_search['_form_id']);
-			$this->Index(array('saved_search' => $va_saved_search, 'form_id' => $vn_form_id));
+		if ($saved_search = $this->request->user->getSavedSearchByKey($this->ops_tablename, $this->ops_find_type, $k=$this->request->getParameter('saved_search_key', pString))) {
+			$label = $saved_search['_label'] ?? null;
+			unset($saved_search['_label']);
+			$form_id = $saved_search['_form_id'] ?? null;
+			unset($saved_search['_form_id']);
+			$this->Index(['saved_search' => $saved_search, 'form_id' => $form_id]);
 			return;
 		}
 		
