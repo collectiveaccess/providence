@@ -168,7 +168,28 @@ foreach($list as $placement_id => $info) {
 		}
 
 	} elseif ($display_text = $t_display->getDisplayValue($t_item, $placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : array()))) {
+		
+		// check if $display_text contains a music score
+		if(strpos($display_text, '<div class="verovio_summary">') !== false) {
+			// if it does, we need to replace the div with the actual image
+			preg_match('/src="([^"]*)"/i', $display_text, $matches);
+			if($matches[1]) {
+				// Add the field label
+				$textrun = $contentCell->createTextRun();
+				if ($this->request->config->get('report_include_labels_in_docx_output')) {
+					$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+				}
 
+				// Add the image
+				$contentCell->addImage(
+					$matches[1],
+					array('width' => 300)
+				);
+			}
+			continue; // skip to the next iteration
+		} 
+
+		// Normal text field
 		$textrun = $contentCell->createTextRun();
 		
 		if ($this->request->config->get('report_include_labels_in_docx_output')) {
