@@ -359,7 +359,7 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$vs_element = '<div '._caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, null)]).'>';
-		$vs_element .= '<div>{{'.$pa_element_info['element_id'].'}}</div>';
+		$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
 		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Upload").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
 
 		if(caGetOption('forSimpleForm', $pa_options, false)) {
