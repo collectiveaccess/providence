@@ -1397,7 +1397,7 @@ div.formLabelUploadSizeNote {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	width: 40%;
+	width: auto;
 	vertical-align:bottom;
 	padding-bottom:5px;
 }
