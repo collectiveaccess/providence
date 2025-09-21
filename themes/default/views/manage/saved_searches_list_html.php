@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,110 +25,120 @@
  *
  * ----------------------------------------------------------------------
  */ 
- 	$va_saved_searches = $this->getVar('saved_searches');
-	if(sizeof($va_saved_searches) > 0){
+$saved_searches = $this->getVar('saved_searches');
+if(sizeof($saved_searches) > 0){
 ?>
-		<script language="JavaScript" type="text/javascript">
-		/* <![CDATA[ */
-			jQuery(document).ready(function(){
-				jQuery('#caItemList').caFormatListTable();
-			});
-		/* ]]> */
-		</script>
-		<div class="sectionBox">
+	<script language="JavaScript" type="text/javascript">
+	/* <![CDATA[ */
+		jQuery(document).ready(function(){
+			jQuery('#caItemList').caFormatListTable();
+		});
+	/* ]]> */
+	</script>
+	<div class="sectionBox">
 <?php
-	print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
-			'',
-			"<a href='#' onclick='jQuery(\"#SavedSearchesListForm\").attr(\"action\", \"".caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete')."\").submit();' class='form-button'><span class='delete'>".caNavIcon(__CA_NAV_ICON_DELETE__, 2)." "._t('Delete selected')."</span></a>"
-		); 
+print caFormControlBox(
+		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+		'',
+		"<a href='#' onclick='jQuery(\"#SavedSearchesListForm\").attr(\"action\", \"".caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete')."\").submit();' class='form-button'><span class='delete'>".caNavIcon(__CA_NAV_ICON_DELETE__, 2)." "._t('Delete selected')."</span></a>"
+	); 
 ?>
-			<form id="SavedSearchesListForm">
-			
-			<table id="caItemList" class="listtable">
-				<thead>
+		<form id="SavedSearchesListForm">
+		
+		<table id="caItemList" class="listtable">
+			<thead>
+				<tr>
+					<th class="list-header-unsorted">
+						<?= _t('Table'); ?>
+					</th>
+					<th class="list-header-unsorted">
+						<?= _t('Search Type'); ?>
+					</th>
+					<th class="list-header-unsorted">
+						<?= _t('Search term/name'); ?>
+					</th>
+					<th class="{sorter: false} list-header-nosort listtableEdit"><input type='checkbox' name='record' value='' id='savedSearchesSelectAllControl' class='' onchange="jQuery('.savedSearchesControl').prop('checked', jQuery('#savedSearchesSelectAllControl').is(':checked') ? true : false);"/></th>
+				</tr>
+			</thead>
+			<tbody>
+<?php
+		foreach($saved_searches as $table => $searches){
+			$controller = "Search";			
+			switch($table){
+				case "ca_objects":
+					$display_table = _t("Objects");
+					$controller .= "Objects";
+				break;
+				# ------------------------
+				case "ca_entities":
+					$display_table = _t("Entities");
+					$controller .= "Entities";
+				break;
+				# ------------------------
+				case "ca_places":
+					$display_table = _t("Places");
+					$controller .= "Places";
+				break;
+				# ------------------------
+				case "ca_object_lots":
+					$display_table = _t("Object Lots");
+					$controller .= "ObjectLots";
+				break;
+				# ------------------------
+				case "ca_storage_locations":
+					$display_table = _t("Storage Locations");
+					$controller .= "StorageLocations";
+				break;
+				# ------------------------
+				case "ca_collections":
+					$display_table = _t("Collections");
+					$controller .= "Collections";
+					break;
+				# ------------------------
+				case "ca_occurrences":
+					$display_table = _t("Occurrences");
+					$controller .= "Occurrences";
+					break;
+				# ------------------------
+			}
+			foreach($searches as $search_type => $search_info){
+				if (sizeof($search_info) > 0) {
+					foreach(array_reverse($search_info) as $key => $search) {
+					$search = strip_tags($search['_label']);
+					
+					$opts = [];
+					switch($search_type) {
+						case 'advanced_search':
+							$opts['returnAdvanced'] = true;
+							break;
+						case 'search_builder':
+							$opts['returnBuilder'] = true;
+							break;
+					}
+					$bits = caSearchUrl($this->request, $table, $search, true, null, $opts);						
+?>
 					<tr>
-						<th class="list-header-unsorted">
-							<?= _t('Table'); ?>
-						</th>
-						<th class="list-header-unsorted">
-							<?= _t('Search Type'); ?>
-						</th>
-						<th class="list-header-unsorted">
-							<?= _t('Search term/name'); ?>
-						</th>
-						<th class="{sorter: false} list-header-nosort listtableEdit"><input type='checkbox' name='record' value='' id='savedSearchesSelectAllControl' class='' onchange="jQuery('.savedSearchesControl').attr('checked', jQuery('#savedSearchesSelectAllControl').attr('checked'));"/></th>
+						<td>
+							<?= $display_table; ?>
+						</td>
+						<td>
+							<?= str_replace("_", " ", $search_type); ?>
+						</td>
+						<td>
+							<?= caNavLink($this->request, $search, "", "find", $bits['controller'], 'doSavedSearch', ["saved_search_key" => $key]); ?>
+						</td>
+						<td class="listtableEdit">
+							<input type="checkbox" class="savedSearchesControl" name="saved_search_id[]" value="<?= $table."-".$search_type."-".$key; ?>">
+						</td>
 					</tr>
-				</thead>
-				<tbody>
 <?php
-			foreach($va_saved_searches as $vs_table => $va_searches){
-				$vs_controller = "Search";			
-				switch($vs_table){
-					case "ca_objects":
-						$vs_display_table = _t("Objects");
-						$vs_controller .= "Objects";
-					break;
-					# ------------------------
-					case "ca_entities":
-						$vs_display_table = _t("Entities");
-						$vs_controller .= "Entities";
-					break;
-					# ------------------------
-					case "ca_places":
-						$vs_display_table = _t("Places");
-						$vs_controller .= "Places";
-					break;
-					# ------------------------
-					case "ca_object_lots":
-						$vs_display_table = _t("Object Lots");
-						$vs_controller .= "ObjectLots";
-					break;
-					# ------------------------
-					case "ca_storage_locations":
-						$vs_display_table = _t("Storage Locations");
-						$vs_controller .= "StorageLocations";
-					break;
-					# ------------------------
-					case "ca_collections":
-						$vs_display_table = _t("Collections");
-						$vs_controller .= "Collections";
-						break;
-					# ------------------------
-					case "ca_occurrences":
-						$vs_display_table = _t("Occurrences");
-						$vs_controller .= "Occurrences";
-						break;
-					# ------------------------
-				}
-				foreach($va_searches as $vs_search_type => $va_search_info){
-					if (sizeof($va_search_info) > 0) {
-						foreach(array_reverse($va_search_info) as $vs_key => $va_search) {
-						$vs_search = strip_tags($va_search['_label']);
-?>
-						<tr>
-							<td>
-								<?= $vs_display_table; ?>
-							</td>
-							<td>
-								<?= str_replace("_", " ", $vs_search_type); ?>
-							</td>
-							<td>
-								<?= caNavLink($this->request, $vs_search, "", "find", $vs_controller.(($vs_search_type == "advanced_search") ? "Advanced": ""), 'doSavedSearch', array("saved_search_key" => $vs_key)); ?>
-							</td>
-							<td class="listtableEdit">
-								<input type="checkbox" class="savedSearchesControl" name="saved_search_id[]" value="<?= $vs_table."-".$vs_search_type."-".$vs_key; ?>">
-							</td>
-						</tr>
-<?php
-						}
 					}
 				}
 			}
+		}
 ?>
-				</tbody>
-			</table></form>
-		</div><!-- end sectionBox -->
+			</tbody>
+		</table></form>
+	</div><!-- end sectionBox -->
 <?php
-	}
-?>
+}
