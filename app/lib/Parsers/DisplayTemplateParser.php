@@ -204,10 +204,10 @@ class DisplayTemplateParser {
 		}
 
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
+		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
+		
 		$qr_res->doHighlighting($do_highlighting);
 		$qr_res->autoConvertLineBreaks($autoconvert_linebreaks);
-		
-		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
         $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, null));
 
