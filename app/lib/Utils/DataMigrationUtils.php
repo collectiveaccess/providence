@@ -545,6 +545,13 @@ class DataMigrationUtils {
 		global $g_ui_locale;
 		$text = $original_text = trim(preg_replace("![ ]+!", " ", $text));
 		
+		// check for trailing year or years
+		$date = null;
+		if (caGetOption('parseDateSuffix', $options, true) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
+			$date = $matches[1];
+			$text = trim(str_replace($matches[0], '', $text));
+		}
+		
 		if (caGetOption('doNotParse', $options, false)) {
 			return [
 				'forename' => '', 'middlename' => '', 'surname' => $text,
@@ -625,12 +632,6 @@ class DataMigrationUtils {
 				$prefix_for_name = $matches[1];
 				$text = str_replace($matches[1], '', $text);
 			}
-		}
-		// check for trailing year or years
-		$date = null;
-		if (caGetOption('parseDateSuffix', $options, false) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
-			$date = $matches[1];
-			$text = trim(str_replace($matches[0], '', $text));
 		}
 		
 		// check for suffixes

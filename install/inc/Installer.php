@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2024 Whirl-i-Gig
+ * Copyright 2011-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,6 +137,14 @@ class Installer {
 			$this->log = new \KLogger(__CA_BASE_DIR__ . '/app/log', \KLogger::DEBUG);
 			$this->logging_status = true;
 		}
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 * @return Db
+	 */
+	public function getDb() {
+		return $this->db;
 	}
 	# --------------------------------------------------
 	/**
@@ -1107,7 +1115,7 @@ class Installer {
 				$t_ui_screens->set('idno',$screen_idno);
 				$t_ui_screens->set('ui_id', $ui_id);
 				$t_ui_screens->set('is_default', $is_default);
-				$t_ui_screens->set('rank', $rank);
+				$t_ui_screens->set('rank', $screen["rank"] ?? $rank);
 				if ($color = $screen["color"]) { $t_ui_screens->set('color', $color); }
 
 				if($t_ui_screens->getPrimaryKey()) {

@@ -837,7 +837,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $pa_data_types array Optional list of element data types to filter on.
 	 * @param $options Options include:
 	 *		useDisambiguationLabels = 
-	 *		deletedOnly = return deleted elements only. [Default is false
+	 *		deletedOnly = return deleted elements only. [Default is false]
 	 *
 	 * @return array A List of elements. Each list item is an array with keys set to field names; there is one additional value added with key "display_label" set to the display label of the element in the current locale
 	 */
@@ -1645,11 +1645,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @return ca_metadata_elements|mixed|null
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	static public function getInstance($pm_element_code_or_id) {
+	static public function getInstance($pm_element_code_or_id, ?array $options=null) {
 		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
-		if(MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
+		if(!caGetOption('noCache', $options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
 			return MemoryCache::fetch($pm_element_code_or_id, 'ElementInstances');
 		}
 

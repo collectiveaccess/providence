@@ -1273,12 +1273,12 @@ function caFileIsIncludable($ps_file) {
 	 * format needed for calculations (eg 54.33)
 	 *
 	 * @param string $ps_value The value to convert
-	 * @param string $ps_locale The locale of the value
+	 * @param string $locale The locale of the value
 	 * @return float The converted value
 	 */
-	function caConvertLocaleSpecificFloat($ps_value, $ps_locale = "en_US") {
+	function caConvertLocaleSpecificFloat($ps_value, $locale="en_US") {
 		try {
-			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $ps_locale));
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
 		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
 			return floatval($ps_value);
 		}
@@ -1292,7 +1292,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $locale Which locale is to be used to return the value
 	 * @return float The converted value
 	 */
-	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
+	function caConvertFloatToLocale($pn_value, $locale="en_US") {
 		try {
 			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
 		} catch (Zend_Locale_Exception $e) {
@@ -2981,15 +2981,15 @@ function caFileIsIncludable($ps_file) {
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 2]);
+				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = null;
 			}
 		} catch (Zend_Locale_Exception $e){

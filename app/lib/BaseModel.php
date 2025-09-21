@@ -7035,6 +7035,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				return $qr_res->get('log_datetime');
 			} 
 			return array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
@@ -7079,6 +7080,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if ($qr_res->nextRow()) {
 			$vn_last_change_timestamp = $qr_res->get('log_datetime');
 			$va_last_change_info = array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),

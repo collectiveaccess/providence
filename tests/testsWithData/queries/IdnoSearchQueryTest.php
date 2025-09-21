@@ -31,13 +31,13 @@
  */
  use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTestClass.php');
 
 /**
  * Class IdnoSearchQueryTest
  * Note: Requires testing profile!
  */
-class IdnoSearchQueryTest extends AbstractSearchQueryTest {
+class IdnoSearchQueryTest extends AbstractSearchQueryTestClass {
 	# -------------------------------------------------------
 	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly
@@ -90,8 +90,8 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.idno:"D.99/2-38"' => 1,
 			'ca_objects.idno:"D.99/2-39"' => 1,
 			'ca_objects.idno:"D.99/2-40"' => 0,
-			'ca_objects.idno:"D.99/2-"' => 0,
-			//'ca_objects.idno:D.99*' => 3, oops, this doesn't work in SqlSearch	
+			'ca_objects.idno:"D.99/2"' => 0,
+			'ca_objects.idno:D.99*' => 3, 
 			'ca_objects.idno:2016*' => 1,
 
 			'ca_objects.idno:"D.99"' => 3,

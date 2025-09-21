@@ -1397,7 +1397,7 @@ div.formLabelUploadSizeNote {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	width: 40%;
+	width: auto;
 	vertical-align:bottom;
 	padding-bottom:5px;
 }
@@ -2414,7 +2414,6 @@ select.searchSetSelect {
 	padding-bottom: 8px;
 	border-bottom: 2px solid #ddd;
 	margin-right: 10px;
-	text-decoration: none;
 	font-weight: normal;
 	color: #333;
 	margin-bottom: 8px;
