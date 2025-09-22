@@ -215,7 +215,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 				<script type=\"module\">
 					import {
 						InlineEditor,
-					 	ClassicEditor, 
+						ClassicEditor, 
 						BlockQuote, 
 						BlockToolbar, 
 						Bold, 
@@ -226,7 +226,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 						FontColor, 
 						FontFamily, 
 						FontSize, 
-					 	GeneralHtmlSupport, 
+						GeneralHtmlSupport, 
 						Heading, 
 						Highlight, 
 						HtmlComment, 
@@ -239,7 +239,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 						ImageStyle, 
 						ImageTextAlternative, 
 						ImageToolbar, 
-					 	Indent, 
+						Indent, 
 						IndentBlock, 
 						Italic, 
 						Link, 
@@ -254,7 +254,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 						SourceEditing, 
 						SpecialCharacters, 
 						SpecialCharactersArrows, 
-					 	SpecialCharactersCurrency, 
+						SpecialCharactersCurrency, 
 						SpecialCharactersEssentials, 
 						SpecialCharactersLatin, 
 						SpecialCharactersMathematical, 
@@ -268,6 +268,8 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 						Undo
 					} from 'ckeditor5';
 				
+					import { ResizableHeight } from 'ckresizeable';
+
 					ClassicEditor.create( document.querySelector( '#{$name}' ), {
 						plugins: [ 
 							BlockQuote, 
@@ -291,11 +293,36 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 							ImageInsertViaUrl, 
 							ImageResize, 
 							ImageStyle, 
-							ImageTextAlternative, ImageToolbar, 
-								Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, MediaEmbed, 
-								Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
-								SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
-								SpecialCharactersText, Strikethrough, Subscript, Superscript, TextTransformation, TodoList, Underline, Undo
+							ImageTextAlternative, 
+							ImageToolbar, 
+							Indent, 
+							IndentBlock, 
+							Italic, 
+							Link, 
+							LinkImage, 
+							List, 
+							ListProperties, 
+							MediaEmbed, 
+							Paragraph, 
+							PasteFromOffice, 
+							RemoveFormat, 
+							ResizeableHeight,
+							SelectAll, 
+							SourceEditing, 
+							SpecialCharacters, 
+							SpecialCharactersArrows, 
+							SpecialCharactersCurrency, 
+							SpecialCharactersEssentials, 
+							SpecialCharactersLatin, 
+							SpecialCharactersMathematical, 
+							SpecialCharactersText, 
+							Strikethrough, 
+							Subscript, 
+							Superscript, 
+							TextTransformation, 
+							TodoList, 
+							Underline, 
+							Undo
 							],
 							toolbar: {
 								items: ".json_encode($toolbar).",
@@ -312,6 +339,12 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 									'|',
 									'resizeImage'
 								]
+							},
+							ResizableHeight: {
+								resize: true,
+								height: '{$height_w_suffix}',
+								minHeight: '50px',
+								maxHeight: '1500px'
 							}
 						} ).then(editor => {
 								// Add current instance to list of initialized editors
@@ -324,13 +357,13 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 							
 				
 				$attr_string = _caHTMLMakeAttributeString($attributes, $options);			
-				$element .= "<div id=\"{$name}_container\" style='width: {$width}px; height: {$height}px; overflow-y: auto;'>
+				$element .= "<div id=\"{$name}_container\">
 					<{$tag_name} name=\"{$name}\" id=\"{$name}\">{$attributes['value']}</{$tag_name}></div>
-<style>
-#{$name}_container .ck-editor__editable_inline {
-min-height: calc({$height}px - 100px);
-}
-</style>";
+					<style>
+					#{$name}_container .ck-editor__editable_inline {
+					min-height: calc({$height}px - 100px);
+					}
+					</style>";
 				break;
 			case 'quilljs';
 			default:

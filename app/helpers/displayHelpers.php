@@ -6405,6 +6405,7 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		'textcolor' => ['code' => 'fontColor'],
 		'background' => ['code' => 'fontBackgroundColor'],
 		
+		'highlight' => ['code' => 'highlight'],
 		'blockquote' => ['code' => 'blockQuote'],
 		'link' => ['code' => 'link'],
 		'image' => ['code' => 'insertImage'],
@@ -6412,6 +6413,7 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		'formula' => ['code' => 'formula'],
 		'align' => ['code' => 'alignment'],
 		
+		'specialcharacters' => ['code' => 'specialCharacters'],
 		'numberedlist' => ['code' => 'numberedList'],
 		'bulletedlist' => ['code' => 'bulletedList'],
 		'checkList' => ['code' => 'todoList'],
