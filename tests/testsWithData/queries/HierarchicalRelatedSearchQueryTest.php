@@ -31,13 +31,13 @@
  */
  use PHPUnit\Framework\TestCase;
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTestClass.php');
 
 /**
  * Class HierarchicalRelatedSearchQueryTest
  * Note: Requires testing profile!
  */
-class HierarchicalRelatedSearchQueryTest extends AbstractSearchQueryTest {
+class HierarchicalRelatedSearchQueryTest extends AbstractSearchQueryTestClass {
 	# -------------------------------------------------------
 	protected function setUp() : void {
 		// don't forget to call parent so that request is set up correctly

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,19 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vo_result = $this->getVar('result');
-	$vn_items_per_page = $this->getVar('current_items_per_page');
-	
-	if (!$this->request->isAjax()) {
-		print caFormTag($this->request, 'Index', 'PlaceBasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
-			print caFormControlBox(
-				'<div class="simple-search-box">'._t('Search').': <input type="text" id="browseSearch" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
-					caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', array(), 
-					array('href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', 'SearchPlaces', 'Index', array('search' => '')).'" + escape(jQuery("#browseSearch").attr("value"))); return false;')),
-				'',
-				'<a href="#" id="browseToggle" class="form-button"></a>'
-			); 
+$vo_result = $this->getVar('result');
+$t_subject = $vo_result->getInstance();
+$vn_items_per_page = $this->getVar('current_items_per_page');
+
+if (!$this->request->isAjax()) {
+	print caFormTag($this->request, 'Index', 'PlaceBasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
+		print caFormControlBox(
+			'<div class="simple-search-box">'._t('Search').': <input type="text" id="browseSearch" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
+				caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', array(), 
+				array('href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', 'SearchPlaces', 'Index', array('search' => '')).'" + escape(jQuery("#browseSearch").attr("value"))); return false;')),
+			'',
+			'<a href="#" id="browseToggle" class="form-button"></a>'
+		); 
 ?>
 		</form>
 		<div id="browse">
@@ -72,7 +72,6 @@
 			var stateCookieJar = jQuery.cookieJar('caCookieJar');
 			
 			jQuery(document).ready(function() {
-				
 				jQuery('#browseTypeMenu .sf-hier-menu .sf-menu a').click(function() { 
 					jQuery(document).attr('location', jQuery(this).attr('href') + oHierBrowser.getSelectedItemID());	
 					return false;
@@ -88,6 +87,7 @@
 					initItemID: '<?= $this->getVar('browse_last_id'); ?>',
 					indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 					typeMenuID: 'browseTypeMenu',
+					dontAllowEditForFirstLevel: <?= in_array($t_subject->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]) ? '1': '0'; ?>,
 					
 					currentSelectionDisplayID: 'browseCurrentSelection'
 				});
@@ -140,7 +140,6 @@
 			}
 		</script>
 			<!--- END HIERARCHY BROWSER --->
-		<br />
+		<br/>
 <?php
 	}
-?>

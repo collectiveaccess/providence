@@ -57,16 +57,21 @@ $display_list = $this->getVar("display_list");
 	</div>
 	<div class="representationList">		
 	<?php
-		$reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => true]);
+		
+		if($t_display->getSetting("show_representations") == "primary"){
+			print $t_item->get("ca_object_representations.media.medium");
+		}elseif($t_display->getSetting("show_representations") == "all"){
+			$reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => true]);
 
-		foreach($reps as $rep) {
-			if(sizeof($reps) > 1){
-				# more than one rep: show thumbnail version
-				$padding_top = ((120 - $rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
-				print $rep['tags']['thumbnail']."\n";
-			}else{
-				# one rep: show medium version 
-				print $rep['tags']['medium']."\n";
+			foreach($reps as $rep) {
+				if(sizeof($reps) > 1){
+					# more than one rep: show thumbnail version
+					$padding_top = ((120 - $rep["info"]["thumbnail"]["HEIGHT"])/2) + 5;
+					print $rep['tags']['thumbnail']."\n";
+				}else{
+					# one rep: show medium version 
+					print $rep['tags']['medium']."\n";
+				}
 			}
 		}
 	?>

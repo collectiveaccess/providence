@@ -209,7 +209,8 @@ class BrowseEngine extends BaseFindEngine {
 	 */
 	private function _processBrowseSettings() {
 		$va_revised_facets = array();
-		foreach($this->opa_browse_settings['facets'] as $vs_facet_name => $va_facet_info) {
+		$facet_list = $this->getInfoForFacets();
+		foreach($facet_list as $vs_facet_name => $va_facet_info) {
 
 			global $g_ui_locale;
 			if(is_array($va_facet_info['label_singular'] ?? null)) {
@@ -932,10 +933,37 @@ class BrowseEngine extends BaseFindEngine {
 	/**
 	 * Returns list of all facets configured for this for browse subject
 	 *
+	 * @param array $options Options include:
+	 *		normalizeLabelCase = Force case of all facet labels. Possible values are "ucfirst" (initial letter is uppercase), "lowercase" (all lowercase), "uppercase" (all uppercase). [Default is ucfirst]
+	 *
 	 * @return array
 	 */
-	public function getInfoForFacets() {
-		return $this->opa_browse_settings['facets'];
+	public function getInfoForFacets(?array $options=null) {
+		$facet_list = $this->opa_browse_settings['facets'];
+		$normalize = caGetOption('normalizeLabelCase', $options, 'ucfirst', ['forceLowercase' => true]);
+		
+		if($normalize) {
+			$facet_list = array_map(function($v) use ($normalize) {
+				switch($normalize) {
+					case 'uppercase':
+						$v['label_singular'] = mb_strtoupper($v['label_singular'] ?? '');
+						$v['label_plural'] = mb_strtoupper($v['label_plural'] ?? '');
+						break;
+					case 'lowercase':
+						$v['label_singular'] = mb_strtolower($v['label_singular'] ?? '');
+						$v['label_plural'] = mb_strtolower($v['label_plural'] ?? '');
+						break;
+					case 'ucfirst':
+					default:
+						$v['label_singular'] = caUcFirstUTF8Safe($v['label_singular'] ?? '');
+						$v['label_plural'] = caUcFirstUTF8Safe($v['label_plural'] ?? '');
+						break;
+				}
+				return $v;
+			}, $facet_list);
+		}
+		
+		return $facet_list;
 	}
 	# ------------------------------------------------------
 	/**
@@ -946,7 +974,8 @@ class BrowseEngine extends BaseFindEngine {
 	 */
 	public function getInfoForFacet($ps_facet_name) {
 		if (!$this->isValidFacetName($ps_facet_name)) { return null; }
-		$va_facets = array_filter($this->opa_browse_settings['facets'] ?? [], function($v) {
+		$facet_list = $this->getInfoForFacets();
+		$va_facets = array_filter($facet_list ?? [], function($v) {
 			return isset($v['type']);
 		});
 		
@@ -991,7 +1020,8 @@ class BrowseEngine extends BaseFindEngine {
 		//
 		if (is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
 			$va_facets = array();
-			foreach($this->opa_browse_settings['facets'] as $vs_facet_name => $va_facet_info) {
+			$facet_list = $this->getInfoForFacets();
+			foreach($facet_list as $vs_facet_name => $va_facet_info) {
 				if (in_array($vs_facet_name, $va_criteria_facets) && (caGetOption('type', $va_facet_info, null) == 'field')) { continue; }	// fields can only appear once
 				if (isset($va_facet_info['requires']) && !is_array($va_facet_info['requires']) && $va_facet_info['requires']) { $va_facet_info['requires'] = array($va_facet_info['requires']); }
 				//
@@ -1035,8 +1065,9 @@ class BrowseEngine extends BaseFindEngine {
 			// of the specified "required" facets is present in the criteria
 			//
 			$va_facets = array();
-
-			foreach($this->opa_browse_settings['facets'] as $vs_facet_name => $va_facet_info) {
+			
+			$facet_list = $this->getInfoForFacets();
+			foreach($facet_list as $vs_facet_name => $va_facet_info) {
 				if ($g_request && is_array($va_facet_info['requires_roles'] ?? null)) {
 					$roles = array_map(function($v) { return $v['code']; }, $g_request->isLoggedIn() ? $g_request->user->getUserRoles(['skipVars' => true]) : []);
 					
@@ -1089,26 +1120,26 @@ class BrowseEngine extends BaseFindEngine {
 	 */
 	public function getInfoForAvailableFacets() {
 		if (!is_array($this->opa_browse_settings)) { return null; }
-		$va_facets = $this->opa_browse_settings['facets'];
+		$facet_list = $this->getInfoForFacets();
 		$va_facet_with_content = $this->opo_ca_browse_cache->getFacets();
 
 		$vs_facet_group = $this->getFacetGroup();
 
-		unset($va_facets['_search']);
-		foreach($va_facets as $vs_facet_name => $va_facet_info) {
+		unset($facet_list['_search']);
+		foreach($facet_list as $vs_facet_name => $va_facet_info) {
 			if ($vs_facet_group) {
 				if (!(isset($va_facet_info['facet_groups']) && is_array($va_facet_info['facet_groups']) && in_array($vs_facet_group, $va_facet_info['facet_groups']))) {
-					unset($va_facets[$vs_facet_name]);
+					unset($facet_list[$vs_facet_name]);
 					continue;
 				}
 			}
 
 			if (!isset($va_facet_with_content[$vs_facet_name]) || !$va_facet_with_content[$vs_facet_name]) {
-				unset($va_facets[$vs_facet_name]);
+				unset($facet_list[$vs_facet_name]);
 			}
 		}
 
-		return $va_facets;
+		return $facet_list;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1139,13 +1170,13 @@ class BrowseEngine extends BaseFindEngine {
 		}
 
 		if (is_array($va_facets_with_content)) {
-			$va_facets = $this->opa_browse_settings['facets'];
+			$facet_list = $this->getInfoForFacets();
 			$vs_facet_group = $this->getFacetGroup();
 
 			$va_tmp = array();
 			foreach($va_facets_with_content as $vs_facet) {
-				if (($vs_facet_group && $va_facets[$vs_facet]['facet_groups'] && is_array($va_facets[$vs_facet]['facet_groups'])) && (!in_array($vs_facet_group, $va_facets[$vs_facet]['facet_groups']))) { continue; }
-				$va_tmp[$vs_facet] = $va_facets[$vs_facet];
+				if (($vs_facet_group && $facet_list[$vs_facet]['facet_groups'] && is_array($facet_list[$vs_facet]['facet_groups'])) && (!in_array($vs_facet_group, $facet_list[$vs_facet]['facet_groups']))) { continue; }
+				$va_tmp[$vs_facet] = $facet_list[$vs_facet];
 			}
 			return $va_tmp;
 		}
@@ -1374,6 +1405,9 @@ class BrowseEngine extends BaseFindEngine {
 
 														// yes option
 										$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
+										if(($vs_target_browse_table_name !== $vs_rel_table_name) && Datamodel::getFieldInfo($vs_target_browse_table_name, 'deleted')) {
+											$va_wheres[] = "({$vs_target_browse_table_name}.deleted = 0)";
+										}
 										if ($t_rel_item->hasField('deleted')) {
 											$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
 										}
@@ -3353,7 +3387,8 @@ class BrowseEngine extends BaseFindEngine {
 		}
 
 		if (!is_array($this->opa_browse_settings)) { return null; }
-		if (!isset($this->opa_browse_settings['facets'][$ps_facet_name])) { return null; }
+		$facet_list = $this->getInfoForFacets();
+		if (!isset($facet_list[$ps_facet_name])) { return null; }
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vb_check_availability_only = (isset($pa_options['checkAvailabilityOnly'])) ? (bool)$pa_options['checkAvailabilityOnly'] : false;
 
@@ -3361,7 +3396,7 @@ class BrowseEngine extends BaseFindEngine {
 
 		if (!is_array($va_criteria = $this->getCriteria($ps_facet_name))) { $va_criteria = []; }
 
-		$va_facet_info = $this->opa_browse_settings['facets'][$ps_facet_name];
+		$va_facet_info = $facet_list[$ps_facet_name] ?? null;
 		
 		if (is_array($force_access = caGetOption('force_access', $va_facet_info, null))) {
 			$pa_options['checkAccess'] = $force_access;
@@ -3863,14 +3898,18 @@ class BrowseEngine extends BaseFindEngine {
 				}
 
 				if ($t_item->hasField('deleted')) {
-					$va_where_sql[] = "(".$vs_browse_table_name.".deleted = 0)";
+					$va_where_sql[] = "({$vs_browse_table_name}.deleted = 0)";
 					$vb_needs_join = true;
+				}
+				
+				if (in_array($t_item->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__])) {
+					$va_where_sql[] = "({$vs_browse_table_name}.parent_id IS NOT NULL)";
 				}
 
 				if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
 					$va_restrict_to_type_ids = caMakeTypeIDList($vs_browse_table_name, $va_restrict_to_types, array('dont_include_subtypes_in_type_restriction' => true));
 					if (is_array($va_restrict_to_type_ids) && sizeof($va_restrict_to_type_ids)) {
-						$va_where_sql[] = "(".$vs_browse_table_name.".".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids).")".($t_item->getFieldInfo('type_id', 'IS_NULL') ? " OR (".$vs_browse_table_name.'.'.$t_item->getTypeFieldName()." IS NULL)" : '').")";
+						$va_where_sql[] = "({$vs_browse_table_name}.".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids).")".($t_item->getFieldInfo('type_id', 'IS_NULL') ? " OR (".$vs_browse_table_name.'.'.$t_item->getTypeFieldName()." IS NULL)" : '').")";
 						$vb_needs_join = true;
 					}
 				}
@@ -8069,6 +8108,10 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		$vs_cur_table = array_shift($va_path);
 		foreach($va_path as $vs_join_table) {
 			$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
+			
+			if(Datamodel::getFieldInfo($vs_join_table, 'deleted')) {
+				$va_wheres[] = "{$vs_join_table}.deleted = 0";
+			}
 			$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 			$vs_cur_table = $vs_join_table;
 		}

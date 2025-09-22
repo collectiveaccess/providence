@@ -33,7 +33,7 @@ use PHPUnit\Framework\TestCase;
  
 require_once(__CA_APP_DIR__."/helpers/systemHelpers.php");
 
-class SystemHelpersExecTest extends TestCase {
+class SystemHelpersTest extends TestCase {
 	# -------------------------------------------------------
 	public function testExecReturnsValidExitCode() {
 		$status_code = 1;

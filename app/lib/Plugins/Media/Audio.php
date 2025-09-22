@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2024 Whirl-i-Gig
+ * Copyright 2006-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/x-wav"						=> "wav",
 			"audio/x-wave"						=> "wav",
 			"audio/mp4"							=> "mp4",
-			"audio/x-flac"						=> "flac"
+			"audio/x-flac"						=> "flac",
+			"audio/webm"						=> "webm"
 		),
 
 		"EXPORT" => array(
@@ -76,7 +77,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/x-flv"						=> "flv",
 			"image/png"							=> "png",
 			"image/jpeg"						=> "jpg",
-			"audio/x-flac"						=> "flac"
+			"audio/x-flac"						=> "flac",
+			"audio/webm"						=> "webm"
 		),
 
 		"TRANSFORMATIONS" => array(
@@ -130,7 +132,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"audio/mp4"							=> "AAC",
 		"image/png"							=> "PNG",
 		"image/jpeg"						=> "JPEG",
-		"audio/x-flac"						=> "FLAC"
+		"audio/x-flac"						=> "FLAC",
+		"audio/webm"						=> "WEBM"
 	);
 	
 	#
@@ -277,6 +280,12 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
 			} else {
 				$this->metadata = $this->handle;
+			}
+			
+			if(is_array($this->handle["error"])) {
+				if(preg_match("!fragmented mp4!", join(' ', $this->handle["error"]))) { 
+					$this->handle["error"] = [];
+				}
 			}
 		}
 		if (!((isset($this->handle["error"])) && (is_array($this->handle["error"])) && (sizeof($this->handle["error"]) > 0))) {

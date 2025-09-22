@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/plugins/AbstractPluginIntegrationTest.php
+ * tests/plugins/AbstractPluginIntegrationTestClass.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
  * // Force initial setup of plugins so it isn't called later, which will overwrite our manually set up plugin
  * ApplicationPluginManager::initPlugins();
  *
- * class FancyPantsPluginIntegrationTest extend AbstractPluginIntegrationTest {
+ * class FancyPantsPluginIntegrationTest extend AbstractPluginIntegrationTestClass {
  *     public static function setUpBeforeTest() {
  *         self::_init();
  *         self::_processConfiguration(__DIR__ . '/conf/integration', 'conf/fancyPants.conf.template', 'conf/fancyPants.conf');
@@ -62,7 +62,7 @@
  */
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractPluginIntegrationTest extends TestCase {
+abstract class AbstractPluginIntegrationTestClass extends TestCase {
 
 	/**
 	 * The timestamp when the test was initialised, used for generating unique reference data.

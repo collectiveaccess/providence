@@ -63,14 +63,13 @@ AssetLoadManager::register('dashboard');			// adds caUI dashboard library
 </script>
 <div id="dashboardControls">
 	<div id="clearDashboardControl" style="float: left;">
-		<?= caNavLink($this->request, _t('Clear dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'clear', array(), array('id' => 'dashboardClearButton')).
-	    	caNavLink($this->request, _t('Default dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'default', array(), array('id' => 'dashboardDefaultButton')); 
-	    ?>
+		<?= caNavLink($this->request, _t('Default dashboard'), 'button-gray', '', 'Dashboard', 'default', array(), array('id' => 'dashboardDefaultButton')); ?>
 	</div>
 	
-	<a href="#" onclick='caDashboard.editDashboard(1);' class='dashboardControl' id='dashboardEditButton'><?= _t('Edit dashboard'); ?> &rsaquo;</a>
-	<a href="#" onclick='caDashboardWidgetPanel.showWidgetPanel();' class='dashboardControl' id='dashboardAddButton'><?= _t('Add widget'); ?> &rsaquo;</a>
-	<a href="#" onclick='caDashboard.editDashboard(0);' class='dashboardControl' id='dashboardDoneEditingButton'><?= _t('Done'); ?> &rsaquo;</a>
+	<a href="#" onclick='caDashboard.editDashboard(1);' class='button-gray' id='dashboardEditButton'><?= _t('Edit dashboard'); ?></a>
+	<?= caNavLink($this->request, _t('Clear dashboard'), 'button-gray', '', 'Dashboard', 'clear', array(), array('id' => 'dashboardClearButton')); ?> 
+	<a href="#" onclick='caDashboardWidgetPanel.showWidgetPanel();' class='button-gray' id='dashboardAddButton'><?= _t('Add widget'); ?></a>
+	<a href="#" onclick='caDashboard.editDashboard(0);' class='button-gray' id='dashboardDoneEditingButton'><?= _t('Done'); ?></a>
 </div>
 <div class="dashboard">
 	<div class="dashboardWelcomeMessage" id="dashboard_welcome_message"><?= _t('This is your CollectiveAccess dashboard.  Click the "Edit Dashboard" button above to add widgets to your dashboard that will allow you to monitor system activity.  You\'ll see your dashboard whenever you login or  click the CollectiveAccess logo above.'); ?></div>

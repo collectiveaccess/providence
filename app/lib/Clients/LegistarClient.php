@@ -89,7 +89,7 @@ class LegistarClient {
 				
 				break;
 				
-			} catch(Exception $e) {
+			} catch(\Exception $e) {
 				print "[WARNING] Network connection to ".$this->base_url." FAILED; retrying...\n";	
 				$logger->logWarn("When calling {$type} connection FAILED; retry {$retry_count}: {$e}");
 				$retry_count++;

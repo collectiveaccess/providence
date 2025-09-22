@@ -56,7 +56,7 @@
 			if (
 				(!is_array($sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_summary_sort_values')) || !sizeof($sort_fields))
 				&&
-				(!is_array($sort_fields = $t_item->getAppConfig()->get('ca_collections_hierarchy_browser_sort_values')) || !sizeof($sort_fields))
+				(!is_array($sort_fields = caGetHierarchyBrowserSortValues('ca_collections', $t_item))|| !sizeof($sort_fields))
 			) {
 				$sort_fields = ['ca_collections.preferred_labels.name'];
 			}

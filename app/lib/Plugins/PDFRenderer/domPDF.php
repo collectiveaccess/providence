@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -140,8 +140,14 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 	 * @return bool True on success, false if parameters are invalid
 	 */
 	public function setPage($size, $orientation, $margin_top=0, $margin_right=0, $margin_bottom=0, $margin_left=0) {
-		$this->renderer->set_paper($size, $orientation);
-		
+		if (PDFRenderer::isCustomPageSize($size)){
+			if(!is_array($s = PDFRenderer::getPageSize($size, 'px', $orientation))) {
+				throw new ApplicationException(_t('Invalid page size %1', $size));
+			}
+			$this->renderer->set_paper([0, 0, $s['width'], $s['height']]);
+		} else {
+			$this->renderer->set_paper($size, $orientation);
+		}
 		return true;
 	}
 	# ------------------------------------------------

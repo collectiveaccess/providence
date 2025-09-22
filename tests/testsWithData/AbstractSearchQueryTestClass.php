@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/AbstractSearchQueryTest.php
+ * tests/testsWithData/AbstractSearchQueryTestClass.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@ use PHPUnit\Framework\TestCase;
 require_once(__CA_LIB_DIR__.'/Service/ItemService.php');
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
-abstract class AbstractSearchQueryTest extends BaseTestWithData {
+abstract class AbstractSearchQueryTestClass extends BaseTestWithData {
 
 	/**
 	 * @var string Primary search table

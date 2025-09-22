@@ -34,40 +34,37 @@ $hide_zero_counts 		= $this->getVar('hide_zero_counts');
 ?>
 <div class="dashboardWidgetContentContainer" style="font-size:13px; padding-right:10px;">
 <?php
-	print _t("There are").' ';
 	$va_counts = array();
 	$i = 1;
 	foreach($this->getVar('counts') as $vs_table => $count) {
-		if((sizeof($this->getVar('counts')) > 1) && ($i == sizeof($this->getVar('counts')))){
-			 $vs_and = ' '._t("and").' ';
-		}else{
-			$vs_and = "";
-		}
-		
 		if(is_array($count)) { 
 			foreach($count as $type_id => $info) {
 				if($hide_zero_counts && ($info['count'] == 0)) { continue; }
 				$typename = caGetListItemByIDForDisplay($type_id, ['return' => ($info['count'] == 1) ? 'singular' : 'plural']);
-				$va_counts[] = $vs_and."<b><a>".caSearchLink($po_request,$info['count'], '', $vs_table, "{$vs_table}.type_id:".caGetListItemIdno($type_id), ['type_id' => $type_id]).'</a></b>&nbsp;'.$typename;
+				$va_counts[] = "<b><a>".caSearchLink($po_request,$info['count'], '', $vs_table, "{$vs_table}.type_id:".caGetListItemIdno($type_id), ['type_id' => $type_id]).'</a></b>&nbsp;'.$typename;
 			}
 		} else {
 			if($hide_zero_counts && ($count == 0)) { continue; }
 			$link = caSearchLink($po_request, $count, '', $vs_table, '*', ['clearType' => 1]);
 			if ($count == 1) {
-				$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
+				$va_counts[] = "<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
 			} else {
-				$va_counts[] = $vs_and."<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
+				$va_counts[] = "<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
 			}
 			$i++;
 		}
 	}
 	
-	# --- only use a comma to join if there are more than 2 things
-	if((sizeof($va_counts) > 2)){
+	# --- only make a list if there is more than 1 thing
+	if((sizeof($va_counts) > 1)){
+		print "<ul class='disc allowBold'>";
+		foreach($va_counts as $vs_count){
+			print "<li>".$vs_count."</li>";
+		}
+		print "</ul>";
 		$vs_join = ", ";
 	}else{
-		$vs_join = " ";
+		print $va_counts[0];
 	}
-	print implode($vs_join, $va_counts).".";
 ?>
 </div>

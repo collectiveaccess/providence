@@ -164,12 +164,11 @@ class CurrencyAttributeValueTest extends TestCase {
 	public function testWithMultipleDecimalPoints(){
 		$o_val = new CurrencyAttributeValue();
 
-		$va_return = $o_val->parseValue('USD 55.4.563', []);	// everything after second "decimal" is truncated
+		// Old (pre 2.0) behavior was that everything after second "decimal" is truncated
+		// 2.0+ behavior is to consider this invalid and return false
+		$va_return = $o_val->parseValue('USD 55.4.563', []); 
 	
-		$this->assertArrayHasKey('value_longtext1', $va_return);
-		$this->assertArrayHasKey('value_decimal1', $va_return);
-		$this->assertEquals('USD', $va_return['value_longtext1']);
-		$this->assertEquals(55.40, $va_return['value_decimal1']);
+		$this->assertFalse($va_return);
 	}
 
 	public function testWithGarbage(){

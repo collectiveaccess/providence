@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 BaseModel::$s_ca_models_definitions['ca_locales'] = array(
  	'NAME_SINGULAR' 	=> _t('locale'),
  	'NAME_PLURAL' 		=> _t('locales'),
@@ -257,7 +252,6 @@ class ca_locales extends BaseModel {
 	 *
 	 */
 	static public function getLocaleList($pa_options=null) {
-		
 		$vs_sort_field 				= isset($pa_options['sort_field']) ? $pa_options['sort_field'] : '';
 		$vs_sort_direction 			= isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : 'asc';
 		$vb_index_by_code 			= (isset($pa_options['index_by_code']) && $pa_options['index_by_code']) ? true : false;
@@ -279,9 +273,13 @@ class ca_locales extends BaseModel {
 			if(MemoryCache::itemCountForNamespace('LocaleCodeToId') == 0) {
 				foreach($va_locales as $va_locale) {
 					if ($vb_available_for_cataloguing_only && $va_locale['dont_use_for_cataloguing']) { continue; }
-
-					MemoryCache::save(mb_strtolower($va_locale['language'].'_'.$va_locale['country']), $va_locale['locale_id'], 'LocaleCodeToId');
-					MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'], 'LocaleIdToCode');
+					if($va_locale['dialect'] ?? null) {
+						MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'].'_'.$va_locale['dialect'], 'LocaleIdToCode');
+						MemoryCache::save(mb_strtolower($va_locale['language'].'_'.$va_locale['country'].'_'.$va_locale['dialect']), $va_locale['locale_id'], 'LocaleCodeToId');
+					} else {
+						MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'], 'LocaleIdToCode');
+						MemoryCache::save(mb_strtolower($va_locale['language'].'_'.$va_locale['country']), $va_locale['locale_id'], 'LocaleCodeToId');
+					}
 					MemoryCache::save($va_locale['locale_id'], $va_locale['name'], 'LocaleIdToName');
 				}
 			}
@@ -308,6 +306,9 @@ class ca_locales extends BaseModel {
 				$vm_val = $qr_locales->getRow();
 			}
 			$vs_code = ($qr_locales->get('language').'_'.$qr_locales->get('country'));
+			if($dialect = $qr_locales->get('dialect')) {
+				$vs_code .= "_{$dialect}";
+			}
 			$vn_id = $qr_locales->get('locale_id');
 			
 			if (!$vb_return_display_values) {
@@ -442,7 +443,7 @@ class ca_locales extends BaseModel {
 		if(is_numeric($ps_code)) { return (int)$ps_code; }
 		$ps_code = mb_strtolower($ps_code);
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
-			ca_locales::getLocaleList(array('index_by_code' => true));
+			ca_locales::getLocaleList(['index_by_code' => true]);
 		}
 		return MemoryCache::fetch($ps_code, 'LocaleCodeToId');
 	}

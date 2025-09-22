@@ -323,10 +323,13 @@ class ca_change_log extends BaseModel {
 			", [$ps_for_guid, $ps_for_guid]);
 		} elseif($pn_from_datetime > 0) {	// pull based upon log datetime
 			$qr_results = $o_db->query("
-				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
-				WHERE cl.log_id = cls.log_id AND cl.log_datetime >= ?
-				{$vs_table_filter_sql}
-				ORDER BY cl.log_id
+				SELECT * 
+				FROM ca_change_log cl
+				INNER JOIN ca_change_log_snapshots AS cls ON cl.log_id = cls.log_id 
+				WHERE 
+					cl.log_datetime >= ?
+					{$vs_table_filter_sql}
+				ORDER BY cls.log_id
 				{$vs_limit_sql}
 			", [$pn_from_datetime]);
 		}  elseif (caGetOption('includeSubjectEntries', $pa_options, false)) {		// pull based upon log_id with subject log entries included
@@ -336,10 +339,14 @@ class ca_change_log extends BaseModel {
 				$vs_table_filter_sql = 'AND (cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ') OR clsub.subject_table_num NOT IN (' . join(',', $va_ignore_tables) . '))';
 			}
 			$qr_results = $o_db->query("
-				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls, ca_change_log_subjects clsub
-				WHERE cl.log_id = cls.log_id AND cl.log_id>=? AND cl.log_id = clsub.log_id
+				SELECT * 
+				FROM ca_change_log cl
+				INNER JOIN ca_change_log_snapshots AS cls ON cl.log_id = cls.log_id
+				INNER JOIN ca_change_log_subjects AS clsub ON cl.log_id = clsub.log_id
+				WHERE 
+					cl.log_id >= ?
 				{$vs_table_filter_sql}
-				ORDER BY cl.log_id
+				ORDER BY cls.log_id
 				{$vs_limit_sql}
 			", [$pn_from]);
 		} else {							// pull based upon log_id
@@ -349,10 +356,13 @@ class ca_change_log extends BaseModel {
 				$vs_table_filter_sql = 'AND cl.logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
 			}
 			$qr_results = $o_db->query("
-				SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
-				WHERE cl.log_id = cls.log_id AND cl.log_id>=?
+				SELECT * 
+				FROM ca_change_log cl
+				INNER JOIN ca_change_log_snapshots AS cls ON cl.log_id = cls.log_id
+				WHERE  
+					cl.log_id >= ?
 				{$vs_table_filter_sql}
-				ORDER BY cl.log_id
+				ORDER BY cls.log_id
 				{$vs_limit_sql}
 			", [$pn_from]);
 		}

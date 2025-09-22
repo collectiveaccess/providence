@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,6 +113,13 @@ $show_loan_controls = $show_movement_controls = $show_location_controls = $show_
 <?php
 			}
 			
+			if(!$read_only && !caGetOption('hide_update_place_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_places'))) {
+                $show_place_controls = true;
+?>
+				<div style='float: left;'  class='button caChangePlaceButton <?= $vs_id_prefix; ?>caChangePlaceButton'><a href="#" id="<?= $vs_id_prefix; ?>ChangePlace"><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= caGetOption('update_place_control_label', $settings, _t('Update place'), ['defaultOnEmptyString' => true]); ?></a></div>
+<?php
+			}
+			
 			if(!$read_only && $show_return_home_controls && !caGetOption('hide_return_to_home_location_controls', $settings, false) && ($subject_table::historyTrackingPolicyUses($policy, 'ca_storage_locations'))) {
 ?>
 				<div style='float: left;' class='button caReturnToHomeLocationButton <?= $vs_id_prefix; ?>caReturnToHomeLocationButton'><a href="#" id="<?= $vs_id_prefix; ?>ReturnToHomeLocation"><?= caNavIcon(__CA_NAV_ICON_HOME__, '15px'); ?> <?= caGetOption('return_to_home_location_control_label', $settings, _t('Return to home location'), ['defaultOnEmptyString' => true]); ?></a></div>
@@ -163,6 +170,7 @@ $show_loan_controls = $show_movement_controls = $show_location_controls = $show_
 			</div>
 					
 		<div class="<?= $vs_id_prefix; ?>caLocationList"> </div>
+		<div class="<?= $vs_id_prefix; ?>caPlaceList"> </div>
 		<div class="caLoanList"> </div>
 		<div class="caMovementList"> </div>
 		<div class="caObjectList"> </div>
@@ -355,12 +363,12 @@ switch($display_mode) {
 			
 			<div style='width: 700px; height: 200px;'>				
 				<div style="float: right;">
-					<div class='hierarchyBrowserSearchBar'><input type='text' id='<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder=<?= json_encode(_t('Search')); ?>/></div>
+					<div class='hierarchyBrowserSearchBar'><input type='text' id='<?= $vs_id_prefix; ?>_locationHierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder=<?= json_encode(_t('Search')); ?>/></div>
 				</div>
 				
 				<div class="clear"><!-- empty --></div>
 				
-				<div id='<?= $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 165px;' class='hierarchyBrowser'>
+				<div id='<?= $vs_id_prefix; ?>_locationHierarchyBrowser{n}' style='width: 100%; height: 165px;' class='hierarchyBrowser'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->	
 				
@@ -381,7 +389,7 @@ switch($display_mode) {
 		
 			<script type='text/javascript'>
 				jQuery(document).ready(function() { 
-					var <?= $vs_id_prefix; ?>oHierBrowser{n} = caUI.initHierBrowser('<?= $vs_id_prefix; ?>_hierarchyBrowser{n}', {
+					var <?= $vs_id_prefix; ?>oLocationHierBrowser{n} = caUI.initHierBrowser('<?= $vs_id_prefix; ?>_locationHierarchyBrowser{n}', {
 						uiStyle: 'horizontal',
 						levelDataUrl: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'GetHierarchyLevel', array()); ?>',
 						initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'GetHierarchyAncestorList'); ?>',
@@ -407,15 +415,15 @@ switch($display_mode) {
 						}
 					});
 				
-					jQuery('#<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete({
+					jQuery('#<?= $vs_id_prefix; ?>_locationHierarchyBrowserSearch{n}').autocomplete({
 							source: '<?= caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
 							minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_storage_locations_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {
-									<?= $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
+									<?= $vs_id_prefix; ?>oLocationHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
 								}
 								event.preventDefault();
-								jQuery('#<?= $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
+								jQuery('#<?= $vs_id_prefix; ?>_locationHierarchyBrowserSearch{n}').val('');
 							}
 						}
 					);
@@ -423,6 +431,109 @@ switch($display_mode) {
     if (caGetOption('ca_storage_locations_useDatePicker', $settings, false)) {
 ?>
 					jQuery('#<?= $vs_id_prefix; ?>_ca_storage_locations__effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
+<?php
+    }
+?>
+				});
+			</script>
+<?php
+	}
+?>
+		</div>
+	</textarea>
+<?php
+}
+
+    if ($show_place_controls) {
+?>	
+	<textarea class='<?= $vs_id_prefix; ?>caHistoryTrackingSetPlaceTemplate' style='display: none;'>
+		<div class="clear"><!-- empty --></div>
+		<div id="<?= $vs_id_prefix; ?>_ca_places_{n}" class="labelInfo caRelatedPlace <?= $vs_id_prefix; ?>caRelatedPlace">
+			<h2 class="caHistoryTrackingSetPlaceHeading"><?= caGetOption('update_place_control_label', $settings, _t('Update place')); ?></h2>
+<?php
+	if (!(bool)$settings['useHierarchicalBrowser']) {
+?>
+		<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeletePlaceButton <?= $vs_id_prefix; ?>caDeletePlaceButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+			
+		<input type="text" size="60" name="<?= $vs_id_prefix; ?>_ca_places_autocomplete{n}" value="{{label}}" id="<?= $vs_id_prefix; ?>_ca_places_autocomplete{n}" class="lookupBg"/>
+		<input type="hidden" name="<?= $vs_id_prefix; ?>_ca_places_id{n}" id="<?= $vs_id_prefix; ?>_ca_places_id{n}" value="{id}"/>
+	
+		<?= ca_places::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
+<?php
+	} else {
+?>
+			<div class="caHistoryTrackingButtonBarDelete"><a href="#" class="caDeletePlaceButton <?= $vs_id_prefix; ?>caDeletePlaceButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+			
+			<div style='width: 700px; height: 200px;'>				
+				<div style="float: right;">
+					<div class='hierarchyBrowserSearchBar'><input type='text' id='<?= $vs_id_prefix; ?>_placeHierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder=<?= json_encode(_t('Search')); ?>/></div>
+				</div>
+				
+				<div class="clear"><!-- empty --></div>
+				
+				<div id='<?= $vs_id_prefix; ?>_placeHierarchyBrowser{n}' style='width: 100%; height: 165px;' class='hierarchyBrowser'>
+					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+				</div><!-- end hierarchyBrowser -->	
+				
+				<div class="hierarchyBrowserCurrentSelectionText">
+					<input type="hidden" name="<?= $vs_id_prefix; ?>_ca_places_id{n}" id="<?= $vs_id_prefix; ?>_ca_places_id{n}" value="{id}"/>
+				
+					<span class="hierarchyBrowserCurrentSelectionText" id="<?= $vs_id_prefix; ?>_browseCurrentSelectionText{n}"> </span>
+				</div>
+				
+				<div style="clear: both; width: 1px; height: 5px;"><!-- empty --></div>
+			</div>
+			
+			<div class="clear" style="height: 20px;"><!-- empty --></div>
+
+			<?= ca_places::getHistoryTrackingChronologyInterstitialElementAddHTMLForm($this->request, $vs_id_prefix, $subject_table, $settings, ['placement_code' => $vs_id_prefix]); ?>	
+
+			<div class="clear"><!-- empty --></div>
+		
+			<script type='text/javascript'>
+				jQuery(document).ready(function() { 
+					var <?= $vs_id_prefix; ?>oPlaceHierBrowser{n} = caUI.initHierBrowser('<?= $vs_id_prefix; ?>_placeHierarchyBrowser{n}', {
+						uiStyle: 'horizontal',
+						levelDataUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyLevel', array()); ?>',
+						initDataUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
+					
+						selectOnLoad : true,
+						browserWidth: '100%',
+					
+						dontAllowEditForFirstLevel: false,
+					
+						className: 'hierarchyBrowserLevel',
+						classNameContainer: 'hierarchyBrowserContainer',
+						currentSelectionIDID: '<?= $vs_id_prefix; ?>_ca_places_id{n}',
+						currentSelectionDisplayPrefix: <?= json_encode('<span class="hierarchyBrowserCurrentSelectionHeader">'._t('Selected').'</span>: '); ?>,
+					
+						indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+						editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+						disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
+					
+						displayCurrentSelectionOnLoad: false,
+						currentSelectionDisplayID: '<?= $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
+						onSelection: function(item_id, parent_id, name, display, type_id) {
+							caRelationBundle<?= $vs_id_prefix; ?>_ca_places.select('{n}', {id: item_id, type_id: type_id}, display);
+						}
+					});
+				
+					jQuery('#<?= $vs_id_prefix; ?>_placeHierarchyBrowserSearch{n}').autocomplete({
+							source: '<?= caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>',
+							minLength: <?= (int)$t_subject->getAppConfig()->get(["ca_places_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>, delay: 800, html: true,
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									<?= $vs_id_prefix; ?>oPlaceHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
+								}
+								event.preventDefault();
+								jQuery('#<?= $vs_id_prefix; ?>_placeHierarchyBrowserSearch{n}').val('');
+							}
+						}
+					);
+<?php
+    if (caGetOption('ca_places_useDatePicker', $settings, false)) {
+?>
+					jQuery('#<?= $vs_id_prefix; ?>_ca_places__effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});  // attempt to add date picker
 <?php
     }
 ?>
@@ -757,6 +868,44 @@ if($show_entity_controls) {
 			});
 <?php
 		}	
+    }
+    if($show_place_controls) {
+?>	
+			caRelationBundle<?= $vs_id_prefix; ?>_ca_places = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
+				fieldNamePrefix: '<?= $vs_id_prefix; ?>_ca_places_',
+				templateValues: ['label', 'type_id', 'id'],
+				initialValues: [],
+				initialValueOrder: [],
+				itemID: '<?= $vs_id_prefix; ?>_ca_places_',
+				placementID: '<?= $placement_id; ?>',
+				templateClassName: '<?= $vs_id_prefix; ?>caHistoryTrackingSetPlaceTemplate',
+				initialValueTemplateClassName: null,
+				itemListClassName: '<?= $vs_id_prefix; ?>caPlaceList',
+				listItemClassName: '<?= $vs_id_prefix; ?>caRelatedPlace',
+				addButtonClassName: '<?= $vs_id_prefix; ?>caChangePlaceButton',
+				deleteButtonClassName: '<?= $vs_id_prefix; ?>caDeletePlaceButton',
+				showEmptyFormsOnLoad: 0,
+				relationshipTypes: <?= json_encode($this->getVar('place_relationship_types_by_sub_type')); ?>,
+				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Place', 'Get', []); ?>',
+				minChars:<?= (int)$t_subject->getAppConfig()->get(["ca_places_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
+				readonly: false,
+				isSortable: false,
+				listSortItems: 'div.roundedRel',			
+				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
+				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false))); ?>',
+				minRepeats: 0,
+				maxRepeats: 2,
+				addMode: 'prepend',
+				useAnimation: 1,
+				onAddItem: function(id, options, isNew) {
+					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
+				},
+				onDeleteItem: function(id) {
+					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
+				}
+			});
+<?php
     }
 	if($show_loan_controls) {
 ?>			

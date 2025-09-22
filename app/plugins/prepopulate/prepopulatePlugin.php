@@ -116,14 +116,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 * Prepopulate record fields according to rules in prepopulate.conf
 	 *
 	 * @param array $params Plugin paramters, including the table instance to prepopulate
-	 * @param array $pa_options Options array. Available options are:
+	 * @param array $options Options array. Available options are:
 	 * 		prepopulateConfig = override path to prepopulate.conf, e.g. for testing purposes
 	 *		hook = indicates what triggered application: "save" or "edit"
      *      restrictToRules = used with CLI, an array of rules to apply
      *      excludeRules = used with CLI, an array of rules to not apply
 	 * @return bool success or not
 	 */
-	public function prepopulateFields(&$params, $pa_options=null) {
+	public function prepopulateFields(&$params, $options=null) {
 		global $g_ui_locale_id;
 		
 		if(!($t_instance = caGetOption('instance', $params, null))) { return false; }
@@ -138,11 +138,11 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 		$forced_values = caGetOption('forced_values', $params, []);
 		
-		if($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null)) {
+		if($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $options, caGetOption('prepopulateConfig', $params, null))) {
 			$this->opo_plugin_config = Configuration::load($vs_prepopulate_cfg);
 		}
 
-		$hook = caGetOption('hook', $pa_options, null);
+		$hook = caGetOption('hook', $options, null);
 
 		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
 		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
@@ -150,8 +150,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
-        if (isset($pa_options['restrictToRules']) && strlen($pa_options['restrictToRules'])) {
-            $restrictToRules = explode(",", $pa_options['restrictToRules']);
+        if (isset($options['restrictToRules']) && strlen($options['restrictToRules'])) {
+            $restrictToRules = explode(",", $options['restrictToRules']);
             // Intersect between all rules and restricted rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
             foreach ($restrictToRules as $res_rules) {
@@ -159,8 +159,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                     $va_rules_filtered[] = $va_rules[$res_rules];
             }
             $va_rules=$va_rules_filtered;
-        } elseif(isset($pa_options['excludeRules']) && strlen($pa_options['excludeRules'])) {
-            $excludeRules = explode(",", $pa_options['excludeRules']);
+        } elseif(isset($options['excludeRules']) && strlen($options['excludeRules'])) {
+            $excludeRules = explode(",", $options['excludeRules']);
             // Difference between all rules and excluded rules. It will ignore the ones that doesn't exists
             $va_rules_filtered = [];
             foreach ($va_rules as $rule_key => $rule) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,23 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$o_browse 				= $this->getVar('browse');
-	$va_available_facets 	= $o_browse->getInfoForAvailableFacets();
-	$va_criteria 			= $o_browse->getCriteriaWithLabels();
-	$va_facet_info 			= $o_browse->getInfoForFacets();
-	
-	
-	if (sizeof($va_available_facets)) {
-		print "<div class='startBrowsingBy'>"._t('Filter results by')."</div>";
-		$c = 0;
-		foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
-			$c++;
+$o_browse 			= $this->getVar('browse');
+$available_facets 	= $o_browse->getInfoForAvailableFacets();
+$criteria 			= $o_browse->getCriteriaWithLabels();
+$facet_info 		= $o_browse->getInfoForFacets();
+
+if (sizeof($available_facets)) {
+	print "<div class='startBrowsingBy'>"._t('Filter results by')."</div>";
+	$c = 0;
+	foreach($available_facets as $vs_facet_code => $facet_info) {
+		$c++;
 ?>		
-			<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?= $vs_facet_code;?>")'><?= $va_facet_info['label_plural'];?></a>
+		<a href='#' onclick='$("#searchRefineBox").slideUp(200); caUIBrowsePanel.showBrowsePanel("<?= $vs_facet_code;?>")'><?= $facet_info['label_plural'];?></a>
 <?php		
-		}
-	} else {
-		print "<div class='startBrowsingBy'>"._t('No applicable filters')."</div>";
 	}
-	
+} else {
+	print "<div class='startBrowsingBy'>"._t('No applicable filters')."</div>";
+}

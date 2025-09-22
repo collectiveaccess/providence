@@ -88,28 +88,51 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
    		$search_on = caGetOption('searchOn', $pa_settings, 'cql.any');
    		
         $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&httpAccept=application/json&query=".urlencode("{$search_on} all \"{$ps_search}\""), [
+        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&Accept=json&query=".urlencode("{$search_on} all \"{$ps_search}\""), [
             'headers' => [
                 'Accept' => 'application/json'
             ]
         ]);
-        $va_raw_resultlist = json_decode($vo_response->getBody(), true);
-    
-        $va_return = [];
-        if (is_array($response_data = $va_raw_resultlist['searchRetrieveResponse']['records'])) {
-			foreach ($response_data as $data){
-				if (!($label = $data['record']['recordData']['mainHeadings']['data'][0]['text'])) {
-					$label = $data['record']['recordData']['mainHeadings']['data']['text'];
+
+		$va_raw_resultlist = json_decode($vo_response->getBody(), true);
+
+		$va_return = [];
+        if (is_array($response_data = $va_raw_resultlist['searchRetrieveResponse']['records']['record'])) {
+			foreach ($response_data as $index=>$data){
+				// remove all the namespace prefixes in the array keys
+                $data = $this->removeNamespacePrefixes($data);
+
+				$viafID = (int) $data["recordData"]["VIAFCluster"]["viafID"];
+				if (!($label = $data['recordData']["VIAFCluster"]['mainHeadings']['data'][0]['text'])) {
+					$label = $data['recordData']["VIAFCluster"]['mainHeadings']['data']['text'];
 				}
 				$label = str_replace("|", ":", $label);
 				$va_return['results'][] = [
 					'label' => $label,
-					'url' => self::VIAF_SERVICES_BASE_URL."/".$data['record']['recordData']['viafID'],
-					'idno' => $data['record']['recordData']['viafID']
+					'url' => self::VIAF_SERVICES_BASE_URL."/".$viafID,
+					'idno' => $viafID
 				];
+			
 			}
 		}
         return $va_return;
+    }
+
+    /**
+     * Remove all prefixes (ns2:, ns3:, etc.) from array keys recursively
+     */
+    private function removeNamespacePrefixes($array) {
+        if (!is_array($array)) return $array;
+        $newArray = [];
+        foreach ($array as $key => $value) {
+            $newKey = preg_replace('/^ns\d+:/', '', $key);
+            if (is_array($value)) {
+                $newArray[$newKey] = $this->removeNamespacePrefixes($value);
+            } else {
+                $newArray[$newKey] = $value;
+            }
+        }
+        return $newArray;
     }
 
     public function getExtendedInformation($pa_settings, $ps_url) {

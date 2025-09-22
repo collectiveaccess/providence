@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -777,7 +777,7 @@ class ItemService extends BaseJSONService {
 				if (($vs_field_name === $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && (strpos($vs_value, '%') !== false)) {
 					$t_instance->setIdnoWithTemplate($vs_value);
 				} else {
-					$t_instance->set($vs_field_name,$vs_value);
+					$t_instance->set($vs_field_name, $vs_value);
 				}
 			}
 		} else {
@@ -796,12 +796,11 @@ class ItemService extends BaseJSONService {
 						// use the default locale
 						$va_value["locale_id"] = ca_locales::getDefaultCataloguingLocaleID();
 					}
-					$t_instance->addAttribute($va_value,$vs_attribute_name);
+					$t_instance->addAttribute($va_value, $vs_attribute_name);
 				}
 			}
 		}
 
-		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->insert();
 
 		if(!$t_instance->getPrimaryKey()) {
@@ -894,7 +893,6 @@ class ItemService extends BaseJSONService {
 							}
 
 							if($vb_have_to_update) {
-								$t_rel->setMode(ACCESS_WRITE);
 								$t_rel->update();
 							}
 						}
@@ -980,7 +978,6 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->update();
 
 		// AFTER UPDATE STUFF
@@ -1072,7 +1069,6 @@ class ItemService extends BaseJSONService {
 						}
 
 						if($vb_have_to_update) {
-							$t_rel->setMode(ACCESS_WRITE);
 							$t_rel->update();
 						}
 					}
@@ -1137,7 +1133,6 @@ class ItemService extends BaseJSONService {
 		$vb_delete_related = isset($va_post["delete_related"]) ? $va_post["delete_related"] : false;
 		$vb_hard_delete = isset($va_post["hard"]) ? $va_post["hard"] : false;
 
-		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->delete($vb_delete_related,array("hard" => $vb_hard_delete));
 
 

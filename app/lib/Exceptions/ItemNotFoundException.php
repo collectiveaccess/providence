@@ -46,6 +46,7 @@ class ItemNotFoundException extends ApplicationException {
 	}
 
 	public function getDisplayMessage(string $type_name) : string {
+		$type_name = caUcFirstUTF8Safe($type_name);
 		switch($this->getReason()) {
 			case 'DELETED':
 				$message = _t('%1 has been deleted', $type_name);

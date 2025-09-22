@@ -40,12 +40,12 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
 
 		// check access to set - if user doesn't have edit access we bail
-		$t_set = new ca_sets($set_id = $po_request->getParameter('set_id', pInteger));
-		if ($set_id && (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $po_request)))) {
+		$t_set = new ca_sets($set_id = $request->getParameter('set_id', pInteger));
+		if ($set_id && (!$t_set->haveAccessToSet($request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $request)))) {
 			$this->postError(2320, _t("Access denied"), "SetsEditorController->__construct");
 		}
 	}
@@ -53,10 +53,10 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	protected function _initView($pa_options=null) {
+	protected function _initView($options=null) {
 		AssetLoadManager::register('bundleableEditor');
 		AssetLoadManager::register('sortableUI');
-		$va_init = parent::_initView($pa_options);
+		$va_init = parent::_initView($options);
 		if (!$va_init[1]->getPrimaryKey()) {
 			$va_init[1]->set('user_id', $this->request->getUserID());
 			$va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
@@ -67,8 +67,8 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function Edit($pa_values=null, $pa_options=null) {
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+	public function Edit($values=null, $options=null) {
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($options);
 		
 		// does user have edit access to set?
 		if ($t_subject->isLoaded() && !$t_subject->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
@@ -79,33 +79,33 @@ class SetEditorController extends BaseEditorController {
 		
 		Session::setVar('last_set_id', $t_subject->getPrimaryKey());
 		
-		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
-		parent::Edit($pa_values, $pa_options);
+		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject));
+		parent::Edit($values, $options);
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public function Save($pa_options=null) {
+	public function Save($options=null) {
 		$parent_id = $this->request->getParameter('parent_id', pInteger);
 		$t_parent = new ca_sets($parent_id);
 		if(!$this->request->getParameter('table_num', pInteger)) {
 			$this->request->setParameter('table_num', $t_parent->get('ca_sets.table_num'));
 		}
-		parent::Save($pa_options);
+		parent::Save($options);
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public function Delete($pa_options=null) {
-		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
+	public function Delete($options=null) {
+		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($options);
 
 		if (!$vn_subject_id) { return; }
-		if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
+		if (!$this->UserCanDeleteSet($t_subject)) {
 			$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
 		} else {
-			parent::Delete($pa_options);
+			parent::Delete($options);
 			if((bool)$this->request->getParameter('confirm', pInteger)) {
 				$this->response->setRedirect(caNavUrl($this->request, 'manage', 'Set', 'ListSets', []));
 			}
@@ -115,20 +115,22 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	private function UserCanDeleteSet($user_id) {
-	  $can_delete = FALSE;
-	  // If users can delete all sets, show Delete button
-	  if ($this->request->user->canDoAction('can_delete_sets')) {
-		$can_delete = TRUE;
-	  }
-
-	  // If users can delete own sets, and this set belongs to them, show Delete button
-	  if ($this->request->user->canDoAction('can_delete_own_sets')) {
-		if ($user_id == $this->request->getUserID()) {
-		  $can_delete = TRUE;
+	private function UserCanDeleteSet(BaseModel $t_subject) {
+		$can_delete = false;
+		
+		// If users can delete all sets, show Delete button
+		if ($this->request->user->canDoAction('can_delete_sets')) {
+			$can_delete = true;
 		}
-	  }
-	  return $can_delete;
+		
+		// If users can delete own sets, and this set belongs to them, show Delete button
+		$user_id = $t_subject->get('user_id');
+		if ($this->request->user->canDoAction('can_delete_own_sets')) {
+			if ($user_id == $this->request->getUserID()) {
+				$can_delete = true;
+			}
+		}
+		return $can_delete;
 	}
 	# -------------------------------------------------------
 	# Ajax handlers
@@ -277,16 +279,16 @@ class SetEditorController extends BaseEditorController {
 		}
 		$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
 		if(!$t_set->getPrimaryKey()) { return; }
-
+		
 		if(!(bool)$this->request->config->get('ca_sets_disable_duplication_of_items') && $this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
 			if($this->getRequest()->getParameter('setForDupes', pString) == 'current') {
-				$pa_dupe_options = array('addToCurrentSet' => true);
+				$dupe_options = ['addToCurrentSet' => true];
 			} else {
-				$pa_dupe_options = array('addToCurrentSet' => false);
+				$dupe_options = ['addToCurrentSet' => false];
 			}
 
 			unset($_REQUEST['form_timestamp']);
-			$t_dupe_set = $t_set->duplicateItemsInSet($this->getRequest()->getUserID(), $pa_dupe_options);
+			$t_dupe_set = $t_set->duplicateItemsInSet($this->getRequest()->getUserID(), $dupe_options);
 			if(!$t_dupe_set) {
 				$this->notification->addNotification(_t('Could not duplicate items in set: %1', join(';', $t_set->getErrors())), __NOTIFICATION_TYPE_ERROR__);
 				$this->Edit();
@@ -409,7 +411,7 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 * Generates options form for printable template
 	 *
-	 * @param array $pa_options Array of options passed through to _initView
+	 * @param array $options Array of options passed through to _initView
 	 */
 	public function PrintSummaryOptions(?array $options=null) {
 		$form = $this->request->getParameter('form', pString);
@@ -476,9 +478,20 @@ class SetEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function Info($pa_parameters) {
-		parent::info($pa_parameters);
+	public function Info($parameters) {
+		parent::info($parameters);
 		return $this->render('widget_set_info_html.php', true);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return label for navigation breadcrumb trail
+	 */
+	public function BreadcrumbValue($parameters) {
+		if ($set_id = $this->request->getParameter('set_id', pInteger)) {
+			$t_set = new ca_sets($set_id);
+			return _t('Set');
+		}
+		return '???';
 	}
 	# -------------------------------------------------------
 }

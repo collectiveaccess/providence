@@ -236,7 +236,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 	 *
 	 */
 	protected function GetHierarchyLevelData($pa_ids) {
-
 		$o_config = Configuration::load();
 		$t_object = new ca_objects();
 
@@ -297,15 +296,14 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 				$va_items[$va_tmp[$vs_pk]] = $va_tmp;
 
-			} elseif ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
-
+			} elseif($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
 				$va_additional_wheres = [];
 				$t_label_instance = $t_item->getLabelTableInstance();
 				if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
 					$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
 				}
 
-				$va_sorts = $o_config->getList($vs_table.'_hierarchy_browser_sort_values');
+				$va_sorts = caGetHierarchyBrowserSortValues($vs_table, $t_item);
 				if (!is_array($va_sorts) || !sizeof($va_sorts)) {
 					$va_sorts = [];
 				}
@@ -407,7 +405,8 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 
 
 				if ($t_item->tableName() == 'ca_collections') {
-					$va_object_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
+					// Collection levels may mix collection and object records
+					$va_object_sorts = caGetHierarchyBrowserSortValues('ca_objects', $t_item);
 					if (!is_array($va_object_sorts) || !sizeof($va_object_sorts)) {
 						$va_object_sorts = [];
 					}

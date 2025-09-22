@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/services/graphql/BaseGraphQLServiceTest.php
+ * tests/services/graphql/BaseGraphQLServiceTestClass.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,7 @@
  */
 use PHPUnit\Framework\TestCase;
 
-
-abstract class BaseGraphQLServiceTest extends TestCase {
+abstract class BaseGraphQLServiceTestClass extends TestCase {
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -144,7 +143,7 @@ abstract class BaseGraphQLServiceTest extends TestCase {
 		foreach($this->ids_to_cleanup as $table => $ids) {
 			foreach(array_keys($ids) as $id) {
 				if($t = $table::find($id, ['returnAs' => 'firstModelInstance'])) {
-					$t->delete(true);
+					$t->delete(true, ['hard' => true]);
 				}
 			}
 		}

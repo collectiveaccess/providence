@@ -177,7 +177,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
-			'DEFAULT' => '',
+			'DEFAULT' => 0,
 			'LABEL' => _t('Transcribe?'), 'DESCRIPTION' => _t('Indicates that the representation is a candidate for transcription.')
 		),
 		'home_location_id' => array(

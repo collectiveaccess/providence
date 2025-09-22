@@ -93,6 +93,6 @@ class BaseDelimitedDataParser extends TestCase {
 		$this->assertNotNull( $data );
 		$row = $data->nextRow();
 
-		$this->assertEquals( 3, sizeof( $row ) );
+		$this->assertEquals( 6, sizeof( $row ) );
 	}
 }

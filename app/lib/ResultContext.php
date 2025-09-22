@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -565,7 +565,7 @@ class ResultContext {
 			}
 		} else {
 			if (!is_numeric($pn_type_id)) { 
-				$pn_type_id = array_shift(caMakeTypeIDList($this->ops_table_name, [$pn_type_id]));
+				$pn_type_id = array_shift(caMakeTypeIDList($this->ops_table_name, [$pn_type_id], ['dontIncludeSubtypesInTypeRestriction' => true]));
 				if(!$pn_type_id) {		// invalid text types clear type
 					$this->opb_type_restriction_has_changed = $pb_type_restriction_has_changed = true;
 					$this->setTypeRestriction(null);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -77,16 +77,11 @@ class SetDeleteTest extends BaseTestWithData {
 		$qr_objects = $o_db->query('select object_id from ca_objects where deleted=0');
 		$va_object_ids = $qr_objects->getAllFieldValues('object_id');
 
-		//$t = new Timer();
 		$this->opt_set->addItems($va_object_ids);
-		//var_dump($t->getTime());
 
 		$this->assertSame(sizeof($va_object_ids), $this->opt_set->getItemCount());
 
-		$this->opt_set->setMode(ACCESS_WRITE);
-		//$t = new Timer();
-		$this->opt_set->delete(true);
-		//var_dump($t->getTime());
+		$this->opt_set->delete(true, ['hard' => true]);
 	}
 	# -------------------------------------------------------
 }

@@ -488,7 +488,7 @@ class BaseBrowseController extends BaseFindController {
 		$o_config = Configuration::load();
 		
 		// Get level sort criteria
-		if (!(is_array($va_sorts = $o_config->getList($this->ops_tablename.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
+		if (!(is_array($va_sorts = caGetHierarchyBrowserSortValues($this->ops_tablename))) || !sizeof($va_sorts)) { $va_sorts = []; }
 		
 		// Get level sort direction
 		if (!in_array($vs_sort_dir = strtolower($o_config->get($this->ops_tablename.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) { $vs_sort_dir = 'asc'; }
@@ -604,7 +604,7 @@ class BaseBrowseController extends BaseFindController {
 								$vn_parent_id = $qr_res->get("{$vs_rel_table}.parent_id");
 								$vn_item_id = $qr_res->get("{$vs_rel_table}.{$vs_pk}");
 								
-								if (!isset($facet_ids[$vn_item_id]) && !in_array($vn_item_id, $va_ancestors)) { continue; } 
+								if (!isset($facet_ids[$vn_item_id]) && !isset($va_facet[$vn_item_id]) && !in_array($vn_item_id, $va_ancestors)) { continue; } 
 								
 								$va_item = [];
 								$va_item['item_id'] = $vn_item_id;

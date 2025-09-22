@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2024 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -722,7 +722,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			$o_sheet->getRowDimension($line)->setRowHeight(30);
 			foreach($display_list as $placement_id => $info) {
 				if($column) {
-					$o_sheet->setCellValue($supercol.$column.$line, $info['display']);
+					$o_sheet->setCellValueExplicit($supercol.$column.$line, $info['display'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 					$o_sheet->getStyle($supercol.$column.$line)->applyFromArray($columntitlestyle);
 					if (!($column = next($a_to_z))) {
 						$supercol = array_shift($supercol_a_to_z);
@@ -804,7 +804,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						;	
 					}
 					
-					$o_sheet->setCellValue($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5));
+					$o_sheet->setCellValueExplicit($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 					// We trust the autosizing up to a certain point, but
 					// we want column widths to be finite :-).
 					// Since Arial is not fixed-with and font rendering

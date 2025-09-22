@@ -798,7 +798,7 @@ class Replicator {
 						if($v == $missing_guid) { return false; }
 						if($v == $missing_entry['guid']) { return false; }
 						
-						if(isset($missing_entry['snapshot']['attribute_guid']) && ($missing_entry['logged_table_num'] == 3)) { return false; }	// don't check deps for attribute values on attributes - values always follow attributes
+						if(isset($missing_entry['snapshot']['attribute_guid']) && ($missing_entry['logged_table_num'] == 3) && ($k !== 'item_id_guid')) { return false; }	// don't check deps for attribute values on attributes - values always follow attributes
 						
 						if(preg_match("!([A-Za-z0-9_]+)_guid$!", $k, $matches) && ($matches[1] !== $missing_log_entry_pk) && ($matches[1].'_id' !== $missing_log_entry_pk) && preg_match("!^[a-z0-9]+\-[a-z0-9]+\-[a-z0-9]+\-[a-z0-9]+\-[a-z0-9]+$!i", $v)) {
 							if(
@@ -1101,7 +1101,7 @@ class Replicator {
 		
 		$r = $o_source->setRequestMethod('POST')->setEndpoint('hasAccess')
 			->addGetParameter('access', join(';', $this->access_list))
-			->setRequestBody($guids)
+			->setRequestBody($filtered_guids)
 			->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 			->request();
 			
@@ -1111,7 +1111,7 @@ class Replicator {
 				$this->guid_access_cache[$guid] = $access;
  			}
 		
-			$res = array_merge($res, $cached_res);
+			$res = array_merge($cached_res, $res);
 		} else {
 			new ApplicationException(_t('Could not get access data'));
 		}
