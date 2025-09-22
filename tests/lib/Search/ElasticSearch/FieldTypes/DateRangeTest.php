@@ -44,10 +44,12 @@ class DateRangeTest extends TestCase {
 
 		$this->assertEquals(array(
 			'ca_objects/dates_value_text' => '2015/02/28 to 2015/03/01',
-			'ca_objects/dates_value' => array(
+			'ca_objects/dates_value' => [
 				0 => '2015-02-28T00:00:00Z',
 				1 => '2015-03-01T23:59:59Z'
-			)
+			],
+			'ca_objects/dates_value_start' => '2015-02-28T00:00:00Z',
+			'ca_objects/dates_value_end' => '2015-03-01T23:59:59Z'
 		), $va_ret);
 	}
 	
@@ -61,9 +63,11 @@ class DateRangeTest extends TestCase {
 		$this->assertEquals(array(
 			'ca_objects/dates_value_text' => 'before 2012',
 			'ca_objects/dates_value' => array(
-				0 => 'BC 9999-01-01T00:00:00Z',
+				0 => '-9999-01-01T00:00:00Z',
 				1 => '2012-12-31T23:59:59Z'
-			)
+			),
+			'ca_objects/dates_value_start' => '-9999-01-01T00:00:00Z',
+			'ca_objects/dates_value_end' => '2012-12-31T23:59:59Z'
 		), $va_ret);
 	}
 	
@@ -79,7 +83,9 @@ class DateRangeTest extends TestCase {
 			'ca_objects/dates_value' => array(
 				0 => '2012-01-01T00:00:00Z',
 				1 => '9999-12-31T23:59:59Z'
-			)
+			),
+			'ca_objects/dates_value_start' => '2012-01-01T00:00:00Z',
+			'ca_objects/dates_value_end' => '9999-12-31T23:59:59Z'
 		), $va_ret);
 	}
 }

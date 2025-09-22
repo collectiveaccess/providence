@@ -1273,12 +1273,12 @@ function caFileIsIncludable($ps_file) {
 	 * format needed for calculations (eg 54.33)
 	 *
 	 * @param string $ps_value The value to convert
-	 * @param string $ps_locale The locale of the value
+	 * @param string $locale The locale of the value
 	 * @return float The converted value
 	 */
-	function caConvertLocaleSpecificFloat($ps_value, $ps_locale = "en_US") {
+	function caConvertLocaleSpecificFloat($ps_value, $locale="en_US") {
 		try {
-			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $ps_locale));
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
 		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
 			return floatval($ps_value);
 		}
@@ -1292,7 +1292,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $locale Which locale is to be used to return the value
 	 * @return float The converted value
 	 */
-	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
+	function caConvertFloatToLocale($pn_value, $locale="en_US") {
 		try {
 			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
 		} catch (Zend_Locale_Exception $e) {

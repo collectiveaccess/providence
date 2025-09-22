@@ -249,7 +249,7 @@ class BaseLabel extends BaseModel {
 	public function get($field, $options=null) {
 		$v = parent::get($field, $options);
 		
-		if(caGetOption('stripEnclosingParagraphTags', $options, true)) {
+		if(is_string($v) && caGetOption('stripEnclosingParagraphTags', $options, true)) {
 			$v = caStripEnclosingParagraphHTMLTags($v);
 		}
 		return $v;

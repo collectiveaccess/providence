@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2024 Whirl-i-Gig
+ * Copyright 2021-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -557,6 +557,7 @@ class XMLProfileParser extends BaseProfileParser {
 			$default = self::getAttribute($screen, "default");
 			$deleted = self::getAttribute($screen, "deleted");
 			$color = self::getAttribute($screen, "color");
+			$rank = self::getAttribute($screen, "rank") ?? 1;
 			$include_subtypes = self::getAttribute($ui, "includeSubtypes");
 			
 			$labels = self::getLabelsFromXML($screen->labels);
@@ -577,6 +578,7 @@ class XMLProfileParser extends BaseProfileParser {
 				'default' => $default,
 				'labels' => $labels,
 				'settings' => $settings,
+				'rank' => $rank,
 				'color' => $color,
 				'deleted' => $deleted,
 				'typeRestrictions' => $type_restrictions,
