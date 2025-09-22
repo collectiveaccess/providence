@@ -206,6 +206,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 	if ($use_wysiwyg_editor) {
 		$o_config = Configuration::load();
 		$use_editor = $o_config->get('wysiwyg_editor');
+		$height_w_suffix = is_numeric($height) ? "{$height}px" : $height;
 		switch($use_editor) {
 			case 'ckeditor':
 				AssetLoadManager::register("ck5");
