@@ -71,6 +71,11 @@ if (!defined("__CA_ADMIN_EMAIL__")) {
 	define("__CA_ADMIN_EMAIL__", 'info@put-your-domain-here.com');
 }
 
+# __CA_AUTH_ADAPTER__ = the auth adapter for login
+#
+if (!defined("__CA_AUTH_ADAPTER__")) {
+	define("__CA_AUTH_ADAPTER__", 'CaUsers');
+}
 
 # Outgoing email
 #
