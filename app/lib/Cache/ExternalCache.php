@@ -207,7 +207,7 @@ class ExternalCache {
 			    self::getCache()->clear();
 			}
 		} catch(UnexpectedValueException $e) {
-			// happens during the installer pre tasks when we just purge everything in app/tmp without asking.
+			// happens during the installer pre tasks when we just purge everything in CA tmp without asking.
 			// At that point we have existing objects in self::$cache that can't deal with that.
 			// We do nothing here because the directory is re-created automatically the next time someone
 			// tries to access the cache.
@@ -237,7 +237,7 @@ class ExternalCache {
 	}
 	# ------------------------------------------------
 	private static function getCacheDirectory() {
-		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_TEMP_DIR__);
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 		if(!file_exists($vs_cache_dir)) { @mkdir($vs_cache_dir); }
 		return $vs_cache_dir;
