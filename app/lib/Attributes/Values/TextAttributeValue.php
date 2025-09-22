@@ -508,7 +508,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									Paragraph, 
 									PasteFromOffice, 
 									RemoveFormat, 
-									ResizableHeight
+									ResizableHeight,
 									SelectAll, 
 									SourceEditing, 
 									SpecialCharacters, 
