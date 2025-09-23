@@ -65,6 +65,11 @@ if (!defined("__CA_TEMP_DIR__")) {
 	define("__CA_TEMP_DIR__", __CA_APP_DIR__."/tmp");
 }
 
+# Allow overriding log directory via setup.php
+if (!defined("__CA_LOG_DIR__")) {
+	define("__CA_LOG_DIR__", __CA_APP_DIR__."/app/log");
+}
+
 # --------------------------------------------------------------------------------------------
 # Caching configuration
 # The default file-based caching should work fine in most setups

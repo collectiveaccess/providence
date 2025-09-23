@@ -76,7 +76,7 @@ class ModelController extends BaseServiceController {
 		$vs_post_data = $this->getRequest()->getRawPostData();
 		require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
 		// @todo make this configurable or get from app.conf?
-		$o_log = new KLogger(__CA_BASE_DIR__ . '/app/log', KLogger::DEBUG);
+		$o_log = new KLogger(__CA_LOG_DIR__, KLogger::DEBUG);
 		try {
 			$o_log->logInfo(_t('Got incoming updateConfig request from %1', $this->getRequest()->getClientIP()));
 			$o_log->logInfo(_t('Raw payload is %1', $vs_post_data));
