@@ -67,7 +67,7 @@ if (!defined("__CA_TEMP_DIR__")) {
 
 # Allow overriding log directory via setup.php
 if (!defined("__CA_LOG_DIR__")) {
-	define("__CA_LOG_DIR__", __CA_APP_DIR__."/app/log");
+	define("__CA_LOG_DIR__", __CA_APP_DIR__."/log");
 }
 
 # --------------------------------------------------------------------------------------------
