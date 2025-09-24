@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 var caUI = caUI || {};
 
 (function ($) {
@@ -44,6 +43,7 @@ var caUI = caUI || {};
 			addID: 'dashboardAddWidget',
 			editID: 'dashboardEditWidget',
 			doneEditingID: 'dashboardDoneEditingButton',
+			defaultID: 'dashboardDefaultButton',
 			clearID: 'dashboardClearButton',
 			welcomeMessageID: 'dashboard_welcome_message',
 			editMessageID: 'dashboard_edit_message'
@@ -141,7 +141,6 @@ var caUI = caUI || {};
 			});
 
 		}
-		
 		// --------------------------------------------------------------------------------
 		that.editDashboard = function(edit, noTransitions) {
 			if (edit === null) { edit = 0; }
@@ -150,6 +149,7 @@ var caUI = caUI || {};
 			var cookieJar = jQuery.cookieJar('caCookieJar');
 			if (edit != 0) {
 				jQuery('#' + that.addID).show(0);
+				jQuery('#' + that.defaultID).show(0);
 				jQuery('#' + that.editID).hide(0);
 				jQuery('#' + that.doneEditingID).show(0);
 				jQuery('#' + that.clearID).show(0);
@@ -161,6 +161,7 @@ var caUI = caUI || {};
 				cookieJar.set('caDashboardEdit', 1);
 			} else {
 				jQuery('#' + that.addID).hide(0);
+				jQuery('#' + that.defaultID).hide(0);
 				jQuery('#' + that.editID).show(0);
 				jQuery('#' + that.doneEditingID).hide(0);
 				jQuery('#' + that.clearID).hide(0);
