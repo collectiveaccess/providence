@@ -215,7 +215,6 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 				$element .= "
 				<script type=\"module\">
 					import {
-						InlineEditor,
 						ClassicEditor, 
 						BlockQuote, 
 						BlockToolbar, 
@@ -307,7 +306,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 							Paragraph, 
 							PasteFromOffice, 
 							RemoveFormat, 
-							ResizeableHeight,
+							ResizableHeight,
 							SelectAll, 
 							SourceEditing, 
 							SpecialCharacters, 
