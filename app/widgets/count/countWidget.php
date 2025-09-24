@@ -135,6 +135,19 @@ class countWidget extends BaseWidget implements IWidget {
 }
 
 BaseWidget::$s_widget_settings['countWidget'] = array(	
+	'format' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 40, 'height' => 1,
+		'takesLocale' => false,
+		'default' => 'PARAGRAPH',
+		'options' => [
+			_t('List') => 'LIST',
+			_t('Paragraph') => 'PARAGRAPH'
+		],
+		'label' => _t('Format'),
+		'description' => _t('Format counts as list or text paragraph?')
+	),	
 	'hide_zero_counts' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
