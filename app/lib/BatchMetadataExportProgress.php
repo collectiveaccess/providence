@@ -59,7 +59,7 @@ class BatchMetadataExportProgress extends AppControllerPlugin {
 		$code = $req->getParameter('exporter_id', pString);
 		$t_exporter = ca_data_exporters::findAsInstance(['exporter_code' => $code]);
 
-		$file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'dataExport');
+		$file = tempnam(__CA_TEMP_DIR__, 'dataExport');
 
 		// we have 3 different sources for batch exports: search/browse result, sets and search expressions (deprecated)
 		// they all operate on different parameters and on different static functions in ca_data_exporters

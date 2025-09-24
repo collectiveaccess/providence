@@ -1405,6 +1405,9 @@ class BrowseEngine extends BaseFindEngine {
 
 														// yes option
 										$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
+										if(($vs_target_browse_table_name !== $vs_rel_table_name) && Datamodel::getFieldInfo($vs_target_browse_table_name, 'deleted')) {
+											$va_wheres[] = "({$vs_target_browse_table_name}.deleted = 0)";
+										}
 										if ($t_rel_item->hasField('deleted')) {
 											$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
 										}
@@ -8105,6 +8108,10 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		$vs_cur_table = array_shift($va_path);
 		foreach($va_path as $vs_join_table) {
 			$va_rel_info = Datamodel::getRelationships($vs_cur_table, $vs_join_table);
+			
+			if(Datamodel::getFieldInfo($vs_join_table, 'deleted')) {
+				$va_wheres[] = "{$vs_join_table}.deleted = 0";
+			}
 			$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 			$vs_cur_table = $vs_join_table;
 		}

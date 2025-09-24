@@ -37,7 +37,7 @@ class WLPlugBanHammerIPAddress Extends BaseBanHammerPlugin  {
 	/**
 	 *
 	 */
-	static $banned_ips_list_filepath = __CA_APP_DIR__.'/tmp/bannedIps.json';
+	static $banned_ips_list_filepath = __CA_TEMP_DIR__.'/bannedIps.json';
 	# ------------------------------------------------------
 	/**
 	 *

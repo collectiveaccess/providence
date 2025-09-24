@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2024 Whirl-i-Gig
+ * Copyright 2000-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -5138,7 +5138,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 									'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
 									'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
 									'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
-									'outputDirectory' => __CA_APP_DIR__.'/tmp'
+									'outputDirectory' => __CA_TEMP_DIR__
 								)
 							);
 							if (is_array($va_preview_frame_list)) {
@@ -9414,7 +9414,8 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = '<input type="checkbox" name="'.$pa_options["name"].'" value="1" '.($vm_field_value ? 'checked="1"' : '').' '.$vs_js.($pa_options['readonly'] ? ' disabled="disabled" ' : '').' id="'.$pa_options["id"].'"/>';
 							break;
 						case (DT_RADIO_BUTTONS):
-							$vs_element = 'Radio buttons not supported for bit-type fields';
+							$vs_element = '<input type="radio" name="'.$pa_options["name"].'" value="1" '.($vm_field_value ? 'checked="1"' : '').' '.$vs_js.($pa_options['readonly'] ? ' disabled="disabled" ' : '').' id="'.$pa_options["id"].'_1"/> '._t('Yes');
+							$vs_element .= '  <input type="radio" name="'.$pa_options["name"].'" value="0" '.(!$vm_field_value ? 'checked="1"' : '').' '.$vs_js.($pa_options['readonly'] ? ' disabled="disabled" ' : '').' id="'.$pa_options["id"].'_0"/> '._t('No');
 							break;
 					}
 					break;
@@ -12225,6 +12226,10 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if($this->hasField('deleted')) {
 			$va_wheres[] = '(t.deleted = 0)';
+		}
+		$hier_type = $this->getProperty('HIERARCHY_TYPE');
+		if($hier_type === __CA_HIER_TYPE_MULTI_MONO__) { 
+			$va_wheres[] = '(t.parent_id IS NOT NULL)';
 		}
 		
 		$vs_where_sql = join(" AND ", $va_wheres);
