@@ -2929,9 +2929,13 @@ class BaseModel extends BaseObject {
 		if (!caGetOption('force', $pa_options, false) && isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
 			$va_possible_conflicts = $this->getChangeLog(null, array('forTable' => true, 'range' => array('start' => $vn_form_timestamp, 'end' => time()), 'excludeUnitID' => $this->getCurrentLoggingUnitID()));
 			
+			if(is_array($va_possible_conflicts)) { 
+				$va_possible_conflicts = array_filter($va_possible_conflicts, function($v) use ($AUTH_CURRENT_USER_ID) {
+					return ((int)$AUTH_CURRENT_USER_ID !== (int)$v['user_id']);
+				});
+			}
 			if (sizeof($va_possible_conflicts)) {
-				$va_conflict_users = array();
-				$va_conflict_fields = array();
+				$va_conflict_users = $va_conflict_fields = [];
 				foreach($va_possible_conflicts as $va_conflict) {
 					$vs_user_desc = trim($va_conflict['fname'].' '.$va_conflict['lname']);
 					if ($vs_user_email = trim($va_conflict['email'])) {
