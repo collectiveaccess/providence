@@ -4249,7 +4249,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$locale = caGetOption('locale', $options, $g_ui_locale);
 		$max_length = caGetOption('maxLength', $options, 255, ['castTo' => 'int']);
-		$text = strip_tags($text);
+		$text = trim(strip_tags($text));
 		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
 		$omit_article = caGetOption('omitArticle', $options, true);
@@ -4276,11 +4276,15 @@ function caFileIsIncludable($ps_file) {
 			if(is_numeric($t)) {
 				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
 			} elseif(preg_match("!^([A-Za-z]+)([\d]+)([A-Za-z]+)$!u", $t, $m)) {
-				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[3], 0, 4), 4, ' ', STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[1], 0, 10), 10, ' ', STR_PAD_RIGHT);
+				$padded[] = str_pad($m[2], 10, 0, STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[3], 0, 10), 10, ' ', STR_PAD_RIGHT);
 			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $t, $m)) {
-				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[2], 0, 10), 10, ' ', STR_PAD_RIGHT);
 			} elseif(preg_match("!^([A-Za-z]+)([\d]+)$!u", $t, $m)) {
-				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[1], 0, 10), 10, ' ', STR_PAD_RIGHT);
+				$padded[] = str_pad($m[2], 10, 0, STR_PAD_LEFT);
 			} else {
 				$padded[] = str_pad(mb_substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
