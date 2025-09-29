@@ -1122,7 +1122,6 @@ li.notification-info-box {
     font-weight: bold;
     color: #333;
     font-size: 13px;
-    text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
 }
@@ -1131,7 +1130,6 @@ li.notification-warning-box {
     font-weight: bold;
     color: #333;
     font-size: 13px;
-    text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
 }
@@ -1140,7 +1138,6 @@ li.notification-error-box {
     font-weight: normal;
     color: #EB0000;
     font-size: 13px;
-    text-indent: 10px;
     font-family: 'din-regular';
 	padding-top: 2px;
 }
@@ -1157,6 +1154,10 @@ div.notification-message-container {
     display: flex;
     align-items: center;
     justify-content: left;
+}
+
+div.notification-message-container div {
+	margin-left: 10px;
 }
 
 div.hint {
