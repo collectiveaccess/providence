@@ -225,9 +225,10 @@ class ca_unsaved_edits extends BaseModel {
 	/**
 	 * Remove unsaved edit buffer for row
 	 */
-	public static function clearUnsavedEdits(RequestHTTP $request, $table, int $row_id, ?array $options=null) : ?bool {
+	public static function clearUnsavedEdits(RequestHTTP $request, $table, ?int $row_id, ?array $options=null) : ?bool {
 		if(!($table_num = Datamodel::getTableNum($table))) { return null; }
 		if(!($user_id = $request->getUserID())) { return null; }
+		if(!$row_id) { return null; }
 		
 		if(!($t = ca_unsaved_edits::find(['table_num' => $table_num, 'row_id' => $row_id, 'user_id' => $user_id], ['returnAs' => 'firstModelInstance']))) {
 			return null;

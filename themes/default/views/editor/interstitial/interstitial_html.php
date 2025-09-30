@@ -42,8 +42,9 @@ $form_name = "InterstitialEditorForm";
 $t_left= $t_subject->getLeftTableInstance();
 $t_right= $t_subject->getRightTableInstance();
 $rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName()."</em>";
-$key = $this->getVar('key') ?? 'relation_id';
-
+if(!($key = $this->getVar('key'))) {
+	$key = 'relation_id'; 
+}
 ?>		
 <form action="#" name="<?= $form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $form_name.$field_name_prefix.$n; ?>">
 	<div class='dialogHeader quickAddDialogHeader'><?php 
