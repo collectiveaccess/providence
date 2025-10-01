@@ -242,7 +242,7 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 						'relationship_type_code' => ['name' => _t('Relationship type code'), 'datatype' => 'String'], 
 						'relationship_typename' => ['name' => _t('Relationship type name'), 'datatype' => 'String'],
 						'rank' => ['name' => _t('Relationship rank'), 'datatype' => 'Numeric'],
-						'table' => ['name' => _t('Relationshop table'), 'datatype' => 'String']
+						'table' => ['name' => _t('Relationship table'), 'datatype' => 'String']
 					];
 					$linking_table = \Datamodel::getLinkingTableName($table, $f);
 					foreach($d as $index => $rel) {

@@ -159,7 +159,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			return false;
 		}
 		if(!($result = caMakeSearchResult($parameters['table'], $parameters['results'], ['sort' => $parameters['sort'], 'sortDirection' => $parameters['sortDirection']]))) {
-			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid table or id. Table was '%1''", $parameters['table'])); 
+			$logger->logError(_t("[TaskQueue::dataExport::process] Invalid table or id. Table was '%1'", $parameters['table'])); 
 			$this->error->setError(551, _t("Invalid table or id. Table was '%1'", $parameters['table']),"dataExport->process()");
 			return false;
 		}
