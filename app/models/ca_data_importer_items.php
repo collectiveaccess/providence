@@ -824,7 +824,7 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 2,
 			'takesLocale' => false,
 			'default' => false,
-			'label' => _t('Parse trailing dates in entity preferred label values and make available as synthetic __entity_label_date__ mapping value.'),
+			'label' => _t('Parse trailing dates in entity preferred label values and make available as synthetic __entity_label_date__ mapping values.'),
 		);
 		
 		$this->setAvailableSettings($settings);
