@@ -4784,9 +4784,78 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGenerateRandomPassword($length=6, $options=null) {
-		$pw = substr(md5(uniqid(microtime())), rand(0, (31 - $length)), $length);
+		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+
+		if(strtolower($auth_config->get('auth_adapter')) === 'causers') { // password policies only apply to integral auth system
+			if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
+				$limits = [];
+				foreach($policies as $k => $psettings) {
+					if(isset($psettings['rules']) && is_array($psettings['rules'])) {
+						$psettings = $psettings['rules'];
+					}
+					foreach($psettings as $setting => $value) {
+						switch($setting) {
+							case 'min_length':
+								if($length < $value) { $length = $value; }
+								break;
+							case 'max_length':
+								if($length > $value) {  $length = $value; }
+								break;
+							case 'upper_case':
+							case 'lower_case':
+							case 'digits':
+							case 'special_characters':
+								if($value > 0) {
+									if(($limits[$setting] ?? 0) < $value) {
+										$limits[$setting] = $value;
+									}
+								}
+								break;
+							case 'does_not_contain':
+								// noop (assume randomly generated password is never going to contain recognizable phrases)
+								break;
+						}	
+					}
+				}
+			}
+		}
+		
+		$lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+        $pw = '';
+        $all = $lowercase.$uppercase.$numbers.$symbols;
+
+        if(($limits['lower_case'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['lower_case']; $i++) {
+				$pw .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+			}
+		}
+		if(($limits['upper_case'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['upper_case']; $i++) {
+				$pw .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+			}
+		}
+		if(($limits['digits'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['digits']; $i++) {
+				$pw .= $numbers[random_int(0, strlen($numbers) - 1)];
+			}
+		}
+		if(($limits['special_characters'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['special_characters']; $i++) {
+				$pw .= $symbols[random_int(0, strlen($symbols) - 1)];
+			}
+		}
+
+        $rem_length = $length - strlen($pw);
+        for ($i = 0; $i < $rem_length; $i++) {
+            $pw .= $all[random_int(0, strlen($all) - 1)];
+        }
+		
 		if (caGetOption('uppercase', $options, false)) { $pw = strtoupper($pw); }
-		return $pw;
+		return str_shuffle($pw);
 	}
 	# ----------------------------------------
 	/**
