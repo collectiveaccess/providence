@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 	
 require_once(__CA_LIB_DIR__."/BaseFindController.php");
 require_once(__CA_LIB_DIR__."/Search/QuickSearch.php");
 
@@ -63,6 +62,7 @@ class QuickSearchController extends BaseFindController {
 		
 		$single_results = [];
 		$multiple_results = 0;
+		$force_to = null;
 		foreach($searches as $target => $sorts) {
 			$table_bits = explode('/', $target);
 			$table = $table_bits[0]; $type = (isset($table_bits[1])) ? $table_bits[1] : null;
@@ -93,16 +93,28 @@ class QuickSearchController extends BaseFindController {
 			if($result->numHits() > 0){
 				if ($result->numHits() == 1) {
 					$single_results[$target] = $found_item_ids[0];
-				}else{
-					$multiple_results = 1;
+					if($result->nextHit()) {
+						if(
+							(((mb_strtolower($result->get($result->tableName().'.'.Datamodel::getTableProperty($table, 'ID_NUMBERING_ID_FIELD'))) === mb_strtolower($search)))
+)							&&
+							($this->request->user->getPreference('quicksearch_redirect_on_idno_match') == 1)
+						) {
+							$force_to = ['table' => $result->tableName(), 'id' => $result->getPrimaryKey()];
+						}
+						$result->seek(0);
+					}
+				} else {
+					$multiple_results++;
 				}
 			}
 		}
+		
 		$this->view->setVar('searches', $searches);
 		
 		// note last quick search
 		if ($search) {
 			Session::setVar('quick_search_last_search', $search);
+			Session::save();
 		}
 		if($sort) {
 			Session::setVar('quick_search_last_sort', $sort);
@@ -112,6 +124,9 @@ class QuickSearchController extends BaseFindController {
 				
 		$this->view->setVar('maxNumberResults', $this->opn_num_results_per_item_type);
 		
+		if($force_to && !$multiple_results && (sizeof($single_results) <= 1)) {
+			$single_results = [$force_to['table'] => $force_to['id']];
+		}
 		// did we find only a single result in a single table? If so, then redirect to that record instead of showing results
 		if ((!$multiple_results) && (sizeof($single_results) == 1)) {
 			foreach($single_results as $target => $id) {

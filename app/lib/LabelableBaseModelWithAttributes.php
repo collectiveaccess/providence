@@ -110,8 +110,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
+	 *		notes = Notes for label. [Default is null]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
 	 *		sourceInfo = Source for label. [Default is null]
+	 *		notes = Notes for label. [Default is null]
 	 *		skipExisting = Don't add labels that already exist on this record. [Default is true]
 	 *
 	 * @return int id for newly created label, false on error or null if no row is loaded
@@ -127,6 +129,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+		$label_notes = caGetOption(['notes', 'label_notes', 'labelNotes'], $pa_options, null);
 		$label_checked = caGetOption(['checked', 'label_checked', 'labelChecked'], $pa_options, 0);
 		$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 		
@@ -181,6 +184,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			$t_label->set('effective_date', $effective_date); 
 		}
 		if ($t_label->hasField('access')) { $t_label->set('access', $label_access); }
+		if ($t_label->hasField('notes')) { $t_label->set('notes', $label_notes); }
 		if ($t_label->hasField('checked')) { $t_label->set('checked', $label_checked); }
 		if ($t_label->hasField('source_info')) { $t_label->set('source_info', $source_info); }
 		
@@ -221,8 +225,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * 		queueIndexing = Queue search indexing for background processing if possible. [Default is true]
 	 *		effectiveDate = Effective date for label. [Default is null]
 	 *		access = Access value for label (from access_statuses list). [Default is 0]
+	 *		notes = Notes for label. [Default is null]
 	 *		checked = Checked value for label (yes/no; ca_entity_labels only). [Default is 0]
 	 *		aourceInfo = Source for label. [Default is null]
+	 *		notes = Notes for label. [Default is null]
 	 * @return int id for the edited label, false on error or null if no row is loaded
 	 */
 	public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
@@ -233,6 +239,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$effective_date = caGetOption(['effective_date', 'effectiveDate'], $pa_options, null);
 		$label_access = caGetOption(['access', 'label_access', 'labelAccess'], $pa_options, 0);
+		$label_notes = caGetOption(['notes', 'label_notes', 'labelNotes'], $pa_options, 0);
 		$label_checked = caGetOption(['checked', 'label_checked', 'labelChecked'], $pa_options, 0);
 		$source_info = caGetOption(['source_info', 'sourceInfo'], $pa_options, null);
 		
@@ -289,6 +296,10 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		if ($t_label->hasField('access')) { 
 			$t_label->set('access', $label_access); 
 			if ($t_label->changed('access')) { $vb_has_changed = true; }
+		}
+		if ($t_label->hasField('notes')) { 
+			$t_label->set('notes', $label_notes); 
+			if ($t_label->changed('notes')) { $vb_has_changed = true; }
 		}
 		if ($t_label->hasField('checked')) { 
 			$t_label->set('checked', $label_checked); 
@@ -2517,7 +2528,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('graphicsPath', $pa_options['graphicsPath'] ?? null);
 		
 		$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_preferred_label_show_effective_date"));			
-		$o_view->setVar('show_access', $po_request->config->get("{$table}_preferred_label_show_access"));
+		$o_view->setVar('show_access', $po_request->config->get("{$table}_preferred_label_show_access"));	
+		$o_view->setVar('show_notes', $po_request->config->get("{$table}_preferred_label_show_notes"));
 		
 		$o_view->setVar('label_type_list', $po_request->config->get("{$table}_preferred_label_type_list"));
 		
@@ -2638,6 +2650,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$o_view->setVar('show_effective_date', $po_request->config->get("{$table}_nonpreferred_label_show_effective_date"));			
 		$o_view->setVar('show_access', $po_request->config->get("{$table}_nonpreferred_label_show_access"));
+		$o_view->setVar('show_notes', $po_request->config->get("{$table}_nonpreferred_label_show_notes"));
 		
 		$o_view->setVar('label_type_list', $po_request->config->get("{$table}_nonpreferred_label_type_list"));
 		

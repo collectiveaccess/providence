@@ -204,10 +204,10 @@ class DisplayTemplateParser {
 		}
 
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, ['sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
+		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
+		
 		$qr_res->doHighlighting($do_highlighting);
 		$qr_res->autoConvertLineBreaks($autoconvert_linebreaks);
-		
-		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
         $filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, null));
 
@@ -775,7 +775,6 @@ class DisplayTemplateParser {
 								]
 							)
 						);
-
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						
 						if($limit > 0) { 
@@ -789,7 +788,6 @@ class DisplayTemplateParser {
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
-						$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); // trim to start/length
 						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
@@ -1576,7 +1574,7 @@ class DisplayTemplateParser {
 					// related
 					$vs_relationship_type_sql = null;
 					if (!is_array($va_path = array_keys(Datamodel::getPath($ps_tablename, $ps_relative_to))) || !sizeof($va_path)) {
-						throw new Exception(_t("Cannot be path between %1 and %2", $ps_tablename, $ps_relative_to));
+						throw new Exception(_t("Cannot find path between %1 and %2", $ps_tablename, $ps_relative_to));
 					}
 					
 					$va_joins = array();

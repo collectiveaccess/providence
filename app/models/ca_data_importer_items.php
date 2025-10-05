@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -589,7 +589,6 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Collapse multiple spaces'),
 			'description' => _t('Convert multiple spaces to a single space.')
 		);
-		
 		$settings['upperCaseFirst'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -671,7 +670,6 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Treat value as identifiers for multiple rows'),
 			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
 		);
-		
 		$settings['treatAsIdnosForMultipleRows'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -681,7 +679,6 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Treat value as identifiers for multiple rows'),
 			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
 		);
-		
 		$settings['treatAsIdsForMultipleRows'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -691,7 +688,6 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Treat value as CollectiveAccess IDs for multiple rows'),
 			'description' => _t('Explode value on delimiter and use as CollectiveAccess IDs for multiple rows.')
 		);
-		
 		$settings['displaynameFormat'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -804,6 +800,31 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => false,
 			'label' => _t('Use mapped value as identifier for purposed of matching existing records via an existing record policy.'),
+		);
+		$settings['doNotParse'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Do not parse entity values for entity preferred labels.')
+		);
+		$settings['allowIdnoReplacement'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Allow replacement of existing idno values'),
+			'description' => _t('When set mappings to idno on existing records with idno values are applied. The default is to not apply idno mappings to existing records when an idno value already exists.')
+		);
+		$settings['parseDateSuffix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => false,
+			'label' => _t('Parse trailing dates in entity preferred label values and make available as synthetic __entity_label_date__ mapping values.'),
 		);
 		
 		$this->setAvailableSettings($settings);

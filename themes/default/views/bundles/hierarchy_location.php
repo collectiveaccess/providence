@@ -28,9 +28,9 @@
 AssetLoadManager::register('hierBrowser');
 AssetLoadManager::register('tabUI');
 
-$t_subject 			= $this->getVar('t_subject');
+$t_subject 		= $this->getVar('t_subject');
 $subject_label	= $t_subject->getLabelForDisplay();
-$subject_table 		= $t_subject->tableName();
+$subject_table 	= $t_subject->tableName();
 
 if (($priv_table = $subject_table) == 'ca_list_items') { $priv_table = 'ca_lists'; }		// actions happen to be on names for ca_lists for ca_list_items
 
@@ -38,6 +38,10 @@ $batch 			= $this->getVar('batch');
 $parent_id 		= $this->getVar('parent_id');
 $ancestors 		= $this->getVar('ancestors');
 $id 			= $this->getVar('id');
+$type_id 		= $this->getVar('type_id');
+$t_type			= $this->getVar('t_type');
+$is_new 		= !$id;
+$dont_init_move_browser = false;
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 $items_in_hier 	= $t_subject->getHierarchySize();
 $bundle_preview	= '('.$items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $subject_table, array($t_subject->getPrimaryKey()));
@@ -45,27 +49,42 @@ $bundle_preview	= '('.$items_in_hier. ') '. caProcessTemplateForIDs("^preferred_
 $record_set = $this->getVar('recordSet');
 
 $config = $t_subject->getAppConfig();
+$read_only		=	(($bundle_settings['readonly'] ?? false)  || ($this->request->user->getBundleAccessLevel($subject_table, 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
 
 if(!($min_autocomplete_search_length = (int)$config->get(["{$priv_table}_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]))) { $min_autocomplete_search_length = 3; }
 
-if (!$id && $batch) {
+if ($is_new) {
 	switch($t_subject->getProperty('HIERARCHY_TYPE')) {
 		case __CA_HIER_TYPE_ADHOC_MONO__:
-			// For batching on ad-hoc hierarchies we need to load something, so we pick the first record in the current record set		
-			$record_ids = $record_set ? $record_set->getItemRowIDs() : [];
-			$id = array_shift($record_ids);
-			if($id && ($t_rec = Datamodel::getInstance($subject_table, true, $id)) && ($parent_id = $t_rec->get("{$subject_table}.parent_id"))) {
-				$id = $parent_id;	
+			if($record_set) {
+				// For batching on ad-hoc hierarchies we need to load something, 
+				// so we pick the first record in the current record set		
+				$record_ids = $record_set ? $record_set->getItemRowIDs() : [];
+				$id = array_shift($record_ids);
+				if($id && ($t_rec = Datamodel::getInstance($subject_table, true, $id)) && ($subject_parent_id = $t_rec->get("{$subject_table}.parent_id"))) {
+					$id = $subject_parent_id;	
+				}
 			}
-			if(!$id && ($t_subject = $subject_table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids']))) {
-				$id = $t_subject->getPrimaryKey();
+			if(!$id && !$batch && $parent_id) { 
+				// New record with parent set - show parent, allow subsequent navigation if desired (to choose alternate parent
+				$id = $parent_id; 
+			}
+			
+			// Find first record with relevant type to be enclosure
+			// User can then search to find another
+			$has_enclosure = $t_type && ((int)$t_type->get('ca_list_items.parent_id') !== (int)$t_type->getHierarchyRootID());
+			if(!$id && $has_enclosure) { // && ($random_subject = $subject_table::findAsInstance('*', ['limit' => 1, 'returnAs' => 'ids']))) {
+				//$t_subject = $random_subject;
+				//$id = $t_subject->getPrimaryKey();
+				$id = null;
 			}
 			break;
 		case __CA_HIER_TYPE_SIMPLE_MONO__:
 			$id = $t_subject->getHierarchyRootID();
 			break;
 	}
-}
+} 
+$dont_init_move_browser = $is_new && !$id && !$parent_id;
 
 switch($priv_table) {
 	case 'ca_relationship_types':
@@ -113,7 +132,11 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	
 	$edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
-	$init_id = $subject_table."-".$id;
+	
+	if($collection_id = $this->request->getParameter('collection_id', pInteger)) {
+		$dont_init_move_browser = false;
+	}
+	$init_id = $collection_id ? "ca_collections-{$collection_id}" : "{$subject_table}-{$id}";
 } else {
 	$lookup_urls 			= caJSONLookupServiceUrl($this->request, $subject_table, $va_search_lookup_extra_params);
 	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
@@ -121,15 +144,17 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 	$init_id = $id;
 }
 
-$strict_type_hierarchy = $this->request->config->get($subject_table.'_enforce_strict_type_hierarchy');
-$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$id_prefix}type_id", array('id' => "{$id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 'includeSelf' => !(bool)$strict_type_hierarchy, 'directChildrenOnly' => ((bool)$strict_type_hierarchy && ($strict_type_hierarchy !== '~')), 'restrictToTypes' => $bundle_settings['restrict_to_types'] ?? null)));
+$strict_type_hierarchy = $this->request->config->get("{$subject_table}_enforce_strict_type_hierarchy");
+$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
+	"{$id_prefix}type_id", 
+	['id' => "{$id_prefix}typeList"], 
+	['enforceStrictTypeHierarchy' => $strict_type_hierarchy]
+));
 
-$read_only		=	((isset($bundle_settings['readonly']) && $bundle_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($subject_table, 'hierarchy_location') == __CA_BUNDLE_ACCESS_READONLY__));
-
-$show_add = (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
+$show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
 $show_move = ((!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) && !$read_only);
 
-$show_add_object = (!$read_only && $has_privs && !$batch) && $objects_x_collections_hierarchy_enabled && ($subject_table == 'ca_collections') && (((!$strict_type_hierarchy || ($strict_type_hierarchy === '~'))) || (($strict_type_hierarchy && ($strict_type_hierarchy !== '~')) && (!sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])))));
+$show_add_object = (!$read_only && $has_privs && !$batch) && $objects_x_collections_hierarchy_enabled && in_array($subject_table, ['ca_collections'], true) && (!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~'])) && (($strict_type_hierarchy != '1') || !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])));
 
 // Tab to open on load?
 $default_tab_index = 0;
@@ -184,11 +209,11 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 	if($template) {
 		$template_values = caProcessTemplateForIDs($template, $subject_table, array_keys($ancestors), ['returnAsArray' => true, 'indexWithIDs' => true]);
 	}
-	foreach($ancestors as $id => $va_item) {
+	foreach($ancestors as $ancestor_id => $va_item) {
 		$va_item['table'] = $va_item['table'] ?? null;
 		
 		$item_id = $do_objects_x_collections_hierarchy ? ($va_item['table'].'-'.($va_item['item_id'] ?? null)) : ($va_item['item_id'] ?? null);
-		if($id === '') {
+		if($ancestor_id === '') {
 			$path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
 		} else {
 			$label = $template_values[$id] ?? $va_item['label'];
@@ -291,11 +316,11 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				print "<div class='formLabel'><span class='formLabelError'>".join('; ', $va_errors)."</span></div>\n";
 			}
 	
-			if (!$batch && ($id > 0)) {
+			if (!$batch && (!$is_new || $has_enclosure) ) {
 				$count_label = caExtractSettingsValueByUserLocale('label_for_count', $bundle_settings) ?? caGetTableDisplayName($subject_table, true);
 
 ?>
-				<div class="hierarchyCountDisplay"><?php if($items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $count_label, $items_in_hier); } ?></div>
+				<div class="hierarchyCountDisplay"><?php if($items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $count_label, $items_in_hier); } else { print "&nbsp;"; } ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?= $id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?= _t('Show Hierarchy'); ?></span></a>
 				</div>			
@@ -314,25 +339,25 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 	</div><!-- end hiernav -->
 <?php
 	}
-	if (($id > 0) || $batch) {
+	if (($id > 0) || $batch || $has_enclosure) {
 ?>
 		<div id="<?= $id_prefix; ?>HierarchyBrowserContainer" style="display: none;" class="editorHierarchyBrowserContainer">		
 			<div  id="<?= $id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
 <?php
-	if (!$batch) {
+	if (!$batch && !$is_new) {
 ?>
 					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?= $id_prefix; ?>ExploreHierarchyBrowser();'><span><?= _t('Explore'); ?></span></a></li>
 <?php	
 	}
 	if ($show_move) {
 ?>
-					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-move" onclick='_init<?= $id_prefix; ?>MoveHierarchyBrowser();'><span><?= _t('Move'); ?></span></a></li>
+					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-move" onclick='_init<?= $id_prefix; ?>MoveHierarchyBrowser();'><span><?= $is_new ? _t('Position') : _t('Move'); ?></span></a></li>
 <?php
 	}
 	if ($show_add) {
 ?>
-					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?= $id_prefix; ?>AddHierarchyBrowser();'><span><?= ($objects_x_collections_hierarchy_enabled && ($subject_table == 'ca_collections')) ? _t('Add level') : _t('Add'); ?></span></a></li>
+					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?= $id_prefix; ?>AddHierarchyBrowser();'><span><?= ($objects_x_collections_hierarchy_enabled && in_array($subject_table, ['ca_collections'], true)) ? _t('Add level') : _t('Add'); ?></span></a></li>
 <?php
 	}
 	if ($show_add_object) {
@@ -343,7 +368,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 ?>
 				</ul>
 <?php
-	if (!$batch) {
+	if (!$batch && !$is_new) {
 ?>
 				<div id="<?= $id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
 					<div class="hierarchyBrowserFind">
@@ -369,13 +394,22 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 		) {
 			$return_home_button = caJSButton($this->request, __CA_NAV_ICON_HOME__, _t("Or return this record under its home location"), '', ['onclick' => "o{$id_prefix}MoveHierarchyBrowser.setUpHierarchy({$home_location_id}, true); return false;", 'class' => 'hierarchyReturnToHomeButton'], ['size' => '15px', 'no_background' => true]);
 		}
+		
+		$msg = _t('Click on an arrow to choose the location to move this record under.');
+		if($dont_init_move_browser) {
+			$msg = _t('Search for a record to serve as enclosure for the newly created record.');
+		} elseif($is_new) {
+			$msg = _t('Search for or click on a record to serve as enclosure.');
+		} elseif($batch) {
+			$msg = _t('Search for or click on a record to move items in the current record set under.');
+		}
 ?>
 				<div id="<?= $id_prefix; ?>HierarchyBrowserTabs-move" class="hierarchyBrowseTab">
 					<div class="hierarchyBrowserFind">
 						<?= _t('Find'); ?>: <input type="text" id="<?= $id_prefix; ?>MoveHierarchyBrowserSearch" name="search" value="" size="25"/>
 					</div>
 					<div class="hierarchyBrowserMessageContainer">
-						<?= $batch ? _t('Search for or click on a record to move items in the current record set under.') : _t('Click on an arrow to choose the location to move this record under.', $t_subject->getProperty('NAME_SINGULAR')); ?>
+						<?= $msg; ?>
 						<?= $return_home_button ? "<div class='hierarchyReturnToHomeContainer'>{$return_home_button}</div>" : ""; ?>
 						<div id='<?= $id_prefix; ?>HierarchyBrowserSelectionMessage' class='hierarchyBrowserNewLocationMessage'><!-- Message specifying move destination is dynamically inserted here by ca.hierbrowser --></div>	
 					</div>
@@ -467,7 +501,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 					<?= _t('Use the controls below to create new %1 relative to this %2 in the hierarchy.', $t_object->getProperty('NAME_PLURAL'), mb_strtolower($t_subject->getTypeName())); ?>
 				</div>
 				
-				<div id='<?= $id_prefix; ?>AddObjectHierarchyBrowseTypeMenu' style="margin-top: 15px;">
+				<div id='<?= $id_prefix; ?>AddObjectHierarchyBrowseTypeMenu' class="hierarchyBrowserMessageContainer">
 <?php
 					print "<div id='{$id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $this->getVar('objectTypeList'), $subject_label);
 
@@ -630,6 +664,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				editButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 				disabledButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
+				dontInit: <?= json_encode($dont_init_move_browser); ?>,
 						
 				allowDragAndDropSorting: <?= caDragAndDropSortingForHierarchyEnabled($this->request, $subject_table, $t_subject->getPrimaryKey()) ? "true" : "false"; ?>,
 				sortSaveUrl: '<?= $lookup_urls['sortSave']; ?>',
@@ -637,9 +672,9 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 		
 				currentSelectionIDID: '<?= $id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?= $id_prefix; ?>HierarchyBrowserSelectionMessage',
-				currentSelectionDisplayFormat: <?= json_encode(_t('Will be moved under <em>^current</em> after next save.')); ?>,
+				currentSelectionDisplayFormat: <?= json_encode($is_new ? _t('Will be placed under <em>^current</em> after save') : _t('Will be moved under <em>^current</em> after next save.')); ?>,
 				
-				allowExtractionFromHierarchy: <?= ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
+				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
 				extractFromHierarchyMessage: <?= json_encode(_t('Will be placed at the top of its own hierarchy after next save.')); ?>,
 				
@@ -665,8 +700,9 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				},
 				
 				displayCurrentSelectionOnLoad: false,
-				autoShrink: <?= (caGetOption('auto_shrink', $bundle_settings, false) ? 'true' : 'false'); ?>,
-				autoShrinkAnimateID: '<?= $id_prefix; ?>MoveHierarchyBrowser'
+				autoShrink: <?= json_encode((caGetOption('auto_shrink', $bundle_settings, false) || $dont_init_move_browser)); ?>,
+				autoShrinkAnimateID: '<?= $id_prefix; ?>MoveHierarchyBrowser',
+				autoShrinkMinHeightPx: <?= json_encode($dont_init_move_browser ? 50 : 180); ?>
 			});
 		}
 	}
@@ -749,6 +785,11 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
 <?php
 		}
+	} elseif($is_new) {
+?>
+		jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").show();
+		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
+<?php
 	} elseif (isset($bundle_settings['open_hierarchy']) && (bool)$bundle_settings['open_hierarchy']) {
 ?>
 		jQuery("#<?= $id_prefix; ?>browseToggle").trigger("click", { "delay" : 0 });

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -401,16 +401,17 @@ class ImportHelpersTest extends TestCase {
      */
     public function testCaProcessImportItemSettingsForValue() {
         $ps_value = '7.30.pepe';
-        $pa_item_settings = array(
-                'applyRegularExpressions' => array(
-                        array("match" => '([0-9]+)\\.([0-9]+)',
-                                "replaceWith" => "\\1:\\2"),
-                        array(
-                                "match" => "[^0-9:]+",
-                                "replaceWith" => ""
-                        )
-                )
-        );
+        $pa_item_settings = ['settings' => [
+				'applyRegularExpressions' => [
+						["match" => '([0-9]+)\\.([0-9]+)',
+								"replaceWith" => "\\1:\\2"],
+						[
+								"match" => "[^0-9:]+",
+								"replaceWith" => ""
+						]
+				]
+			]
+        ];
 
         $result = caProcessImportItemSettingsForValue($ps_value, $pa_item_settings);
         $this->assertSame('7:30', $result);
@@ -418,16 +419,17 @@ class ImportHelpersTest extends TestCase {
 
     public function testCaProcessImportItemSettingsForArrayValue() {
         $va_value = ['7.30.pepe', '8.30.smith'];
-        $va_item_settings = array(
-                'applyRegularExpressions' => array(
-                        array("match" => '([0-9]+)\\.([0-9]+)',
-                                "replaceWith" => "\\1:\\2"),
-                        array(
+        $va_item_settings = ['settings' => [
+                'applyRegularExpressions' => [
+                        ["match" => '([0-9]+)\\.([0-9]+)',
+                                "replaceWith" => "\\1:\\2"],
+                        [
                                 "match" => "[^0-9:]+",
                                 "replaceWith" => ""
-                        )
-                )
-        );
+                        ]
+                ]
+            ]
+        ];
 
         $result = caProcessImportItemSettingsForValue($va_value, $va_item_settings);
         $this->assertIsArray($result);
@@ -456,16 +458,17 @@ class ImportHelpersTest extends TestCase {
 
     public function testCaProcessImportItemSettingsForValueWithExclamation() {
         $ps_value = '7!30!pepe';
-        $pa_item_settings = array(
-                'applyRegularExpressions' => array(
-                        array("match" => '([0-9]+)!([0-9]+)',
-                                "replaceWith" => "\\1:\\2"),
-                        array(
+        $pa_item_settings = ['settings' => [
+                'applyRegularExpressions' => [
+                        ["match" => '([0-9]+)!([0-9]+)',
+                                "replaceWith" => "\\1:\\2"],
+                        [
                                 "match" => "[^0-9:]+",
                                 "replaceWith" => ""
-                        )
-                )
-        );
+                        ]
+                ]
+            ]
+        ];
 
         $result = caProcessImportItemSettingsForValue($ps_value, $pa_item_settings);
         $this->assertSame('7:30', $result);
@@ -492,9 +495,9 @@ class ImportHelpersTest extends TestCase {
         $this->assertEquals(0, sizeof($result));
     }
 
-    public function testCaProcessRefineryAttributesWithFileType() {
-        $this->markTestIncomplete('testCaProcessRefineryAttributesWithFileType pending test');
-    }
+//     public function testCaProcessRefineryAttributesWithFileType() {
+//         $this->markTestIncomplete('testCaProcessRefineryAttributesWithFileType pending test');
+//     }
 
     public function testCaProcessRefineryAttributesWithIndexedArray() {
         $pa_attributes = $this->attributes;

@@ -181,7 +181,7 @@ class CLITools extends CLIBaseUtils {
 			"itemValueColumn|x=s" => _t('Column number to use for item values. Omit to not set item values.'),
 			"itemDescriptionColumn|y=s" => _t('Column number to use for item descriptions. Omit to not set item descriptions.'),
 			"nonPreferredLabelsColumn|z=s" => _t('Column number to use for item nonpreferred labels. Omit to not set nonpreferred labels.'),
-			"worksheet|w-s" => _t('Zeroobased index of worksheet to use. If omitted first worksheet (0) is used.')
+			"worksheet|w-s" => _t('Zero-based index of worksheet to use. If omitted first worksheet (0) is used.')
 		);
 	}
 	# -------------------------------------------------------

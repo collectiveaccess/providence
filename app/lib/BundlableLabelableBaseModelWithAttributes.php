@@ -3303,11 +3303,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vn_first_id = array_shift($va_ids);
 			}
 		}
+
+		$type_id = $po_request->getParameter('type_id', pInteger);
+		
+		$id = ($pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		
+		if(!$id && $type_id) {
+			$this->get('type_id', $type_id);
+		}
 		
 		$o_view->setVar('batch', $pb_batch);
 		$o_view->setVar('parent_id', $vn_parent_id);
 		$o_view->setVar('ancestors', $va_ancestor_list);
-		$o_view->setVar('id', $pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		$o_view->setVar('id', $id);
+		$o_view->setVar('type_id', $type_id);
+		$o_view->setVar('t_type', $this->getTypeInstance());
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		return $o_view;
@@ -4206,98 +4216,6 @@ if (!$vb_batch) {
 
 	$pa_options['ifv'] = $ifv;	// return incoming form values via options to caller
 		
-	if (is_array($va_fields_by_type['special'] ?? null)) {
-		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
-			if ($vs_bundle !== 'hierarchy_location') { continue; }
-			
-			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
-			
-			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
-			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
-				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
-				return false;
-			});
-		
-			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
-			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
-			$target_table = $this->tableName();
-			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
-			
-			if(!is_array($multiple_move_selection) || !sizeof($multiple_move_selection)) {
-				$multiple_move_selection = [$this->getPrimaryKey()];
-			}
-			
-			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0) && ($vn_parent_id !== $this->get($this->HIERARCHY_PARENT_ID_FLD))) {
-				if(sizeof($multiple_move_selection) > 0) {
-					foreach($multiple_move_selection as $t_id) {
-						$target_tmp = explode('-', $t_id);
-						if(sizeof($target_tmp) > 1) {
-							list($tt, $target_id) = $target_tmp;
-						} else {
-							$tt = $target_table;
-							$target_id = $t_id;
-						}
-						
-						if ($parent_table == $tt) {	
-							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
-								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { 
-									$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
-									continue; 
-								}
-								if(!$t->isSaveable($po_request)) { continue; }
-								
-								$t->setTransaction($this->getTransaction());
-								
-								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
-								if(!$t->update()) {
-									$this->postError(2510, _t('Could not move item [%1]: %2', $t->getPrimaryKey(), join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-									$po_request->addActionErrors($this->errors());
-								}
-							}
-						} elseif(
-							(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
-							($parent_table == 'ca_collections') && ($tt == 'ca_objects') &&
-							($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
-						) { 
-							
-							if($t = ca_objects::findAsInstance(['object_id' => $target_id])) {
-								$t->removeRelationships('ca_collections', $coll_rel_type);
-								$t->set($t->HIERARCHY_PARENT_ID_FLD, null);
-								$t->set($t->HIERARCHY_ID_FLD, $t->getPrimaryKey());
-								if(!$t->update()) {
-									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-									$po_request->addActionErrors($this->errors());
-								}
-								if (!($t->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
-									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-									$po_request->addActionErrors($this->errors());
-								}
-							}						
-						}
-					}
-				} 
-			} else {
-				// Move record to root of adhoc hierarchy (Eg. Take object out of hierarchy and make top-level)
-				if (
-					$this->getPrimaryKey() && 
-					$this->HIERARCHY_PARENT_ID_FLD && 
-					($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && 
-					isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && 
-					($vn_parent_id <= 0)
-				) {
-					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
-					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
-				
-					// Support for collection-object cross-table hierarchies
-					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
-						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
-					}
-				}
-			}
-			break;
-		}
-	}
-		
 		//
 		// Call processBundlesBeforeBaseModelSave() method in sub-class, if it is defined. The method is passed
 		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() –
@@ -4364,6 +4282,99 @@ if (!$vb_batch) {
 		
 		$this->clearErrors();
 		
+			if (is_array($va_fields_by_type['special'] ?? null)) {
+		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
+			if ($vs_bundle !== 'hierarchy_location') { continue; }
+			
+			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
+			
+			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
+			
+			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
+				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
+				return false;
+			});
+		
+			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
+			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
+			$target_table = $this->tableName();
+			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
+			
+			if(!is_array($multiple_move_selection) || !sizeof($multiple_move_selection)) {
+				$multiple_move_selection = [$this->getPrimaryKey()];
+			}
+			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0) && ($vn_parent_id !== $this->get($this->HIERARCHY_PARENT_ID_FLD))) {
+				if(sizeof($multiple_move_selection) > 0) {
+					foreach($multiple_move_selection as $t_id) {
+						$target_tmp = explode('-', $t_id);
+						if(sizeof($target_tmp) > 1) {
+							list($tt, $target_id) = $target_tmp;
+						} else {
+							$tt = $target_table;
+							$target_id = $t_id;
+						}
+						
+						if ($parent_table == $tt) {	
+							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
+								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { 
+									$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+									continue; 
+								}
+								if(!$t->isSaveable($po_request)) { continue; }
+								
+								$t->setTransaction($this->getTransaction());
+								
+								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+								if(!$t->update()) {
+									$this->postError(2510, _t('Could not move item [%1]: %2', $t->getPrimaryKey(), join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+							}
+						} elseif(
+							(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
+							($parent_table == 'ca_collections') && ($tt == 'ca_objects') &&
+							($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
+						) { 
+							if($t = ca_objects::findAsInstance(['object_id' => $target_id])) {
+								$t->removeRelationships('ca_collections', $coll_rel_type);
+								$t->set($t->HIERARCHY_PARENT_ID_FLD, null);
+								$t->set($t->HIERARCHY_ID_FLD, $t->getPrimaryKey());
+								if(!$t->update()) {
+									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+								if (!($t->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
+									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+							}						
+						}
+					}
+				} 
+			} else {
+				// Move record to root of adhoc hierarchy (Eg. Take object out of hierarchy and make top-level)
+				if (
+					$this->getPrimaryKey() && 
+					$this->HIERARCHY_PARENT_ID_FLD && 
+					($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && 
+					isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && 
+					($vn_parent_id <= 0)
+				) {
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
+					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+				
+					// Support for collection-object cross-table hierarchies
+					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
+						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+					}
+				} elseif(!$this->getPrimaryKey() && ($vn_parent_id > 0)) {
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+				}
+			}
+			break;
+		}
+	}
+		
 		// Save reserved elements -  those with a saveElement method
 		if (isset($reserved_elements) && is_array($reserved_elements)) {
 			foreach($reserved_elements as $res_element) {
@@ -4404,10 +4415,11 @@ if (!$vb_batch) {
 									}
 									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_'.$va_label['label_id'], pString);
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_'.$va_label['label_id'], pInteger);
+									$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'notes_'.$va_label['label_id'], pString);
 									$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'checked_'.$va_label['label_id'], pInteger);
 									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'source_info_'.$va_label['label_id'], pString);
 							
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4508,10 +4520,11 @@ if (!$vb_batch) {
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
 							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'effective_date_new_'.$vn_c, pString);
 							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'access_new_'.$vn_c, pInteger);
+							$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'notes_new_'.$vn_c, pString);
 							$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'checked_new_'.$vn_c, pInteger);
 							$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'source_info_new_'.$vn_c, pString);
 							
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 								$vb_error_inserting_pref_label = true;
@@ -4559,10 +4572,11 @@ if (!$vb_batch) {
 									
 									$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_'.$va_label['label_id'], pString);
 									$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_'.$va_label['label_id'], pInteger);
+									$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'notes_'.$va_label['label_id'], pString);
 									$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'checked_'.$va_label['label_id'], pInteger);
 									$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_'.$va_label['label_id'], pString);
 
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -4626,10 +4640,11 @@ if (!$vb_batch) {
 							$vn_new_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_new_'.$vn_c, pInteger);
 							$effective_date = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'effective_date_new_'.$vn_c, pString);
 							$label_access = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'access_new_'.$vn_c, pInteger);
+							$label_notes = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'notes_new_'.$vn_c, pString);
 							$label_checked = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'checked_new_'.$vn_c, pInteger);
 							$source_info = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'source_info_new_'.$vn_c, pString);
 							
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, ['queueIndexing' => true, 'effectiveDate' => $effective_date, 'access' => $label_access, 'notes' => $label_notes, 'checked' => $label_checked, 'sourceInfo' => $source_info]);
 						
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
@@ -5538,6 +5553,36 @@ if (!$vb_batch) {
 								
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_storage_locations', $vn_location_id);
+										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+									}
+								}
+							}
+						}
+						if (!caGetOption('hide_update_place_controls', $va_bundle_settings, false)) {
+							$vn_place_id = $vn_place_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_places_idnew_0", pInteger);
+							if ($vn_place_id) {
+								$t_loc = Datamodel::getInstance('ca_places', true);
+								
+								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+								if ($t_loc->load($vn_place_id)) {
+									if ($policy) {
+										$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_places', $t_loc->getTypeCode());
+										$vn_relationship_type_id = caGetOption('trackingRelationshipType', $policy_info, null);
+									}
+									
+									if ($vn_relationship_type_id) {
+										// is effective date set?
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_places__effective_datenew_0", pString);
+						
+										$t_item_rel = $this->addRelationship('ca_places', $vn_place_id, $vn_relationship_type_id, $vs_effective_date);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											ca_places::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_ca_places', $t_item_rel, $vn_place_id, $processed_bundle_settings);							
+										}									
+								
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_places', $vn_place_id);
 										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
 									}
 								}

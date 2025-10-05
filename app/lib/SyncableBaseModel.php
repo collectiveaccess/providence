@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2021 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_MODELS_DIR__ . '/ca_guids.php');
 
 trait SyncableBaseModel {
@@ -102,7 +101,7 @@ trait SyncableBaseModel {
 		$va_info = ca_guids::getInfoForGUID($ps_guid);
 
 		if($va_info['table_num'] == $this->tableNum()) {
-			return $this->load($va_info['row_id']);
+			return $this->load($va_info['row_id'], false);
 		}
 
 		return null;
@@ -160,7 +159,7 @@ trait SyncableBaseModel {
 		$qr_res = $o_db->query("SELECT * FROM ca_guids WHERE guid = ?", [$ps_guid]);
 		
 		if($qr_res->nextRow()) {
-			if (($t_instance = Datamodel::getInstanceByTableNum($qr_res->get('table_num'))) && ($t_instance->load($qr_res->get('row_id')))) {
+			if (($t_instance = Datamodel::getInstanceByTableNum($qr_res->get('table_num'))) && ($t_instance->load($qr_res->get('row_id'), false))) {
 				return $t_instance;
 			}
 		}

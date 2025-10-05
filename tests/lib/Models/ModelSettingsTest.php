@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021 Whirl-i-Gig
+ * Copyright 2021-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,9 +38,8 @@ class ModelSettingsTest extends TestCase {
 		$t = ca_list_items::findAsInstance(['list_id' => caGetListID('entity_types'), 'idno' => 'ind']);
 		
 		$available_settings = $t->getAvailableSettings();
-		
 		$this->assertIsArray($available_settings);
-		$this->assertCount(6, $available_settings);
+		$this->assertCount(8, $available_settings);
 		$this->assertContains('entity_class', array_keys($available_settings));
 		$this->assertContains('use_suffix_for_orgs', array_keys($available_settings));
 		$this->assertContains('render_in_new_menu', array_keys($available_settings));
@@ -114,7 +113,7 @@ class ModelSettingsTest extends TestCase {
 		
 		$available_settings = $bp->getAvailableSettings();
 		$this->assertIsArray($available_settings);
-		$this->assertCount(6, $available_settings);
+		$this->assertCount(7, $available_settings);
 		
 		$this->assertContains('label', array_keys($available_settings));
 		$this->assertContains('format', array_keys($available_settings));

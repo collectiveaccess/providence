@@ -3147,7 +3147,7 @@
         <setting name="fieldHeight">4</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
-        <setting name="doesNotTakeLocale">1</setting>
+        <setting name="doesNotTakeLocale">0</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -4161,27 +4161,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="ubio" datatype="InformationService">
-      <labels>
-        <label locale="en_US">
-          <name>uBio</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="service">uBio</setting>
-        <setting name="fieldWidth">90</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="wikipedia" datatype="InformationService">
       <labels>
         <label locale="en_US">
@@ -4427,9 +4406,6 @@
             </placement>
             <placement code="ca_attribute_ulan">
               <bundle>ca_attribute_ulan</bundle>
-            </placement>
-            <placement code="ca_attribute_ubio">
-              <bundle>ca_attribute_ubio</bundle>
             </placement>
             <placement code="ca_attribute_wikipedia">
               <bundle>ca_attribute_wikipedia</bundle>

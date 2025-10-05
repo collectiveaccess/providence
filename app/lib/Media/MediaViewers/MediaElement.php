@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
  */
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__.'/Media/IMediaViewer.php');
@@ -67,7 +63,14 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 					'dont_init_plyr' => caGetOption('dontInitPlyr', $pa_options, caGetOption('dontInitPlyr', $pa_data['display'], null)),
 				];
 				
-				if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
+				$allow_fulllength_playback_element_code = $t_subject->getAppConfig()->get('allow_fulllength_playback_element_code');
+				$allow_fulllength_playback_element_code_yes_value = $t_subject->getAppConfig()->get('allow_fulllength_playback_element_code_yes_value');
+				if($t_subject->hasElement($allow_fulllength_playback_element_code) && ($t_subject->get($allow_fulllength_playback_element_code, ['convertCodesToIdno' => true]) === $allow_fulllength_playback_element_code_yes_value) && isset($pa_data['display']['fulllength_version'])) {
+					$vs_version = $pa_data['display']['fulllength_version'];	
+				} else {
+					$vs_version = caGetOption('display_version', $pa_data['display'], 'original');
+				}
+				if (!$t_instance->hasMediaVersion('media', $vs_version)) {
 					if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('alt_display_version', $pa_data['display'], 'original'))) {
 						$vs_version = 'original';
 					}

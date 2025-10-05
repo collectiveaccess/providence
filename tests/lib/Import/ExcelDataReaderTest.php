@@ -98,7 +98,7 @@ class ExcelDataReaderTest extends TestCase {
 		$row = $this->reader->getRow();
 
 		// columns are 1-based, there is a null on position 0.
-		$this->assertEquals( 4, sizeof( $row ) );
+		$this->assertEquals( 7, sizeof( $row ) );
 
 	}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2021 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,7 +113,7 @@ class RelatedListController extends BaseSearchController {
 				switch($placement->get('bundle_name')) {
 					case 'history_tracking_current_contents':
 						$settings = $placement->getSettings();
-						if($qr = $t_instance->getContents($settings['policy'] ?? null)) {
+						if($qr = $t_instance->getContents($settings['policy'] ?? null, ['expandHierarchically' => $settings['expandHierarchically'] ?? false])) {
 							$va_relation_ids = $qr->getAllFieldValues($qr->primaryKey());
 						}
 						break;
@@ -157,7 +157,7 @@ class RelatedListController extends BaseSearchController {
 		if(!$t_related || !$t_related_rel) { throw new Exception(_t('Invalid table name')); }
 
 		// we need the rel table to translate the incoming relation_ids to primary keys in the related table for the list search result
-		$o_interstitial_res = caMakeSearchResult($vs_related_rel_table, array_keys($va_relation_ids));
+		$o_interstitial_res = caMakeSearchResult($vs_related_rel_table, array_keys($va_relation_ids ?? []));
 
 		$va_relation_id_typenames = array();
 		while($o_interstitial_res->nextHit()) {
@@ -216,7 +216,7 @@ class RelatedListController extends BaseSearchController {
 		$va_res = caMakeSearchResult($t_related->tableName(), $va_relation_ids, $va_search_opts);
 		$o_res = $va_res['result'];
 		$va_relation_ids_to_related_ids = [];
-		$x = array_flip($va_relation_ids);
+		$x = array_flip($va_relation_ids ?? []);
 		foreach($va_res['index'] as $rel_id) {
 			$va_relation_ids_to_related_ids[$x[$rel_id]] = $rel_id;
 		}

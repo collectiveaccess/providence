@@ -121,7 +121,7 @@ class ExcelDataReader extends BaseDataReader {
 				
 				$headers = [];
 				foreach ($o_cells as $o_cell) {
-					$headers[] = str_replace("\\0", '/0', trim((string)self::getCellAsHTML($o_cell)));
+					$headers[] = str_replace("\\0", '/0', trim(strip_tags((string)self::getCellAsHTML($o_cell))));
 						
 					$col++;
 					if ($col > $this->opn_max_columns) { break; }
@@ -212,7 +212,7 @@ class ExcelDataReader extends BaseDataReader {
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num-1;
 		$this->opo_rows->seek($seek = ($pn_row_num > 0) ? $pn_row_num : 0);
-		return ($seek <= 1) ? $this->nextRow() : true;
+		return $this->nextRow();
 	}
 	# -------------------------------------------------------
 	/**

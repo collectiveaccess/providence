@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2020 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 class PDFRenderer {
 	# --------------------------------------------------------------------------------
 	public const CUSTOM_REGEX = '/Custom\((.+),(.+)\)/i';
@@ -297,9 +293,8 @@ class PDFRenderer {
 		if (!PDFRenderer::isValidOrientation($ps_orientation)) { $ps_orientation='portrait'; }
 
 		if (preg_match(self::CUSTOM_REGEX, $ps_size, $matches)){
-			$vn_page_width = caConvertMeasurement($matches[1], 'mm') . $ps_units;
-			$vn_page_height = caConvertMeasurement($matches[2], 'mm') . $ps_units;
-
+			$vn_page_width = caConvertMeasurement($matches[1], $ps_units) . $ps_units;
+			$vn_page_height = caConvertMeasurement($matches[2], $ps_units) . $ps_units;
 		} else {
 			$va_page_size =	self::$PAPER_SIZES[$ps_size];
 			$vn_page_width = caConvertMeasurement(($va_page_size[2] - $va_page_size[0]).'px', $ps_units);
