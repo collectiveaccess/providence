@@ -2462,7 +2462,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function reload_attribute_sortable_valuesHelp() {
-		return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements. This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
+		return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements). This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
 	}
 	# -------------------------------------------------------
 }
