@@ -29,8 +29,9 @@ $t_subject 			= $this->getVar('t_subject');
 $o_result_context 	= $this->getVar('result_context');
 $t_list 			= new ca_lists();
 
-$can_edit_inventories = (bool)(is_array($inventories = $this->getVar('inventories')) && sizeof($inventories) && $this->request->user->canDoAction('can_edit_inventories'));
+$can_edit_inventories = $this->request->user->canDoAction('can_edit_inventories');
 $can_create_inventories = (bool)$this->request->user->canDoAction('can_create_inventories');
+$inventories_exist = (bool)(is_array($inventories = $this->getVar('inventories')) && sizeof($inventories));
 
 // Source list
 $source_select = caHTMLSelect('source', 
@@ -61,7 +62,7 @@ $set_list = $can_edit_inventories ? caHTMLSelect('set_id',
 $new_set_input = $can_create_inventories ? caHTMLTextInput('set_name', 
 	[
 		'id' => 'caNewInventoryInput', 
-		'style' => $can_edit_inventories ? 'display: none;' : '',
+		'style' => ($can_edit_inventories && $inventories_exist) ? 'display: none;' : '',
 		'class' => 'searchSetsTextInput setSource', 
 		'value' => '', 
 		'placeholder' => _t('New inventory name')
@@ -69,7 +70,7 @@ $new_set_input = $can_create_inventories ? caHTMLTextInput('set_name',
 	[]
 ) : '';
 
-if ($can_edit_inventories || $can_create_inventories) {
+if ($can_edit_inventories) {
 ?>
 <div class='inventoryTools'>
 	<a href="#" id='searchInventoryToolsShow' onclick="return caShowSearchInventoryTools(true);"><?= caNavIcon(__CA_NAV_ICON_INVENTORY__, 2).' '._t("Inventory"); ?></a>
@@ -85,7 +86,7 @@ if ($can_edit_inventories || $can_create_inventories) {
 		<form id="caCreateInventoryFromResults">
 			<?= _t("%1 to %2", 
 				$source_select,
-				($can_edit_inventories ? $set_list : '').($can_create_inventories ? $new_set_input : '')
+				(($can_edit_inventories && $inventories_exist) ? $set_list : '').($can_create_inventories ? $new_set_input : '')
 			).
 			caHTMLHiddenInput('mode', ['value' => 'U', 'id' => 'caInventorySaveMode']); ?>
 			<div class="inventoryControlBlock">
@@ -253,5 +254,12 @@ if ($can_edit_inventories || $can_create_inventories) {
 	
 	jQuery(document).ready(function() {
 		caInventoryUpdateForm();
+<?php
+	if(!$inventories_exist) {
+?>
+		caToggleNewInventoryControl(true);
+<?php
+	}
+?>
 	});
 </script>
