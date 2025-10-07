@@ -439,7 +439,7 @@
 		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."' ".($autocomplete ? '' : 'autocomplete="off"').">\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
 		
 		if (!caGetOption('noTimestamp', $pa_options, false)) {
-			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
+			$vs_buf .= caHTMLHiddenInput('form_timestamp', ['value' => ceil(microtime(true))]);
 		}
 		if (!caGetOption('noCSRFToken', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('csrfToken', array('value' => caGenerateCSRFToken($po_request)));

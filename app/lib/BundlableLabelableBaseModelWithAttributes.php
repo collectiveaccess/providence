@@ -4224,100 +4224,6 @@ if (!$vb_batch) {
 
 	$pa_options['ifv'] = $ifv;	// return incoming form values via options to caller
 		
-	if (is_array($va_fields_by_type['special'] ?? null)) {
-		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
-			if ($vs_bundle !== 'hierarchy_location') { continue; }
-			
-			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
-			
-			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
-			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
-				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
-				return false;
-			});
-		
-			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
-			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
-			$target_table = $this->tableName();
-			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
-			
-			if(!is_array($multiple_move_selection) || !sizeof($multiple_move_selection)) {
-				$multiple_move_selection = [$this->getPrimaryKey()];
-			}
-			
-			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0) && ($vn_parent_id !== $this->get($this->HIERARCHY_PARENT_ID_FLD))) {
-				if(sizeof($multiple_move_selection) > 0) {
-					foreach($multiple_move_selection as $t_id) {
-						$target_tmp = explode('-', $t_id);
-						if(sizeof($target_tmp) > 1) {
-							list($tt, $target_id) = $target_tmp;
-						} else {
-							$tt = $target_table;
-							$target_id = $t_id;
-						}
-						
-						if ($parent_table == $tt) {	
-							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
-								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { 
-									$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
-									continue; 
-								}
-								if(!$t->isSaveable($po_request)) { continue; }
-								
-								$t->setTransaction($this->getTransaction());
-								
-								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
-								if(!$t->update()) {
-									$this->postError(2510, _t('Could not move item [%1]: %2', $t->getPrimaryKey(), join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-									$po_request->addActionErrors($this->errors());
-								}
-							}
-						} elseif(
-							(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
-							($parent_table == 'ca_collections') && ($tt == 'ca_objects') &&
-							($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
-						) { 
-							
-							if($t = ca_objects::findAsInstance(['object_id' => $target_id])) {
-								$t->removeRelationships('ca_collections', $coll_rel_type);
-								$t->set($t->HIERARCHY_PARENT_ID_FLD, null);
-								$t->set($t->HIERARCHY_ID_FLD, $t->getPrimaryKey());
-								if(!$t->update()) {
-									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-									$po_request->addActionErrors($this->errors());
-								}
-								if (!($t->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
-									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
-									$po_request->addActionErrors($this->errors());
-								}
-							}						
-						}
-					}
-				} 
-			} else {
-				// Move record to root of adhoc hierarchy (Eg. Take object out of hierarchy and make top-level)
-				if (
-					$this->getPrimaryKey() && 
-					$this->HIERARCHY_PARENT_ID_FLD && 
-					($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && 
-					isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && 
-					($vn_parent_id <= 0)
-				) {
-					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
-					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
-				
-					// Support for collection-object cross-table hierarchies
-					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
-						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
-					}
-				} elseif(!$this->getPrimaryKey() && ($vn_parent_id > 0)) {
-					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
-				}
-			}
-			break;
-		}
-	}
-		
 		//
 		// Call processBundlesBeforeBaseModelSave() method in sub-class, if it is defined. The method is passed
 		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() –
@@ -4383,6 +4289,99 @@ if (!$vb_batch) {
 		}	// bail if insert failed
 		
 		$this->clearErrors();
+		
+			if (is_array($va_fields_by_type['special'] ?? null)) {
+		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
+			if ($vs_bundle !== 'hierarchy_location') { continue; }
+			
+			if ($vb_batch && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_batch_mode', pString) !== '_replace_')) { continue; }
+			
+			$parent_tmp = explode("-", $po_request->getParameter(["{$vs_placement_code}{$vs_form_prefix}_new_parent_id", "{$vs_placement_code}_new_parent_id"], pString));
+			
+			$multiple_move_selection = array_filter(explode(";", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_move_selection", pString)), function($v) {
+				if(is_numeric($v) || preg_match("!^(ca_objects|ca_collections)!", $v)){ return true; }
+				return false;
+			});
+		
+			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
+			$vn_parent_id = (($vn_parent_id = array_pop($parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
+			$target_table = $this->tableName();
+			$parent_table = (sizeof($parent_tmp) > 0) ? array_pop($parent_tmp) : $target_table;
+			
+			if(!is_array($multiple_move_selection) || !sizeof($multiple_move_selection)) {
+				$multiple_move_selection = [$this->getPrimaryKey()];
+			}
+			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0) && ($vn_parent_id !== $this->get($this->HIERARCHY_PARENT_ID_FLD))) {
+				if(sizeof($multiple_move_selection) > 0) {
+					foreach($multiple_move_selection as $t_id) {
+						$target_tmp = explode('-', $t_id);
+						if(sizeof($target_tmp) > 1) {
+							list($tt, $target_id) = $target_tmp;
+						} else {
+							$tt = $target_table;
+							$target_id = $t_id;
+						}
+						
+						if ($parent_table == $tt) {	
+							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
+								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { 
+									$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+									continue; 
+								}
+								if(!$t->isSaveable($po_request)) { continue; }
+								
+								$t->setTransaction($this->getTransaction());
+								
+								$t->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
+								if(!$t->update()) {
+									$this->postError(2510, _t('Could not move item [%1]: %2', $t->getPrimaryKey(), join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+							}
+						} elseif(
+							(bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') &&
+							($parent_table == 'ca_collections') && ($tt == 'ca_objects') &&
+							($coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))
+						) { 
+							if($t = ca_objects::findAsInstance(['object_id' => $target_id])) {
+								$t->removeRelationships('ca_collections', $coll_rel_type);
+								$t->set($t->HIERARCHY_PARENT_ID_FLD, null);
+								$t->set($t->HIERARCHY_ID_FLD, $t->getPrimaryKey());
+								if(!$t->update()) {
+									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+								if (!($t->addRelationship('ca_collections', $vn_parent_id, $coll_rel_type))) {
+									$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors());
+								}
+							}						
+						}
+					}
+				} 
+			} else {
+				// Move record to root of adhoc hierarchy (Eg. Take object out of hierarchy and make top-level)
+				if (
+					$this->getPrimaryKey() && 
+					$this->HIERARCHY_PARENT_ID_FLD && 
+					($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && 
+					isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && 
+					($vn_parent_id <= 0)
+				) {
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
+					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+				
+					// Support for collection-object cross-table hierarchies
+					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
+						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+					}
+				} elseif(!$this->getPrimaryKey() && ($vn_parent_id > 0)) {
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+				}
+			}
+			break;
+		}
+	}
 		
 		// Save reserved elements -  those with a saveElement method
 		if (isset($reserved_elements) && is_array($reserved_elements)) {

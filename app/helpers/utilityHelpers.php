@@ -765,7 +765,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGetTempDirPath($options=null) {
-		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_APP_DIR__."/tmp"; }
+		if(caGetOption('useAppTmpDir', $options, true)) { return __CA_TEMP_DIR__; }
 	
 		if (!empty($_ENV['TMP'])) {
 			return realpath($_ENV['TMP']);
@@ -906,12 +906,12 @@ function caFileIsIncludable($ps_file) {
 			$threshold = 1800;
 		}
 		
-		$files_to_delete = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, false, false, true, ['notModifiedSince' => time() - $threshold]);
+		$files_to_delete = caGetDirectoryContentsAsList(__CA_TEMP_DIR__, true, false, false, true, ['notModifiedSince' => time() - $threshold]);
 	
 		$count = 0;
 		foreach($files_to_delete as $file_to_delete) {
 			if(is_writeable($file_to_delete)) {
-				if(preg_match("!^".__CA_APP_DIR__.'/tmp'."/wkhtmltopdf[\d]+!", $file_to_delete)) {
+				if(preg_match("!^".__CA_TEMP_DIR__."/wkhtmltopdf[\d]+!", $file_to_delete)) {
 					@unlink($file_to_delete);
 					$count++;
 				}
@@ -1636,7 +1636,7 @@ function caFileIsIncludable($ps_file) {
 	  *
 	  */
 	function caGetCacheObject($ps_prefix, $pn_lifetime=86400, $ps_cache_dir=null, $pn_cleaning_factor=100) {
-		if (!$ps_cache_dir) { $ps_cache_dir = __CA_APP_DIR__.'/tmp'; }
+		if (!$ps_cache_dir) { $ps_cache_dir = __CA_TEMP_DIR__; }
 		$va_frontend_options = array(
 			'cache_id_prefix' => $ps_prefix,
 			'lifetime' => $pn_lifetime,
@@ -4249,7 +4249,7 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$locale = caGetOption('locale', $options, $g_ui_locale);
 		$max_length = caGetOption('maxLength', $options, 255, ['castTo' => 'int']);
-		$text = strip_tags($text);
+		$text = trim(strip_tags($text));
 		//if (!$locale) { return mb_substr($text, 0, $max_length); }
 
 		$omit_article = caGetOption('omitArticle', $options, true);
@@ -4276,11 +4276,15 @@ function caFileIsIncludable($ps_file) {
 			if(is_numeric($t)) {
 				$padded[] = str_pad($t, 10, 0, STR_PAD_LEFT).'    ';	// assume numbers don't go wider than 10 places
 			} elseif(preg_match("!^([A-Za-z]+)([\d]+)([A-Za-z]+)$!u", $t, $m)) {
-				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[3], 0, 4), 4, ' ', STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[1], 0, 10), 10, ' ', STR_PAD_RIGHT);
+				$padded[] = str_pad($m[2], 10, 0, STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[3], 0, 10), 10, ' ', STR_PAD_RIGHT);
 			} elseif(preg_match("!^([\d]+)([A-Za-z]+)$!u", $t, $m)) {
-				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT).str_pad(mb_substr($m[2], 0, 4), 4, ' ', STR_PAD_LEFT);
+				$padded[] = str_pad($m[1], 10, 0, STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[2], 0, 10), 10, ' ', STR_PAD_RIGHT);
 			} elseif(preg_match("!^([A-Za-z]+)([\d]+)$!u", $t, $m)) {
-				$padded[] = str_pad(mb_substr($m[1], 0, 4), 4, ' ', STR_PAD_LEFT).str_pad($m[2], 10, 0, STR_PAD_LEFT);
+				$padded[] = str_pad(mb_substr($m[1], 0, 10), 10, ' ', STR_PAD_RIGHT);
+				$padded[] = str_pad($m[2], 10, 0, STR_PAD_LEFT);
 			} else {
 				$padded[] = str_pad(mb_substr($t, 0, 10), 14, ' ', STR_PAD_RIGHT);
 			}
@@ -4780,9 +4784,78 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGenerateRandomPassword($length=6, $options=null) {
-		$pw = substr(md5(uniqid(microtime())), rand(0, (31 - $length)), $length);
+		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+
+		if(strtolower($auth_config->get('auth_adapter')) === 'causers') { // password policies only apply to integral auth system
+			if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
+				$limits = [];
+				foreach($policies as $k => $psettings) {
+					if(isset($psettings['rules']) && is_array($psettings['rules'])) {
+						$psettings = $psettings['rules'];
+					}
+					foreach($psettings as $setting => $value) {
+						switch($setting) {
+							case 'min_length':
+								if($length < $value) { $length = $value; }
+								break;
+							case 'max_length':
+								if($length > $value) {  $length = $value; }
+								break;
+							case 'upper_case':
+							case 'lower_case':
+							case 'digits':
+							case 'special_characters':
+								if($value > 0) {
+									if(($limits[$setting] ?? 0) < $value) {
+										$limits[$setting] = $value;
+									}
+								}
+								break;
+							case 'does_not_contain':
+								// noop (assume randomly generated password is never going to contain recognizable phrases)
+								break;
+						}	
+					}
+				}
+			}
+		}
+		
+		$lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+        $pw = '';
+        $all = $lowercase.$uppercase.$numbers.$symbols;
+
+        if(($limits['lower_case'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['lower_case']; $i++) {
+				$pw .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+			}
+		}
+		if(($limits['upper_case'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['upper_case']; $i++) {
+				$pw .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+			}
+		}
+		if(($limits['digits'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['digits']; $i++) {
+				$pw .= $numbers[random_int(0, strlen($numbers) - 1)];
+			}
+		}
+		if(($limits['special_characters'] ?? 0) > 0) {
+			for ($i = 0; $i < $limits['special_characters']; $i++) {
+				$pw .= $symbols[random_int(0, strlen($symbols) - 1)];
+			}
+		}
+
+        $rem_length = $length - strlen($pw);
+        for ($i = 0; $i < $rem_length; $i++) {
+            $pw .= $all[random_int(0, strlen($all) - 1)];
+        }
+		
 		if (caGetOption('uppercase', $options, false)) { $pw = strtoupper($pw); }
-		return $pw;
+		return str_shuffle($pw);
 	}
 	# ----------------------------------------
 	/**
@@ -4797,7 +4870,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string Path to file
 	 */
 	function caFetchFileFromUrl($url, $dest=null, array $options=null) {
-		$tmp_file = $dest ? $dest : tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
+		$tmp_file = $dest ? $dest : tempnam(__CA_TEMP_DIR__, 'caUrlCopy');
 		
 		$r_outgoing_fp = @fopen($tmp_file, 'w');
 		if(!$r_outgoing_fp) {

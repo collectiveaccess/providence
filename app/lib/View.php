@@ -172,7 +172,7 @@ class View extends BaseObject {
 	 */
 	public function isCompiled($ps_filepath) {
 		global $g_ui_locale;
-		$vs_compiled_path = __CA_APP_DIR__."/tmp/caCompiledView".md5($ps_filepath.$g_ui_locale);
+		$vs_compiled_path = __CA_TEMP_DIR__."/caCompiledView".md5($ps_filepath.$g_ui_locale);
 		if (!file_exists($vs_compiled_path)) { return false; }
 		if (filesize($vs_compiled_path) === 0) { return false; }
 		
@@ -197,7 +197,7 @@ class View extends BaseObject {
 		
 		$vs_buf = $this->_render($ps_filepath);
 		
-		$vs_compiled_path = __CA_APP_DIR__."/tmp/caCompiledView".md5($ps_filepath);
+		$vs_compiled_path = __CA_TEMP_DIR__."/caCompiledView".md5($ps_filepath);
 		preg_match_all("!(?<=\{\{\{)(?s)(.*?)(?=\}\}\})!", $vs_buf, $va_matches);
 		
 		$va_tags = $va_matches[1];

@@ -25,46 +25,54 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-$po_request 			= $this->getVar('request');
-$va_instances 			= $this->getVar('instances');
-$va_settings 			= $this->getVar('settings');
-$vs_widget_id 			= $this->getVar('widget_id');
-$hide_zero_counts 		= $this->getVar('hide_zero_counts');
+$request 			= $this->getVar('request');
+$instances 			= $this->getVar('instances');
+$settings 			= $this->getVar('settings');
+$widget_id 			= $this->getVar('widget_id');
+$hide_zero_counts 	= $this->getVar('hide_zero_counts');
 ?>
 <div class="dashboardWidgetContentContainer" style="font-size:13px; padding-right:10px;">
 <?php
-	$va_counts = array();
+	$counts = array();
 	$i = 1;
-	foreach($this->getVar('counts') as $vs_table => $count) {
+	foreach($this->getVar('counts') as $table => $count) {
 		if(is_array($count)) { 
 			foreach($count as $type_id => $info) {
 				if($hide_zero_counts && ($info['count'] == 0)) { continue; }
 				$typename = caGetListItemByIDForDisplay($type_id, ['return' => ($info['count'] == 1) ? 'singular' : 'plural']);
-				$va_counts[] = "<b><a>".caSearchLink($po_request,$info['count'], '', $vs_table, "{$vs_table}.type_id:".caGetListItemIdno($type_id), ['type_id' => $type_id]).'</a></b>&nbsp;'.$typename;
+				$counts[] = "<b><a>".caSearchLink($request,$info['count'], '', $table, "{$table}.type_id:".caGetListItemIdno($type_id), ['type_id' => $type_id]).'</a></b>&nbsp;'.$typename;
 			}
 		} else {
 			if($hide_zero_counts && ($count == 0)) { continue; }
-			$link = caSearchLink($po_request, $count, '', $vs_table, '*', ['clearType' => 1]);
+			$link = caSearchLink($request, $count, '', $table, '*', ['clearType' => 1]);
 			if ($count == 1) {
-				$va_counts[] = "<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_SINGULAR'));
+				$counts[] = "<b>".$link.'</b>&nbsp;'._t($instances[$table]->getProperty('NAME_SINGULAR'));
 			} else {
-				$va_counts[] = "<b>".$link.'</b>&nbsp;'._t($va_instances[$vs_table]->getProperty('NAME_PLURAL'));
+				$counts[] = "<b>".$link.'</b>&nbsp;'._t($instances[$table]->getProperty('NAME_PLURAL'));
 			}
 			$i++;
 		}
 	}
 	
 	# --- only make a list if there is more than 1 thing
-	if((sizeof($va_counts) > 1)){
-		print "<ul class='disc allowBold'>";
-		foreach($va_counts as $vs_count){
-			print "<li>".$vs_count."</li>";
+	if(($settings['format'] ?? null) === 'LIST') {
+		if((sizeof($counts) > 1)){
+			print "<ul class='disc allowBold'>";
+			foreach($counts as $count){
+				print "<li>".$count."</li>";
+			}
+			print "</ul>";
+			$join = ", ";
+		}else{
+			print $counts[0];
 		}
-		print "</ul>";
-		$vs_join = ", ";
-	}else{
-		print $va_counts[0];
+	} else {
+		if((sizeof($counts) > 2)){
+			$join = ", ";
+		}else{
+			$join = " ";
+		}
+		print implode($join, $counts).".";
 	}
 ?>
 </div>

@@ -114,6 +114,7 @@ class QuickSearchController extends BaseFindController {
 		// note last quick search
 		if ($search) {
 			Session::setVar('quick_search_last_search', $search);
+			Session::save();
 		}
 		if($sort) {
 			Session::setVar('quick_search_last_sort', $sort);
@@ -123,10 +124,9 @@ class QuickSearchController extends BaseFindController {
 				
 		$this->view->setVar('maxNumberResults', $this->opn_num_results_per_item_type);
 		
-		if($force_to && !$multiple_results) {
+		if($force_to && !$multiple_results && (sizeof($single_results) <= 1)) {
 			$single_results = [$force_to['table'] => $force_to['id']];
 		}
-		
 		// did we find only a single result in a single table? If so, then redirect to that record instead of showing results
 		if ((!$multiple_results) && (sizeof($single_results) == 1)) {
 			foreach($single_results as $target => $id) {

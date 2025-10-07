@@ -500,7 +500,7 @@ class BatchProcessor {
 		
 		BatchProcessor::$s_import_error_list = [];
 
-		$vs_log_dir = caGetOption('log', $pa_options, __CA_APP_DIR__."/log");
+		$vs_log_dir = caGetOption('log', $pa_options, __CA_LOG_DIR__);
 		$vs_log_level = caGetOption('logLevel', $pa_options, "INFO");
 
 		if (!is_writeable($vs_log_dir)) { $vs_log_dir = caGetTempDirPath(); }
@@ -564,6 +564,7 @@ class BatchProcessor {
 				$vb_delete_media_on_import			= (bool)$pa_options['deleteMediaOnImport'];
 	
 				$vs_import_mode 					= $pa_options['importMode'];
+				$force_primary	 					= (bool)$pa_options['forcePrimary'];
 				$vs_match_mode 						= $pa_options['matchMode'];
 				$vs_match_type						= $pa_options['matchType'];
 				$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
@@ -993,7 +994,7 @@ class BatchProcessor {
 							}
 							$t_new_rep = $t_instance->addRepresentation(
 								$vs_directory.'/'.$f, $vn_rep_type_id, // path
-								$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
+								$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, $force_primary, // locale, status, access, primary
 								array('idno' => $vs_rep_idno), // values
 								array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
 							);

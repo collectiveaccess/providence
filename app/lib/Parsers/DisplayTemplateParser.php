@@ -1574,7 +1574,7 @@ class DisplayTemplateParser {
 					// related
 					$vs_relationship_type_sql = null;
 					if (!is_array($va_path = array_keys(Datamodel::getPath($ps_tablename, $ps_relative_to))) || !sizeof($va_path)) {
-						throw new Exception(_t("Cannot be path between %1 and %2", $ps_tablename, $ps_relative_to));
+						throw new Exception(_t("Cannot find path between %1 and %2", $ps_tablename, $ps_relative_to));
 					}
 					
 					$va_joins = array();

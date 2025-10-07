@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,16 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
-$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
-$vn_table_num 				= $this->getVar('table_num');
+$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vn_table_num 			= $this->getVar('table_num');
 
-$t_subject					= $this->getVar('t_subject');
+$t_subject				= $this->getVar('t_subject');
 $settings 				= $this->getVar('settings');
 
-$vb_read_only				=	(isset($settings['readonly']) && $settings['readonly']);
-$vb_batch					= $this->getVar('batch');
+$vb_read_only			= (isset($settings['readonly']) && $settings['readonly']);
+$vb_batch				= $this->getVar('batch');
 
-if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
+if (!($vs_add_label 	= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 
 if ($vb_batch) {
 	print caBatchEditorIntrinsicModeControl($t_subject, $vs_id_prefix);
@@ -53,6 +53,8 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 ?>
 		<div class='formLabel'><?= _t('Deaccessioned: %1', ((bool)$t_subject->get('is_deaccessioned')) ? _t('Yes') : _t('No')); ?></div>
 <?php
+	} elseif($t_subject->getAppConfig()->get('deaccession_bundle_use_radio_buttons')) {
+		print $t_subject->htmlFormElement('is_deaccessioned', _t('Deaccessioned').' ^ELEMENT', array('DISPLAY_TYPE' => DT_RADIO_BUTTONS, 'name' => "{$vs_id_prefix}is_deaccessioned", 'id' => "{$vs_id_prefix}IsDeaccessioned"));
 	} else {
 		print $t_subject->htmlFormElement('is_deaccessioned', '^ELEMENT '._t('Deaccessioned'), array('name' => "{$vs_id_prefix}is_deaccessioned", 'id' => "{$vs_id_prefix}IsDeaccessioned", 'onclick' => 'return caShowDeaccessionControls(); '));
 	}
@@ -80,11 +82,11 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 </div>
 
 <?php
-	if (!$vb_read_only) {
+if (!$vb_read_only) {
 ?>
 <script type="text/javascript">
-	function caShowDeaccessionControls() {
-		jQuery('#<?= $vs_id_prefix; ?>IsDeaccessioned').is(':checked') ? jQuery('#<?= $vs_id_prefix; ?>DeaccessionContainer').slideDown(250) : jQuery('#<?= $vs_id_prefix; ?>DeaccessionContainer').slideUp(250);
+	function caShowDeaccessionControls(isRadio=false) {
+		jQuery(isRadio ? '#<?= $vs_id_prefix; ?>IsDeaccessioned_1' : '#<?= $vs_id_prefix; ?>IsDeaccessioned').is(':checked') ? jQuery('#<?= $vs_id_prefix; ?>DeaccessionContainer').slideDown(250) : jQuery('#<?= $vs_id_prefix; ?>DeaccessionContainer').slideUp(250);
 		return true;
 	}
 	jQuery(document).ready(function() {
@@ -92,12 +94,14 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 		jQuery('#<?= $vs_id_prefix; ?>DeaccessionDisposalDate').datepicker({constrainInput: false});
 		
 		jQuery('#<?= $vs_id_prefix; ?>DeaccessionAuthorizedBy').autocomplete( 
-						{ 
-							source: '<?= caNavUrl($this->request, 'lookup', 'Intrinsic', 'Get', ['max' => 500, 'bundle' => 'ca_objects.deaccession_authorized_by']); ?>',
-							minLength: 3, delay: 800
-						}
-					);
+			{ 
+				source: '<?= caNavUrl($this->request, 'lookup', 'Intrinsic', 'Get', ['max' => 500, 'bundle' => 'ca_objects.deaccession_authorized_by']); ?>',
+				minLength: 3, delay: 800
+			}
+		);
+		
+		jQuery('#<?= $vs_id_prefix; ?>IsDeaccessioned_1, #<?= $vs_id_prefix; ?>IsDeaccessioned_0').on('click', function() { caShowDeaccessionControls(true)});
 	});
 </script>
 <?php
-	}
+}

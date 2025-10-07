@@ -149,6 +149,11 @@ print $vs_control_box = caFormControlBox(
 			print $this->getVar('import_mode');
 ?>
 						</p>
+						<p class="formLabel">
+<?php
+			print $this->getVar('force_primary');
+?>
+						</p>
 					</div>
 				</div>
 		</div>

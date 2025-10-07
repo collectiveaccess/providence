@@ -60,6 +60,16 @@ if (!defined("__CA_CONF_DIR__")) {
 	define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 }
 
+# Path to CollectiveAccess 'temp' directory
+if (!defined("__CA_TEMP_DIR__")) {
+	define("__CA_TEMP_DIR__", __CA_APP_DIR__."/tmp");
+}
+
+# Allow overriding log directory via setup.php
+if (!defined("__CA_LOG_DIR__")) {
+	define("__CA_LOG_DIR__", __CA_APP_DIR__."/log");
+}
+
 # --------------------------------------------------------------------------------------------
 # Caching configuration
 # The default file-based caching should work fine in most setups
@@ -77,7 +87,7 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 # File path for file-based caching. The default works but in some setups you may want to move this
 # to the fastest available storage (in terms of random access time), like an SSD
 if (!defined('__CA_CACHE_FILEPATH__')) { 
-	define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+	define('__CA_CACHE_FILEPATH__', __CA_TEMP_DIR__);
 }
 
 # Time-to-live for cache items (in seconds)
@@ -501,4 +511,10 @@ if (!defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__')) {
 # Disable caching of translations. May be useful when developing a new locale
 if (!defined('__CA_DONT_CACHE_TRANSLATIONS__')) {
 	define('__CA_DONT_CACHE_TRANSLATIONS__', false);
+}
+
+# __CA_AUTH_ADAPTER__ = the auth adapter for login
+#
+if (!defined("__CA_AUTH_ADAPTER__")) {
+	define("__CA_AUTH_ADAPTER__", 'CaUsers');
 }

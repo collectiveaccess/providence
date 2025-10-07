@@ -685,7 +685,7 @@ class BaseEditorController extends ActionController {
 		} elseif(!$redirect_url) {
 			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
 		}
-		
+		Session::save();
 		caSetRedirect($redirect_url);
 	}
 	# -------------------------------------------------------

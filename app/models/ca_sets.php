@@ -4428,7 +4428,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$info = ca_sets::getAutoDeleteInfo($qr,	$user_pref_cache[$user_id]['user']);
 			if($info['should_autodelete'] ?? false) {
 				if($dryrun) {
-					$log->logInfo(_t('Found set to auto-deleted in dryrun mode. Set is %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
+					$log->logInfo(_t('Found set to auto-delete in dryrun mode. Set is %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
 					$delete_count++;
 					continue;
 				}
