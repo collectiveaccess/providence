@@ -80,7 +80,7 @@ var caUI = caUI || {};
 			jQuery('#' + that.availableListID).html(displayListText);
 			if(tooltipTargets.length) {
 			    for(let i in tooltipTargets) {
-			        jQuery('#' + tooltipTargets[i]).tooltip({tooltipClass: 'tooltipFormat', show: 150, hide: 150});
+			        jQuery('#' + CSS.escape(tooltipTargets[i])).tooltip({tooltipClass: 'tooltipFormat', show: 150, hide: 150});
 			    }
 			}
 			that._makeDisplayListsSortable();
