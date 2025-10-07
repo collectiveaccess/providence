@@ -38,7 +38,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 	/**
 	 *
 	 */
-	static $banned_useragents_list_filepath = __CA_APP_DIR__.'/tmp/userAgents.json';
+	static $banned_useragents_list_filepath = __CA_TEMP_DIR__.'/userAgents.json';
 	
 	# ------------------------------------------------------
 	/**

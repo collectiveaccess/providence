@@ -500,7 +500,7 @@ class BatchProcessor {
 		
 		BatchProcessor::$s_import_error_list = [];
 
-		$vs_log_dir = caGetOption('log', $pa_options, __CA_APP_DIR__."/log");
+		$vs_log_dir = caGetOption('log', $pa_options, __CA_LOG_DIR__);
 		$vs_log_level = caGetOption('logLevel', $pa_options, "INFO");
 
 		if (!is_writeable($vs_log_dir)) { $vs_log_dir = caGetTempDirPath(); }

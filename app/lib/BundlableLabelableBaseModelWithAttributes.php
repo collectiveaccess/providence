@@ -3303,11 +3303,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vn_first_id = array_shift($va_ids);
 			}
 		}
+
+		$type_id = $po_request->getParameter('type_id', pInteger);
+		
+		$id = ($pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		
+		if(!$id && $type_id) {
+			$this->get('type_id', $type_id);
+		}
 		
 		$o_view->setVar('batch', $pb_batch);
 		$o_view->setVar('parent_id', $vn_parent_id);
 		$o_view->setVar('ancestors', $va_ancestor_list);
-		$o_view->setVar('id', $pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		$o_view->setVar('id', $id);
+		$o_view->setVar('type_id', $type_id);
+		$o_view->setVar('t_type', $this->getTypeInstance());
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		return $o_view;
@@ -4311,7 +4321,6 @@ if (!$vb_batch) {
 			break;
 		}
 	}
-		
 		//
 		// Call processBundlesBeforeBaseModelSave() method in sub-class, if it is defined. The method is passed
 		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() –

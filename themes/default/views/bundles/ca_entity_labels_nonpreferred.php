@@ -175,7 +175,7 @@ $show_checked 			= $t_subject->getTypeSetting('show_checked_for_nonpreferred_lab
 	if($show_notes) {
 ?>					
 			<tr>
-				<td colspan="2">
+				<td colspan="5">
 					<div class="formLabel">
 						<?= $t_label->htmlFormElement('notes', "^LABEL<br>^ELEMENT", array('classname' => 'labelnotes', 'id' => "{fieldNamePrefix}notes_{n}", 'name' => "{fieldNamePrefix}notes_{n}", "value" => "{notes}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
 					</div>
@@ -239,7 +239,7 @@ $show_checked 			= $t_subject->getTypeSetting('show_checked_for_nonpreferred_lab
 	if($show_notes) {
 ?>					
 			<tr>
-				<td colspan="2">
+				<td colspan="5">
 					<div class="formLabel">
 						<?= $t_label->htmlFormElement('notes', "^LABEL<br>^ELEMENT", array('classname' => 'labelnotes', 'id' => "{fieldNamePrefix}notes_{n}", 'name' => "{fieldNamePrefix}notes_{n}", "value" => "{notes}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry')); ?>	
 					</div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2023 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@ class countWidget extends BaseWidget implements IWidget {
 	private $opo_config;
 	private $opa_tables;
 	
-	static $s_widget_settings = array(	);
+	static $s_widget_settings = [];
 	
 	# -------------------------------------------------------
 	public function __construct($ps_widget_path, $pa_settings) {
@@ -47,7 +47,7 @@ class countWidget extends BaseWidget implements IWidget {
 		
 		$o_config = Configuration::load();
 		foreach($this->opa_tables as $vs_table => $vn_c) {
-			if ((bool)$o_config->get($vs_table.'_disable')) {
+			if ((bool)$o_config->get("{$vs_table}_disable")) {
 				if (($vs_table == 'ca_object_representations') && !(bool)$o_config->get('ca_objects_disable')) { continue; }
 				unset(BaseWidget::$s_widget_settings['countWidget']['show_'.$vs_table]);
 				unset(BaseWidget::$s_widget_settings['countWidget']['breakout_'.$vs_table.'_by_type']);
@@ -104,7 +104,6 @@ class countWidget extends BaseWidget implements IWidget {
 		$this->opo_view->setVar('settings', $pa_settings);
 		$this->opo_view->setVar('request', $this->getRequest());
 		
-		
 		return $this->opo_view->render('main_html.php');
 	}
 	# -------------------------------------------------------
@@ -136,6 +135,19 @@ class countWidget extends BaseWidget implements IWidget {
 }
 
 BaseWidget::$s_widget_settings['countWidget'] = array(	
+	'format' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 40, 'height' => 1,
+		'takesLocale' => false,
+		'default' => 'PARAGRAPH',
+		'options' => [
+			_t('List') => 'LIST',
+			_t('Paragraph') => 'PARAGRAPH'
+		],
+		'label' => _t('Format'),
+		'description' => _t('Format counts as list or text paragraph?')
+	),	
 	'hide_zero_counts' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,

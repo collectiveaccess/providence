@@ -91,7 +91,7 @@ class GoogleDrive Extends BaseMediaUrlPlugin {
 		$path = join("/", $tmp);
 		
 		$url_stub = $parsed_url['scheme']."://".$parsed_url['host'].$path; 
-		if (!isUrl($url_stub) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file|document)/d/!', $url_stub, $m)) {
+		if (!isUrl($url_stub) || !preg_match('!^https://(docs|drive).google.com/(spreadsheets|file|document)/d/([^/]+)!', $url_stub, $m)) {
 			return false;
 		}
 		if (!$format) {
@@ -103,11 +103,15 @@ class GoogleDrive Extends BaseMediaUrlPlugin {
 					$format = 'docx';
 					break;
 				default:
-					$format = 'pdf';
+					$format = null;
 					break;
 			}
 		}
-		$transformed_url = $format ? "{$url_stub}?format={$format}" : $url_stub;
+		if(is_null($format)) {
+			$transformed_url =  "https://drive.google.com/uc?export=download&id={$m[3]}";
+		} else {
+			$transformed_url = $format ? "{$url_stub}?format={$format}" : $url_stub;
+		}
 		
 		// Get doc title
  		if(!strlen($content = @file_get_contents($url))) { return false; }
@@ -137,11 +141,36 @@ class GoogleDrive Extends BaseMediaUrlPlugin {
 			}
 			
 			$tmp_file = caFetchFileFromUrl($p['url'], $dest, ['mimetype' => self::$mimetypes[$format]]);
+			$attr = [];
+			if(filesize($tmp_file) < 8192) { // looks like confirmation HTML
+				$html = file_get_contents($tmp_file);
+				$dom = \DOM\HTMLDocument::createFromString($html);
+				if(($inputs = $dom->querySelectorAll('input'))) {
+					foreach($inputs as $input) {
+						switch($n = $input->getAttribute('name')) {
+							case 'id':
+							case 'at':
+							case 'uuid':
+							case 'export':
+							case 'confirm':
+								$attr[$n] = $input->getAttribute('value');
+								break;
+						}
+					}
+				}		
+				$url = "https://drive.usercontent.google.com/download?".http_build_query($attr);	
+				$tmp_file = caFetchFileFromUrl($url, $dest, ['mimetype' => self::$mimetypes[$format]]);
+			}
 			
 			if (caGetOption('returnAsString', $options, false)) {
 				$content = file_get_contents($tmp_file);
 				unlink($tmp_file);
 				return $content;
+			}
+			
+			$m = new \Media();
+			if($mimetype = $m->divineFileFormat($tmp_file)) {
+				$format = \Media::getExtensionForMimetype($mimetype);
 			}
 			
 			if(!$dest) { rename($tmp_file, $tmp_file .= '.'.$format); }

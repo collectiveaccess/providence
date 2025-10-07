@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -147,17 +147,17 @@ final class ConfigurationCheck {
 	# -------------------------------------------------------
 	public static function permissionInstallCheck(){
 		//
-		// Check app/tmp
+		// Check __CA_TEMP_DIR__ (app/tmp by default)
 		//
-		if (!is_writeable(__CA_APP_DIR__.'/tmp')) {
-			self::addError(_t('The CollectiveAccess <i>app/tmp</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_APP_DIR__.'/tmp'));
+		if (!is_writeable(__CA_TEMP_DIR__)) {
+			self::addError(_t('The CollectiveAccess <i>tmp</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_TEMP_DIR__));
 		}
 		
 		//
 		// Check app/log
 		//
-		if (!is_writeable(__CA_APP_DIR__.'/log')) {
-			self::addError(_t('The CollectiveAccess <i>app/log</i> directory is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_APP_DIR__.'/log'));
+		if (!is_writeable(__CA_LOG_DIR__)) {
+			self::addError(_t('The CollectiveAccess log directory (default <i>app/log</i>) is NOT writeable by the installer. This may result in installation errors. It is recommended that you change permissions on this directory (<i>%1</i>) to allow write access prior to installation. You can reload the installer to verify that the changed permissions are correct.', __CA_LOG_DIR__));
 		}
 
 		//
@@ -292,11 +292,11 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Does the app/tmp dir exist and is it writable?
+	 * Does the __CA_TEMP_DIR__ dir (app/tmp by default) exist and is it writable?
 	 */
 	public static function tmpDirQuickCheck() {
-		if(!file_exists(__CA_APP_DIR__."/tmp") || !is_writable(__CA_APP_DIR__."/tmp")){
-			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",__CA_APP_DIR__."/tmp"));
+		if(!file_exists(__CA_TEMP_DIR__) || !is_writable(__CA_TEMP_DIR__)){
+			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write to this directory.",__CA_TEMP_DIR__));
 		}
 
 		if(!defined('__CA_CACHE_BACKEND__')) {
@@ -304,7 +304,7 @@ final class ConfigurationCheck {
 		}
 
 		if(!defined('__CA_CACHE_FILEPATH__')) {
-			define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+			define('__CA_CACHE_FILEPATH__', __CA_TEMP_DIR__);
 		}
 
 
@@ -321,7 +321,7 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function logDirQuickCheck() {
-		$vs_log_path = __CA_APP_DIR__."/log";
+		$vs_log_path = __CA_LOG_DIR__;
 		if(!file_exists($vs_log_path) || !is_writable($vs_log_path)){
 			self::addError(_t("It looks like the log directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$vs_log_path));
 		}
@@ -332,6 +332,18 @@ final class ConfigurationCheck {
 		$vs_media_root = self::$opo_config->get("ca_media_root_dir");
 		if(!file_exists($vs_media_root) || !is_writable($vs_media_root)){
 			self::addError(_t("It looks like the media directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$vs_media_root));
+		}
+		return true;
+	}
+	# -------------------------------------------------------
+	public static function fontDirQuickCheck() {
+		$font_path = __CA_APP_DIR__."/fonts";
+		$pdf = new PDFRenderer();
+		$renderer = $pdf->getCurrentRendererCode();
+		
+		// domPDF needs to write to app/fonts
+		if(($renderer === 'domPDF') && (!file_exists($font_path) || !is_writable($font_path))){
+			self::addError(_t("It looks like the font directory is not writable by the webserver. Please change the permissions of %1 (or create it if it doesn't exist already) and enable the user which runs the webserver to write to this directory.",$font_path));
 		}
 		return true;
 	}

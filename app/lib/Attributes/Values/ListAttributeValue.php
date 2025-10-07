@@ -339,6 +339,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 * 			list_id = if set then the numeric item_id value is translated into label text in the current locale. If not set then the numeric item_id is returned.
 	 *			useSingular = If list_id is set then by default the returned text is the plural label. Setting this option to true will force use of the singular label. [Default is false]
 	 *			returnIdno = If true list item idno is returned rather than preferred label [Default is false]
+	 *			returnItemValue = If true list item value is returned rather than preferred label [Default is false]
 	 *			idsOnly = Return numeric item_id only [Default is false]
 	 *			alwaysReturnItemID = Synonym for idsOnly [Default is false]
 	 *			output = List item value return. Valid values are text [display text], idno [identifier; same as returnIdno option], value [numeric item_id; same as idsOnly option]. [Default is "value"]
@@ -370,6 +371,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					$pa_options['idsOnly'] = false;
 					$pa_options['returnDisplayText'] = true;
 					break;
+				case 'itemValue':
+					$pa_options['returnItemValue'] = true;
+					break;
 				default:
 					$pa_options['idsOnly'] = true;
 					break;
@@ -388,6 +392,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
         if(!($pa_options['showHierarchy'] ?? false)) {
             if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
                 return caGetListItemIdno($this->opn_item_id, $pa_options);
+            }
+            if($return_value= ((isset($pa_options['returnItemValue']) && (bool)$pa_options['returnItemValue']))) {
+                return caGetListItemValueForID($this->opn_item_id, $pa_options);
             }
             if($vb_return_idno = ((isset($pa_options['returnDisplayText']) && (bool)$pa_options['returnDisplayText']))) {
                 return caGetListItemByIDForDisplay($this->opn_item_id, array_merge($pa_options, ['return' => $use_singular ? 'singular' : 'plural']));

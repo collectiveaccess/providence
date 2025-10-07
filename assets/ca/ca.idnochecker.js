@@ -86,7 +86,7 @@ var caUI = caUI || {};
                                     msg = that.pluralAlreadyInUseMessage.replace('%1', '' + data.matches.length);
                                 }
                                 if (that.searchUrl) {
-                                    msg = "<a href='" + that.searchUrl + idno + "'>" + msg + "</a>";
+                                    msg = "<a href='" + that.searchUrl + "?search=" + encodeURIComponent(idno) + "'>" + msg + "</a>";
                                 }
                                 jQuery('#' + that.idnoStatusID).html((that.errorIcon ? that.errorIcon + ' ' : '') + msg).show(0);
                             }

@@ -167,36 +167,36 @@ function caInstallVendorLibraries() {
 		if (!is_writable(__CA_BASE_DIR__."/vendor")) { 
 			return ["The vendor directory is not writable. Please change the permissions of ".__CA_BASE_DIR__."/vendor and enable the user which runs the webserver to write to this directory."];
 		}
-		if (!copy(__CA_BASE_DIR__.'/support/scripts/install_composer.sh.txt', __CA_APP_DIR__.'/tmp/install_composer.sh')) {
-			return ["Could not copy composer installer to app/tmp"];
+		if (!copy(__CA_BASE_DIR__.'/support/scripts/install_composer.sh.txt', __CA_TEMP_DIR__.'/install_composer.sh')) {
+			return ["Could not copy composer installer to ".__CA_TEMP_DIR__."."];
 		}
 		$output = [];
 		putenv("COLLECTIVEACCESS_HOME=".__CA_BASE_DIR__);
 		
 		if(function_exists("caExec")) {
-			caExec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+			caExec('sh '.__CA_TEMP_DIR__.'/install_composer.sh 2>&1', $output, $ret);
 		} else {
-			exec('sh '.__CA_APP_DIR__.'/tmp/install_composer.sh 2>&1', $output, $ret);
+			exec('sh '.__CA_TEMP_DIR__.'/install_composer.sh 2>&1', $output, $ret);
 		}
 		if ($ret > 0) {
 			return ["Composer installation failed: ".join("; ", $output)];
 		}
 		
 		$output = [];
-		putenv("COMPOSER_HOME=".__CA_BASE_DIR__."/app/tmp");
+		putenv("COMPOSER_HOME=".__CA_TEMP_DIR__);
 		chdir(__CA_BASE_DIR__);
 		
 		if(function_exists("caExec")) {
-			caExec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+			caExec("php ".__CA_TEMP_DIR__.'/composer.phar -n install 2>&1', $output, $ret);
 		} else {
-			exec("php ".__CA_APP_DIR__.'/tmp/composer.phar -n install 2>&1', $output, $ret);
+			exec("php ".__CA_TEMP_DIR__.'/composer.phar -n install 2>&1', $output, $ret);
 		}
 		if ($ret > 0) {
 			return ["Library installation failed: ".join("; ", $output)];
 		}
 		
-		unlink(__CA_APP_DIR__.'/tmp/composer.phar');
-		unlink(__CA_APP_DIR__.'/tmp/install_composer.sh');
+		unlink(__CA_TEMP_DIR__.'/composer.phar');
+		unlink(__CA_TEMP_DIR__.'/install_composer.sh');
 		return [];
 	}
 	

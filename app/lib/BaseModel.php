@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2024 Whirl-i-Gig
+ * Copyright 2000-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2929,9 +2929,13 @@ class BaseModel extends BaseObject {
 		if (!caGetOption('force', $pa_options, false) && isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
 			$va_possible_conflicts = $this->getChangeLog(null, array('forTable' => true, 'range' => array('start' => $vn_form_timestamp, 'end' => time()), 'excludeUnitID' => $this->getCurrentLoggingUnitID()));
 			
+			if(is_array($va_possible_conflicts)) { 
+				$va_possible_conflicts = array_filter($va_possible_conflicts, function($v) use ($AUTH_CURRENT_USER_ID) {
+					return ((int)$AUTH_CURRENT_USER_ID !== (int)$v['user_id']);
+				});
+			}
 			if (sizeof($va_possible_conflicts)) {
-				$va_conflict_users = array();
-				$va_conflict_fields = array();
+				$va_conflict_users = $va_conflict_fields = [];
 				foreach($va_possible_conflicts as $va_conflict) {
 					$vs_user_desc = trim($va_conflict['fname'].' '.$va_conflict['lname']);
 					if ($vs_user_email = trim($va_conflict['email'])) {
@@ -5138,7 +5142,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 									'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
 									'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
 									'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
-									'outputDirectory' => __CA_APP_DIR__.'/tmp'
+									'outputDirectory' => __CA_TEMP_DIR__
 								)
 							);
 							if (is_array($va_preview_frame_list)) {
@@ -5230,6 +5234,29 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					// Just set field values in SQL (assume in-place update of media metadata) because no tmp_name is set
 					// [This generally should not happen]
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
+					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
+				} else {
+					$media_desc = [
+						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
+						"_CENTER" => [],
+						"_SCALE" => [],
+						"_SCALE_UNITS" => [],
+						"_START_AT_TIME" => null,
+						"_START_AT_PAGE" => null,
+						"INPUT" => [
+							"MIMETYPE" => $m->get("mimetype"),
+							"WIDTH" => $m->get("width"),
+							"HEIGHT" => $m->get("height"),
+							"MD5" => null,
+							"FILESIZE" => null,
+							"FETCHED_BY" => $vs_url_fetched_by,
+							"FETCHED_ORIGINAL_URL" => $vs_url_fetched_original_url,
+							"FETCHED_FROM" => $vs_url_fetched_from,
+							"FETCHED_ON" => $vn_url_fetched_on,
+							"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
+						 ]
+					];
+					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field] = $media_desc;
 					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
 
@@ -7012,6 +7039,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				return $qr_res->get('log_datetime');
 			} 
 			return array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
@@ -7056,6 +7084,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if ($qr_res->nextRow()) {
 			$vn_last_change_timestamp = $qr_res->get('log_datetime');
 			$va_last_change_info = array(
+				'log_id' => $qr_res->get('log_id'),
 				'user_id' => $qr_res->get('user_id'),
 				'fname' => $qr_res->get('fname'),
 				'lname' => $qr_res->get('lname'),
@@ -9389,7 +9418,8 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_element = '<input type="checkbox" name="'.$pa_options["name"].'" value="1" '.($vm_field_value ? 'checked="1"' : '').' '.$vs_js.($pa_options['readonly'] ? ' disabled="disabled" ' : '').' id="'.$pa_options["id"].'"/>';
 							break;
 						case (DT_RADIO_BUTTONS):
-							$vs_element = 'Radio buttons not supported for bit-type fields';
+							$vs_element = '<input type="radio" name="'.$pa_options["name"].'" value="1" '.($vm_field_value ? 'checked="1"' : '').' '.$vs_js.($pa_options['readonly'] ? ' disabled="disabled" ' : '').' id="'.$pa_options["id"].'_1"/> '._t('Yes');
+							$vs_element .= '  <input type="radio" name="'.$pa_options["name"].'" value="0" '.(!$vm_field_value ? 'checked="1"' : '').' '.$vs_js.($pa_options['readonly'] ? ' disabled="disabled" ' : '').' id="'.$pa_options["id"].'_0"/> '._t('No');
 							break;
 					}
 					break;
@@ -12200,6 +12230,10 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if($this->hasField('deleted')) {
 			$va_wheres[] = '(t.deleted = 0)';
+		}
+		$hier_type = $this->getProperty('HIERARCHY_TYPE');
+		if($hier_type === __CA_HIER_TYPE_MULTI_MONO__) { 
+			$va_wheres[] = '(t.parent_id IS NOT NULL)';
 		}
 		
 		$vs_where_sql = join(" AND ", $va_wheres);

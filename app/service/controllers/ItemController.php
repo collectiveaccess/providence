@@ -317,7 +317,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 				// ------------------------------------------------------------
 				'getRelationshipsForItems' => [
 					'type' => ItemSchema::get('RelationshipList'),
-					'description' => _t('Get relationships for several item'),
+					'description' => _t('Get relationships for several items'),
 					'args' => [
 						[
 							'name' => 'jwt',
@@ -497,7 +497,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'target',
 							'type' => Type::string(),
-							'description' => _t('Media source (ca_object_representations or bundle in current record')
+							'description' => _t('Media source (ca_object_representations or bundle in current record)')
 						],
 						[
 							'name' => 'restrictToTypes',
@@ -659,7 +659,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						[
 							'name' => 'target',
 							'type' => Type::string(),
-							'description' => _t('Media source (ca_object_representations or bundle in current record')
+							'description' => _t('Media source (ca_object_representations or bundle in current record)')
 						],
 						[
 							'name' => 'restrictToTypes',

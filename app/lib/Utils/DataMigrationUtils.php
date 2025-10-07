@@ -74,10 +74,12 @@ class DataMigrationUtils {
 	 *
 	 * @see DataMigrationUtils::_getID()
 	 */
-	static function getEntityID($pa_entity_name, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
-		if(is_null($pa_entity_name)) { return null; }
-		$pa_entity_name = ca_entity_labels::normalizeLabel($pa_entity_name, $options);
-		return DataMigrationUtils::_getID('ca_entities', $pa_entity_name, null, $pn_type_id, $locale_id, $pa_values, $options);
+	static function getEntityID($entity_name, $type_id, $locale_id, $values=null, $options=null) {
+		if(is_null($entity_name)) { return null; }
+		if(caGetOption('normalize', $options, false)) {
+			$entity_name = ca_entity_labels::normalizeLabel($entity_name, $options);
+		}
+		return DataMigrationUtils::_getID('ca_entities', $entity_name, null, $type_id, $locale_id, $values, $options);
 	}
 	# -------------------------------------------------------
 	/**
@@ -371,7 +373,7 @@ class DataMigrationUtils {
 			}
 			return $vn_item_id;
 		} else {
-			if ($o_log) { $o_log->logError(_t("%2Could not find add item to list: %1", join("; ", $t_list->getErrors()), $log_reference_str)); }
+			if ($o_log) { $o_log->logError(_t("%2Could not add item to list: %1", join("; ", $t_list->getErrors()), $log_reference_str)); }
 		}
 		return null;
 	}
@@ -543,6 +545,13 @@ class DataMigrationUtils {
 		global $g_ui_locale;
 		$text = $original_text = trim(preg_replace("![ ]+!", " ", $text));
 		
+		// check for trailing year or years
+		$date = null;
+		if (caGetOption('parseDateSuffix', $options, true) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
+			$date = $matches[1];
+			$text = trim(str_replace($matches[0], '', $text));
+		}
+		
 		if (caGetOption('doNotParse', $options, false)) {
 			return [
 				'forename' => '', 'middlename' => '', 'surname' => $text,
@@ -624,12 +633,6 @@ class DataMigrationUtils {
 				$text = str_replace($matches[1], '', $text);
 			}
 		}
-		// check for trailing year or years
-		$date = null;
-		if (caGetOption('parseDateSuffix', $options, true) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
-			$date = $matches[1];
-			$text = trim(str_replace($matches[0], '', $text));
-		}
 		
 		// check for suffixes
 		$suffix_for_name = null;
@@ -642,7 +645,6 @@ class DataMigrationUtils {
 		$name = ['surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name];
 		
 		if($date) {
-			if(!($name['suffix'] ?? null)) { $name['suffix'] = $date; }
 			$name['_date'] = $date;
 		}
 		if($class === 'ORG') {
@@ -689,9 +691,9 @@ class DataMigrationUtils {
 			$forename = array_shift($tmp);
 			$original_text = trim("{$forename} {$surname}".((sizeof($tmp) > 0) ? ' '.join(' ', $tmp) : ''));
 		} else {
-			$name = [
+			$name = array_merge($name, [
 				'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $prefix_for_name, 'suffix' => $suffix_for_name
-			];
+			]);
 			
 			if(is_array($surname_prefixes)) {
 				foreach($surname_prefixes as $p) {
@@ -729,14 +731,39 @@ class DataMigrationUtils {
 							$name['surname'] = array_pop($tmp);
 							$name['forename'] = join(' ', $tmp);
 						} else {
-							$name['forename'] = array_shift($tmp);
-							$name['surname'] = join(' ', $tmp);
+							$l = ['forename', 'middlename','surname'];
+							while(sizeof($tmp) > 0) {
+								$token = trim(array_shift($tmp));
+								$is_parenthetical = preg_match("!\(!", $token);
+								
+								switch($l[0]) {
+									case 'forename':
+										$name['forename'] = $token;
+										array_shift($l);
+										break;
+									case 'middlename':
+										if($is_parenthetical) {
+											$name['forename'] .= ' '.$token;	
+										} elseif(sizeof($tmp) > 0) {
+											$name['middlename'] = $token;	
+											array_shift($l);
+										}
+										break;
+									default:
+										if($is_parenthetical && (sizeof($tmp) > 0) && !$name['surname']) {
+											$name['forename'] .= ' '.$token;	
+											break;
+										} else {
+											$name['surname'] = trim($token.' '.join(' ', $tmp));
+											break(2);
+										}
+								}
+							}
 						}
 						break;
 				}
 			}
 		}
-		
 		if($class === 'ORG') { $options['displaynameFormat'] = 'forenamemiddlenamesurname'; }
 		switch($format = caGetOption('displaynameFormat', $options, 'original', array('forceLowercase' => true))) {
 			case 'surnamecommaforename':
@@ -790,15 +817,24 @@ class DataMigrationUtils {
 		$tokens = array_values($tokens);
 		
 		$name = [];
-		if (in_array(mb_strtolower(preg_replace("!\.$!", "", trim($tokens[0]))), array_map("mb_strtolower", $values['titles']))) {
+		if (is_array($values['titles'] ?? null) && in_array(mb_strtolower(preg_replace("!\.$!", "", trim($tokens[0]))), array_map("mb_strtolower", $values['titles']))) {
 			$name['prefix'] = array_shift($tokens);
 		}
 		if ((sizeof($tokens) > 1) && (array_search(_t('and'), $tokens, true) === false) && (array_search('&', $tokens, true) === false)) {
 			$name['forename'] = array_shift($tokens);
+			if(preg_match("!\(!", trim($tokens[0]))) {
+				$name['forename'] .= ' '.array_shift($tokens);
+			}
 			$name['middlename'] = join(" ", $tokens);
 		} else {
 			$name['middlename'] = '';
 			$name['forename'] = join(' ', $tokens);
+		}
+		
+		// Treat middle name parentheticals as part of forename
+		if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!si", $name['middlename'], $matches) && (mb_strlen($matches[1]) <= 30)) {	// max parenthetical length = 30
+			$name['middlename'] = str_replace($matches[0], '', $name['middlename']);
+			$name['forename'] = trim($name['forename']).' '.$matches[1];
 		}
 		return $name;
 	}
@@ -824,10 +860,10 @@ class DataMigrationUtils {
 		}
 		
 		// Treat parentheticals as suffixes
-		if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!si", $text, $matches) && (mb_strlen($matches[1]) <= 30)) {	// max parenthetical length = 30
-			$name['suffix'] = $matches[1];
-			$text = str_replace($matches[0], '', $text);
-		}
+		// if (preg_match("![,]*[ ]*([\(]+.*[ \)]+)$!si", $text, $matches) && (mb_strlen($matches[1]) <= 30)) {	// max parenthetical length = 30
+// 			$name['suffix'] = $matches[1];
+// 			$text = str_replace($matches[0], '', $text);
+// 		}
 		$name['surname'] = $text;
 		return $name;
 	}

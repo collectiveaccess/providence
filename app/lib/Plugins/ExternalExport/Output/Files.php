@@ -104,7 +104,7 @@ class WLPlugFiles Extends BaseExternalExportFormatPlugin Implements IWLPlugExter
         $target_options = caGetOption('options', $output_config, null);
         $name = preg_replace("![^A-Za-z0-9\-\.\_]+!", "_", $t_instance->getWithTemplate(caGetOption('name', $output_config, null)));
                 
-        $zip = new ZipFile(__CA_APP_DIR__."/tmp");
+        $zip = new ZipFile(__CA_TEMP_DIR__);
         $output_path = caGetOption('path', $output_config, null);
         if(!$output_path || !file_exists($output_path) || !is_dir($output_path)) {
         	throw new WLPlugFilesException(_t('Output path %1 does not exist', $output_path));

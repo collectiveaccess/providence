@@ -815,7 +815,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
-				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+				LEFT JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -1957,10 +1957,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		
-		$vs_label_join_sql = '';
+		$label_join_sql = '';
 		if ($t_rel_label_table) {
 			if ($t_rel_label_table->hasField("is_preferred")) { $vs_preferred_sql = " AND rel_label.is_preferred = 1 "; }
-			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
+			$label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
 		}
 		
 		
@@ -2003,7 +2003,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
 	LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
-				$vs_rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
+				$vs_rep_where_sql = " AND ((coxor.is_primary = 1 OR coxor.is_primary IS NULL) AND (cor.deleted = 0 OR cor.deleted IS NULL))";
 			
 				$vs_rep_select = ', coxor.*, cor.media, cor.access rep_access';
 			
@@ -2034,7 +2034,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
 			FROM ca_set_items casi
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
-			{$vs_label_join_sql}
+			{$label_join_sql}
 			WHERE
 				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
 			ORDER BY 
@@ -2081,7 +2081,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			FROM ca_set_items casi
 			LEFT JOIN ca_set_item_labels AS casil ON casi.item_id = casil.item_id
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
-			{$vs_label_join_sql}
+			{$label_join_sql}
 			{$vs_rep_join_sql}
 			WHERE
 				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
@@ -3880,7 +3880,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$info = ca_sets::getAutoDeleteInfo($qr,	$user_pref_cache[$user_id]['user']);
 			if($info['should_autodelete'] ?? false) {
 				if($dryrun) {
-					$log->logInfo(_t('Found set to auto-deleted in dryrun mode. Set is %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
+					$log->logInfo(_t('Found set to auto-delete in dryrun mode. Set is %1 (%2) [Set id %3]', $t_set->get('ca_sets.preferred_labels'), $t_set->get('ca_sets.set_code'), $t_set->get('ca_sets.set_id')));
 					$delete_count++;
 					continue;
 				}

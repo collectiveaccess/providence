@@ -52,6 +52,8 @@ class FindTest extends BaseTestWithData {
 	private $opn_object_id2 = null;
 	# -------------------------------------------------------
 	protected function setUp() : void {
+		require_once 'Zend/Registry.php';
+		
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 

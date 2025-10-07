@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,7 @@ AssetLoadManager::register('dashboard');			// adds caUI dashboard library
 		addID: 'dashboardAddButton',
 		editID: 'dashboardEditButton',
 		doneEditingID: 'dashboardDoneEditingButton',
+		defaultID: 'dashboardDefaultButton',
 		clearID: 'dashboardClearButton',
 		welcomeMessageID: 'dashboard_welcome_message',
 		editMessageID: 'dashboard_edit_message'
@@ -63,14 +64,13 @@ AssetLoadManager::register('dashboard');			// adds caUI dashboard library
 </script>
 <div id="dashboardControls">
 	<div id="clearDashboardControl" style="float: left;">
-		<?= caNavLink($this->request, _t('Clear dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'clear', array(), array('id' => 'dashboardClearButton')).
-	    	caNavLink($this->request, _t('Default dashboard').' &rsaquo;', 'dashboardControl', '', 'Dashboard', 'default', array(), array('id' => 'dashboardDefaultButton')); 
-	    ?>
+		<?= caNavLink($this->request, _t('Default dashboard'), 'button-gray', '', 'Dashboard', 'default', array(), array('id' => 'dashboardDefaultButton')); ?>
+		<?= caNavLink($this->request, _t('Clear dashboard'), 'button-gray', '', 'Dashboard', 'clear', array(), array('id' => 'dashboardClearButton')); ?> 
 	</div>
 	
-	<a href="#" onclick='caDashboard.editDashboard(1);' class='dashboardControl' id='dashboardEditButton'><?= _t('Edit dashboard'); ?> &rsaquo;</a>
-	<a href="#" onclick='caDashboardWidgetPanel.showWidgetPanel();' class='dashboardControl' id='dashboardAddButton'><?= _t('Add widget'); ?> &rsaquo;</a>
-	<a href="#" onclick='caDashboard.editDashboard(0);' class='dashboardControl' id='dashboardDoneEditingButton'><?= _t('Done'); ?> &rsaquo;</a>
+	<a href="#" onclick='caDashboard.editDashboard(1);' class='button-gray' id='dashboardEditButton'><?= _t('Edit dashboard'); ?></a>
+	<a href="#" onclick='caDashboardWidgetPanel.showWidgetPanel();' class='button-gray' id='dashboardAddButton'><?= _t('Add widget'); ?></a>
+	<a href="#" onclick='caDashboard.editDashboard(0);' class='button-gray' id='dashboardDoneEditingButton'><?= _t('Done'); ?></a>
 </div>
 <div class="dashboard">
 	<div class="dashboardWelcomeMessage" id="dashboard_welcome_message"><?= _t('This is your CollectiveAccess dashboard.  Click the "Edit Dashboard" button above to add widgets to your dashboard that will allow you to monitor system activity.  You\'ll see your dashboard whenever you login or  click the CollectiveAccess logo above.'); ?></div>
@@ -99,18 +99,18 @@ AssetLoadManager::register('dashboard');			// adds caUI dashboard library
 // 
 // PHP convenience function to generate HTML for dashboard columns
 //
-function caGetDashboardWidgetHTML($po_request, $pn_column) {
-	$o_dashboard_manager = DashboardManager::load($po_request);
-	$va_widget_list = $o_dashboard_manager->getWidgetsForColumn($pn_column);
-	foreach($va_widget_list as $vn_i => $va_widget_info) {
-		if (!($widget_content = $o_dashboard_manager->renderWidget($va_widget_info['widget'], $va_widget_info['widget_id'], $va_widget_info['settings']))) { continue; }
-		print "<div class='portlet' id='dashboardWidget_{$pn_column}_{$vn_i}'>";
-		print caNavLink($po_request, caNavIcon(__CA_NAV_ICON_DELETE__, '16px'), 'dashboardRemoveWidget', '', 'Dashboard', 'removeWidget', array('widget' => $va_widget_info['widget'], 'widget_id' => $va_widget_info['widget_id']));
-		if($o_dashboard_manager->widgetHasSettings($va_widget_info['widget'])) {
-			print "<a href='#' class='dashboardWidgetSettingsButton' onclick='jQuery(\"#content_".$va_widget_info['widget_id']."\").load(\"".caNavUrl($po_request, '', 'Dashboard', 'getSettingsForm')."\", { widget_id: \"".$va_widget_info['widget_id']."\" }); return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, '16px')."</a>";
+function caGetDashboardWidgetHTML($request, $column) {
+	$o_dashboard_manager = DashboardManager::load($request);
+	$widget_list = $o_dashboard_manager->getWidgetsForColumn($column);
+	foreach($widget_list as $vn_i => $widget_info) {
+		if (!($widget_content = $o_dashboard_manager->renderWidget($widget_info['widget'], $widget_info['widget_id'], $widget_info['settings']))) { continue; }
+		print "<div class='portlet' id='dashboardWidget_{$column}_{$vn_i}'>";
+		print caNavLink($request, caNavIcon(__CA_NAV_ICON_DELETE__, '16px'), 'dashboardRemoveWidget', '', 'Dashboard', 'removeWidget', array('widget' => $widget_info['widget'], 'widget_id' => $widget_info['widget_id']));
+		if($o_dashboard_manager->widgetHasSettings($widget_info['widget'])) {
+			print "<a href='#' class='dashboardWidgetSettingsButton' onclick='jQuery(\"#content_".$widget_info['widget_id']."\").load(\"".caNavUrl($request, '', 'Dashboard', 'getSettingsForm')."\", { widget_id: \"".$widget_info['widget_id']."\" }); return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, '16px')."</a>";
 		}
-		print '<div class="portlet-header">'.WidgetManager::getWidgetTitle($va_widget_info['widget']).'</div>';
-		print '<div class="portlet-content" id="content_'.$va_widget_info['widget_id'].'">'.$widget_content.'</div>';
+		print '<div class="portlet-header">'.WidgetManager::getWidgetTitle($widget_info['widget']).'</div>';
+		print '<div class="portlet-content" id="content_'.$widget_info['widget_id'].'">'.$widget_content.'</div>';
 		print '</div>';
 	}
 }

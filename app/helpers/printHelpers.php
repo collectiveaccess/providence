@@ -303,7 +303,7 @@ function caConvertMeasurementToPoints($ps_value, $pa_options=null) {
 	
 	$vn_dpi = caGetOption('dpi', $pa_options, caGetOption('ppi', $pa_options, 72));
 
-	switch(strtolower($va_matches[2])) {
+	switch(strtolower(trim($va_matches[2]))) {
 		case 'in':
 			$ps_value_in_points = $va_matches[1] * $vn_dpi;
 			break;
@@ -759,7 +759,7 @@ function caEditorPrintSetItemsControls($view) {
 		'value' => $t_display->getPrimaryKey(), 
 		'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 
 		'user_id' => $request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 
-		'context' => 'editor_summary'
+		'context' => 'set_item_bundle'
 	]));
 	
 	// Opts for on-screen display list (only displays; no PDF print templates)

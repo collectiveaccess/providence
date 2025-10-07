@@ -326,7 +326,7 @@ class Db_mysqli extends DbDriverBase {
 		$logger = null;
 		$prefix = "[{$db_seq}::".getmypid()."] ";
 		if(defined('__CA_LOG_DATABASE_QUERIES__') && __CA_LOG_DATABASE_QUERIES__) {
-			$logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'queries'], null);
+			$logger = caGetLogger(['logDirectory' => __CA_LOG_DIR__, 'logName' => 'queries'], null);
 			
 			$db_seq++;
 			$logger->logInfo(caPrintStacktrace((defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__') && __CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__) ? [] : ['skip' => 3, 'head' => 1]));
@@ -352,7 +352,7 @@ class Db_mysqli extends DbDriverBase {
 		if($is_error) {
 			$po_statement->postError($this->nativeToDbError($error_num), $error_message, "Db->mysqli->execute()");
 				
-			if($err_logger = caGetLogger(['logDirectory' => __CA_APP_DIR__.'/log', 'logName' => 'db_errors'], null)) {
+			if($err_logger = caGetLogger(['logDirectory' => __CA_LOG_DIR__, 'logName' => 'db_errors'], null)) {
 				$err_logger->logError($prefix.json_encode(['code' => $this->nativeToDbError($error_num), 'errorNumber' => $error_num, 'errorMessage' => $error_message, 'sql' => $vs_sql, 'stacktrace' => caPrintStacktrace()]));
 			}
 			throw new DatabaseException($error_message, $error_num, "Db->mysqli->execute()");
