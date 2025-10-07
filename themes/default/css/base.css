@@ -1207,6 +1207,7 @@ div.hint {
     padding-left: 10px;
 	padding-bottom: 3px;
 	display: inline-block;
+	text-transform: capitalize;
 }
 
 .formLabelSubtext {
