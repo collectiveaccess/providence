@@ -759,7 +759,7 @@ function caEditorPrintSetItemsControls($view) {
 		'value' => $t_display->getPrimaryKey(), 
 		'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 
 		'user_id' => $request->getUserID(), 'restrictToTypes' => [$t_item->getTypeID()], 
-		'context' => 'editor_summary'
+		'context' => 'set_item_bundle'
 	]));
 	
 	// Opts for on-screen display list (only displays; no PDF print templates)

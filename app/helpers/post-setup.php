@@ -512,3 +512,9 @@ if (!defined('__CA_SHOW_FULL_STACKTRACE_IN_DATABASE_QUERY_LOG__')) {
 if (!defined('__CA_DONT_CACHE_TRANSLATIONS__')) {
 	define('__CA_DONT_CACHE_TRANSLATIONS__', false);
 }
+
+# __CA_AUTH_ADAPTER__ = the auth adapter for login
+#
+if (!defined("__CA_AUTH_ADAPTER__")) {
+	define("__CA_AUTH_ADAPTER__", 'CaUsers');
+}

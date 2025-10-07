@@ -123,7 +123,15 @@ class Session {
 				$secure = (__CA_SITE_PROTOCOL__ === 'https');
 				$_COOKIE[Session::$name] = $session_id =  caGenerateGUID();
 				if (!caIsRunFromCLI() && (!defined('__CA_IS_SERVICE_REQUEST__') || !__CA_IS_SERVICE_REQUEST__ || (defined('__CA_SET_COOKIE_FOR_SERVICE_REQUEST__') && __CA_SET_COOKIE_FOR_SERVICE_REQUEST__))) { 
-					setcookie(Session::$name, $session_id, Session::$lifetime ? time() + Session::$lifetime : null, $cookiepath, null, $secure, true); 
+					setcookie(Session::$name, $session_id,
+						[
+							'expires' => Session::$lifetime ? time() + Session::$lifetime : null,
+							'path' => $cookiepath,
+							'domain' => null, 
+							'secure' => true, 
+							'httponly' => true, 
+							'samesite' => 'Strict'
+						]);
 				}
 		 	}
 
@@ -230,12 +238,28 @@ class Session {
 		$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 		$secure = (__CA_SITE_PROTOCOL__ === 'https');
 		if (isset($_COOKIE[session_name()])) {
-			setcookie(session_name(), '', time()- (24 * 60 * 60), $cookiepath, null, $secure, true);
+			setcookie(session_name(), '',
+						[
+							'expires' => time()- (24 * 60 * 60),
+							'path' => $cookiepath,
+							'domain' => null, 
+							'secure' => true, 
+							'httponly' => true, 
+							'samesite' => 'Strict'
+						]);
 			@session_destroy();
 		}
 		// Delete session data
 		unset($_COOKIE[Session::$name]);
-		setCookie(Session::$name, "", time()-3600, $cookiepath, null, $secure, true);
+		setcookie(Session::$name, '',
+						[
+							'expires' => time()-3600,
+							'path' => $cookiepath,
+							'domain' => null, 
+							'secure' => true, 
+							'httponly' => true, 
+							'samesite' => 'Strict'
+						]);
 		self::$s_cache_type::delete($session_id, 'SessionVars');
 	}
 	# ----------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2022 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -171,7 +171,6 @@ JSON;
         $result = caMakeDelimitedRegexp($regexp, '/');
         $this->assertEquals('/([0-9]+)!([0-9]+)/', $result);
     }
-    
 	# -------------------------------------------------------
 	public function testCaExtractTagsFromTemplate() {
 		$tags = caExtractTagsFromTemplate("IDNO:^ca_objects.idno");
@@ -206,7 +205,16 @@ JSON;
 		$this->assertIsArray($tags);
 		$this->assertCount(1, $tags);
 		$this->assertEquals("701/a", $tags[0]);
-		
 	}
+	
+	# -------------------------------------------------------
+    public function testCaGenerateRandomPassword(){
+        $pw = caGenerateRandomPassword(12);
+        
+        for($i=0; $i < 500; $i++) {
+			$this->assertEquals(20, strlen($pw), 'Password length does not confirm to policy');	// policy minimum is 20, so that is what we should get no matter what was passsed
+			$this->assertTrue(ca_users::applyPasswordPolicy($pw), 'Password does not confirm to policy');
+		}
+    }
 	# -------------------------------------------------------
 }

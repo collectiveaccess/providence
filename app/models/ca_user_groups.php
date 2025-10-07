@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code identifying group. Can use used by users in <em>Pawtucket</em> to join this group.'),
+				'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code identifying group. Can be used by users in <em>Pawtucket</em> to join this group.'),
 				'BOUNDS_LENGTH' => array(1,20)
 		),
 		'description' => array(

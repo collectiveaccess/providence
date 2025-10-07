@@ -132,7 +132,11 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	
 	$edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
-	$init_id = $subject_table."-".$id;
+	
+	if($collection_id = $this->request->getParameter('collection_id', pInteger)) {
+		$dont_init_move_browser = false;
+	}
+	$init_id = $collection_id ? "ca_collections-{$collection_id}" : "{$subject_table}-{$id}";
 } else {
 	$lookup_urls 			= caJSONLookupServiceUrl($this->request, $subject_table, $va_search_lookup_extra_params);
 	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
@@ -150,7 +154,7 @@ $type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
 $show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
 $show_move = ((!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) && !$read_only);
 
-$show_add_object = (!$read_only && $has_privs && !$batch) && $objects_x_collections_hierarchy_enabled && in_array($subject_table, ['ca_collections'], true) && (!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~'])) && (!sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])));
+$show_add_object = (!$read_only && $has_privs && !$batch) && $objects_x_collections_hierarchy_enabled && in_array($subject_table, ['ca_collections'], true) && (!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~'])) && (($strict_type_hierarchy != '1') || !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])));
 
 // Tab to open on load?
 $default_tab_index = 0;
@@ -316,7 +320,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				$count_label = caExtractSettingsValueByUserLocale('label_for_count', $bundle_settings) ?? caGetTableDisplayName($subject_table, true);
 
 ?>
-				<div class="hierarchyCountDisplay"><?php if($items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $count_label, $items_in_hier); } ?></div>
+				<div class="hierarchyCountDisplay"><?php if($items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", $count_label, $items_in_hier); } else { print "&nbsp;"; } ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?= $id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?= _t('Show Hierarchy'); ?></span></a>
 				</div>			

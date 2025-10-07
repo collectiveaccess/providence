@@ -1439,7 +1439,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function precache_search_indexHelp() {
-		return _t('Preload SQLSearch index into MySQL in-memory cache. This is only relevant if you are using the MySQL-based SQLSearch engine. Preloading can significantly improve performance on system with large search indices. Note that your MySQL installation must have a large enough buffer pool configured to hold the index. Loading may take several minutes.');
+		return _t('Preload SQLSearch index into MySQL in-memory cache. This is only relevant if you are using the MySQL-based SQLSearch engine. Preloading can significantly improve performance on systems with large search indices. Note that your MySQL installation must have a large enough buffer pool configured to hold the index. Loading may take several minutes.');
 	}
 	
 	# -------------------------------------------------------
@@ -2462,7 +2462,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function reload_attribute_sortable_valuesHelp() {
-		return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements. This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
+		return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements). This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
 	}
 	# -------------------------------------------------------
 }
