@@ -5494,19 +5494,19 @@ if (!$batch) {
 							$batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
 							if($batch_mode == '_disabled_') { break; }
 							
-							if($batch_mode == '_delete_') { 
+							if(in_array($batch_mode, ['_replace_', '_delete_'], true)) { 
 								if(is_array($history = $this->getHistory(['policy' => $policy]))) {
 									foreach($history as $hentry) {
 										if(!is_array($hentry)) { continue; }
 										foreach($hentry as $hitem) {
 											if($relation_id = ($hitem['relation_id'] ?? null)) {
 												$this->removeRelationship($hitem['type'], $relation_id);
-												print $hitem['type'].":: $relation_id\n";
+												if($batch_mode === '_replace_') { break(2); }
 											}
 										}
 									}
 								}
-								break; 
+								if($batch_mode === '_delete_') { break; } 
 							}
 						}
 					    
