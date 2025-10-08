@@ -538,7 +538,7 @@ class MultipartIDNumber extends IDNumber {
 			$field_limit_sql = "{$field} <> ''";
 		} elseif($is_serial) {
 			$field_limit_sql = "{$field} REGEXP ?";
-			$params = [preg_quote($stub.$separator, "!").'[0-9]+$'];
+			$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+$'];
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];
