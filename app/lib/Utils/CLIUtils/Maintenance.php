@@ -482,8 +482,8 @@ trait CLIUtilsMaintenance {
 			return false;
 		}
 
-		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the temporary directory (app/tmp) for ownership by \"%1\"...", $vs_user)); }
-		$va_files = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/tmp', true, true, false, true, ['includeRoot' => true]);
+		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the temporary directory (\"%2\") for ownership by \"%1\"...", $vs_user, __CA_TEMP_DIR__)); }
+		$va_files = caGetDirectoryContentsAsList(__CA_TEMP_DIR__, true, true, false, true, ['includeRoot' => true]);
 
 		foreach($va_files as $vs_path) {
 			chown($vs_path, $vs_user);
@@ -500,8 +500,8 @@ trait CLIUtilsMaintenance {
 			chmod($vs_path, 0775);
 		}
 
-		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for ownership by \"%1\"...", $vs_user)); }
-		$va_files = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true, ['includeRoot' => true]);
+		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory " . Configuration::load()->get('purify_serializer_path') . " for ownership by \"%1\"...", $vs_user)); }
+		$va_files = caGetDirectoryContentsAsList(Configuration::load()->get('purify_serializer_path'), true, false, false, true, ['includeRoot' => true]);
 
 		foreach($va_files as $vs_path) {
 			chown($vs_path, $vs_user);
@@ -509,8 +509,8 @@ trait CLIUtilsMaintenance {
 			chmod($vs_path, 0770);
 		}
 		
-		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the log directory (app/log) for ownership by \"%1\"...", $vs_user)); }
-		$va_files = caGetDirectoryContentsAsList(__CA_APP_DIR__.'/log', true, true, false, true, ['includeRoot' => true]);
+		if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the log directory for ownership by \"%1\"...", $vs_user)); }
+		$va_files = caGetDirectoryContentsAsList(__CA_LOG_DIR__, true, true, false, true, ['includeRoot' => true]);
 
 		foreach($va_files as $vs_path) {
 			chown($vs_path, $vs_user);
@@ -559,7 +559,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function fix_permissionsHelp() {
-		return _t("CollectiveAccess must have both read and write access to the temporary storage directory (app/tmp), media directory (media) and HTMLPurifier definition cache (app/lib/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache). A run-time error will be displayed if any of these locations is not accessible to the application. To change these permissions to allow CollectiveAccess to run normally run this command while logged in with administrative/root privileges. You are currently logged in as %1 (uid %2). You can specify which user will be given ownership of the directories using the --user option. If you do not specify a user, the web server user for your server will be automatically determined and used.", caGetProcessUserName(), caGetProcessUserID());
+		return _t("CollectiveAccess must have both read and write access to the temporary storage directory (%3), media directory (media) and HTMLPurifier definition cache (app/lib/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache). A run-time error will be displayed if any of these locations is not accessible to the application. To change these permissions to allow CollectiveAccess to run normally run this command while logged in with administrative/root privileges. You are currently logged in as %1 (uid %2). You can specify which user will be given ownership of the directories using the --user option. If you do not specify a user, the web server user for your server will be automatically determined and used.", caGetProcessUserName(), caGetProcessUserID(), __CA_TEMP_DIR__);
 	}
 	# -------------------------------------------------------
 	/**
@@ -1055,8 +1055,12 @@ trait CLIUtilsMaintenance {
 		if (in_array($ps_cache, ['all', 'app'])) {
 			CLIUtils::addMessage(_t('Clearing application caches...'));
 			if (is_writable($config->get('taskqueue_tmp_directory'))) {
+				$tempdir_info = stat($config->get('taskqueue_tmp_directory'));
 				caRemoveDirectory($config->get('taskqueue_tmp_directory'), false);
-				mkdir($config->get('purify_serializer_path'));
+				mkdir($config->get('purify_serializer_path'), $tempdir_info['mode']);
+				chown($config->get('purify_serializer_path'), $tempdir_info['uid']);
+				chgrp($config->get('purify_serializer_path'), $tempdir_info['gid']);
+				clearstatcache();
 			} else {
 				CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 			}
@@ -1435,7 +1439,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function precache_search_indexHelp() {
-		return _t('Preload SQLSearch index into MySQL in-memory cache. This is only relevant if you are using the MySQL-based SQLSearch engine. Preloading can significantly improve performance on system with large search indices. Note that your MySQL installation must have a large enough buffer pool configured to hold the index. Loading may take several minutes.');
+		return _t('Preload SQLSearch index into MySQL in-memory cache. This is only relevant if you are using the MySQL-based SQLSearch engine. Preloading can significantly improve performance on systems with large search indices. Note that your MySQL installation must have a large enough buffer pool configured to hold the index. Loading may take several minutes.');
 	}
 	
 	# -------------------------------------------------------
@@ -2458,7 +2462,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function reload_attribute_sortable_valuesHelp() {
-		return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements. This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
+		return _t('To improve sorting performance an abbreviated sortable value is stored for all text-based metadata attributes (Ex. text, URL, LCSH and InformationService elements). This command regenerates and reloads sortable values from current data, which systems created prior to version 1.7.9 will lack.');
 	}
 	# -------------------------------------------------------
 }

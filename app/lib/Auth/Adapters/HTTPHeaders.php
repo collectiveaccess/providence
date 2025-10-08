@@ -44,7 +44,7 @@ class HTTPHeaderAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		
 		// if the HTTP header is missing or blank = bad authentication
 		if (!isset($_SERVER[$vs_httpheader_username]) || $_SERVER[$vs_httpheader_username] == "" ) {
-			caLogEvent('LOGF', _t('Could not login user %1 using http headers are missing failed %2 [%3]', $ps_username, $vs_httpheader_username, $_SERVER['REMOTE_ADDR']), 'HTTPHeaderAuthAdapter');
+			caLogEvent('LOGF', _t('Could not login user %1 using http headers: missing %2 [%3]', $ps_username, $vs_httpheader_username, $_SERVER['REMOTE_ADDR']), 'HTTPHeaderAuthAdapter');
 			return false;
 		}
 		

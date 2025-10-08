@@ -373,7 +373,7 @@ class DataMigrationUtils {
 			}
 			return $vn_item_id;
 		} else {
-			if ($o_log) { $o_log->logError(_t("%2Could not find add item to list: %1", join("; ", $t_list->getErrors()), $log_reference_str)); }
+			if ($o_log) { $o_log->logError(_t("%2Could not add item to list: %1", join("; ", $t_list->getErrors()), $log_reference_str)); }
 		}
 		return null;
 	}

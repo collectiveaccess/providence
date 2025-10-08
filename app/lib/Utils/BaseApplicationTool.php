@@ -119,7 +119,7 @@ abstract class BaseApplicationTool implements IApplicationTool {
 		if (is_array($settings)) { $this->setSettings($settings); }
 		if ($tool_config_path) { $this->ops_tool_config_path = $tool_config_path; }
 		
-		if (!$log_path) { $log_path = __CA_APP_DIR__.'/log'; }
+		if (!$log_path) { $log_path = __CA_LOG_DIR__; }
 		if ($log_path) { $this->setLogPath($log_path); }
 		if ($mode) { $this->setMode($mode); }
 	}

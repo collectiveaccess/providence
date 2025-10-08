@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,10 +62,22 @@
    		
 		MemoryCache::flush('translation');
 		$g_translation_cache = [];
+		
+		$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+		$secure = (__CA_SITE_PROTOCOL__ === 'https');
 
    		if (!($va_locale_paths = validateLocale($ps_locale))) {
    		    // cookie invalid, deleting
-			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, -1); }
+			if (!headers_sent()) { 
+				setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, [
+					'expires' => -1,
+					'path' => $cookiepath,
+					'domain' => null, 
+					'secure' => true, 
+					'httponly' => true, 
+					'samesite' => 'Strict'
+				]);
+			}
 			return false;
    		}
 		
@@ -89,13 +101,21 @@
                 'locale'  => $_locale
             ]);
         }
-        
-		$cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
+
         if(CookieOptionsManager::allow('performance')) {
-        	$secure = (__CA_SITE_PROTOCOL__ === 'https');
-			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $ps_locale, time() + Session::lifetime(), $cookiepath, null, $secure); }
+			if (!headers_sent()) { 
+				setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $ps_locale,
+					[
+						'expires' => time() + Session::lifetime(),
+						'path' => $cookiepath,
+						'domain' => null, 
+						'secure' => true, 
+						'httponly' => true, 
+						'samesite' => 'Strict'
+					]);
+			}
 		} elseif($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale']) {	// delete cookie
-			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, time() - 310600, $cookiepath);
+			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, time() - 310600, $cookiepath, null, $secure, true);
 		}
         return true;
    	}

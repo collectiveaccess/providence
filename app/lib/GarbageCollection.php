@@ -79,7 +79,7 @@ final class GarbageCollection {
 	private static function removeStaleDiskCacheItems(array $options=null) {
 		if(__CA_CACHE_BACKEND__ != 'file') { return false; } // the other backends *should* honor the TTL we pass
 
-		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_TEMP_DIR__);
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		$va_list = caGetDirectoryContentsAsList($vs_cache_dir, true, false, false, false, ['limit' => caGetOption('limit', $options, 1000)]);	// max 1000 files to check 
