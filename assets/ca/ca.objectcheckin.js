@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -158,8 +158,6 @@ var caUI = caUI || {};
 						dataType: 'json',
 						data: { user_id: that.user_id, item_list: JSON.stringify(that.itemList) },
 						success: function(data) {
-								//console.log('Success', data);
-						
 								// clear item list
 								jQuery('#' + that.transactionListContainerID + ' .transactionList li').remove();
 								that.itemList = [];
