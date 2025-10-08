@@ -151,6 +151,7 @@
       <xs:enumeration value="Filesize"/>
       <xs:enumeration value="FloorPlan"/>
       <xs:enumeration value="ExternalMedia"/>
+      <xs:enumeration value="MusicScore"/>
     </xs:restriction>
   </xs:simpleType>
 
