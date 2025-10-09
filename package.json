@@ -36,7 +36,14 @@
     "tus": "^0.1.7",
     "tus-js-client": "^2.3.0",
     "webpack": "^5.102.1",
-    "webpack-cli": "^4.9.1"
+    "webpack-cli": "^4.9.1",
+    "lodash": ">=4.17.21",
+    "uglify-js": ">=2.4.24",
+    "grunt": ">=1.5.3",
+    "karma": ">=6.3.16",
+    "express": ">=4.20.0",
+    "body-parser": ">=1.20.3",
+    "rollup": ">=2.79.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
