@@ -1249,6 +1249,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = [
 							'type' => 'ca_object_lots',
 							'id' => $vn_lot_id,
+							'relation_id' => $linking_table ? $relation_id : null,
 							'display' => $qr_lots->getWithTemplate($vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -1379,6 +1380,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_loans',
 							'id' => $vn_loan_id,
+							'relation_id' => $relation_id,
 							'display' => $qr_loans->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -1507,6 +1509,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_movements',
 							'id' => $vn_movement_id,
+							'relation_id' => $relation_id,
 							'display' => $qr_movements->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -1644,6 +1647,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_occurrences',
 							'id' => $vn_occurrence_id,
+							'relation_id' => $relation_id,
 							'display' => $qr_occurrences->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -1779,6 +1783,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_entities',
 							'id' => $vn_entity_id,
+							'relation_id' => $relation_id,
 							'display' => $qr_entities->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -1907,6 +1912,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_collections',
 							'id' => $vn_collection_id,
+							'relation_id' => $relation_id,
 							'display' => $qr_collections->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -2036,6 +2042,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$va_date['sortable']][] = array(
 							'type' => 'ca_objects',
 							'id' => $vn_object_id,
+							'relation_id' => $relation_id,
 							'display' => $qr_objects->getWithTemplate(($vn_rel_row_id != $row_id) ? $vs_child_display_template : $vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => $vs_icon_url,
@@ -2294,6 +2301,7 @@ trait HistoryTrackingCurrentValueTrait {
 				$va_history[$vn_date.(int)$row_id][] = array(
 					'type' => 'ca_objects_deaccession',
 					'id' => $row_id,
+					'relation_id' => null,
 					'display' => $qr->getWithTemplate($vs_display_template, ['locale' => $locale]),
 					'color' => $vs_color,
 					'icon_url' => '',
@@ -2328,6 +2336,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$va_history[$vn_date.$vn_id][] = array(
 							'type' => 'ca_objects_deaccession',
 							'id' => $vn_id,
+							'relation_id' => null,
 							'display' => $q->getWithTemplate($vs_display_template, ['locale' => $locale]),
 							'color' => $vs_color,
 							'icon_url' => '',

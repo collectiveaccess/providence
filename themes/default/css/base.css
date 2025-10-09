@@ -8260,6 +8260,7 @@ li p {
 	padding: 0 !important;
 }
 
+<<<<<<< HEAD
 
 /**
  * Inventory
@@ -8449,4 +8450,11 @@ div.inventoryItemNumber {
 
 div.inventoryItemHasUnsavedChanges {
 	background-color: #cc0000;
+}
+
+.ck-body-wrapper {
+	position: fixed !important;
+	z-index: 30000 !important;
+	top: 100%;
+	left: 100%;
 }

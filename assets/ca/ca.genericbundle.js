@@ -406,7 +406,6 @@ var caUI = caUI || {};
 			if(this.buttons) {
 				for(var i in this.buttons) {
 					let b = this.buttons[i];
-					//console.log('button', this.buttons[i]);
 					jQuery("#" +this.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
 				}
 			}
