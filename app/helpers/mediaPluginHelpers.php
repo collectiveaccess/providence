@@ -641,7 +641,7 @@ function caEmbedMediaMetadataIntoFile($t_instance, string $version, ?array $opti
 	if (!preg_match("/^image\//", mime_content_type($file))) { return false; } // Don't try to embed in files other than images
 
 	// make a temporary copy (we won't touch the original)
-	$tmp_filepath = __CA_APP_DIR__."/tmp/".time().md5($file);
+	$tmp_filepath = __CA_TEMP_DIR__."/".time().md5($file);
 	if(!copy($file, $tmp_filepath)) {
 		return false;
 	}

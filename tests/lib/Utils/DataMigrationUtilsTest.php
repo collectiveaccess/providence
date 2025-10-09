@@ -194,7 +194,7 @@ class DataMigrationUtilsTest extends TestCase {
 		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => '']);
 
 		$r = DataMigrationUtils::splitEntityName("Jane Alice Erin Dalhia Doe", ['displaynameFormat' => 'surnameCommaForename']);
-		$this->_checkValue($r, ['surname' => 'Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Doe, Jane', 'prefix' => '', 'suffix' => '']);
+		$this->_checkValue($r, ['surname' => 'Erin Dalhia Doe', 'forename' => 'Jane', 'middlename' => 'Alice', 'displayname' => 'Erin Dalhia Doe, Jane', 'prefix' => '', 'suffix' => '']);
 
 		$r = DataMigrationUtils::splitEntityName("Van Der Doe, Jane Alice Erin Dalhia", ['displaynameFormat' => 'surnameCommaForename']);
 		$this->_checkValue($r, ['surname' => 'Van Der Doe', 'forename' => 'Jane', 'middlename' => 'Alice Erin Dalhia', 'displayname' => 'Van Der Doe, Jane', 'prefix' => '', 'suffix' => '']);

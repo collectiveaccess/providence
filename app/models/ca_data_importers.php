@@ -2668,13 +2668,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && strlen( trim( $va_item['settings']['skipIfExpression'] ) )
 							) {
 								try {
-									$exp_row = $this->_processDelimitersForRow($va_item['source'], $va_item, $use_raw ? $va_raw_row : $va_row_with_replacements, $vn_i);
-								
+									$exp_row = self::_rowDataForExpression($va_item['settings']['skipIfExpression'], $use_raw ? $va_raw_row : $va_row_with_replacements, $o_reader);
+									$exp_row = $this->_processDelimitersForRow($va_item['source'], $va_item, $exp_row, $vn_i);
+									
 									if ( $vm_ret = ExpressionParser::evaluate( $va_item['settings']['skipIfExpression'],
 										 $exp_row)
 									) {
-										$o_log->logInfo( _t( '[%1] Skipped mapping because skipIfExpression %2 is true',
-											$vs_idno, $va_item['settings']['skipIfExpression'] ) );
+										$o_log->logInfo( _t( '[%1] Skipped mapping because skipIfExpression %2 is true : %3',
+											$vs_idno, $va_item['settings']['skipIfExpression'] , print_r($exp_row, true)) );
 										continue;
 									}
 								} catch ( Exception $e ) {
@@ -2890,7 +2891,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							     && strlen( trim( $va_item['settings']['skipIfExpression'] ) )
 							) {
 								try {
-									$exp_row = $this->_processDelimitersForRow($va_item['source'], $va_item, $use_raw ? $va_raw_row : $va_row_with_replacements, $vn_i);
+									$exp_row = self::_rowDataForExpression($va_item['settings']['skipIfExpression'], $use_raw ? $va_raw_row : $va_row_with_replacements, $o_reader);
+									$exp_row = $this->_processDelimitersForRow($va_item['source'], $va_item, $exp_row, $vn_i);
 								
 									if ( $vm_ret = ExpressionParser::evaluate( $va_item['settings']['skipIfExpression'],
 										$exp_row )
@@ -4440,8 +4442,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			 && strlen( trim( $mapping_items[$item_id]['settings']['skipIfExpression'] ) )
 		) {
 			try {
+				$exp_row = self::_rowDataForExpression($mapping_items[$item_id]['settings']['skipIfExpression'], is_array($use_raw) ? $use_raw : $row_with_replacements, $o_reader);
 				if ($vm_ret = ExpressionParser::evaluate( $mapping_items[$item_id]['settings']['skipIfExpression'],
-					is_array($use_raw) ? $use_raw : $row_with_replacements )
+					$exp_row )
 				) {
 					return false;
 				}
@@ -4777,6 +4780,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
         $o_writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook);
  	    $o_writer->save($file);
         return true;   
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _rowDataForExpression(string $expression, array $row, $reader) {
+		$tags = caGetTemplateTags($expression);
+		foreach($tags as $t) {
+			if(!isset($row[$t])) {
+				$row[$t] = $reader->get($t);
+			}
+		}
+		return $row;
 	}
 	# ------------------------------------------------------
 	/**

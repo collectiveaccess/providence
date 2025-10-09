@@ -429,12 +429,12 @@ class BundlableLabelableBaseModelWithAttributesTest extends TestCase {
 
 		$t_object->insert();
 		
-		$va_prepopulate_options = array('instance' => $t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container_overwrite.conf');
+		$prepopulate_options = ['instance' => &$t_object, 'prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container_overwrite.conf'];
 
 		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
 		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
 		$o_plugin = new prepopulatePlugin(__CA_APP_DIR__.'/plugins/prepopulate');
-		$this->assertTrue($o_plugin->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertTrue($o_plugin->prepopulateFields($prepopulate_options), 'Prepopulate should return true');
 
 		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
 		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');

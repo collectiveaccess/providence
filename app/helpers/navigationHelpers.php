@@ -133,7 +133,6 @@ define('__CA_NAV_ICON_ICON_POS_BOTTOM__', 3);
  *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
  *		absolute = return absolute URL. [Default is to return relative URL]
  *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
- *		encodeSlashesInParams = transform "/" characters in $pa_other_params values into "::slash::" for transmision on urls (some webserver reject urls with parameters encoding slashes). [Default is false]
  *		isServiceUrl = assume URL is a web-services call (Eg. use service.php rather than index.php) [Default is false]
  *
  * @return string
@@ -170,15 +169,6 @@ function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_
 	
 	if (is_array($pa_other_params) && sizeof($pa_other_params)) {
 		$vn_i = 0;
-		
-		if(caGetOption('encodeSlashesInParams', $pa_options, false)) {
-			$pa_other_params = array_map(function($v) {
-				if(strpos($v, '/') !== false) {
-					$v = str_replace('/', '::slash::', $v);
-				}
-				return $v;
-			}, $pa_other_params);
-		}
 		
 		if (caIsAssociativeArray($pa_other_params)) {
 			$use_query_string = caGetOption('useQueryString', $pa_options, false);
@@ -440,7 +430,7 @@ function caFormTag($po_request, $ps_action, $ps_id, $ps_module_and_controller_pa
 	$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."' ".($autocomplete ? '' : 'autocomplete="off"').">\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
 	
 	if (!caGetOption('noTimestamp', $pa_options, false)) {
-		$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
+		$vs_buf .= caHTMLHiddenInput('form_timestamp', ['value' => ceil(microtime(true))]);
 	}
 	if (!caGetOption('noCSRFToken', $pa_options, false)) {
 		$vs_buf .= caHTMLHiddenInput('csrfToken', array('value' => caGenerateCSRFToken($po_request)));

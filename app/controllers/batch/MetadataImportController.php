@@ -244,7 +244,7 @@ class MetadataImportController extends ActionController {
 				// Copy upload tmp file to persistent tmp path
 				// TaskQueue handle will delete this file when it's done with it
 				if($ext = pathinfo($options['sourceFile'], PATHINFO_EXTENSION)) { $ext = '.'.$ext; }
-				@copy($options['sourceFile'], $new_path = __CA_APP_DIR__.'/tmp/caMetadataImportTmp_'.$entity_key.$ext);
+				@copy($options['sourceFile'], $new_path = __CA_TEMP_DIR__.'/caMetadataImportTmp_'.$entity_key.$ext);
 				$options['sourceFile'] = $new_path;
 			}
 			

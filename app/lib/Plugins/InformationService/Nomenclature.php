@@ -51,7 +51,7 @@ class WLPlugInformationServiceNomenclature extends BaseGettyLODServicePlugin imp
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Limit to hierarchy'),
-			'description' => _t('Limit results to one or more Nomenclature sub-hierarchies. Enter numeric Nomenclature identifiers (Eg. 300111079) for the root of the sub-hierarchy. Separate multiple Nomenclature identifiers with semicolons or commas. Only terms under the specified root Nomenclature terms will be returned.')
+			'description' => _t('Limit results to one or more Nomenclature sub-hierarchies. Enter numeric Nomenclature identifiers (Eg. 300111079) for the roots of the sub-hierarchies. Separate multiple Nomenclature identifiers with semicolons or commas. Only terms under the specified root Nomenclature terms will be returned.')
 		];
 		$g_information_service_settings_nomenclature['additionalFilter'] = [
 			'formatType' => FT_TEXT,

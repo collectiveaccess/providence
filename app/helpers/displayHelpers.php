@@ -6170,11 +6170,11 @@ function caGetReferenceToExistingRepresentationMedia(ca_object_representations $
 		}
 	} else {
 		$rec_label = $rec_label ? 
-			_t('Media aleady exists in %1', ($g_request ? 
+			_t('Media already exists in %1', ($g_request ? 
 				caEditorLink($g_request, $rec_label, '', $parent_table, $rel[Datamodel::primaryKey($parent_table)])
 				: $rec_label))
 			:
-			($g_request ? _t('Media aleady %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
+			($g_request ? _t('Media already %1', caEditorLink($g_request, _t('exists'), '', 'ca_object_representations', $t_rep->getPrimaryKey())) : _t('Media already exists'))
 		;
 		return $rec_label;
 	}
