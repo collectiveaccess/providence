@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,8 +91,14 @@ class ObjectComponentController extends ActionController {
 				if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
 					$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
 				}
-				if (!($o_idno = $t_subject->getIDNoPlugInInstance()) || !$o_idno->isSerialFormat($o_idno->getFormat())) {
-					$t_subject->set('idno', $t_parent->get('idno'));
+				$pidno = $t_parent->get('idno');
+				$subject_idno_instance = $t_subject->getIDNoPlugInInstance();
+				$subject_idno_element_count = sizeof($subject_idno_instance->getElements());
+				$parent_idno_instance = $t_parent->getIDNoPlugInInstance();
+				$parent_idno_element_count = sizeof($parent_idno_instance->getElements());
+				
+				if(!$subject_idno_instance || !$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || ($subject_idno_element_count > $parent_idno_instance) && strlen($pidno)) {
+					$t_subject->set('idno', $pidno);
 				}
 			}
 		}
