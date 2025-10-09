@@ -1109,7 +1109,7 @@ class BaseFindController extends ActionController {
 			throw new ApplicationException(_t('Cannot use editor for %1', $this->ops_tablename));
 		}
 		
-		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+		if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification]) === false) {
 			throw new ApplicationException(_t('CSRF check failed'));
 			return;
 		}

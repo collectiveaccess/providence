@@ -147,6 +147,8 @@ class MediaImportController extends ActionController {
 		
 		$this->view->setVar('import_mode', caHTMLSelect('import_mode', $import_modes, ['id' => 'importMode'], ['value' => $va_last_settings['importMode'] ?? null]));
 		
+		$this->view->setVar('force_primary', caHTMLCheckboxInput('force_primary', ['id' => 'forcePrimary', 'value' => '1', 'checked' => $va_last_settings['forcePrimary'] ?? false], []).' '._t('Make imported media primary?'));
+		
 		$this->view->setVar('match_mode', caHTMLSelect('match_mode', [
 			_t('Match using file name') => 'FILE_NAME',
 			_t('Match using directory name') => 'DIRECTORY_NAME',
@@ -239,6 +241,7 @@ class MediaImportController extends ActionController {
 			'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
 			'deleteMediaOnImport' => $this->user_can_delete_media_on_import && (bool)$this->request->getParameter('delete_media_on_import', pInteger),
 			'importMode' => $this->request->getParameter('import_mode', pString),
+			'forcePrimary' => $this->request->getParameter('force_primary', pString),
 			'matchMode' => $this->request->getParameter('match_mode', pString),
 			'matchType' => $this->request->getParameter('match_type', pString),
 			$vs_import_target.'_limit_matching_to_type_ids' => $this->request->getParameter($vs_import_target.'_limit_matching_to_type_ids', pArray),
