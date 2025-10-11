@@ -843,7 +843,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public static function getElementsAsList($pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_use_cache=true, $pb_return_stats=false, $pb_index_by_element_code=false, $pa_data_types=null, $options=null){
 		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
-		$vs_cache_key = md5($vn_table_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').serialize($pa_data_types));
+		$vs_cache_key = md5($vn_table_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').serialize($pa_data_types).serialize($options));
 
 		if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'ElementList')) {
 			$va_element_list = CompositeCache::fetch($vs_cache_key, 'ElementList');
