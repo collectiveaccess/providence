@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2024 Whirl-i-Gig
+ * Copyright 2000-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -128,7 +128,7 @@ class Session {
 							'expires' => Session::$lifetime ? time() + Session::$lifetime : null,
 							'path' => $cookiepath,
 							'domain' => null, 
-							'secure' => true, 
+							'secure' => $secure, 
 							'httponly' => true, 
 							'samesite' => 'Strict'
 						]);
@@ -243,7 +243,7 @@ class Session {
 							'expires' => time()- (24 * 60 * 60),
 							'path' => $cookiepath,
 							'domain' => null, 
-							'secure' => true, 
+							'secure' => $secure, 
 							'httponly' => true, 
 							'samesite' => 'Strict'
 						]);
@@ -256,7 +256,7 @@ class Session {
 							'expires' => time()-3600,
 							'path' => $cookiepath,
 							'domain' => null, 
-							'secure' => true, 
+							'secure' => $secure, 
 							'httponly' => true, 
 							'samesite' => 'Strict'
 						]);
