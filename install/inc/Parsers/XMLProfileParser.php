@@ -81,7 +81,7 @@ class XMLProfileParser extends BaseProfileParser {
 			throw new \Exception(_t('XML profile validation failed'));
 		}
 		if(!$this->loadProfile($directory, $profile)) {
-			throw new \Exception(_t('Could not load XML profile'));
+			throw new \Exception(_t('Could not parse XML profile'));
 		}
 		
 		$this->directory = $directory;
