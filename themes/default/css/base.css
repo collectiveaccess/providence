@@ -8108,6 +8108,15 @@ ul.ui-autocomplete {
     z-index: 999999;
 }
 
+ul.ui-autocomplete {
+    display: inline-block; /* shrink to fit shortest content, not full width */
+    max-width: 100%; /* never overflow container */
+    width: auto !important; /* override any fixed inline width */
+    white-space: normal; /* allow wrapping for long items */
+    word-break: break-word; /* break long words when needed */
+    box-sizing: border-box;
+}
+
 li.ui-menu-item {
     padding: 10px;
 }
