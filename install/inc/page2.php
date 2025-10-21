@@ -28,16 +28,16 @@
 if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
 
 $t_total = new Timer();
-$va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profile)
+$profile_info = \Installer\Installer::getProfileInfo("./profiles", $profile)
 ?>
 <div id='box'>
 	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 	<div id="content">
 	<H1>
-		Installing CollectiveAccess <?= constant('__CollectiveAccess__'); ?>...
+		<?= _t('Installing CollectiveAccess %1', constant('__CollectiveAccess_Version__')); ?>...
 	</H1>
 	<H2>
-		Loading <?= $va_profile_info['display']; ?>
+		<?= _t('Loading %1', $profile_info['display']); ?>
 	</H2>
 	<div id="progressbar" ></div>
 	
@@ -52,14 +52,14 @@ $va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profil
 	</div>
 <?php
 	
-	$vn_progress = 0;
+	$progress = 0;
 	
 	// parameters: profile dir, profile name, admin email, overwrite y/n, profile debug mode y/n
-	$vo_installer = new \Installer\Installer("profiles/", $ps_profile, $ps_email, $pb_overwrite, $pb_debug);
+	$vo_installer = new \Installer\Installer("profiles/", $profile, $email, $pb_overwrite, $pb_debug);
 	
 	// if profile validation against XSD failed, we already have an error here
 	if($vo_installer->numErrors()){
-		caSetMessage("There were errors parsing the profile(s): ".join("; ", $vo_installer->getErrors()));
+		caSetMessage("There were errors parsing the profile(s): ".join("; ", array_map(function($v) { return $v['message'] ?? ''; }, $vo_installer->getErrors())));
 	} else {
 		
 		try {
@@ -68,134 +68,134 @@ $va_profile_info = \Installer\Installer::getProfileInfo("./profiles", $ps_profil
 				throw new ApplicationException(_t('Cannot install. Existing CollectiveAccess installation has been detected.'));
 			}
 			
-			caIncrementProgress($vn_progress, "Performing preinstall tasks");
+			caIncrementProgress($progress, _t("Performing preinstall tasks"));
 			$vo_installer->performPreInstallTasks();
 		
-			caIncrementProgress($vn_progress, "Loading schema");
+			caIncrementProgress($progress, _t("Loading schema"));
 			$vo_installer->loadSchema('caGetTableToBeLoaded');
 		
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing locales");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing locales"));
 			$vo_installer->processLocales();
 
-			caIncrementProgress($vn_progress, "Processing lists");
+			caIncrementProgress($progress, _t("Processing lists"));
 			$vo_installer->processLists('caGetListToBeLoaded');
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing relationship types");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing relationship types"));
 			$vo_installer->processRelationshipTypes();
 
-			$vn_progress += 5;
-			caIncrementProgress($vn_progress, "Processing metadata elements");
+			$progress += 5;
+			caIncrementProgress($progress, _t("Processing metadata elements"));
 			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 
-			$vn_progress += 2;
-			caIncrementProgress($vn_progress, "Processing metadata dictionary");
+			$progress += 2;
+			caIncrementProgress($progress, _t("Processing metadata dictionary"));
 			$vo_installer->processMetadataDictionary();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing access roles");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing access roles"));
 			$vo_installer->processRoles();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing user groups");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing user groups"));
 			$vo_installer->processGroups();
 
-			$vn_progress += 2;
-			caIncrementProgress($vn_progress, "Creating logins");
-			$va_login_info = $vo_installer->processLogins();
+			$progress += 2;
+			caIncrementProgress($progress, _t("Creating logins"));
+			$login_info = $vo_installer->processLogins();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing user interfaces");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing user interfaces"));
 			$vo_installer->processUserInterfaces();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing displays");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing displays"));
 			$vo_installer->processDisplays();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing search forms");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Processing search forms"));
 			$vo_installer->processSearchForms();
 
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Setting up hierarchies");
+			$progress += 7;
+			caIncrementProgress($progress, _t("Setting up hierarchies"));
 			$vo_installer->processMiscHierarchicalSetup();
 			
-			$vn_progress += 2;
-			caIncrementProgress($vn_progress, "Processing metadata alerts");
+			$progress += 2;
+			caIncrementProgress($progress, _t("Processing metadata alerts"));
 			$vo_installer->processMetadataAlerts();
 
-			caIncrementProgress($vn_progress, "Performing post install tasks");
+			caIncrementProgress($progress, _t("Performing post install tasks"));
 			$vo_installer->performPostInstallTasks();
 
-			caIncrementProgress(100, "Installation complete");
+			caIncrementProgress(100, _t("Installation complete"));
 
-			$vs_message = '';
-			$vs_time =  "(Installation took ".$t_total->getTime(0)." seconds)";
+			$message = '';
+			$time =  _t("(Installation took %1 seconds)", $t_total->getTime(0));
 			if($vo_installer->numErrors() || $vo_installer->numWarnings()){
-				if (sizeof($va_errors = array_map(function($e) { return "<li>{$e['stage']}: {$e['message']}</li>"; }, $vo_installer->getErrors()))) {
-					$vs_message .= "<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul>".join("", $va_errors)."</ul></div>";
+				if (sizeof($errors = array_map(function($e) { return "<li>{$e['stage']}: {$e['message']}</li>"; }, $vo_installer->getErrors()))) {
+					$message .= "<div class='contentFailure'><div class='contentFailureHead'>"._t('There were errors during installation:')."</div><ul>".join("", $errors)."</ul></div>";
 				}
-				if (sizeof($va_warnings = array_map(function($e) { return "<li>{$e['stage']}: {$e['message']}</li>"; }, $vo_installer->getWarnings()))) {
-					$vs_message .= "<div class='contentFailure'><div class='contentFailureHead'>There were warnings during installation:</div><ul>".join("", $va_warnings)."</ul></div>";
+				if (sizeof($warnings = array_map(function($e) { return "<li>{$e['stage']}: {$e['message']}</li>"; }, $vo_installer->getWarnings()))) {
+					$message .= "<div class='contentFailure'><div class='contentFailureHead'>"._t('There were warnings during installation:')."</div><ul>".join("", $warnings)."</ul></div>";
 				}
-				$vs_message .= "<div class='contentSuccess'>You can now try to <a href='../index.php?action=login'>login</a> with ";
+				$message .= "<div class='contentSuccess'>"._t("You can now try to <a href='../index.php?action=login'>login</a> with ");
 		
 			} else {
-				$vs_message .= "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
+				$message .= "<div class='contentSuccess'><span style='font-size:18px;'><b>"._t('Installation was successful!')."</b></span><br/>"._t("You can now <a href='../index.php?action=login'>login</a> with ");
 			}
 			
-			if(!is_array($va_login_info)) {
-				$vs_message .= "<strong>[could not create logins]</strong>";
-			} elseif (sizeof($va_login_info) == 1) {
-				foreach($va_login_info as $vs_user_name => $vs_password) {
-					$vs_message .= "username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span>.<br/><b>Make a note of this password!</b><br/>";
+			if(!is_array($login_info)) {
+				$message .= "<strong>["._t('could not create logins')."]</strong>";
+			} elseif (sizeof($login_info) == 1) {
+				foreach($login_info as $user_name => $password) {
+					$message .= "username <span class='contentHighlight'>{$user_name}</span> and password <span class='contentHighlight'>{$password}</span>.<br/><b>"._t('Make a note of this password!')."</b><br/>";
 				}
 			} else {
-				$vs_message .= " the following logins:<br/>";
-				foreach($va_login_info as $vs_user_name => $vs_password) {
-					$vs_message .= "Username <span class='contentHighlight'>{$vs_user_name}</span> and password <span class='contentHighlight'>{$vs_password}</span><br/>";
+				$message .= " the following logins:<br/>";
+				foreach($login_info as $user_name => $password) {
+					$message .= _t("Username <span class='contentHighlight'>%1</span> and password <span class='contentHighlight'>%2</span>", $user_name, $password)."<br/>";
 				}
-				$vs_message .= "<br/><b>Make note of these passwords!</b><br/>";
+				$message .= "<br/><b>"._t('Make note of these passwords!')."</b><br/>";
 			}
 
-			$vs_message .= "<span style='font-size:11px;'>{$vs_time}</span></div>";
-			caSetMessage($vs_message, true);
+			$message .= "<span style='font-size:11px;'>{$time}</span></div>";
+			caSetMessage($message, true);
 
 		} catch(Exception $e) {
-			caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul><li>".$e->getMessage()."</li></ul></div>");
+			caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>"._t('There were errors during installation:')."</div><ul><li>".$e->getMessage()."</li></ul></div>");
 		}
 	}
 ?>
 </div><!-- end content --></div><!-- end box -->
 <?php
-	function caIncrementProgress($pn_percentage, $ps_message) {
-		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$pn_percentage}); jQuery('#installerLog').html('{$ps_message}');</script>";
+	function caIncrementProgress($percentage, $message) {
+		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$percentage}); jQuery('#installerLog').html('{$message}');</script>";
 		caFlushOutput();
 	}
 	
-	function caSetMessage($ps_message, $pb_resize=false) {
-		$ps_message = addslashes($ps_message);
-		print "<script type='text/javascript'>jQuery('#installerLog').html('{$ps_message}');";
+	function caSetMessage($message, $pb_resize=false) {
+		$message = addslashes($message);
+		print "<script type='text/javascript'>jQuery('#installerLog').html('{$message}');";
 		if ($pb_resize) {
 			print "jQuery('#installerLog').css('overflow', 'visible').css('height', '100%');";
 		}
 		print "</script>";
 		caFlushOutput();
 	}
-	function caGetTableToBeLoaded($ps_statement, $ps_table, $pn_table, $pn_num_tables) {
-		global $vn_progress;
+	function caGetTableToBeLoaded($statement, $ltable, $table, $num_tables) {
+		global $progress;
 		
-		$vn_progress += (21/$pn_num_tables);
+		$progress += (21/$num_tables);
 		
-		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$vn_progress}); jQuery('#installerLog').html('Installing database table for <i>{$ps_table}</i>');</script>";
+		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$progress}); jQuery('#installerLog').html(".json_encode(_t('Installing database table for <i>%1</i>', $ltable)).");</script>";
 		caFlushOutput();
 	}
-	function caGetListToBeLoaded($ps_list_code, $pn_list, $pn_num_lists) {
-		global $vn_progress;
+	function caGetListToBeLoaded($list_code, $list, $num_lists) {
+		global $progress;
 		
-		$vn_progress += (21/$pn_num_lists);
+		$progress += (21/$num_lists);
 		
-		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$vn_progress}); jQuery('#installerLog').html('Installing list <i>{$ps_list_code}</i>');</script>";
+		print "<script type='text/javascript'>jQuery('#progressbar').progressbar('value',{$progress}); jQuery('#installerLog').html(".json_encode(_t('Installing list <i>%1</i>', $list_code)).");</script>";
 		caFlushOutput();
 	}

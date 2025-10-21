@@ -47,62 +47,62 @@ require_once('../app/helpers/configurationHelpers.php');
 require_once('../app/helpers/htmlFormHelpers.php');
 require_once("inc/Installer.php");
 
-$ps_instance = 	$_REQUEST['instance'];
-$ps_action = 	$_REQUEST['action'];
-$pn_page = 		$_REQUEST['page'];
+$instance = 	$_REQUEST['instance'];
+$action = 		$_REQUEST['action'];
+$page = 		$_REQUEST['page'];
 
 if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
-	if ($ps_action == 'profileUpload') {
-		$va_response = ['STATUS' => 'OK'];
+	if ($action == 'profileUpload') {
+		$response = ['STATUS' => 'OK'];
 		
-		$vs_profile_dir = pathinfo(__FILE__, PATHINFO_DIRNAME).'/profiles';
+		$profile_dir = pathinfo(__FILE__, PATHINFO_DIRNAME).'/profiles';
 		if (is_array($_FILES['files']['tmp_name'])) { 
-			foreach($_FILES['files']['tmp_name'] as $vn_i => $vs_tmp_name) {
+			foreach($_FILES['files']['tmp_name'] as $vn_i => $tmp_name) {
 				if ($_FILES['files']['size'][$vn_i] <= 0) { 
-					$va_response['skippedMessage'][] = _t('%1 is empty', $_FILES['files']['name'][$vn_i]);
+					$response['skippedMessage'][] = _t('%1 is empty', $_FILES['files']['name'][$vn_i]);
 					continue; 
 				}
 				// check if file looks like a profile
-				if(!($format = \Installer\Installer::validateProfile(pathinfo($vs_tmp_name, PATHINFO_DIRNAME), pathinfo($vs_tmp_name, PATHINFO_BASENAME), pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_EXTENSION)))) {
-					$va_response['skippedMessage'][] = _t('%1 is not a valid profile', $_FILES['files']['name'][$vn_i]);
+				if(!($format = \Installer\Installer::validateProfile(pathinfo($tmp_name, PATHINFO_DIRNAME), pathinfo($tmp_name, PATHINFO_BASENAME), pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_EXTENSION)))) {
+					$response['skippedMessage'][] = _t('%1 is not a valid profile', $_FILES['files']['name'][$vn_i]);
 					continue; 
 				}
 				$format = strtolower($format);
 			
-				$vb_exists = file_exists($vs_profile_dir.'/'.$format.'/'.$_FILES['files']['name'][$vn_i]);
+				$exists = file_exists($profile_dir.'/'.$format.'/'.$_FILES['files']['name'][$vn_i]);
 			
 				// attempt to write to profile dir
-				if (@copy($vs_tmp_name, $vs_profile_dir."/{$format}/".$_FILES['files']['name'][$vn_i])) {
-					$va_response['added'][] = pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_FILENAME);
-					$va_response['uploadMessage'][] = $vb_exists ? _t('Updated %1', $_FILES['files']['name'][$vn_i]) : _t('Added %1', $_FILES['files']['name'][$vn_i]);
+				if (@copy($tmp_name, $profile_dir."/{$format}/".$_FILES['files']['name'][$vn_i])) {
+					$response['added'][] = pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_FILENAME);
+					$response['uploadMessage'][] = $exists ? _t('Updated %1', $_FILES['files']['name'][$vn_i]) : _t('Added %1', $_FILES['files']['name'][$vn_i]);
 				} else {
-					$va_response['skippedMessage'][] = _t('%1 could not be written', $_FILES['files']['name'][$vn_i]);
+					$response['skippedMessage'][] = _t('%1 could not be written', $_FILES['files']['name'][$vn_i]);
 					continue; 
 				}
 				
 			}
 		}
 		// return list of profiles
-		$va_response['profiles'] = caGetAvailableProfiles();
+		$response['profiles'] = caGetAvailableProfiles();
 		
-		print json_encode($va_response);
+		print json_encode($response);
 		return;
 	}
 }
 	
-	$ps_email = isset($_REQUEST['email']) ? $_REQUEST['email'] : '';
-	$ps_profile = isset($_REQUEST['profile']) ? $_REQUEST['profile'] : '';
+	$email = isset($_REQUEST['email']) ? $_REQUEST['email'] : '';
+	$profile = isset($_REQUEST['profile']) ? $_REQUEST['profile'] : '';
 	$pb_overwrite = (isset($_REQUEST['overwrite']) && defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) ? (bool)$_REQUEST['overwrite'] : false;
 	$pb_debug = (isset($_REQUEST['debug']) && defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) ? (bool)$_REQUEST['debug'] : false;
 
-	$va_errors = array();
+	$errors = array();
 	
-	$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
-	array_pop($va_tmp);
-	$vs_url_path = join("/", $va_tmp);
+	$tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
+	array_pop($tmp);
+	$url_path = join("/", $tmp);
 	
 	// get current locale
-	$locale = 'en_US';
+	$locale = defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US';
 	
 	// get current theme
 	$theme = 'default';
@@ -112,11 +112,11 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 	// Check setup.php settings
 	// ...
 	
-	if ($pn_page == 2) {
-		$ps_email = $_REQUEST['email'];
-		if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $ps_email)) {
-			$va_errors[] = 'Administrator e-mail address is invalid';
-			$pn_page = 1;
+	if ($page == 2) {
+		$email = $_REQUEST['email'];
+		if (!preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._\-\+])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/" , $email)) {
+			$errors[] = 'Administrator e-mail address is invalid';
+			$page = 1;
 		}
 	}
 ?>
@@ -143,7 +143,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 <body>
 	<div class='content'>
 <?php 
-		switch($pn_page) {
+		switch($page) {
 			case 1:
 			default:
 				require_once("./inc/page1.php");
