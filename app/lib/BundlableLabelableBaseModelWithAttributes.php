@@ -4352,13 +4352,8 @@ if (!$batch) {
 							$tt = $target_table;
 							$target_id = $t_id;
 						}
-						
 						if ($parent_table == $tt) {	
 							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
-								if($t->getPrimaryKey() ==  $this->getPrimaryKey()) { 
-									$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); 
-									continue; 
-								}
 								if(!$t->isSaveable($po_request)) { continue; }
 								
 								$t->setTransaction($this->getTransaction());

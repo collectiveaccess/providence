@@ -124,8 +124,7 @@ class Installer {
 		
 		if(!$skip_load) {
 			if(!is_array($data)) {
-				// TODO: get error from parser
-				$this->addError('init', _t('Could not load profile.'));
+				$this->addError('init', _t('Profile is invalid'));
 				return false;
 			}
 			$this->parsed_data = $data;
@@ -161,10 +160,16 @@ class Installer {
 		}
 		
 		
+		$this->notices = $this->warnings = $this->errors = [];
 		if(!($parser = self::profileParser($path))) { return null; }
-		
-		$data = $parser->parse($directory, $profile, $options);
-		
+
+		try {
+			$data = $parser->parse($directory, $profile, $options);
+		} catch(\Exception $e) {
+			$this->errors = [
+				['stage' => 'INIT', 'message' => _t('Could not parse profile: %1', $e->getMessage())] 
+			];
+		}
 		$this->notices = $parser->getNotices();
 		$this->warnings = $parser->getWarnings();
 		$this->errors = $parser->getErrors();
@@ -1001,7 +1006,7 @@ class Installer {
 		$uis = $this->parsed_data['userInterfaces'];
 	
 		foreach($uis as $ui_code => $ui) {
-			$type = $ui["type"];
+			$type = $ui_table = $ui["type"];
 			if (!($type = \Datamodel::getTableNum($type))) {
 				$this->addError('processUserInterfaces', _t("Invalid type %1 for UI code %2", $type, $ui_code));
 				return false;
@@ -1134,7 +1139,7 @@ class Installer {
 
 				self::addLabels($t_ui_screens, $screen['labels']);
 			
-				$available_bundles = $t_ui_screens->getAvailableBundles(null, ['dontCache' => true]);
+				$available_bundles = $t_ui_screens->getAvailableBundles($t_instance->tableNum(), ['dontCache' => true]);
 
 				// nuke previous placements. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of placements to include all of them!
@@ -1213,6 +1218,12 @@ class Installer {
 					$placement_code = $placement["code"];
 					$bundle_type_restrictions = $placement["typeRestrictions"];
 					$bundle = trim((string)$placement['bundle']);
+					
+					$bundle_proc = preg_replace("!^ca_attribute_!", "", $bundle);
+					$tmp = explode('.', $bundle_proc);
+					if(!\Datamodel::tableExists($tmp[0])) {
+						$bundle_proc = "{$ui_table}.{$bundle_proc}";
+					}
 
 					if (is_array($bundle_type_restrictions) && sizeof($bundle_type_restrictions)) {
 						$bundle_type_restrictions_types = array_map(function($v) { return $v['type']; }, $bundle_type_restrictions);
@@ -1248,14 +1259,14 @@ class Installer {
 					
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
-					if (!($t_placement = $t_ui_screens->addPlacement($bundle, $placement_code, [], null, ['additional_settings' => $available_bundles[$bundle]['settings'], 'returnInstance' => true]))) {
+					if (!($t_placement = $t_ui_screens->addPlacement($bundle, $placement_code, [], null, ['additional_settings' => $available_bundles[$bundle_proc]['settings'], 'returnInstance' => true]))) {
 						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
 					} else {
 						$settings = $this->_processSettings($t_placement, $placement['settings'], [
-							'table' => $table, 
-							'leftTable' => $table, 
+							'table' => $table ? $table : $type, 
+							'leftTable' => $table ? $table : $type, 
 							'rightTable' => \Datamodel::tableExists($type) ? $type : null, 
-							'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle]['settings']) ? $available_bundles[$bundle]['settings'] : []),
+							'settingsInfo' => array_merge($t_placement->getAvailableSettings(), is_array($available_bundles[$bundle_proc]['settings']) ? $available_bundles[$bundle_proc]['settings'] : []),
 							'source' => "UserInterface:{$ui_code}:Screen {$screen_idno}:Placement {$placement_code}"
 						]);
 						$t_placement->update();
