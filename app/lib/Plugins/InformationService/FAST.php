@@ -122,6 +122,9 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
 		$n = $xml->numberOfRecords;
 		$records = $xml->records->record;
         $return = [];
+        $primary = null;
+    
+    	$search_lc = mb_strtolower($search);
 		foreach($records as $r) {
 			$data = $r->recordData->children('http://www.loc.gov/MARC21/slim');
 			
@@ -130,12 +133,19 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
 			
 			$fast_id_data = $data->xpath("mx:controlfield[@tag='001']/text()");
 			$fast_id = (string)$fast_id_data[0];
-			$return['results'][] = [
+			
+			$entry = [
 				'label' => $label,
 				'url' => "http://id.worldcat.org/fast/{$fast_id}",
 				'idno' => $fast_id
 			];
+			if($search_lc == mb_strtolower($label)) {
+				$primary = $entry;
+			} else {
+				$return['results'][] = $entry;
+			}
 		}
+		if($primary) { array_unshift($return['results'], $primary); }
         return $return;
     }
 
