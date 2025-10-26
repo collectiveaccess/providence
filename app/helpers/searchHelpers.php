@@ -769,6 +769,30 @@ function caGetInfoForSearchBuilderType($ps_search_type) {
 }
 # ---------------------------------------
 /**
+ * 
+ *
+ * @return array 
+ */
+function caLoadSearchBuilderLocale(?string $locale=null) {
+	global $g_ui_locale;
+	if(!$locale) { $locale = $g_ui_locale; }
+	$config = caGetSearchBuilderConfig();
+	
+	$locale_map = $config->getAssoc('locale_map');
+	list($language, $country) = explode('_', $locale);
+	
+	if(isset($locale_map[$locale])) {
+		AssetLoadManager::register('jquery', 'querybuilderLocale_'.$locale);
+	} elseif(isset($locale_map[$language])) {
+		AssetLoadManager::register('jquery', 'querybuilderLocale_'.$language);
+	} else {
+		AssetLoadManager::register('jquery', 'querybuilderLocale_en');
+	}
+
+	return true;
+}
+# ---------------------------------------
+/**
  *
  */
 function caGetQueryStringForHTMLFormInput($po_result_context, $pa_options=null) {
