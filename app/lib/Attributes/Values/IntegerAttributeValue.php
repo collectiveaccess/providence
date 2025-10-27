@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_INTEGER__", 11);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -208,7 +204,14 @@ $_ca_attribute_settings['IntegerAttributeValue'] = array(		// global
 
 class IntegerAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
+	
+	/**
+	 *
+	 */
 	private $opn_integer_value;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
@@ -370,6 +373,15 @@ class IntegerAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function getType() {
 		return __CA_ATTRIBUTE_VALUE_INTEGER__;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return is_null($this->opn_integer_value);
 	}
 	# ------------------------------------------------------------------
 }

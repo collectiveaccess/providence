@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1108,21 +1108,30 @@ final class ConfigurationExporter {
 								foreach($va_values as $vs_key => $vs_value) {
 									switch($vs_setting) {
 										case 'restrict_to_types':
+										case 'restrictToTypes':
 											$t_item = new ca_list_items($vs_value);
 											if ($t_item->getPrimaryKey()) {
 												$vs_value = $t_item->get('idno');
+											} else {
+												$vs_value = null;
 											}
 											break;
 										case 'restrict_to_lists':
+										case 'restrictToLists':
 											$t_list = new ca_lists($vs_value);
 											if ($t_list->getPrimaryKey()) {
 												$vs_value = $t_list->get('list_code');
+											} else {
+												$vs_value = null;
 											}
 											break;
 										case 'restrict_to_relationship_types':
+										case 'restrictToRelationshipTypes':
 											$t_rel_type = new ca_relationship_types($vs_value);
 											if ($t_rel_type->getPrimaryKey()) {
 												$vs_value = $t_rel_type->get('type_code');
+											} else {
+												$vs_value = null;
 											}
 											break;
 										case 'bundleTypeRestrictions':

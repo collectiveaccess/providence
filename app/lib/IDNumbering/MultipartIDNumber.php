@@ -538,7 +538,7 @@ class MultipartIDNumber extends IDNumber {
 			$field_limit_sql = "{$field} <> ''";
 		} elseif($is_serial) {
 			$field_limit_sql = "{$field} REGEXP ?";
-			$params = [preg_quote($stub.$separator, "!").'[0-9]+$'];
+			$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+$'];
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];
@@ -717,6 +717,9 @@ class MultipartIDNumber extends IDNumber {
 					
 					if($allow_prefix = (bool)($element_info['prefix'] ?? null)) {
 						$v = preg_replace("![^0-9]+$!", "", $v);
+					}
+					if($element_info['type'] === 'SERIAL') {
+						$v = (int)$v;
 					}
 					if($prefix) {
 						$tmp = mb_substr($v, mb_strlen($prefix));

@@ -574,6 +574,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					$t_instance = Datamodel::getInstanceByTableName($va_bundle_name[0], true);
 					$placements[$placement_id]['display'] = ($t_instance ? $t_instance->getDisplayLabel($vs_bundle_name) : "???");
 				}
+				
+				if(is_array($label = caExtractValuesByUserLocale((is_array($va_settings) && is_array($va_settings['label'])) ? [$va_settings['label']] : [])) && sizeof($label) && ($label = array_shift($label))) {
+					$placements[$placement_id]['display'] = $label;
+				}
+				
 if (!$pb_omit_editing_info) {
 				if ($va_bundle_name[0] == $vs_subject_table) {
 					// Only primary fields are inline-editable

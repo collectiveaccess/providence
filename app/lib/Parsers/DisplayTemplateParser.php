@@ -602,7 +602,8 @@ class DisplayTemplateParser {
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals);
+						$v = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), array_merge($pa_options, ['escapeDoubleQuotes' => true])), array_merge($pa_options, ['quoteNonNumericValues' => true]));
+						$vs_acc .= $content = ExpressionParser::evaluate($v, $pa_vals);
 						
 						if ($pb_is_case && $content) { break(2); }
 					}
@@ -1353,6 +1354,12 @@ class DisplayTemplateParser {
 		$va_vals['__base_url__'] = $config->get('site_host').$config->get('ca_url_root');
 				
 		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					// Return nothing when relationship type is set and a value is referenced but not set
+
+		if(caGetOption('escapeDoubleQuotes', $pa_options, false)) {
+			$va_vals = array_map(function($v) {
+				return str_replace('"', '\\"', $v);
+			}, $va_vals);
+		}
 
 		return $va_vals;
 	}

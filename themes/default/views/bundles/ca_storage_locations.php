@@ -224,7 +224,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 						selectOnLoad : true,
 						browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? null; ?>",
 						
-						dontAllowEditForFirstLevel: false,
+						dontAllowEditForFirstLevel: <?= json_encode(!caAllowEditingForFirstLevelOfHierarchyBrowser(Datamodel::getInstance('ca_storage_locations', true))); ?>,
 						disabledItems: '<?= $disabled_items_mode; ?>',
 						
 						className: 'hierarchyBrowserLevel',

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -186,8 +186,15 @@ $_ca_attribute_settings['CurrencyAttributeValue'] = array(		// global
 
 class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_currency_specifier;
-	private $opn_value;
+	/**
+	 *
+	 */
+	protected $ops_currency_specifier;
+	
+	/**
+	 *
+	 */
+	protected $opn_value;
 	
 	private $opb_display_currency_conversion = false;
 	# ------------------------------------------------------------------
@@ -395,6 +402,15 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function getType() {
 		return __CA_ATTRIBUTE_VALUE_CURRENCY__;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return is_null($this->opn_value);
 	}
 	# ------------------------------------------------------------------
 }

@@ -263,7 +263,10 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 
 class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
 	# ------------------------------------------------------------------
 	public function __construct($value_array=null) {
 		parent::__construct($value_array);
@@ -444,7 +447,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									minHeight: '50px',
 									maxHeight: '1500px'
 								}
-							} ).then(editor => {
+							}).then(editor => {
 								// Add current instance to list of initialized editors
 								if(!caUI) { caUI = {}; }
 								if(!caUI.ckEditors) { caUI.ckEditors = []; }

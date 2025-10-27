@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -237,5 +237,14 @@ function caDateIsRange($date_expression) {
 		return (strpos($v, '/') !== false);
 	}
 	return false;
+}
+# ----------------------------------------
+/**
+ * Count delimited vales in a string
+ */
+function caValueCount(string $value, ?string $delimiter=';') : int {
+	if(!strlen($value)) { return 0; }
+	$acc = explode($delimiter, $value);
+	return sizeof($acc);
 }
 # ---------------------------------------

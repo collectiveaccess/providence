@@ -32,7 +32,7 @@
     "opis/json-schema": "^1.0",
     "pear/file_marc": "~1.2",
     "phpoffice/phppresentation": "1.0.0",
-    "phpoffice/phpspreadsheet": "v1.29.8",
+    "phpoffice/phpspreadsheet": "~1.30.0",
     "phpoffice/phpword": "v0.18.*",
     "phpunit/phpunit": "^11.0",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",

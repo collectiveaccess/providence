@@ -1207,6 +1207,7 @@ div.hint {
     padding-left: 10px;
 	padding-bottom: 3px;
 	display: inline-block;
+	text-transform: capitalize;
 }
 
 .formLabelSubtext {
@@ -8210,4 +8211,11 @@ span.anonymousAccessUrlLabel {
 
 li p {
 	padding: 0 !important;
+}
+
+.ck-body-wrapper {
+	position: fixed !important;
+	z-index: 30000 !important;
+	top: 100%;
+	left: 100%;
 }
