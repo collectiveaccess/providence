@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022 Whirl-i-Gig
+ * Copyright 2022-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_EXTERNAL_MEDIA__", 34);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -137,9 +133,20 @@ $_ca_attribute_settings['ExternalMediaAttributeValue'] = [		// global
 
 class ExternalMediaAttributeValue extends AttributeValue implements IAttributeValue {
     # ------------------------------------------------------------------
-    private $url_value;
-    private $url_source;
-    private $config;
+    /**
+     *
+     */
+    protected $url_value;
+    
+    /**
+     *
+     */
+    protected $url_source;
+    
+    /**
+     *
+     */
+    protected $config;
     # ------------------------------------------------------------------
     public function __construct($value_array=null) {
         parent::__construct($value_array);
@@ -288,4 +295,13 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
         return __CA_ATTRIBUTE_VALUE_EXTERNAL_MEDIA__;
     }
     # ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return ((strlen($this->url_value) === 0) && (strlen($this->url_source) === 0));
+	}
+	# ------------------------------------------------------------------
 }

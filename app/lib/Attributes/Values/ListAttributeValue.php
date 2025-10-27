@@ -1001,4 +1001,13 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		return $va_ret;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return !($this->opn_item_id > 0);
+	}
+	# ------------------------------------------------------------------
 }

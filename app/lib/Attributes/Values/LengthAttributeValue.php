@@ -155,8 +155,19 @@ $_ca_attribute_settings['LengthAttributeValue'] = array(		// global
 
 class LengthAttributeValue extends AttributeValue implements IAttributeValue {
     # ------------------------------------------------------------------
-    private $ops_text_value;
-    private $opn_decimal_value;
+    /**
+     *
+     */
+    protected $ops_text_value;
+    
+    /**
+     *
+     */
+    protected $opn_decimal_value;
+    
+    /**
+     *
+     */
     private $config;
     # ------------------------------------------------------------------
     public function __construct($pa_value_array=null) {
@@ -458,4 +469,13 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
         return __CA_ATTRIBUTE_VALUE_LENGTH__;
     }
     # ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return is_null($this->opn_decimal_value);
+	}
+	# ------------------------------------------------------------------
 }
