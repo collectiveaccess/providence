@@ -1634,9 +1634,11 @@ class ca_acl extends BaseModel {
 		$qr = caMakeSearchResult($subject_table, $ids);
 		
 		$items = [];
-		while($qr->nextHit()) {
-			$id = $qr->getPrimaryKey();
-			$items[$id] = ['id' => $id, 'parent_id' => $qr->get('parent_id'), 'inherit' => $qr->get($key), 'access' => $qr->get('access')];
+		if($qr) { 
+			while($qr->nextHit()) {
+				$id = $qr->getPrimaryKey();
+				$items[$id] = ['id' => $id, 'parent_id' => $qr->get('parent_id'), 'inherit' => $qr->get($key), 'access' => $qr->get('access')];
+			}
 		}
 		$hier = [];
 		foreach($items as $c) {
