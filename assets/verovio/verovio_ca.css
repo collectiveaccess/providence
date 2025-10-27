@@ -1,0 +1,6 @@
+.verovio svg { width: 80%; }
+
+.verovio_svg svg {
+  width: 100%;
+  height: auto;
+}
