@@ -597,7 +597,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		$vs_cache_key = md5($pm_table_name_or_num . serialize($pa_options));
 
-		if(MemoryCache::contains($vs_cache_key, 'UiScreensAvailableBundles')) {
+		if(!$pb_dont_cache && MemoryCache::contains($vs_cache_key, 'UiScreensAvailableBundles')) {
 			return MemoryCache::fetch($vs_cache_key, 'UiScreensAvailableBundles');
 		}
 		
@@ -1079,7 +1079,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'showOnSelect' => 'policy',
 								'default' => '0',
 								'label' => _t('Show current only?'),
-								'description' => _t('If checked only the most recently dated relationship displayed.')
+								'description' => _t('If checked only the most recently dated relationship will be displayed.')
 							),
 							'policy' => array(
 								'formatType' => FT_TEXT,
@@ -1935,7 +1935,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => 10, 'height' => 1,
 										'takesLocale' => false,
 										'default' => '0',
-										'label' => _t('Hide "Add to" occurrence controls'),
+										'label' => _t('Hide "Add to occurrence" controls'),
 										'description' => _t('Check this option if you want to hide the "Add to occurrence" controls in this bundle placement.'),
 										'hideOnSelect' => ['add_to_occurrence_types', 'always_create_new_occurrence', 'occurrence_control_label']
 									),
@@ -2381,7 +2381,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_sorted_bundles[$vs_real_key] = $va_info;
 			}
 		}
-
 		MemoryCache::save($vs_cache_key, $va_sorted_bundles, 'UiScreensAvailableBundles');
 
 		return $va_sorted_bundles;

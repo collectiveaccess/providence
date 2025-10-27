@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2754,16 +2754,33 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns information about a single saved search based upon search key. The key is a 32 character md5 hash 
 	 *
-	 * @param mixed $pm_table_name_or_num Table name or number of search target (eg. ca_objects or 57 for an object search)
-	 * @param string $ps_type A search type descriptor. This is just a string used to distinguish different types of searches (eg. basic vs. advanced) and is typically set to the "find_type" property value set in subclasses of BaseSearchController
-	 * @param string $ps_key The 32 character md5 hash key for the saved search
+	 * @param mixed $table_name_or_num Table name or number of search target (eg. ca_objects or 57 for an object search)
+	 * @param string $type A search type descriptor. This is just a string used to distinguish different types of searches (eg. basic vs. advanced) and is typically set to the "find_type" property value set in subclasses of BaseSearchController
+	 * @param string $key The 32 character md5 hash key for the saved search
 	 * @return array An array containing the search parameters + 2 special entries: (1) _label is a display label for the search (2) _form_id is the ca_search_forms.form_id for the search, if the search was form-based. _form_id will be undefined if the search was basic (eg. simple one-entry text search)
 	 */
-	public function getSavedSearchByKey($pm_table_name_or_num, $ps_type, $ps_key) {
-		if (!($vn_table_num = Datamodel::getTableNum($pm_table_name_or_num))) { return false; }
-		if(!is_array($va_searches = $this->getVar('saved_searches'))) { $va_searches = array(); }
+	public function getSavedSearchByKey($table_name_or_num, $type, $key) {
+		if (!($table_num = Datamodel::getTableNum($table_name_or_num))) { return false; }
+		if(!is_array($searches = $this->getVar('saved_searches'))) { $searches = []; }
 		
-		return is_array($va_searches[$vn_table_num][strtolower($ps_type)][$ps_key]) ? $va_searches[$vn_table_num][strtolower($ps_type)][$ps_key] : array();
+		$type = strtolower($type);
+		
+		$search_builder_config = caGetSearchBuilderConfig();
+		if(($type == 'search_builder') && is_array($searches[$table_num][$type])) {
+			$filters = caGetSearchBuilderFilters(Datamodel::getInstance($table_num, true), $search_builder_config, []);
+						
+			if((isset($searches[$table_num][$type][$key])) && !isset($searches[$table_num][$type][$key]['search'])) {
+				$s = $searches[$table_num][$type][$key];
+				if(!$s['search']) {
+					$sn = $s['_label'] ?? null;
+					foreach($filters as $f) {
+						$sn = str_replace($f['label'], $f['id'], $sn);
+					}
+				}
+				$searches[$table_num][$type][$key]['search'] = $sn;
+			}
+		}
+		return is_array($searches[$table_num][$type][$key]) ? $searches[$table_num][$type][$key] : [];
 	}
 	# ----------------------------------------
 	/**

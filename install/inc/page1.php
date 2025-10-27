@@ -67,17 +67,17 @@ $o_config = Configuration::load();
 		<form action='index.php' name='page1form' id='page1form'>
 			<div class='formItem'>
 <?php	
-				if(sizeof($va_errors)) { 
+				if(sizeof($errors)) { 
 					print "<div class='contentError'> ".caNavIcon(__CA_NAV_ICON_ALERT__ , 1, ['class' => 'permissionErrorIcon'])._t('Please enter a valid email address')."</div>\n"; 
 				}
 ?>
 				<?=_t("Administrator's e-mail address"); ?>:<br/>
-				<input type='text' name='email' value='<?= htmlspecialchars($ps_email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
+				<input type='text' name='email' value='<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
 			</div><!-- end formItem -->
 			<div class='formItem'><?= _t("Installation profile"); ?>:<br/>
 				<div id="profileChooser">
 <?php
-					print caHTMLSelect('profile', caGetAvailableProfiles(), array('id' => 'profileSelect'), array('value' => $ps_profile));
+					print caHTMLSelect('profile', caGetAvailableProfiles(), array('id' => 'profileSelect'), array('value' => $profile));
 
 			if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 ?>

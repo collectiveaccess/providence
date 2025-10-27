@@ -1619,6 +1619,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		}
 		
 		$words = self::filterStopWords($words);
+		$words = array_values(array_filter(array_map(function_exists('mb_trim') ? 'mb_trim' : 'trim', $words), 'strlen'));
 		return $words;
 	}
 	# --------------------------------------------------

@@ -37,7 +37,7 @@ class WLPlugBanHammerIPAddress Extends BaseBanHammerPlugin  {
 	/**
 	 *
 	 */
-	static $banned_ips_list_filepath = __CA_APP_DIR__.'/tmp/bannedIps.json';
+	static $banned_ips_list_filepath = __CA_TEMP_DIR__.'/bannedIps.json';
 	# ------------------------------------------------------
 	/**
 	 *
@@ -145,7 +145,7 @@ class WLPlugBanHammerIPAddress Extends BaseBanHammerPlugin  {
 			 		$lines[$i] = $tmp[0];
 			 	}
 				
-				$log->logInfo(_t('[BanHammer::IPAddress] Loadedip ban list from URL "%1"; got %2 ip addresses', $config['ip_ban_feed_url'], sizeof($lines)));
+				$log->logInfo(_t('[BanHammer::IPAddress] Loaded IP ban list from URL "%1"; got %2 ip addresses', $config['ip_ban_feed_url'], sizeof($lines)));
 			
 				if(!file_put_contents(self::$banned_ips_list_filepath, json_encode($lines))) {
 					$log->logError(_t('[BanHammer::IPAddress] Could not write ip ban list to "%1"', self::$banned_ips_list_filepath));

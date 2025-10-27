@@ -447,7 +447,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									minHeight: '50px',
 									maxHeight: '1500px'
 								}
-							} ).then(editor => {
+							}).then(editor => {
 								// Add current instance to list of initialized editors
 								if(!caUI) { caUI = {}; }
 								if(!caUI.ckEditors) { caUI.ckEditors = []; }

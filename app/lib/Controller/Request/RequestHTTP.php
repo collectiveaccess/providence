@@ -958,7 +958,10 @@ class RequestHTTP extends Request {
 		} else {		
 			$user_name = ($this->user && $this->user->getUserID()) ? $this->user->get('user_name') : ($pa_options["user_name"] ?? null);
 			$msg = "Successful login for '{$user_name}'; IP=".RequestHTTP::ip()."; user agent=".($_SERVER['HTTP_USER_AGENT'] ?? null);
+			if($this->user->get("active") == 0) $msg .= "; but user is not active";
+
 			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
+			if($this->user->get("active") == 0) return false;
 			
 			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 		    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log

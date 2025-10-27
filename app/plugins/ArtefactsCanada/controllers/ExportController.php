@@ -86,7 +86,7 @@ class ExportController extends ActionController {
 					}
 				} 
 				return;
-			}, caGetDirectoryContentsAsList(__CA_APP_DIR__."/tmp", false));
+			}, caGetDirectoryContentsAsList(__CA_TEMP_DIR__, false));
 		}
 		
 		$t_set = new ca_sets();
@@ -178,7 +178,7 @@ class ExportController extends ActionController {
 		; }, $headers);
 		$rows[] = join("\t", $headers);
 		
-		$zip = new ZipFile(__CA_APP_DIR__."/tmp");
+		$zip = new ZipFile(__CA_TEMP_DIR__);
 		$seen_idnos = [];
 		
 		
@@ -224,7 +224,7 @@ class ExportController extends ActionController {
 		
 		$zip_path = $zip->output(ZIPFILE_FILEPATH);
 		
-		copy($zip_path, $new_path = __CA_APP_DIR__."/tmp/artefacts_canada_export_{$job_id}.zip");
+		copy($zip_path, $new_path = __CA_TEMP_DIR__."/artefacts_canada_export_{$job_id}.zip");
 		
 		$links = [caNavLink($this->request, _t('Download Artefacts Canada data as ZIP file (%1)', caHumanFilesize(filesize($new_path))), '', '*', '*', 'Download', ['job_id' => $job_id, 'download' => 1])];
 		
@@ -255,11 +255,11 @@ class ExportController extends ActionController {
 		if (!$this->request->user->canDoAction('can_export_artefacts_canada')) { return; }
 		$job_id = preg_replace("![^A-Za-z0-9_]+!", "_", $this->request->getParameter('job_id', pString));
 
-		if(!file_exists(__CA_APP_DIR__."/tmp/artefacts_canada_export_{$job_id}.zip")) {
+		if(!file_exists(__CA_TEMP_DIR__."/artefacts_canada_export_{$job_id}.zip")) {
 			throw new ApplicationException(_t('Download file is no longer available'));
 		}
 		
-		$this->view->setVar('archive_path', __CA_APP_DIR__."/tmp/artefacts_canada_export_{$job_id}.zip");
+		$this->view->setVar('archive_path', __CA_TEMP_DIR__."/artefacts_canada_export_{$job_id}.zip");
 		$this->view->setVar('archive_name', "artefacts_canada_export_{$job_id}.zip");
 		$this->view->render('bundles/download_file_binary.php');
 	}
