@@ -89,32 +89,59 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
    		if(preg_match("!^http[s]{0,1}://www.viaf.org/viaf/([\d]+)!", $search, $m)) {
    			$search = $m[1];
    		}
-   		
+   		$search = trim($search);
    		$search_on = caGetOption('searchOn', $settings, 'cql.any');
    		
-        $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&recordSchema=BriefVIAF&Accept=json&query=".urlencode("{$search_on} all \"{$search}\""), [
+        $client = $this->getClient();
+        $response = $client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=500&recordSchema=BriefVIAF&Accept=json&sortKey=holdingscount&query=".urlencode("cql.any all \"{$search}\""), [
             'headers' => [
                 'Accept' => 'application/json'
             ]
         ]);
 
-		$raw_resultlist = json_decode($z=$vo_response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+		$raw_resultlist = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+		
 		$return = [];
+		$primaries = [];
         if (is_array($response_data = $raw_resultlist['searchRetrieveResponse']['records']['record'])) {
 			foreach ($response_data as $index=>$data){
+				if(!isset($data["recordData"]["v:VIAFCluster"]["v:viafID"]['content'])) { continue; }
 				$viafID = (string)$data["recordData"]["v:VIAFCluster"]["v:viafID"]['content'];
-				if (!($label = $data['recordData']["v:VIAFCluster"]['v:mainHeadings']['v:data'][0]['v:text'])) {
-					$label = $data['recordData']["v:VIAFCluster"]['v:mainHeadings']['v:data']['v:text'];
+				
+				$label = null;
+				if(is_array($data['recordData']["v:VIAFCluster"]['v:titles']['v:work'])) {
+					foreach($data['recordData']["v:VIAFCluster"]['v:titles']['v:work'] as $k => $x) {
+						if($k === 'v:title') {
+							if($x) { $label = $x; break; }
+						} elseif($label = trim($x['v:title'] ?? null)) {
+							break;
+						}
+					}
 				}
-				$label = str_replace("|", ":", $label);
-				$return['results'][] = [
+				if(!$label) { 
+					if (!($label = $data['recordData']["v:VIAFCluster"]['v:mainHeadings']['v:data'][0]['v:text'])) {
+						$label = $data['recordData']["v:VIAFCluster"]['v:mainHeadings']['v:data']['v:text'];
+					}
+				}
+
+				$label = trim(str_replace("|", ":", $label));
+				
+				$entry = [
 					'label' => $label,
 					'url' => self::VIAF_SERVICES_BASE_URL."/".$viafID,
 					'idno' => $viafID
 				];
-			
+				if(mb_strtolower($search) == mb_strtolower($label)) {
+					array_unshift($primaries, $entry);
+				} elseif(preg_match('!^'.preg_quote($search, '!').'!i', $label)) {
+					$primaries[] = $entry;
+				} else {
+				 	$return['results'][] = $entry;
+				}
 			}
+		}
+		if(sizeof($primaries)) {
+			$return['results'] = array_merge($primaries, $return['results']);
 		}
         return $return;
     }

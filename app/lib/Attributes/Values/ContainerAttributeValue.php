@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
  */
 define("__CA_ATTRIBUTE_VALUE_CONTAINER__", 0);
 
@@ -191,6 +187,15 @@ class ContainerAttributeValue extends AttributeValue implements IAttributeValue 
 	 */
 	public function getType() {
 		return __CA_ATTRIBUTE_VALUE_CONTAINER__;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return false;
 	}
 	# ------------------------------------------------------------------
 }

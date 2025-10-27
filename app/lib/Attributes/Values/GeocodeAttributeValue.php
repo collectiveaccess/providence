@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -316,11 +316,29 @@ $_ca_attribute_settings['GeocodeAttributeValue'] = array(		// global
 
 class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $ops_path_value;
-	private $opn_latitude;
-	private $opn_longitude;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
 	
+	/**
+	 *
+	 */
+	protected $ops_path_value;
+	
+	/**
+	 *
+	 */
+	protected $opn_latitude;
+	
+	/**
+	 *
+	 */
+	protected $opn_longitude;
+	
+	/**
+	 *
+	 */
 	private $opo_geo_plugin;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {

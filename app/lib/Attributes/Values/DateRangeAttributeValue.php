@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -233,9 +233,20 @@ $_ca_attribute_settings['DateRangeAttributeValue'] = array(		// global
 
 class DateRangeAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $opn_start_date;
-	private $opn_end_date;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
+	
+	/**
+	 *
+	 */
+	protected $opn_start_date;
+	
+	/**
+	 *
+	 */
+	protected $opn_end_date;
 
 	/**
 	 * @var TimeExpressionParser

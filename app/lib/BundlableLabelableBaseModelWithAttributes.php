@@ -4077,8 +4077,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								case '_disabled_':		// skip
 									continue(2);
 									break;
-								case '_add_':			// just try to add attribute as in normal non-batch save
-									// noop
+								case '_add_':
+									// Is there a single existing value that is blank? If so delete it.
+									// Otherwise just add attribute as in normal non-batch save.
+									$attrs = $this->getAttributesByElement($vn_element_id);
+									if(is_array($attrs) && (sizeof($attrs) === 1)) {
+										$attr_values = $attrs[0]->getValues();
+										if(is_array($attr_values) && (sizeof($attr_values) === 1) && $attr_values[0]->isEmpty()) {
+											$this->removeAttributes($vn_element_id, array('force' => true));
+										}
+									}
 									break;
 								case '_replace_':		// remove all existing attributes before trying to save
 									$this->removeAttributes($vn_element_id, array('force' => true));
