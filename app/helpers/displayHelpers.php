@@ -6444,4 +6444,18 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 	return $groups;
 }
 # ------------------------------------------------------------------
+/**
+ *
+ */
+function caAllowEditingForFirstLevelOfHierarchyBrowser(BaseModel $t_subject) : bool {
+	if($t_subject->getHierarchyType() === __CA_HIER_TYPE_MULTI_MONO__) { return false; }
+	if(
+		($t_subject->getHierarchyType() === __CA_HIER_TYPE_SIMPLE_MONO__)
+		&&
+		!$t_subject->getAppConfig()->get($t_subject->tableName().'_hierarchy_browser_hide_root')
+	) { return false; }
+	
+	return true;
+}
+# ------------------------------------------------------------------
 
