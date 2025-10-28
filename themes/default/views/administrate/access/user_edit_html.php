@@ -52,11 +52,14 @@ $password_policies = $this->getVar('password_policies') ?? [];
 			switch($f) {
 				case 'password':
 					if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
-						// display password confirmation
-						print $t_user->htmlFormElement($f, null, array('value' => '', 'placeholder' => _t('Change password'), 'field_errors' => $this->request->getActionErrors('field_'.$f)));
-						print $t_user->htmlFormElement($f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('value' => '', 'placeholder' => _t('Confirm password'), 'name' => 'password_confirm', 'LABEL' => 'Confirm password'));
 ?>
-						<div id="password_errors"></div>
+						<div class="userPasswordInput">
+							<?= $t_user->htmlFormElement($f, null, array('includeVisibilityButton' => true, 'value' => '', 'placeholder' => _t('Change password'), 'field_errors' => $this->request->getActionErrors('field_'.$f))); ?>
+						</div>
+						<div class="userPasswordInput">
+							<?= $t_user->htmlFormElement($f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('includeVisibilityButton' => true, 'value' => '', 'placeholder' => _t('Confirm password'), 'name' => 'password_confirm', 'LABEL' => 'Confirm password')); ?>
+							<div id="password_errors"></div>
+						</div>
 <?php
 					}
 					break;
