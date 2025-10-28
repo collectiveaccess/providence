@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,10 +43,10 @@ class GroupsController extends ActionController {
 		AssetLoadManager::register('tableList');
 		
 		$t_group = $this->getGroupObject();
-		foreach($t_group->getFormFields() as $vs_f => $va_field_info) {
-			$t_group->set($vs_f, $_REQUEST[$vs_f]);
+		foreach($t_group->getFormFields() as $f => $field_info) {
+			$t_group->set($f, $_REQUEST[$f]);
 			if ($t_group->numErrors()) {
-				$this->request->addActionErrors($t_group->errors(), 'field_'.$vs_f);
+				$this->request->addActionErrors($t_group->errors(), 'field_'.$f);
 			}
 		}
 		
@@ -61,10 +61,10 @@ class GroupsController extends ActionController {
 		if($this->request->numActionErrors() == 0) {
 			if (!$t_group->getPrimaryKey()) {
 				$t_group->insert();
-				$vs_message = _t("Added group");
+				$message = _t("Added group");
 			} else {
 				$t_group->update();
-				$vs_message = _t("Saved changes to group");
+				$message = _t("Saved changes to group");
 			}
 
 			if ($t_group->numErrors()) {
@@ -75,27 +75,27 @@ class GroupsController extends ActionController {
 				}
 			} else {
 				// Save roles
-				$va_set_group_roles = $this->request->getParameter('roles', pArray);
-				if(!is_array($va_set_group_roles)) { $va_set_group_roles = array(); }
+				$set_group_roles = $this->request->getParameter('roles', pArray);
+				if(!is_array($set_group_roles)) { $set_group_roles = array(); }
 				
-				$va_existing_group_roles = $t_group->getGroupRoles();
-				$va_role_list = $t_group->getRoleList();
+				$existing_group_roles = $t_group->getGroupRoles();
+				$role_list = $t_group->getRoleList();
 				
-				foreach($va_role_list as $vn_role_id => $va_role_info) {
-					if ($va_existing_group_roles[$vn_role_id] && !in_array($vn_role_id, $va_set_group_roles)) {
+				foreach($role_list as $role_id => $role_info) {
+					if ($existing_group_roles[$role_id] && !in_array($role_id, $set_group_roles)) {
 						// remove role
-						$t_group->removeRoles($vn_role_id);
+						$t_group->removeRoles($role_id);
 						continue;
 					}
 					
-					if (!$va_existing_group_roles[$vn_role_id] && in_array($vn_role_id, $va_set_group_roles)) {
+					if (!$existing_group_roles[$role_id] && in_array($role_id, $set_group_roles)) {
 						// add role
-						$t_group->addRoles($vn_role_id);
+						$t_group->addRoles($role_id);
 						continue;
 					}
 				}
 				
-				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);
+				$this->notification->addNotification($message, __NOTIFICATION_TYPE_INFO__);
 			}
 		} else {
 			$this->notification->addNotification(_t("Your entry has errors. See below for details."), __NOTIFICATION_TYPE_ERROR__);
@@ -115,8 +115,8 @@ class GroupsController extends ActionController {
 		AssetLoadManager::register('tableList');
 		
 		$t_group = $this->getGroupObject();
-		$vs_sort_field = $this->request->getParameter('sort', pString);
-		$this->view->setVar('group_list', $t_group->getGroupList($vs_sort_field, 'asc'));
+		$sort_field = $this->request->getParameter('sort', pString);
+		$this->view->setVar('group_list', $t_group->getGroupList($sort_field, 'asc'));
 
 		$this->render('group_list_html.php');
 	}
@@ -140,15 +140,15 @@ class GroupsController extends ActionController {
 	# -------------------------------------------------------
 	# Utilities
 	# -------------------------------------------------------
-	private function getGroupObject($pb_set_view_vars=true, $pn_group_id=null) {
+	private function getGroupObject($set_view_vars=true, $group_id=null) {
 		if (!($t_group = $this->pt_group)) {
-			if (!($vn_group_id = $this->request->getParameter('group_id', pInteger))) {
-				$vn_group_id = $pn_group_id;
+			if (!($group_id = $this->request->getParameter('group_id', pInteger))) {
+				$group_id = $group_id;
 			}
-			$t_group = new ca_user_groups($vn_group_id);
+			$t_group = new ca_user_groups($group_id);
 		}
-		if ($pb_set_view_vars){
-			$this->view->setVar('group_id', $vn_group_id);
+		if ($set_view_vars){
+			$this->view->setVar('group_id', $group_id);
 			$this->view->setVar('t_group', $t_group);
 		}
 		$this->pt_group = $t_group;
