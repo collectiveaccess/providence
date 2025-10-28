@@ -117,11 +117,9 @@ define('__CA_NAV_ICON_NOT_CHECKED__', 79);
 define('__CA_NAV_ICON_CIRCLE_DOT__', 80);
 define('__CA_NAV_ICON_INVENTORY__', 81);
 define('__CA_NAV_ICON_LIST__', 82);
-define('__CA_NAV_ICON_AUTO_DELETE__', 83);
-define('__CA_NAV_ICON_NO_AUTO_DELETE__', 84);
-define('__CA_NAV_ICON_UNSAVED_CHANGES__', 85);
-define('__CA_NAV_ICON_RANDOM__', 86);
-define('__CA_NAV_ICON_NO_AUTO_DELETE__', 87);
+define('__CA_NAV_ICON_NO_AUTO_DELETE__', 83);
+define('__CA_NAV_ICON_UNSAVED_CHANGES__', 84);
+define('__CA_NAV_ICON_RANDOM__', 85);
 
 /**
  * Icon position constants
