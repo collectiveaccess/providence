@@ -138,6 +138,7 @@ $password_policies = $this->getVar('password_policies') ?? [];
 		const pwchecker = caUI.initPasswordChecker({
 			'policies': <?= json_encode($password_policies); ?>,
 			'messagePrefix': <?= json_encode(caNavIcon(__CA_NAV_ICON_ALERT__, 1).' '); ?>,
+			'minimumPasswordScore': <?= (int)$this->getVar('requireMinimumPasswordScore'); ?>,
 			'messages': {
 				'INCLUDES_PHRASE': <?= json_encode(_t('Password must not include the phrase "%value"')); ?>,
 				'DOES_NOT_INCLUDE_SPECIAL_CHARACTERS_SINGULAR': <?= json_encode(_t('Password must include at least %value special character')); ?>,

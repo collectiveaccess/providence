@@ -47,6 +47,7 @@ class UsersController extends ActionController {
 		
 		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 		$this->view->setVar('password_policies', $auth_config->getAssoc('password_policies') ?? []);
+		$this->view->setVar('requireMinimumPasswordScore', (int)$auth_config->get('require_minimum_password_score'));
 		
 		$profile_prefs = $t_user->getValidPreferences('profile');
 		if (is_array($profile_prefs) && sizeof($profile_prefs)) {
