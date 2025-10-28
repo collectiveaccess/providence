@@ -42,12 +42,32 @@ if(!$this->request->isAjax()) {
 <?php 
 		print caFormTag($this->request, 'ListUsers', 'caUserListForm', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Search').': <input type="text" name="search" id="userSearch" value="" size="20"/></div>', 
 			''._t('Show %1 users', caHTMLSelect('userclass', $this->request->user->getFieldInfo('userclass', 'BOUNDS_CHOICE_LIST'), array('onchange' => 'jQuery("#caUserListForm").submit();'), array('value' => $this->getVar('userclass')))), 
 			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New user"), 'administrate/access', 'Users', 'Edit', array('user_id' => 0), [], ['size' => '30px'])
 		); 
 ?>		
 		</form>
+<script language="JavaScript" type="text/javascript">
+	jQuery(document).ready(function(){
+		jQuery('#userSearch').autocomplete(
+			{
+				minLength: 3, delay: 800, html: true,
+				source: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get', ['noInline' => 1]); ?>',
+				select: function(event, ui) {
+					if (parseInt(ui.item.id) > 0) {
+						jQuery('#userSearch').val('');
+						document.location = '<?= caNavUrl($this->request, '*', '*', 'Edit'); ?>/user_id/' + ui.item.id;
+					}
+				}
+			}
+		).click(function() { this.select(); });
+	});
+	
+	function _navigateToNewForm(type_id, table_num) {
+		document.location = '<?= caNavUrl($this->request, 'manage/sets', 'SetEditor', 'Edit', array('set_id' => 0)); ?>/type_id/' + type_id + '/table_num/' + table_num;
+	}
+</script>
 		<h1 style='float:left; margin:10px 0px 10px 0px;'><?= _t('%1 users', ucfirst($this->getVar('userclass_displayname'))); ?></h1>
 <?php
 if(sizeof($user_list)){	
