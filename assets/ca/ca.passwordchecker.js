@@ -55,6 +55,7 @@ var caUI = caUI || {};
 				'IS_NOT_MAX_LENGTH_SINGULAR': 'Password must be at less than %value character',
 				'IS_NOT_MAX_LENGTH_PLURAL': 'Password must be at less than %value characters',
 				'DO_NOT_MATCH': 'Passwords do not match',
+				'EASY_TO_GUESS': 'Password is easy to guess'
 			},
 			
 			debounce: null
@@ -140,10 +141,7 @@ var caUI = caUI || {};
 				
 				if(passed >= min_passing_rules) {
 					failures = [];
-				} else if((passed < min_passing_rules) && (min_passing_rules > 1)){
-					// failures.push("Password must conform to at least " + min_passing_rules + " rules");
-					// NOOP?
-				}
+				} 
 			});
 			
 			that.failures = failures;
@@ -166,7 +164,7 @@ var caUI = caUI || {};
 				let failures = that.validatePassword(password);
 				
 				if(that.calculatePasswordStrength(password) < 3) {
-					failures.push("Password is easy to guess");
+					failures.push(that.messages['EASY_TO_GUESS']);
 				}
 				if(password !== password_confirm) {
 					failures.push(that.messages['DO_NOT_MATCH']);

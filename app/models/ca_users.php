@@ -406,6 +406,12 @@ class ca_users extends BaseModel {
 			return false;
 		}
 		
+		// check password complexity	
+		if (!self::checkPasswordComplexity($this->get('password'))) {
+			$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->insert()');
+			return false;
+		}
+		
 
 		# Confirmation key is an md5 hash than can be used as a confirmation token. The idea
 		# is that you create a new user record with the 'active' field set to false. You then
@@ -444,7 +450,7 @@ class ca_users extends BaseModel {
 	/**
 	 *
 	 */
-	static public function applyPasswordPolicy($password) {
+	static public function applyPasswordPolicy(string $password) : bool {
 		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 		
@@ -474,6 +480,24 @@ class ca_users extends BaseModel {
 				
 			$validator = new \PasswordPolicy\Validator($builder->getPolicy());
 			if(!$validator->attempt($password)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	static public function checkPasswordComplexity(string $password) : bool {
+		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
+	
+		if(($min_score = (int)$auth_config->get('require_minimum_password_score')) > 0) {
+			$zxcvbn = new ZxcvbnPhp\Zxcvbn();
+			$d = $zxcvbn->passwordStrength($password);
+			if(is_array($d) && ($d['score'] < $min_score)) {
 				return false;
 			}
 		}
@@ -562,6 +586,12 @@ class ca_users extends BaseModel {
 		if($this->changed('password')) {
 			if (!self::applyPasswordPolicy($this->get('password'))) {
 				$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->update()');
+				return false;
+			}
+					
+			// check password complexity	
+			if (!self::checkPasswordComplexity($this->get('password'))) {
+				$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->update()');
 				return false;
 			}
 			

@@ -150,6 +150,7 @@ $password_policies = $this->getVar('password_policies') ?? [];
 				'IS_NOT_MAX_LENGTH_SINGULAR': <?= json_encode(_t('Password must be at less than %value character')); ?>,
 				'IS_NOT_MAX_LENGTH_PLURAL': <?= json_encode(_t('Password must be at less than %value characters')); ?>,
 				'DO_NOT_MATCH': <?= json_encode(_t('Passwords do not match')); ?>,
+				'EASY_TO_GUESS': <?= json_encode(_t('Password is easy to guess')); ?>
 			},
 		});
 		jQuery("#password, #password_confirm").on('keyup', function(e) {
