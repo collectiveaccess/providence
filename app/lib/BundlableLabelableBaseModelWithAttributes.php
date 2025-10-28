@@ -2062,6 +2062,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// 
 					case 'ca_user_roles':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
+						
+						if(in_array($this->tableName(), ['ca_editor_uis', 'ca_editor_ui_screens'], true)) { 
+						    $pa_options['defaultAccess'] = __CA_BUNDLE_ACCESS_EDIT__;
+						}
 						$vs_element .= $this->getUserRoleHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
 						break;
 					# -------------------------------
