@@ -39,6 +39,7 @@ var caUI = caUI || {};
 			},
 			failures: [],
 			passed: 0,
+			minimumPasswordScore: 3,
 			messagePrefix: null,
 			messages: {
 				'INCLUDES_PHRASE': 'Password must not include the phrase "%value"',
@@ -163,7 +164,7 @@ var caUI = caUI || {};
 				
 				let failures = that.validatePassword(password);
 				
-				if(that.calculatePasswordStrength(password) < 3) {
+				if(that.calculatePasswordStrength(password) < that.minimumPasswordScore) {
 					failures.push(that.messages['EASY_TO_GUESS']);
 				}
 				if(password !== password_confirm) {
