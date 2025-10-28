@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,6 +58,7 @@ class BaseSearchBuilderController extends BaseRefineableSearchController {
 	 */
 	public function Index($pa_options=null) {
 		AssetLoadManager::register('querybuilder');
+		caLoadSearchBuilderLocale();
 		
 		$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -156,8 +156,19 @@ $_ca_attribute_settings['FilesizeAttributeValue'] = [		// global
 
 class FilesizeAttributeValue extends AttributeValue implements IAttributeValue {
     # ------------------------------------------------------------------
-    private $ops_text_value;
-    private $opn_decimal_value;
+    /**
+     *
+     */
+    protected $ops_text_value;
+    
+    /**
+     *
+     */
+    protected $opn_decimal_value;
+    
+    /**
+     *
+     */
     private $config;
     # ------------------------------------------------------------------
     public function __construct($value_array=null) {
@@ -256,4 +267,13 @@ class FilesizeAttributeValue extends AttributeValue implements IAttributeValue {
         return __CA_ATTRIBUTE_VALUE_FILESIZE__;
     }
     # ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return is_null($this->opn_decimal_value);
+	}
+	# ------------------------------------------------------------------
 }

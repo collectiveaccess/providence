@@ -176,10 +176,17 @@ $_ca_attribute_settings['LCSHAttributeValue'] = array(		// global
 
 class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $ops_uri_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
 	
-	static $s_term_cache = array();
+	/**
+	 *
+	 */
+	protected $ops_uri_value;
+	
+	static $s_term_cache = [];
 	static $s_term_cache_max_size = 2048;
 	# ------------------------------------------------------------------
 	public function __construct($value_array=null) {

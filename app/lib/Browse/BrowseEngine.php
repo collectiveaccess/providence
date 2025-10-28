@@ -5143,12 +5143,22 @@ class BrowseEngine extends BaseFindEngine {
 						// fields with values set according to ca_list_items (not a foreign key ref)
 						if ($va_list_items = caExtractValuesByUserLocale($t_list->getItemsForList($vs_list_name))) {
 							foreach($va_list_items as $vn_id => $va_list_item) {
-								$va_list_items_by_value[$va_list_item['item_value']] = $va_list_item['name_plural'];
+								$va_list_items_by_value[$va_list_item['item_value']] = [
+									'label' => $va_list_item['name_plural'],
+									'rank' => $va_list_item['rank'] ?? null,
+									'value' => $va_list_item['item_value'] ?? null,
+									'idno' => $va_list_item['idno'] ?? null
+								];
 							}
 
 						} else {
 							foreach($va_field_info['BOUNDS_CHOICE_LIST'] as $vs_val => $vn_id) {
-								$va_list_items_by_value[$vn_id] = $vs_val;
+								$va_list_items_by_value[$vn_id] = [
+									'label' => $vs_val,
+									'rank' => null,
+									'value' => $vs_val,
+									'idno' => $vs_val
+								];
 							}
 						}
 
@@ -5207,6 +5217,24 @@ class BrowseEngine extends BaseFindEngine {
 
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
+							$t_list->load(array('list_code' => $vs_list_name));
+							$vn_sort = $t_list->get('default_sort');
+							$sort_key = null;
+							switch($vn_sort) {
+								default:
+								case __CA_LISTS_SORT_BY_LABEL__:	// by label
+									$sort_key = 'label';
+									break;
+								case __CA_LISTS_SORT_BY_RANK__:	// by rank
+									$sort_key = 'rank';
+									break;
+								case __CA_LISTS_SORT_BY_VALUE__:	// by value
+									$sort_key = 'item_value';
+									break;
+								case __CA_LISTS_SORT_BY_IDENTIFIER__:	// by identifier
+									$sort_key = 'idno';
+									break;
+							}
 							$vs_sql = "
 								SELECT COUNT(*) _count, ".$vs_browse_table_name.'.'.$vs_field_name."
 								FROM ".$vs_browse_table_name."
@@ -5226,7 +5254,8 @@ class BrowseEngine extends BaseFindEngine {
 								if (isset($va_list_items_by_value[$vn_id])) {
 									$va_values[$vn_id] = array(
 										'id' => $vn_id,
-										'label' => $va_list_items_by_value[$vn_id],
+										'label' => $va_list_items_by_value[$vn_id]['label'],
+										'sort' => $sort_key ? ($va_list_items_by_value[$vn_id][$sort_key] ?? null) : null,
 										'content_count' => $qr_res->get('_count')
 									);
 									if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
@@ -5238,6 +5267,7 @@ class BrowseEngine extends BaseFindEngine {
 							if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
 								return array();
 							}
+							$va_values = caSortArrayByKeyInValue($va_values, ['sort']);
 							return $va_values;
 						}
 					} else {
@@ -6142,14 +6172,14 @@ class BrowseEngine extends BaseFindEngine {
 						if ($o_tep->parse($va_facet_info['minimum_date'])) {
 							$va_tmp = $o_tep->getHistoricTimestamps();
 							$vn_min_date = (float)$va_tmp['start'];
-							$vs_min_sql = " AND (ca_attribute_values.value_decimal1 >= {$vn_min_date})";
+							$vs_min_sql = " AND ((ca_attribute_values.value_decimal1 >= {$vn_min_date}) OR (ca_attribute_values.value_decimal2 >= {$vn_min_date}))";
 						}
 					}
 					if (isset($va_facet_info['maximum_date'])) {
 						if ($o_tep->parse($va_facet_info['maximum_date'])) {
 							$va_tmp = $o_tep->getHistoricTimestamps();
 							$vn_max_date = (float)$va_tmp['end'];
-							$vs_max_sql = " AND (ca_attribute_values.value_decimal2 <= {$vn_max_date})";
+							$vs_max_sql = " AND ((ca_attribute_values.value_decimal1 <= {$vn_max_date}) OR (ca_attribute_values.value_decimal2 <= {$vn_max_date}))";
 						}
 					}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,6 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
     static $s_settings;
     private $o_client;
     # ------------------------------------------------
-
     /**
      * WLPlugInformationServiceVIAF constructor.
      */
@@ -75,70 +74,88 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
 
         $this->description = _t('Provides access to VIAF service');
     }
-
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
     public function getAvailableSettings() {
         return WLPlugInformationServiceVIAF::$s_settings;
     }
-
-    public function lookup($pa_settings, $ps_search, $pa_options = null)  {
-   		if(preg_match("!^http[s]{0,1}://www.viaf.org/viaf/([\d]+)!", $ps_search, $m)) {
-   			$ps_search = $m[1];
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
+    public function lookup($settings, $search, $options = null)  {
+   		if(preg_match("!^http[s]{0,1}://www.viaf.org/viaf/([\d]+)!", $search, $m)) {
+   			$search = $m[1];
    		}
+   		$search = trim($search);
+   		$search_on = caGetOption('searchOn', $settings, 'cql.any');
    		
-   		$search_on = caGetOption('searchOn', $pa_settings, 'cql.any');
-   		
-        $vo_client = $this->getClient();
-        $vo_response = $vo_client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=100&Accept=json&query=".urlencode("{$search_on} all \"{$ps_search}\""), [
+        $client = $this->getClient();
+        $response = $client->request("GET", self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP."?maximumRecords=500&recordSchema=BriefVIAF&Accept=json&sortKey=holdingscount&query=".urlencode("cql.any all \"{$search}\""), [
             'headers' => [
                 'Accept' => 'application/json'
             ]
         ]);
 
-		$va_raw_resultlist = json_decode($vo_response->getBody(), true);
-
-		$va_return = [];
-        if (is_array($response_data = $va_raw_resultlist['searchRetrieveResponse']['records']['record'])) {
+		$raw_resultlist = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+		
+		$return = [];
+		$primaries = [];
+        if (is_array($response_data = $raw_resultlist['searchRetrieveResponse']['records']['record'])) {
 			foreach ($response_data as $index=>$data){
-				// remove all the namespace prefixes in the array keys
-                $data = $this->removeNamespacePrefixes($data);
-
-				$viafID = (int) $data["recordData"]["VIAFCluster"]["viafID"];
-				if (!($label = $data['recordData']["VIAFCluster"]['mainHeadings']['data'][0]['text'])) {
-					$label = $data['recordData']["VIAFCluster"]['mainHeadings']['data']['text'];
+				if(!isset($data["recordData"]["v:VIAFCluster"]["v:viafID"]['content'])) { continue; }
+				$viafID = (string)$data["recordData"]["v:VIAFCluster"]["v:viafID"]['content'];
+				
+				$label = null;
+				if(is_array($data['recordData']["v:VIAFCluster"]['v:titles']['v:work'])) {
+					foreach($data['recordData']["v:VIAFCluster"]['v:titles']['v:work'] as $k => $x) {
+						if($k === 'v:title') {
+							if($x) { $label = $x; break; }
+						} elseif($label = trim($x['v:title'] ?? null)) {
+							break;
+						}
+					}
 				}
-				$label = str_replace("|", ":", $label);
-				$va_return['results'][] = [
+				if(!$label) { 
+					if (!($label = $data['recordData']["v:VIAFCluster"]['v:mainHeadings']['v:data'][0]['v:text'])) {
+						$label = $data['recordData']["v:VIAFCluster"]['v:mainHeadings']['v:data']['v:text'];
+					}
+				}
+
+				$label = trim(str_replace("|", ":", $label));
+				
+				$entry = [
 					'label' => $label,
 					'url' => self::VIAF_SERVICES_BASE_URL."/".$viafID,
 					'idno' => $viafID
 				];
-			
+				if(mb_strtolower($search) == mb_strtolower($label)) {
+					array_unshift($primaries, $entry);
+				} elseif(preg_match('!^'.preg_quote($search, '!').'!i', $label)) {
+					$primaries[] = $entry;
+				} else {
+				 	$return['results'][] = $entry;
+				}
 			}
 		}
-        return $va_return;
+		if(sizeof($primaries)) {
+			$return['results'] = array_merge($primaries, $return['results']);
+		}
+        return $return;
     }
-
-    /**
-     * Remove all prefixes (ns2:, ns3:, etc.) from array keys recursively
-     */
-    private function removeNamespacePrefixes($array) {
-        if (!is_array($array)) return $array;
-        $newArray = [];
-        foreach ($array as $key => $value) {
-            $newKey = preg_replace('/^ns\d+:/', '', $key);
-            if (is_array($value)) {
-                $newArray[$newKey] = $this->removeNamespacePrefixes($value);
-            } else {
-                $newArray[$newKey] = $value;
-            }
-        }
-        return $newArray;
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
+    public function getExtendedInformation($settings, $url) {
+        return ['display' => "<p><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
     }
-
-    public function getExtendedInformation($pa_settings, $ps_url) {
-        return ['display' => "<p><a href='{$ps_url}' target='_blank' rel='noopener noreferrer'>{$ps_url}</a></p>"];
-    }
-
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
     /**
      * @return Guzzle\Http\Client
      */
@@ -147,9 +164,10 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
             $this->o_client = new \GuzzleHttp\Client(['base_uri' => self::VIAF_SERVICES_BASE_URL."/".self::VIAF_LOOKUP]);
 
         $o_conf = Configuration::load();
-        if($vs_proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */
-            $this->o_client->getConfig()->add('proxy', $vs_proxy);
+        if($proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */
+            $this->o_client->getConfig()->add('proxy', $proxy);
 
         return $this->o_client;
     }
+	# ------------------------------------------------
 }

@@ -9399,6 +9399,27 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_max_length = '';
 					if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 					$vs_element = '<input type="password" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value).'" size="'.$vn_display_width.'" '.$vs_max_length.' '.$vs_js.' autocomplete="off" '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')." ".($pa_options['placeholder'] ? "placeholder='".htmlentities($pa_options['placeholder'])."'" : "")."/>";
+					
+					if(caGetOption('includeVisibilityButton', $pa_options, false)) {
+						$vs_element .= "<button id='".$pa_options["id"]."View' class='formPasswordView'>".caNavIcon(__CA_NAV_ICON_WATCH__, '16px', [])."</button>";
+						$vs_element .= "<script type='text/javascript'>
+							jQuery(document).ready(function() {
+								jQuery('#".($pa_options['id'].'View')."').on('click', function(e) {
+									const t = jQuery('#".$pa_options["id"]."').attr('type');
+									
+									if(t == 'password') {
+										jQuery('#".$pa_options["id"]."').attr('type', 'text');
+										jQuery('#".$pa_options["id"]."View i').css('color', 'red');
+									} else {
+										jQuery('#".$pa_options["id"]."').attr('type', 'password');
+										jQuery('#".$pa_options["id"]."View i').css('color', 'black');
+									}
+									e.preventDefault();
+									return false;
+								});
+							});
+						</script>\n";
+					}
 					break;
 				# ----------------------------
 				case(FT_BIT):

@@ -117,7 +117,7 @@ if (!$this->request->isAjax()) {
 					typeMenuID: 'browseTypeMenu',
 					disabledItems: 'full',
 					
-					dontAllowEditForFirstLevel: <?= in_array($t_subject->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__]) ? '1': '0'; ?>,
+					dontAllowEditForFirstLevel: <?= json_encode(!caAllowEditingForFirstLevelOfHierarchyBrowser($t_subject)); ?>,
 					
 					currentSelectionDisplayID: 'browseCurrentSelection'
 				});

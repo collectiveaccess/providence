@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,7 +99,10 @@ $_ca_attribute_settings['FloorPlanAttributeValue'] = array(		// global
 
 class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
- 	private $ops_text_value;
+ 	/**
+ 	 *
+ 	 */
+ 	protected $ops_text_value;
  	# ------------------------------------------------------------------
  	public function __construct($pa_value_array=null) {
  		parent::__construct($pa_value_array);
