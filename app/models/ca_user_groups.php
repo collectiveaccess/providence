@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2019 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
-
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 require_once(__CA_LIB_DIR__."/SyncableBaseModel.php");
-
 
 BaseModel::$s_ca_models_definitions['ca_user_groups'] = array(
  	'NAME_SINGULAR' 	=> _t('user group'),
@@ -619,43 +613,56 @@ class ca_user_groups extends BaseModel {
 		}
 	}
 	# ------------------------------------------------------
-/**
- * Returns HTML multiple <select> with full list of roles for currently loaded group
- *
- * @param array $pa_options (optional) array of options. Keys are:
- *		size = height of multiple select, in rows; default is 8
- *		name = HTML form element name to apply to role <select>; default is 'roles'
- *		id = DOM id to apply to role <select>; default is no id
- *		label = String to label form element with
- * @return string Returns HTML containing form element and form label
- */
-	public function roleListAsHTMLFormElement($pa_options=null) {
-		$vn_size = (isset($pa_options['size']) && ($pa_options['size'] > 0)) ? $pa_options['size'] : 8;
-		$vs_name = (isset($pa_options['name'])) ? $pa_options['name'] : 'roles';
-		$vs_id = (isset($pa_options['id'])) ? $pa_options['id'] : '';
-		$vs_label = (isset($pa_options['label'])) ? $pa_options['label'] : _t('Roles');
+	/**
+	 * Returns HTML multiple <select> with full list of roles for currently loaded group
+	 *
+	 * @param array $options (optional) array of options. Keys are:
+	 *		size = height of multiple select, in rows; default is 8
+	 *		name = HTML form element name to apply to role <select>; default is 'roles'
+	 *		id = DOM id to apply to role <select>; default is no id
+	 *		label = String to label form element with
+	 *		renderAs = Control type. Valid values are DT_SELECT or DT_CHECKBOXES. [Default is DT_SELECT]
+	 *		includeLabel = Return formatted field label above form element. [Default is true]
+	 * @return string Returns HTML containing form element and form label
+	 */
+	public function roleListAsHTMLFormElement(?array $options=null) : string {
+		$size = (isset($options['size']) && ($options['size'] > 0)) ? $options['size'] : 8;
+		$name = (isset($options['name'])) ? $options['name'] : 'roles';
+		$id = (isset($options['id'])) ? $options['id'] : '';
+		$label = (isset($options['label'])) ? $options['label'] : _t('Roles');
 		
+		$render_as = caGetOption('renderAs', $options, DT_SELECT);
+		$include_label = caGetOption('includeLabel', $options, true);
 		
-		$va_roles = $this->getRoleList();
-		$vs_buf = '';
-		if (sizeof($va_roles)) {
-			if(!$va_group_roles = $this->getGroupRoles()) { $va_group_roles = array(); }
-		
-			$vs_buf .= "<select multiple='1' name='{$vs_name}[]' size='{$vn_size}' id='{$vs_id}'>\n";
-			foreach($va_roles as $vn_role_id => $va_role_info) {
-				$SELECTED = (isset($va_group_roles[$vn_role_id]) && $va_group_roles[$vn_role_id]) ? "SELECTED='1'" : "";
-				$vs_buf .= "<option value='{$vn_role_id}' {$SELECTED}>".$va_role_info['name']." [".$va_role_info["code"]."]</option>\n";
+		$roles = $this->getRoleList();
+		$buf = '';
+		if (sizeof($roles)) {
+			if(!$group_roles = $this->getGroupRoles()) { $group_roles = array(); }
+			
+			switch($render_as) {
+				case DT_CHECKBOXES:
+					foreach($roles as $role_id => $role_info) {
+						$SELECTED = (isset($group_roles[$role_id]) && $group_roles[$role_id]) ? "CHECKED='1'" : "";
+						$buf .= "<div><input type='checkbox' name='{$name}[]' value='{$role_id}' {$SELECTED}>".$role_info['name']." [".$role_info["code"]."]</div>\n";
+					}
+					break;
+				default:
+					$buf .= "<select multiple='1' name='{$name}[]' size='{$size}' id='{$id}'>\n";
+					foreach($roles as $role_id => $role_info) {
+						$SELECTED = (isset($group_roles[$role_id]) && $group_roles[$role_id]) ? "SELECTED='1'" : "";
+						$buf .= "<option value='{$role_id}' {$SELECTED}>".$role_info['name']." [".$role_info["code"]."]</option>\n";
+					}
+					$buf .= "</select>\n";
 			}
-			$vs_buf .= "</select>\n";
 		}
-		if ($vs_format = $this->_CONFIG->get('form_element_display_format')) {
-			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
-			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
-			$vs_format = str_replace("^ERRORS", '', $vs_format);
-			$vs_buf = str_replace("^EXTRA", '', $vs_format);
+		if ($buf && $include_label && ($format = $this->_CONFIG->get('form_element_display_format'))) {
+			$format = str_replace("^ELEMENT", $buf, $format);
+			$format = str_replace("^LABEL", $label, $format);
+			$format = str_replace("^ERRORS", '', $format);
+			$buf = str_replace("^EXTRA", '', $format);
 		}
 		
-		return $vs_buf;
+		return $buf;
 	}
 	# ------------------------------------------------------
 	/**
