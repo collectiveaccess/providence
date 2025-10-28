@@ -8265,3 +8265,19 @@ li p {
 	font-weight: bold;
 	font-size: 12px;
 }
+
+div.userPasswordInput {
+	position: relative;
+}
+
+button.formPasswordView {
+	margin-left: -28px; 
+	border: none; 
+	background-color: transparent;
+}
+
+button.passwordView {
+	margin: 0 0 0 -38px; 
+	border: none; 
+	background-color: transparent;
+}
