@@ -8219,3 +8219,65 @@ li p {
 	top: 100%;
 	left: 100%;
 }
+
+.roleList, .groupList {
+	display: flex; 
+	flex-direction: row; 
+	align-content: flex-start;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.roleList div, .groupList div {
+	position: relative;
+	padding: 0 10px 10px 22px;
+	flex: 1 1 140px;
+	max-width: 140px;
+	line-height: normal;
+}
+
+.roleList div input, .groupList div input {
+	position: absolute;
+	top: 1px;
+	left: 1px;
+}
+
+.users .userList {
+	display: flex; 
+	flex-direction: row; 
+	align-content: flex-start;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+
+.users .userList div {
+	position: relative;
+	padding: 0 10px 10px 0;
+	flex: 1 1 120px;
+	max-width: 120px;
+	line-height: normal;
+}
+
+#password_errors {
+	display: none;
+	padding: 5px 0 15px 0;
+	color: red;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+div.userPasswordInput {
+	position: relative;
+}
+
+button.formPasswordView {
+	margin-left: -28px; 
+	border: none; 
+	background-color: transparent;
+}
+
+button.passwordView {
+	margin: 0 0 0 -38px; 
+	border: none; 
+	background-color: transparent;
+}
