@@ -12218,7 +12218,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$table_name}
 					WHERE {$primary_key} IN (?)
 				";
-				if(!($qr_res = $o_db->query($sql, [$ids])) || !$qr_res->numRows()) {
+				if(!is_array($ids) || !sizeof($ids) || !($qr_res = $o_db->query($sql, [$ids])) || !$qr_res->numRows()) {
 					return null;
 				}
 				
