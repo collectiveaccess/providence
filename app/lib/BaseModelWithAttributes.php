@@ -1438,7 +1438,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		$pa_options['limitToItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), $pa_options);
-		
+		if(!is_array($pa_options['restrictToSources'] )) { $pa_options['restrictToSources']  = []; }
 		if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
 			if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
 				$pa_options['limitToItemsWithID'] = $pa_options['restrictToSources'];
