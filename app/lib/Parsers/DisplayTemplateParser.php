@@ -1837,7 +1837,7 @@ class DisplayTemplateParser {
 			switch($vs_tag = strtolower($o_node->tag)) {
 				case 'case':
 					if (!$pb_is_case) {
-						$vs_acc .= DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['isCase' => true]));	
+						$vs_acc .= trim(DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['isCase' => true])));	
 					}
 					break;
 				case 'if':
