@@ -3790,7 +3790,7 @@ function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settin
 	$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 
 	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
-	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
+	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', 'closed'); }); </script>";	
 	$vs_buf .= "</span>\n";	
 
 	return $vs_buf;
@@ -6447,6 +6447,20 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 		$groups = array_merge($groups, $group);
 	}
 	return $groups;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caAllowEditingForFirstLevelOfHierarchyBrowser(BaseModel $t_subject) : bool {
+	if($t_subject->getHierarchyType() === __CA_HIER_TYPE_MULTI_MONO__) { return false; }
+	if(
+		($t_subject->getHierarchyType() === __CA_HIER_TYPE_SIMPLE_MONO__)
+		&&
+		!$t_subject->getAppConfig()->get($t_subject->tableName().'_hierarchy_browser_hide_root')
+	) { return false; }
+	
+	return true;
 }
 # ------------------------------------------------------------------
 

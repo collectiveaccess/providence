@@ -263,7 +263,10 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 
 class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
 	# ------------------------------------------------------------------
 	public function __construct($value_array=null) {
 		parent::__construct($value_array);

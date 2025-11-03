@@ -296,8 +296,15 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
- 	private $ops_text_value;
- 	private $ops_uri_value;
+ 	/**
+ 	 *
+ 	 */
+ 	protected $ops_text_value;
+ 	
+ 	/**
+ 	 *
+ 	 */
+ 	protected $ops_uri_value;
  	
  	private $opo_geo_plugin;
  	# ------------------------------------------------------------------

@@ -166,8 +166,16 @@ $_ca_attribute_settings['InformationServiceAttributeValue'] = array(		// global
 
 class InformationServiceAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $ops_uri_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
+	
+	/**
+	 *
+	 */
+	protected $ops_uri_value;
+	
 	/**
 	 * @var IWLPlugInformationService|null
 	 */
