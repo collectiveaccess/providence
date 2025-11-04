@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -659,7 +659,7 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 				return false;
 			}
 			if ($t_rep->numErrors()) {
-				$this->errors = array_merge($this->errors, $t_rep->errors());
+				$this->errors = array_merge($this->errors ?? [], $t_rep->errors());
 				return false;
 			}
 		

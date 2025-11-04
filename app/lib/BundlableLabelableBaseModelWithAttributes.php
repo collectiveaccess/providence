@@ -368,6 +368,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$va_errors = [];
 		if (!$this->_validateIncomingAdminIDNo(true, false)) { 
+			 if ($this->_CONFIG->get('require_valid_id_number_for_'.$this->tableName())) { return false; }
 			 $va_errors = $this->errors();
 			 // don't save number if it's invalid
 			 if ($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
@@ -4976,6 +4977,10 @@ if (!$batch) {
 											}
 											if ($t_rep = $this->addRepresentation($f, $vn_rep_type_id, $vals['locale_id'] ?? null, $vals['status'] ?? null, $vals['access'] ?? null, null, array_merge($vals, ['name' => $vals['rep_label'] ?? null]), ['original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id])) {	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 												@unlink($f);
+											} else {
+												foreach($this->errors as $e) {
+													$po_request->addActionErrors(array(new ApplicationError(1100, _t('Could not add media: %1', $e->getErrorDescription()), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'ca_object_representations', false,false)), $vs_bundle, 'general');
+												}
 											}
 										}
 									} elseif($vs_key === 'empty') {
