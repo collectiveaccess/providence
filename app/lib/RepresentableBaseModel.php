@@ -580,6 +580,7 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			$t_rep->set('locale_id', $pn_locale_id);
 			$t_rep->set('status', $pn_status);
 			$t_rep->set('access', $pn_access);
+			$t_rep->set('original_filename', $pa_options['original_filename'] ?? null);
 			if($ps_media_path) { $t_rep->set('media', $ps_media_path, $pa_options); }
 			
 			if($ps_media_path && is_array($skip_config = $this->getAppConfig()->get('skip_object_representation_versions_for_mimetype_when'))) {
@@ -653,7 +654,28 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			try {
+				$this->opo_app_plugin_manager->hookBeforeInsertItem(
+					[
+						'id' => $t_rep->getPrimaryKey(), 
+						'table_num' => $t_rep->tableNum(), 
+						'table_name' => $t_rep->tableName(), 
+						'instance' => $t_rep, 
+						'is_insert' => true, 
+						'for_duplication' => caGetOption('forDuplication', $pa_options, false)
+					]
+				);
 				$t_rep->insert($media_proc_opts);
+				$this->opo_app_plugin_manager->hookInsertItem(
+					[
+						'id' => $t_rep->getPrimaryKey(), 
+						'table_num' => $t_rep->tableNum(), 
+						'table_name' => $t_rep->tableName(), 
+						'instance' => $t_rep, 
+						'is_insert' => true, 
+						'for_duplication' => caGetOption('forDuplication', $pa_options, false)
+					]
+				);
+				
 			} catch (MediaExistsException $e) {
 				$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
 				return false;
@@ -818,6 +840,16 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		
 			try {
 				$t_rep->update();
+
+				$this->opo_app_plugin_manager->hookEditItem(
+					[
+						'id' => $t_rep->getPrimaryKey(), 
+						'table_num' => $t_rep->tableNum(), 
+						'table_name' => $t_rep->tableName(), 
+						'instance' => $t_rep, 
+						'for_duplication' => caGetOption('forDuplication', $pa_options, false)
+					]
+				);
 			} catch (MediaExistsException $e) {
 				$this->postError(2730, caGetReferenceToExistingRepresentationMedia($e->getRepresentation()), 'ca_object_representations->insert()');
 				return false;
