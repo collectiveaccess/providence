@@ -5833,6 +5833,15 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		return $vs_sql;
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 * Get internal file data prior to save
+	 *
+	 * @return array
+	 */
+	protected function getSetFileData() : array {
+		return $this->_SET_FILES ?? [];
+	}
+	# --------------------------------------------------------------------------------
 	# --- Utilities
 	# --------------------------------------------------------------------------------
 	/**
@@ -9056,7 +9065,7 @@ $pa_options["display_form_field_tips"] = true;
 								// if 'LIST' is set try to stock over choice list with the contents of the list
 								if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 									// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
-									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('nullOption' => $pa_options['nullOption'] ?? null, 'width' => $pa_options['width'] ?? null, 'key' => 'item_value', 'value' => $vm_raw_field_value, 'nullOption' => $pa_options['nullOption'], 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
+									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('nullOption' => $pa_options['nullOption'] ?? null, 'width' => $pa_options['width'] ?? null, 'key' => 'item_value', 'value' => $vm_raw_field_value, 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
 								}
 								if (!$vs_element && (isset($va_attr["BOUNDS_CHOICE_LIST"]) && is_array($va_attr["BOUNDS_CHOICE_LIST"]))) {
 	
