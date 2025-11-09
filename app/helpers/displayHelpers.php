@@ -1366,7 +1366,7 @@ function caEditorInspector($view, $options=null) {
 				FooterManager::add($change_type_view->render("change_type_html.php"));
 				TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
 			}
-		
+
 			if ($t_item->getPrimaryKey() && $view->request->config->get("{$table_name}_show_add_child_control_in_inspector")) {
 				$show_add_child_control = true;
 				if (is_array($va_restrict_add_child_control_to_types = $view->request->config->getList($table_name.'_restrict_child_control_in_inspector_to_types')) && sizeof($va_restrict_add_child_control_to_types)) {
@@ -2898,7 +2898,9 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 					$ps_value = mb_substr($ps_value, 0, (int)$va_tmp[1]); 
 					if($ellipsis) { $ps_value .= '...'; }
 				}
-				
+				break;
+			case 'STRIPEXTENSION':
+				$ps_value = preg_replace("!\.[A-Z0-9]+$!i", "", $ps_value);
 				break;
 		}
 	}
