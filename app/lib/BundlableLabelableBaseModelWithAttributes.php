@@ -4850,31 +4850,26 @@ if (!$batch) {
 									}
 								} elseif($po_request->getAppConfig()->get('allow_representations_without_media') && preg_match('/^'.$vs_prefix_stub.'no_media_new_([\d]+)$/', $vs_key, $va_matches)) {
 									$index = (int)$va_matches[1];
-									$va_file_list['empty'] = ['index' => $index];
+									$va_file_list["empty_{$index}"] = ['_empty_' => true, 'index' => $index];
 								}
-                            }
-                            
-                            if(isset($va_file_list['empty'])) {
-                            	$index = $va_file_list['empty']['index'];
-								$va_file_list = array_filter($va_file_list, function($v) use ($index) { return (($v['index'] !== $index) || (sizeof($v) === 1)); });
                             }
                             
                             // Sort files such that they are inserted in file name order
                         	$va_file_list = caSortArrayByKeyInValue($va_file_list, ['tmp_name'], 'ASC', ['mode' => SORT_NATURAL]);
-                            
+
                             foreach($va_file_list as $vs_key => $va_values) {
                             	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);
                             	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
                                 $this->clearErrors();
                             
 								if (
-									($vs_key !== 'empty') &&
+									(!($va_values['_empty_'] ?? false)) &&
 									!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && 
 									!preg_match('/^'.$vs_prefix_stub.'mediarefsnew_([\d]+)_([\d]+)$/', $vs_key, $va_matches) && 
 									(($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls) && 
 									(($vb_allow_existing_rep && !preg_match('/^'.$vs_prefix_stub.'autocompletenew_([\d]+)$/', $vs_key, $va_matches))||!$vb_allow_existing_rep) ) {  
 										continue; 
-								} elseif($vs_key === 'empty') {
+								} elseif($va_values['_empty_'] ?? false) {
 									$va_matches = [null, $va_values['index']];
 								}
 								
@@ -4919,7 +4914,7 @@ if (!$batch) {
                                     	$vs_path = $vs_original_name = null;
                                     }
                                     
-                                    if (($vs_key !== 'empty') && !$vs_path) { continue; }
+                                    if (!($va_values['_empty_'] ?? false) && !$vs_path) { continue; }
                             
                                     $vn_rep_type_id = $po_request->getParameter([$vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], $vs_prefix_stub.'type_id_new_'.$va_matches[1]], pInteger);
                                     
@@ -4983,7 +4978,7 @@ if (!$batch) {
 												}
 											}
 										}
-									} elseif($vs_key === 'empty') {
+									} elseif($va_values['_empty_'] ?? false) {
 										$t_rep = $this->addRepresentation(null, $vn_rep_type_id, $vals['locale_id'], $vals['status'], $vals['access'], null, array_merge($vals, ['name' => $vals['rep_label']]), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id, 'mapping_id' => $vn_object_representation_mapping_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 									}
                                     
