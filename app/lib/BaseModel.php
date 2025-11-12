@@ -2909,6 +2909,7 @@ class BaseModel extends BaseObject {
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		// Clear any cached display template values for this record
