@@ -1475,6 +1475,19 @@ function caEditorInspector($view, $options=null) {
 			$msg = $autodelete_info['message'] ?? null;
 			$more_info .= "<div id='inspectorAutoDeleteMessage' class='inspectorAutodeleteSet'>{$msg}</div>\n";
 		}
+				
+		$set_access_for_related_tables = $view->request->config->getAssoc('set_access_for_related_tables');
+		if($view->request->user->canDoAction("can_set_access_for_related_{$table_name}") && is_array($set_access_for_related_tables) && is_array($set_access_for_related_tables[$table_name]) && sizeof($set_access_for_related_tables[$table_name])) {
+			$set_access_for_related_tables = $set_access_for_related_tables[$table_name];
+			$tools[] = "<div id='inspectorSetAccessForRelated' class='inspectorActionButton'><div id='inspectorSetAccessForRelatedButon'><a href='#' onclick='caSetAccessForRelatedPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_SET_ACCESS__, '20px', array('title' => _t('Set access for related')))."</a></div></div>\n";
+
+			$set_access_for_related_tables_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$set_access_for_related_tables_view->setVar('t_item', $t_item);
+			$set_access_for_related_tables_view->setVar('targets', $set_access_for_related_tables);
+
+			FooterManager::add($set_access_for_related_tables_view->render("set_access_for_related_html.php"));
+			TooltipManager::add("#inspectorSetAccessForRelated", _t('Set Access For Related'));
+		}
 		
 		$creation = $t_item->getCreationTimestamp();
 		$last_change = $t_item->getLastChangeTimestamp();
@@ -2885,7 +2898,9 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 					$ps_value = mb_substr($ps_value, 0, (int)$va_tmp[1]); 
 					if($ellipsis) { $ps_value .= '...'; }
 				}
-				
+				break;
+			case 'STRIPEXTENSION':
+				$ps_value = preg_replace("!\.[A-Z0-9]+$!i", "", $ps_value);
 				break;
 		}
 	}

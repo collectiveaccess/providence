@@ -3194,4 +3194,123 @@ class BaseEditorController extends ActionController {
 		$this->response->addContent(json_encode($va_sorted_ids));
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function setAccessForRelated(?array $options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	return;
+	    }
+		list($subject_id, $t_subject) = $this->_initView();
+		if (!$t_subject->isLoaded()) { 
+			throw new ApplicationException(_t('Invalid id %1', $subject_id));
+		}
+		$table_name = $t_subject->tableName();
+		if(!$this->request->user->canDoAction("can_set_access_for_related_{$table_name}")) {
+			throw new ApplicationException(_t('Access denied'));
+	    	return;
+		}
+		
+		if(!$this->verifyAccess($t_subject)) { return; }
+		
+		$target = $this->request->getParameter('target', pString);
+		$access = $this->request->getParameter('access', pInteger);
+		$status = $this->request->getParameter('status', pInteger);
+		
+		$set_access_for_related_tables = $this->request->config->getAssoc('set_access_for_related_tables');
+		if(!is_array($set_access_for_related_tables) || !is_array($set_access_for_related_tables[$table_name]) || !sizeof($set_access_for_related_tables[$table_name])) {
+			throw new ApplicationException(_t('No configured targets'));
+	    	return;
+		}
+		$set_access_for_related_tables = $set_access_for_related_tables[$table_name];
+		if(!is_array($set_access_for_related_tables[$target])) {
+			throw new ApplicationException(_t('Invalid target'));
+	    	return;
+		}
+		
+		$label = $set_access_for_related_tables[$target]['label'] ?? '???';
+		$set = $set_access_for_related_tables[$target]['set'] ?? null;
+		if(!is_array($set) && !sizeof($set)) {
+			throw new ApplicationException(_t('Invalid target configuration'));
+	    	return;
+		}
+		$errors = [];
+		$changed = $skipped = 0;
+		foreach($set as $s) {
+			$tmp = explode('/', $s);
+			$target_table = $tmp[0];
+			if($target_types = $tmp[1] ?? null) {
+				$target_types = preg_split('![;,]+!', $target_types);
+			}
+			$rel_ids = $t_subject->getRelatedItems($target_table, ['restrictToTypes' => $target_types, 'returnAs' => 'ids']);
+			
+			if(!is_array($rel_ids) || !sizeof($rel_ids)) { continue; }
+			if(!($qr = caMakeSearchResult($target_table, $rel_ids))) { continue; }
+			
+			$is_batched = false;
+			if((sizeof($rel_ids) > 10) && (bool)$this->request->config->get('queue_enabled')) {
+				$filtered_ids = [];
+				while($qr->nextHit()) {
+					if(strlen($status)) {
+						if($qr->get("{$target_table}.status") != $status) { continue; }
+					}
+					if($qr->get("{$target_table}.access") == $access) { $skipped++; continue; }
+					$changed++;
+					
+					$filtered_ids[] = $qr->getPrimaryKey();
+					
+				}
+				if(!sizeof($filtered_ids)) { continue; }
+				$qr = caMakeSearchResult($target_table, $filtered_ids);
+				$rs = new RecordSelection($qr);
+				$screen = ca_editor_uis::findScreenWithBundle($target_table, 'access', $this->request, ['user_id' => $this->request->getUserID()]);
+				$settings = [
+					'id' => $rs->ID(),
+					'record_selection' => $rs->serialize(),
+					'ui_id' => $screen['ui_id'],
+					'screen' => 'Screen'.$screen['screen_id'],
+					'user_id' => $this->request->getUserID(),
+					'values' => ['P'.$screen['placement']['placement_id'].'access' => $access],
+					'sendMail' => false,
+					'sendSMS' => false
+				];
+				
+				$o_tq = new TaskQueue();
+				
+				$row_key = $entity_key = join("/", array($this->request->getUserID(), $rs->ID(), time(), rand(1,999999)));
+				if ($o_tq->addTask(
+					'batchEditor',
+					$settings,
+					["priority" => 100, "entity_key" => $entity_key, "row_key" => $row_key, 'user_id' => $this->request->getUserID()]))
+				{
+					$is_batched = true;
+					$changed = $qr->numHits();
+				}
+			} 
+			if(!$is_batched) {
+				while($qr->nextHit()) {
+					if(strlen($status)) {
+						if($qr->get("{$target_table}.status") != $status) { continue; }
+					}
+					if($qr->get("{$target_table}.access") == $access) { $skipped++; continue; }
+					$x = $qr->getInstance();
+					$x->set('access', $access);
+					if(!$x->update()) {
+						$errors[] = _t('Could not set access for %1: %2', $qr->getPrimaryKey(), join('; ', $x->getErrors()));
+					} else {
+						$changed++;
+					}
+					
+				}
+			}
+		}
+		$resp = ['ok' => sizeof($errors) ? 0 : 1, 'errors' => $errors, 'changed' => $changed, 'skipped' => $skipped, 'batch' => $is_batched];
+		
+		$this->view->setVar('response', $resp);
+		
+		$this->response->setContentType('application/json');
+		$this->render('../generic/set_access_for_related_json.php');
+	}
+	# -------------------------------------------------------
 }

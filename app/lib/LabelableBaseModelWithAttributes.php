@@ -2770,11 +2770,13 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 */
 	public function getPreferredDisplayLabelsForIDs($pa_ids, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = []; }
-		$va_ids = array();
-		foreach($pa_ids as $vn_id) {
-			if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
+		$va_ids = [];
+		if(is_array($pa_ids)) {
+			foreach($pa_ids as $vn_id) {
+				if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
+			}
 		}
-		if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
+		if (!is_array($va_ids) || !sizeof($va_ids)) { return []; }
 		
 		$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
 		$vb_return_all_types = caGetOption('returnAllTypes', $pa_options, false);

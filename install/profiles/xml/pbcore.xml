@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/PBCoreInstallationProfile">
-  <profileName>[Standard] PBCore v1.2 REVISED 2013</profileName>
+  <profileName>[Standard] PBCore v1.2 (revised 2013)</profileName>
   <profileDescription>Use this profile to set up a system implementing the PBCore v1.2 (http://www.pbcore.org) metadata standard</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>

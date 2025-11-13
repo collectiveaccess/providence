@@ -942,6 +942,19 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if(($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) && (!$this->hasField('deleted') || caGetOption('hard', $pa_options, false))) {
 			// Delete any associated attributes and attribute_values
 			if (!($qr_res = $this->getDb()->query("
+				DELETE FROM ca_attribute_value_multifiles
+				USING ca_attributes 
+				INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id 
+				INNER JOIN ca_attribute_value_multifiles ON ca_attribute_values.value_id = ca_attribute_value_multifiles.value_id 
+				WHERE ca_attributes.table_num = ? AND ca_attributes.row_id = ?
+			", array((int)$this->tableNum(), (int)$vn_id)))) { 
+				$this->errors = $this->getDb()->errors();
+				if ($o_trans) { $o_trans->rollback(); }
+				
+				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				return false; 
+			}
+			if (!($qr_res = $this->getDb()->query("
 				DELETE FROM ca_attribute_values 
 				USING ca_attributes 
 				INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id 

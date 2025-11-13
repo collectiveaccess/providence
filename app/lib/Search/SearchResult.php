@@ -4170,4 +4170,24 @@ class SearchResult extends BaseObject {
 		return $o_search->resolveResultDescData($result_desc);
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Return array of all types present in the current result set. Array keys
+	 * are type_ids, values are display text for type
+	 *
+	 * @param array $options Options passed through to SearchResult::get()
+	 *
+	 * @return array
+	 */
+	public function getResultListTypes(?array $options=null) : array {
+		$index = $this->currentIndex();
+		$type_ids = [];
+		while($this->nextHit()) {
+			if($type_id = $this->get("{$t}.type_id", $options)) {
+				$type_ids[$type_id] = $this->get("{$t}.type_id", ['convertCodesToDisplayText' => true]);
+			}
+		}
+		$this->seek($index);
+		return $type_ids;
+	}
+	# ------------------------------------------------------------------
 }

@@ -3880,7 +3880,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param RequestHTTP $request Current request
 	 * @return string
 	 */
-	function caGenerateCSRFToken($request=null){
+	function caGenerateCSRFToken($request=null, ?array $options=null){
 		$session_id = $request ? $request->getSessionID() : 'none';
 	    if(function_exists("random_bytes")) {           // PHP 7
 	        $token = bin2hex(random_bytes(32));
@@ -3893,11 +3893,13 @@ function caFileIsIncludable($ps_file) {
 	        if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
 	        if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
 	    
-	    	foreach($used_tokens as $ut => $t) {
-	    		unset($tokens[$ut]);
-	    	}
+	    	if(caGetOption('removeUsedTokens', $options, false)) {
+				foreach($used_tokens as $ut => $t) {
+					unset($tokens[$ut]);
+				}
+			}
 	    
-	        if (sizeof($tokens) > 255) { 
+	        if (sizeof($tokens) > 1024) { 
 	        	$tokens = array_filter($tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
 	    
@@ -3905,7 +3907,7 @@ function caFileIsIncludable($ps_file) {
 	        
 	        PersistentCache::save("csrf_tokens_{$session_id}", $tokens, "csrf_tokens");
 	        
-	         if (sizeof($used_tokens) > 255) { 
+	         if (sizeof($used_tokens) > 1024) { 
 	        	$used_tokens = array_filter($used_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    		PersistentCache::save("csrf_used_tokens_{$session_id}", $used_tokens, "csrf_tokens");
 	    	}
@@ -3930,7 +3932,7 @@ function caFileIsIncludable($ps_file) {
 	    if(!$token) { $token = $request->getParameter('csrfToken', pString); }
 	    
 		if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
-	    if(isset($used_tokens[$token])) { return null; }	// ignore - token has already been used
+	   // if(isset($used_tokens[$token])) { return null; }	// ignore - token has already been used
 		
 	    if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
 	    

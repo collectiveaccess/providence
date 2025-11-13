@@ -2390,7 +2390,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 		
 		$va_result['input'] = is_array($va_select_options) ? $render_in_builder : 'text';
 		$va_result['values'] = is_array($va_select_options) ? (object)$va_select_options : null;
-		$va_result['operators'] = $va_operators_by_type[$va_result['input']];
+		$va_result['operators'] = $va_operators_by_type[$va_result['input']] ?? null;
 	} elseif($vs_name === "{$table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
 		$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 	} else {
