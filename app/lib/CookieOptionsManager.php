@@ -44,7 +44,7 @@ class CookieOptionsManager {
 	 */
 	static public function init() {
 		if(!self::$config) { 
-			self::$config = Configuration::load("cookies.conf");
+			self::$config = Configuration::load('cookies.conf');
 		}
 	}
 	# -------------------------------------------------------

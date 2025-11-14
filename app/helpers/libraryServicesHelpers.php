@@ -38,6 +38,6 @@
 	 * @return Configuration Returns reference to library services configuration
 	 */
 	function caGetLibraryServicesConfiguration() {
- 		return Configuration::load("library_services.conf");
+ 		return Configuration::load('library_services.conf');
 	}
 	# ---------------------------------------

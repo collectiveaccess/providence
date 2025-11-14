@@ -34,7 +34,7 @@ class StatisticsDashboard {
      *
      */
     static public function getPanelList() {
-        $config = Configuration::load("statistics.conf");
+        $config = Configuration::load('statistics.conf');
 		if (!is_array($dashboard = $config->getAssoc('dashboard')) && is_array($dashboard['panels'])) {
 			return null;
 		}

@@ -60,7 +60,7 @@ if (!function_exists('array_key_first')) {
 
 MemoryCache::flush('translation');
 
-$g_translations = Configuration::load("translations.conf");
+$g_translations = Configuration::load('translations.conf');
 
 $g_translation_strings = $g_translations->get('strings');
 $g_translation_replacements = $g_translations->get('replacements');
@@ -3749,7 +3749,7 @@ function caFileIsIncludable($ps_file) {
 		$va_extracted_measurements = [];
 		$vs_specified_units = $vs_extracted_units = null;
 		
-		$o_dimensions_config = Configuration::load("dimensions.conf");
+		$o_dimensions_config = Configuration::load('dimensions.conf');
 
 		$ps_units = caGetOption('units', $pa_options, 'in');
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
@@ -4142,7 +4142,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_display_config = Configuration::load("dimensions.conf");
+		$o_display_config = Configuration::load('dimensions.conf');
 		
 		$pa_allow_fractions_for = caGetOption('allowFractionsFor', $pa_options, null);
         if (is_null($pa_allow_fractions_for)) { $pa_allow_fractions_for = $o_display_config->get('display_fractions_for'); }
@@ -4786,7 +4786,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGenerateRandomPassword($length=6, $options=null) {
-		$auth_config = Configuration::load("authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 
 		if(strtolower($auth_config->get('auth_adapter')) === 'causers') { // password policies only apply to integral auth system
 			if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {

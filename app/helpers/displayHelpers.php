@@ -2564,7 +2564,7 @@ function caGetTableDisplayName($pm_table_name_or_num, $pb_use_plural=true) {
  */
 function caGetMediaDisplayConfig() {
 	$o_config = Configuration::load();
-	return Configuration::load("media_display.conf");
+	return Configuration::load('media_display.conf');
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -2753,7 +2753,7 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 	$force_english_units = caGetOption('forceEnglishUnits', $pa_options, null, ['validValues' => ['ft', 'in']]);
 	$force_metric_units = caGetOption('forceMetricUnits', $pa_options, null, ['validValues' => ['m', 'cm', 'mm']]);
 
-	$o_dimensions_config = Configuration::load("dimensions.conf");
+	$o_dimensions_config = Configuration::load('dimensions.conf');
 	$va_add_periods_list = $o_dimensions_config->get('add_period_after_units');
 
 	$vn_precision = ini_get('precision');

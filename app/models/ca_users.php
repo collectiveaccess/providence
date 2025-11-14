@@ -451,7 +451,7 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	static public function applyPasswordPolicy(string $password) : bool {
-		$auth_config = Configuration::load("authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
@@ -491,7 +491,7 @@ class ca_users extends BaseModel {
 	 * 
 	 */
 	static public function checkPasswordComplexity(string $password) : bool {
-		$auth_config = Configuration::load("authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 	
 		if(($min_score = (int)$auth_config->get('require_minimum_password_score')) > 0) {
@@ -508,7 +508,7 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	static public function getPasswordPolicyAsText() {
-		$auth_config = Configuration::load("authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return ''; }	// password policies only apply to integral auth system
 		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {

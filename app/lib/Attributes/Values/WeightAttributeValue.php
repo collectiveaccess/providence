@@ -171,7 +171,7 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 	private $config;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
-        $this->config = Configuration::load("dimensions.conf");
+        $this->config = Configuration::load('dimensions.conf');
 		parent::__construct($pa_value_array);
 	}
 	# ------------------------------------------------------------------

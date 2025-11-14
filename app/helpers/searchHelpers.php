@@ -1166,7 +1166,7 @@ function caGetLabelForBundle($ps_bundle) {
 	}
 	
 	// Maybe it's an access point?
-	if($indexing_config = Configuration::load("search_indexing.conf")) {
+	if($indexing_config = Configuration::load('search_indexing.conf')) {
 		$keys = $indexing_config->getAssocKeys();
 		
 		foreach($keys as $k) {
