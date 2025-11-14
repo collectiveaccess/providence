@@ -69,7 +69,6 @@ require_once(__CA_LIB_DIR__."/CookieOptionsManager.php");
    		if (!($va_locale_paths = validateLocale($ps_locale))) {
    		    // cookie invalid, deleting
 			if (!headers_sent()) { 
-				$secure = (__CA_SITE_PROTOCOL__ === 'https');
 				setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, [
 					'expires' => -1,
 					'path' => $cookiepath,
