@@ -94,7 +94,7 @@ class Session {
 	 */
 	public static function init($ps_app_name=null, $pb_dont_create_new_session=false) {
  		$o_config = Configuration::load();
- 		$service_config = Configuration::load(__CA_CONF_DIR__."/services.conf");
+ 		$service_config = Configuration::load("services.conf");
  		
  		// Use persistent (SQL-based) cache when cache back-end is file-based as Stash 
  		// tends to invalidate keys early in some enviroments causing forced logouts

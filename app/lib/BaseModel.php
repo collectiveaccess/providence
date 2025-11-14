@@ -407,7 +407,7 @@ class BaseModel extends BaseObject {
 		$this->field_conflicts = array();
 
 		$this->_CONFIG = Configuration::load();
-		$this->_TRANSLATIONS = Configuration::load(__CA_CONF_DIR__."/translations.conf");
+		$this->_TRANSLATIONS = Configuration::load("translations.conf");
 		$this->_FILES_CLEAR = array();
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();

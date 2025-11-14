@@ -45,7 +45,7 @@ class UsersController extends ActionController {
 		AssetLoadManager::register("bundleableEditor");
 		$t_user = $this->getUserObject();
 		
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$auth_config = Configuration::load("authentication.conf");
 		$this->view->setVar('password_policies', $auth_config->getAssoc('password_policies') ?? []);
 		$this->view->setVar('requireMinimumPasswordScore', (int)$auth_config->get('require_minimum_password_score'));
 		

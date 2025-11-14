@@ -107,7 +107,7 @@ class ExportCTDA extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($data, $options=[]){
-		$ext_config = Configuration::load(__CA_CONF_DIR__.'/external_exports.conf');
+		$ext_config = Configuration::load('external_exports.conf');
 		self::$row_index++;
 		$group = self::$row_index;
 		

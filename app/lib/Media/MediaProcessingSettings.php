@@ -66,7 +66,7 @@ class MediaProcessingSettings {
 			if (!($media_processing_setting = $field_info['MEDIA_PROCESSING_SETTING'] ?? null)) {
 				return false;
 			}
-			$this->opo_config_settings = Configuration::load(__CA_CONF_DIR__."/media_processing.conf");
+			$this->opo_config_settings = Configuration::load("media_processing.conf");
 			
 			if (!($this->opa_config_settings_as_array = $this->opo_config_settings->getAssoc($media_processing_setting))) {
 				return false;
