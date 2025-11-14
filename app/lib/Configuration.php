@@ -135,7 +135,6 @@ class Configuration {
 		$va_config_path_components = explode("/", $this->ops_config_file_path);
 		$vs_config_filename = array_pop($va_config_path_components);
 
-
         $vs_top_level_config_path = $this->ops_config_file_path;
 		if (!$pb_dont_load_from_default_path) {
 			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
@@ -153,6 +152,7 @@ class Configuration {
 				$va_config_file_list[] = $vs_top_level_config_path = $appname_specific_path;
 			}
 		}
+		if(defined('__CA_CONF_DIR__')) { $va_config_file_list[] = __CA_CONF_DIR__.'/'.$vs_config_filename; }
 		$o_config = ($vs_top_level_config_path === $this->ops_config_file_path) ? $this : Configuration::load($vs_top_level_config_path, false, false, true);
 
 		$vs_filename = pathinfo($ps_file_path, PATHINFO_BASENAME);
