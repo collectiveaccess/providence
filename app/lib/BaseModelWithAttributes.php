@@ -2939,6 +2939,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			foreach($va_vals as $vn_id => $va_vals_by_locale) {
 				foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 					foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
+						if(!is_array($va_val)) { continue; }
 						$va_val['locale_id'] = ($vn_locale_id) ? $vn_locale_id : $g_ui_locale_id;
 
 						$t_dupe->addAttribute($va_val, $vs_element_code);
