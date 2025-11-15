@@ -211,9 +211,14 @@ class Configuration {
 		$this->ops_config_settings = [];
 
 		# try loading global.conf file
-		$vs_global_path = join("/", $va_config_path_components).'/global.conf';
-		if (file_exists($vs_global_path)) { $this->loadFile($vs_global_path, false); }
-
+		if (sizeof($va_config_file_list) > 0) {
+			foreach($va_config_file_list as $vs_config_file_path) {
+				if(!strlen(trim($vs_config_file_path))) { continue; }
+				$vs_global_path = pathinfo($vs_config_file_path, PATHINFO_DIRNAME).'/global.conf';
+				if (file_exists($vs_global_path)) { $this->loadFile($vs_global_path, false); }
+			}
+		}
+		
 		//
 		// Insert current user locale as constant into configuration.
 		//
