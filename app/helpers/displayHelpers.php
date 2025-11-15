@@ -5944,7 +5944,7 @@ function caFormatPersonName($fname, $lname, $default=null){
  * @throws ApplicationException
  */
 function caEscapeFilenameForDownload(string $filename, ?array $options=null) : string {
-	$v = preg_replace("![\|;\<\>\(\)\$\`\~&\\\\]+!", "_", html_entity_decode($filename));
+	$v = preg_replace("![\|;\<\>\(\)\$\`\~&\\\\,]+!", "_", html_entity_decode($filename));
 	if(preg_match('^\.+$', $filename)) {
 		throw new ApplicationError(_t('Invalid filename'));
 	}
