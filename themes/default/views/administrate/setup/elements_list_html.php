@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2016 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
-
-$va_element_list = $this->getVar('element_list');
-$va_attribute_types = $this->getVar('attribute_types');
+$element_list = $this->getVar('element_list');
+$attribute_types = $this->getVar('attribute_types');
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
@@ -49,10 +48,10 @@ $va_attribute_types = $this->getVar('attribute_types');
 		<thead>
 		<tr>
 			<th>
-				<?php _p('Label'); ?>
+				<?php _p('Name'); ?>
 			</th>
 			<th>
-				<?php _p('Element code'); ?>
+				<?php _p('Code'); ?>
 			</th>
 			<th>
 				<?php _p('Type'); ?>
@@ -68,27 +67,27 @@ $va_attribute_types = $this->getVar('attribute_types');
 		</thead>
 		<tbody>
 <?php
-	foreach($va_element_list as $va_element) {
+	foreach($element_list as $element) {
 ?>
 		<tr>
 			<td>
-				<?= $va_element['display_label']; ?>
+				<?= $element['display_label']; ?>
 			</td>
 			<td>
-				<?= $va_element['element_code']; ?>
+				<?= $element['element_code']; ?>
 			</td>
 			<td>
-				<?= $va_attribute_types[$va_element['datatype']]; ?>
+				<?= $attribute_types[$element['datatype']]; ?>
 			</td>
 			<td>
 <?php
-	if (is_array($va_element['restrictions']) && sizeof($va_element['restrictions'])) {
+	if (is_array($element['restrictions']) && sizeof($element['restrictions'])) {
 ?>
 				<table>
 <?php
-		foreach($va_element['restrictions'] as $vs_table => $va_type_list) {
-			foreach($va_type_list as $vn_type_id => $vs_type_name) {
-				print ucfirst($vs_table)." [{$vs_type_name}]<br/>\n";
+		foreach($element['restrictions'] as $table => $type_list) {
+			foreach($type_list as $type_id => $type_name) {
+				print ucfirst($table)." [{$type_name}]<br/>\n";
 			}
 		}
 ?>
@@ -99,12 +98,12 @@ $va_attribute_types = $this->getVar('attribute_types');
 			</td>
 			<td>
 <?php
-	if (is_array($va_element['ui_counts']) && sizeof($va_element['ui_counts'])) {
+	if (is_array($element['ui_counts']) && sizeof($element['ui_counts'])) {
 ?>
 				<table>
 <?php
-		foreach($va_element['ui_counts'] as $vs_table => $vn_count) {
-			print ucfirst($vs_table)." ({$vn_count})<br/>\n";
+		foreach($element['ui_counts'] as $table => $count) {
+			print ucfirst($table)." ({$count})<br/>\n";
 		}
 ?>
 				</table>
@@ -113,8 +112,8 @@ $va_attribute_types = $this->getVar('attribute_types');
 ?>
 			</td>
 			<td class="listtableEditDelete">
-				<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-				<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			
 			</td>
 		</tr>
