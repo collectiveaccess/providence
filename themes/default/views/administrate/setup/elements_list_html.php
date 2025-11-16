@@ -77,7 +77,7 @@ $attribute_types = $this->getVar('attribute_types');
 				<?= $element['element_code']; ?>
 			</td>
 			<td>
-				<?= $attribute_types[$element['datatype']]; ?>
+				<?= $element['datatype_display']; ?>
 			</td>
 			<td>
 <?php
@@ -112,9 +112,14 @@ $attribute_types = $this->getVar('attribute_types');
 ?>
 			</td>
 			<td class="listtableEditDelete">
+<?php
+	if($element['element_id'] > 0) {
+?>
 				<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-			
+<?php
+	}
+?>			
 			</td>
 		</tr>
 <?php

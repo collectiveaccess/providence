@@ -5315,7 +5315,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
 	 	
 	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
@@ -5326,5 +5326,131 @@ function caFileIsIncludable($ps_file) {
 	 		if(sizeof($types)) { return $types; }
 	 	}
 	 	return null;
-	 }
+	}
+	# ----------------------------------------
+	/**
+	 * Return full list of metadata bundles - bundles that data can be directly entered 
+	 * into, including intrinsic, metadata elements, and labels
+	 *
+	 * @param $options array Options include:
+	 *
+	 * @return array
+	 */
+	function caGetDataBundleList(?array $options=null) : array {
+		$bundles = ca_metadata_elements::getRootElementsAsList(null, null, true, true);
+		
+		$bundles = array_map(function($v) { 
+			$v['datatype_display'] = ca_metadata_elements::dataTypeAsString($v['datatype']);
+			$v['type'] = 'metadata_element';
+			return $v;
+		}, $bundles);
+		
+		$intrinsics_and_labels = caGetBundleList();
+		$bundle_ui_counts = caGetUIUsageCountsForBundles();
+		
+		$labels = $intrinsics = null;
+		foreach($intrinsics_and_labels as $table_num => $tbundles) {
+			$t = Datamodel::getInstance($table_num, true);
+			$table = $t->getProperty('NAME_PLURAL');
+			
+			foreach($tbundles as $bc => $b) {
+				switch($b['type']) {
+					case 'intrinsic':
+						if(is_null($intrinsics[$bc] ?? null)) {
+							$fi = $t->getFieldInfo($bc);
+							$intrinsics[$bc] = [
+								'type' => $b['type'],
+								'display_label' => $b['label'],
+								'restrictions' => [$table => [null => '*']],
+								'ui_counts' => $bundle_ui_counts[$bc] ?? 0,
+								'datatype' => $fi['FIELD_TYPE'],
+								'datatype_display' => _t('Intrinsic (%1)', $t->intrinsicTypeToString($fi['FIELD_TYPE'])),
+								'element_code' => $bc
+							];
+						} else {
+							$intrinsics[$bc]['restrictions'][$table] = [null => '*'];
+						}
+						break;
+					case 'preferred_label':
+					case 'nonpreferred_label':
+						if(is_null($labels[$b['type']]) ?? null) {
+							$labels[$b['type']] = [
+								'type' => $b['type'],
+								'display_label' => $b['label'],
+								'restrictions' => [$table => [null => '*']],
+								'ui_counts' => 0,
+								'datatype' => $fi['FIELD_TYPE'],
+								'datatype_display' => ($b['type'] === 'preferred_label') ? _t('Preferred labels') : _t('Non-preferred labels'),
+								'element_code' => $bc
+							];
+						} else {
+							$labels[$b['type']]['restrictions'][$table] = [null => '*'];
+						}
+						break;
+				}
+			}
+		}
+		$bundles = array_merge($bundles, array_values($labels));
+		$bundles = array_merge($bundles, array_values($intrinsics));
+		return $bundles;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetBundleList(?array $options=null) : array {
+		$t_ui = new ca_editor_uis();
+		$tables = caFilterTableList($t_ui->getFieldInfo('editor_type', 'BOUNDS_CHOICE_LIST'));
+		
+		$bundles = [];
+		foreach($tables as $table_num) {
+			$t = Datamodel::getInstance($table_num, true);
+			$tbundles = $t->getBundleList(['includeBundleInfo' => true]);
+			
+			$bundles[$table_num] = array_filter($tbundles, function($v) {
+				return in_array($v['type'], ['intrinsic', 'preferred_label', 'nonpreferred_label']);
+			});
+		}
+		return $bundles;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns array with information about usage of intrinsics and labels in user interfaces
+	 *
+	 * @param $options array 
+	 * @return array Array of counts. Keys are bundle codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the intrinsic or label is referenced in a user interface for the table.
+	 */
+	function caGetUIUsageCountsForBundles(?array $options=null) : array {
+		$db = new Db();
+		
+		$intrinsics_and_labels = caGetBundleList();
+
+		$qr_use_counts = $db->query("
+			SELECT count(*) c, p.bundle_name, u.editor_type 
+			FROM ca_editor_ui_bundle_placements p 
+			INNER JOIN ca_editor_ui_screens AS s ON s.screen_id = p.screen_id 
+			INNER JOIN ca_editor_uis AS u ON u.ui_id = s.ui_id 
+			GROUP BY 
+				p.bundle_name, u.editor_type
+		");
+		
+		$counts_by_bundle = [];
+		while($qr_use_counts->nextRow()) {
+			$table_num = $qr_use_counts->get('editor_type');
+			$table = Datamodel::getTableName($table_num);
+			foreach($intrinsics_and_labels[$table_num] as $b) {
+			
+			}
+			$row = $qr_use_counts->getRow();
+			
+			$bundle_name = $qr_use_counts->get('bundle_name');
+			if (
+				preg_match("!^({$table}\.{$bundle_name}|{$bundle_name})$!", $bundle_name, $matches)	
+			) {
+				if (!($t_table = Datamodel::getInstanceByTableNum($table_num, true))) { continue; }
+				$counts_by_bundle[$bundle_name][$t_table->getProperty('NAME_PLURAL')] = $qr_use_counts->get('c');
+			}
+		}
+		return $counts_by_bundle;
+	}
 	# ----------------------------------------

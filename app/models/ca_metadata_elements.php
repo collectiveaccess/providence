@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1169,7 +1169,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @return array Array of counts. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
 	 */
 	static public function getUIUsageCounts($pm_element_code_or_id=null) {
-		// Get UI usage counts
 		$vo_db = new Db();
 
 		$vn_element_id = null;
@@ -1203,7 +1202,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_use_counts->nextRow()) {
 			$vn_table_num = $qr_use_counts->get('editor_type');
 			$vs_table = Datamodel::getTableName($vn_table_num);
-			if (preg_match("!^($vs_table\.|ca_attribute_)([A-Za-z0-9_\\-]+)\$!", $qr_use_counts->get('bundle_name'), $va_matches)) {
+			if (preg_match("!^({$vs_table}\.|ca_attribute_)([A-Za-z0-9_\\-]+)\$!", $qr_use_counts->get('bundle_name'), $va_matches)) {
 				if (!($t_table = Datamodel::getInstanceByTableNum($vn_table_num, true))) { continue; }
 				$va_counts_by_attribute[$va_matches[2]][$t_table->getProperty('NAME_PLURAL')] = $qr_use_counts->get('c');
 			}
@@ -1219,7 +1218,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $options array Options include:
 	 *		returnAll = include restriction settings in returned data. [Default is false]
 	 *
-	 * @return array Array of restrictions. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is references in a user interface for the table.
+	 * @return array Array of restrictions. Keys are element_codes, values are arrays keyed on table DISPLAY name (eg. "set items", not "ca_set_items"). Values are the number of times the element is referenced in a user interface for the table.
 	 */
 	static public function getTypeRestrictionsAsList($element_code_or_id=null, array $options=null) : array {
 		$return_all = caGetOption('returnAll', $options, false);
