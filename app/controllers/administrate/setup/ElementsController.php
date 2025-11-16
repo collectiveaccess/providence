@@ -476,12 +476,12 @@ class ElementsController extends BaseEditorController {
  	/**
  	 *
  	 */
- 	private function getElementObject(?bool $set_view_vars=true, ?int $element_id=null) {
- 		if(!$element_id)
+ 	private function getElementObject(?bool $set_view_vars=true, ?int $element_id=null) : ?ca_metadata_elements {
+ 		if(!$element_id) {
  			$element_id = $this->request->getParameter('element_id', pInteger);
 		}
 		$t_element = ca_metadata_elements::getInstance($element_id);
- 		if ($pb_set_view_vars){
+ 		if ($set_view_vars){
  			$this->view->setVar('element_id', $element_id);
  			$this->view->setVar('t_element', $t_element);
  		}
