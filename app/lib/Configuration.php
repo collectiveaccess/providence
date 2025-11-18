@@ -152,7 +152,7 @@ class Configuration {
 				$va_config_file_list[] = $vs_top_level_config_path = $appname_specific_path;
 			}
 		}
-		if(defined('__CA_CONF_DIR__')) { $va_config_file_list[] = __CA_CONF_DIR__.'/'.$vs_config_filename; }
+		if(defined('__CA_CONF_DIR__') && file_exists(__CA_CONF_DIR__.'/'.$vs_config_filename)){ $va_config_file_list[] = __CA_CONF_DIR__.'/'.$vs_config_filename; }
 		$o_config = ($vs_top_level_config_path === $this->ops_config_file_path) ? $this : Configuration::load($vs_top_level_config_path, false, false, true);
 
 		$vs_filename = pathinfo($ps_file_path, PATHINFO_BASENAME);
@@ -171,7 +171,7 @@ class Configuration {
                 if ($i > 10) { break; } // max 10 levels
             }
 		}
-		array_unshift($va_config_file_list, $this->ops_config_file_path);
+		if(file_exists($this->ops_config_file_path)) { array_unshift($va_config_file_list, $this->ops_config_file_path); }
 
 		// try to figure out if we can get it from cache
 		$mtime_keys = [];
@@ -227,16 +227,10 @@ class Configuration {
 		//
 		// Load specified config file(s), overlaying each 
 		//
-		$vs_config_file_path = array_shift($va_config_file_list);
-		if (file_exists($vs_config_file_path) && $this->loadFile($vs_config_file_path, false, false)) {
-			$this->ops_config_settings["ops_config_file_path"] = $vs_config_file_path;
-		}
-		
-		
         if (sizeof($va_config_file_list) > 0) {
-            foreach($va_config_file_list as $vs_config_file_path) {
+            foreach(array_reverse($va_config_file_list) as $vs_config_file_path) {
                 if (file_exists($vs_config_file_path)) {
-                    $this->loadFile($vs_config_file_path, false, false, true);
+                    $this->loadFile($vs_config_file_path, false, false);
                 }
             }
         }
