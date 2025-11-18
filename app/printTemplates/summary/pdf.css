@@ -181,3 +181,10 @@ div.findingAid.data {
 	height:14px;
 	display:inline-block;
 }
+
+.verovio_image img {
+	width:13cm;
+	display:inline-block;
+	margin-top:0.3cm;
+	margin-bottom:-0.8cm;
+}
