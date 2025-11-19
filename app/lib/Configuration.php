@@ -98,7 +98,7 @@ class Configuration {
 	 */
 	static function load($file_path=__CA_APP_CONFIG__, $dont_cache=false, $dont_cache_instance=false, $dont_load_from_default_path=false) {
 		if(!$file_path) { $file_path = __CA_APP_CONFIG__; }
-$dont_cache = true;
+
 		if(!MemoryCache::contains($file_path, 'ConfigurationInstances') || $dont_cache || $dont_cache_instance) {
 			MemoryCache::save($file_path, new Configuration($file_path, true, $dont_cache, $dont_load_from_default_path), 'ConfigurationInstances');
 		}
