@@ -174,9 +174,9 @@ class Configuration {
             }
 		}
 		if(file_exists($this->ops_config_file_path) && !in_array($this->ops_config_file_path, $config_file_list, true)) { 
-			array_unshift($config_file_list, $this->ops_config_file_path); 
+			array_push($config_file_list, $this->ops_config_file_path); 
 		}
-
+		
 		// try to figure out if we can get it from cache
 		$mtime_keys = [];
 		if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$dont_cache) {
