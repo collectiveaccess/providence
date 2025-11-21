@@ -509,7 +509,7 @@ print $vs_control_box = caFormControlBox(
 										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
 										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
 										?></td>
-									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?= _t('Set %1 identifier to ', caGetTableDisplayName('ca_object_representations', false)).$t_rep->htmlFormElement('idno', '^ELEMENT', ['request' => $this->request]); ?></td>
+									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?= _t('Set %1 identifier to %2', caGetTableDisplayName('ca_object_representations', false), $t_rep->htmlFormElement('idno', '^ELEMENT', ['request' => $this->request])); ?></td>
 								</tr>
 <?php
 	if(!$this->getVar('representation_idno_is_serial')) {

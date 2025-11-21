@@ -736,7 +736,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Static
 	# ------------------------------------------------------
 	public static function getAttributeTypes() {
-		$o_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf");
+		$o_types = Configuration::load('attribute_types.conf');
 
 		$va_types = $o_types->getList('types');
 		foreach($va_types as $vn_i => $vs_typename) {
@@ -1317,7 +1317,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			return MemoryCache::fetch($data_type, 'ElementDataTypeStrings');
 		}
 		
-		$attr_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf")->get('types');
+		$attr_types = Configuration::load('attribute_types.conf')->get('types');
 
 		$attr_string = $attr_types[$data_type] ?? null;
 		MemoryCache::save($data_type, $attr_string, 'ElementDataTypeStrings');
@@ -1943,7 +1943,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsAsHTMLFormElement($pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 
-		$o_presets = Configuration::load(__CA_CONF_DIR__."/attribute_presets.conf");
+		$o_presets = Configuration::load('attribute_presets.conf');
 
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$vs_form_element_name = caGetOption('name', $pa_options, "{fieldNamePrefix}_presets_{n}");
@@ -1974,7 +1974,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsJavascript($ps_field_prefix, $pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 
-		$o_presets = Configuration::load(__CA_CONF_DIR__."/attribute_presets.conf");
+		$o_presets = Configuration::load('attribute_presets.conf');
 
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$va_elements = $this->getElementsInSet();

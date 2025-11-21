@@ -49,7 +49,7 @@ abstract class BaseRepresentationAnnotationCoder extends BaseObject implements I
 	public function __construct() {
 		parent::__construct();
 		$this->opo_config = Configuration::load();
-		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+		$this->opo_type_config = Configuration::load('annotation_types.conf');
 		
 		$this->opa_type_info = $this->opo_type_config->getAssoc('types');
 		$this->opa_property_values = array();

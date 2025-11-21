@@ -29,8 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
+require_once(__CA_LIB_DIR__."/CookieOptionsManager.php");
  
- require_once(__CA_LIB_DIR__."/CookieOptionsManager.php");
   /**
    *
    */
@@ -73,7 +73,7 @@
 					'expires' => -1,
 					'path' => $cookiepath,
 					'domain' => null, 
-					'secure' => true, 
+					'secure' => $secure, 
 					'httponly' => true, 
 					'samesite' => 'Strict'
 				]);
@@ -83,7 +83,6 @@
 		
         // If the locale is valid, locale is set
         $_locale = new Zend_Locale($ps_locale);
-      //  Zend_Registry::set('Zend_Locale', $_locale);
             
         if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
             Zend_Translate::setCache($o_cache);
@@ -109,7 +108,7 @@
 						'expires' => time() + Session::lifetime(),
 						'path' => $cookiepath,
 						'domain' => null, 
-						'secure' => true, 
+						'secure' => $secure, 
 						'httponly' => true, 
 						'samesite' => 'Strict'
 					]);

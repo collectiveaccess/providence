@@ -46,7 +46,7 @@ class BaseRepresentationAnnotationSearchResult extends BaseSearchResult {
 	 */
 	public function __construct() {
  		$o_config = Configuration::load();
- 		$this->type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+ 		$this->type_config = Configuration::load('annotation_types.conf');
  		
 		parent::__construct();
 	}
