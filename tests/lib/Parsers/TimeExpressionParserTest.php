@@ -2370,4 +2370,335 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($o_tep->getText(), "December 1 – 7 2022");
 		
 	}
+
+	function testOrdinalSuffix(){
+		$o_tep = new TimeExpressionParser();
+
+		/* use reflection to access private fct*/
+		$refClass = new ReflectionClass($o_tep);
+		$method = $refClass->getMethod('getOrdinalSuffix');
+		$method->setAccessible(true);
+
+		$o_tep->setLanguage("nl_NL");
+		$this->assertEquals($method->invoke($o_tep, 0), 'de');
+		$this->assertEquals($method->invoke($o_tep, 1), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 2), 'de');
+		$this->assertEquals($method->invoke($o_tep, 3), 'de');
+		$this->assertEquals($method->invoke($o_tep, 4), 'de');
+		$this->assertEquals($method->invoke($o_tep, 5), 'de');
+		$this->assertEquals($method->invoke($o_tep, 6), 'de');
+		$this->assertEquals($method->invoke($o_tep, 7), 'de');
+		$this->assertEquals($method->invoke($o_tep, 8), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 9), 'de');
+		$this->assertEquals($method->invoke($o_tep, 10), 'de');
+		$this->assertEquals($method->invoke($o_tep, 11), 'de');
+		$this->assertEquals($method->invoke($o_tep, 12), 'de');
+		$this->assertEquals($method->invoke($o_tep, 13), 'de');
+		$this->assertEquals($method->invoke($o_tep, 14), 'de');
+		$this->assertEquals($method->invoke($o_tep, 15), 'de');
+		$this->assertEquals($method->invoke($o_tep, 16), 'de');
+		$this->assertEquals($method->invoke($o_tep, 17), 'de');
+		$this->assertEquals($method->invoke($o_tep, 18), 'de');
+		$this->assertEquals($method->invoke($o_tep, 19), 'de');
+		$this->assertEquals($method->invoke($o_tep, 20), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 21), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 22), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 23), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 24), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 28), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 100), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 101), 'ste');// actually can be both -ste and -de :)
+		$this->assertEquals($method->invoke($o_tep, 102), 'de');
+		$this->assertEquals($method->invoke($o_tep, 103), 'de');
+		$this->assertEquals($method->invoke($o_tep, 104), 'de');
+		$this->assertEquals($method->invoke($o_tep, 108), 'ste');
+		$this->assertEquals($method->invoke($o_tep, 111), 'de');
+		$this->assertEquals($method->invoke($o_tep, 112), 'de');
+		$this->assertEquals($method->invoke($o_tep, 113), 'de');
+		$this->assertEquals($method->invoke($o_tep, 118), 'de');
+
+		$o_tep->setLanguage("en_US");// so as MA, AZ, GB, UA, IL, HU, BR, PT
+		$this->assertEquals($method->invoke($o_tep, 0), 'th');
+		$this->assertEquals($method->invoke($o_tep, 1), 'st');
+		$this->assertEquals($method->invoke($o_tep, 2), 'nd');
+		$this->assertEquals($method->invoke($o_tep, 3), 'rd');
+		$this->assertEquals($method->invoke($o_tep, 4), 'th');
+		$this->assertEquals($method->invoke($o_tep, 5), 'th');
+		$this->assertEquals($method->invoke($o_tep, 6), 'th');
+		$this->assertEquals($method->invoke($o_tep, 7), 'th');
+		$this->assertEquals($method->invoke($o_tep, 8), 'th');
+		$this->assertEquals($method->invoke($o_tep, 9), 'th');
+		$this->assertEquals($method->invoke($o_tep, 10), 'th');
+		$this->assertEquals($method->invoke($o_tep, 11), 'th');
+		$this->assertEquals($method->invoke($o_tep, 12), 'th');
+		$this->assertEquals($method->invoke($o_tep, 13), 'th');
+		$this->assertEquals($method->invoke($o_tep, 14), 'th');
+		$this->assertEquals($method->invoke($o_tep, 15), 'th');
+		$this->assertEquals($method->invoke($o_tep, 16), 'th');
+		$this->assertEquals($method->invoke($o_tep, 17), 'th');
+		$this->assertEquals($method->invoke($o_tep, 18), 'th');
+		$this->assertEquals($method->invoke($o_tep, 19), 'th');
+		$this->assertEquals($method->invoke($o_tep, 20), 'th');
+		$this->assertEquals($method->invoke($o_tep, 21), 'st');
+		$this->assertEquals($method->invoke($o_tep, 22), 'nd');
+		$this->assertEquals($method->invoke($o_tep, 23), 'rd');
+		$this->assertEquals($method->invoke($o_tep, 24), 'th');
+		$this->assertEquals($method->invoke($o_tep, 28), 'th');
+		$this->assertEquals($method->invoke($o_tep, 100), 'th');
+		$this->assertEquals($method->invoke($o_tep, 101), 'st');
+		$this->assertEquals($method->invoke($o_tep, 102), 'nd');
+		$this->assertEquals($method->invoke($o_tep, 103), 'rd');
+		$this->assertEquals($method->invoke($o_tep, 104), 'th');
+		$this->assertEquals($method->invoke($o_tep, 108), 'th');
+		$this->assertEquals($method->invoke($o_tep, 111), 'th');
+		$this->assertEquals($method->invoke($o_tep, 112), 'th');
+		$this->assertEquals($method->invoke($o_tep, 113), 'th');
+		$this->assertEquals($method->invoke($o_tep, 118), 'th');
+
+		$o_tep->setLanguage("de_DE");// so as AT, CZ, RS - RS has many config for just all . maybe simplify
+		$this->assertEquals($method->invoke($o_tep, 0), '.');
+		$this->assertEquals($method->invoke($o_tep, 1), '.');
+		$this->assertEquals($method->invoke($o_tep, 2), '.');
+		$this->assertEquals($method->invoke($o_tep, 3), '.');
+		$this->assertEquals($method->invoke($o_tep, 4), '.');
+		$this->assertEquals($method->invoke($o_tep, 5), '.');
+		$this->assertEquals($method->invoke($o_tep, 6), '.');
+		$this->assertEquals($method->invoke($o_tep, 7), '.');
+		$this->assertEquals($method->invoke($o_tep, 8), '.');
+		$this->assertEquals($method->invoke($o_tep, 9), '.');
+		$this->assertEquals($method->invoke($o_tep, 10), '.');
+		$this->assertEquals($method->invoke($o_tep, 11), '.');
+		$this->assertEquals($method->invoke($o_tep, 12), '.');
+		$this->assertEquals($method->invoke($o_tep, 13), '.');
+		$this->assertEquals($method->invoke($o_tep, 14), '.');
+		$this->assertEquals($method->invoke($o_tep, 15), '.');
+		$this->assertEquals($method->invoke($o_tep, 16), '.');
+		$this->assertEquals($method->invoke($o_tep, 17), '.');
+		$this->assertEquals($method->invoke($o_tep, 18), '.');
+		$this->assertEquals($method->invoke($o_tep, 19), '.');
+		$this->assertEquals($method->invoke($o_tep, 20), '.');
+		$this->assertEquals($method->invoke($o_tep, 21), '.');
+		$this->assertEquals($method->invoke($o_tep, 22), '.');
+		$this->assertEquals($method->invoke($o_tep, 23), '.');
+		$this->assertEquals($method->invoke($o_tep, 24), '.');
+		$this->assertEquals($method->invoke($o_tep, 28), '.');
+		$this->assertEquals($method->invoke($o_tep, 100), '.');
+		$this->assertEquals($method->invoke($o_tep, 101), '.');
+		$this->assertEquals($method->invoke($o_tep, 102), '.');
+		$this->assertEquals($method->invoke($o_tep, 103), '.');
+		$this->assertEquals($method->invoke($o_tep, 104), '.');
+		$this->assertEquals($method->invoke($o_tep, 108), '.');
+		$this->assertEquals($method->invoke($o_tep, 111), '.');
+		$this->assertEquals($method->invoke($o_tep, 112), '.');
+		$this->assertEquals($method->invoke($o_tep, 113), '.');
+		$this->assertEquals($method->invoke($o_tep, 118), '.');
+
+		$o_tep->setLanguage("el_GR");/* so as AT, CZ */
+		/*
+		commented out the recurrent 1,2 tests since the current configuration in Greek seems to not reflect 0,1,2 rather their gendered male, neutral, female versions
+		they should probably just stick to one default and remove ordinalSuffixes = [ος, ο, η] ??
+		*/
+		$this->assertEquals($method->invoke($o_tep, 0), 'ος');
+		//$this->assertEquals($method->invoke($o_tep, 1), '.');
+		//$this->assertEquals($method->invoke($o_tep, 2), '.');
+		$this->assertEquals($method->invoke($o_tep, 3), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 4), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 5), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 6), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 7), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 8), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 9), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 10), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 11), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 12), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 13), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 14), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 15), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 16), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 17), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 18), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 19), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 20), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 21), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 22), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 23), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 24), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 28), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 100), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 101), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 102), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 103), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 104), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 108), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 111), 'ος');
+		// $this->assertEquals($method->invoke($o_tep, 112), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 113), 'ος');
+		$this->assertEquals($method->invoke($o_tep, 118), 'ος');
+
+
+
+		$o_tep->setLanguage("es_ES");/* MX, EU - IT has some character for zero vs the rest */
+		$this->assertEquals($method->invoke($o_tep, 0), '');
+		$this->assertEquals($method->invoke($o_tep, 1), '');
+		$this->assertEquals($method->invoke($o_tep, 2), '');
+		$this->assertEquals($method->invoke($o_tep, 3), '');
+		$this->assertEquals($method->invoke($o_tep, 4), '');
+		$this->assertEquals($method->invoke($o_tep, 5), '');
+		$this->assertEquals($method->invoke($o_tep, 6), '');
+		$this->assertEquals($method->invoke($o_tep, 7), '');
+		$this->assertEquals($method->invoke($o_tep, 8), '');
+		$this->assertEquals($method->invoke($o_tep, 9), '');
+		$this->assertEquals($method->invoke($o_tep, 10), '');
+		$this->assertEquals($method->invoke($o_tep, 11), '');
+		$this->assertEquals($method->invoke($o_tep, 12), '');
+		$this->assertEquals($method->invoke($o_tep, 13), '');
+		$this->assertEquals($method->invoke($o_tep, 14), '');
+		$this->assertEquals($method->invoke($o_tep, 15), '');
+		$this->assertEquals($method->invoke($o_tep, 16), '');
+		$this->assertEquals($method->invoke($o_tep, 17), '');
+		$this->assertEquals($method->invoke($o_tep, 18), '');
+		$this->assertEquals($method->invoke($o_tep, 19), '');
+		$this->assertEquals($method->invoke($o_tep, 20), '');
+		$this->assertEquals($method->invoke($o_tep, 21), '');
+		$this->assertEquals($method->invoke($o_tep, 22), '');
+		$this->assertEquals($method->invoke($o_tep, 23), '');
+		$this->assertEquals($method->invoke($o_tep, 24), '');
+		$this->assertEquals($method->invoke($o_tep, 28), '');
+		$this->assertEquals($method->invoke($o_tep, 100), '');
+		$this->assertEquals($method->invoke($o_tep, 101), '');
+		$this->assertEquals($method->invoke($o_tep, 102), '');
+		$this->assertEquals($method->invoke($o_tep, 103), '');
+		$this->assertEquals($method->invoke($o_tep, 104), '');
+		$this->assertEquals($method->invoke($o_tep, 108), '');
+		$this->assertEquals($method->invoke($o_tep, 111), '');
+		$this->assertEquals($method->invoke($o_tep, 112), '');
+		$this->assertEquals($method->invoke($o_tep, 113), '');
+		$this->assertEquals($method->invoke($o_tep, 118), '');
+
+		$o_tep->setLanguage("fr_FR");/* */
+		/*
+		could then shorten their rules ordinalSuffixes = [th, er] ?? ungendered as well premier/première
+		configuration has problems for recurring 1:er, since onzième, vingt-et-uneième,... should be handled in some sort of recurring exceptions :p
+		*/
+		$this->assertEquals($method->invoke($o_tep, 0), 'e');
+		$this->assertEquals($method->invoke($o_tep, 1), 'er');
+		$this->assertEquals($method->invoke($o_tep, 2), 'e');
+		$this->assertEquals($method->invoke($o_tep, 3), 'e');
+		$this->assertEquals($method->invoke($o_tep, 4), 'e');
+		$this->assertEquals($method->invoke($o_tep, 5), 'e');
+		$this->assertEquals($method->invoke($o_tep, 6), 'e');
+		$this->assertEquals($method->invoke($o_tep, 7), 'e');
+		$this->assertEquals($method->invoke($o_tep, 8), 'e');
+		$this->assertEquals($method->invoke($o_tep, 9), 'e');
+		$this->assertEquals($method->invoke($o_tep, 10), 'e');
+		// $this->assertEquals($method->invoke($o_tep, 11), 'e');
+		$this->assertEquals($method->invoke($o_tep, 12), 'e');
+		$this->assertEquals($method->invoke($o_tep, 13), 'e');
+		$this->assertEquals($method->invoke($o_tep, 14), 'e');
+		$this->assertEquals($method->invoke($o_tep, 15), 'e');
+		$this->assertEquals($method->invoke($o_tep, 16), 'e');
+		$this->assertEquals($method->invoke($o_tep, 17), 'e');
+		$this->assertEquals($method->invoke($o_tep, 18), 'e');
+		$this->assertEquals($method->invoke($o_tep, 19), 'e');
+		$this->assertEquals($method->invoke($o_tep, 20), 'e');
+		// $this->assertEquals($method->invoke($o_tep, 21), 'e');
+		$this->assertEquals($method->invoke($o_tep, 22), 'e');
+		$this->assertEquals($method->invoke($o_tep, 23), 'e');
+		$this->assertEquals($method->invoke($o_tep, 24), 'e');
+		$this->assertEquals($method->invoke($o_tep, 28), 'e');
+		$this->assertEquals($method->invoke($o_tep, 100), 'e');
+		$this->assertEquals($method->invoke($o_tep, 101), 'er');
+		$this->assertEquals($method->invoke($o_tep, 102), 'e');
+		$this->assertEquals($method->invoke($o_tep, 103), 'e');
+		$this->assertEquals($method->invoke($o_tep, 104), 'e');
+		$this->assertEquals($method->invoke($o_tep, 108), 'e');
+		// $this->assertEquals($method->invoke($o_tep, 111), 'e');
+		$this->assertEquals($method->invoke($o_tep, 112), 'e');
+		$this->assertEquals($method->invoke($o_tep, 113), 'e');
+		$this->assertEquals($method->invoke($o_tep, 118), 'e');
+
+		$o_tep->setLanguage("pl_PL");/* */
+		$this->assertEquals($method->invoke($o_tep, 0), '-wy');
+		$this->assertEquals($method->invoke($o_tep, 1), '-szy');
+		$this->assertEquals($method->invoke($o_tep, 2), '-gi');
+		$this->assertEquals($method->invoke($o_tep, 3), '-ci');
+		$this->assertEquals($method->invoke($o_tep, 4), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 5), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 6), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 7), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 8), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 9), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 10), '-wy');
+		$this->assertEquals($method->invoke($o_tep, 11), '-szy');
+		$this->assertEquals($method->invoke($o_tep, 12), '-gi');
+		$this->assertEquals($method->invoke($o_tep, 13), '-ci');
+		$this->assertEquals($method->invoke($o_tep, 14), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 15), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 16), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 17), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 18), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 19), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 20), '-wy');
+		$this->assertEquals($method->invoke($o_tep, 21), '-szy');
+		$this->assertEquals($method->invoke($o_tep, 22), '-gi');
+		$this->assertEquals($method->invoke($o_tep, 23), '-ci');
+		$this->assertEquals($method->invoke($o_tep, 24), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 25), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 26), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 27), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 28), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 29), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 100), '-wy');
+		$this->assertEquals($method->invoke($o_tep, 101), '-szy');
+		$this->assertEquals($method->invoke($o_tep, 102), '-gi');
+		$this->assertEquals($method->invoke($o_tep, 103), '-ci');
+		$this->assertEquals($method->invoke($o_tep, 104), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 105), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 106), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 107), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 108), '-ty');
+		$this->assertEquals($method->invoke($o_tep, 109), '-ty');
+
+		$o_tep->setLanguage("sv_SE");/* config could simplify ? */
+		$this->assertEquals($method->invoke($o_tep, 0), ':a');
+		$this->assertEquals($method->invoke($o_tep, 1), ':a');
+		$this->assertEquals($method->invoke($o_tep, 2), ':e');
+		$this->assertEquals($method->invoke($o_tep, 3), ':e');
+		$this->assertEquals($method->invoke($o_tep, 4), ':e');
+		$this->assertEquals($method->invoke($o_tep, 5), ':e');
+		$this->assertEquals($method->invoke($o_tep, 6), ':e');
+		$this->assertEquals($method->invoke($o_tep, 7), ':e');
+		$this->assertEquals($method->invoke($o_tep, 8), ':e');
+		$this->assertEquals($method->invoke($o_tep, 9), ':e');
+		$this->assertEquals($method->invoke($o_tep, 10), ':a');
+		$this->assertEquals($method->invoke($o_tep, 11), ':a');
+		$this->assertEquals($method->invoke($o_tep, 12), ':e');
+		$this->assertEquals($method->invoke($o_tep, 13), ':e');
+		$this->assertEquals($method->invoke($o_tep, 14), ':e');
+		$this->assertEquals($method->invoke($o_tep, 15), ':e');
+		$this->assertEquals($method->invoke($o_tep, 16), ':e');
+		$this->assertEquals($method->invoke($o_tep, 17), ':e');
+		$this->assertEquals($method->invoke($o_tep, 18), ':e');
+		$this->assertEquals($method->invoke($o_tep, 19), ':e');
+		$this->assertEquals($method->invoke($o_tep, 20), ':a');
+		$this->assertEquals($method->invoke($o_tep, 21), ':a');
+		$this->assertEquals($method->invoke($o_tep, 22), ':e');
+		$this->assertEquals($method->invoke($o_tep, 23), ':e');
+		$this->assertEquals($method->invoke($o_tep, 24), ':e');
+		$this->assertEquals($method->invoke($o_tep, 25), ':e');
+		$this->assertEquals($method->invoke($o_tep, 26), ':e');
+		$this->assertEquals($method->invoke($o_tep, 27), ':e');
+		$this->assertEquals($method->invoke($o_tep, 28), ':e');
+		$this->assertEquals($method->invoke($o_tep, 29), ':e');
+		$this->assertEquals($method->invoke($o_tep, 100), ':a');
+		$this->assertEquals($method->invoke($o_tep, 101), ':a');
+		$this->assertEquals($method->invoke($o_tep, 102), ':e');
+		$this->assertEquals($method->invoke($o_tep, 103), ':e');
+		$this->assertEquals($method->invoke($o_tep, 104), ':e');
+		$this->assertEquals($method->invoke($o_tep, 105), ':e');
+		$this->assertEquals($method->invoke($o_tep, 106), ':e');
+		$this->assertEquals($method->invoke($o_tep, 107), ':e');
+		$this->assertEquals($method->invoke($o_tep, 108), ':e');
+		$this->assertEquals($method->invoke($o_tep, 109), ':e');
+	}
 }
