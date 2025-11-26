@@ -1369,7 +1369,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
 		$types = self::getAttributeTypes();
 	
-		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true))) {
+		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], false))) {
 			$s = $value->sortField();
 			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
 			return $s;
