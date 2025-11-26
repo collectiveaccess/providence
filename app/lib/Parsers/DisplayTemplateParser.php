@@ -166,12 +166,6 @@ class DisplayTemplateParser {
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		unset($pa_options['returnAsArray']);
 	
-		if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
-			$pa_sort = explode(";", $pa_sort);
-		}
-		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
-		if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
-	
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
