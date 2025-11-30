@@ -4354,7 +4354,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		global $AUTH_CURRENT_USER_ID;
 		
 		$va_media_info = $this->getMediaInfo($ps_field,$ps_version);
-		if (!$va_media_info) { return true; }
+		if (!is_array($va_media_info)) { return true; }
 
 		$vs_volume = $va_media_info["VOLUME"];
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($vs_volume);
