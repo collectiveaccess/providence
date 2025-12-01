@@ -41,7 +41,7 @@ abstract class BaseNomismaLODServicePlugin extends BaseInformationServicePlugin 
 	public function __construct() {
 		parent::__construct(); // sets app.conf
 
-		$this->opo_linked_data_conf = Configuration::load($this->opo_config->get('linked_data_config'));
+		$this->opo_linked_data_conf = Configuration::load('linked_data.conf');
 	}
 	# ------------------------------------------------
 	abstract protected function getConfigName();

@@ -1475,6 +1475,19 @@ function caEditorInspector($view, $options=null) {
 			$msg = $autodelete_info['message'] ?? null;
 			$more_info .= "<div id='inspectorAutoDeleteMessage' class='inspectorAutodeleteSet'>{$msg}</div>\n";
 		}
+				
+		$set_access_for_related_tables = $view->request->config->getAssoc('set_access_for_related_tables');
+		if($view->request->user->canDoAction("can_set_access_for_related_{$table_name}") && is_array($set_access_for_related_tables) && is_array($set_access_for_related_tables[$table_name]) && sizeof($set_access_for_related_tables[$table_name])) {
+			$set_access_for_related_tables = $set_access_for_related_tables[$table_name];
+			$tools[] = "<div id='inspectorSetAccessForRelated' class='inspectorActionButton'><div id='inspectorSetAccessForRelatedButon'><a href='#' onclick='caSetAccessForRelatedPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_SET_ACCESS__, '20px', array('title' => _t('Set access for related')))."</a></div></div>\n";
+
+			$set_access_for_related_tables_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+			$set_access_for_related_tables_view->setVar('t_item', $t_item);
+			$set_access_for_related_tables_view->setVar('targets', $set_access_for_related_tables);
+
+			FooterManager::add($set_access_for_related_tables_view->render("set_access_for_related_html.php"));
+			TooltipManager::add("#inspectorSetAccessForRelated", _t('Set Access For Related'));
+		}
 		
 		$creation = $t_item->getCreationTimestamp();
 		$last_change = $t_item->getLastChangeTimestamp();
@@ -2551,7 +2564,7 @@ function caGetTableDisplayName($pm_table_name_or_num, $pb_use_plural=true) {
  */
 function caGetMediaDisplayConfig() {
 	$o_config = Configuration::load();
-	return Configuration::load(__CA_APP_DIR__.'/conf/media_display.conf');
+	return Configuration::load('media_display.conf');
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -2740,7 +2753,7 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 	$force_english_units = caGetOption('forceEnglishUnits', $pa_options, null, ['validValues' => ['ft', 'in']]);
 	$force_metric_units = caGetOption('forceMetricUnits', $pa_options, null, ['validValues' => ['m', 'cm', 'mm']]);
 
-	$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+	$o_dimensions_config = Configuration::load('dimensions.conf');
 	$va_add_periods_list = $o_dimensions_config->get('add_period_after_units');
 
 	$vn_precision = ini_get('precision');
@@ -2885,7 +2898,9 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 					$ps_value = mb_substr($ps_value, 0, (int)$va_tmp[1]); 
 					if($ellipsis) { $ps_value .= '...'; }
 				}
-				
+				break;
+			case 'STRIPEXTENSION':
+				$ps_value = preg_replace("!\.[A-Z0-9]+$!i", "", $ps_value);
 				break;
 		}
 	}
@@ -5929,7 +5944,7 @@ function caFormatPersonName($fname, $lname, $default=null){
  * @throws ApplicationException
  */
 function caEscapeFilenameForDownload(string $filename, ?array $options=null) : string {
-	$v = preg_replace("![\|;\<\>\(\)\$\`\~&\\\\]+!", "_", html_entity_decode($filename));
+	$v = preg_replace("![\|;\<\>\(\)\$\`\~&\\\\,]+!", "_", html_entity_decode($filename));
 	if(preg_match('^\.+$', $filename)) {
 		throw new ApplicationError(_t('Invalid filename'));
 	}

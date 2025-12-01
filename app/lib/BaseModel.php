@@ -407,7 +407,7 @@ class BaseModel extends BaseObject {
 		$this->field_conflicts = array();
 
 		$this->_CONFIG = Configuration::load();
-		$this->_TRANSLATIONS = Configuration::load(__CA_CONF_DIR__."/translations.conf");
+		$this->_TRANSLATIONS = Configuration::load('translations.conf');
 		$this->_FILES_CLEAR = array();
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();
@@ -2909,6 +2909,7 @@ class BaseModel extends BaseObject {
 	 * @return bool success state
 	 */
 	public function update($pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		// Clear any cached display template values for this record
@@ -4353,7 +4354,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		global $AUTH_CURRENT_USER_ID;
 		
 		$va_media_info = $this->getMediaInfo($ps_field,$ps_version);
-		if (!$va_media_info) { return true; }
+		if (!is_array($va_media_info)) { return true; }
 
 		$vs_volume = $va_media_info["VOLUME"];
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($vs_volume);
@@ -5831,6 +5832,15 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			}
 		}
 		return $vs_sql;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Get internal file data prior to save
+	 *
+	 * @return array
+	 */
+	protected function getSetFileData() : array {
+		return $this->_SET_FILES ?? [];
 	}
 	# --------------------------------------------------------------------------------
 	# --- Utilities
@@ -9056,7 +9066,7 @@ $pa_options["display_form_field_tips"] = true;
 								// if 'LIST' is set try to stock over choice list with the contents of the list
 								if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 									// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
-									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('key' => 'item_value', 'value' => $vm_raw_field_value, 'nullOption' => $pa_options['nullOption'], 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
+									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('nullOption' => $pa_options['nullOption'] ?? null, 'width' => $pa_options['width'] ?? null, 'key' => 'item_value', 'value' => $vm_raw_field_value, 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
 								}
 								if (!$vs_element && (isset($va_attr["BOUNDS_CHOICE_LIST"]) && is_array($va_attr["BOUNDS_CHOICE_LIST"]))) {
 	
@@ -9401,7 +9411,7 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_element = '<input type="password" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value).'" size="'.$vn_display_width.'" '.$vs_max_length.' '.$vs_js.' autocomplete="off" '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')." ".($pa_options['placeholder'] ? "placeholder='".htmlentities($pa_options['placeholder'])."'" : "")."/>";
 					
 					if(caGetOption('includeVisibilityButton', $pa_options, false)) {
-						$vs_element .= "<button id='".$pa_options["id"]."View' class='formPasswordView'>".caNavIcon(__CA_NAV_ICON_WATCH__, '16px', [])."</button>";
+						$vs_element .= "<button type='button' id='".$pa_options["id"]."View' class='formPasswordView'>".caNavIcon(__CA_NAV_ICON_WATCH__, '16px', [])."</button>";
 						$vs_element .= "<script type='text/javascript'>
 							jQuery(document).ready(function() {
 								jQuery('#".($pa_options['id'].'View')."').on('click', function(e) {

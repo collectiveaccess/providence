@@ -166,12 +166,6 @@ class DisplayTemplateParser {
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		unset($pa_options['returnAsArray']);
 	
-		if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
-			$pa_sort = explode(";", $pa_sort);
-		}
-		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
-		if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
-	
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
@@ -1807,7 +1801,7 @@ class DisplayTemplateParser {
 		$o_doc = str_get_dom($ps_template);	
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
     
-        $o_dim_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+        $o_dim_config = Configuration::load('dimensions.conf');
         if($o_dim_config->get('omit_repeating_units_for_measurements_in_templates')) {
 		    $pa_options['dimensionsUnitMap'] = self::createDimensionsUnitMap($ps_template);    // list of dimensional units used by tags; needed to support convoluted function to omit repeating units on quantities
 		}
@@ -1845,7 +1839,7 @@ class DisplayTemplateParser {
 			switch($vs_tag = strtolower($o_node->tag)) {
 				case 'case':
 					if (!$pb_is_case) {
-						$vs_acc .= DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['isCase' => true]));	
+						$vs_acc .= trim(DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['isCase' => true])));	
 					}
 					break;
 				case 'if':
@@ -2019,7 +2013,7 @@ class DisplayTemplateParser {
         
 	    $va_val_list = $va_acc = [];
 	    
-	    $o_dim_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+	    $o_dim_config = Configuration::load('dimensions.conf');
 	    $vb_omit_repeating_units_for_measurements_in_templates = (bool)$o_dim_config->get('omit_repeating_units_for_measurements_in_templates');
 	    
 	    $vs_last_units = null;

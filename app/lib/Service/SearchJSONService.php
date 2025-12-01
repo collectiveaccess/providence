@@ -100,7 +100,7 @@ class SearchJSONService extends BaseJSONService {
 			return false;
 		}
 		
-		$o_service_config = Configuration::load(__CA_APP_DIR__."/conf/services.conf");
+		$o_service_config = Configuration::load('services.conf');
 		
 		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 

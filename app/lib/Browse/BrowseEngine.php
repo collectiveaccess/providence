@@ -153,7 +153,7 @@ class BrowseEngine extends BaseFindEngine {
 		}
 
 		$this->opo_config = Configuration::load();
-		$this->opo_ca_browse_config = Configuration::load(__CA_CONF_DIR__.'/browse.conf');
+		$this->opo_ca_browse_config = Configuration::load('browse.conf');
 		$this->opa_browse_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
 
 		// Add "virtual" search facet - allows seeding of a browse with a search

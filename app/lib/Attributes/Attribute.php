@@ -221,7 +221,7 @@ class Attribute {
 	static public function getAttributeTypes() {
 		if (Attribute::$s_attribute_types) { return Attribute::$s_attribute_types; }
 		
-		$o_attribute_types = \Configuration::load(__CA_CONF_DIR__.'/attribute_types.conf');
+		$o_attribute_types = \Configuration::load('attribute_types.conf');
 		return Attribute::$s_attribute_types = $o_attribute_types->getList('types');
 	}
 	# ------------------------------------------------------------------

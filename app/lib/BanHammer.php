@@ -42,7 +42,7 @@ class BanHammer {
 	 *
 	 */
 	static public function init() {
-		if(!self::$config) { self::$config = Configuration::load(__CA_CONF_DIR__.'/ban_hammer.conf'); }
+		if(!self::$config) { self::$config = Configuration::load('ban_hammer.conf'); }
 		return true;
 	}
 	# ------------------------------------------------------

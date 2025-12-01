@@ -47,7 +47,7 @@ function caGetPawtucketLightboxDownloadVersions(string $table, ?array $options=n
 		$config = Configuration::load();
 		$lightbox_options = $config->get('pawtucket_lightbox_options') ?? [];
 	} else {
-		$config = Configuration::load(__CA_APP_DIR__.'/conf/lightbox.conf');
+		$config = Configuration::load('lightbox.conf');
 		$lightbox_options = $config->get('lightbox_options');
 	}
 	

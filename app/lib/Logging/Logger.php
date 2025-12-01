@@ -92,12 +92,12 @@ class Logger {
 		
 		switch($ps_log_type) {
 			case 'replication':
-				$o_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
+				$o_replication_conf = Configuration::load('replication.conf');
 				$vs_log = $o_replication_conf->get('replication_log')."_".__CA_APP_NAME__;
 				$vs_app = 'CollectiveAccess Replicator';
 				break;
 			case 'replication_debug':
-				$o_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
+				$o_replication_conf = Configuration::load('replication.conf');
 				$vs_log = $o_replication_conf->get('replication_debug_log')."_".__CA_APP_NAME__;
 				$vs_app = 'CollectiveAccess Replicator';
 				break;

@@ -796,7 +796,7 @@ class BaseFindController extends ActionController {
 	 */ 
 	public function DownloadMedia() {
 		if ($t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true)) {
-			$o_md_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
+			$o_md_conf = Configuration::load('media_metadata');
 
 			$id_list = null;	// list of ids to pull media for
 			if (($ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
