@@ -6473,4 +6473,58 @@ function caAllowEditingForFirstLevelOfHierarchyBrowser(BaseModel $t_subject) : b
 	return true;
 }
 # ------------------------------------------------------------------
+/**
+ * Normalize capitalization of bundle labels according to bundle_label_normalization setting in app.conf
+ *
+ * @param string $label 
+ * @param array $options Options include:
+ *		normalize = Override app.conf bundle_label_normalization setting. Default is null - use app.conf setting. Valid values are:
+ *			uc (force to upper case)
+ *			lc (force to lower case)
+ *			ucinitial (force to lower case with capitalization of initial letter)
+ *			ucfirst (force to lower case with capitalization of each word)
+ *			none (return label as-is)
+ *
+ */
+function caNormalizeBundleLabel(?string $label, ?array $options=null) : ?string {
+	$config = Configuration::load();
+	$n = strtolower(caGetOption('normalize', $options, $config->getScalar('bundle_label_normalization')));
+	switch($n) {
+		case 'uc':
+			$label  = mb_strtoupper($label);
+			break;
+		case 'lc':
+			$label  = mb_strtolower($label);
+			break;
+		case 'ucinitial':
+			$label  = caUcFirstUTF8Safe(mb_strtolower($label));
+			break;
+		case 'ucfirst':
+			$label  = mb_convert_case(mb_strtolower($label), MB_CASE_TITLE, 'UTF-8');
+			
+			$skip_words = (MemoryCache::contains('normalizeBundleSkipWords')) ? 
+				MemoryCache::fetch('normalizeBundleSkipWords')
+				:
+				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_skip_words') ?: []);
+			
+			// Clean up conjunctions and parentheticals that are now incorrectly capitalized
+			foreach($skip_words as $p) {
+				$label = str_replace($p, mb_strtolower($p), $label);
+			}
+			if(preg_match_all("!\(([\w]+)\)!", $label, $m)) {
+				 foreach($m as $p) {
+ 					$label = str_replace($p[0], mb_strtolower($p[0]), $label);
+ 				}
+			}
+			$label = caUcFirstUTF8Safe($label);
+			break;
+		case 'none':
+		default:
+			// noop
+			break;
+	}
+	
+	return $label;
+}
+# ------------------------------------------------------------------
 
