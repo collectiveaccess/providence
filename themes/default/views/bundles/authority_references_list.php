@@ -75,9 +75,13 @@
 					print "<ul class='authorityReferenceList'>\n";
 				
 					if (!($vs_template = caGetOption("{$vs_ref_table_name}_displayTemplate", $va_settings, null))) {
-						if (is_array($vs_template = $t_instance->getAppConfig()->getList("{$vs_ref_table_name}_lookup_settings"))) {
+						$vs_template = $t_instance->getAppConfig()->get("{$vs_ref_table_name}_lookup_settings");
+						if(!is_array($vs_template) && $vs_template)) {
+							$vs_template = [$vs_template];
+						}
+						if (is_array($vs_template)) {
 							$vs_template = join($t_instance->getAppConfig()->get("{$vs_ref_table_name}_lookup_delimiter"), $vs_template);
-						} elseif(!($vs_template = $t_instance->getAppConfig()->get("{$vs_ref_table_name}_lookup_settings"))) {
+						} else {
 							$vs_template = "<l>^{$vs_ref_table_name}.preferred_labels</l>";
 						}
 					}
