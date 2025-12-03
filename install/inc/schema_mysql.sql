@@ -7892,6 +7892,7 @@ create table if not exists ca_ip_bans (
    reason                    varchar(255)                   not null,
    created_on                int unsigned                   not null,
    expires_on                int unsigned                   null,
+   details                   text                           not null,
    
    ip_addr		             varchar(39)                    not null,
    
@@ -7984,4 +7985,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (206, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (207, unix_timestamp());
