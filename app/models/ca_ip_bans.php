@@ -56,7 +56,7 @@ BaseModel::$s_ca_models_definitions['ca_ip_bans'] = array(
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'details' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -187,7 +187,7 @@ class ca_ip_bans extends BaseModel {
 		$ban = new ca_ip_bans();
 		$ban->set('ip_addr', $ip);
 		$ban->set('reason', $reason);
-		$ban->set('details', $details);
+		$ban->set('details', json_encode($details));
 		$ban->set('expires_on', $ttl ? date('c', time() + $ttl) : null);
 		return $ban->insert();
 	}
