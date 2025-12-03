@@ -1094,6 +1094,7 @@ class DisplayTemplateParser {
 		
 		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
 		$va_relationship_orientations = caGetOption('relationshipTypeOrientations', $pa_options, array(), ['castTo' => 'array']);
+		$primary_ids = caGetOption('primaryIDs', $pa_options, null);
 		
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		$ps_prefix = caGetOption(['placeholderPrefix', 'relativeTo', 'prefix'], $pa_options, null);
@@ -1104,6 +1105,9 @@ class DisplayTemplateParser {
 		$vs_cache_key = md5($vs_table."/".$pr_res->getPrimaryKey()."/".print_r($pa_tags, true)."/".print_r($pa_options, true));
 		
 		$va_remove_opts_for_related = ['restrictToTypes' => null, 'restrictToRelationshipTypes' => null];
+		
+		$t_instance = Datamodel::getInstance($vs_table, true);
+		$self_rel_subject_table = (method_exists($t_instance, "isSelfRelationship") && $t_instance->isSelfRelationship() && (!is_array($va_relationship_orientations) || !sizeof($va_relationship_orientations))) ? $t_instance->getLeftTableName() : null;
 		
 		$va_get_specs = $va_opts = [];
 		foreach(array_keys($pa_tags) as $vs_tag) {
@@ -1243,7 +1247,11 @@ class DisplayTemplateParser {
                             $va_val_list = [];
                             $va_relationship_orientations = array_slice($va_relationship_orientations, $vn_start);
 
-                            $orientation = caGetOption('orientation', $pa_options, strtoupper($va_relationship_orientations[$pr_res->currentIndex()] ?? null) ?? 'LTOR');
+                            $orientation = caGetOption('orientation', $pa_options, strtoupper($va_relationship_orientations[$pr_res->currentIndex()] ?? null) ?? null);
+                            
+                            if(!strlen($orientation) && $self_rel_subject_table) {
+								$orientation = (in_array($pr_res->get("{$vs_table}.".$t_instance->getLeftTableFieldName()), $primary_ids[$self_rel_subject_table] ?? [])) ? 'LTOR' : 'RTOL';
+							}
                             
                             if (is_array($va_relationship_type_ids) && is_array($va_relationship_type_ids = array_slice($va_relationship_type_ids, $vn_start)) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()] ?? null)) {
                                 $qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
