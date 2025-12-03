@@ -37,6 +37,11 @@ class BaseBanHammerPlugin {
 	 */
 	static $config;
 	
+	/**
+	 *
+	 */
+	static $details;
+	
 	# ------------------------------------------------------
 	/**
 	 *
@@ -89,6 +94,20 @@ class BaseBanHammerPlugin {
 	 */
 	static public function getLogger() {
 		return self::$config->get('logging') ? caGetLogger(['logName' => 'ban']) : null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function setDetails($details) {
+		self::$details = $details;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getDetails() {
+		return self::$details;
 	}
 	# ------------------------------------------------------
 }
