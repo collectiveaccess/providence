@@ -67,6 +67,9 @@
     "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
   },
   "config": {
+    "platform": {
+      "php": "8.2"
+    },
     "discard-changes": true,
     "allow-plugins" : {
       "php-http/discovery": false,
