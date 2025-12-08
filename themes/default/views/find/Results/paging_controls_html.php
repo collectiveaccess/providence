@@ -54,7 +54,23 @@
 		$vs_searchNav .= "</div>";
 		$vs_searchNav .= '<form action="#">'._t('Jump to page').': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'.caNavIcon(__CA_NAV_ICON_GO__, "14px").'</a></form>';
 	}
-	$vs_searchNav .= _t('Your %1 found', $this->getVar('mode_name')).' '.$vn_num_hits.' '.$this->getVar(($vn_num_hits == 1) ? 'mode_type_singular' : 'mode_type_plural');
+	if ($vn_num_hits == 0) {
+		// When there are no results → use the translation "Your search found no %1"
+		$vs_searchNav .= _t(
+			"Your search found no %1",
+			$this->getVar('mode_type_plural')
+		);
+	} else {
+		// When there are results → use the previous text
+		$vs_searchNav .= _t(
+			                 'Your %1 found',
+			                 $this->getVar('mode_name')
+		                 ) . ' ' .
+		                 $vn_num_hits . ' ' .
+		                 $this->getVar(
+			                 ($vn_num_hits == 1) ? 'mode_type_singular' : 'mode_type_plural'
+		                 );
+	}
 	$vs_searchNav .= "</div>";
 	print $vs_searchNav;
 ?>
