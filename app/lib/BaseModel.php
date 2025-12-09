@@ -4595,7 +4595,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					}
 				
 					$input_mimetype = $m->divineFileFormat($this->_SET_FILES[$ps_field]['tmp_name']);
-					if (!$input_type = $o_media_proc_settings->canAccept($input_mimetype)) {
+					if (!($input_type = $o_media_proc_settings->canAccept($input_mimetype))) {
 						# error - filetype not accepted by this field
 						$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 						set_time_limit($vn_max_execution_time);

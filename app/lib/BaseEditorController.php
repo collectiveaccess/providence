@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -390,6 +390,9 @@ class BaseEditorController extends ActionController {
 			}
 
 		} else {
+			if ($t_subject->numErrors()) {
+				$this->notification->addNotification(join("; ", $t_subject->getErrors()), __NOTIFICATION_TYPE_ERROR__);
+			}
 			$vs_message = _t("Saved changes to %1", $vs_type_name);
 		}
 
@@ -670,7 +673,8 @@ class BaseEditorController extends ActionController {
 	 * Redirects to a sensible location after a record delete. Defaults to the last find action
 	 * for the current table, which depending on the table may not be available. Can be
 	 * overridden in subclasses/implementations.
-	 * @param string $ps_table table name
+	 *
+	 * @param string $t_subject Instance of deleted row
 	 */
 	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
