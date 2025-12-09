@@ -2315,7 +2315,7 @@ class TimeExpressionParserTest extends TestCase {
 	}	
 	
 	public function testAcademicDates() {
-		if(!Configuration::load(__CA_CONF_DIR__.'/datetime.conf')->get('assumeAcademicYears')) {
+		if(!Configuration::load('datetime.conf')->get('assumeAcademicYears')) {
 			$this->markTestIncomplete('Cannot test academic date parsing because assumeAcademicYears option in datetime.conf is not set');
 		}
 		$o_tep = new TimeExpressionParser();

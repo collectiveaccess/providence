@@ -86,9 +86,7 @@ abstract class BaseMediaPlugin extends WLPlug  {
 		parent::__construct();
 
 		$this->opo_app_config = Configuration::load();
-
-		$vs_external_app_config_path = $this->opo_app_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->opo_external_app_config = Configuration::load('external_applications.conf');
 	}
 	# ------------------------------------------------
 	/** 

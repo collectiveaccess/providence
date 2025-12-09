@@ -65,7 +65,11 @@ $password_policies = $this->getVar('password_policies') ?? [];
 					break;
 				case 'entity_id':
 					print "<div class='formLabel'><span id='_ca_user_entity_id_'>".($entity_label = $t_user->getFieldInfo('entity_id', 'LABEL'))."</span><br/>";
-					$template = join($this->request->config->get('ca_entities_lookup_delimiter'), $this->request->config->get('ca_entities_lookup_settings'));
+					$lookup_template = $this->request->config->get('ca_entities_lookup_settings');
+					if(!is_array($lookup_template) && $lookup_template) {
+						$lookup_template = [$lookup_template];
+					}
+					$template = join($this->request->config->get('ca_entities_lookup_delimiter'), $lookup_template);
 					print caHTMLTextInput('entity_id_lookup', array('class' => 'lookupBg', 'size' => 70, 'id' => 'ca_users_entity_id_lookup', 'value' => caProcessTemplateForIDs($template, 'ca_entities', array($entity_id = $t_user->get('entity_id')))));
 					if ($entity_id) { print "<a href='#' onclick='caClearUserEntityID(); return false;'>"._t('Clear')." &rsaquo;</a>\n"; }
 					print caHTMLHiddenInput('entity_id', array('value' => $entity_id, 'id' => 'ca_users_entity_id_value'));

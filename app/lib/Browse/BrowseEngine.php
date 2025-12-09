@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -153,7 +153,7 @@ class BrowseEngine extends BaseFindEngine {
 		}
 
 		$this->opo_config = Configuration::load();
-		$this->opo_ca_browse_config = Configuration::load(__CA_CONF_DIR__.'/browse.conf');
+		$this->opo_ca_browse_config = Configuration::load('browse.conf');
 		$this->opa_browse_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
 
 		// Add "virtual" search facet - allows seeding of a browse with a search
@@ -1770,7 +1770,7 @@ class BrowseEngine extends BaseFindEngine {
 										WHERE
 											(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql} {$filter_where}";
 									$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
-									
+
 									if (!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 									$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
 									
@@ -8159,9 +8159,16 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		if ($t_item_rel) { // foo_x_bar Table exists ==> join foo_x_bar and relative_to table
 			$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
 			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
+		} elseif(method_exists($t_target, 'isSelfRelationship') && $t_target->isSelfRelationship()) {
+			$va_rel_info = Datamodel::getRelationships($ps_relative_to_table, $t_rel_item->tableName());
+			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON 
+				({$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][1][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][1][1]})
+				OR
+				({$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][0][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][0][1]})
+			";
 		} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
 			$va_rel_info = Datamodel::getRelationships($ps_relative_to_table, $t_rel_item->tableName());
-			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][0][0]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][0][0]}";
+			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][1][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][1][1]}";
 		}
 
 		return array(

@@ -40,6 +40,7 @@ class WLPlugBanHammerExportFrequency Extends BaseBanHammerPlugin  {
 	 */
 	static public function evaluate($request, $options=null) {
 		self::init($request, $options);
+		$log = self::getLogger();
 		$config = self::$config->get('plugins.ExportFrequency');
 		if ((($frequency_threshold = (float)($config['frequency_threshold'] ?? 0)) < 0.1) || ($frequency_threshold > 999)) {
 			$frequency_threshold = 10;
@@ -63,12 +64,16 @@ class WLPlugBanHammerExportFrequency Extends BaseBanHammerPlugin  {
 	
 		if (($interval = (time() - $export_count['s'])) > 0) {
 			$freq = (float)$export_count['c']/(float)$interval;
+			if($log) { $log->logError(_t('[BanHammer::ExportFrequency] Export freq %1 (%2) > threshold %3', $freq, $export_count['c'], $frequency_threshold)); }
+			self::setDetails(['details' => _t('Export freq %1 (%2) > threshold %3', $freq, $export_count['c'], $frequency_threshold)]);
 			if ($freq > $frequency_threshold) { return $ban_probability; }
 		}
 		
 		// Absolute count ban
 		if(($exports_per_session = ($config['allowed_exports_per_session'] ?? 100)) > 0) {
 			if($export_count['total'] > $exports_per_session) {
+				if($log) { $log->logError(_t('[BanHammer::ExportFrequency] Export count %1 > count limit %2', $export_count['total'], $exports_per_session)); }
+				self::setDetails(['details' => _t('Export count %1  > count limit %2', $export_count['total'], $exports_per_session)]);
 				return $ban_probability;
 			}
 		}

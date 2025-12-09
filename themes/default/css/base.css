@@ -143,7 +143,7 @@ h5 {
 #navWrapper {
 	position: absolute;
 	float: right;
-	right: 20px;
+	left: 50%;
 }
 #logo {
     background-repeat: no-repeat;
@@ -404,6 +404,9 @@ div.clear {
 }
 #leftNav div.watchThis { 
 	text-align:center; 
+}
+#leftNav #inspectorSetAccessForRelated img {
+	padding-top: 1px;
 }
 #inspectorLotMediaDownload {
    
@@ -755,7 +758,7 @@ ul.sf-menu li li.sfHover li ul {
 }
 ul.sf-menu li li li:hover ul,
 ul.sf-menu li li li.sfHover ul {
-    left:			12em; /* match ul width */
+    left:			14em; /* match ul width */
     top:			0;
 }
 
@@ -1207,7 +1210,6 @@ div.hint {
     padding-left: 10px;
 	padding-bottom: 3px;
 	display: inline-block;
-	text-transform: capitalize;
 }
 
 .formLabelSubtext {
@@ -1750,12 +1752,19 @@ html.safari span.form-button button:focus{
     outline:none;
 }
 
-#caTypeChangePanelControlButtons .saveButton {
+#caTypeChangePanelControlButtons .saveButton, #caSetAccessForRelatedPanelControlButtons .saveButton {
 	width:100px;
 	float:left;
 	font-family: 'DIN-Regular';
 	font-weight: bold;
 	vertical-align: top;
+}
+
+div.caSetAccessForRelatedPanelSpinner {
+	position: absolute;
+	display: none;
+	bottom: 5px;
+	right: 5px;
 }
 
 del.form-button{
@@ -6260,7 +6269,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
 }
 
 /* Type change */
-#caTypeChangePanel, #caCreateChildPanel, #caRandomSetGenerationPanel {
+#caTypeChangePanel, #caCreateChildPanel, #caSetAccessForRelatedPanel, #caRandomSetGenerationPanel {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -6275,24 +6284,25 @@ table.caConfirmBatchExecutionPanelAlertControls {
     -webkit-border-radius:4px;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, ##caCreateChildPanel .close a, .close a {
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, ##caCreateChildPanel .close a, #caSetAccessForRelatedPanel .close a, .close a {
     text-decoration:none;
     font-size:16px;
 }
 
-#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea, #caRandomSetGenerationPanelContentArea {
+#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea, #caRandomSetGenerationPanelContentArea, #caSetAccessForRelatedPanelContentArea {
+     position: relative;
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons, #caRandomSetGenerationPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons, #caRandomSetGenerationPanelControlButtons, #caSetAccessForRelatedPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table, #caRandomSetGenerationPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table, #caRandomSetGenerationPanelControlButtons table, #caSetAccessForRelatedPanelControlButtons table {
     width: 100%;
 }
-#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left, #caRandomSetGenerationPanelControlButtons img.form-button-left {
+#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left, #caRandomSetGenerationPanelControlButtons img.form-button-left, #caSetAccessForRelatedPanelControlButtons img.form-button-left {
 	margin-top:-10px;
 }
 .addChild {

@@ -120,7 +120,8 @@ define('__CA_NAV_ICON_LIST__', 82);
 define('__CA_NAV_ICON_NO_AUTO_DELETE__', 83);
 define('__CA_NAV_ICON_UNSAVED_CHANGES__', 84);
 define('__CA_NAV_ICON_RANDOM__', 85);
-
+define('__CA_NAV_ICON_NO_AUTO_DELETE__', 86);
+define('__CA_NAV_ICON_SET_ACCESS__', 87);
 /**
  * Icon position constants
  */ 
@@ -958,10 +959,13 @@ function _caNavIconTypeToName($pn_type) {
 			break;				
 		case __CA_NAV_ICON_NO_AUTO_DELETE__:
 			$vs_fa_class = 'fas fa-recycle';
-			break;				
+			break;		
 		case __CA_NAV_ICON_UNSAVED_CHANGES__:
 			$vs_fa_class = 'far fa-clipboard caIconRed';
 			break;
+		case __CA_NAV_ICON_SET_ACCESS__:
+			$vs_fa_class = 'fas fa-broadcast-tower';
+			break;		
 		default:
 			print "INVALID CONSTANT {$pn_type}<br>\n";
 			return null;

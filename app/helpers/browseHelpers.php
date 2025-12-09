@@ -184,7 +184,7 @@ function caGetBrowseInstance($pm_table_name_or_num, $pa_options=null) {
  * @return Configuration 
  */
 function caGetBrowseConfig() {
-	return Configuration::load(__CA_CONF_DIR__.'/browse.conf');
+	return Configuration::load('browse.conf');
 }
 # ---------------------------------------
 /**

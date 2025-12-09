@@ -176,7 +176,7 @@ class TimeExpressionParser {
 		global $g_ui_locale;
 		
 		$o_config = Configuration::load();
-		$this->opo_datetime_settings = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+		$this->opo_datetime_settings = Configuration::load('datetime.conf');
 		
 		if (!$ps_iso_code) { $ps_iso_code = $g_ui_locale; }
 		if (!$ps_iso_code) { $ps_iso_code = $o_config->get('locale_default'); }

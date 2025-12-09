@@ -38,7 +38,7 @@ class BaseRepresentationAnnotationModel extends BundlableLabelableBaseModelWithA
 		parent::__construct($id, $options);
 		
  		$o_config = $this->getAppConfig();
- 		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+ 		$this->opo_type_config = Configuration::load('annotation_types.conf');
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {

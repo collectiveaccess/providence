@@ -70,7 +70,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 	public function getParametersForDisplay($rec) {
 		$parameters = caUnserializeForDatabase($rec["parameters"]);
 		$params = [];
-		$config = Configuration::load(__CA_CONF_DIR__.'/find_navigation.conf');
+		$config = Configuration::load('find_navigation.conf');
 		$find_types = $config->getAssoc('find_types_for_display');
 		$is_summary = ($parameters["mode"] ?? null) === 'SUMMARY';
 		$is_set = ($parameters["mode"] ?? null) === 'SETS';

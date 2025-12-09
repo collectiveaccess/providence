@@ -790,7 +790,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$vs_mimetype = $va_media_info['INPUT']['MIMETYPE'];
  		
- 		$o_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
+ 		$o_type_config = Configuration::load('annotation_types.conf');
  		$va_mappings = $o_type_config->getAssoc('mappings');
  		
  		return $va_mappings[$vs_mimetype];
@@ -1149,8 +1149,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
  			}
  		
- 			$t_annotation->setMode(ACCESS_WRITE);
- 		
 			$t_annotation->set('type_code', $o_coder->getType());
 			$t_annotation->set('locale_id', $pn_locale_id);
 			
@@ -1216,7 +1214,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$t_annotation = new $vs_annotation_table($pn_annotation_id);
  		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		if ($t_annotation->get('representation_id') == $vn_representation_id) {
- 			$t_annotation->setMode(ACCESS_WRITE);
  			$t_annotation->delete(true);
  			
  			if ($t_annotation->numErrors()) {
@@ -1333,7 +1330,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 						$t_annotation = new $vs_annotation_table($va_rel_item['annotation_id']);
 						if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
 						if ($t_annotation->getPrimaryKey()) {
-							$t_annotation->setMode(ACCESS_WRITE);
 							
 							$va_pref_labels = $t_annotation->getPreferredLabels(array($vn_locale_id), false);
 							
@@ -1447,7 +1443,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				return null;
  			}
  		}
- 		$t_multifile->setMode(ACCESS_WRITE);
  		$t_multifile->set('representation_id', $this->getPrimaryKey());
  		$t_multifile->set('media', $ps_filepath);
  		$t_multifile->set('resource_path', $ps_resource_path);
@@ -1472,7 +1467,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		
  		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
- 			$t_multifile->setMode(ACCESS_WRITE);
  			$t_multifile->delete();
  			
 			if ($t_multifile->numErrors()) {
@@ -1647,7 +1641,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			return null;
  		}
  		
- 		$t_caption->setMode(ACCESS_WRITE);
  		$t_caption->set('representation_id', $this->getPrimaryKey());
  		$va_tmp = explode("/", $ps_filepath);
  		$t_caption->set('caption_file', $ps_filepath, array('original_filename' => caGetOption('originalFilename', $options, array_pop($va_tmp))));
@@ -1673,7 +1666,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		
  		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
- 			$t_caption->setMode(ACCESS_WRITE);
  			$t_caption->delete();
  			
 			if ($t_caption->numErrors()) {
@@ -1743,7 +1735,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if($this->inTransaction()) { $t_sidecar->setTransaction($this->getTransaction()); }
  		
  		if ($t_sidecar->get('representation_id') == $this->getPrimaryKey()) {
- 			$t_sidecar->setMode(ACCESS_WRITE);
  			$t_sidecar->delete();
  			
 			if ($t_sidecar->numErrors()) {

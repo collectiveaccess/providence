@@ -165,7 +165,7 @@ class ca_ip_whitelist extends BaseModel {
 	 *
 	 */
 	static public function init() {
-		if(!self::$config) { self::$config = Configuration::load("ban_hammer.conf"); }
+		if(!self::$config) { self::$config = Configuration::load('ban_hammer.conf'); }
 	}
 	# ------------------------------------------------------
 	/**

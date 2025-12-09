@@ -52,8 +52,8 @@ class SearchBase extends BaseFindEngine {
 		parent::__construct($po_db);
 		
 		$this->opo_app_config = Configuration::load();
-		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');			
+		$this->opo_search_config = Configuration::load('search.conf');
+		$this->opo_search_indexing_config = Configuration::load('search_indexing.conf');			
 
 		// load search engine plugin as configured by the 'search_engine_plugin' directive in the main app config file
 		if($pb_load_engine) {

@@ -207,7 +207,7 @@ function caInstallVendorLibraries() {
   * 
   */
 function caEmitHeaders($response) {
-	$header_conf = Configuration::load(__CA_CONF_DIR__.'/headers.conf');
+	$header_conf = Configuration::load('headers.conf');
 	$groups = $header_conf->getAssocKeys();
 	if(is_array($groups)) {
 		foreach($groups as $g) {

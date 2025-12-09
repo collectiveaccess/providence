@@ -332,7 +332,7 @@ class ca_users extends BaseModel {
 	public function __construct($pn_id=null, ?array $options=null) {
 		parent::__construct($pn_id);	# call superclass constructor	
 		
-		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
+		$this->opo_auth_config = Configuration::load('authentication.conf');
 	}
 	# ------------------------------------------------------
 	/**
@@ -451,7 +451,7 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	static public function applyPasswordPolicy(string $password) : bool {
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
@@ -491,7 +491,7 @@ class ca_users extends BaseModel {
 	 * 
 	 */
 	static public function checkPasswordComplexity(string $password) : bool {
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 	
 		if(($min_score = (int)$auth_config->get('require_minimum_password_score')) > 0) {
@@ -508,7 +508,7 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	static public function getPasswordPolicyAsText() {
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return ''; }	// password policies only apply to integral auth system
 		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
@@ -683,7 +683,11 @@ class ca_users extends BaseModel {
 			$va_values["ca_users.{$vs_key}"] = $vs_val;
 		}
 		
-		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
+		$lookup_template = $this->getAppConfig()->get('ca_users_lookup_settings');
+		if(!is_array($lookup_template) && $lookup_template) {
+			$lookup_template = [$lookup_template];
+		}
+		return caProcessTemplate(join($this->getAppConfig()->get('ca_users_lookup_delimiter'), $lookup_template), $va_values, array());
 	}
 	# ----------------------------------------
 	# --- User variables
@@ -2734,10 +2738,8 @@ class ca_users extends BaseModel {
 	
 	public function loadUserPrefDefs($pb_force_reload=false) {
 		if (!$this->_user_pref_defs || $pb_force_reload) {
-			if ($vs_user_pref_def_path = __CA_CONF_DIR__."/user_pref_defs.conf") {
-				$this->_user_pref_defs = Configuration::load($vs_user_pref_def_path, $pb_force_reload);
-				return true;
-			}
+			$this->_user_pref_defs = Configuration::load('user_pref_defs.conf', $pb_force_reload);
+			return true;
 		}
 		return false;
 	}
@@ -3661,7 +3663,7 @@ class ca_users extends BaseModel {
 			return ca_users::$s_user_action_access_cache[$cache_key] = in_array($action, $va_actions);
 		}
 		// is default set in user_action.conf?
-		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
+		$user_actions = Configuration::load('user_actions.conf');
 		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
 			foreach($actions as $categories) {
 				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {

@@ -89,7 +89,7 @@ trait CLIUtilsReplication {
 		$system_info = $g_systems[$source];
 		
 		// create entity record
-		$o_replication_config = Configuration::load(__CA_CONF_DIR__."/replication.conf");
+		$o_replication_config = Configuration::load('replication.conf');
 		if(!($entity_type = $o_replication_config->get('consortium_member_entity_type')) || !($entity_type_id = caGetListItemID('entity_types', $entity_type))) {
 			print "Invalid entity type {$entity_type}\n";
 			exit;
