@@ -185,7 +185,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		'image/x-dpx'		=> 'DPX',
 		'image/x-exr'		=> 'EXR',
 		'image/jp2'			=> 'JP2',
-		'image/webp'		=> 'webp',
+		'image/webp'		=> 'WEBP',
 		'image/x-adobe-dng'	=> 'DNG',
 		'image/x-canon-cr2'	=> 'CR2',
 		'image/x-canon-crw'	=> 'CRW',
