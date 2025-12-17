@@ -1501,6 +1501,33 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Check if given element code (or id) is deleted elementCodesToIDs
+	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_options Supported options are:
+	 *      noCache = Don't use cache. [Default is false]
+	 * @return int
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function isDeleted($pm_element_code_or_id, $pa_options=null) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(!caGetOption('noCache', $pa_options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementIsDeleted')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementIsDeleted');
+		}
+
+		$vm_return = false;
+		$t_element = self::getInstance($pm_element_code_or_id);
+
+		if($t_element && ($t_element->getPrimaryKey())) {
+			$vm_return = (bool)$t_element->get('deleted');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementIsDeleted');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get hier_element id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
 	 * @return int

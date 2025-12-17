@@ -1802,6 +1802,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$bundle_code = $this->tableName().".{$vs_attr_element_code}";
 				
+				if(ca_metadata_elements::isDeleted($vs_attr_element_code)) { 
+					continue;
+				}
+				
 				if(!strlen($vs_element = $this->getAttributeHTMLFormBundle($pa_options['request'], $pa_options['formName'], $vs_attr_element_code, $ps_placement_code, $pa_bundle_settings, $pa_options))) {
 					// No bundle?
 					return null; 
