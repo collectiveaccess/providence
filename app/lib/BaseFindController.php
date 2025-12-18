@@ -1237,11 +1237,11 @@ class BaseFindController extends ActionController {
 			$hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
 		
 			if (!($name = ($mode == 'singular') ? $hier[$type_id]['name_singular'] ?? '' : $hier[$type_id]['name_plural'] ?? '')) {
-				$name = mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+				$name = ($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL');
 			}
-			return mb_strtolower($name);
+			return $name;
 		} else {
-			return mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+			return ($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL');
 		}
 	}
 	# -------------------------------------------------------
