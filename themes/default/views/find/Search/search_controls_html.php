@@ -138,18 +138,30 @@ if (!$this->request->isAjax()) {
 						}
 					}
 				);
-				jQuery("#browseToggle").click(function() {
-					jQuery("#browse").slideToggle(350, function() { 
-						stateCookieJar.set('<?= $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 
-						jQuery("#browseToggle").html((this.style.display == 'block') ? '<?= '<span class="form-button">'.addslashes(_t('Hide hierarchy ')).'</span>';?>' : '<?= '<span class="form-button">'._t('Show hierarchy').'</span>';?>');
-					}); 
-					return false;
+				jQuery("#browseToggle").off("click").on("click", function(e) {
+					e.preventDefault();
+
+					var $browse = jQuery("#browse");
+
+					$browse.stop(true, true).slideToggle(350, function() {
+						var isOpen = $browse.is(":visible");
+
+						stateCookieJar.set('<?= $vs_table; ?>BrowserIsClosed', isOpen ? 0 : 1);
+
+						jQuery("#browseToggle").html(
+							isOpen
+								? '<?= '<span class="form-button">'.addslashes(_t('Hide hierarchy')).'</span>';?>'
+								: '<?= '<span class="form-button">'.addslashes(_t('Show hierarchy')).'</span>';?>'
+						);
+					});
 				});
-				
+
+				var $browse = jQuery("#browse");
+
 				if (<?= ($this->getVar('force_hierarchy_browser_open') ? 'true' : "!stateCookieJar.get('{$vs_table}BrowserIsClosed')"); ?>) {
 					jQuery("#browseToggle").html('<?= '<span class="form-button">'.addslashes(_t('Hide hierarchy')).'</span>';?>');
 				} else {
-					jQuery("#browse").hide();
+					$browse.hide();
 					jQuery("#browseToggle").html('<?= '<span class="form-button">'.addslashes(_t('Show hierarchy')).'</span>';?>');
 				}
 			});
