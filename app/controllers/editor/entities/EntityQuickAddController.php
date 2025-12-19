@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,18 +24,16 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_entities.php");
- 	require_once(__CA_LIB_DIR__."/BaseQuickAddController.php");
- 
- 	class EntityQuickAddController extends BaseQuickAddController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_entities';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+ */ 
+require_once(__CA_MODELS_DIR__."/ca_entities.php");
+require_once(__CA_LIB_DIR__."/BaseQuickAddController.php");
+
+class EntityQuickAddController extends BaseQuickAddController {
+	# -------------------------------------------------------
+	protected $ops_table_name = 'ca_entities';		// name of "subject" table (what we're editing)
+	# -------------------------------------------------------
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
+	}
+	# -------------------------------------------------------
+}
