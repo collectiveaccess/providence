@@ -124,9 +124,9 @@ h5 {
     background-image: none;
     border: 0px;
     border-radius: 0;
-    -moz-box-shadow: 0 0 5px #888;
-    -webkit-box-shadow: 0 0 5px#888;
-    box-shadow: 0 0 5px #888;
+    -moz-box-shadow: 0 0 1px #333;
+    -webkit-box-shadow: 0 0 1px #333;
+    box-shadow: 0 0 1px #333;
     min-height: 20px;
     height: 58px;
 }
