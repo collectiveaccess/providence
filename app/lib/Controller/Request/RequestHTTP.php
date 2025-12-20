@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1092,7 +1092,12 @@ class RequestHTTP extends Request {
 				if (isset($_SERVER[$h]) && $_SERVER[$h]) { return $_SERVER[$h]; }
 			}
 		}
-		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		
+		if(filter_var($ip, FILTER_VALIDATE_IP)) {
+			return $ip;
+		}
+		return null;
 	}
 	# ----------------------------------------
 }
