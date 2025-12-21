@@ -857,6 +857,10 @@ class AppNavigation extends BaseObject {
 				case 'constant':
 					$vs_value = constant($va_tmp[1]);
 					break;
+				case 'configuration':
+				case 'config':
+					$vs_value = $this->opo_request->config->getScalar($va_tmp[1]);
+					break;
 				default:
 					$vs_value = '';
 					break;
