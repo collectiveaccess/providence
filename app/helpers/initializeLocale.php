@@ -152,4 +152,15 @@ require_once(__CA_LIB_DIR__."/CookieOptionsManager.php");
 		}
 		return $g_locale_articles[$key] = array_merge($o_config->getList('definiteArticles'), $o_config->getList('indefiniteArticles'));
 	}
+   	# ----------------------------------------
+	/**
+	* Return language code for locale
+	*
+	* @param string $locale An ISO locale ("en_US") or language ("en") code
+	* @return string Language code
+	*/
+	function caGetLanguageForLocale(string $locale) : string {
+		$tmp = explode('_', $locale);
+		return mb_strtolower($tmp[0]);
+	}
 	# ----------------------------------------
