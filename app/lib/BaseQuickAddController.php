@@ -62,6 +62,11 @@ class BaseQuickAddController extends ActionController {
 		
 		$vn_subject_id = $t_subject->getPrimaryKey();
 		
+		$t_placement = ($placement_id = $this->request->getParameter('placement_id', pString)) ? ca_editor_ui_bundle_placements::findAsInstance($placement_id) : null;
+		
+		$default_type_id = $t_placement ? $t_placement->getSetting('defaultQuickaddType') : null;
+		if(is_array($default_type_id)) { $default_type_id = array_shift($default_type_id); }
+		
 		// table name and row_id from calling record (what we're quick-adding on)
 		// only set for ca_objects quick-adds
 		$vs_source = $this->request->getParameter('source', pString);
@@ -150,7 +155,7 @@ class BaseQuickAddController extends ActionController {
 					$vn_type_id = array_shift($va_tmp);
 				}
 				if (!$vn_type_id) {
-					$vn_type_id = $t_subject->getDefaultTypeID();
+					$vn_type_id = $default_type_id ?? $t_subject->getDefaultTypeID();
 				}
 			}
 		}

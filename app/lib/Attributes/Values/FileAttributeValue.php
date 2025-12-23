@@ -103,10 +103,25 @@ $_ca_attribute_settings['FileAttributeValue'] = array(		// global
 
 class FileAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $opa_file_data;
-	private $ops_file_data;
-	private $ops_file_original_name;
-	private $opo_file_info_coder;
+	/**
+	 *
+	 */
+	protected $opa_file_data;
+	
+	/**
+	 *
+	 */
+	protected $ops_file_data;
+	
+	/**
+	 *
+	 */
+	protected $ops_file_original_name;
+	
+	/**
+	 *
+	 */
+	protected $opo_file_info_coder;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
 		$this->opo_file_info_coder = new FileInfoCoder();
@@ -293,6 +308,15 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function getType() {
 		return __CA_ATTRIBUTE_VALUE_FILE__;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return (strlen($this->ops_file_data) === 0);
 	}
 	# ------------------------------------------------------------------
 }

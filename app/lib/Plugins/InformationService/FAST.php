@@ -55,7 +55,7 @@ $g_information_service_settings_fast = [
 			_t('Subfield') => 'oclc.subphrase',
 			_t('Full see also headings') => 'oclc.seeAlsophrase',
 			_t('LC Source headings') => 'oclc.lcphrase',
-			_t('FAST Authority Record Number (ARN)') => 'oia.identifier',
+			_t('FAST Authority Record Number (ARN)') => 'oai.identifier',
 			_t('Record status') => 'oclc.faststatus',
 			_t('Level of establishment') => 'oclc.establish',
 			_t('Geographic area code (GAC)') => 'oclc.geocode',
@@ -81,7 +81,6 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
     static $s_settings;
     private $o_client;
     # ------------------------------------------------
-
     /**
      * WLPlugInformationServiceFAST constructor.
      */
@@ -100,14 +99,18 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
     }
 
     public function lookup($settings, $search, $options = null)  {
-   		if(preg_match("!^http[s]{0,1}://www.fast.org/fast/([\d]+)!", $search, $m)) {
-   			$search = $m[1];
+   		$search_on = caGetOption('searchOn', $settings, 'cql.any');
+   		if(
+   			preg_match("!^http[s]{0,1}://id.worldcat.org/fast/(fst){0,1}([\d]+)!", $search, $m)
+   			||
+   			preg_match("!^(fst)([\d]+)!", $search, $m)
+   		) {
+   			$search = 'fst'.$m[2];
+   			$search_on = 'oai.identifier';
    		}
    		
-   		$search_on = caGetOption('searchOn', $settings, 'cql.any');
-   		
         $client = $this->getClient();
-        $response = $client->request("GET", self::FAST_SERVICES_BASE_URL."/".self::FAST_LOOKUP."?maximumRecords=100&accept=application/xml&query=".urlencode("{$search_on} = \"{$search}\""), [
+        $response = $client->request("GET", self::FAST_SERVICES_BASE_URL."/".self::FAST_LOOKUP."?maximumRecords=100&accept=application/xml&query=".urlencode("{$search_on} all \"{$search}\""), [
             'headers' => [
                 'Accept' => 'application/xml'
             ]
@@ -119,20 +122,30 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
 		$n = $xml->numberOfRecords;
 		$records = $xml->records->record;
         $return = [];
+        $primary = null;
+    
+    	$search_lc = mb_strtolower($search);
 		foreach($records as $r) {
 			$data = $r->recordData->children('http://www.loc.gov/MARC21/slim');
 			
-			$label_data = $data->xpath("mx:datafield[@tag='100' or @tag='150' or @tag='151']/mx:subfield[@code='a']/text()");
-			$label = (string)$label_data[0];
+			$label_data = $data->xpath("mx:datafield[@tag >= '100' and @tag < '199']/mx:subfield/text()");
+			$label = join(", ", array_filter($label_data ?? [], 'strlen'));
 			
 			$fast_id_data = $data->xpath("mx:controlfield[@tag='001']/text()");
 			$fast_id = (string)$fast_id_data[0];
-			$return['results'][] = [
+			
+			$entry = [
 				'label' => $label,
 				'url' => "http://id.worldcat.org/fast/{$fast_id}",
 				'idno' => $fast_id
 			];
+			if($search_lc == mb_strtolower($label)) {
+				$primary = $entry;
+			} else {
+				$return['results'][] = $entry;
+			}
 		}
+		if($primary) { array_unshift($return['results'], $primary); }
         return $return;
     }
 

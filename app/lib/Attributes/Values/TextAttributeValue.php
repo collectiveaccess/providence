@@ -263,7 +263,10 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 
 class TextAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
 	# ------------------------------------------------------------------
 	public function __construct($value_array=null) {
 		parent::__construct($value_array);
@@ -518,7 +521,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 				$element_dom_ids[$e['element_code']] = "#{fieldNamePrefix}".$e['element_id']."_{n}";
 			}
 			
-			$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+			$o_dimensions_config = Configuration::load('dimensions.conf');
 			$parser_opts = [];
 			
 			foreach([

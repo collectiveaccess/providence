@@ -296,8 +296,15 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
- 	private $ops_text_value;
- 	private $ops_uri_value;
+ 	/**
+ 	 *
+ 	 */
+ 	protected $ops_text_value;
+ 	
+ 	/**
+ 	 *
+ 	 */
+ 	protected $ops_uri_value;
  	
  	private $opo_geo_plugin;
  	# ------------------------------------------------------------------
@@ -366,14 +373,22 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  			$vs_id = null;
 			if (preg_match("! \[id:([0-9]+)\]$!", $vs_text, $va_matches)) {
 				$vs_id = $va_matches[1];
-				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
+				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $vs_text);
+			}
+			if (preg_match("!\|([0-9]+)$!", $vs_text, $va_matches)) {
+				$vs_id = $va_matches[1];
+				$vs_text = preg_replace("!\|[0-9]+$!", "", $vs_text);
+			}
+			if (preg_match("!\[\-{0,1}([0-9\.]+,[0-9\.]+)\]!", $vs_text, $va_matches)) {
+				$vs_coords = $va_matches[1];
+				$vs_text = preg_replace("!\[\-{0,1}([0-9\.]+,[0-9\.]+)\]!", "", $vs_text);
 			}
 			if (!$vs_id) {
 			    $vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
                 $t_locale = new ca_locales($g_ui_locale_id);
                 $vs_lang = $t_locale->get("language");
                 $va_params = [
-                    "q" => $ps_value,
+                    "q" => $vs_text,
                     "lang" => $vs_lang,
                     'style' => 'full',
                     'username' => $vs_user,

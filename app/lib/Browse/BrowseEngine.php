@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -153,7 +153,7 @@ class BrowseEngine extends BaseFindEngine {
 		}
 
 		$this->opo_config = Configuration::load();
-		$this->opo_ca_browse_config = Configuration::load(__CA_CONF_DIR__.'/browse.conf');
+		$this->opo_ca_browse_config = Configuration::load('browse.conf');
 		$this->opa_browse_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
 
 		// Add "virtual" search facet - allows seeding of a browse with a search
@@ -1770,7 +1770,7 @@ class BrowseEngine extends BaseFindEngine {
 										WHERE
 											(ca_attribute_values.element_id = ?) {$vs_attr_sql} {$vs_container_sql} {$vs_where_sql} {$filter_where}";
 									$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
-									
+
 									if (!is_array($va_acc[$vn_i])) { $va_acc[$vn_i] = []; }
 									$va_acc[$vn_i] = array_merge($va_acc[$vn_i], $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey()));
 									
@@ -5143,12 +5143,22 @@ class BrowseEngine extends BaseFindEngine {
 						// fields with values set according to ca_list_items (not a foreign key ref)
 						if ($va_list_items = caExtractValuesByUserLocale($t_list->getItemsForList($vs_list_name))) {
 							foreach($va_list_items as $vn_id => $va_list_item) {
-								$va_list_items_by_value[$va_list_item['item_value']] = $va_list_item['name_plural'];
+								$va_list_items_by_value[$va_list_item['item_value']] = [
+									'label' => $va_list_item['name_plural'],
+									'rank' => $va_list_item['rank'] ?? null,
+									'value' => $va_list_item['item_value'] ?? null,
+									'idno' => $va_list_item['idno'] ?? null
+								];
 							}
 
 						} else {
 							foreach($va_field_info['BOUNDS_CHOICE_LIST'] as $vs_val => $vn_id) {
-								$va_list_items_by_value[$vn_id] = $vs_val;
+								$va_list_items_by_value[$vn_id] = [
+									'label' => $vs_val,
+									'rank' => null,
+									'value' => $vs_val,
+									'idno' => $vs_val
+								];
 							}
 						}
 
@@ -5207,6 +5217,24 @@ class BrowseEngine extends BaseFindEngine {
 
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
+							$t_list->load(array('list_code' => $vs_list_name));
+							$vn_sort = $t_list->get('default_sort');
+							$sort_key = null;
+							switch($vn_sort) {
+								default:
+								case __CA_LISTS_SORT_BY_LABEL__:	// by label
+									$sort_key = 'label';
+									break;
+								case __CA_LISTS_SORT_BY_RANK__:	// by rank
+									$sort_key = 'rank';
+									break;
+								case __CA_LISTS_SORT_BY_VALUE__:	// by value
+									$sort_key = 'item_value';
+									break;
+								case __CA_LISTS_SORT_BY_IDENTIFIER__:	// by identifier
+									$sort_key = 'idno';
+									break;
+							}
 							$vs_sql = "
 								SELECT COUNT(*) _count, ".$vs_browse_table_name.'.'.$vs_field_name."
 								FROM ".$vs_browse_table_name."
@@ -5226,7 +5254,8 @@ class BrowseEngine extends BaseFindEngine {
 								if (isset($va_list_items_by_value[$vn_id])) {
 									$va_values[$vn_id] = array(
 										'id' => $vn_id,
-										'label' => $va_list_items_by_value[$vn_id],
+										'label' => $va_list_items_by_value[$vn_id]['label'],
+										'sort' => $sort_key ? ($va_list_items_by_value[$vn_id][$sort_key] ?? null) : null,
 										'content_count' => $qr_res->get('_count')
 									);
 									if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
@@ -5238,6 +5267,7 @@ class BrowseEngine extends BaseFindEngine {
 							if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
 								return array();
 							}
+							$va_values = caSortArrayByKeyInValue($va_values, ['sort']);
 							return $va_values;
 						}
 					} else {
@@ -6142,14 +6172,14 @@ class BrowseEngine extends BaseFindEngine {
 						if ($o_tep->parse($va_facet_info['minimum_date'])) {
 							$va_tmp = $o_tep->getHistoricTimestamps();
 							$vn_min_date = (float)$va_tmp['start'];
-							$vs_min_sql = " AND (ca_attribute_values.value_decimal1 >= {$vn_min_date})";
+							$vs_min_sql = " AND ((ca_attribute_values.value_decimal1 >= {$vn_min_date}) OR (ca_attribute_values.value_decimal2 >= {$vn_min_date}))";
 						}
 					}
 					if (isset($va_facet_info['maximum_date'])) {
 						if ($o_tep->parse($va_facet_info['maximum_date'])) {
 							$va_tmp = $o_tep->getHistoricTimestamps();
 							$vn_max_date = (float)$va_tmp['end'];
-							$vs_max_sql = " AND (ca_attribute_values.value_decimal2 <= {$vn_max_date})";
+							$vs_max_sql = " AND ((ca_attribute_values.value_decimal1 <= {$vn_max_date}) OR (ca_attribute_values.value_decimal2 <= {$vn_max_date}))";
 						}
 					}
 
@@ -8129,9 +8159,16 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		if ($t_item_rel) { // foo_x_bar Table exists ==> join foo_x_bar and relative_to table
 			$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
 			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
+		} elseif(method_exists($t_target, 'isSelfRelationship') && $t_target->isSelfRelationship()) {
+			$va_rel_info = Datamodel::getRelationships($ps_relative_to_table, $t_rel_item->tableName());
+			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON 
+				({$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][1][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][1][1]})
+				OR
+				({$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][0][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][0][1]})
+			";
 		} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
 			$va_rel_info = Datamodel::getRelationships($ps_relative_to_table, $t_rel_item->tableName());
-			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][0][0]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][0][0]}";
+			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][1][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][1][1]}";
 		}
 
 		return array(

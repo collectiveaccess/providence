@@ -105,8 +105,8 @@ abstract class IDNumber implements IIDNumbering {
 	 */
 	public function __construct($format=null, $type=null, $value=null, $db=null) {
 		$this->config = Configuration::load();
-		$this->idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
-		$this->search_config = Configuration::load(__CA_APP_DIR__."/conf/search.conf");
+		$this->idnumber_config = Configuration::load('multipart_id_numbering.conf');
+		$this->search_config = Configuration::load('search.conf');
 		$this->formats = caChangeArrayKeyCase($this->idnumber_config->getAssoc('formats'));
 		
 		if (!$type) { $type = ['__default__']; }

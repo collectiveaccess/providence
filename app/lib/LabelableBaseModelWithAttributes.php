@@ -2767,11 +2767,13 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 */
 	public function getPreferredDisplayLabelsForIDs($pa_ids, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = []; }
-		$va_ids = array();
-		foreach($pa_ids as $vn_id) {
-			if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
+		$va_ids = [];
+		if(is_array($pa_ids)) {
+			foreach($pa_ids as $vn_id) {
+				if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
+			}
 		}
-		if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
+		if (!is_array($va_ids) || !sizeof($va_ids)) { return []; }
 		
 		$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
 		$vb_return_all_types = caGetOption('returnAllTypes', $pa_options, false);
@@ -3438,46 +3440,70 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 *			code			[short alphanumeric code identifying the role]
 	 *			description		[text description of role]
 	 *
+	 * @param array $options Options include:
+	 *		defaultAccess = Set default access to value when role is not associated with item. [Default is null; no default set]
+	 *
 	 * @return array List of role associated with the currently loaded row
 	 */ 
-	public function getUserRoles($pa_options=null) {
-		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
-		$vs_pk = $this->primaryKey();
+	public function getUserRoles(?array $options=null) {
+		if (!($id = (int)$this->getPrimaryKey())) { return null; }
+		if (!($role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
+		$pk = $this->primaryKey();
 		
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
+		if (!is_array($options)) { $options = array(); }
+		$return_for_bundle =  (isset($options['returnAsInitialValuesForBundle']) && $options['returnAsInitialValuesForBundle']) ? true : false;
 		
-		$t_rel = Datamodel::getInstanceByTableName($vs_role_rel_table);
+		$t_rel = Datamodel::getInstanceByTableName($role_rel_table);
 		
 		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
 			SELECT g.*, r.*
-			FROM {$vs_role_rel_table} r
+			FROM {$role_rel_table} r
 			INNER JOIN ca_user_roles AS g ON g.role_id = r.role_id
 			WHERE
-				r.{$vs_pk} = ?
-		", $vn_id);
+				r.{$pk} = ?
+		", $id);
 		
-		$va_roles = [];
+		$roles = [];
 		
 		while($qr_res->nextRow()) {
-			$va_row = array();
-			foreach(array('role_id', 'name', 'code', 'description', 'access') as $vs_f) {
-				$va_row[$vs_f] = $qr_res->get($vs_f);
+			$row = array();
+			foreach(array('role_id', 'name', 'code', 'description', 'access') as $f) {
+				$row[$f] = $qr_res->get($f);
 			}
 			
-			if ($vb_return_for_bundle) {
-				$va_row['label'] = $va_row['name'];
-				$va_row['id'] = $va_row['role_id'];
-				$va_roles[(int)$qr_res->get('relation_id')] = $va_row;
+			if ($return_for_bundle) {
+				$row['label'] = $row['name'];
+				$row['id'] = $row['role_id'];
+				$roles[(int)$qr_res->get('relation_id')] = $row;
 			} else {
-				$va_roles[(int)$qr_res->get('role_id')] = $va_row;
+				$roles[(int)$qr_res->get('role_id')] = $row;
 			}
 		}
 		
-		return $va_roles;
+		if(!is_null($default_access = caGetOption('defaultAccess', $options, null))) {
+			// set defaults
+			$qr_res = $o_db->query("
+				SELECT role_id, name, code, description
+				FROM ca_user_roles 
+			");
+			
+			while($qr_res->nextRow()) {
+				$row = $qr_res->getRow();
+				if(!isset($roles[$row['role_id']])) {
+					$roles[$row['role_id']] = [
+						'name' => $row['name'],
+						'role_id' => $row['role_id'],
+						'code' => $row['code'],
+						'description' => $row['description'],
+						'access' => $default_access
+					];
+				}
+			}
+		}
+		
+		return $roles;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -3522,7 +3548,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$t_rel = Datamodel::getInstanceByTableName($vs_role_rel_table, true);
 		if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 		
-		$va_current_roles = $this->getUserroles();
+		$va_current_roles = $this->getUserRoles();
 		
 		foreach($pa_role_ids as $vn_role_id => $vn_access) {
 			if ($vn_user_id) {	// verify that role we're linking to is owned by the current user
@@ -3629,8 +3655,6 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
-		
-		require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
 		$t_role = new ca_user_roles();
 		
 		$t_rel = Datamodel::getInstanceByTableName($this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'));
@@ -3642,7 +3666,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_role', $t_role);
-		$o_view->setVar('initialValues', $this->getUserRoles());
+		$o_view->setVar('initialValues', $this->getUserRoles(['defaultAccess' => caGetOption('defaultAccess', $pa_options, null)]));
 		
 		return $o_view->render('ca_user_roles.php');
 	}

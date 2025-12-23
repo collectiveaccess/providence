@@ -228,4 +228,18 @@ abstract class AttributeValue extends BaseObject {
 		return [];
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Check if attribute value is empty. The precise nature of emptiness varies by attribute value type but generally corresponds to a lack
+	 * of value. For a List attribute, a null item_id indicates emptiness. For a text attribute (and most others) a blank value 
+	 * (zero characters in length) is considered empty.
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		if(property_exists($this, 'ops_text_value')) {
+			return (bool)strlen($this->ops_text_value);
+		}
+		return false;
+	}
+	# ------------------------------------------------------------------
 }

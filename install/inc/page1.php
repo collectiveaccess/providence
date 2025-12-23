@@ -37,7 +37,7 @@ $o_config = Configuration::load();
 	<div id="logo"><?= caGetLoginLogo(); ?></div><!-- end logo -->
 	<div id="content">
 	<H1>
-		<?= _t('Version %1 installer (XML)', constant('__CollectiveAccess__')); ?>
+		<?= _t('Version %1 installer (XML)', constant('__CollectiveAccess_Version__')); ?>
 	</H1>
 <?php
 	// Check for configuration issues
@@ -67,17 +67,17 @@ $o_config = Configuration::load();
 		<form action='index.php' name='page1form' id='page1form'>
 			<div class='formItem'>
 <?php	
-				if(sizeof($va_errors)) { 
+				if(sizeof($errors)) { 
 					print "<div class='contentError'> ".caNavIcon(__CA_NAV_ICON_ALERT__ , 1, ['class' => 'permissionErrorIcon'])._t('Please enter a valid email address')."</div>\n"; 
 				}
 ?>
 				<?=_t("Administrator's e-mail address"); ?>:<br/>
-				<input type='text' name='email' value='<?= htmlspecialchars($ps_email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
+				<input type='text' name='email' class='installerEmail' value='<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>' size='40' maxlength='100'/>
 			</div><!-- end formItem -->
 			<div class='formItem'><?= _t("Installation profile"); ?>:<br/>
 				<div id="profileChooser">
 <?php
-					print caHTMLSelect('profile', caGetAvailableProfiles(), array('id' => 'profileSelect'), array('value' => $ps_profile));
+					print caHTMLSelect('profile', caGetAvailableProfiles(), ['id' => 'profileSelect', 'class' => 'profileSelect'], array('value' => $profile));
 
 			if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 ?>
@@ -109,8 +109,13 @@ $o_config = Configuration::load();
 <?php
 			}
 ?>
-				
-				<div class="loginSubmitButton"><a href='#' onclick='jQuery("#page1form").submit();' class='form-button'><span class='form-button'><i class="form-button-left fa fa-check-circle-o fa-2x" style='padding-right: 10px;'></i> <?= _t('Begin installation'); ?></span></a></div>
+
+				<div class="loginSubmitPanel">
+					<div class="loginSubmitButton">
+						<div class="loginSubmitButtonItem icon"><a href="#" onclick="jQuery('#page1form').submit();" aria-label=<?= json_encode(_t('Begin installation')); ?>><i class="caIcon far fa-check-circle" border="0" alt="='Save'" style="font-size: 30px; padding-right: 5px"></i></a></div>
+						<div class="loginSubmitButtonItem text"><a href="#" onclick="jQuery('#page1form').submit();" aria-label=<?= json_encode(_t('Begin installation')); ?>><?= _t('Begin installation'); ?></a></div>
+					</div>
+				</div>
 				<input type='hidden' name='page' value='2'/>
 			</form>
 		</div><!-- end installForm -->

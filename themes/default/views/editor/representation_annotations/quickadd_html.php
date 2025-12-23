@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -77,6 +77,11 @@ $notifications 	= $this->getVar('notifications');
 		
 		<script type="text/javascript">
 			function caSaveAnnotation<?= $form_name.$field_name_prefix.$n; ?>(e) {
+				if(caUI.ckEditors) { 
+					jQuery.each(caUI.ckEditors, function(k, instance) {
+						instance.updateSourceElement();
+					});
+				}
 				jQuery.post('<?= caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?= $form_name.$field_name_prefix.$n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						

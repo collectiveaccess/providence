@@ -57,7 +57,7 @@ class CheckOutController extends ActionController {
 	 * 
 	 */
 	public function Items() {
-		$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
+		$library_config = Configuration::load('library_services.conf');
 		$user_id = $this->request->user->canDoAction('can_do_library_checkinout_for_anyone') ? $this->request->getParameter('user_id', pInteger) : $this->request->getUserID();
 		
 		$this->view->setVar('user_id', $user_id);
@@ -198,7 +198,7 @@ class CheckOutController extends ActionController {
 	 * Return info via ajax on selected object
 	 */
 	public function SaveTransaction() {
-		$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
+		$library_config = Configuration::load('library_services.conf');
 		$checkout_template = $library_config->get('checkout_receipt_item_display_template');
 		$reservation_template = $library_config->get('checkout_reservation_receipt_item_display_template');
 	
@@ -300,7 +300,7 @@ class CheckOutController extends ActionController {
 	 * Return current user's borrowings
 	 */
 	public function Return() {
-		$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
+		$library_config = Configuration::load('library_services.conf');
 		$display_template = $library_config->get('checkout_receipt_item_display_template');
 		
 		$t_checkout = new ca_object_checkouts();

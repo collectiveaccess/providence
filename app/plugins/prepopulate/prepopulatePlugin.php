@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -55,6 +55,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		);
 	}
 	# --------------------------------------------------------------------------------------------
+	public function hookBeforeInsertItem(&$pa_params) {
+		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
+			$this->prepopulateFields($pa_params, ['hook' => 'beforeInsert']);
+		}
+		return $pa_params;
+	}
 	public function hookInsertItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
 			$this->prepopulateFields($pa_params, ['hook' => 'save']);
@@ -90,7 +96,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	    	'Command' => 'apply-prepopulate-rules',
             'Options' => [
                         'restrictToTables|T-s' => _t('Apply rules only on specified tables. You can include multiple tables with a comma separated list (Ex: --restrictToTables="ca_objects,ca_entities"). Cannot be used with excludeTables'),
-                        'excludeTables|t-s' => _t('Don\'apply rules on specified tables. You can exclude multiple tables with a comma separated list (Ex: --excludeTables="ca_objects,ca_entities"). Cannot be used with restrictToTables'),
+                        'excludeTables|t-s' => _t('Don\'t apply rules on specified tables. You can exclude multiple tables with a comma separated list (Ex: --excludeTables="ca_objects,ca_entities"). Cannot be used with restrictToTables'),
                         'restrictToRules|R-s' => _t('Apply only specified rules. You can include multiple rules with a comma separated list (Ex: --restrictToRules="rule1,rule2"). Cannot be used with excludeRules'),
                         'excludeRules|r-s' => _t('Don\'t apply specified rules. You can exclude multiple rules with a comma separated list (Ex: --excludeRules="rule1,rule2"). Cannot be used with restrictToRules'),
                         'findQuery|F-s' => _t("Accept an associative array of key and values in json format. Key can be an intrinsic or a metadata, used without table identifier. Ex: --findQuery='{\"idno\":\"foo\"}' to apply the rules to every record where idno=foo")],
@@ -142,10 +148,10 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$this->opo_plugin_config = Configuration::load($vs_prepopulate_cfg);
 		}
 
-		$hook = caGetOption('hook', $options, null);
-
+		$hook = caGetOption('hook', $options, null, ['forceLowercase' => true]);
 		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
 		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
+		$default_prepop_before_insert = (bool)$this->opo_plugin_config->get('prepopulate_fields_before_insert');
 
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
@@ -197,8 +203,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			} elseif(!$useFor) {
 				if (($hook === 'edit') && !$default_prepop_on_edit) { continue; }
 				if (($hook === 'save') && !$default_prepop_on_save) { continue; }
+				if (($hook === 'beforeinsert') && !$default_prepop_before_insert) { continue; }
 			}
-
 			$vs_mode = strtolower(caGetOption('mode', $va_rule, 'merge'));
 
 			// check target
@@ -240,10 +246,20 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				}
 			}
 
+			$vs_value = null;
             if (!$vb_is_relationship_rule) {
                 // evaluate template
                 if($t_parent) { $vs_template = str_replace(".parent.", ".", $vs_template); }
-                $vs_value = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), [$t_parent ? $t_parent->getPrimaryKey() : $t_instance->getPrimaryKey()], array('path' => true));
+                
+                if($t_instance->isLoaded()) {
+               		$vs_value = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), [$t_parent ? $t_parent->getPrimaryKey() : $t_instance->getPrimaryKey()], array('path' => true));
+               	} else {
+               		$values = $t_instance->getFieldValuesArray();
+               		foreach($values as $k => $x) {
+               			$values[$t_instance->tableName().'.'.$k] = $x;
+               		}
+               		$vs_value = caProcessTemplate($vs_template, $values);
+               	}
                 Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
             }
 
@@ -651,8 +667,13 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			}
 		}
 
-
 		if($force_values) {
+			foreach($forced_values as $k => $v) {
+				if($t_instance->hasField($k)) {
+					unset($forced_values[$k]);
+					$t_instance->set($k, $v);
+				}
+			}
 			$params['forced_values'] = $forced_values;
 		} elseif ($t_instance->attributesChanged() || (count($t_instance->getChangedFieldValuesArray()) > 0)) {
 			if(isset($_REQUEST['form_timestamp']) && ($_REQUEST['form_timestamp'] > 0)) { $_REQUEST['form_timestamp'] = time(); }

@@ -60,7 +60,7 @@ if (!function_exists('array_key_first')) {
 
 MemoryCache::flush('translation');
 
-$g_translations = Configuration::load(__CA_CONF_DIR__."/translations.conf");
+$g_translations = Configuration::load('translations.conf');
 
 $g_translation_strings = $g_translations->get('strings');
 $g_translation_replacements = $g_translations->get('replacements');
@@ -3749,7 +3749,7 @@ function caFileIsIncludable($ps_file) {
 		$va_extracted_measurements = [];
 		$vs_specified_units = $vs_extracted_units = null;
 		
-		$o_dimensions_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+		$o_dimensions_config = Configuration::load('dimensions.conf');
 
 		$ps_units = caGetOption('units', $pa_options, 'in');
 		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
@@ -3880,7 +3880,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param RequestHTTP $request Current request
 	 * @return string
 	 */
-	function caGenerateCSRFToken($request=null){
+	function caGenerateCSRFToken($request=null, ?array $options=null){
 		$session_id = $request ? $request->getSessionID() : 'none';
 	    if(function_exists("random_bytes")) {           // PHP 7
 	        $token = bin2hex(random_bytes(32));
@@ -3893,11 +3893,13 @@ function caFileIsIncludable($ps_file) {
 	        if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
 	        if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
 	    
-	    	foreach($used_tokens as $ut => $t) {
-	    		unset($tokens[$ut]);
-	    	}
+	    	if(caGetOption('removeUsedTokens', $options, false)) {
+				foreach($used_tokens as $ut => $t) {
+					unset($tokens[$ut]);
+				}
+			}
 	    
-	        if (sizeof($tokens) > 255) { 
+	        if (sizeof($tokens) > 1024) { 
 	        	$tokens = array_filter($tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    	}
 	    
@@ -3905,7 +3907,7 @@ function caFileIsIncludable($ps_file) {
 	        
 	        PersistentCache::save("csrf_tokens_{$session_id}", $tokens, "csrf_tokens");
 	        
-	         if (sizeof($used_tokens) > 255) { 
+	         if (sizeof($used_tokens) > 1024) { 
 	        	$used_tokens = array_filter($used_tokens, function($v) { return ($v > (time() - 86400)); });	// delete any token older than eight hours
 	    		PersistentCache::save("csrf_used_tokens_{$session_id}", $used_tokens, "csrf_tokens");
 	    	}
@@ -3930,7 +3932,7 @@ function caFileIsIncludable($ps_file) {
 	    if(!$token) { $token = $request->getParameter('csrfToken', pString); }
 	    
 		if (!is_array($used_tokens = PersistentCache::fetch("csrf_used_tokens_{$session_id}", "csrf_tokens"))) { $used_tokens = []; }
-	    if(isset($used_tokens[$token])) { return null; }	// ignore - token has already been used
+	   // if(isset($used_tokens[$token])) { return null; }	// ignore - token has already been used
 		
 	    if (!is_array($tokens = PersistentCache::fetch("csrf_tokens_{$session_id}", "csrf_tokens"))) { $tokens = []; }
 	    
@@ -4140,7 +4142,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_display_config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+		$o_display_config = Configuration::load('dimensions.conf');
 		
 		$pa_allow_fractions_for = caGetOption('allowFractionsFor', $pa_options, null);
         if (is_null($pa_allow_fractions_for)) { $pa_allow_fractions_for = $o_display_config->get('display_fractions_for'); }
@@ -4784,7 +4786,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string
 	 */
 	function caGenerateRandomPassword($length=6, $options=null) {
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 
 		if(strtolower($auth_config->get('auth_adapter')) === 'causers') { // password policies only apply to integral auth system
 			if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {

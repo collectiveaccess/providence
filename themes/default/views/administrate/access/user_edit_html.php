@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,89 +25,102 @@
  *
  * ----------------------------------------------------------------------
  */
+$t_user = $this->getVar('t_user');
+$user_id = $this->getVar('user_id');
 
-	$t_user = $this->getVar('t_user');
-	$vn_user_id = $this->getVar('user_id');
-	
-	$va_roles = $this->getVar('roles');
-	$va_groups = $this->getVar('groups');
+$roles = $this->getVar('roles');
+$groups = $this->getVar('groups');
+$password_policies = $this->getVar('password_policies') ?? [];
 ?>
 <div class="sectionBox">
 <?php
-	print $vs_control_box = caFormControlBox(
+	print $control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'UsersForm').' '.
 		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'ListUsers', array('user_id' => 0)), 
 		'', 
-		($vn_user_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $vn_user_id)) : ''
+		($user_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $user_id)) : ''
 	);
 ?>
 <?php
 	print caFormTag($this->request, 'Save', 'UsersForm');
-
+?>
+	<h2><?= _t('Login information'); ?></h2>
+<?php
 		// ca_users fields
-		foreach($t_user->getFormFields() as $vs_f => $va_user_info) {
+		foreach($t_user->getFormFields() as $f => $user_info) {
 			
-			switch($vs_f) {
+			switch($f) {
 				case 'password':
 					if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
-						// display password confirmation
-						print $t_user->htmlFormElement($vs_f, null, array('value' => '', 'placeholder' => _t('Change password'), 'field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-						print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('value' => '', 'placeholder' => _t('Confirm password'), 'name' => 'password_confirm', 'LABEL' => 'Confirm password'));
+?>
+						<div class="userPasswordInput">
+							<?= $t_user->htmlFormElement($f, null, array('includeVisibilityButton' => true, 'value' => '', 'placeholder' => _t('Change password'), 'field_errors' => $this->request->getActionErrors('field_'.$f))); ?>
+						</div>
+						<div class="userPasswordInput">
+							<?= $t_user->htmlFormElement($f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('includeVisibilityButton' => true, 'value' => '', 'placeholder' => _t('Confirm password'), 'name' => 'password_confirm', 'LABEL' => 'Confirm password')); ?>
+							<div id="password_errors"></div>
+						</div>
+<?php
 					}
 					break;
 				case 'entity_id':
-					print "<div class='formLabel'><span id='_ca_user_entity_id_'>".($vs_entity_label = $t_user->getFieldInfo('entity_id', 'LABEL'))."</span><br/>";
-					$vs_template = join($this->request->config->get('ca_entities_lookup_delimiter'), $this->request->config->get('ca_entities_lookup_settings'));
-					print caHTMLTextInput('entity_id_lookup', array('class' => 'lookupBg', 'size' => 70, 'id' => 'ca_users_entity_id_lookup', 'value' => caProcessTemplateForIDs($vs_template, 'ca_entities', array($vn_entity_id = $t_user->get('entity_id')))));
-					if ($vn_entity_id) { print "<a href='#' onclick='caClearUserEntityID(); return false;'>"._t('Clear')." &rsaquo;</a>\n"; }
-					print caHTMLHiddenInput('entity_id', array('value' => $vn_entity_id, 'id' => 'ca_users_entity_id_value'));
+					print "<div class='formLabel'><span id='_ca_user_entity_id_'>".($entity_label = $t_user->getFieldInfo('entity_id', 'LABEL'))."</span><br/>";
+					$lookup_template = $this->request->config->get('ca_entities_lookup_settings');
+					if(!is_array($lookup_template) && $lookup_template) {
+						$lookup_template = [$lookup_template];
+					}
+					$template = join($this->request->config->get('ca_entities_lookup_delimiter'), $lookup_template);
+					print caHTMLTextInput('entity_id_lookup', array('class' => 'lookupBg', 'size' => 70, 'id' => 'ca_users_entity_id_lookup', 'value' => caProcessTemplateForIDs($template, 'ca_entities', array($entity_id = $t_user->get('entity_id')))));
+					if ($entity_id) { print "<a href='#' onclick='caClearUserEntityID(); return false;'>"._t('Clear')." &rsaquo;</a>\n"; }
+					print caHTMLHiddenInput('entity_id', array('value' => $entity_id, 'id' => 'ca_users_entity_id_value'));
 					print "</div>\n";
 					
 					ToolTipManager::add(
-						'#_ca_user_entity_id_', "<h3>{$vs_entity_label}</h3>\n".$t_user->getFieldInfo('entity_id', 'DESCRIPTION')
+						'#_ca_user_entity_id_', "<h3>{$entity_label}</h3>\n".$t_user->getFieldInfo('entity_id', 'DESCRIPTION')
 					);
 					break;
 				default:
-					print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+					print $t_user->htmlFormElement($f, null, array('field_errors' => $this->request->getActionErrors('field_'.$f)));
 					break;
 			}
 		}
 ?>
-		<table style="width: 700px;">
-			<tr valign="top">
-				<td>
+					<div class="roles">
+						<h2><?= _t('Roles'); ?></h2>
+						
+						<div class="roleList">
 <?php
 		// roles
-		print $t_user->roleListAsHTMLFormElement(array('name' => 'roles', 'size' => 6));
+		print $t_user->roleListAsHTMLFormElement(['name' => 'roles', 'size' => 6, 'renderAs' => DT_CHECKBOXES, 'includeLabel' => false]);
 ?>
-				</td>
-				<td>
+						</div>
+					</div>
+					<div class="groups">
+						<h2><?= _t('Groups'); ?></h2>
+						
+						<div class="groupList">
 <?php
-		// groups
-		print $t_user->groupListAsHTMLFormElement(array('name' => 'groups', 'size' => 6));
+		// Groups
+		print $t_user->groupListAsHTMLFormElement(['name' => 'groups', 'size' => 6, 'renderAs' => DT_CHECKBOXES, 'includeLabel' => false]);
 ?>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="2">
+						</div>
+					</div>
+					<h2><?= _t('User profile'); ?></h2>
 <?php
 		// Output user profile settings if defined
-		$va_user_profile_settings = $this->getVar('profile_settings');
-		if (is_array($va_user_profile_settings) && sizeof($va_user_profile_settings)) {
-			foreach($va_user_profile_settings as $vs_field => $va_info) {
-				if($va_errors[$vs_field] ?? null){
-					print "<div class='formErrors' style='text-align: left;'>".$va_errors[$vs_field]."</div>";
+		$user_profile_settings = $this->getVar('profile_settings');
+		if (is_array($user_profile_settings) && sizeof($user_profile_settings)) {
+			foreach($user_profile_settings as $field => $info) {
+				if($errors[$field] ?? null){
+					print "<div class='formErrors' style='text-align: left;'>".$errors[$field]."</div>";
 				}
-				print $va_info['element']."\n";
+				print $info['element']."\n";
 			}
 		}
 ?>				
-				</td>
-			</tr>
-		</table>
 	</form>
 <?php
-	print $vs_control_box;
+	print $control_box;
 ?>
 </div>
 	<div class="editorBottomPadding"><!-- empty --></div>
@@ -125,6 +138,32 @@
 				}
 			}
 		);
+		
+		const pwchecker = caUI.initPasswordChecker({
+			'policies': <?= json_encode($password_policies); ?>,
+			'messagePrefix': <?= json_encode(caNavIcon(__CA_NAV_ICON_ALERT__, 1).' '); ?>,
+			'minimumPasswordScore': <?= (int)$this->getVar('requireMinimumPasswordScore'); ?>,
+			'messages': {
+				'INCLUDES_PHRASE': <?= json_encode(_t('Password must not include the phrase "%value"')); ?>,
+				'DOES_NOT_INCLUDE_SPECIAL_CHARACTERS_SINGULAR': <?= json_encode(_t('Password must include at least %value special character')); ?>,
+				'DOES_NOT_INCLUDE_SPECIAL_CHARACTERS_PLURAL': <?= json_encode(_t('Password must include at least %value special characters')); ?>,
+				'DOES_NOT_INCLUDE_DIGITS_SINGULAR': <?= json_encode(_t('Password must include at least %value digit')); ?>,
+				'DOES_NOT_INCLUDE_DIGITS_PLURAL': <?= json_encode(_t('Password must include at least %value digits')); ?>,
+				'DOES_NOT_INCLUDE_LOWERCASE_SINGULAR': <?= json_encode(_t('Password must include at least %value lowercase character')); ?>,
+				'DOES_NOT_INCLUDE_LOWERCASE_PLURAL': <?= json_encode(_t('Password must include at least %value lowercase characters')); ?>,
+				'DOES_NOT_INCLUDE_UPPERCASE_SINGULAR': <?= json_encode(_t('Password must include at least %value uppercase character')); ?>,
+				'DOES_NOT_INCLUDE_UPPERCASE_PLURAL': <?= json_encode(_t('Password must include at least %value uppercase characters')); ?>,
+				'IS_NOT_MIN_LENGTH_SINGULAR': <?= json_encode(_t('Password must be at least %value character')); ?>,
+				'IS_NOT_MIN_LENGTH_PLURAL': <?= json_encode(_t('Password must be at least %value characters')); ?>,
+				'IS_NOT_MAX_LENGTH_SINGULAR': <?= json_encode(_t('Password must be at less than %value character')); ?>,
+				'IS_NOT_MAX_LENGTH_PLURAL': <?= json_encode(_t('Password must be at less than %value characters')); ?>,
+				'DO_NOT_MATCH': <?= json_encode(_t('Passwords do not match')); ?>,
+				'EASY_TO_GUESS': <?= json_encode(_t('Password is easy to guess')); ?>
+			},
+		});
+		jQuery("#password, #password_confirm").on('keyup', function(e) {
+ 			pwchecker.checkPasswordInput('password', 'password_errors');
+		});
 	});
 	
 	function caClearUserEntityID() {

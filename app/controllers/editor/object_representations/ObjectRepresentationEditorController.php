@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -203,8 +203,9 @@ class ObjectRepresentationEditorController extends BaseEditorController {
 	
 		if ($vn_representation_id) {
 			// find object editor screen with media bundle
-			$t_ui = ca_editor_uis::loadDefaultUI('ca_objects', $this->request);
-			$this->view->setVar('object_editor_screen', $t_ui->getScreenWithBundle('ca_object_representations', $this->request));
+			if($t_ui = ca_editor_uis::loadDefaultUI('ca_objects', $this->request)) {
+				$this->view->setVar('object_editor_screen', $t_ui->getScreenWithBundle('ca_object_representations', $this->request));
+			}
 		}
 		
 		return $this->render('widget_object_representation_info_html.php', true);

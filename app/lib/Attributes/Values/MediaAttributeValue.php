@@ -102,10 +102,25 @@ $_ca_attribute_settings['MediaAttributeValue'] = array(		// global
 
 class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $opa_media_data;
-	private $ops_media_data;
-	private $ops_file_original_name;
-	private $opo_media_info_coder;
+	/**
+	 *
+	 */
+	protected $opa_media_data;
+	
+	/**
+	 *
+	 */
+	protected $ops_media_data;
+
+	/**
+	 *
+	 */
+	protected $ops_file_original_name;
+	
+	/**
+	 *
+	 */
+	protected $opo_media_info_coder;
 	# ------------------------------------------------------------------
 	/**
 	 *
@@ -399,6 +414,15 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function getType() {
 		return __CA_ATTRIBUTE_VALUE_MEDIA__;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return (strlen($this->ops_media_data) === 0);
 	}
 	# ------------------------------------------------------------------
 }

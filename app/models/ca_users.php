@@ -332,7 +332,7 @@ class ca_users extends BaseModel {
 	public function __construct($pn_id=null, ?array $options=null) {
 		parent::__construct($pn_id);	# call superclass constructor	
 		
-		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
+		$this->opo_auth_config = Configuration::load('authentication.conf');
 	}
 	# ------------------------------------------------------
 	/**
@@ -406,6 +406,12 @@ class ca_users extends BaseModel {
 			return false;
 		}
 		
+		// check password complexity	
+		if (!self::checkPasswordComplexity($this->get('password'))) {
+			$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->insert()');
+			return false;
+		}
+		
 
 		# Confirmation key is an md5 hash than can be used as a confirmation token. The idea
 		# is that you create a new user record with the 'active' field set to false. You then
@@ -444,8 +450,8 @@ class ca_users extends BaseModel {
 	/**
 	 *
 	 */
-	static public function applyPasswordPolicy($password) {
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+	static public function applyPasswordPolicy(string $password) : bool {
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
@@ -477,6 +483,24 @@ class ca_users extends BaseModel {
 				return false;
 			}
 		}
+		
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	static public function checkPasswordComplexity(string $password) : bool {
+		$auth_config = Configuration::load('authentication.conf');
+		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
+	
+		if(($min_score = (int)$auth_config->get('require_minimum_password_score')) > 0) {
+			$zxcvbn = new ZxcvbnPhp\Zxcvbn();
+			$d = $zxcvbn->passwordStrength($password);
+			if(is_array($d) && ($d['score'] < $min_score)) {
+				return false;
+			}
+		}
 		return true;
 	}
 	# ----------------------------------------
@@ -484,7 +508,7 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	static public function getPasswordPolicyAsText() {
-		$auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return ''; }	// password policies only apply to integral auth system
 		
 		if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
@@ -562,6 +586,12 @@ class ca_users extends BaseModel {
 		if($this->changed('password')) {
 			if (!self::applyPasswordPolicy($this->get('password'))) {
 				$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->update()');
+				return false;
+			}
+					
+			// check password complexity	
+			if (!self::checkPasswordComplexity($this->get('password'))) {
+				$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->update()');
 				return false;
 			}
 			
@@ -653,7 +683,11 @@ class ca_users extends BaseModel {
 			$va_values["ca_users.{$vs_key}"] = $vs_val;
 		}
 		
-		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
+		$lookup_template = $this->getAppConfig()->get('ca_users_lookup_settings');
+		if(!is_array($lookup_template) && $lookup_template) {
+			$lookup_template = [$lookup_template];
+		}
+		return caProcessTemplate(join($this->getAppConfig()->get('ca_users_lookup_delimiter'), $lookup_template), $va_values, array());
 	}
 	# ----------------------------------------
 	# --- User variables
@@ -795,67 +829,82 @@ class ca_users extends BaseModel {
 	/** 
 	 * Returns list of users
 	 *
-	 * @param array $pa_options Optional array of options. Options include:
-	 *		sort
-	 *		sort_direction
-	 *		userclass
+	 * @param array $options Optional array of options. Options include:
+	 *		sort =
+	 *		sort_direction =
+	 *		userclass =
+	 *		start =
+	 *		limit =
+	 *		count = 
 	 *	@return array List of users. Array is keyed on user_id and value is array with all ca_users fields + the last_login time as a unix timestamp
 	 *
 	 */
-	public function getUserList($pa_options=null) {
-		$ps_sort_field= isset($pa_options['sort']) ? $pa_options['sort'] : '';
-		$ps_sort_direction= isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : 'asc';
-		$pa_userclass= isset($pa_options['userclass']) ? $pa_options['userclass'] : array();
-
-		if(!is_array($pa_userclass)) { $pa_userclass = array($pa_userclass); }
+	public function getUserList(?array $options=null) {
+		$sort_field= isset($options['sort']) ? $options['sort'] : '';
+		$sort_direction= isset($options['sort_direction']) ? $options['sort_direction'] : 'asc';
+		$userclass= isset($options['userclass']) ? $options['userclass'] : array();
+		$start = caGetOption('start', $options, 0);
+		$limit = caGetOption('limit', $options, null);	
+		$count = caGetOption('count', $options, false);	
+	
+		$limit_sql = '';
+		if($limit > 0) {
+			$limit_sql .= "LIMIT {$limit}";
+		}
+		if($start > 0) {
+			$limit_sql .= " OFFSET {$start}";
+		}
+		if(!is_array($userclass)) { $userclass = [$userclass]; }
 
 		$o_db = $this->getDb();
 		
-		$va_valid_sorts = array('lname,fname', 'user_name', 'email', 'last_login', 'active', 'registered_on');
-		if (!in_array($ps_sort_field, $va_valid_sorts)) {
-			$ps_sort_field = 'lname,fname';
+		$valid_sorts = ['lname', 'lname,fname', 'user_name', 'email', 'last_login', 'active', 'registered_on'];
+		if (!in_array($sort_field, $valid_sorts)) {
+			$sort_field = 'lname,fname';
 		}
 		
-		if($ps_sort_direction != 'desc') {
-			$ps_sort_direction = 'asc';
+		if($sort_direction != 'desc') {
+			$sort_direction = 'asc';
 		}
 		
-		$va_query_params = array();
-		$vs_user_class_sql = '';
-		if (is_array($pa_userclass) && sizeof($pa_userclass)) {
-			$vs_user_class_sql = " WHERE userclass IN (?)";
-			$va_query_params[] = $pa_userclass;
+		$query_params = [];
+		$user_class_sql = '';
+		if (is_array($userclass) && sizeof($userclass)) {
+			$user_class_sql = " WHERE userclass IN (?)";
+			$query_params[] = $userclass;
 		}
 		
-		if ($ps_sort_field == 'last_login') {
-			$vs_sort = '';
-		} else {
-			$vs_sort = "ORDER BY {$ps_sort_field} {$ps_sort_direction}";
+		$sort_sql = '';
+		if ($sort_field !== 'last_login') {
+			$sort_sql = "ORDER BY {$sort_field} {$sort_direction}";
 		}
-		$qr_users = $o_db->query("
+		$qr_users = $o_db->query($x="
 			SELECT *
 			FROM ca_users
-				{$vs_user_class_sql}
-			{$vs_sort}
-		", $va_query_params);
-		
-		$va_users = array();
+				{$user_class_sql}
+				{$sort_sql}
+				{$limit_sql}
+		", $query_params);
+		if($count) {
+			return $qr_users->numRows();
+		}
+		$users = [];
 		while($qr_users->nextRow()) {
-			if (!is_array($va_vars = $qr_users->getVars('vars'))) { $va_vars = array(); }
+			if (!is_array($vars = $qr_users->getVars('vars'))) { $vars = []; }
 			
-			if (is_array($va_volatile_vars = $qr_users->getVars('volatile_vars'))) {
-				$va_vars = array_merge($va_vars, $va_volatile_vars);
+			if (is_array($volatile_vars = $qr_users->getVars('volatile_vars'))) {
+				$vars = array_merge($vars, $volatile_vars);
 			}
- 			$va_users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), array('last_login' => $va_vars['last_login'] ?? null));
+ 			$users[$qr_users->get('user_id')] = array_merge($qr_users->getRow(), ['last_login' => $vars['last_login'] ?? null]);
  		}
 		
-		return $va_users;
+		return $users;
 	}
 	# ----------------------------------------
 	/**
 	 * Returns HTML multiple <select> with list of "full" users
 	 *
-	 * @param array $pa_options (optional) array of options. Keys are:
+	 * @param array $options (optional) array of options. Keys are:
 	 *		size = height of multiple select, in rows; default is 8
 	 *		name = HTML form element name to apply to role <select>; default is 'groups'
 	 *		id = DOM id to apply to role <select>; default is no id
@@ -863,33 +912,33 @@ class ca_users extends BaseModel {
 	 *		selected = User_id values to select
 	 * @return string Returns HTML containing form element and form label
 	 */
-	public function userListAsHTMLFormElement($pa_options=null) {
-		$vn_size = (isset($pa_options['size']) && ($pa_options['size'] > 0)) ? $pa_options['size'] : 8;
-		$vs_name = (isset($pa_options['name'])) ? $pa_options['name'] : 'users';
-		$vs_id = (isset($pa_options['id'])) ? $pa_options['id'] : '';
-		$vs_label = (isset($pa_options['label'])) ? $pa_options['label'] : _t('Users');
-		$va_selected = (isset($pa_options['selected']) && is_array($pa_options['selected'])) ? $pa_options['selected'] : array();
+	public function userListAsHTMLFormElement($options=null) {
+		$vn_size = (isset($options['size']) && ($options['size'] > 0)) ? $options['size'] : 8;
+		$name = (isset($options['name'])) ? $options['name'] : 'users';
+		$id = (isset($options['id'])) ? $options['id'] : '';
+		$label = (isset($options['label'])) ? $options['label'] : _t('Users');
+		$selected = (isset($options['selected']) && is_array($options['selected'])) ? $options['selected'] : array();
 		
-		$va_users = $this->getUserList($pa_options);
-		$vs_buf = '';
+		$users = $this->getUserList($options);
+		$buf = '';
 		
-		if (sizeof($va_users)) {
-			$vs_buf .= "<select multiple='1' name='{$vs_name}[]' size='{$vn_size}' id='{$vs_id}'>\n";
-			foreach($va_users as $vn_user_id => $va_user_info) {
-				$SELECTED = (in_array($vn_user_id, $va_selected)) ? "SELECTED='1'" : "";
-				$vs_buf .= "<option value='{$vn_user_id}' {$SELECTED}>".$va_user_info['fname'].' '.$va_user_info['lname'].($va_user_info['email'] ? " (".$va_user_info['email'].")" : "")."</option>\n";
+		if (sizeof($users)) {
+			$buf .= "<select multiple='1' name='{$name}[]' size='{$vn_size}' id='{$id}'>\n";
+			foreach($users as $vn_user_id => $user_info) {
+				$SELECTED = (in_array($vn_user_id, $selected)) ? "SELECTED='1'" : "";
+				$buf .= "<option value='{$vn_user_id}' {$SELECTED}>".$user_info['fname'].' '.$user_info['lname'].($user_info['email'] ? " (".$user_info['email'].")" : "")."</option>\n";
 			}
-			$vs_buf .= "</select>\n";
+			$buf .= "</select>\n";
 		}
-		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
-			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
-			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
-			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
-			$vs_format = str_replace("^ERRORS", '', $vs_format);
-			$vs_buf = str_replace("^EXTRA", '', $vs_format);
+		if ($buf && ($format = $this->_CONFIG->get('form_element_display_format'))) {
+			$format = str_replace("^ELEMENT", $buf, $format);
+			$format = str_replace("^LABEL", $label, $format);
+			$format = str_replace("^BUNDLECODE", '', $format);
+			$format = str_replace("^ERRORS", '', $format);
+			$buf = str_replace("^EXTRA", '', $format);
 		}
 		
-		return $vs_buf;
+		return $buf;
 	}
 	# ----------------------------------------
 	# --- Roles
@@ -1148,14 +1197,14 @@ class ca_users extends BaseModel {
 	 * to an associated group.
 	 *
 	 * @access public
-	 * @param mixed $pm_role The role to test for the current user. Role may be specified by name, code or id.
+	 * @param mixed $role The role to test for the current user. Role may be specified by name, code or id.
 	 * @return bool Returns true if user has the role, false if not.
 	 */	
-	public function hasRole($ps_role) {
-		if ($this->hasUserRole($ps_role)) {
+	public function hasRole($role) {
+		if ($this->hasUserRole($role)) {
 			return true;
 		} else {
-			if ($this->hasGroupRole($ps_role)) {
+			if ($this->hasGroupRole($role)) {
 				return true;
 			}
 		}
@@ -1165,41 +1214,54 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns HTML multiple <select> with full list of roles for currently loaded user
 	 *
-	 * @param array $pa_options (optional) array of options. Keys are:
+	 * @param array $options (optional) array of options. Keys are:
 	 *		size = height of multiple select, in rows; default is 8
 	 *		name = HTML form element name to apply to role <select>; default is 'roles'
 	 *		id = DOM id to apply to role <select>; default is no id
 	 *		label = String to label form element with
+	 *		renderAs = Control type. Valid values are DT_SELECT or DT_CHECKBOXES. [Default is DT_SELECT]
+	 *		includeLabel = Return formatted field label above form element. [Default is true]
 	 * @return string Returns HTML containing form element and form label
 	 */
-	public function roleListAsHTMLFormElement($pa_options=null) {
-		$vn_size = (isset($pa_options['size']) && ($pa_options['size'] > 0)) ? $pa_options['size'] : 8;
-		$vs_name = (isset($pa_options['name'])) ? $pa_options['name'] : 'roles';
-		$vs_id = (isset($pa_options['id'])) ? $pa_options['id'] : '';
-		$vs_label = (isset($pa_options['label'])) ? $pa_options['label'] : _t('Roles');
+	public function roleListAsHTMLFormElement(?array $options=null) : string {
+		$size = (isset($options['size']) && ($options['size'] > 0)) ? $options['size'] : 8;
+		$name = (isset($options['name'])) ? $options['name'] : 'roles';
+		$id = (isset($options['id'])) ? $options['id'] : '';
+		$label = (isset($options['label'])) ? $options['label'] : _t('Roles');
 		
+		$render_as = caGetOption('renderAs', $options, DT_SELECT);
+		$include_label = caGetOption('includeLabel', $options, true);
 		
-		$va_roles = $this->getRoleList();
-		$vs_buf = '';
-		if (sizeof($va_roles)) {
-			if(!$va_user_roles = $this->getUserRoles(['skipVars' => true])) { $va_user_roles = array(); }
+		$roles = $this->getRoleList();
+		$buf = '';
+		if (sizeof($roles)) {
+			if(!$user_roles = $this->getUserRoles(['skipVars' => true])) { $user_roles = []; }
 		
-			$vs_buf .= "<select multiple='1' name='{$vs_name}[]' size='{$vn_size}' id='{$vs_id}'>\n";
-			foreach($va_roles as $vn_role_id => $va_role_info) {
-				$SELECTED = (isset($va_user_roles[$vn_role_id]) && $va_user_roles[$vn_role_id]) ? "SELECTED='1'" : "";
-				$vs_buf .= "<option value='{$vn_role_id}' {$SELECTED}>".$va_role_info['name']." [".$va_role_info["code"]."]</option>\n";
+			switch($render_as) {
+				case DT_CHECKBOXES:
+					foreach($roles as $role_id => $role_info) {
+						$SELECTED = (isset($user_roles[$role_id]) && $user_roles[$role_id]) ? "CHECKED='1'" : "";
+						$buf .= "<div><input type='checkbox' name='{$name}[]' value='{$role_id}' {$SELECTED}>".$role_info['name']." [".$role_info["code"]."]</div>\n";
+					}
+					break;
+				default:
+					$buf .= "<select multiple='1' name='{$name}[]' size='{$size}' id='{$id}'>\n";
+					foreach($roles as $role_id => $role_info) {
+						$SELECTED = (isset($user_roles[$role_id]) && $user_roles[$role_id]) ? "SELECTED='1'" : "";
+						$buf .= "<option value='{$role_id}' {$SELECTED}>".$role_info['name']." [".$role_info["code"]."]</option>\n";
+					}
+					$buf .= "</select>\n";
 			}
-			$vs_buf .= "</select>\n";
 		}
-		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
-			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
-			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
-			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
-			$vs_format = str_replace("^ERRORS", '', $vs_format);
-			$vs_buf = str_replace("^EXTRA", '', $vs_format);
+		if ($buf && $include_label && ($format = $this->_CONFIG->get('form_element_display_format'))) {
+			$format = str_replace("^ELEMENT", $buf, $format);
+			$format = str_replace("^LABEL", $label, $format);
+			$format = str_replace("^BUNDLECODE", '', $format);
+			$format = str_replace("^ERRORS", '', $format);
+			$buf = str_replace("^EXTRA", '', $format);
 		}
 		
-		return $vs_buf;
+		return $buf;
 	}
 	# ----------------------------------------
 	# --- Groups
@@ -1543,42 +1605,55 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns HTML multiple <select> with full list of groups for currently loaded user
 	 *
-	 * @param array $pa_options (optional) array of options. Keys are:
+	 * @param array $options (optional) array of options. Keys are:
 	 *		size = height of multiple select, in rows; default is 8
 	 *		name = HTML form element name to apply to role <select>; default is 'groups'
 	 *		id = DOM id to apply to role <select>; default is no id
 	 *		label = String to label form element with
+	 *		renderAs = Control type. Valid values are DT_SELECT or DT_CHECKBOXES. [Default is DT_SELECT]
+	 *		includeLabel = Return formatted field label above form element. [Default is true]
 	 * @return string Returns HTML containing form element and form label
 	 */
-	public function groupListAsHTMLFormElement($pa_options=null) {
-		$vn_size = (isset($pa_options['size']) && ($pa_options['size'] > 0)) ? $pa_options['size'] : 8;
-		$vs_name = (isset($pa_options['name'])) ? $pa_options['name'] : 'groups';
-		$vs_id = (isset($pa_options['id'])) ? $pa_options['id'] : '';
-		$vs_label = (isset($pa_options['label'])) ? $pa_options['label'] : _t('Groups');
+	public function groupListAsHTMLFormElement(?array $options=null) : string {
+		$size = (isset($options['size']) && ($options['size'] > 0)) ? $options['size'] : 8;
+		$name = (isset($options['name'])) ? $options['name'] : 'groups';
+		$id = (isset($options['id'])) ? $options['id'] : '';
+		$label = (isset($options['label'])) ? $options['label'] : _t('Groups');
+		$render_as = caGetOption('renderAs', $options, DT_SELECT);
+		$include_label = caGetOption('includeLabel', $options, true);
 		
+		$groups = $this->getGroupList();
+		$buf = '';
 		
-		$va_groups = $this->getGroupList();
-		$vs_buf = '';
+		if (sizeof($groups)) {
+			if(!$user_groups = $this->getUserGroups()) { $user_groups = []; }
 		
-		if (sizeof($va_groups)) {
-			if(!$va_user_groups = $this->getUserGroups()) { $va_user_groups = array(); }
-		
-			$vs_buf .= "<select multiple='1' name='{$vs_name}[]' size='{$vn_size}' id='{$vs_id}'>\n";
-			foreach($va_groups as $vn_group_id => $va_group_info) {
-				$SELECTED = (isset($va_user_groups[$vn_group_id]) && $va_user_groups[$vn_group_id]) ? "SELECTED='1'" : "";
-				$vs_buf .= "<option value='{$vn_group_id}' {$SELECTED}>".$va_group_info['name']." [".$va_group_info["code"]."]</option>\n";
+			switch($render_as) {
+				case DT_CHECKBOXES:
+					foreach($groups as $group_id => $group_info) {
+						$SELECTED = (isset($user_groups[$group_id]) && $user_groups[$group_id]) ? "CHECKED='1'" : "";
+						$buf .= "<div><input type='checkbox' name='{$name}[]' value='{$group_id}' {$SELECTED}>".$group_info['name']." [".$group_info["code"]."]</div>\n";
+					}
+					break;
+				default:
+					$buf .= "<select multiple='1' name='{$name}[]' size='{$size}' id='{$id}'>\n";
+					foreach($groups as $group_id => $group_info) {
+						$SELECTED = (isset($user_groups[$group_id]) && $user_groups[$group_id]) ? "SELECTED='1'" : "";
+						$buf .= "<option value='{$group_id}' {$SELECTED}>".$group_info['name']." [".$group_info["code"]."]</option>\n";
+					}
+					$buf .= "</select>\n";
+					break;
 			}
-			$vs_buf .= "</select>\n";
 		}
-		if ($vs_buf && ($vs_format = $this->_CONFIG->get('form_element_display_format'))) {
-			$vs_format = str_replace("^ELEMENT", $vs_buf, $vs_format);
-			$vs_format = str_replace("^LABEL", $vs_label, $vs_format);
-			$vs_format = str_replace("^BUNDLECODE", '', $vs_format);
-			$vs_format = str_replace("^ERRORS", '', $vs_format);
-			$vs_buf = str_replace("^EXTRA", '', $vs_format);
+		if ($buf && $include_label && ($format = $this->_CONFIG->get('form_element_display_format'))) {
+			$format = str_replace("^ELEMENT", $buf, $format);
+			$format = str_replace("^LABEL", $label, $format);
+			$format = str_replace("^BUNDLECODE", '', $format);
+			$format = str_replace("^ERRORS", '', $format);
+			$buf = str_replace("^EXTRA", '', $format);
 		}
 		
-		return $vs_buf;
+		return $buf;
 	}
 	# ----------------------------------------
 	# --- User preferences
@@ -2646,10 +2721,8 @@ class ca_users extends BaseModel {
 	
 	public function loadUserPrefDefs($pb_force_reload=false) {
 		if (!$this->_user_pref_defs || $pb_force_reload) {
-			if ($vs_user_pref_def_path = __CA_CONF_DIR__."/user_pref_defs.conf") {
-				$this->_user_pref_defs = Configuration::load($vs_user_pref_def_path, $pb_force_reload);
-				return true;
-			}
+			$this->_user_pref_defs = Configuration::load('user_pref_defs.conf', $pb_force_reload);
+			return true;
 		}
 		return false;
 	}
@@ -3573,7 +3646,7 @@ class ca_users extends BaseModel {
 			return ca_users::$s_user_action_access_cache[$cache_key] = in_array($action, $va_actions);
 		}
 		// is default set in user_action.conf?
-		$user_actions = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
+		$user_actions = Configuration::load('user_actions.conf');
 		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
 			foreach($actions as $categories) {
 				if(isset($categories['actions'][$action]) && isset($categories['actions'][$action]['default'])) {

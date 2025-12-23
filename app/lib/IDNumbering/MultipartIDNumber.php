@@ -718,6 +718,9 @@ class MultipartIDNumber extends IDNumber {
 					if($allow_prefix = (bool)($element_info['prefix'] ?? null)) {
 						$v = preg_replace("![^0-9]+$!", "", $v);
 					}
+					if($element_info['type'] === 'SERIAL') {
+						$v = (int)$v;
+					}
 					if($prefix) {
 						$tmp = mb_substr($v, mb_strlen($prefix));
 						if(is_numeric($tmp)) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,7 +68,7 @@ $edit_url = caEditorUrl($this->request, $t_item->tableName());
 				levelDataUrl: '<?= $lookup_urls['levelList']; ?>',
 				initDataUrl: '<?= $lookup_urls['ancestorList']; ?>',
 			
-				dontAllowEditForFirstLevel: true,
+				dontAllowEditForFirstLevel: <?= json_encode(!caAllowEditingForFirstLevelOfHierarchyBrowser(Datamodel::getInstance('ca_storage_locations', true))); ?>,
 			
 				readOnly: false,
 			

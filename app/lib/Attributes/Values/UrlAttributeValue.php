@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2022 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 define("__CA_ATTRIBUTE_VALUE_URL__", 5);
 
 require_once(__CA_LIB_DIR__.'/Attributes/Values/IAttributeValue.php');
@@ -211,7 +207,10 @@ $_ca_attribute_settings['UrlAttributeValue'] = array(		// global
 
 class UrlAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
 		parent::__construct($pa_value_array);

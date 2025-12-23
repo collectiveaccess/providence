@@ -142,7 +142,7 @@ if ($id > 0) {
 			readOnly: false,
 			initItemID: '<?= $init_id; ?>',
 			indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
-			dontAllowEditForFirstLevel: <?= (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
+			dontAllowEditForFirstLevel: <?= json_encode(!caAllowEditingForFirstLevelOfHierarchyBrowser($t_subject)); ?>,
 
 			disabledItems: '<?= $disabled_items_mode; ?>',
 			

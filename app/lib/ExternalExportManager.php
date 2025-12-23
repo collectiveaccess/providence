@@ -71,7 +71,7 @@ class ExternalExportManager {
      * @return Configuration
      */
     public static function getConfig() {
-        return Configuration::load(__CA_CONF_DIR__.'/external_exports.conf');
+        return Configuration::load('external_exports.conf');
     }
     # ------------------------------------------------------
     /**

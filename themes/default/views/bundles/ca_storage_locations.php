@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 AssetLoadManager::register('hierBrowser');
 
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
@@ -219,7 +218,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 						selectOnLoad : true,
 						browserWidth: "<?= $settings['hierarchicalBrowserWidth'] ?? null; ?>",
 						
-						dontAllowEditForFirstLevel: false,
+						dontAllowEditForFirstLevel: <?= json_encode(!caAllowEditingForFirstLevelOfHierarchyBrowser(Datamodel::getInstance('ca_storage_locations', true))); ?>,
 						disabledItems: '<?= $disabled_items_mode; ?>',
 						
 						className: 'hierarchyBrowserLevel',
@@ -371,7 +370,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'placement_id' => $placement_id, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 <?php } ?>
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			

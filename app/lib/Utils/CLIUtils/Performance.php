@@ -42,7 +42,7 @@ trait CLIUtilsPerformance {
 		
 	
 		$o_app_conf = Configuration::load();
-		$o_service_conf = Configuration::load(__CA_APP_DIR__.'/conf/services.conf');
+		$o_service_conf = Configuration::load('services.conf');
 		$va_endpoints = $o_service_conf->get('simple_api_endpoints');
 		
 		$ps_password = $vs_auth = null;
@@ -139,7 +139,7 @@ trait CLIUtilsPerformance {
 	 */
 	public static function precache_browse($po_opts=null) {
 		$app_config = Configuration::load();
-		$browse_config = Configuration::load(__CA_APP_DIR__.'/conf/browse.conf');
+		$browse_config = Configuration::load('browse.conf');
 		
 		ExternalCache::flush('browse_results');
 		ExternalCache::flush('facets_for_collection_chron');
@@ -215,7 +215,7 @@ trait CLIUtilsPerformance {
 	 */
 	public static function precache_detail_exports($po_opts=null) {
 		$app_config = Configuration::load();
-		$detail_config = Configuration::load(__CA_APP_DIR__.'/conf/detail.conf');
+		$detail_config = Configuration::load('detail.conf');
 		
 		ExternalCache::flush('browse_results');
 		

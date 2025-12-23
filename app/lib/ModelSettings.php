@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -636,6 +636,9 @@ trait ModelSettings {
 					
 					if ($vs_list_code) {
 						$t_list = new ca_lists();
+						if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+							$va_opts['nullOption'] = '-';
+						}
 						if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 						$vs_select_element = $t_list->getListAsHTMLFormElement($vs_list_code, $vs_input_name, $va_attr, $va_opts);
 					} else {

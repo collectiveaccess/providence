@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -233,9 +233,20 @@ $_ca_attribute_settings['DateRangeAttributeValue'] = array(		// global
 
 class DateRangeAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $opn_start_date;
-	private $opn_end_date;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
+	
+	/**
+	 *
+	 */
+	protected $opn_start_date;
+	
+	/**
+	 *
+	 */
+	protected $opn_end_date;
 
 	/**
 	 * @var TimeExpressionParser
@@ -318,7 +329,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
 			$va_settings = [];
 		}
-		$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+		$o_date_config = Configuration::load('datetime.conf');
 
 		if (!($vs_date_format = caGetOption('dateFormat', $pa_options, null))) {
 			if (!($vs_date_format = caGetOption('dateFormat', $va_settings, null))) {
@@ -354,7 +365,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	}
 	# ------------------------------------------------------------------
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-		$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+		$o_date_config = Configuration::load('datetime.conf');
 		$show_Undated = $o_date_config->get('showUndated');
 
 		$ps_value = trim($ps_value);
@@ -394,7 +405,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 				return false;
 			} else {
-				$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+				$o_date_config = Configuration::load('datetime.conf');
 		
 				// Default to "undated" date for blanks
 				$vs_undated_date = '';
@@ -481,7 +492,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 
 			$vs_date_format = isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd';
 
-			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+			$o_date_config = Configuration::load('datetime.conf');
 			if ((bool)$o_date_config->get('useDateRangePicker')) {
 				$vs_date_picker = "daterangepicker({dateFormat: '{$vs_date_format}' , datepickerOptions: { minDate: null, maxDate: null}});";
 			}

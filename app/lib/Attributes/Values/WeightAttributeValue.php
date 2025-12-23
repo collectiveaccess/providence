@@ -155,12 +155,23 @@ $_ca_attribute_settings['WeightAttributeValue'] = array(		// global
 
 class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $opn_decimal_value;
+	/**
+	 *
+	 */
+	protected $ops_text_value;
+	
+	/**
+	 *
+	 */
+	protected $opn_decimal_value;
+	
+	/**
+	 *
+	 */
 	private $config;
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
-        $this->config = Configuration::load(__CA_APP_DIR__."/conf/dimensions.conf");
+        $this->config = Configuration::load('dimensions.conf');
 		parent::__construct($pa_value_array);
 	}
 	# ------------------------------------------------------------------
@@ -350,6 +361,15 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function getType() {
 		return __CA_ATTRIBUTE_VALUE_WEIGHT__;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if value is empty. 
+	 *
+	 * @return bool
+	 */
+	public function isEmpty() : bool {
+		return is_null($this->opn_decimal_value);
 	}
 	# ------------------------------------------------------------------
 }

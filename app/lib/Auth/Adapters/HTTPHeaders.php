@@ -39,7 +39,7 @@ class HTTPHeaderAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			return false;
 		}
 		
-		$o_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
+		$o_auth_config = Configuration::load('authentication.conf');
 		$vs_httpheader_username  = $o_auth_config->get("httpheader_username");
 		
 		// if the HTTP header is missing or blank = bad authentication
@@ -69,7 +69,7 @@ class HTTPHeaderAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
 	public function getUserInfo($ps_username, $ps_password, $options=null) {
 		
-		$o_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
+		$o_auth_config = Configuration::load('authentication.conf');
 		
 		// learn which HTTP headers to inspect
 		$vs_httpheader_username  = $o_auth_config->get("httpheader_username");

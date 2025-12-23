@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,16 +65,16 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	/**
 	 *
 	 */
-	public function __construct($pa_value_array=null) {
-		parent::__construct($pa_value_array);
+	public function __construct($value_array=null) {
+		parent::__construct($value_array);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 */
-	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
-		$this->opn_id = $pa_value_array['value_integer1'];
+	public function loadTypeSpecificValueFromRow($value_array) {
+		$this->ops_text_value = $value_array['value_longtext1'];
+		$this->opn_id = $value_array['value_integer1'];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -91,46 +91,50 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 *          checkAccess = Only return list items with a specified access value. [Default is null; no filtering performed]
 	 * @return string The value
 	 */
-	public function getDisplayValue($pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		if (caGetOption('forDuplication', $pa_options, false)) {
+	public function getDisplayValue($options=null) {
+		if (!is_array($options)) { $options = array(); }
+		if (caGetOption('forDuplication', $options, false)) {
 			return $this->opn_id;
 		}
-		if (isset($pa_options['output'])) {
-			switch(strtolower($pa_options['output'])) {
+		if (isset($options['output'])) {
+			switch(strtolower($options['output'])) {
 				case 'idno':
-					$pa_options['returnIdno'] = true;
+					$options['returnIdno'] = true;
 					break;
 				case 'text':
-					$pa_options['returnIdno'] = false;
-					$pa_options['idsOnly'] = false;
+					$options['returnIdno'] = false;
+					$options['idsOnly'] = false;
 					break;
 				default:
-					$pa_options['idsOnly'] = true;
+					$options['idsOnly'] = true;
 					break;
 			}
 		}
 		
-		$vs_idno = $this->elementTypeToInstance($this->getType())->getIdnoForID($this->opn_id, $pa_options);
-		if($vs_idno === false) { return null; } // failed checkAccess checks
+		$idno = $this->elementTypeToInstance($this->getType())->getIdnoForID($this->opn_id, $options);
+		if($idno === false) { return null; } // failed checkAccess checks
 		
-		if (caGetOption('returnIdno', $pa_options, false)) {
-			return $vs_idno;
+		if (caGetOption('returnIdno', $options, false)) {
+			return $idno;
 		}
 
 		$o_config = Configuration::load();
-		if(is_array($va_lookup_template = $o_config->getList($this->ops_table_name.'_lookup_settings'))) {
-			$vs_default_template = join($o_config->get($this->ops_table_name.'_lookup_delimiter'), $va_lookup_template);
+		$lookup_template = $o_config->get($this->ops_table_name.'_lookup_settings');
+		if(!is_array($lookup_template) && $lookup_template) {
+			$lookup_template = [$lookup_template];
+		}
+		if(is_array($lookup_template)) {
+			$default_template = join($o_config->get($this->ops_table_name.'_lookup_delimiter'), $lookup_template);
 		} else {
-			$vs_default_template = "^".$this->ops_table_name.".preferred_labels";
+			$default_template = "^".$this->ops_table_name.".preferred_labels";
 		}
 
-		$ps_template = (string)caGetOption('template', $pa_options, $vs_default_template);
-		$vb_include_id = (bool)caGetOption('includeID', $pa_options, false);
-		$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
+		$template = (string)caGetOption('template', $options, $default_template);
+		$include_id = (bool)caGetOption('includeID', $options, false);
+		$ids_only = (bool)caGetOption('idsOnly', $options, false);
 
-		if ($vb_ids_only) { return $this->opn_id; }
-		return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array('returnAsArray' => false, 'returnAllLocales' => false)).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
+		if ($ids_only) { return $this->opn_id; }
+		return $this->opn_id ? caProcessTemplateForIDs($template, $this->ops_table_name, array($this->opn_id), array('returnAsArray' => false, 'returnAllLocales' => false)).($include_id ? " [".$this->opn_id."]" : '') : "";
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -143,47 +147,47 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	/**
 	 *
 	 */
-	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-		if (!strlen($ps_value)) {
+	public function parseValue($value, $element_info, $options=null) {
+		if (!strlen($value)) {
 			// record truly empty values as null for now
 			return array(
 				'value_longtext1' => null,
 				'value_integer1' => null
 			);
 		}
-		$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
-        $vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
-		$o_trans = caGetOption('transaction', $pa_options, null);
+		$require_value = (is_null($element_info['settings']['requireValue'])) ? true : (bool)$element_info['settings']['requireValue'];
+        $treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $options, false);
+		$o_trans = caGetOption('transaction', $options, null);
 
-		$va_match_on = caGetOption('matchOn', $pa_options, null);
-		if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
-		if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno'); }
-		if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno'); }
-		if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
-		if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('row_id'); }
+		$match_on = caGetOption('matchOn', $options, null);
+		if ($match_on && !is_array($match_on)){ $match_on = array($match_on); }
+		if (!is_array($match_on) && $treat_value_as_idno) { $match_on = array('idno'); }
+		if ((!is_array($match_on) || !sizeof($match_on)) && preg_match('![^\d]+!', $value)) { $match_on = array('idno'); }
+		if (($treat_value_as_idno) && (!in_array('idno', $match_on))) { array_push($match_on, 'idno'); }
+		if (!is_array($match_on) || !sizeof($match_on)) { $match_on = array('row_id'); }
 
-		$vn_id = null;
+		$id = null;
 
 		$t_item = Datamodel::getInstanceByTableName($this->ops_table_name, true);
 
-		foreach($va_match_on as $vs_match_on) {
-			switch($vs_match_on) {
+		foreach($match_on as $match_on) {
+			switch($match_on) {
 				case 'idno':
 					// try to convert idno to row_id
-					if ($vn_id = call_user_func($this->ops_table_name.'::find', array($t_item->getProperty('ID_NUMBERING_ID_FIELD') => $ps_value), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) {
+					if ($id = call_user_func($this->ops_table_name.'::find', array($t_item->getProperty('ID_NUMBERING_ID_FIELD') => $value), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) {
 						break(2);
 					}
 					break;
 				case 'label':
 				case 'labels':
 					// try to convert label to row_id
-					if ($vn_id = call_user_func($this->ops_table_name.'::find', array('preferred_labels' => array($t_item->getLabelDisplayField() => $ps_value)), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) {
+					if ($id = call_user_func($this->ops_table_name.'::find', array('preferred_labels' => array($t_item->getLabelDisplayField() => $value)), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) {
 						break(2);
 					}
 					break;
 				case 'row_id':
 				default:
-					if ($vn_id = call_user_func($this->ops_table_name.'::find', array($t_item->primaryKey() => $ps_value), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) {
+					if ($id = call_user_func($this->ops_table_name.'::find', array($t_item->primaryKey() => $value), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) {
 						break(2);
 					}
 					break;
@@ -191,33 +195,33 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 		}
 		
 		
-		if ((!$vn_id) && ($o_log = caGetOption('log', $pa_options, null))) {
-			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $ps_value, caGetOption('logReference', $pa_options, '???'), $t_item->getProperty('name_singular')));
+		if ((!$id) && ($o_log = caGetOption('log', $options, null))) {
+			$o_log->logError(_t('Value %1 was not set for %2 because it does not refer to an existing %3', $value, caGetOption('logReference', $options, '???'), $t_item->getProperty('name_singular')));
 		}
 
-		if (!$vb_require_value && !$vn_id) {
+		if (!$require_value && !$id) {
 			return array(
 				'value_longtext1' => null,
 				'value_integer1' => null
 			);
 		}
-		if (!$vn_id) {
-			$this->postError(1970, _t('%1 id %2 is not valid for element %3', $this->ops_name_singular, $ps_value, $pa_element_info["element_code"]), $this->ops_name_plural.'AttributeValue->parseValue()');
+		if (!$id) {
+			$this->postError(1970, _t('%1 id %2 is not valid for element %3', $this->ops_name_singular, $value, $element_info["element_code"]), $this->ops_name_plural.'AttributeValue->parseValue()');
 			return false;
 		}
 
 		return array(
-			'value_longtext1' => (int)$vn_id,
-			'value_integer1' => (int)$vn_id,
-			'value_sortable' => $this->sortableValue((string)$vn_id)
+			'value_longtext1' => (int)$id,
+			'value_integer1' => (int)$id,
+			'value_sortable' => $this->sortableValue((string)$id)
 		);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * Return HTML form element for editing.
 	 *
-	 * @param array $pa_element_info An array of information about the metadata element being edited
-	 * @param array $pa_options array Options include:
+	 * @param array $element_info An array of information about the metadata element being edited
+	 * @param array $options array Options include:
 	 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
 	 *			width = the width of the form element [Default=field width defined in metadata element definition]
 	 *			height = the height of the form element [Default=field height defined in metadata element definition]
@@ -225,47 +229,47 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 *
 	 * @return string
 	 */
-	public function htmlFormElement($pa_element_info, $pa_options=null) {
+	public function htmlFormElement($element_info, $options=null) {
 		$t_instance = self::elementTypeToInstance($this->getType());
 
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'restrictToTypes'));
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
+		$va_settings = $this->getSettingValuesFromElementArray($element_info, array('fieldWidth', 'restrictToTypes'));
+		$class = trim((isset($options['class']) && $options['class']) ? $options['class'] : 'lookupBg');
 
-		if ($pa_options['request']) {
+		if ($options['request']) {
 			if($va_restrict_to_types = array_filter(caGetOption('restrictToTypes', $va_settings, [], ['castTo' => 'array']), function($v) { return strlen($v); })) { 
 				$va_params = array('max' => 50, 'types' => join(";", $va_restrict_to_types));
-			} elseif($vs_restrict_to_type = caGetOption('restrictTo'.$this->ops_name_singular.'TypeIdno', $pa_element_info['settings'], null)) {
-				$va_params = array('max' => 50, 'type' => $vs_restrict_to_type);
+			} elseif($restrict_to_type = caGetOption('restrictTo'.$this->ops_name_singular.'TypeIdno', $element_info['settings'], null)) {
+				$va_params = array('max' => 50, 'type' => $restrict_to_type);
 			} else {
 				$va_params = array('max' => 50);
 			}
-			$vs_url = caNavUrl($pa_options['request'], 'lookup', $this->ops_name_singular, 'Get', $va_params);
+			$url = caNavUrl($options['request'], 'lookup', $this->ops_name_singular, 'Get', $va_params);
 		} else {
 			// no lookup is possible
 			return $this->getDisplayValue();
 		}
 
-		$va_pieces = caEditorUrl($pa_options['request'], $t_instance->tableName(), 0, true);
+		$va_pieces = caEditorUrl($options['request'], $t_instance->tableName(), 0, true);
 		$va_pieces['controller'] = str_replace('Editor', 'QuickAdd', $va_pieces['controller']);
 		$va_pieces['action'] = 'Form';
 
-		$vs_quickadd_url = caNavUrl(
-			$pa_options['request'], $va_pieces['module'], $va_pieces['controller'], $va_pieces['action'], array($t_instance->primaryKey() => 0)
+		$quickadd_url = caNavUrl(
+			$options['request'], $va_pieces['module'], $va_pieces['controller'], $va_pieces['action'], array($t_instance->primaryKey() => 0)
 		);
 
-		$o_view = new View($pa_options['request'], $pa_options['request']->getViewsDirectoryPath()."/bundles/");
-		$o_view->setVar('field_name_prefix', "{fieldNamePrefix}{$pa_element_info['element_id']}");
-		$o_view->setVar('quickadd_url', $vs_quickadd_url);
-		$o_view->setVar('lookup_url', $vs_url);
-		$o_view->setVar('options', $pa_options);
+		$o_view = new View($options['request'], $options['request']->getViewsDirectoryPath()."/bundles/");
+		$o_view->setVar('field_name_prefix', "{fieldNamePrefix}{$element_info['element_id']}");
+		$o_view->setVar('quickadd_url', $quickadd_url);
+		$o_view->setVar('lookup_url', $url);
+		$o_view->setVar('options', $options);
 		$o_view->setVar('settings', $va_settings);
-		$o_view->setVar('element_info', $pa_element_info);
-		$o_view->setVar('class', $vs_class);
-		$o_view->setVar('forSearch', caGetOption('forSearch', $pa_options, false));
-		$o_view->setVar('class', $vs_class);
+		$o_view->setVar('element_info', $element_info);
+		$o_view->setVar('class', $class);
+		$o_view->setVar('forSearch', caGetOption('forSearch', $options, false));
+		$o_view->setVar('class', $class);
 		$o_view->setVar('table', $t_instance->tableName());
 		
-		$o_view->setVar('allowQuickadd', (strpos($pa_options['request']->getController(), 'Interstitial') === false));
+		$o_view->setVar('allowQuickadd', (strpos($options['request']->getController(), 'Interstitial') === false));
 
 		return $o_view->render('authority_attribute.php');
 	}
@@ -273,7 +277,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	/**
 	 *
 	 */
-	public function getAvailableSettings($pa_element_info=null) {
+	public function getAvailableSettings($element_info=null) {
 		global $_ca_attribute_settings;
 
 		return $_ca_attribute_settings[$this->ops_name_plural.'AttributeValue'];
@@ -305,7 +309,11 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * @return string
 	 */
 	public function sortableValue(?string $value) {
-		$name = caProcessTemplateForIDs(join(Configuration::load()->getList($this->ops_table_name.'_lookup_delimiter'), Configuration::load()->getList($this->ops_table_name.'_lookup_settings')), $this->ops_table_name, [(int)$value], []);
+		$lookup_template = Configuration::load()->get($this->ops_table_name.'_lookup_settings');
+		if(!is_array($lookup_template) && sizeof($lookup_template)) {
+			$lookup_template = [$lookup_template];
+		}
+		$name = caProcessTemplateForIDs(join(Configuration::load()->get($this->ops_table_name.'_lookup_delimiter'), $lookup_template), $this->ops_table_name, [(int)$value], []);
 		
 		return mb_strtolower(substr(trim($name), 0, 100));
 	}
@@ -323,11 +331,11 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * Intercept calls to get*ID, where * = the singular name of the authority attribute (Eg. "Entity")
 	 * and reroute to getID(). The provides support for legacy table-specific getID() calls.
 	 */
-	public function __call($ps_method, $pa_params) {
-		if ($ps_method == 'get'.$this->ops_name_singular.'ID') {
-			return $this->getID($pa_params[0]);
+	public function __call($method, $params) {
+		if ($method == 'get'.$this->ops_name_singular.'ID') {
+			return $this->getID($params[0]);
 		}
-		throw new Exception(_t('Method %1 does not exist for %2 attributes', $ps_method, $this->ops_name_singular));
+		throw new Exception(_t('Method %1 does not exist for %2 attributes', $method, $this->ops_name_singular));
 	}
 	# ------------------------------------------------------
 	/**
@@ -384,8 +392,8 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	 * @return int An attribute datatype number or null if the table does not have an associated attribute type
 	 */
 	public static function tableToElementType($pm_table_name_or_num) {
-		$vs_table = Datamodel::getTableName($pm_table_name_or_num);
-		switch($vs_table) {
+		$table = Datamodel::getTableName($pm_table_name_or_num);
+		switch($table) {
 			case 'ca_list_items':
 				require_once(__CA_LIB_DIR__."/Attributes/Values/ListAttributeValue.php");
 				return __CA_ATTRIBUTE_VALUE_LIST__;

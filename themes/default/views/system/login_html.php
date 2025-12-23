@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,7 +65,8 @@
 							<input type="text" name="username" size="25"/>
 						</div>
 						<div class="loginFormElement"><?= _t("Password"); ?>:<br/>
-							<input type="password" name="password" size="25"/>
+							<input id="password" type="password" name="password" size="25"/>
+							<button type="button" id='passwordView' class="passwordView"><?= caNavIcon(__CA_NAV_ICON_WATCH__, '20px', []); ?></button>
 						</div>
 						<input name="redirect" type="hidden" value="<?php echo htmlspecialchars($this->getVar('redirect'), ENT_QUOTES); ?>" />
 						<input name="local" type="hidden" value="<?php echo (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
@@ -79,5 +80,22 @@
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->
 		</div><!-- end center -->
+		
+		<script type='text/javascript'>
+			jQuery(document).ready(function() {
+				jQuery('#passwordView').on('click', function(e) {
+					const t = jQuery('#password').attr('type');
+					if(t == 'password') {
+						jQuery('#password').attr('type', 'text');
+						jQuery('#passwordView i').css('color', 'red');
+					} else {
+						jQuery('#password').attr('type', 'password');
+						jQuery('#passwordView i').css('color', 'black');
+					}
+					e.preventDefault();
+					return false;
+				});
+			});
+		</script>
 	</body>
 </html>

@@ -776,7 +776,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				
 				$caption_count = is_array($captions) ? sizeof($captions) : 0;
 				
-				$tag = (($caption_count || ($ui == 'plyr-video')) && ($ui !== 'plyr-audio')) ? 'video' : 'audio';
+				$tag = (($caption_count || (($ui == 'plyr-video')) && ($ui !== 'plyr-audio'))) ? 'video' : 'audio';
 
 				if($ui = caGetOption('user_interface', $options, false, ['forceLowercase' => true]) !== 'mediaelement') {
 					if($tag === 'audio') {

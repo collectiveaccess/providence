@@ -736,7 +736,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Static
 	# ------------------------------------------------------
 	public static function getAttributeTypes() {
-		$o_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf");
+		$o_types = Configuration::load('attribute_types.conf');
 
 		$va_types = $o_types->getList('types');
 		foreach($va_types as $vn_i => $vs_typename) {
@@ -843,7 +843,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public static function getElementsAsList($pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_use_cache=true, $pb_return_stats=false, $pb_index_by_element_code=false, $pa_data_types=null, $options=null){
 		$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
-		$vs_cache_key = md5($vn_table_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').serialize($pa_data_types));
+		$vs_cache_key = md5($vn_table_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').serialize($pa_data_types).serialize($options));
 
 		if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'ElementList')) {
 			$va_element_list = CompositeCache::fetch($vs_cache_key, 'ElementList');
@@ -1317,7 +1317,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			return MemoryCache::fetch($data_type, 'ElementDataTypeStrings');
 		}
 		
-		$attr_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf")->get('types');
+		$attr_types = Configuration::load('attribute_types.conf')->get('types');
 
 		$attr_string = $attr_types[$data_type] ?? null;
 		MemoryCache::save($data_type, $attr_string, 'ElementDataTypeStrings');
@@ -1369,7 +1369,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$datatype = self::getElementDatatype($pm_element_code_or_id);
 		$types = self::getAttributeTypes();
 	
-		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], true))) {
+		if (isset($types[$datatype]) && ($value = \CA\Attributes\Attribute::getValueInstance($datatype, [], false))) {
 			$s = $value->sortField();
 			CompositeCache::save($pm_element_code_or_id, $s, 'ElementSortFields');
 			return $s;
@@ -1497,6 +1497,33 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementIDs');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if given element code (or id) is deleted elementCodesToIDs
+	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_options Supported options are:
+	 *      noCache = Don't use cache. [Default is false]
+	 * @return int
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function isDeleted($pm_element_code_or_id, $pa_options=null) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(!caGetOption('noCache', $pa_options, false) && MemoryCache::contains($pm_element_code_or_id, 'ElementIsDeleted')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementIsDeleted');
+		}
+
+		$vm_return = false;
+		$t_element = self::getInstance($pm_element_code_or_id);
+
+		if($t_element && ($t_element->getPrimaryKey())) {
+			$vm_return = (bool)$t_element->get('deleted');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementIsDeleted');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1918,7 +1945,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsAsHTMLFormElement($pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 
-		$o_presets = Configuration::load(__CA_CONF_DIR__."/attribute_presets.conf");
+		$o_presets = Configuration::load('attribute_presets.conf');
 
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$vs_form_element_name = caGetOption('name', $pa_options, "{fieldNamePrefix}_presets_{n}");
@@ -1949,7 +1976,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsJavascript($ps_field_prefix, $pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 
-		$o_presets = Configuration::load(__CA_CONF_DIR__."/attribute_presets.conf");
+		$o_presets = Configuration::load('attribute_presets.conf');
 
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$va_elements = $this->getElementsInSet();

@@ -575,7 +575,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					$placements[$placement_id]['display'] = ($t_instance ? $t_instance->getDisplayLabel($vs_bundle_name) : "???");
 				}
 				
-				if(is_array($label = caExtractValuesByUserLocale(is_array($va_settings['label']) ? [$va_settings['label']] : [])) && sizeof($label) && ($label = array_shift($label))) {
+				if(is_array($label = caExtractValuesByUserLocale((is_array($va_settings) && is_array($va_settings['label'] ?? null)) ? [$va_settings['label']] : [])) && is_array($label) && sizeof($label) && ($label = array_shift($label))) {
 					$placements[$placement_id]['display'] = $label;
 				}
 				

@@ -462,8 +462,7 @@ class SimpleService {
 	 * @throws Exception
 	 */
 	private static function getEndpointConfig($ps_endpoint) {
-		$o_app_conf = Configuration::load();
-		$o_service_conf = Configuration::load($o_app_conf->get('services_config'));
+		$o_service_conf = Configuration::load('services.conf');
 
 		$va_endpoints = $o_service_conf->get('simple_api_endpoints');
 

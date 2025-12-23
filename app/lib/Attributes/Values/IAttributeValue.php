@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */	
 require_once(__CA_LIB_DIR__.'/Error/IErrorSetter.php');
 
 interface IAttributeValue extends IErrorSetter {
@@ -81,4 +77,8 @@ interface IAttributeValue extends IErrorSetter {
 
 	// Get extra info to add to search index
 	public function getDataForSearchIndexing();
+	
+	// Check if value is empty
+	public function isEmpty() : bool;
+	# ------------------------------------------------------------------
 }

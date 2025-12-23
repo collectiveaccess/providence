@@ -46,7 +46,7 @@ trait CLIUtilsMedia {
 		$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 		$skip_mimetypes = caGetOption('skip-mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
 		$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
-		$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
+		$pa_kinds = caGetOption('kinds', $po_opts, 'ca_object_representations', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
 		
 		$unprocessed = (bool)$po_opts->getOption('unprocessed');
 		$oriented_only = (bool)$po_opts->getOption('oriented-only');
