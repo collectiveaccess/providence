@@ -42,7 +42,7 @@
     "grunt": ">=1.5.3",
     "karma": ">=6.3.16",
     "express": ">=4.20.0",
-    "body-parser": ">=1.20.3",
+    "body-parser": ">=2.2.1",
     "rollup": ">=2.79.2"
   },
   "scripts": {
