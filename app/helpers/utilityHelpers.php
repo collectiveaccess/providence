@@ -5044,9 +5044,18 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
-		$config = HTMLPurifier_Config::createDefault();
-		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
-		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
+		$config = HTMLPurifier_Config::createDefault();	
+		//$config->set('HTML.DefinitionID','enduser-customize.html tutorial');
+		$config->set('HTML.Allowed','*[style|class],img[src|width|height|style|alt],p,div,strong,em,i,u,s,sub,sup,figure,figcaption,ul,li,h1,h2,h3,h4,h5,h6,ol,blockquote,a[href|title],br');
+		//$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+		//$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
+		//$config->set('CSS.AllowTricky',true);
+		//$config->set('CSS.Trusted',true);
+		$config->set('Cache.DefinitionImpl',null); //Remove this later
+		$def = $config->getHTMLDefinition(true);
+			$def->addElement('figcaption', 'Block', 'Flow', 'Common');
+			$def->addElement('figure','Block','Optional:(figcaption,Flow) | (Flow,figcaption) | Flow', 'Common');
+		
 		return new HTMLPurifier($config); 
 	}
 	# ----------------------------------------
