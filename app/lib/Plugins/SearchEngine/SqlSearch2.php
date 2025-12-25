@@ -2215,23 +2215,33 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$lower_long = $parsed_values['min_longitude'];
 				$upper_long = $parsed_values['max_longitude'];
 			} else {
-				if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info']))) {
+				if (!is_array($parsed_value = $attrval->parseValue($text, $ap['element_info'], ['returnBounds' => true]))) {
 					return null;
 				}
-				$lower_lat = (float)$parsed_value['value_decimal1'];
-				$lower_long = (float)$parsed_value['value_decimal2'];
-			
+				
 				$upper_lat = $upper_long = null;
+				if(isset($parsed_value['bounds'])) {
+					$lower_lat = (float)$parsed_value['bounds']['south'];
+					$lower_long = (float)$parsed_value['bounds']['west'];
+					$upper_lat = (float)$parsed_value['bounds']['north'];
+					$upper_long = (float)$parsed_value['bounds']['east'];
+				} else {
+					$lower_lat = (float)$parsed_value['value_decimal1'];
+					$lower_long = (float)$parsed_value['value_decimal2'];
+				}
+			
 				if($text_upper) {
-					$parsed_value = $attrval->parseValue($text_upper, $ap['element_info']);
+					$parsed_value = $attrval->parseValue($text_upper, $ap['element_info'], ['returnBounds' => true]);
 					$upper_lat = (float)$parsed_value['value_decimal1'];
 					$upper_long = (float)$parsed_value['value_decimal2'];
-				} elseif($parsed_values = caParseGISSearch("[{$lower_lat},{$lower_long} ~ 500m]")) {
+				} elseif((!$upper_lat || !$upper_long) && ($parsed_values = caParseGISSearch("[{$lower_lat},{$lower_long} ~ 500m]"))) {
 					$lower_lat = $parsed_values['min_latitude'];
 					$upper_lat = $parsed_values['max_latitude'];
 					$lower_long = $parsed_values['min_longitude'];
 					$upper_long = $parsed_values['max_longitude'];
-				} elseif(!$upper_lat || !$upper_long) {
+				}
+				
+				if(!$upper_lat || !$upper_long) {
 					$upper_lat = $lower_lat;
 					$upper_long = $lower_long;
 					
@@ -2276,7 +2286,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				AND
 				({$where_sql})
 		";
-		
+		print $sql; print_R($params);
 		return ['sql' => $sql, 'params' => $params];
 	}
 	# -------------------------------------------------------

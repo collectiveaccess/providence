@@ -563,7 +563,6 @@ function caParseGISSearch($value) {
 				);
 				
 				break;
-			
 		}
 	}
 	

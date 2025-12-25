@@ -513,8 +513,8 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 			return [
 				'value_longtext1' => $matches[1],
 				'value_longtext2' => "{$first_lat},{$first_long}",
-				'value_decimal1' => $first_lat,		// latitude
-				'value_decimal2' => $first_long		// longitude
+				'value_decimal1' => $first_lat,	
+				'value_decimal2' => $first_long
 			];	
 		} elseif($value = preg_replace("!\[[\d,\-\.]+\]!", "", $value)) {
 			$geocoder = new \Geocoder\ProviderAggregator();
@@ -545,6 +545,16 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 					'value_decimal1' => $lat,
 					'value_decimal2' => $long
 				];
+				if(caGetOption('returnBounds', $options, false)) {
+					if($bounds = $result->first()->getBounds()) {
+						$res['bounds'] = [
+							'north' => $bounds->getNorth(),
+							'east' => $bounds->getEast(),
+							'south' => $bounds->getSouth(),
+							'west' => $bounds->getWest()
+						];
+					}
+				} 
 				return $res;
 			} else {
 				$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
