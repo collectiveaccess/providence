@@ -520,45 +520,67 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 			$geocoder = new \Geocoder\ProviderAggregator();
 			$client  = new \GuzzleHttp\Client();
 			
-			$chain = new \Geocoder\Provider\Chain\Chain([
-				\Geocoder\Provider\Nominatim\Nominatim::withOpenStreetMapServer($client, __CA_APP_NAME__),
-				new \Geocoder\Provider\Geonames\Geonames($client, __CA_APP_NAME__),
-				//new \Geocoder\Provider\GoogleMaps\GoogleMaps($client, __CA_APP_NAME__),
-			]);
-			$geocoder->registerProvider($chain);
+			$provider_list = [];
 			
-			$result = $geocoder->geocodeQuery(GeocodeQuery::create($value));
-			
-			if(!$result || !$result->first()){
-				$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
-				return false;
+			if(!is_array($provider_conf = Configuration::load()->getList('geocode_providers'))) {
+				$provider_conf = ['Nominatim'];
 			}
-
-			$coords = $result->first()->getCoordinates();
-			$lat = $coords->getLatitude();
-			$long = $coords->getLongitude();
-
-			if($lat && $long) {
-				$res = [
-					'value_longtext1' => $value,
-					'value_longtext2' => $lat.','.$long,
-					'value_decimal1' => $lat,
-					'value_decimal2' => $long
-				];
-				if(caGetOption('returnBounds', $options, false)) {
-					if($bounds = $result->first()->getBounds()) {
-						$res['bounds'] = [
-							'north' => $bounds->getNorth(),
-							'east' => $bounds->getEast(),
-							'south' => $bounds->getSouth(),
-							'west' => $bounds->getWest()
-						];
+			foreach($provider_conf as $p) {
+				switch(strtolower($p)) {
+					case 'nominatim':
+						$provider_list[] = \Geocoder\Provider\Nominatim\Nominatim::withOpenStreetMapServer($client, __CA_APP_NAME__);
+						break;
+					case 'geonames':
+						$provider_list[] = new \Geocoder\Provider\Geonames\Geonames($client, __CA_APP_NAME__);
+						break;
+					case 'googlemaps':
+						if(!defined('__CA_GOOGLE_MAPS_KEY__') || !__CA_GOOGLE_MAPS_KEY__) { break; }
+						$provider_list[] = new \Geocoder\Provider\GoogleMaps\GoogleMaps($client, __CA_APP_NAME__, __CA_GOOGLE_MAPS_KEY__);
+						break;
+				}
+			}
+			if(sizeof($provider_list) > 0) {
+				$chain = new \Geocoder\Provider\Chain\Chain($provider_list);
+				$geocoder->registerProvider($chain);
+				
+				$result = $geocoder->geocodeQuery(GeocodeQuery::create($value));
+				
+				try {
+					if(!$result || !$result->first()){
+						$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
+						return false;
 					}
-				} 
-				return $res;
-			} else {
-				$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
-				return false;
+				} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
+					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
+					return false;
+				}
+	
+				$coords = $result->first()->getCoordinates();
+				$lat = $coords->getLatitude();
+				$long = $coords->getLongitude();
+	
+				if($lat && $long) {
+					$res = [
+						'value_longtext1' => $value,
+						'value_longtext2' => $lat.','.$long,
+						'value_decimal1' => $lat,
+						'value_decimal2' => $long
+					];
+					if(caGetOption('returnBounds', $options, false)) {
+						if($bounds = $result->first()->getBounds()) {
+							$res['bounds'] = [
+								'north' => $bounds->getNorth(),
+								'east' => $bounds->getEast(),
+								'south' => $bounds->getSouth(),
+								'west' => $bounds->getWest()
+							];
+						}
+					} 
+					return $res;
+				} else {
+					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
+					return false;
+				}
 			}
 		}
 		

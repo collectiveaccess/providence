@@ -2230,11 +2230,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$lower_long = (float)$parsed_value['value_decimal2'];
 				}
 			
+				$default_search_radius = $this->search_config->get('geocode_search_default_radius') ?: "500m";
 				if($text_upper) {
 					$parsed_value = $attrval->parseValue($text_upper, $ap['element_info'], ['returnBounds' => true]);
 					$upper_lat = (float)$parsed_value['value_decimal1'];
 					$upper_long = (float)$parsed_value['value_decimal2'];
-				} elseif((!$upper_lat || !$upper_long) && ($parsed_values = caParseGISSearch("[{$lower_lat},{$lower_long} ~ 500m]"))) {
+				} elseif((!$upper_lat || !$upper_long) && ($parsed_values = caParseGISSearch("[{$lower_lat},{$lower_long} ~ {$default_search_radius}]"))) {
 					$lower_lat = $parsed_values['min_latitude'];
 					$upper_lat = $parsed_values['max_latitude'];
 					$lower_long = $parsed_values['min_longitude'];
