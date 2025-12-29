@@ -556,7 +556,7 @@ class DataMigrationUtils {
 		
 		// check for trailing year or years
 		$date = null;
-		if (caGetOption('parseDateSuffix', $options, true) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
+		if (caGetOption('parseDateSuffix', $options, false) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
 			$date = $matches[1];
 			$text = trim(str_replace($matches[0], '', $text));
 		}

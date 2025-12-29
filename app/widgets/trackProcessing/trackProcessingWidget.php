@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -226,7 +226,7 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 					if ($link = caEditorLink($view->request, caGetTableDisplayName($tmp[0], true).' ➜ '.join(' ➜ ', array_slice($tmp, 1)), 'link', $tmp[0], $tmp[2], array(), array(), array('verifyLink' => true))) {
 						$result .= "<strong>".$info['label']."</strong>: ".$link."<br/>\n";
 					} else {
-						$result .=  "<strong>".$info['label']."</strong>: ".$info['value']." [<em>"._t('DELETED')."</em>]<br/>\n";
+						$result .=  "<strong>".$info['label']."</strong>: ".caGetTableDisplayName($tmp[0], true).' ➜ '.join(' ➜ ', array_slice($tmp, 1))."<br/>\n";
 					}
 					break;
 				default:

@@ -796,7 +796,7 @@ class BaseFindController extends ActionController {
 	 */ 
 	public function DownloadMedia() {
 		if ($t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true)) {
-			$o_md_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
+			$o_md_conf = Configuration::load('media_metadata');
 
 			$id_list = null;	// list of ids to pull media for
 			if (($ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
@@ -1218,9 +1218,15 @@ class BaseFindController extends ActionController {
 	/**
 	 * Returns string representing the name of the item the search will return
 	 *
-	 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
+	 * If $mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
+	 *
+	 * @param string $mode
+	 * 
+	 * @return string
 	 */
-	public function getResultsDisplayName($mode='singular') {
+	public function getResultsDisplayName(?string $mode='singular') : ?string {
+		global $g_ui_locale;
+		
 		$type_restriction_has_changed = false;
 		$type_id = $this->opo_result_context->getTypeRestriction($type_restriction_has_changed);
 		
@@ -1233,16 +1239,21 @@ class BaseFindController extends ActionController {
 			$t_list->load(array('list_code' => $t_instance->getTypeListCode()));
 		
 			$t_list_item = new ca_list_items();
-			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
+			$t_list_item->load(['list_id' => $t_list->getPrimaryKey(), 'parent_id' => null]);
 			$hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
 		
 			if (!($name = ($mode == 'singular') ? $hier[$type_id]['name_singular'] ?? '' : $hier[$type_id]['name_plural'] ?? '')) {
-				$name = mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+				$name = ($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL');
 			}
-			return mb_strtolower($name);
 		} else {
-			return mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+			$name = ($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL');
 		}
+	
+		if(strlen($g_ui_locale) && (caGetLanguageForLocale($g_ui_locale) === 'de')) {	// Deutsche Hauptworten mußen groß schreiben bleiben
+			return $name;
+		}
+	
+		return mb_strtolower($name);
 	}
 	# -------------------------------------------------------
 	/**

@@ -417,7 +417,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Vocabulary', 'Get', $lookup_params); ?>',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []), 'lists' => join(';', $settings['restrict_to_lists'] ?? []))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form', array('item_id' => 0, 'placement_id' => $placement_id, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []), 'lists' => join(';', $settings['restrict_to_lists'] ?? []))); ?>',
 <?php } ?>
 			lists: <?= json_encode($settings['restrict_to_lists'] ?? []); ?>,
 			types: <?= json_encode($settings['restrict_to_types'] ?? []); ?>,

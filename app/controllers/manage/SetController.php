@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,7 +82,19 @@ class SetController extends ActionController {
 		
 		$t_set = new ca_sets();
 		// get content types for sets
-		$this->view->setVar('table_list', caFilterTableList($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')));
+		$raw = caFilterTableList(
+			$t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')
+		);
+
+		$table_list_i18n = [];
+
+		foreach ($raw as $ignored => $table_num) {
+			$msgid = Datamodel::getTableProperty($table_num, 'NAME_PLURAL');
+			$table_list_i18n[_t($msgid)] = $table_num;
+		}
+
+		$this->view->setVar('table_list', $table_list_i18n);
+
 		$this->view->setVar('t_set', $t_set);
 		
 		$vn_user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;            
@@ -182,7 +194,19 @@ class SetController extends ActionController {
 		
 		$t_set = new ca_sets();
 		// get content types for sets
-		$this->view->setVar('table_list', caFilterTableList($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')));
+		$raw = caFilterTableList(
+			$t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')
+		);
+
+		$table_list_i18n = [];
+
+		foreach ($raw as $ignored => $table_num) {
+			$msgid = Datamodel::getTableProperty($table_num, 'NAME_PLURAL');
+			$table_list_i18n[_t($msgid)] = $table_num;
+		}
+
+		$this->view->setVar('table_list', $table_list_i18n);
+
 		$this->view->setVar('t_set', $t_set);
 		
 		$this->view->setVar('page', $vn_page_num = $o_result_context->getCurrentResultsPageNumber());

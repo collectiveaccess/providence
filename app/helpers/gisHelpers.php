@@ -29,6 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
+use AnthonyMartin\GeoLocation\GeoPoint;
 require_once(__CA_LIB_DIR__.'/Attributes/Values/LengthAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Parsers/gPoint.php');
 
@@ -491,88 +492,77 @@ function caParseGISSearch($value) {
 	$value = str_replace(" to ", " .. ", $value);
 	$value = preg_replace('![^A-Za-z0-9,\.\-~ ]+!', '', $value);
 	
-	$va_tokens = preg_split('![ ]+!', $value);
+	$tokens = preg_split('![ ]+!', $value);
 	
-	$vn_lat1 = $vn_long1 = $vn_lat2 = $vn_long2 = null;
-	$vn_dist = null;
-	$vn_state = 0;
-	while(sizeof($va_tokens)) {
-		$vs_token = trim(array_shift($va_tokens));
+	$lat1 = $long1 = $lat2 = $long2 = null;
+	$dist = null;
+	$state = 0;
+	while(sizeof($tokens)) {
+		$vs_token = trim(array_shift($tokens));
 		if(!$vs_token) { continue; }
-		switch($vn_state) {
+		switch($state) {
 			case 0:		// start
-				$va_tmp = explode(',', $vs_token);
-				if (sizeof($va_tmp) != 2) { return false; }
-				$vn_lat1 = (float)$va_tmp[0];
-				$vn_long1 = (float)$va_tmp[1];
+				$tmp = explode(',', $vs_token);
+				if (sizeof($tmp) != 2) { return false; }
+				$lat1 = (float)$tmp[0];
+				$long1 = (float)$tmp[1];
 				
-				if (!sizeof($va_tokens)) {
+				if (!sizeof($tokens)) {
 					return array(
-						'min_latitude' => $vn_lat1,
-						'max_latitude' => $vn_lat1,
-						'min_longitude' => $vn_long1,
-						'max_longitude' => $vn_long1
+						'min_latitude' => $lat1,
+						'max_latitude' => $lat1,
+						'min_longitude' => $long1,
+						'max_longitude' => $long1
 					);
 				}
 				
-				$vn_state = 1;
+				$state = 1;
 				break;
 			case 1:		// conjunction
 				switch($vs_token) {
 					case '~':
-						$vn_state = 3;
+						$state = 3;
 						break(2);
 					case '..' :
-						$vn_state = 2;
+						$state = 2;
 						break(2);
 					default:
-						$vn_state = 2;
+						$state = 2;
 						break;
 				}
 				// fall through
 			case 2:	// second lat/long
-				$va_tmp = explode(',', $vs_token);
-				if (sizeof($va_tmp) != 2) { return false; }
-				$vn_lat2 = (float)$va_tmp[0];
-				$vn_long2 = (float)$va_tmp[1];
+				$tmp = explode(',', $vs_token);
+				if (sizeof($tmp) != 2) { return false; }
+				$lat2 = (float)$tmp[0];
+				$long2 = (float)$tmp[1];
 				
-				if (($vn_lat1 == 0) || ($vn_lat2 == 0) || ($vn_long1 == 0) || ($vn_long2 == 0)) { return null; }
+				if (($lat1 == 0) || ($lat2 == 0) || ($long1 == 0) || ($long2 == 0)) { return null; }
 				
 				return array(
-					'min_latitude' => ($vn_lat1 > $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'max_latitude' => ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'min_longitude' => ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
-					'max_longitude' => ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
+					'min_latitude' => ($lat1 > $lat2) ? $lat2 : $lat1,
+					'max_latitude' => ($lat1 < $lat2) ? $lat2 : $lat1,
+					'min_longitude' => ($long1 > $long2) ? $long2 : $long1,
+					'max_longitude' => ($long1 < $long2) ? $long2 : $long1,
 				);
 				break;
 			case 3:	// distance
-				//
-				// TODO: The lat/long delta calculations below are very rough. We should replace with more accurate formulas.
-				//
 				$t_length = new LengthAttributeValue();
-				$va_length_val = $t_length->parseValue($vs_token, array('displayLabel' => 'distance'));
-				$vn_length = ((float)array_shift(explode(' ', preg_replace('![^\d\.]+!', '', $va_length_val['value_decimal1'])))) / 1000;		// kilometers
-				$vn_lat1_km = (10000/90) * $vn_lat1;
-				$vn_long1_km = (10000/90) * $vn_long1;
+				$length_val = $t_length->parseValue($vs_token, array('displayLabel' => 'distance'));
+				$length = ((float)array_shift(explode(' ', preg_replace('![^\d\.]+!', '', $length_val['value_decimal1'])))) / 1000;		// kilometers
 				
-				$vn_lat1 = (($vn_lat1_km + ($vn_length/2)))/(10000/90);
-				$vn_long1 = (($vn_long1_km + ($vn_length/2)))/(10000/90);
-				
-				$vn_lat2 = (($vn_lat1_km - ($vn_length/2)))/(10000/90);
-				$vn_long2 = (($vn_long1_km - ($vn_length/2)))/(10000/90);
-				
-				if (($vn_lat1 == 0) || ($vn_lat2 == 0) || ($vn_long1 == 0) || ($vn_long2 == 0)) { return null; }
+				$pt = new GeoPoint($lat1, $long1);
+				$bb = $pt->boundingBox($length, 'km');
 				
 				return array(
-					'min_latitude' => ($vn_lat1 > $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'max_latitude' =>  ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'min_longitude' =>  ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
-					'max_longitude' =>  ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
-					'distance' => $vn_length
+					'min_latitude' => $bb->getMinLatitude(),
+					'max_latitude' =>  $bb->getMaxLatitude(),
+					'min_longitude' => $bb->getMinLongitude(),
+					'max_longitude' =>  $bb->getMaxLongitude(),
+					'distance' => $length
 				);
 				
 				break;
-			
 		}
 	}
 	

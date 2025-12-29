@@ -56,8 +56,9 @@ class IIIFController extends BaseServiceController {
 	 */
 	public function manifest() {
 		$path = explode('/', $this->request->getPathInfo()); // path = /IIIF/manifest/<identifier> ; identifier index = 3
+		$options = $this->getRequest()->getParameters();
 		try {
-			$manifest = IIIFService::manifest($path[3], $this->getRequest());
+			$manifest = IIIFService::manifest($path[3], $options);
 		} catch(IIIFAccessException $e) {
 			$this->getView()->setVar('errors', array($e->getMessage()));
 			$this->render('json_error.php');

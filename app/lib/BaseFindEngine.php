@@ -210,7 +210,11 @@ class BaseFindEngine extends BaseObject {
 		if (!($t_table = Datamodel::getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
 
 		$t_user = new ca_users($pn_user_id);
+<<<<<<< HEAD
 		if (caDontEnforceACLForAdministrators($t_user)) { return $pa_hits; }
+=======
+		if (caAppIsProvidence() && $t_user->canDoAction('is_administrator')) { return $pa_hits; }
+>>>>>>> dev/2.0
 		if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
 			$va_group_ids = array_keys($va_groups);
 			$vs_group_sql = 'OR (ca_acl.group_id IN ('.join(',',$va_group_ids).'))';
@@ -1281,8 +1285,8 @@ class BaseFindEngine extends BaseObject {
 		
 		$sql = "
 			SELECT s.{$rel_table_pk}, s.{$intrinsic} val
-			FROM {$table}
-			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			FROM {$table} t
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = t.{$table_pk}
 			{$join_sql}
 			WHERE
 				s.{$intrinsic} IN (?)

@@ -504,8 +504,8 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 			// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
 			$o_config = Configuration::load();
 			if (((bool)$o_config->get('video_preview_generate_frames') || (bool)$o_config->get('document_preview_generate_pages')) && method_exists($t_instance, 'addFile')) {
-				if (method_exists($this, 'removeAllFiles')) {
-					$this->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
+				if (method_exists($t_instance, 'removeAllFiles')) {
+					$t_instance->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
 				}
 				$o_media->read($vs_input_file);
 				$va_preview_frame_list = $o_media->writePreviews(
