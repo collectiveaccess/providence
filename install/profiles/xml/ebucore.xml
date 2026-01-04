@@ -2,7 +2,7 @@
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
     infoUrl="http://tech.ebu.ch/docs/tech/tech3293v1_4.pdf">
-    <profileName>EBUCORE V1.4 2013</profileName>
+    <profileName>[Standard] EBUCORE V1.4 (revised 2013)</profileName>
     <profileDescription>This CollectiveAccess profile configuration is compliant with EBUCORE version 1.4.</profileDescription>
     <locales>
         <locale lang="en" country="US">English</locale>

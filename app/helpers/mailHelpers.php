@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024  Whirl-i-Gig
+ * Copyright 2009-2025  Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,7 @@ require_once(__CA_LIB_DIR__.'/View.php');
  *					source = source of email, used for logging. [Default is "Registration"]
  *					successMessage = Message to use for logging on successful send of email. Use %1 as a placeholder for a list of recipient email addresses. [Default is 'Email was sent to %1']
  *					failureMessage = Message to use for logging on failure of send. Use %1 as a placeholder for a list of recipient email addresses; %2 for the error message. [Default is 'Could not send email to %1: %2']
+ *					replyTo = Email addresses to reply to. Can be string with single email address or an array with keys set to multiple addresses and corresponding values optionally set toa human-readable recipient name. [Default is null]
  *
  * While both $body_text and $html_text are optional, at least one should be set and both can be set for a 
  * combination text and HTML email
@@ -225,6 +226,20 @@ function caSendmail($to, $from, $subject, $body_text, $body_html='', $cc=null, $
 				$o_mail->addBCC(is_numeric($to_email) ? $to_name : $to_email);
 			}
 		}
+		
+		if($reply_tos = caGetOption('replyTo', $options, null)) {
+			if (!is_array($reply_tos) && $reply_tos) {
+				$reply_tos = preg_split('![,;\|]!', $reply_tos);
+			}
+			
+			foreach($reply_tos as $reply_to_email => $reply_to_name) {
+				if (is_numeric($reply_to_email)) {
+		 			$o_mail->addReplyTo($reply_to_name, $reply_to_name); 
+		 		} else {
+		 			$o_mail->addReplyTo($reply_to_email, $reply_to_name); 
+		 		}
+		 	}
+		 }
 
 		if(is_array($attachments)) {
 			if (isset($attachments["path"])) { $attachments = [$attachments]; }

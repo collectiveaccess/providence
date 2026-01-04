@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,7 +146,7 @@ class DataMigrationUtils {
 		if (!is_array($options)) { $options = array(); }
 
 		$pb_output_errors 			= caGetOption('outputErrors', $options, false);
-		$pa_match_on 				= caGetOption('matchOn', $options, array('label', 'labels', 'idno'), array('castTo' => "array"));
+		$pa_match_on 				= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'id'), array('castTo' => "array"));
 		$vn_parent_id 				= caGetOption('parent_id', $pa_values, false);
 
 		$vs_singular_label 			= (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
@@ -221,6 +221,15 @@ class DataMigrationUtils {
 		$vn_item_id = null;
 		foreach($pa_match_on as $vs_match_on) {
 			switch(strtolower($vs_match_on)) {
+				case 'id':
+					$id = $ps_item_idno ?? $pa_values['id'] ?? $pa_values[$t_instance->primaryKey()] ?? $pa_values['_originalText'] ?? $pa_values['idno'] ?? null;
+					if (
+						$id &&
+						($vn_item_id = (ca_list_items::find($id, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true))))
+					) {
+						break(2);
+					}
+					break;
 				case 'label':
 				case 'labels':
 				case 'preferred_labels':
@@ -547,7 +556,7 @@ class DataMigrationUtils {
 		
 		// check for trailing year or years
 		$date = null;
-		if (caGetOption('parseDateSuffix', $options, true) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
+		if (caGetOption('parseDateSuffix', $options, false) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {
 			$date = $matches[1];
 			$text = trim(str_replace($matches[0], '', $text));
 		}
@@ -879,7 +888,7 @@ class DataMigrationUtils {
 	 *		log = If KLogger instance is passed then actions will be logged. [Default is null]
 	 *		separateUpdatesForAttributes = Perform a separate update() for each attribute. This will ensure that an error triggered by any value will not affect setting on others, but is detrimental to performance. [Default is false]
 	 *		delimiter = Delimiter to split values on. [Default is null]
-	 *		matchOn = Optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
+	 *		matchOn = Optional list indicating sequence of checks for an existing record; values of array can be "label", "labels", "idno", "id". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
 	 *		outputErrors = Print errors to console. [Default is false]
 	 *
 	 * @return bool True on success, false on error 		
@@ -939,7 +948,7 @@ class DataMigrationUtils {
 										(caGetOption('skipExistingValues', $options, true) 
 										|| 
 										caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])]);
+									'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels', 'id'])]);
 						} else {
 							foreach($va_expanded_values as $va_v) {
 								if($source_value = caGetOption('_source', $va_v, null)) {
@@ -954,7 +963,7 @@ class DataMigrationUtils {
 											caGetOption('skipExistingValues', $options, true) 
 											|| 
 											caGetOption('_skipExistingValues', $va_values, true)), // default to skipping attribute values if they already exist (until v1.7.9 default was _not_ to skip)
-										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])]);
+										'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels', 'id'])]);
 							}
 						}
 					} else {
@@ -972,7 +981,7 @@ class DataMigrationUtils {
 								$vs_element, null, [
 								'source' => $source_value, 
 								'skipExistingValues' => true, 
-								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels'])
+								'matchOn' => caGetOption('_matchOn', $va_values, ['idno', 'label', 'labels', 'id'])
 							]);
 						}
 					}
@@ -1082,7 +1091,7 @@ class DataMigrationUtils {
 	 * @param array $options An optional array of options, which include:
 	 *                outputErrors - if true, errors will be printed to console [default=false]
 	 *                dontCreate - if true then new entities will not be created [default=false]
-	 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specify "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
+	 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label", "labels", "idno" or "id". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specify "displayname", "surname" and "forename" to match on the text of the those label fields exclusively. If "none" is specified alone no matching is performed.
 	 *                matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 	 *                transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 	 *                returnInstance = return ca_entities instance rather than entity_id. Default is false.
@@ -1135,7 +1144,7 @@ class DataMigrationUtils {
 		
 		$pb_output_errors 				= caGetOption('outputErrors', $options, false);
 		$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $options, true);
-		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'displayname'), array('castTo' => "array"));
+		$pa_match_on 					= caGetOption('matchOn', $options, array('label', 'labels', 'idno', 'displayname', 'id'), array('castTo' => "array"));
 		$ps_event_source 				= caGetOption('importEventSource', $options, '?'); 
 		$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $options, false);
 		$pb_ignore_parent			 	= caGetOption('ignoreParent', $options, false);
@@ -1192,6 +1201,15 @@ class DataMigrationUtils {
 		$vn_id = null;
 		foreach($pa_match_on as $vs_match_on) {
 			switch(strtolower($vs_match_on)) {
+				case 'id':
+					$id = $pa_values['id'] ?? $pa_values[$t_instance->primaryKey()] ?? $pa_values['_originalText'] ?? $pa_values['idno'] ?? null;
+					if (
+						$id &&
+						($vn_id = ($vs_table_class::find($id, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $options['transaction'], 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true))))
+					) {
+						break(2);
+					}
+					break;
 				case 'idno':
 				case 'idno_stub':
 					if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder

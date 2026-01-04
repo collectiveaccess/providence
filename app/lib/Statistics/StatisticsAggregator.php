@@ -113,7 +113,7 @@ class StatisticsAggregator {
 	 * @return array List of sites
 	 */
 	static public function getSites(?array $options=null) : array {
-		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
+		$config = Configuration::load('statistics.conf');
 		if (!is_array($sites = $config->getAssoc('sites'))) {
 			return null;
 		}
@@ -134,7 +134,7 @@ class StatisticsAggregator {
 	 * @return array List of groups
 	 */
 	static public function getGroups() {
-		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
+		$config = Configuration::load('statistics.conf');
 		if (!is_array($groups = $config->getAssoc('groups'))) {
 			return null;
 		}
@@ -160,7 +160,7 @@ class StatisticsAggregator {
 	 * 
 	 */
 	static public function localSite() {
-		$config = Configuration::load(__CA_CONF_DIR__."/statistics.conf");
+		$config = Configuration::load('statistics.conf');
 		$local_site = $config->get('local_site');
 		$sites = self::getSites();
 		return isset($sites[$local_site]) ? array_merge($sites[$local_site], ['code' => $local_site]) : null;

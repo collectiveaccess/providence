@@ -148,7 +148,7 @@ $strict_type_hierarchy = $this->request->config->get("{$subject_table}_enforce_s
 $type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
 	"{$id_prefix}type_id", 
 	['id' => "{$id_prefix}typeList"], 
-	['enforceStrictTypeHierarchy' => $strict_type_hierarchy]
+	['enforceStrictTypeHierarchy' => $strict_type_hierarchy, 'restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
 ));
 
 $show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));

@@ -46,7 +46,7 @@ class SubmissionController extends \GraphQLServices\GraphQLServiceController {
 		parent::__construct($request, $response, $view_paths);
 		
 		if(!self::$config) { 
-			self::$config = Configuration::load(__CA_CONF_DIR__.'/Submission.conf'); 
+			self::$config = Configuration::load('Submission.conf'); 
 		}
 	}
 	

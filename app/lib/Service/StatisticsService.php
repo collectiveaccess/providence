@@ -66,7 +66,7 @@ class StatisticsService extends BaseJSONService {
 	private static function runStats($request) {
 		set_time_limit(3600*3);	// 3 hours should be enough?
 		$app_config = Configuration::load();
-		$config = Configuration::load(__CA_CONF_DIR__."/services.conf");
+		$config = Configuration::load('services.conf');
 		$ct = time();
 		$db = new Db();
 		

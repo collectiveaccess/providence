@@ -86,7 +86,7 @@ class CheckInController extends ActionController {
 	 * 
 	 */
 	public function SaveTransaction() {
-		$library_config = Configuration::load(__CA_CONF_DIR__."/library_services.conf");
+		$library_config = Configuration::load('library_services.conf');
 		$display_template = $library_config->get('checkin_receipt_item_display_template');
 		
 		$ps_item_list = $this->request->getParameter('item_list', pString);

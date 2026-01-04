@@ -575,6 +575,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			return (int)$qr_res->numRows();
 		}
 		
+		$va_ids = [];
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			if ($vb_dont_include_worksheet) { unset($va_row['worksheet']); }

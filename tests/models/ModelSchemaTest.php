@@ -121,7 +121,7 @@ class ModelSchemaTest extends TestCase {
 	 */
 	public function testDatamodelRelationshipsAreValid(){
 		
-		$o_datamodel_conf = Configuration::load(__CA_CONF_DIR__.'/datamodel.conf');
+		$o_datamodel_conf = Configuration::load('datamodel.conf');
 		$va_relationships = $o_datamodel_conf->getList('relationships');
 		
 		$o_db = new Db();

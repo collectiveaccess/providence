@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,7 @@
  */
  
  $o_search_config = caGetSearchConfig();
+ $o_app_config = Configuration::load();
  
  $search = $this->getVar('search');
  $searches = $this->getVar('searches');
@@ -137,7 +138,7 @@
 		return false;
 	}
 <?php
-	if ($t_instance && !$t_instance->getAppConfig()->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
+	if ($o_app_config->get('quicksearch_dont_open_results_panel_automatically') && (sizeof($searches) > 0)) {
 ?>
 		jQuery(document).ready(function() {
 			caQuickSearchShowHideResults('show', '<?= str_replace("/", "-", array_shift(array_keys($searches))); ?>');

@@ -53,7 +53,7 @@ class OktaAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
      */
     public function __construct(){
         $this->config = Configuration::load();
-        $this->auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+        $this->auth_config = Configuration::load('authentication.conf');
     }
 	# --------------------------------------------------------------------------------
 	/**

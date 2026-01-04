@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://dublincore.org/documents/dces/">
-  <profileName>[Standard] DublinCore [2018 Revision]</profileName>
+  <profileName>[Standard] DublinCore (Revised 2018)</profileName>
   <profileDescription>Use this profile if you want a system that is compliant with the simple Dublin Core Metadata Element Set, Version 1.1</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>

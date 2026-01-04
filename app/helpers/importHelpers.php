@@ -519,7 +519,7 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 				}
 				$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, ['delimiter' => $delimiter, 'returnAsString' => true, 'ignoreIndexForNonRepeatingValues' => true, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings]);
 			} else {
-				 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %1: value was %2', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
+				 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %2: value was %3', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 			}
 		}
 		

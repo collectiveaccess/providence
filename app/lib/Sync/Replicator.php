@@ -159,7 +159,7 @@ class Replicator {
 	
 	# --------------------------------------------------------------------------------------------------------------
 	public function __construct() {
-		$this->opo_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
+		$this->opo_replication_conf = Configuration::load('replication.conf');
 		Replicator::$s_log = new Logger('replication');
 		Replicator::$s_debug_log = new Logger('replication_debug');
 	}

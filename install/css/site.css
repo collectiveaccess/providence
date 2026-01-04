@@ -958,3 +958,40 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  */
 .ui-progressbar { height:2em; text-align: left; }
 .ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
+
+#box form select.profileSelect, #box form input.installerEmail {
+	width: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+
+div.loginSubmitPanel {
+	width: 100%;
+	margin-left: 33%;
+}
+div.loginSubmitButton {
+	display: flex;  
+	align-items: center;
+	justify-content: center; 
+	width: 33%;
+	height: 20px; 
+	background-color: #eee;
+	border-radius: 4px;
+	padding: 14px;
+}
+div.loginSubmitButton div.icon {
+	width: 30px;
+	margin-right: 8px;
+}
+div.loginSubmitButton div.text {
+	width: 100px;
+	font-weight: bold;
+	text-decoration: none;
+}
+div.loginSubmitButton div.text a {
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.loginSubmitButtonItem {
+}

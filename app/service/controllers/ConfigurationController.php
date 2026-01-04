@@ -90,7 +90,7 @@ class ConfigurationController extends \GraphQLServices\GraphQLServiceController 
 							throw new \ServiceException(_t('Access denied'));
 						}
 						
-						if(!($config = Configuration::load(__CA_CONF_DIR__.'/'.$args['file']))) {
+						if(!($config = Configuration::load(''.$args['file']))) {
 							throw new \ServiceException(_t('Invalid configuration file: %1', $args['file']));
 						}
 						

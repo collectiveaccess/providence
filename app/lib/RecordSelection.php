@@ -42,7 +42,7 @@ class RecordSelection {
 	private $type; 
 	
 	/**
-	 * @param ca_set|ResultContext $source Underlying set of records. Can be either a ca_sets instance or ResultContext
+	 * @param ca_set|ResultContext|SearchResult $source Underlying set of records. Can be either a ca_sets instance, ResultContext or SearchResult
 	 */
 	public function __construct($source) {
 		$this->setSource($source);
@@ -53,7 +53,9 @@ class RecordSelection {
 	 */
 	public function setSource($source) {
 		$this->source = $source;
-		$this->type = get_class($source);
+		
+		$pclasses = class_parents($source);
+		$this->type = (in_array('SearchResult', $pclasses)) ? 'SearchResult' : get_class($source);
 	}
 	
 	/**
@@ -73,7 +75,10 @@ class RecordSelection {
 				break;
 			case 'ResultContext':
 				return 'BatchEdit:'.$this->source->tableName();
-				break;		
+				break;	
+			case 'SearchResult':
+				return 'SearchResult:'.$this->source->tableName();
+				break;	
 		}
 		return null;
 	}
@@ -88,6 +93,9 @@ class RecordSelection {
 				break;
 			case 'ResultContext':
 				return _t('%1 selection', Datamodel::getTableProperty($this->source->tableName(), 'NAME_SINGULAR'));
+				break;	
+			case 'SearchResult':
+				return _t('%1 search result', Datamodel::getTableProperty($this->source->tableName(), 'NAME_SINGULAR'));
 				break;		
 		}
 		return null;
@@ -102,6 +110,7 @@ class RecordSelection {
 				return Datamodel::getTableName($this->source->get('table_num'));
 				break;
 			case 'ResultContext':
+			case 'SearchResult':
 				return $this->source->tableName();
 				break;		
 		}
@@ -117,6 +126,7 @@ class RecordSelection {
 				return (int)$this->source->get('table_num');
 				break;
 			case 'ResultContext':
+			case 'SearchResult':
 				return (int)$this->source->tableNum();
 				break;		
 		}
@@ -132,8 +142,9 @@ class RecordSelection {
 				return $this->source->getTypesForItems($options);
 				break;
 			case 'ResultContext':
+			case 'SearchResult':
 				return $this->source->getResultListTypes($options);
-				break;		
+				break;	
 		}
 		return null;
 	}
@@ -148,6 +159,9 @@ class RecordSelection {
 				break;
 			case 'ResultContext':
 				return $this->source->getResultCount();
+				break;	
+			case 'SearchResult':
+				return $this->source->numHits();
 				break;		
 		}
 		return null;
@@ -163,6 +177,9 @@ class RecordSelection {
 				break;
 			case 'ResultContext':
 				return $this->source->getResultList();
+				break;	
+			case 'SearchResult':
+				return $this->source->getAllFieldValues($this->source->primaryKey());
 				break;		
 		}
 		return null;
@@ -172,12 +189,22 @@ class RecordSelection {
 	 * 
 	 */
 	public function serialize(array $options=null) : array {
-		$items = $this->getItemRowIDs();
+		$items = null;
+		switch($this->type) {
+			case 'ca_sets':
+				$items = null;
+				break;
+			case 'ResultContext':
+			case 'SearchResult':
+				$items = $this->getItemRowIDs();
+				break;
+		}
+		
 		return [
 			'id' => $this->ID(),
 			'name' => $this->name(),
 			'table' => $this->tableName(),
-			'items' => ($this->type === 'ca_sets') ? null : $items,
+			'items' => $items,
 			'itemCount' => is_array($items) ? sizeof($items) : 0,
 			'types' => $this->getTypesForItems()
 		];
@@ -190,7 +217,6 @@ class RecordSelection {
 	static public function restore(array $serialized_data, array $options=null) : ?RecordSelection {
 		if(empty($serialized_data['id'])) { return null; }
 		list($type, $id) = explode(':', $serialized_data['id']);
-		
 		switch($type) {
 			case 'ca_sets':
 				return new RecordSelection(ca_sets::findAsInstance(['set_id' => (int)$id]));
@@ -202,6 +228,13 @@ class RecordSelection {
 				$rc = new ResultContext($request, $id, 'BatchEdit');
 				$rc->setResultList($ids);
 				return new RecordSelection($rc);
+				break;
+			case 'SearchResult':
+				if(!($ids = caGetOption('items', $serialized_data, null))) { return null; }
+				if(!($request = caGetOption('request', $options, null))) { return null; }
+				
+				if(!($qr = caMakeSearchResult($id, $ids))) { return null; }
+				return new RecordSelection($qr);
 				break;
 		}
 		return null;
@@ -230,6 +263,12 @@ class RecordSelection {
 				return caNavLink($request, _t('Back to Sets'), '', 'manage', 'Set', 'ListSets');
 				break;
 			case 'ResultContext':
+				$table = $this->source->getParameter('primary_table');
+				$id = $this->source->getParameter('primary_id');
+				$screen = $this->source->getParameter('screen');
+				return ($table && $id) ? caEditorLink($request, _t('Back'), '', $table, $id, [], [], ['actionExtra' => $screen]) : '';
+				break;	
+			case 'SearchResult':
 				$table = $this->source->getParameter('primary_table');
 				$id = $this->source->getParameter('primary_id');
 				$screen = $this->source->getParameter('screen');

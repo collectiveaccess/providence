@@ -398,8 +398,8 @@ function caSearchGetAccessPoints($ps_search_expression) {
  */
 function caSearchGetTablesForAccessPoints($pa_access_points) {
 	$o_config = Configuration::load();
-	$o_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
-	$o_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');	
+	$o_search_config = Configuration::load('search.conf');
+	$o_search_indexing_config = Configuration::load('search_indexing.conf');	
 		
 	$va_tables = $o_search_indexing_config->getAssocKeys();
 	
@@ -661,7 +661,7 @@ function caPuppySearch($po_request, $ps_search_expression, $pa_blocks, $pa_optio
 function caSplitSearchResultByType($pr_res, $pa_options=null) {
 	if (!($t_instance = Datamodel::getInstanceByTableName($pr_res->tableName(), true))) { return null; }
 	
-	$o_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+	$o_search_config = Configuration::load('search.conf');
 	
 	if (!($vs_type_fld = $t_instance->getTypeFieldName())) { return null; }
 	$vs_table = $t_instance->tableName();
@@ -693,7 +693,7 @@ function caSplitSearchResultByType($pr_res, $pa_options=null) {
  * @return Configuration 
  */
 function caGetSearchConfig() : ?Configuration {
-	return Configuration::load(__CA_CONF_DIR__.'/search.conf');
+	return Configuration::load('search.conf');
 }
 # ---------------------------------------
 /**
@@ -702,7 +702,7 @@ function caGetSearchConfig() : ?Configuration {
  * @return Configuration 
  */
 function caGetSearchIndexingConfig() : ?Configuration {
-	return Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
+	return Configuration::load('search_indexing.conf');
 }
 # ---------------------------------------
 /**
@@ -712,9 +712,9 @@ function caGetSearchIndexingConfig() : ?Configuration {
  */
 function caGetSearchBuilderConfig() : ?Configuration {
 	if(file_exists(__CA_CONF_DIR__.'/search_builder.conf')) {
-		return Configuration::load(__CA_CONF_DIR__.'/search_builder.conf');
+		return Configuration::load('search_builder.conf');
 	}
-	return Configuration::load(__CA_CONF_DIR__.'/search_query_builder.conf');
+	return Configuration::load('search_query_builder.conf');
 }
 # ---------------------------------------
 /**
@@ -1166,7 +1166,7 @@ function caGetLabelForBundle($ps_bundle) {
 	}
 	
 	// Maybe it's an access point?
-	if($indexing_config = Configuration::load(__CA_CONF_DIR__."/search_indexing.conf")) {
+	if($indexing_config = Configuration::load('search_indexing.conf')) {
 		$keys = $indexing_config->getAssocKeys();
 		
 		foreach($keys as $k) {
@@ -2390,7 +2390,7 @@ function caMapBundleToSearchBuilderFilterDefinition(BaseModel $t_subject, $pa_bu
 		
 		$va_result['input'] = is_array($va_select_options) ? $render_in_builder : 'text';
 		$va_result['values'] = is_array($va_select_options) ? (object)$va_select_options : null;
-		$va_result['operators'] = $va_operators_by_type[$va_result['input']];
+		$va_result['operators'] = $va_operators_by_type[$va_result['input']] ?? null;
 	} elseif($vs_name === "{$table}.".$t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
 		$va_result['operators'] = array_merge($va_operators_by_type['string'], ['between']);
 	} else {

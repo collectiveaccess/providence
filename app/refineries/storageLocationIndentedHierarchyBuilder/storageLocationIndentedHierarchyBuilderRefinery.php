@@ -38,7 +38,7 @@ class storageLocationIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	# -------------------------------------------------------
 	public function __construct() {
 		$this->ops_name = 'storageLocationIndentedHierarchyBuilder';
-		$this->ops_title = _t('Indexed storage location hierarchy builder');
+		$this->ops_title = _t('Indented storage location hierarchy builder');
 		$this->ops_description = _t('Imports spreadsheets with hierarchies expressed as indented values spread across several columns as hierarchical storage location.');
 		
 		$this->opb_returns_multiple_values = true;

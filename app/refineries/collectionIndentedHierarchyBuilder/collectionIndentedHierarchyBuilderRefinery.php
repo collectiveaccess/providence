@@ -44,7 +44,7 @@
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'collectionIndentedHierarchyBuilder';
-			$this->ops_title = _t('Indexed collection hierarchy builder');
+			$this->ops_title = _t('Indented collection hierarchy builder');
 			$this->ops_description = _t('Imports spreadsheets with hierarchies expressed indented values spread across several columns as hierarchical collections.');
 			
 			$this->opb_returns_multiple_values = true;

@@ -42,7 +42,7 @@ class ContentCaching extends AppControllerPlugin {
 	public function __construct() {
 		parent::__construct();
 
-		$this->opo_caching_config = Configuration::load(__CA_CONF_DIR__.'/content_caching.conf');
+		$this->opo_caching_config = Configuration::load('content_caching.conf');
 	}
 	# -------------------------------------------------------
 	private function getKeyForRequest() {

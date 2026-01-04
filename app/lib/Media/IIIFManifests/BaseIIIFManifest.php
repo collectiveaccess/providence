@@ -63,7 +63,7 @@ abstract class BaseIIIFManifest {
 	 */
 	public function __construct() {
 		$this->config = \Configuration::load();
-		$this->iiif_config = \Configuration::load(__CA_CONF_DIR__.'/iiif.conf');
+		$this->iiif_config = \Configuration::load('iiif.conf');
 		$this->base_url = $this->config->get('site_host').$this->config->get('ca_url_root'); //.$request->getBaseUrlPath();
 		
 		$this->manifest_url = \IIIFService::manifestUrl();

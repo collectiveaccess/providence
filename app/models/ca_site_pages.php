@@ -717,7 +717,7 @@ class ca_site_pages extends BundlableLabelableBaseModelWithAttributes {
 					'fetched_original_url' => $va_m['fetched_original_url'],
 					'fetched_by' => $va_m['fetched_by'],
 					'fetched_on' => $va_m['fetched_on'] ? date('c', $va_m['fetched_on']) : null,
-                    'fetched' => isset($va_m['fetched_from']) ? _t("<h3>Fetched from:</h3> URL %1 on %2 uing %3 URL handler", '<a href="'.($va_m['fetched_from'] ?? null).'" target="_ext" title="'.($va_m['fetched_from'] ?? null).'">'.$va_m['fetched_from'].'</a>', date('c', ($va_m['fetched_on'] ?? null)), caGetOption('fetched_by', $va_m, 'default')): ""
+                    'fetched' => isset($va_m['fetched_from']) ? _t("<h3>Fetched from:</h3> URL %1 on %2 using %3 URL handler", '<a href="'.($va_m['fetched_from'] ?? null).'" target="_ext" title="'.($va_m['fetched_from'] ?? null).'">'.$va_m['fetched_from'].'</a>', date('c', ($va_m['fetched_on'] ?? null)), caGetOption('fetched_by', $va_m, 'default')): ""
                 );
         }
         return $va_initial_values;

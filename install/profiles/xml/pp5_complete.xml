@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
-  <profileName>PastPerfect 5.0</profileName>
+  <profileName>[Standard] PastPerfect 5.0</profileName>
   <profileDescription>Profile configuration that is compliant with PastPerfect 5.0</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>

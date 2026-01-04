@@ -125,7 +125,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						
 						
 						// Get configured sorts
-						$conf = Configuration::load(__CA_CONF_DIR__.'/lightbox.conf');
+						$conf = Configuration::load('lightbox.conf');
 						$browse_conf = $conf->get('lightboxBrowse');
 						$sorts = caGetOption('sortBy', $browse_conf, [], ['castTo' => 'array']);
 						

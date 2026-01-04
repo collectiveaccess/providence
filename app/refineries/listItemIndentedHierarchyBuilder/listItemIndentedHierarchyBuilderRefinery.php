@@ -37,7 +37,7 @@ class listItemIndentedHierarchyBuilderRefinery extends BaseRefinery {
 	# -------------------------------------------------------
 	public function __construct() {
 		$this->ops_name = 'listItemIndentedHierarchyBuilder';
-		$this->ops_title = _t('Indexed list item hierarchy builder');
+		$this->ops_title = _t('Indented list item hierarchy builder');
 		$this->ops_description = _t('Imports spreadsheets with hierarchies expressed as indented values spread across several columns as hierarchical lists.');
 		
 		$this->opb_returns_multiple_values = true;

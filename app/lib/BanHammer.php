@@ -42,7 +42,7 @@ class BanHammer {
 	 *
 	 */
 	static public function init() {
-		if(!self::$config) { self::$config = Configuration::load(__CA_CONF_DIR__.'/ban_hammer.conf'); }
+		if(!self::$config) { self::$config = Configuration::load('ban_hammer.conf'); }
 		return true;
 	}
 	# ------------------------------------------------------
@@ -129,7 +129,7 @@ class BanHammer {
 			
 			if ($prob >= $threshold) { 
 				if ($classname::shouldBanIP()) {
-					ca_ip_bans::ban($request, $classname::banTTL(), $p);	
+					ca_ip_bans::ban($request, $classname::banTTL(), $p, $classname::getDetails());	
 				}
 				return false; 
 			}
@@ -145,7 +145,7 @@ class BanHammer {
 		
 		if (($mode == 'average') && (((float)$non_zero_acc/(float)$non_zero_count) >= $threshold)) { 
 			if ($should_ban_ip) {
-				ca_ip_bans::ban($request, $max_ttl, join(';', $non_zero_plugins));
+				ca_ip_bans::ban($request, $max_ttl, join(';', $non_zero_plugins), $classname::getDetails());
 			}
 			return false; 
 		}

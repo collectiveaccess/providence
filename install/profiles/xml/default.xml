@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DefaultProfile">
-  <profileName>[DEFAULT] Visual resources collection</profileName>
+  <profileName>[Example] Visual resources collection</profileName>
   <profileDescription>Profile for art gallery, art collection, or any type of visual resources collection</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>

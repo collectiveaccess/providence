@@ -2,7 +2,7 @@
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
   infoUrl="http://wiki.collectiveaccess.org/index.php?title=DACS_profile">
-  <profileName>[DACS] Heritage Muse</profileName>
+  <profileName>[User] DACS/Heritage Muse</profileName>
   <profileDescription>A DACS and EAD compliant profile for Heritage Muse</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>

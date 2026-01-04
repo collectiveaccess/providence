@@ -54,7 +54,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             throw new LDAPException(_t("PHP's LDAP module is required for LDAP authentication!"));
         }
 
-        $this->opo_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+        $this->opo_auth_config = Configuration::load('authentication.conf');
 
 		// "new" config format allows defining multiple directories in an array
 		if($va_directories = $this->opo_auth_config->get('directories')) {
