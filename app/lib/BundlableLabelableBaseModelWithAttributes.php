@@ -7566,7 +7566,7 @@ if (!$batch) {
 			
 			$parent_idno_is_set = false;
 			if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && !$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_disable_object_collection_idno_inheritance') && $pa_options['request']) {
-				if(!($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger)) && ($obj_coll_rel_types = caGetObjectCollectionHierarchyRelationshipType())) {
+				if(!($vn_collection_id = $pa_options['request']->getParameter('collection_id', pInteger)) && ($obj_coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes())) {
 					if(is_array($coll_ids = $this->get('ca_collections.collection_id', ['restrictToRelationshipTypes' => $obj_coll_rel_types, 'returnAsArray' => true]))) {
 						$vn_collection_id = array_shift($coll_ids);
 					}
