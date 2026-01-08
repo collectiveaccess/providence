@@ -69,67 +69,63 @@ class Datamodel {
 			}
 		}
 		
-		$o_config = Configuration::load();
- 			
-		if ($vs_data_model_path = __CA_CONF_DIR__."/datamodel.conf") {
-			
-			$o_datamodel = Configuration::load($vs_data_model_path);
-			Datamodel::$opo_graph = new Graph();
-			
-			# add tables
-			if (!$va_tables = $o_datamodel->getAssoc("tables")) { $va_tables = []; }
-			foreach($va_tables as $vs_table => $vn_num) {
-				Datamodel::$opo_graph->addNode($vs_table);
-				Datamodel::$opo_graph->addAttribute("num", $vn_num, $vs_table);
-				Datamodel::$opo_graph->addNode("t#".$vn_num);
-				Datamodel::$opo_graph->addAttribute("name", $vs_table, "t#".$vn_num);
-			}
-			
-			# add relationships
-			if (!$va_relationships = $o_datamodel->getList("relationships")) { $va_relationships = []; }
-
-			foreach($va_relationships as $vs_relationship) {
-				$va_keys = preg_split("/[\t ]*=[\t ]*/", $vs_relationship);
-				
-				$vn_num_keys = sizeof($va_keys);
-				
-				switch($vn_num_keys) {
-					case 2:					
-						$vs_key1 = $va_keys[0];
-						$va_tmp = preg_split('/[ ]+/', $va_keys[1]);
-						$vs_key2 = $va_tmp[0];
-						
-						list($vs_table1, $vs_field1) = explode(".", $vs_key1);
-						list($vs_table2, $vs_field2) = explode(".", $vs_key2);
-						
-						$vn_weight = (isset($va_tmp[1]) && (intval($va_tmp[1]) > 0)) ? intval($va_tmp[1]) : 10;
-						break;
-					default:
-						die("Fatal error: syntax error in datamodel relationship specification: '$vs_relationship'\n");
-						break;
-				}
-				
-				
-				if (!Datamodel::$opo_graph->hasNode($vs_table1)) { 
-					die("Fatal error: invalid table '$vs_table1' in relationship in datamodel definition\n");
-				}
-				if (!Datamodel::$opo_graph->hasNode($vs_table2)) { 
-					die("Fatal error: invalid table '$vs_table2' in relationship in datamodel definition\n");
-				}
-				
-				if (!($va_attr = Datamodel::$opo_graph->getAttributes($vs_table1, $vs_table2))) {
-					$va_attr = [];
-					Datamodel::$opo_graph->addRelationship($vs_table1, $vs_table2);
-				}
-				$va_attr["relationships"][$vs_table1][$vs_table2][] = array($vs_field1, $vs_field2);
-				$va_attr["relationships"][$vs_table2][$vs_table1][] = array($vs_field2, $vs_field1);
-				$va_attr['WEIGHT'] = $vn_weight;
-				Datamodel::$opo_graph->setAttributes($va_attr, $vs_table1, $vs_table2);
-			}
-
-			$va_graph_data = Datamodel::$opo_graph->getInternalData();
-			ExternalCache::save('ca_datamodel_graph', $va_graph_data, 'default', 3600 * 24 * 30);
+		$o_config = Configuration::load();			
+		$o_datamodel = Configuration::load('datamodel.conf');
+		Datamodel::$opo_graph = new Graph();
+		
+		# add tables
+		if (!$va_tables = $o_datamodel->getAssoc("tables")) { $va_tables = []; }
+		foreach($va_tables as $vs_table => $vn_num) {
+			Datamodel::$opo_graph->addNode($vs_table);
+			Datamodel::$opo_graph->addAttribute("num", $vn_num, $vs_table);
+			Datamodel::$opo_graph->addNode("t#".$vn_num);
+			Datamodel::$opo_graph->addAttribute("name", $vs_table, "t#".$vn_num);
 		}
+		
+		# add relationships
+		if (!$va_relationships = $o_datamodel->getList("relationships")) { $va_relationships = []; }
+
+		foreach($va_relationships as $vs_relationship) {
+			$va_keys = preg_split("/[\t ]*=[\t ]*/", $vs_relationship);
+			
+			$vn_num_keys = sizeof($va_keys);
+			
+			switch($vn_num_keys) {
+				case 2:					
+					$vs_key1 = $va_keys[0];
+					$va_tmp = preg_split('/[ ]+/', $va_keys[1]);
+					$vs_key2 = $va_tmp[0];
+					
+					list($vs_table1, $vs_field1) = explode(".", $vs_key1);
+					list($vs_table2, $vs_field2) = explode(".", $vs_key2);
+					
+					$vn_weight = (isset($va_tmp[1]) && (intval($va_tmp[1]) > 0)) ? intval($va_tmp[1]) : 10;
+					break;
+				default:
+					die("Fatal error: syntax error in datamodel relationship specification: '$vs_relationship'\n");
+					break;
+			}
+			
+			
+			if (!Datamodel::$opo_graph->hasNode($vs_table1)) { 
+				die("Fatal error: invalid table '$vs_table1' in relationship in datamodel definition\n");
+			}
+			if (!Datamodel::$opo_graph->hasNode($vs_table2)) { 
+				die("Fatal error: invalid table '$vs_table2' in relationship in datamodel definition\n");
+			}
+			
+			if (!($va_attr = Datamodel::$opo_graph->getAttributes($vs_table1, $vs_table2))) {
+				$va_attr = [];
+				Datamodel::$opo_graph->addRelationship($vs_table1, $vs_table2);
+			}
+			$va_attr["relationships"][$vs_table1][$vs_table2][] = array($vs_field1, $vs_field2);
+			$va_attr["relationships"][$vs_table2][$vs_table1][] = array($vs_field2, $vs_field1);
+			$va_attr['WEIGHT'] = $vn_weight;
+			Datamodel::$opo_graph->setAttributes($va_attr, $vs_table1, $vs_table2);
+		}
+
+		$va_graph_data = Datamodel::$opo_graph->getInternalData();
+		ExternalCache::save('ca_datamodel_graph', $va_graph_data, 'default', 3600 * 24 * 30);
 	}
 	# --------------------------------------------------------------------------------------------
 	# 

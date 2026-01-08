@@ -113,7 +113,7 @@ class ReplicationService {
 	 * @return array
 	 */
 	public static function getLog($po_request) {
-		$o_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
+		$o_replication_conf = Configuration::load('replication.conf');
 		$max_media_size = $o_replication_conf->get('maximum_media_size');
 		$max_media_size_in_bytes = $max_media_size ? caParseHumanFilesize($max_media_size) : null;
 

@@ -52,7 +52,7 @@ class MediaVolumes {
 	}
 	# ------------------------------------------------
 	function __construct() {
-		$this->o_info = Configuration::load(__CA_CONF_DIR__."/media_volumes.conf");
+		$this->o_info = Configuration::load('media_volumes.conf');
 	}
 	# ------------------------------------------------
 	# returns block of information as associative array for given volume

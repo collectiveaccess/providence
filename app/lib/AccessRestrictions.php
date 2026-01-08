@@ -63,7 +63,7 @@ class AccessRestrictions {
 	}
 	# -------------------------------------------------------
 	public function __construct(){
-		$this->opo_acr_config = Configuration::load(__CA_CONF_DIR__.'/access_restrictions.conf');
+		$this->opo_acr_config = Configuration::load('access_restrictions.conf');
 		$this->opa_acr = $this->opo_acr_config->get("access_restrictions");
 		$opa_app_plugin_manager = new ApplicationPluginManager();
 		$va_custom_acr = $opa_app_plugin_manager->hookGetAccessRestrictions();

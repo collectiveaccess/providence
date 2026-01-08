@@ -1414,7 +1414,7 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		$vn_primary_id = 0;
 		$va_initial_values = [];
 		if (is_array($va_reps) && sizeof($va_reps)) {
-			$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
+			$o_type_config = Configuration::load('annotation_types.conf');
 			$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
 
 			$va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id');

@@ -1281,8 +1281,8 @@ class BaseFindEngine extends BaseObject {
 		
 		$sql = "
 			SELECT s.{$rel_table_pk}, s.{$intrinsic} val
-			FROM {$table}
-			INNER JOIN {$hit_table} ON {$hit_table}.row_id = {$table}.{$table_pk}
+			FROM {$table} t
+			INNER JOIN {$hit_table} ON {$hit_table}.row_id = t.{$table_pk}
 			{$join_sql}
 			WHERE
 				s.{$intrinsic} IN (?)

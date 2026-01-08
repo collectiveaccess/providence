@@ -974,11 +974,14 @@ function caSuspendCheckAccessChecks($t_item) : bool {
  * @return bool
  */
 function caDontEnforceACLForAdministrators(?ca_users $t_user) : bool {
+	$is_admin = (is_a($t_user, 'ca_users') && $t_user->canDoAction('is_administrator'));
+	
+	if (caAppIsProvidence() && $is_admin) { return true; }
+	
 	$config = Configuration::load();
 	$bypass_enabled = $config->get('acl_dont_enforce_for_administrator');
 	if(!$bypass_enabled) { return false; }
 	
-	$is_admin = (is_a($t_user, 'ca_users') && $t_user->canDoAction('is_administrator'));
 	if($is_admin) { return true; }
 	
 	return false;

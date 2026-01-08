@@ -55,6 +55,13 @@ BaseModel::$s_ca_models_definitions['ca_ip_bans'] = array(
 				'LABEL' => _t('Reason'), 'DESCRIPTION' => _t('Reason for ban'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'details' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Details'), 'DESCRIPTION' => _t('Details for ban')
+		),
 		'created_on' => array(
 				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
@@ -165,13 +172,13 @@ class ca_ip_bans extends BaseModel {
 	 *
 	 */
 	static public function init() {
-		if(!self::$config) { self::$config = Configuration::load("ban_hammer.conf"); }
+		if(!self::$config) { self::$config = Configuration::load('ban_hammer.conf'); }
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	static public function ban(RequestHTTP $request, ?int $ttl=null, ?string $reason=null) {
+	static public function ban(RequestHTTP $request, ?int $ttl=null, ?string $reason=null, $details=null) {
 		self::init();
 		if (!($ip = RequestHTTP::ip())) { return false; }
 		if (self::isWhitelisted()) { return false; } 
@@ -180,6 +187,7 @@ class ca_ip_bans extends BaseModel {
 		$ban = new ca_ip_bans();
 		$ban->set('ip_addr', $ip);
 		$ban->set('reason', $reason);
+		$ban->set('details', json_encode($details));
 		$ban->set('expires_on', $ttl ? date('c', time() + $ttl) : null);
 		return $ban->insert();
 	}

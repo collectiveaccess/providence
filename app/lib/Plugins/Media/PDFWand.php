@@ -156,7 +156,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	public function register() {
 		$this->opo_config = Configuration::load();
 		
-		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+		$this->opo_search_config = Configuration::load('search.conf');
 		
 		$this->ops_ghostscript_path = caMediaPluginGhostscriptInstalled();
 		$this->ops_pdftotext_path = caMediaPluginPdftotextInstalled();

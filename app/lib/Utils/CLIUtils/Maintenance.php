@@ -1454,7 +1454,7 @@ trait CLIUtilsMaintenance {
 		}
 		$access = array_unique(array_merge($config->get('public_access_settings') ?? [], $config->get('privileged_access_settings') ?? []));
 								
-		$cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
+		$cache_config = Configuration::load('content_caching.conf');
 		if(!is_array($va_exclude_from_precache = $cache_config->get('exclude_from_precache'))) { $va_exclude_from_precache = []; }
 		
 		$va_cached_actions = $cache_config->getAssoc('cached_actions');

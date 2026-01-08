@@ -52,7 +52,7 @@ class AppNavigation extends BaseObject {
 		$this->setRequest($po_request);
 		$this->setResponse($po_response);
 		$this->opo_config = Configuration::load();
-		$this->opo_nav_config = Configuration::load($this->opo_config->get("nav_config"));
+		$this->opo_nav_config = Configuration::load('navigation.conf');
 		$this->opa_nav_config = $this->opo_nav_config->getAssoc('navigation');
 		$this->opa_widgets_config = $this->opo_nav_config->getAssoc('widgets');
 		$this->ops_controller_path = $this->opo_request->config->get('controllers_directory');
@@ -856,6 +856,10 @@ class AppNavigation extends BaseObject {
 					break;
 				case 'constant':
 					$vs_value = constant($va_tmp[1]);
+					break;
+				case 'configuration':
+				case 'config':
+					$vs_value = $this->opo_request->config->getScalar($va_tmp[1]);
 					break;
 				default:
 					$vs_value = '';
