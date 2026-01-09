@@ -524,7 +524,7 @@ class IIIFService {
 		
 		$path = null;
 		foreach(['original', 'large', 'page_preview', 'large_preview'] as $version) {
-			if($path = $pt_media->getMediaPath($ps_fldname, $version)) { break; }
+			if(($path = $pt_media->getMediaPath($ps_fldname, $version)) && file_exists($path)) { break; }
 		}
 		
 		if(!$path) { throw new ApplicationException(_t('No media path')); }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,7 @@ function caMediaInfoGuessFileFormat($ps_path) {
  * @return bool|string
  */
 function caGetID3GuessFileFormat($ps_path) {
+	if(!$ps_path) { return null; }
 	if($va_getid3_info = caExtractMetadataWithGetID3($ps_path)) {
 	
 		if(
@@ -89,6 +90,7 @@ function caGetID3GuessFileFormat($ps_path) {
  * @return array|bool
  */
 function caExtractMetadataWithGetID3($ps_filepath) {
+	if(!$ps_filepath) { return null; }
 	if(MemoryCache::contains($ps_filepath, 'GetID3MediaMetadata')) {
 		return MemoryCache::fetch($ps_filepath, 'GetID3MediaMetadata');
 	}
@@ -139,7 +141,7 @@ function caExtractMetadataWithGetID3($ps_filepath) {
  */
 function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
 	if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-	if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
+	if (!$ps_filepath || !caIsValidFilePath($ps_mediainfo_path)) { return false; }
 
 	if(MemoryCache::contains($ps_filepath, 'MediaInfoMetadata')) {
 		return MemoryCache::fetch($ps_filepath, 'MediaInfoMetadata');
@@ -177,6 +179,7 @@ function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
  * @return float|null
  */
 function caExtractVideoFileDurationWithMediaInfo($ps_filepath) {
+	if(!$ps_filepath) { return null; }
 	$ps_mediainfo_path = caGetExternalApplicationPath('mediainfo');
 	if(!caMediaInfoInstalled($ps_mediainfo_path)) { return false; }
 

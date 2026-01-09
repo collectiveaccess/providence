@@ -14,7 +14,7 @@
     "easyrdf/easyrdf": "1.1.1",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
-    "guzzlehttp/guzzle": "7.9.*",
+    "guzzlehttp/guzzle": "^7.9",
     "guzzlehttp/psr7": "2.7.*",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
@@ -55,7 +55,12 @@
     "phpmailer/phpmailer": "^6.8",
     "smalot/pdfparser": "^2.7",
     "justinrainbow/json-schema": "^5.2",
-    "bjeavons/zxcvbn-php": "^1.4"
+    "bjeavons/zxcvbn-php": "^1.4",
+    "geocoder-php/google-maps-provider": "^4.8",
+    "geocoder-php/nominatim-provider": "^5.8",
+    "geocoder-php/geonames-provider": "^4.5",
+    "geocoder-php/chain-provider": "^4.6",
+    "anthonymartin/geo-location": "^2.0"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0",
