@@ -481,7 +481,7 @@ class ElementsController extends BaseEditorController {
  		if(!$element_id) {
  			$element_id = $this->request->getParameter('element_id', pInteger);
 		}
-		$t_element = ca_metadata_elements::getInstance($element_id);
+		$t_element = $element_id ? ca_metadata_elements::getInstance($element_id) : new ca_metadata_elements();
  		if ($set_view_vars){
  			$this->view->setVar('element_id', $element_id);
  			$this->view->setVar('t_element', $t_element);
