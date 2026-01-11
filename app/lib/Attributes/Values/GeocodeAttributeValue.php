@@ -29,6 +29,7 @@
  *
  * ----------------------------------------------------------------------
  */
+use Geocoder\Query\GeocodeQuery;
 define("__CA_ATTRIBUTE_VALUE_GEOCODE__", 4);
 
 require_once(__CA_LIB_DIR__.'/Configuration.php');
@@ -341,17 +342,17 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	private $opo_geo_plugin;
 	# ------------------------------------------------------------------
-	public function __construct($pa_value_array=null) {
-		parent::__construct($pa_value_array);
+	public function __construct($value_array=null) {
+		parent::__construct($value_array);
 		$this->opo_geo_plugin = new GeographicMap();
 	}
 	# ------------------------------------------------------------------
-	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
-		$this->ops_path_value = $pa_value_array['value_longtext2'];
+	public function loadTypeSpecificValueFromRow($value_array) {
+		$this->ops_text_value = $value_array['value_longtext1'];
+		$this->ops_path_value = $value_array['value_longtext2'];
 		
-		$this->opn_latitude = preg_replace('![0]+$!', '', $pa_value_array['value_decimal1']);
-		$this->opn_longitude = preg_replace('![0]+$!', '', $pa_value_array['value_decimal2']);
+		$this->opn_latitude = preg_replace('![0]+$!', '', $value_array['value_decimal1']);
+		$this->opn_longitude = preg_replace('![0]+$!', '', $value_array['value_decimal2']);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -359,7 +360,7 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	 * If you need to get the coordinates parsed out and suitable for mapping then pass the 'coordinates' option set to true; this will cause an array to be
 	 * returned with keys for latitude, longitude (for the first point, if a path), path (a string with all coordinates in the path) and label (the display string)
 	 *
-	 * @param $pa_options - options for generating display value. Supported options are:
+	 * @param $options - options for generating display value. Supported options are:
 	 *			coordinates - if passed a representation of the geocode value with coordinates parse is returned as an array. This array has the following keys:
 	 *							latitude - the latitude of the first point in the geocode
 	 *							longitude - the longitude of the first point in the geocode
@@ -369,11 +370,11 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 * @return mixed - will return string with display value by default; array with parsed coordinate values if the "coordinates" option is passed
 	 */
-	public function getDisplayValue($pa_options=null) {
-		if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
+	public function getDisplayValue($options=null) {
+		if(isset($options['coordinates']) && $options['coordinates']) {
 			return array('latitude' => $this->opn_latitude, 'longitude' => $this->opn_longitude, 'path' => $this->ops_path_value, 'label' => $this->ops_text_value);
 		}
-		if(caGetOption('path', $pa_options, false)) {
+		if(caGetOption('path', $options, false)) {
 			return trim($this->ops_path_value);
 		}
 		if (!$this->ops_text_value && $this->ops_path_value) {
@@ -395,45 +396,48 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 		return $this->ops_path_value;
 	}
 	# ------------------------------------------------------------------
-	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-		$va_settings = $this->getSettingValuesFromElementArray(
-			$pa_element_info, 
-			array('mustNotBeBlank')
+	/**
+	 *
+	 */
+	public function parseValue($value, $element_info, $options=null) {
+		$settings = $this->getSettingValuesFromElementArray(
+			$element_info, 
+			['mustNotBeBlank']
 		);
 		
-		$vs_point = $vn_angle = null;
+		$point = $angle = null;
 		
-		if (is_array($ps_value) && $ps_value['_uploaded_file']) {
-			$o_kml = new KmlParser($ps_value['tmp_name']);
-			$va_placemarks = $o_kml->getPlacemarks();
-			$va_features = array();
-			foreach($va_placemarks as $va_placemark) {
-				$va_coords = array();
-				switch($va_placemark['type']) {
+		if (is_array($value) && ($value['_uploaded_file'] ?? null)) {		// KML file upload
+			$o_kml = new KmlParser($value['_uploaded_file']);
+			$placemarks = $o_kml->getPlacemarks();
+			$features = [];
+			foreach($placemarks as $placemark) {
+				$coords = [];
+				switch($placemark['type'] ?? null) {
 					case 'POINT':
-						$va_coords[] = $va_placemark['latitude'].','.$va_placemark['longitude'];
+						$coords[] = $placemark['latitude'].','.$placemark['longitude'];
 						break;
 					case 'PATH':
-						foreach($va_placemark['coordinates'] as $va_coordinate) {
-							$va_coords[] = $va_coordinate['latitude'].','.$va_coordinate['longitude'];
+						foreach($placemark['coordinates'] as $coordinate) {
+							$coords[] = $coordinate['latitude'].','.$coordinate['longitude'];
 						}	
 						break;
 				}
-				if (sizeof($va_coords)) {
-					$va_features[] = join(';', $va_coords);
+				if (sizeof($coords)) {
+					$features[] = join(';', $coords);
 				}
 			}
 			
-			if (sizeof($va_features)) {
-				$ps_value = '['.join(':', $va_features).']';
+			if (sizeof($features)) {
+				$value = '['.join(':', $features).']';
 			} else {
-				$ps_value = '';
+				$value = '';
 			}
 		}
-		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+		$value = trim(preg_replace("![\t\n\r]+!", ' ', $value));
 		
-		if (!trim($ps_value)) {
-			if ($va_settings['mustNotBeBlank']) {
+		if (!trim($value)) {
+			if ($settings['mustNotBeBlank']) {
 				$this->postError(1970, _t('Address or georeference was blank.'), 'GeocodeAttributeValue->parseValue()');
 				return false;
 			} else {
@@ -444,115 +448,156 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 
 		// is it direct input (decimal lat, decimal long)?
 		if(
-			preg_match("!^([^\[]*)[\[]{1}([\d,\-\.;~]+)[\]]{0,1}$!", $ps_value, $va_matches)
+			preg_match("!^([^\[]*)[\[]{1}([\d,\-\.;~]+)[\]]{0,1}$!", $value, $matches)
 			||
-			preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
+			preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $value, $matches)
 		) {
 
-			$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
-			$va_feature_list_proc = array();
-			foreach($va_feature_list as $vs_feature) {
-				$va_point_list = preg_split("/[;]+/", $vs_feature);
-				$va_parsed_points = array();
-				$vs_first_lat = $vs_first_long = '';
+			$feature_list = preg_split("/[:]+/", $matches[2]);
+			$feature_list_proc = [];
+			foreach($feature_list as $feature) {
+				$point_list = preg_split("/[;]+/", $feature);
+				$parsed_points = [];
+				$first_lat = $first_long = '';
 				
-				foreach($va_point_list as $vs_point) {
-					list($vs_point, $vn_radius) = array_pad(explode('~', $vs_point), 2, null);
-					if (!$vn_radius) {
-						list($vs_point, $vn_angle) = array_pad(explode('*', $vs_point), 2, null);
+				foreach($point_list as $point) {
+					list($point, $radius) = array_pad(explode('~', $point), 2, null);
+					if (!$radius) {
+						list($point, $angle) = array_pad(explode('*', $point), 2, null);
 					}
 					
 					// is it UTM?
-					if (is_array($va_utm_to_latlong = caGISUTMToSignedDecimals($vs_point))) {
-						$va_parsed_points[] = $va_utm_to_latlong['latitude'].','.$va_utm_to_latlong['longitude'].(($vn_radius > 0) ? "~{$vn_radius}" : "");
-						if (!$vs_first_lat) { $vs_first_lat = $va_utm_to_latlong['latitude']; }
-						if (!$vs_first_long) { $vs_first_long = $va_utm_to_latlong['longitude']; }
+					if (is_array($utm_to_latlong = caGISUTMToSignedDecimals($point))) {
+						$parsed_points[] = $utm_to_latlong['latitude'].','.$utm_to_latlong['longitude'].(($radius > 0) ? "~{$radius}" : "");
+						if (!$first_lat) { $first_lat = $utm_to_latlong['latitude']; }
+						if (!$first_long) { $first_long = $utm_to_latlong['longitude']; }
 					} else {
-						$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
+						$tmp = preg_split("/[ ]*[,\/][ ]*/", $point);
 					
-						if(sizeof($va_tmp) && strlen($va_tmp[0])) {
+						if(sizeof($tmp) && strlen($tmp[0])) {
 							// convert from degrees minutes seconds to decimal format
-							if (caGISisDMS($va_tmp[0])) {
-								$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+							if (caGISisDMS($tmp[0])) {
+								$tmp[0] = caGISminutesToSignedDecimal($tmp[0]);
 							} else {
-								$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+								$tmp[0] = caGISDecimalToSignedDecimal($tmp[0]);
 							}
-							if(isset($va_tmp[1]) && strlen($va_tmp[1])) {
-								if (caGISisDMS($va_tmp[1])) {
-									$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+							if(isset($tmp[1]) && strlen($tmp[1])) {
+								if (caGISisDMS($tmp[1])) {
+									$tmp[1] = caGISminutesToSignedDecimal($tmp[1]);
 								} else {
-									$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+									$tmp[1] = caGISDecimalToSignedDecimal($tmp[1]);
 								}
 							} else {
-								$va_tmp[1] = '';
+								$tmp[1] = '';
 							}
 						
-							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1].(($vn_radius > 0) ? "~{$vn_radius}" : "").(($vn_angle > 0) ? "*{$vn_angle}" : "");
-							if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
-							if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
+							$parsed_points[] = $tmp[0].','.$tmp[1].(($radius > 0) ? "~{$radius}" : "").(($angle > 0) ? "*{$angle}" : "");
+							if (!$first_lat) { $first_lat = $tmp[0]; }
+							if (!$first_long) { $first_long = $tmp[1]; }
 						}
 					}
 				}
-				$va_feature_list_proc[] = join(';', $va_parsed_points);
+				$feature_list_proc[] = join(';', $parsed_points);
 			}
-			return array(
-				'value_longtext1' => $va_matches[1],
-				'value_longtext2' => join(':', $va_feature_list_proc),
-				'value_decimal1' => $vs_first_lat,		// latitude
-				'value_decimal2' => $vs_first_long		// longitude
-			);	
-		} elseif(preg_match("!^([\-]{0,1}[\d]{1,3})[\D]+([\d]{1,2})[\D]+([\d\.]+)[^NSEW]+([NSEW]{1})[\D]+([\-]{0,1}[\d]{1,3})[\D]+([\d]{1,2})[\D]+([\d\.]+)[^NSEW]+([NSEW]{1})!", $ps_value, $va_matches)) {
+			return [
+				'value_longtext1' => $matches[1],
+				'value_longtext2' => join(':', $feature_list_proc),
+				'value_decimal1' => $first_lat,		// latitude
+				'value_decimal2' => $first_long		// longitude
+			];	
+		} elseif(preg_match("!^([\-]{0,1}[\d]{1,3})[\D]+([\d]{1,2})[\D]+([\d\.]+)[^NSEW]+([NSEW]{1})[\D]+([\-]{0,1}[\d]{1,3})[\D]+([\d]{1,2})[\D]+([\d\.]+)[^NSEW]+([NSEW]{1})!", $value, $matches)) {
 			// Catch EXIFtool georefs (Ex. 53 deg 25' 56.40" 113 deg 54' 55.20")
-			$vs_first_lat = caGISminutesToSignedDecimal(join(' ', array_slice($va_matches, 0, 4)));
-			$vs_first_long = caGISminutesToSignedDecimal(join(' ', array_slice($va_matches, 5, 4)));
+			$first_lat = caGISminutesToSignedDecimal(join(' ', array_slice($matches, 0, 4)));
+			$first_long = caGISminutesToSignedDecimal(join(' ', array_slice($matches, 5, 4)));
 			
-			return array(
-				'value_longtext1' => $va_matches[1],
-				'value_longtext2' => "{$vs_first_lat},{$vs_first_long}",
-				'value_decimal1' => $vs_first_lat,		// latitude
-				'value_decimal2' => $vs_first_long		// longitude
-			);	
-		} elseif($ps_value = preg_replace("!\[[\d,\-\.]+\]!", "", $ps_value)) {
-			$vs_google_response = @file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($ps_value).'&sensor=false'.((defined("__CA_GOOGLE_MAPS_KEY__") && __CA_GOOGLE_MAPS_KEY__) ? "&key=".__CA_GOOGLE_MAPS_KEY__ : ""));
-			if(!($va_google_response = json_decode($vs_google_response,true)) || !isset($va_google_response['status'])){
-				$this->postError(1970, _t('Could not connect to Google for geocoding'), 'GeocodeAttributeValue->parseValue()');
-				return false;
+			return [
+				'value_longtext1' => $matches[1],
+				'value_longtext2' => "{$first_lat},{$first_long}",
+				'value_decimal1' => $first_lat,	
+				'value_decimal2' => $first_long
+			];	
+		} elseif($value = preg_replace("!\[[\d,\-\.]+\]!", "", $value)) {
+			$geocoder = new \Geocoder\ProviderAggregator();
+			$client  = new \GuzzleHttp\Client();
+			
+			$provider_list = [];
+			
+			if(!is_array($provider_conf = Configuration::load()->getList('geocode_providers'))) {
+				$provider_conf = ['Nominatim'];
 			}
-
-			if(($va_google_response['status'] != 'OK') || !isset($va_google_response['results']) || sizeof($va_google_response['results'])==0){
-				$this->postError(1970, _t('Could not geocode address "%1": [%2]', $ps_value, $va_google_response['status']), 'GeocodeAttributeValue->parseValue()');
-				return false;
+			foreach($provider_conf as $p) {
+				switch(strtolower($p)) {
+					case 'nominatim':
+						$provider_list[] = \Geocoder\Provider\Nominatim\Nominatim::withOpenStreetMapServer($client, __CA_APP_NAME__);
+						break;
+					case 'geonames':
+						$provider_list[] = new \Geocoder\Provider\Geonames\Geonames($client, __CA_APP_NAME__);
+						break;
+					case 'googlemaps':
+						if(!defined('__CA_GOOGLE_MAPS_KEY__') || !__CA_GOOGLE_MAPS_KEY__) { break; }
+						$provider_list[] = new \Geocoder\Provider\GoogleMaps\GoogleMaps($client, __CA_APP_NAME__, __CA_GOOGLE_MAPS_KEY__);
+						break;
+				}
 			}
-
-			$va_first_result = array_shift($va_google_response['results']);
-
-			if(isset($va_first_result['geometry']['location']) && is_array($va_first_result['geometry']['location'])) {
-				return array(
-					'value_longtext1' => $ps_value,
-					'value_longtext2' => $va_first_result['geometry']['location']['lat'].','.$va_first_result['geometry']['location']['lng'],
-					'value_decimal1' => $va_first_result['geometry']['location']['lat'],
-					'value_decimal2' => $va_first_result['geometry']['location']['lng']
-				);
-			} else {
-				$this->postError(1970, _t('Could not geocode address "%1"', $ps_value), 'GeocodeAttributeValue->parseValue()');
-				return false;
+			if(sizeof($provider_list) > 0) {
+				$chain = new \Geocoder\Provider\Chain\Chain($provider_list);
+				$geocoder->registerProvider($chain);
+				
+				$result = $geocoder->geocodeQuery(GeocodeQuery::create($value));
+				
+				try {
+					if(!$result || !$result->first()){
+						$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
+						return false;
+					}
+				} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
+					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
+					return false;
+				}
+	
+				$coords = $result->first()->getCoordinates();
+				$lat = $coords->getLatitude();
+				$long = $coords->getLongitude();
+	
+				if($lat && $long) {
+					$res = [
+						'value_longtext1' => $value,
+						'value_longtext2' => $lat.','.$long,
+						'value_decimal1' => $lat,
+						'value_decimal2' => $long
+					];
+					if(caGetOption('returnBounds', $options, false)) {
+						if($bounds = $result->first()->getBounds()) {
+							$res['bounds'] = [
+								'north' => $bounds->getNorth(),
+								'east' => $bounds->getEast(),
+								'south' => $bounds->getSouth(),
+								'west' => $bounds->getWest()
+							];
+						}
+					} 
+					return $res;
+				} else {
+					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
+					return false;
+				}
 			}
 		}
 		
-		return array(
+		return [
 			'value_longtext1' => '',
 			'value_longtext2' => '',
 			'value_decimal1' => null,		// latitude
 			'value_decimal2' => null		// longitude
-		);
+		];
 		
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * Return HTML form element for editing.
 	 *
-	 * @param array $pa_element_info An array of information about the metadata element being edited
-	 * @param array $pa_options array Options include:
+	 * @param array $element_info An array of information about the metadata element being edited
+	 * @param array $options array Options include:
 	 *			forSearch = simple text entry is returned for use with search forms [Default=false]
 	 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
 	 *			width = the width of the form element [Default=field width defined in metadata element definition]
@@ -560,30 +605,30 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 	 *
 	 * @return string
 	 */
-	public function htmlFormElement($pa_element_info, $pa_options=null) {
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+	public function htmlFormElement($element_info, $options=null) {
+		$class = trim((isset($options['class']) && $options['class']) ? $options['class'] : '');
 		
-		if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
-			return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value'], 'class' => $vs_class), $pa_options);
+		if (isset($options['forSearch']) && $options['forSearch']) {
+			return caHTMLTextInput("{fieldNamePrefix}".$element_info['element_id']."_{n}", ['id' => "{fieldNamePrefix}".$element_info['element_id']."_{n}", 'value' => $options['value'], 'class' => $class], $options);
 		}
-		if ((!isset($pa_options['baseLayer']) || !$pa_options['baseLayer']) || (isset($pa_options['request']) && ($pa_options['request']))) {
-			if ($vs_base_layer_pref = $pa_options['request']->user->getPreference('maps_base_layer')) {
+		if ((!isset($options['baseLayer']) || !$options['baseLayer']) || (isset($options['request']) && ($options['request']))) {
+			if ($base_layer_pref = $options['request']->user->getPreference('maps_base_layer')) {
 				// Prefs don't have quotes in them, so we need to restore here
-				$vs_base_layer_pref = preg_replace("!\(([A-Za-z0-9_\-]+)\)!", "('\\1')", $vs_base_layer_pref);
-				$pa_options['baseLayer'] = $vs_base_layer_pref;
+				$base_layer_pref = preg_replace("!\(([A-Za-z0-9_\-]+)\)!", "('\\1')", $base_layer_pref);
+				$options['baseLayer'] = $base_layer_pref;
 			}
 		}
-		return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, array_merge([
-			'zoomLevel' => caGetOption('defaultZoomLevel', $pa_element_info['settings'], null),
-			'minZoomLevel' => caGetOption('minZoomLevel', $pa_element_info['settings'], null),
-			'maxZoomLevel' => caGetOption('maxZoomLevel', $pa_element_info['settings'], null),
-			'defaultLocation' => caGetOption('defaultLocation', $pa_element_info['settings'], null),
-			'mapWidth' => caGetOption('mapWidth', $pa_element_info['settings'], '695px'), 
-			'mapHeight' => caGetOption('mapHeight', $pa_element_info['settings'], '400px')
-		], $pa_options));
+		return $this->opo_geo_plugin->getAttributeBundleHTML($element_info, array_merge([
+			'zoomLevel' => caGetOption('defaultZoomLevel', $element_info['settings'], null),
+			'minZoomLevel' => caGetOption('minZoomLevel', $element_info['settings'], null),
+			'maxZoomLevel' => caGetOption('maxZoomLevel', $element_info['settings'], null),
+			'defaultLocation' => caGetOption('defaultLocation', $element_info['settings'], null),
+			'mapWidth' => caGetOption('mapWidth', $element_info['settings'], '695px'), 
+			'mapHeight' => caGetOption('mapHeight', $element_info['settings'], '400px')
+		], $options));
 	}
 	# ------------------------------------------------------------------
-	public function getAvailableSettings($pa_element_info=null) {
+	public function getAvailableSettings($element_info=null) {
 		global $_ca_attribute_settings;
 		
 		return $_ca_attribute_settings['GeocodeAttributeValue'];

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -169,8 +169,8 @@ class BaseEditorController extends ActionController {
 		//
 		// get default screen
 		//
-		if (!($vn_type_id = $t_subject->getTypeID())) {
-			$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
+		if (!($type_id = $t_subject->getTypeID())) {
+			$type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
 		}
 
 		if (!$t_ui || !$t_ui->getPrimaryKey()) {
@@ -180,7 +180,7 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 			[],
 			[]
 		);
@@ -390,6 +390,9 @@ class BaseEditorController extends ActionController {
 			}
 
 		} else {
+			if ($t_subject->numErrors()) {
+				$this->notification->addNotification(join("; ", $t_subject->getErrors()), __NOTIFICATION_TYPE_ERROR__);
+			}
 			$vs_message = _t("Saved changes to %1", $vs_type_name);
 		}
 
@@ -670,7 +673,8 @@ class BaseEditorController extends ActionController {
 	 * Redirects to a sensible location after a record delete. Defaults to the last find action
 	 * for the current table, which depending on the table may not be available. Can be
 	 * overridden in subclasses/implementations.
-	 * @param string $ps_table table name
+	 *
+	 * @param string $t_subject Instance of deleted row
 	 */
 	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
@@ -1216,22 +1220,24 @@ class BaseEditorController extends ActionController {
 		if (!$vn_subject_id || !$t_subject->load($vn_subject_id)) {
 			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
 			// so we get the type_id off of the request
-			if (!$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger)) {
-				$vn_type_id = null;
+			if (!($type_ids = caMakeTypeIDList($this->ops_table_name, [$this->request->getParameter($t_subject->getTypeFieldName(), pString)]))) {
+				$type_id = null;
+			} else {
+				$type_id = array_shift($type_ids);
 			}
 
 			// then set the empty row's type_id
 			if($t_subject->hasField($t_subject->getTypeFieldName())) {
-				$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+				$t_subject->set($t_subject->getTypeFieldName(), $type_id);
 			}
 
 			// then reload the definitions (which includes bundle specs)
 			$t_subject->reloadLabelDefinitions();
 		} else {
-			$vn_type_id = $t_subject->getTypeID();
+			$type_id = $t_subject->getTypeID();
 		}
 
-		$t_ui = $this->_getUI($vn_type_id, $pa_options);
+		$t_ui = $this->_getUI($type_id, $pa_options);
 
 		$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 		$this->view->setVar('subject_id', $vn_subject_id);
@@ -1306,10 +1312,10 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 		if (!$this->request->isLoggedIn()) { return []; }
 
-		if (!($vn_type_id = $t_subject->getTypeID()) && !($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
-		    $vn_type_id = $t_subject->getDefaultTypeID();
+		if (!($type_id = $t_subject->getTypeID()) && !($type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
+		    $type_id = $t_subject->getDefaultTypeID();
 		}
-		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
+		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
 			isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
 			isset($pa_params['requires']) ? $pa_params['requires'] : null,
 			($vn_subject_id > 0) ? false : true,
@@ -1788,7 +1794,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
-		$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
+		$type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
 		$t_item->load($vn_item_id);
 
@@ -1843,14 +1849,14 @@ class BaseEditorController extends ActionController {
 			}
 		} else {
 			if($t_item->hasField('type_id')) {
-				$t_item->set('type_id', $vn_type_id);
+				$t_item->set('type_id', $type_id);
 			}
 		}
 		$this->view->setVar('t_item', $t_item);
 		$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 		$this->view->setVar('result_context', $this->getResultContext());
 
-		$this->view->setVar('t_ui', $t_ui = $this->_getUI($vn_type_id));
+		$this->view->setVar('t_ui', $t_ui = $this->_getUI($type_id));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2069,10 +2075,10 @@ class BaseEditorController extends ActionController {
 			//
 			// View object representation
 			//
-			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
+			$vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE');
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype))) {
 				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
 			}
 			

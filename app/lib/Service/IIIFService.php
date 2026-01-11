@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2024 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,11 @@ class IIIFService {
 		if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PROVIDENCE') && !$request->isLoggedIn()) {
 			throw new AccessException(_t('Not logged in'));
 		}
-		
+		if(defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET') && Configuration::load('authentication.conf')->get('iiif_use_authentication') && !$request->isLoggedIn()) {
+			if(!$request->doAuthentication(['noPublicUsers' => true, "dont_redirect" => true, "no_headers" => true])) {
+				throw new AccessException(_t('Not logged in'));
+			}
+		}
 		$response->addHeader('Cache-Control', 'max-age=3600, private', true); // Cache all responses for 1 hour.
 
 		$va_path = array_filter(array_slice(explode("/", $request->getPathInfo()), 3), 'strlen');
@@ -83,7 +87,6 @@ class IIIFService {
 		list($ps_type, $pn_id, $page) = self::parseIdentifier($identifier);
 
 		$vs_image_path = null;
-		//$vb_cache = false;
 		$highlight = $request->getParameter('highlight', pString);
 		$highlight_md5 = $highlight ? md5($highlight) : '';
 		
@@ -139,6 +142,14 @@ class IIIFService {
 			
 			$t_media = $media['instance'];
 			$vs_fldname = $media['field'];
+			
+			if ($t_media->hasField('access') && $t_media->getAppConfig()->get('iiif_enforce_access')) {
+				$access = (int)$t_media->get('access');
+				$public_values = caGetUserAccessValues($request);
+				if(!in_array($access, $public_values, true)) {
+					throw new AccessException(_t('Access denied'));
+				}
+			}
 			
 			$minfo = $t_media->getMediaInfo($vs_fldname);
 			$vn_width = (int)$minfo['INPUT']['WIDTH'];
@@ -513,7 +524,7 @@ class IIIFService {
 		
 		$path = null;
 		foreach(['original', 'large', 'page_preview', 'large_preview'] as $version) {
-			if($path = $pt_media->getMediaPath($ps_fldname, $version)) { break; }
+			if(($path = $pt_media->getMediaPath($ps_fldname, $version)) && file_exists($path)) { break; }
 		}
 		
 		if(!$path) { throw new ApplicationException(_t('No media path')); }

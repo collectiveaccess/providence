@@ -89,9 +89,9 @@ class CLITools extends CLIBaseUtils {
 			$vn_col = 0;
 			foreach ($o_cells as $c => $o_cell) {
 				if($label = trim((string)$o_cell->getValue())) {
-					$item_value = (strlen($item_value_col)) ? $o_sheet->getCellByColumnAndRow($item_value_col, $vn_c)->getValue() : null;
-					$item_description = (strlen($item_desc_col)) ? $o_sheet->getCellByColumnAndRow($item_desc_col, $vn_c)->getValue() : null;
-					$np_labels = (strlen($np_label_col)) ? $o_sheet->getCellByColumnAndRow($np_label_col, $vn_c)->getValue() : null;
+					$item_value = (strlen($item_value_col)) ? $o_sheet->getCell([$item_value_col, $vn_c])->getValue() : null;
+					$item_description = (strlen($item_desc_col)) ? $o_sheet->getCell([$item_desc_col, $vn_c])->getValue() : null;
+					$np_labels = (strlen($np_label_col)) ? $o_sheet->getCell([$np_label_col, $vn_c])->getValue() : null;
 						
 					if ($vn_col > $vn_last_level) {
 						$va_stack[] = &$va_stack[sizeof($va_stack)-1][sizeof($va_stack[sizeof($va_stack)-1]) - 1]['subitems'];

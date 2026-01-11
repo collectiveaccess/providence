@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1141,23 +1141,23 @@ function caEditorInspector($view, $options=null) {
 			//
 			// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
 			//
-			if (is_array($va_display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
-				$display_flag_buf = array();
-				foreach($va_display_flags as $vs_exp => $vs_display_flag) {
-					$exp_vars = array();
-					foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
-						$exp_vars[$vs_var_name] = $t_item->get($vs_var_name, array('convertCodesToIdno' => true));
-					}
-
-					if (ExpressionParser::evaluate($vs_exp, $exp_vars)) {
-						$display_flag_buf[] = $t_item->getWithTemplate("{$vs_display_flag}");
+			if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
+				$display_flag_buf = [];
+				foreach($display_flags as $exp => $display_flag) {
+					if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
+						$qr->nextHit();
+						$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+						if (ExpressionParser::evaluate($exp, $exp_vars)) {
+							$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
+						}
 					}
 				}
 
-				if(!($vs_display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
-					$vs_display_flag_delim = '; ';
+				if(!($display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
+					$display_flag_delim = '; ';
 				}
-				if (sizeof($display_flag_buf) > 0) { $buf .= join($vs_display_flag_delim, $display_flag_buf); }
+			
+				if (sizeof($display_flag_buf) > 0) { $buf .= join($display_flag_delim, $display_flag_buf); }
 			}
 
 			$label = '';
@@ -3310,7 +3310,13 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 
 	if($self_id) { $va_exclude[] = $self_id; }
 
-	if (!is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) { $va_display_format = ['^label']; }
+	if (!is_array($va_display_format = $o_config->get("{$vs_rel_table}_lookup_settings"))) { 
+		if($va_display_format) {
+			$va_display_format = [$va_display_format];
+		} else {
+			$va_display_format = ['^label']; 
+		}
+	}
 	if (!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) { $vs_display_delimiter = ''; }
 	if (!$vs_template) { $vs_template = join($vs_display_delimiter, $va_display_format); }
 
@@ -3723,7 +3729,11 @@ function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_s
 	// If no display_template set try to get a default out of the app.conf file
 	if (!$vs_template) {
 		if(!trim($vs_template = $pt_subject->getAppConfig()->get("{$ps_related_table}_default_editor_display_template"))) {	// use explicit setting
-			if (is_array($va_lookup_settings = $pt_subject->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {	// fall back to derive from lookup setting
+			$va_lookup_settings = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_settings");
+			if($va_lookup_settings && !is_array($va_lookup_settings)) { 
+				$va_lookup_settings = [$va_lookup_settings];
+			}
+			if (is_array($va_lookup_settings)) {	// fall back to derive from lookup setting
 				if (!($vs_lookup_delimiter = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
 				$vs_template = join($vs_lookup_delimiter, $va_lookup_settings);
 			}
@@ -5606,7 +5616,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 	) {
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)\]([^\[]+)\[/{$ref_tag}\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode'])) > 0) {
 					$vals['content'] = $matches[2][$i];
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
@@ -5614,7 +5624,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 		}
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)/\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode'])) > 0) {
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
 			}
@@ -5752,6 +5762,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 						} elseif (strlen($pm_page)) {
 							$params['path'] = $pm_page;
 						}
+						$return = $va_l['mode'] ?? null;
 						$qr_m = ca_site_page_media::find($params, ['returnAs' => 'searchResult']);
 						while ($qr_m->nextHit()) {
 							if (is_array($access_values) && !in_array($qr_m->get('access'), $access_values)) { 
@@ -5771,6 +5782,8 @@ function caProcessReferenceTags($request, $text, $options=null) {
 								$template = str_replace("^idno", $idno, $template);
 								$template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $template);
 								$text = str_replace($tag, $template, $text);
+							} elseif($return === 'url') {
+								$text = str_replace($tag, $qr_m->getMediaUrl('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
 							} else {
 								$text = str_replace($tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
 							}
@@ -6471,6 +6484,60 @@ function caAllowEditingForFirstLevelOfHierarchyBrowser(BaseModel $t_subject) : b
 	) { return false; }
 	
 	return true;
+}
+# ------------------------------------------------------------------
+/**
+ * Normalize capitalization of bundle labels according to bundle_label_normalization setting in app.conf
+ *
+ * @param string $label 
+ * @param array $options Options include:
+ *		normalize = Override app.conf bundle_label_normalization setting. Default is null - use app.conf setting. Valid values are:
+ *			uc (force to upper case)
+ *			lc (force to lower case)
+ *			ucinitial (force to lower case with capitalization of initial letter)
+ *			ucfirst (force to lower case with capitalization of each word)
+ *			none (return label as-is)
+ *
+ */
+function caNormalizeBundleLabel(?string $label, ?array $options=null) : ?string {
+	$config = Configuration::load();
+	$n = strtolower(caGetOption('normalize', $options, $config->getScalar('bundle_label_normalization')));
+	switch($n) {
+		case 'uc':
+			$label  = mb_strtoupper($label);
+			break;
+		case 'lc':
+			$label  = mb_strtolower($label);
+			break;
+		case 'ucinitial':
+			$label  = caUcFirstUTF8Safe(mb_strtolower($label));
+			break;
+		case 'ucfirst':
+			$label  = mb_convert_case(mb_strtolower($label), MB_CASE_TITLE, 'UTF-8');
+			
+			$skip_words = (MemoryCache::contains('normalizeBundleSkipWords')) ? 
+				MemoryCache::fetch('normalizeBundleSkipWords')
+				:
+				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_skip_words') ?: []);
+			
+			// Clean up conjunctions and parentheticals that are now incorrectly capitalized
+			foreach($skip_words as $p) {
+				$label = str_replace($p, mb_strtolower($p), $label);
+			}
+			if(preg_match_all("!\(([\w]+)\)!", $label, $m)) {
+				 foreach($m as $p) {
+ 					$label = str_replace($p[0], mb_strtolower($p[0]), $label);
+ 				}
+			}
+			$label = caUcFirstUTF8Safe($label);
+			break;
+		case 'none':
+		default:
+			// noop
+			break;
+	}
+	
+	return $label;
 }
 # ------------------------------------------------------------------
 

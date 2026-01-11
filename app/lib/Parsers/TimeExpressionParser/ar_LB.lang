@@ -41,6 +41,13 @@ meridianTable = {
 	p.m. = مساءً  
 }
 
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
+
 dateCircaIndicator = [حوالي, ح. , ح. , ح. , ح. , حول]
 dateProbablyIndicator = [ربما, محتمل]
 dateUncertaintyIndicator = [~]

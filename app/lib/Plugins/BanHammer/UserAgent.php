@@ -58,6 +58,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 		$log = self::getLogger();
 		if(isset($ip_to_ua[$ip]) && ($ip_to_ua[$ip] !== $request_useragent)) {
 			if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent changed from %2 to %3', $ip, $ip_to_ua[$ip], $request_useragent)); }
+			self::setDetails(['details' => _t('User agent changed from %1 to %2', $ip_to_ua[$ip], $request_useragent)]);
 			return 1.0;
 		}
 		$ip_to_ua[$ip] = $request_useragent;
@@ -71,10 +72,18 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 				$banned_useragents = array_merge($banned_useragents, $banned_useragents_list);
 			}
 		}
+		if(is_array($exclude_list = $config['exclude_useragents'] ?? []) && sizeof($exclude_list)) {
+			foreach($exclude_list as $u) {
+				if (preg_match("!{$u}!i", $request_useragent)) {
+					return 0;
+				}
+			}
+		}
+		
 		foreach($banned_useragents as $u) {
 			if (preg_match("!{$u}!i", $request_useragent)) {
 				if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent %2 is on ban list', $ip, $request_useragent)); }
-			
+				self::setDetails(['details' => _t('User agent %1 is on ban list', $request_useragent)]);
 				return 1.0;
 			}
 		}
@@ -82,6 +91,7 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 		$cd = new CrawlerDetect();
 		if($cd->isCrawler($_SERVER["HTTP_USER_AGENT"])) {
 			if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent %2 is on CrawlerDetect list', $ip, $request_useragent)); }
+			self::setDetails(['details' => _t('User agent %1 is on CrawlerDetect list', $request_useragent)]);
 			return 1.0;
 		}
 		
