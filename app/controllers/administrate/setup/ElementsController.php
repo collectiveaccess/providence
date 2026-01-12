@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@ class ElementsController extends BaseEditorController {
 	public function Index() {
 		AssetLoadManager::register('tableList');
 	
-		$elements = caGetDataBundleList(); //ca_metadata_elements::getRootElementsAsList(null, null, true, true);
+		$elements = caGetDataBundleList();
 		
 		$this->view->setVar('element_list',$elements);
 		$this->view->setVar('attribute_types', CA\Attributes\Attribute::getAttributeTypes());

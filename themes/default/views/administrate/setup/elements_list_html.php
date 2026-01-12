@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,8 +86,9 @@ $attribute_types = $this->getVar('attribute_types');
 				<table>
 <?php
 		foreach($element['restrictions'] as $table => $type_list) {
-			foreach($type_list as $type_id => $type_name) {
-				print ucfirst($table)." [{$type_name}]<br/>\n";
+			foreach($type_list as $type_id => $type_info) {
+				$t = Datamodel::getTableProperty($table, 'NAME_SINGULAR');
+				print "<a href='#' class='developerBundleCode' data-code='{$table}.{$element['element_code']}'>".ucfirst($t)."</a> [{$type_info['name']}]<br/>\n";
 			}
 		}
 ?>

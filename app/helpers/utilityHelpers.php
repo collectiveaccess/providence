@@ -5337,7 +5337,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return array
 	 */
 	function caGetDataBundleList(?array $options=null) : array {
-		$bundles = ca_metadata_elements::getRootElementsAsList(null, null, true, true);
+		$bundles = ca_metadata_elements::getRootElementsAsList(null, null, true, true, ['returnAll' => true]);
 		
 		$bundles = array_map(function($v) { 
 			$v['datatype_display'] = ca_metadata_elements::dataTypeAsString($v['datatype']);
@@ -5361,14 +5361,20 @@ function caFileIsIncludable($ps_file) {
 							$intrinsics[$bc] = [
 								'type' => $b['type'],
 								'display_label' => $b['label'],
-								'restrictions' => [$table => [null => '*']],
+								'restrictions' => [$t->tableName() => [
+									null => [
+										'name' => '*'
+									]
+								]],
 								'ui_counts' => $bundle_ui_counts[$bc] ?? 0,
 								'datatype' => $fi['FIELD_TYPE'],
 								'datatype_display' => _t('Intrinsic (%1)', $t->intrinsicTypeToString($fi['FIELD_TYPE'])),
 								'element_code' => $bc
 							];
 						} else {
-							$intrinsics[$bc]['restrictions'][$table] = [null => '*'];
+							$intrinsics[$bc]['restrictions'][$t->tableName()] = [null => [
+								'name' => '*'
+							]];
 						}
 						break;
 					case 'preferred_label':
@@ -5377,14 +5383,20 @@ function caFileIsIncludable($ps_file) {
 							$labels[$b['type']] = [
 								'type' => $b['type'],
 								'display_label' => $b['label'],
-								'restrictions' => [$table => [null => '*']],
+								'restrictions' => [$t->tableName() => [
+									null => [
+										'name' => '*'
+									]
+								]],
 								'ui_counts' => 0,
 								'datatype' => $fi['FIELD_TYPE'],
 								'datatype_display' => ($b['type'] === 'preferred_label') ? _t('Preferred labels') : _t('Non-preferred labels'),
 								'element_code' => $bc
 							];
 						} else {
-							$labels[$b['type']]['restrictions'][$table] = [null => '*'];
+							$labels[$b['type']]['restrictions'][$t->tableName()] = [null => [
+								'name' => '*'
+							]];
 						}
 						break;
 				}

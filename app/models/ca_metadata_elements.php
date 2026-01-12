@@ -854,7 +854,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		if ($pb_return_stats) {
 			$va_counts_by_attribute = ca_metadata_elements::getUIUsageCounts();
-			$va_restrictions_by_attribute = ca_metadata_elements::getTypeRestrictionsAsList();
+			$va_restrictions_by_attribute = ca_metadata_elements::getTypeRestrictionsAsList(null, $options);
 		}
 	
 		$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
@@ -1264,6 +1264,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$restrictions[$qr_restrictions->get('element_code')][$t_table->tableName()][$type_id] = array_merge([
 					'name' => $type_name,
 					'type' => caGetListItemIdno($type_id),
+					'table' => $t_table->tableName(),
+					'table_display' => $t_table->getProperty('NAME_PLURAL')
 				], array_map("intval", $settings));
 			} else {
 				$restrictions[$qr_restrictions->get('element_code')][$t_table->getProperty('NAME_PLURAL')][$type_id] = $type_name;
