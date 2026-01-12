@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1141,23 +1141,23 @@ function caEditorInspector($view, $options=null) {
 			//
 			// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
 			//
-			if (is_array($va_display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
-				$display_flag_buf = array();
-				foreach($va_display_flags as $vs_exp => $vs_display_flag) {
-					$exp_vars = array();
-					foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
-						$exp_vars[$vs_var_name] = $t_item->get($vs_var_name, array('convertCodesToIdno' => true));
-					}
-
-					if (ExpressionParser::evaluate($vs_exp, $exp_vars)) {
-						$display_flag_buf[] = $t_item->getWithTemplate("{$vs_display_flag}");
+			if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
+				$display_flag_buf = [];
+				foreach($display_flags as $exp => $display_flag) {
+					if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
+						$qr->nextHit();
+						$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+						if (ExpressionParser::evaluate($exp, $exp_vars)) {
+							$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
+						}
 					}
 				}
 
-				if(!($vs_display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
-					$vs_display_flag_delim = '; ';
+				if(!($display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
+					$display_flag_delim = '; ';
 				}
-				if (sizeof($display_flag_buf) > 0) { $buf .= join($vs_display_flag_delim, $display_flag_buf); }
+			
+				if (sizeof($display_flag_buf) > 0) { $buf .= join($display_flag_delim, $display_flag_buf); }
 			}
 
 			$label = '';
@@ -5616,7 +5616,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 	) {
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)\]([^\[]+)\[/{$ref_tag}\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode'])) > 0) {
 					$vals['content'] = $matches[2][$i];
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
@@ -5624,7 +5624,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 		}
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)/\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode'])) > 0) {
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
 			}
@@ -5762,6 +5762,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 						} elseif (strlen($pm_page)) {
 							$params['path'] = $pm_page;
 						}
+						$return = $va_l['mode'] ?? null;
 						$qr_m = ca_site_page_media::find($params, ['returnAs' => 'searchResult']);
 						while ($qr_m->nextHit()) {
 							if (is_array($access_values) && !in_array($qr_m->get('access'), $access_values)) { 
@@ -5781,6 +5782,8 @@ function caProcessReferenceTags($request, $text, $options=null) {
 								$template = str_replace("^idno", $idno, $template);
 								$template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $template);
 								$text = str_replace($tag, $template, $text);
+							} elseif($return === 'url') {
+								$text = str_replace($tag, $qr_m->getMediaUrl('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
 							} else {
 								$text = str_replace($tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
 							}

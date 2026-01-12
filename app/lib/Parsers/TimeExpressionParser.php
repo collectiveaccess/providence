@@ -72,6 +72,8 @@ define("TEP_TOKEN_EARLY", 29);
 define("TEP_TOKEN_MID", 30);
 define("TEP_TOKEN_LATE", 31);
 define("TEP_TOKEN_ACADEMIC_DATE", 32);
+define("TEP_TOKEN_PAST", 33);
+define("TEP_TOKEN_FUTURE", 34);
 
 # --- Meridian types
 define("TEP_MERIDIAN_AM", 0);
@@ -410,6 +412,51 @@ class TimeExpressionParser {
 						break;
 					} else {
 						switch($va_token['type']) {
+							# ----------------------
+							case TEP_TOKEN_PAST:
+								if($interval = $this->parseIntervalExpression()) {
+									$t = time();
+									$va_past = $this->gmgetdate($t - $interval['seconds']);
+									$va_dates['start'] = array(
+										'month' => $va_past['mon'], 'day' => $va_past['mday'], 'year' => $va_past['year'],
+										'hours' => $va_past['hours'], 'minutes' => $va_past['minutes'], 'seconds' => $va_past['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									
+									$va_now = $this->gmgetdate($t);
+									$va_dates['end'] = array(
+										'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
+										'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									$vn_state = TEP_STATE_ACCEPT;
+									$vb_can_accept = true;
+								} else {
+									$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
+								}
+								break;
+							# ----------------------
+							case TEP_TOKEN_FUTURE:
+								if($interval = $this->parseIntervalExpression()) {
+									$t = time();
+									$va_now = $this->gmgetdate($t);
+									$va_dates['start'] = array(
+										'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
+										'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									$va_next = $this->gmgetdate($t + $interval['seconds']);
+									$va_dates['end'] = array(
+										'month' => $va_next['mon'], 'day' => $va_next['mday'], 'year' => $va_next['year'],
+										'hours' => $va_next['hours'], 'minutes' => $va_next['minutes'], 'seconds' => $va_next['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									$vn_state = TEP_STATE_ACCEPT;
+									$vb_can_accept = true;
+								} else {
+									$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
+								}
+								break;
 							# ----------------------
 							case TEP_TOKEN_SEASON_WINTER:
 							case TEP_TOKEN_SEASON_SPRING:
@@ -1917,6 +1964,16 @@ class TimeExpressionParser {
 		// range conjunction
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("rangeConjunctions"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_RANGE_CONJUNCTION);
+		}
+		
+		// past
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("intervalPastIndicator"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_PAST);
+		}
+		
+		// future
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("intervalFutureIndicator"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_FUTURE);
 		}
 		
 		// multiword range conjunction?
@@ -4041,7 +4098,7 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	/**
-	 * Return current date/time 
+	 * Return interval in specific units represented by the currently parsed date/time
 	 *
 	 * @param array $pa_options Options include:
 	 *		returnAs = time units of return value. Valid values are: days, hours, minutes, seconds. [Default is seconds]
@@ -4404,6 +4461,73 @@ class TimeExpressionParser {
  			$i++;
  		}
  		return $toks;
+ 	}
+ 	# ------------------------------------------------------------------- 	
+ 	/**
+ 	 *
+ 	 * @param 
+ 	 * @return array
+ 	 */
+ 	public function parseIntervalExpression()  {
+ 		$days = $this->getLanguageSettingsWordList("intervalDaysIndicator");
+ 		$weeks = $this->getLanguageSettingsWordList("intervalWeeksIndicator");
+ 		$months = $this->getLanguageSettingsWordList("intervalMonthsIndicator");
+ 		$years = $this->getLanguageSettingsWordList("intervalYearsIndicator");
+ 		$i = 1;
+ 		
+ 		$n = $u = null;
+ 		$t = $this->peekToken($i);
+ 		while($t = $this->peekToken($i)) {
+ 			$token = $t['value'];
+ 			if(preg_match("!^([\d]+)([^\d])+$!", $token, $m)) {
+ 				array_shift($m);
+ 				$stokens = $m;
+ 			} else {
+ 				$stokens = [$token];
+ 			}
+ 			foreach($stokens as $st) {
+				if(preg_match("!^[\d]+$!", $st)) {
+					$n = (float)$st;
+				} elseif(in_array($st, $days)) {
+					$u = 'D';
+				} elseif(in_array($st, $weeks)) {
+					$u = 'W';
+				} elseif(in_array($st, $months)) {
+					$u = 'M';
+				} elseif(in_array($st, $years)) {
+					$u = 'Y';
+				}
+				
+				if(!is_null($n) && !is_null($u)) {
+					break;
+				}
+			}
+ 			$i++;
+ 		}
+ 		if(!is_null($n) && !is_null($u)) {	
+			for($x=0; $x <= $i; $x++) {
+				$this->skipToken();
+			}
+			
+			$offset = 0;
+			switch($u) {
+				case 'D':
+					$offset = $n * 60 * 60 * 24;
+					break;
+				case 'W':
+					$offset = $n * 60 * 60 * 24 * 7;
+					break;
+				case 'M':
+					$offset = $n * 60 * 60 * 24 * 31;
+					break;
+				case 'Y':
+					$offset = $n * 60 * 60 * 24 * 365;
+					break;
+			}
+			
+ 			return ['n' => $n, 'units' => $u, 'seconds' => $offset];
+		}
+		return null;
  	}
  	# ------------------------------------------------------------------- 	
 }

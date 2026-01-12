@@ -430,6 +430,11 @@ class SearchResult extends BaseObject {
 			$va_params[] = $va_type_ids;
 		}
 		
+		$source_sql = '';
+		if (is_array($source_ids = caMakeSourceIDList($ps_tablename, caGetOption('restrictToSources', $pa_options, null))) && sizeof($source_ids)) {
+			$source_sql = " AND (p.source_id IN (?)".($t_rel_instance->getFieldInfo('source_id', 'IS_NULL') ? " OR (p.source_id IS NULL)" : '').')';
+			$va_params[] = $source_ids;
+		}
 		
 		$vs_sql = "
 			SELECT t.{$vs_pk}, t.{$vs_parent_id_fld} ".($vs_hier_id_fld ? ", t.{$vs_hier_id_fld}" : '')."
@@ -437,7 +442,7 @@ class SearchResult extends BaseObject {
 			INNER JOIN {$ps_tablename} AS p ON p.{$vs_pk} = t.{$vs_parent_id_fld}
 			WHERE
 				t.{$vs_pk} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (t.deleted = 0)" : "")."
-				{$vs_type_sql}
+				{$vs_type_sql} {$source_sql}
 		";
 
 		$va_row_id_map = null;
@@ -504,11 +509,16 @@ class SearchResult extends BaseObject {
 		$va_row_ids_in_current_level = $va_row_ids;
 		$va_params = array($va_row_ids_in_current_level);
 		
-		$vs_type_sql = $vs_access_sql = '';
+		$vs_type_sql = $vs_access_sql = $source_sql = '';
 		if (is_array($va_type_ids = caMakeTypeIDList($ps_tablename, caGetOption('restrictToTypes', $pa_options, null))) && sizeof($va_type_ids)) {
 			$vs_related_table = $t_rel_instance->tableName();
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
+		}
+		if (is_array($va_source_ids = caMakeSourceIDList($ps_tablename, caGetOption('restrictToSources', $pa_options, null))) && sizeof($va_source_ids)) {
+			$vs_related_table = $t_rel_instance->tableName();
+			$vs_source_sql = " AND (source_id IN (?)".($t_rel_instance->getFieldInfo('source_id', 'IS_NULL') ? " OR ({$vs_related_table}.source_id IS NULL)" : '').')';;
+			$va_params[] = $va_source_ids;
 		}
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
@@ -523,6 +533,7 @@ class SearchResult extends BaseObject {
 				 {$vs_parent_id_fld} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (deleted = 0)" : "")."
 				 {$vs_type_sql}
 				 {$vs_access_sql}
+				 {$source_sql}
 		";
 		$va_row_id_map = null;
 		$vn_level = 0;
@@ -592,10 +603,14 @@ class SearchResult extends BaseObject {
 		
 		$va_params = array($va_row_ids);
 		
-		$vs_type_sql = '';
+		$vs_type_sql = $source_sql = '';
 		if (is_array($va_type_ids = caMakeTypeIDList($ps_tablename, caGetOption('restrictToTypes', $pa_options, null))) && sizeof($va_type_ids)) {
 			$vs_type_sql = " AND (p.type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR (p.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
+		}
+		if (is_array($va_source_ids = caMakeSourceIDList($ps_tablename, caGetOption('restrictToSources', $pa_options, null))) && sizeof($va_source_ids)) {
+			$source_sql = " AND (p.source_id IN (?)".($t_rel_instance->getFieldInfo('source_id', 'IS_NULL') ? " OR (p.source_id IS NULL)" : '').')';;
+			$va_params[] = $va_source_ids;
 		}
 		
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
@@ -610,7 +625,7 @@ class SearchResult extends BaseObject {
 			INNER JOIN {$ps_tablename} AS p ON t.{$vs_parent_id_fld} = p.{$vs_parent_id_fld}
 			WHERE
 				 t.{$vs_pk} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (t.deleted = 0) AND (p.deleted = 0)" : "")."
-				 {$vs_type_sql} {$vs_access_sql}
+				 {$vs_type_sql} {$vs_access_sql} {$source_sql}
 		";
 		
 		$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
@@ -1361,6 +1376,14 @@ class SearchResult extends BaseObject {
 									}
 								}
 								
+								if(($vn_source_id = $this->get($va_path_components['table_name'].".source_id")) && ($va_restrict_to_sources = caGetOption('restrictToSources', $pa_options, null))) {
+									// NOTE: this restriction is always "straight" – it doesn't automatically include sub-sources
+									$va_sources = caMakeSourceIDList($va_path_components['table_name'], $va_restrict_to_sources, ['dontIncludeSubsourcesInSourceRestriction' => true]);
+									if (!in_array($vn_source_id, $va_sources)) { 
+										array_shift($va_hier_ids);
+									}
+								}
+								
 								if (in_array($t_instance->getHierarchyType(), [__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__])) { array_pop($va_hier_ids); }
 								
 								
@@ -1418,7 +1441,7 @@ class SearchResult extends BaseObject {
                                             if (!in_array($type_id, $filter_by_types)) { continue; }
                                         }
                                         
-                                        if(is_array($qh = $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'] ?? false, 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'] ?? false, 'convertCodesToIdno' => $pa_options['convertCodesToIdno'] ?? false, 'convertCodesToValue' => $pa_options['convertCodesToValue'] ?? false, 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null))))) {
+                                        if(is_array($qh = $qr_hier->get($vs_field_spec, array('returnWithStructure' => true, 'returnAllLocales' => true, 'useLocaleCodes' => $pa_options['useLocaleCodes'] ?? false, 'convertCodesToDisplayText' => $pa_options['convertCodesToDisplayText'] ?? false, 'convertCodesToIdno' => $pa_options['convertCodesToIdno'] ?? false, 'convertCodesToValue' => $pa_options['convertCodesToValue'] ?? false, 'omitDateSortKey' => true, 'restrictToTypes' => caGetOption('restrictToTypes', $pa_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pa_options, null), 'restrictToSources' => caGetOption('restrictToSources', $pa_options, null))))) {
 									   		$va_hier_item += $qh;									    
 										}
 									}
@@ -1448,7 +1471,7 @@ class SearchResult extends BaseObject {
 				
 					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
-					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null, ['noFallback' => $locale_no_fallback]); }
+					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null); }
 				
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
@@ -3191,7 +3214,7 @@ class SearchResult extends BaseObject {
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		foreach($pa_options as $vs_k => $vs_v) {
-			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray',  'excludeTypes', 'excludeRelationshipTypes'))) { continue; }
+			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'restrictToSources', 'returnAsArray',  'excludeTypes', 'excludeRelationshipTypes'))) { continue; }
 			unset($pa_options[$vs_k]);
 		}
 		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options));

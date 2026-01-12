@@ -240,11 +240,20 @@ function caDateIsRange($date_expression) {
 }
 # ----------------------------------------
 /**
- * Count delimited vales in a string
+ * Count delimited values in a string
  */
 function caValueCount(string $value, ?string $delimiter=';') : int {
 	if(!strlen($value)) { return 0; }
 	$acc = explode($delimiter, $value);
+	return sizeof($acc);
+}
+# ---------------------------------------
+/**
+ * Count unique delimited values in a string
+ */
+function caUniqueValueCount(string $value, ?string $delimiter=';') : int {
+	if(!strlen($value)) { return 0; }
+	$acc = array_unique(explode($delimiter, $value));
 	return sizeof($acc);
 }
 # ---------------------------------------

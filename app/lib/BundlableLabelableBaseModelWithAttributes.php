@@ -6429,6 +6429,9 @@ if (!$batch) {
 		if (($options['excludeRelationshipTypes'] = caGetOption(array('excludeRelationshipTypes', 'exclude_relationship_types', 'excludeRelationshipType', 'exclude_relationship_type'), $options, null)) && !is_array($options['excludeRelationshipTypes'])) {
 			$options['excludeRelationshipTypes'] = preg_split("![;,]{1}!", $options['excludeRelationshipTypes']);
 		}
+		if (($options['restrictToSources'] = caGetOption('restrictToSources', $options, null)) && !is_array($options['restrictToSources'])) {
+			$options['restrictToSources'] = preg_split("![;,]{1}!", $options['restrictToSources']);
+		}
 		
 		if (!isset($options['dontIncludeSubtypesInTypeRestriction']) && (isset($options['dont_include_subtypes_in_type_restriction']) && $options['dont_include_subtypes_in_type_restriction'])) { $options['dontIncludeSubtypesInTypeRestriction'] = $options['dont_include_subtypes_in_type_restriction']; }
 		if (!isset($options['returnNonPreferredLabels']) && (isset($options['restrict_to_type']) && $options['restrict_to_type'])) { $options['returnNonPreferredLabels'] = $options['restrict_to_type']; }
@@ -7136,13 +7139,26 @@ if (!$batch) {
 						}   
 					}
                     
-                    if(is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes'])) {
+                    if(
+                    	(is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes']))
+                    	||
+                    	(is_array($options['restrictToSources']) && sizeof($options['restrictToSources']))
+                    ) {
                         foreach($va_rels as $vs_rel_pk => $va_rel_info) {
                             if (!in_array($va_rel_info['one_table'], [$this->tableName()])) {
-                                $va_type_ids = caMakeTypeIDList($va_rel_info['one_table'], $options['restrictToTypes']);
+                                $va_type_ids = (is_array($options['restrictToTypes']) && sizeof($options['restrictToTypes'])) ? caMakeTypeIDList($va_rel_info['one_table'], $options['restrictToTypes']) : null;
+                                $source_ids = (is_array($options['restrictToSources']) && sizeof($options['restrictToSources'])) ? caMakeSourceIDList($va_rel_info['one_table'], $options['restrictToSources']) : null;
                     
+                    			$set = false;
                                 if (is_array($va_type_ids) && sizeof($va_type_ids)) { 
                                     $va_wheres[] = "(r.type_id IN (".join(",", $va_type_ids)."))";
+                                    $set = true;
+                                }
+                                if(is_array($source_ids) && sizeof($source_ids)) {
+                                	$va_wheres[] = "(r.source_id IN (".join(",", $source_ids)."))";
+                                    $set = true;
+                                }
+                                if($set) {
                                     $va_joins[] = "INNER JOIN {$va_rel_info['one_table']} AS r ON r.{$va_rel_info['one_table_field']} = {$vs_related_table_name}.".($vs_rel_pk ?? $t_rel_item->primaryKey()).$deleted_filter;
                                 }
                                 break;

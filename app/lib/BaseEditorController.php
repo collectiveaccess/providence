@@ -2075,10 +2075,10 @@ class BaseEditorController extends ActionController {
 			//
 			// View object representation
 			//
-			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
+			$vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE');
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype))) {
 				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
 			}
 			

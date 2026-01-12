@@ -4491,6 +4491,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				$vs_url = $this->_SET_FILES[$ps_field]['tmp_name'];
 				$vs_url_fetched_original_url = $vs_url_fetched_from = $vn_url_fetched_on = $vs_url_fetched_by = null;
 				
+				$is_without_media = $is_embed = false;
 				if(
 					$vb_allow_fetching_of_urls && 
 					isUrl($vs_url) &&
@@ -4504,6 +4505,13 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
 							}
 							$vs_tmp_file = $r['file'];
+							$is_without_media = true;
+							if(!$vs_tmp_file) {
+								$is_embed = true;
+								if(isset($r['previewPath'])) {
+									$vs_tmp_file = $this->_SET_FILES[$ps_field]['embed_preview'] = $r['previewPath'];
+								}
+							}
 						} else {
 							$this->postError(1600, _t('Could not download media'), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);	
 							return false;
@@ -4548,7 +4556,14 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					}
 				}
 			
-				if (isset($this->_SET_FILES[$ps_field]['tmp_name']) && (file_exists($this->_SET_FILES[$ps_field]['tmp_name']))) {
+				if (
+					(isset($this->_SET_FILES[$ps_field]['tmp_name']) && (file_exists($this->_SET_FILES[$ps_field]['tmp_name'])))
+					||
+					($is_embed && isset($this->_SET_FILES[$ps_field]['embed_preview']))
+				) {
+					if($is_embed) {
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['embed_preview'];
+					}
 					if (!isset($pa_options['dont_allow_duplicate_media'])) {
 						$pa_options['dont_allow_duplicate_media'] = (bool)$this->getAppConfig()->get('dont_allow_duplicate_media');
 					}
@@ -5237,26 +5252,33 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
 					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				} else {
-					$media_desc = [
+					$is_without_media = true;
+				}
+				
+				if($is_without_media || $is_embed) {
+					// Media-less representations
+					if(!is_array($media_desc)) { $media_desc = []; }
+					$media_desc = array_merge($media_desc, [
 						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 						"_CENTER" => [],
 						"_SCALE" => [],
 						"_SCALE_UNITS" => [],
 						"_START_AT_TIME" => null,
 						"_START_AT_PAGE" => null,
+						"IS_EMBEDDED" => $is_embed ? 1 : 0,
 						"INPUT" => [
-							"MIMETYPE" => $m->get("mimetype"),
-							"WIDTH" => $m->get("width"),
-							"HEIGHT" => $m->get("height"),
+							"MIMETYPE" => $is_embed ? null : $m->get("mimetype"),
+							"WIDTH" => $is_embed ? null : $m->get("width"),
+							"HEIGHT" => $is_embed ? null : $m->get("height"),
 							"MD5" => null,
 							"FILESIZE" => null,
 							"FETCHED_BY" => $vs_url_fetched_by,
 							"FETCHED_ORIGINAL_URL" => $vs_url_fetched_original_url,
 							"FETCHED_FROM" => $vs_url_fetched_from,
 							"FETCHED_ON" => $vn_url_fetched_on,
-							"FILE_LAST_MODIFIED" => filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
+							"FILE_LAST_MODIFIED" => $is_embed ? null : filemtime($this->_SET_FILES[$ps_field]['tmp_name'])
 						 ]
-					];
+					]);
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field] = $media_desc;
 					$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
@@ -5504,6 +5526,143 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		if (!is_string($vs_scale_units)) { $vs_scale_units = null; }
 		
 		return array('scale' => $vn_scale, 'measurementUnits' => $vs_scale_units);
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Checks if media in currently loaded record is "embedded".
+	 *
+	 * It is possible to load media directly from external services such as YouTube, 
+	 * Vimeo, SoundCloud, Google Drive and Internet Archive into a record. Typically, the full media file 
+	 * is downloaded/scraped from the service and loaded as if it had been directly uploaded by the user.
+	 * This process of downloading and locally processing the media can be resource intensive in terms of
+	 * download time, bandwidth and local storage. For some services, download is not possible, and only
+	 * references to the media on the service can be stored.
+	 *
+	 * CollectiveAccess supports configuration such that URLs for media hosted by specific services may
+	 * be linked without hosting the media locally. When only a reference to the external media is stored,
+	 * without the file itself available locally, we term is "embedded" media. It is "embedded" in the sense
+	 * that the only way to interact with it is to embed the media in a service-specific manner into the 
+	 * CollectiveAccess web-interface.
+	 *
+	 * This method will return true when the media for the current record is a reference with no locally-stored copy. 
+	 *
+	 * If the media has been pulled from an external service but a locally-stored copy of the media is available, this method
+	 * will return false, even though the media could still potentially be viewed through a service-specific embedding. To
+	 * determine if media can be viewed on an external service, regardless of the availability of the media locally, use the
+	 * BaseModel::mediaIsFetched() method. To determine if media is stored locally, regardless of how it was originally loaded
+	 * use the BaseModel::mediaIsLocal() method.
+	 *
+	 * @param string $field The name of the media field
+	 *
+	 * @return bool True if embedded, false if not, null if no media is loaded.
+	 *
+	 * @SeeAlso mediaIsFetched()
+	 * @SeeAlso mediaIsLocal()
+	 */
+	public function mediaIsEmbedded(string $field) : ?bool {
+		$media_info = $this->getMediaInfo($field);
+		if (!is_array($media_info)) {
+			return null;
+		}
+		
+		return $media_info['IS_EMBEDDED'] ?? false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Checks if media in currently loaded record is "fetched".
+	 *
+	 * It is possible to load media directly from external services such as YouTube, 
+	 * Vimeo, SoundCloud, Google Drive and Internet Archive into a record. Typically, the full media file 
+	 * is downloaded/scraped from the service and loaded as if it had been directly uploaded by the user.
+	 * This process of downloading and locally processing the media can be resource intensive in terms of
+	 * download time, bandwidth and local storage. For some services, download is not possible, and only
+	 * references to the media on the service can be stored.
+	 *
+	 * CollectiveAccess supports configuration such that URLs for media hosted by specific services may
+	 * be linked without hosting the media locally. When only a reference to the external media is stored,
+	 * without the file itself available locally, we term is "embedded" media. It is "embedded" in the sense
+	 * that the only way to interact with it is to embed the media in a service-specific manner into the 
+	 * CollectiveAccess web-interface.
+	 *
+	 * This method will return true when the media for the current record was originally fetched from an external 
+	 * service regardless of whether it is stored locally or not. 
+	 *
+	 * To determine if a copy of the media is stored locally, regardless of how it was originally loaded
+	 * use the BaseModel::mediaIsLocal() method. To determine if media was fetched but is not stored locally use 
+	 * the BaseModel::mediaIsEmbedded() method.
+	 *
+	 * @param string $field The name of the media field
+	 *
+	 * @return bool True if fetched, false if not, null if no media is loaded.
+	 *
+	 * @SeeAlso service()
+	 * @SeeAlso mediaIsLocal()
+	 */
+	public function mediaIsFetched(string $field) : ?array {
+		$media_info = $this->getMediaInfo($field);
+		if (!is_array($media_info)) {
+			return null;
+		}
+		
+		return $media_info['INPUT']['IS_EMBEDDED'] ?? false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Checks if media in currently loaded record is stored locally.
+	 *
+	 * It is possible to load media directly from external services such as YouTube, 
+	 * Vimeo, SoundCloud, Google Drive and Internet Archive into a record. Typically, the full media file 
+	 * is downloaded/scraped from the service and loaded as if it had been directly uploaded by the user.
+	 * This process of downloading and locally processing the media can be resource intensive in terms of
+	 * download time, bandwidth and local storage. For some services, download is not possible, and only
+	 * references to the media on the service can be stored.
+	 *
+	 * CollectiveAccess supports configuration such that URLs for media hosted by specific services may
+	 * be linked without hosting the media locally. When only a reference to the external media is stored,
+	 * without the file itself available locally, we term is "embedded" media. It is "embedded" in the sense
+	 * that the only way to interact with it is to embed the media in a service-specific manner into the 
+	 * CollectiveAccess web-interface.
+	 *
+	 * This method will return true when the media for the current record is stored locally and can be displayed using
+	 * CollectiveAccess' media player user interfaces, regardless of how it was originally loaded.
+	 *
+	 * To determine if media was loaded from an external service use the BaseMode::mediaIsFetched(). If 
+	 * BaseModel::mediaIsLocal() returns false, you can determine if the media can be displayed via an embedding
+	 * with an external service using the BaseModel::mediaIsEmbedded() method. If both BaseModel::mediaIsLocal()
+	 * and BaseModel::mediaIsEmbedded() return false, then no media is loaded in the current row. You can also test
+	 * whether any media - local or embeddded - is available for the currect record using the BaseModel::mediaIsEmpty() method.
+	 *
+	 * @param string $field The name of the media field
+	 *
+	 * @return bool True if local, false if not, null if no media is loaded.
+	 *
+	 * @SeeAlso mediaIsFetched()
+	 * @SeeAlso mediaIsEmbedded()
+	 * @SeeAlso mediaIsEmpty()
+	 */
+	public function mediaIsLocal(string $field) {
+		$media_info = $this->getMediaInfo($field);
+		if (!is_array($media_info)) {
+			return null;
+		}
+		
+		return $media_info['INPUT']['IS_EMBEDDED'] ?? false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Checks if media in currently loaded record is set.
+	 *
+	 * @param string $field The name of the media field
+	 *
+	 * @return bool True if set, false if not.
+	 */
+	public function mediaIsNotSet(string $field) {
+		$media_info = $this->getMediaInfo($field);
+		if (!is_array($media_info)) {
+			return true;
+		}
+		
+		return is_array($media_info['INPUT'] ?? null) ? false : true;
 	}
 	# --------------------------------------------------------------------------------
 	/**

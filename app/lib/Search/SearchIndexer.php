@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -798,8 +798,10 @@ if (!$for_current_value_reindex) {
 						}
 						$vn_fld_num = $t_subject->fieldNum($vs_field);
 						
+						$c = 0;
 						foreach($values as $v) {
-							$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$v], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));
+							$this->opo_engine->indexField($pn_subject_table_num, "I{$vn_fld_num}", $pn_subject_row_id, [$v], array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init, 'dontIncrementFieldIndex' => ($c > 0)]));
+							$c++;
 						}
 						$fld_init = true;
 						$this->_genIndexInheritance($t_subject, null, "I{$vn_fld_num}", $pn_subject_row_id, $pn_subject_row_id, $values, array_merge($va_data, ['dontRemoveExistingIndexing' => $fld_init]));

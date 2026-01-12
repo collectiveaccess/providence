@@ -677,6 +677,8 @@ function caGetCoordinateDataFromResult($data, string $bundle, ?array $options=nu
 	if (is_subclass_of($data, 'BaseModel')) {
 		// Convert instance to search result
 		$data = caMakeSearchResult($data->tableName(), [$data->getPrimaryKey()]);
+	} else {
+		$data->seek(0);
 	}
 	
 	if (is_subclass_of($data, 'SearchResult')) {
