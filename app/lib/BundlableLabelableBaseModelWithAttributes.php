@@ -1791,6 +1791,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				} else {
 					$vs_display_format = $o_config->get('bundle_element_display_format');
 				}
+				
+				$bundle_code = $this->tableName().".{$bundle_code}";
 				break;
 			# -------------------------------------------------
 			case 'attribute':
