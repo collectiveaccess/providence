@@ -1005,9 +1005,15 @@ class BaseFindController extends ActionController {
 		
 		$this->view->setVar('t_item', Datamodel::getInstanceByTableName($this->ops_tablename, true));
 		$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
-		
+
 		if ($pb_render_data) {
-			$this->response->addContent($o_viz->getDataForVisualization($ps_viz, array('request' => $this->request)));
+			$this->response->setContentType('application/json');
+			$this->response->addContent(
+				$o_viz->getDataForVisualization(
+					$ps_viz,
+					array('request' => $this->request)
+				)
+			);
 			return;
 		}
 		$this->render('Results/viz_html.php');

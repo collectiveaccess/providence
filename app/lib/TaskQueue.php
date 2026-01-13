@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2025 Whirl-i-Gig
+ * Copyright 2004-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -374,9 +374,9 @@ class TaskQueue extends BaseObject {
 					
 				} else {
 					$errorDescription = $h->error ? $h->error->getErrorDescription() : '';
-					$errorNumber      = $h->error->getErrorNumber();
+					$errorNumber      = $h->error ? $h->error->getErrorNumber() : 0;
 					$this->log->logError(_t('[TaskQueue] Queue processing failed using handler %1: %2 [%3]; queue was NOT halted', $proc_handler, $errorDescription, $errorNumber));
-					$this->errors[] = $h->error;
+					if($h->error) { $this->errors[] = $h->error; }
 					
 					// Got error, so mark task as failed (non-zero error_code value)
 					$o_db->query('

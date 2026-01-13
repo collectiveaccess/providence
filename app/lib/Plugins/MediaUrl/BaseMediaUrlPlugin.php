@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@ namespace CA\MediaUrl\Plugins;
 
 include_once(__CA_LIB_DIR__."/Plugins/WLPlug.php");
 
-class BaseMediaUrlPlugin extends \WLPlug  {
+abstract class BaseMediaUrlPlugin extends \WLPlug  {
 	# ------------------------------------------------
 	/**
 	 * 
@@ -59,5 +59,51 @@ class BaseMediaUrlPlugin extends \WLPlug  {
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
 	}	
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function parse(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function fetch(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function fetchPreview(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function embedTag(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function icon(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function service(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	protected function getConfiguredIcon(string $plugin, string $service, ?array $options=null) : ?string {
+		$icon_config = \Configuration::load()->getAssoc('fetched_media_default_icons');
+		if(!is_array($icon_config)) { return null; }
+		if(!($icon = $icon_config[$plugin][$service] ?? null)) { return null; }
+		
+		$size = $options['size'] ?? null;
+		
+		if(!is_null($size)) {
+			$icon = str_replace('^SIZE', $size, $icon);
+		}
+		return $icon;
+	}
 	# ------------------------------------------------
 }

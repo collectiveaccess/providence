@@ -26,7 +26,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 $vo_result 				= $this->getVar('result');
 $vn_items_per_page 		= $this->getVar('current_items_per_page');
 $vs_current_sort 		= $this->getVar('current_sort');
@@ -58,7 +57,7 @@ $result_desc			= $this->getVar('result_desc');
 			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
 
 			$vb_has_image = true;
-			if (sizeof($va_tmp) == 0) {
+			if ((sizeof($va_tmp) == 0) || !is_array($va_media_info)) {
 				$va_tmp[] = "<span style='opacity: 0.3;'>".caNavIcon(__CA_NAV_ICON_OVERVIEW__, "64px");
 				$vn_padding_top = $vn_padding_top_bottom = 60;
 				$vb_has_image = false;

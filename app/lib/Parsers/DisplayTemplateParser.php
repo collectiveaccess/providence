@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
- 
+
 class DisplayTemplateParser {
 	# -------------------------------------------------------------------
 	/**
@@ -166,6 +166,12 @@ class DisplayTemplateParser {
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		unset($pa_options['returnAsArray']);
+	
+		if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
+			$pa_sort = explode(";", $pa_sort);
+		}
+		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
+		if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
 	
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		
@@ -602,8 +608,7 @@ class DisplayTemplateParser {
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$v = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), array_merge($pa_options, ['escapeDoubleQuotes' => true])), array_merge($pa_options, ['quoteNonNumericValues' => true]));
-						$vs_acc .= $content = ExpressionParser::evaluate($v, $pa_vals);
+						$vs_acc .= $content = ExpressionParser::evaluate($vs_exp, $pa_vals);
 						
 						if ($pb_is_case && $content) { break(2); }
 					}
@@ -1097,9 +1102,18 @@ class DisplayTemplateParser {
 	/**
 	 *
 	 */
+	static public function getValuesForTemplate(SearchResult $pr_res, string $template, ?array $options=null) {
+		$tags = caGetTemplateTags($template);
+		return self::_getValues($pr_res, array_flip($tags), $options);
+	}
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
 	static private function _getValues(SearchResult $pr_res, array $pa_tags, array $pa_options=null) {
 		unset($pa_options['returnAsArray']);
 		unset($pa_options['returnWithStructure']);
+		if(!is_array($pa_options)) { $pa_options = []; }
 		
 		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
 		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);

@@ -546,6 +546,7 @@ class SearchResult extends BaseObject {
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
 		}
+		
 		if (is_array($source_ids = caMakeSourceIDList($ps_tablename, caGetOption('restrictToSources', $pa_options, null))) && sizeof($source_ids)) {
 			$related_table = $t_rel_instance->tableName();
 			$source_sql = " AND (source_id IN (?)".($t_rel_instance->getFieldInfo('source_id', 'IS_NULL') ? " OR ({$related_table}.source_id IS NULL)" : '').')';
@@ -1499,7 +1500,7 @@ class SearchResult extends BaseObject {
 				
 					$va_acc = [];
 					foreach($va_hier_list as $vn_h => $va_hier_item) {
-					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null, ['noFallback' => $locale_no_fallback]); }
+					   if (!$vb_return_all_locales) { $va_hier_item = caExtractValuesByUserLocale($va_hier_item, null, $locale ? [$locale] : null); }
 				
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;

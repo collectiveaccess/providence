@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2023 Whirl-i-Gig
+ * Copyright 2022-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,7 @@ function caGetExternalMediaUrlSupportedFormats(?array $options=null) : array {
 	$formats = [
 		'YOUTUBE' => ['name' => 'YouTube', 'url' => 'https://youtube.com'],
 		'VIMEO' => ['name' => 'Vimeo', 'url' => 'https://vimeo.com'],
+		'GOOGLEDRIVE' => ['name' => 'GoogleDrive', 'url' => 'https://drive.google.com'],
 	];
 	if(caGetOption('full', $options, false)) {
 		return $formats;
@@ -83,6 +84,13 @@ function caGetExternalMediaUrlInfo(string $url, ?array $options=null) : ?array {
 			return ["source" => "VIMEO", "code" => $v];
 		}
 	}
+	if(preg_match('!^https://(docs|drive).google.com/(spreadsheets|file|document)/d/([^/]+)!', $url), $m) {
+		$v = $parts['path'] ?? null;
+		if($v) { 
+			$v = substr($v, 1);
+			return ["source" => "GOOGLEDRIVE", "service" => $m[1], "type" => $m[2], "code" => $m[3]];
+		}
+	}
 	return null;
 }
 # ---------------------------------------
@@ -111,6 +119,8 @@ function caGetExternalMediaEmbedCode(string $url, ?array $options=null) {
 			return "<iframe src=\"https://www.youtube.com/embed/{$code}\" width=\"{$width}\" height=\"{$height}\" title=\"{$title}\" frameborder=\"0\" allowfullscreen></iframe>";
 		case 'VIMEO':
 			return "<div style=\"padding-bottom: 75%; position: relative;\"><iframe width=\"{$width}\" height=\"{$height}\" title=\"{$title}\" src=\"https://player.vimeo.com/video/{$code}\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen\"  style=\"position: absolute; top: 0px; left: 0px;\"></iframe></div>";
+		case 'GOOGLEDRIVE':
+			return "<div style='left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.25%;'><iframe src='{$url}' style='top: 0; left: 0; width: {$width}; height: {$height}; position: absolute; border: 0;' allowfullscreen scrolling='no' allow='encrypted-media *;'></iframe></div>"
 	}
 	return null;
 }
