@@ -62,6 +62,7 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 		
 		$this->valid_hosts['.youtube\.com$']['username'] = $this->valid_hosts['youtu\.be$']['username'] = defined('__CA_YOUTUBE_USERNAME__') ? __CA_YOUTUBE_USERNAME__ : null;
 		$this->valid_hosts['.youtube\.com$']['password'] = $this->valid_hosts['youtu\.be$']['password'] = defined('__CA_YOUTUBE_PASSWORD__') ? __CA_YOUTUBE_PASSWORD__ : null;
+		$this->valid_hosts['.youtube\.com$']['cookies'] = $this->valid_hosts['youtu\.be$']['cookies'] = defined('__CA_YOUTUBE_COOKIES__') ? __CA_YOUTUBE_COOKIES__ : null;
 		$this->valid_hosts['vimeo\.com$']['username'] = defined('__CA_VIMEO_USERNAME__') ? __CA_VIMEO_USERNAME__ : null;
 		$this->valid_hosts['vimeo\.com$']['password'] = defined('__CA_VIMEO_PASSWORD__') ? __CA_VIMEO_PASSWORD__ : null;
 	}
@@ -97,14 +98,15 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 		
 		// Is it a supported URL?
  		$is_valid = false;
- 		$format = $username = $password = null;
+ 		$format = $username = $password = $cookies = null;
  		foreach($this->valid_hosts as $regex => $info) {
  			if (preg_match("!{$regex}!", $parsed_url['host'])) {
  				$format = $info['format'];
  				$service = $info['name'];
  				
  				$username = $info['username'] ?? null; 				
- 				$password = $info['password'] ?? null;
+ 				$password = $info['password'] ?? null;		
+ 				$cookies = $info['cookies'] ?? null;
  				
  				$is_valid = true;
  				break;
@@ -149,7 +151,8 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 			'service' => $service, 
 			'originalFilename' => pathInfo($url, PATHINFO_BASENAME),
 			'username' => $username,
-			'password' => $password
+			'password' => $password,
+			'cookies' => $cookies
 		];
 	}
 	# ------------------------------------------------
@@ -183,9 +186,10 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 			}
 			
 			$login_opts = ($p['username'] ?? null) ? "--username {$p['username']} --password {$p['password']}" : null;
+			$cookie_opts = ($p['cookies'] ?? null) ? "--cookies {$p['cookies']}" : null;
 			
 			$tmp_file = $dest ? $dest : caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true).'.'.$format;
-			caExec($this->youtube_dl_path.' '.caEscapeShellArg($url).' -f '.$format.' -q -o '.caEscapeShellArg($tmp_file)." {$login_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""));
+			caExec($this->youtube_dl_path.' '.caEscapeShellArg($url).' -f '.$format.' -q -o '.caEscapeShellArg($tmp_file)." {$login_opts} {$cookie_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""));
 
 			if(!file_exists($tmp_file) || (filesize($tmp_file) === 0)) {
 				return false;
@@ -223,12 +227,13 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 			$format = null;
 			
 			$login_opts = ($p['username'] ?? null) ? "--username {$p['username']} --password {$p['password']}" : null;
+			$cookie_opts = ($p['cookies'] ?? null) ? "--cookies {$p['cookies']}" : null;
 			
 			foreach($formats as $format) {
 				$tmp_file = $dest ? $dest : caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true);
 				$output = $ret = null;
-				caExec($this->youtube_dl_path.' '.caEscapeShellArg($url)." -q --skip-download --write-thumbnail --convert-thumbnails {$format} -o ".caEscapeShellArg($tmp_file)." {$login_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""), $output, $ret);
-				if($ret == 0) {
+				caExec($this->youtube_dl_path.' '.caEscapeShellArg($url)." -q --skip-download --write-thumbnail --convert-thumbnails {$format} -o ".caEscapeShellArg($tmp_file)." {$login_opts} {$cookie_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""), $output, $ret);
+				if($ret <= 1) {
 					$preview_path = "{$tmp_file}.{$format}";
 					break;	
 				}

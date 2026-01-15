@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@ trait CLIUtilsCron {
 	 * Process queued tasks
 	 */
 	public static function process_task_queue($po_opts=null) {
+		if(!defined('__CA_DISABLE_ACL__')) { define('__CA_DISABLE_ACL__', true); }
 		return TaskQueue::run([
 			'quiet' => (bool)$po_opts->getOption("quiet"), 
 			'restart' => $po_opts->getOption("restart"),

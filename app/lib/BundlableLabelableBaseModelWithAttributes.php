@@ -278,7 +278,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Set ACL for newly created record
 		if (caACLIsEnabled($this)) {
 			if($AUTH_CURRENT_USER_ID) { $this->setACLUsers([$AUTH_CURRENT_USER_ID => __CA_ACL_EDIT_DELETE_ACCESS__]); }
-			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level'));
+			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level') ?? __CA_ACL_NO_ACCESS__);
 		}
 		
 		if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -8044,7 +8044,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function setACLUsers(array $user_ids, ?array $options=null) : ?bool {
 		$this->removeAllACLUsers($options);
 		if (!$this->addACLUsers($user_ids)) { return false; }
-		
+		ca_acl::clearAccessValueCache();
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -8056,6 +8056,8 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeACLUsers(array $user_ids, ?array $options=null) : ?bool {
 		if (!($id = (int)$this->getPrimaryKey())) { return null; }
 		$table_num = $this->tableNum();
+		
+		ca_acl::clearAccessValueCache();
 		
 		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
 		
@@ -8096,6 +8098,8 @@ $pa_options["display_form_field_tips"] = true;
 	 */ 
 	public function removeAllACLUsers(?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		ca_acl::clearAccessValueCache();
 		
 		$o_db = $this->getDb();
 		
@@ -8211,6 +8215,8 @@ $pa_options["display_form_field_tips"] = true;
 	public function addACLUserGroups(array $group_ids, ?array $options=null) {
 		if (!($id = (int)$this->getPrimaryKey())) { return null; }
 		
+		ca_acl::clearAccessValueCache();
+		
 		$table_num = $this->tableNum();
 		
 		$user_id = (isset($options['user_id']) && $options['user_id']) ? $options['user_id'] : null;
@@ -8276,6 +8282,8 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeACLUserGroups($group_ids, ?array $options=null) {
 		if (!($id = (int)$this->getPrimaryKey())) { return null; }
 		
+		ca_acl::clearAccessValueCache();
+		
 		$table_num = $this->tableNum();
 		
 		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
@@ -8318,6 +8326,8 @@ $pa_options["display_form_field_tips"] = true;
 	public function removeAllACLUserGroups(?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 
+		ca_acl::clearAccessValueCache();
+		
 		$o_db = $this->getDb();
 				
 		$preserve_inherited_acl = caGetOption('preserveInherited', $options, false);
@@ -8415,6 +8425,8 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function setACLWorldAccess($pn_world_access, ?array $options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		ca_acl::clearAccessValueCache();
 		
 		$vn_table_num = $this->tableNum();
 		

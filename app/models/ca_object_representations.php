@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -631,6 +631,29 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Re-import extracted metadata from media, replacing previously extracted metadata.
+	 *
+	 * @param array $options Options include:
+	 * 		path = Path to media. If omitted path to original uploaded media is used. [Default is null]
+	 *
+	 * @return bool True on success, false on failure to read or import metadata, null if no media is loaded
+	 */
+	public function updateExtractedMediaMetadata(?array $options=null) : ?bool {
+		if(!$this->isLoaded()) { return null; }
+		if (!($media_path = $this->getMediaPath('media', 'original'))) {
+			if(!($media_path = $this->getOriginalMediaPath('media'))) {
+				$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+			}
+		}
+		if(!$media_path) { return null; }
+		
+		if(!($reader = $this->_readEmbeddedMetadata($media_path))) { 
+			return false;
+		}
+		return $this->_importEmbeddedMetadata(array_merge($options ?? [], ['path' => $media_path, 'reader' => $reader]));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1715,9 +1738,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$t_sidecar = new ca_object_representation_sidecars();
  		if($this->inTransaction()) { $t_sidecar->setTransaction($this->getTransaction()); }
- 		
- 		
- 		$t_sidecar->setMode(ACCESS_WRITE);
+ 
  		$t_sidecar->set('representation_id', $this->getPrimaryKey());
  		$tmp = explode("/", $filepath);
  		$t_sidecar->set('sidecar_file', $filepath, ['original_filename' => caGetOption('originalFilename', $options, array_pop($tmp))]);
