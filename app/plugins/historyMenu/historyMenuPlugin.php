@@ -57,7 +57,6 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 			if (!is_array($activity_list = Session::getVar("{$table_name}_history_id_list"))) {
 				$activity_list = [];
 			}
-<<<<<<< HEAD
 			
 			if (!method_exists($params['instance'], "getTypeID")) { return $params; }
 			
@@ -86,40 +85,6 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 			];
 			
 			Session::setVar($params['table_name'].'_history_id_list', $activity_list);
-		}
-		return $params;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Record save activity
-	 */
-	public function hookSummarizeItem($params) {
-		$this->hookEditItem($params);
-		
-		return $params;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Record save activity
-	 */
-	public function hookSaveItem($params) {
-		$this->hookEditItem($params);
-		
-		return $params;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Record delete activity
-	 */
-	public function hookDeleteItem($params) {
-		if ($req = $this->getRequest()) {
-			if (!is_array($activity_list = Session::getVar($params['table_name'].'_history_id_list'))) {
-				$activity_list = [];
-			}
-			unset($activity_list[$params['id']]);
-			Session::setVar($params['table_name'].'_history_id_list', $activity_list);
-			
-			AppNavigation::clearMenuBarCache($req);
 		}
 		return $params;
 	}
