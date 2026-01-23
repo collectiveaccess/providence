@@ -97,6 +97,7 @@ if (!is_array($initial_values)) { $initial_values = []; }
 			templateValues: ['label', 'effective_date', 'access', 'id', 'inheritance_link'],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
+			defaultValues: <?= json_encode(['access' => __CA_ACL_READONLY_ACCESS__]); ?>,
 			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',

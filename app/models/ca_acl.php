@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_acl'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => __CA_ACL_READONLY_ACCESS__,
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Access'),
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('no access') => __CA_ACL_NO_ACCESS__,
@@ -887,6 +887,9 @@ class ca_acl extends BaseModel {
 		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		$ids = ca_acl::getACLInheritanceHierarchy($subject);
+		$ids = array_filter($ids, function($v) use ($subject_id) {	// omit self
+			return ((int)$v !== $subject_id);
+		});
 	
 		if(!sizeof($ids)) { return false; }
 		
@@ -938,17 +941,17 @@ class ca_acl extends BaseModel {
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries}))";
+							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 					case 'user':
 						foreach($entries as $user_id => $access) {
-							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$access}))";
+							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$access})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 					case 'group':
 						foreach($entries as $group_id => $access) {
-							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$access}))";
+							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$access})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 				}
@@ -957,7 +960,7 @@ class ca_acl extends BaseModel {
 					$qr_delete = $db->query("
 						DELETE FROM ca_acl
 						WHERE
-						".join(" OR ", $deletes), []);
+						".join(" OR ", $deletes), [$subject_table_num, $id]);
 				}
 			}
 			

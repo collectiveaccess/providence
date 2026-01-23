@@ -195,40 +195,40 @@ var caUI = caUI || {};
 				templateValues.n = id;
 				jQuery.extend(templateValues, initialValues);
 
-				jQuery.each(this.templateValues, function(i, v) {
+				jQuery.each(that.templateValues, function(i, v) {
 					if (templateValues[v] == null) {  templateValues[v] = ''; }
 				});
 			} else {
 				// new item
 				if (!initialValues) {
 					initialValues = {};
-					jQuery.each(this.templateValues, function(i, v) {
+					jQuery.each(that.templateValues, function(i, v) {
 						templateValues[v] = '';
 					});
 				} else {
 					jQuery.extend(templateValues, initialValues);
 
 					// init all unset template placeholders to empty string
-					jQuery.each(this.templateValues, function(i, v) {
+					jQuery.each(that.templateValues, function(i, v) {
 						if (templateValues[v] == null) {  templateValues[v] = ''; }
 					});
 
 					if (initialValues['_errors']) {
-						this.errors[id] = initialValues['_errors'];
+						that.errors[id] = initialValues['_errors'];
 					}
 				}
-				templateValues.n = 'new_' + this.getNIndex();
+				templateValues.n = 'new_' + that.getNIndex();
 				templateValues.error = '';
 				isNew = true;
 			}
 
 			var defaultLocaleSelectedIndex = false;
-			if (isNew && this.incrementLocalesForNewBundles) {
+			if (isNew && that.incrementLocalesForNewBundles) {
 				// set locale_id for new bundles
 				// find unused locale
-				var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
+				var localeList = jQuery.makeArray(jQuery(that.container + " select." + that.localeClassName + ":first option"));
 				for(i=0; i < localeList.length; i++) {
-					if (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
+					if (jQuery(that.container + " select." + that.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
 						continue;
 					}
 					defaultLocaleSelectedIndex = i;
@@ -239,135 +239,136 @@ var caUI = caUI || {};
 			// Set default value for new items
 			var is_new = id ? false : true;
 			if (!id) {
-				jQuery.each(this.defaultValues, function(k, v) {
+				jQuery.each(that.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
 				});
-				id = 'new_' + this.getNIndex();	// set id to ensure sub-fields get painted with unsaved warning handler
+				id = 'new_' + that.getNIndex();	// set id to ensure sub-fields get painted with unsaved warning handler
 			}
 		
 			// print out any errors
 			var errStrs = [];
-			if (this.errors && this.errors[id]) {
+			if (that.errors && that.errors[id]) {
 				var i;
-				for (i=0; i < this.errors[id].length; i++) {
-					errStrs.push(this.errors[id][i].errorDescription);
+				for (i=0; i < that.errors[id].length; i++) {
+					errStrs.push(that.errors[id][i].errorDescription);
 				}
 			}
 
 			templateValues.error = errStrs.join('<br/>');
-			templateValues.fieldNamePrefix = this.fieldNamePrefix; // always pass field name prefix to template
+			templateValues.fieldNamePrefix = that.fieldNamePrefix; // always pass field name prefix to template
 
 			// replace values in template
-			var jElement = jQuery(this.container + ' textarea.' + (isNew ? this.templateClassName : this.initialValueTemplateClassName)).template(templateValues);
+			var jElement = jQuery(that.container + ' textarea.' + (isNew ? that.templateClassName : that.initialValueTemplateClassName)).template(templateValues);
 
 			if(options.useAnimation) {
 				jQuery(jElement).hide();
-				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-					jQuery(this.container + " ." + this.newItemListClassName).prepend(jElement);
+				if ((that.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
+					jQuery(that.container + " ." + that.newItemListClassName).prepend(jElement);
 				} else {
-					jQuery(this.container + " ." + (isNew ? this.newItemListClassName : this.itemListClassName)).append(jElement);
+					jQuery(that.container + " ." + (isNew ? that.newItemListClassName : that.itemListClassName)).append(jElement);
 				}
-				jQuery(jElement).slideDown(this.animationDuration);
+				jQuery(jElement).slideDown(that.animationDuration);
 			} else {
-				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-					jQuery(this.container + " ." + this.newItemListClassName).prepend(jElement);
+				if ((that.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
+					jQuery(that.container + " ." + that.newItemListClassName).prepend(jElement);
 				} else {
-					jQuery(this.container + " ." + (isNew ? this.newItemListClassName : this.itemListClassName)).append(jElement);
+					jQuery(that.container + " ." + (isNew ? that.newItemListClassName : that.itemListClassName)).append(jElement);
 				}
 			}
 
 			if (!dontUpdateBundleFormState && $.fn['scrollTo']) {	// scroll to newly added bundle
-				jQuery(this.container + " ." + this.newItemListClassName).scrollTo("999999px", 250);
+				jQuery(that.container + " ." + that.newItemListClassName).scrollTo("999999px", 250);
 			}
 
-			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
-				this.onInitializeItem(is_new ? null : id, initialValues, this, isNew);
+			if (that.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
+				that.onInitializeItem(is_new ? null : id, initialValues, this, isNew);
 			}
-
-			var that = this;	// for closures
 
 			// set defaults in SELECT elements
-			var selects = jQuery.makeArray(jQuery(this.container + " select"));
+			var selects = jQuery.makeArray(jQuery(that.container + " select"));
 
 			// assumes name of fields is:
 			// {fieldNamePrefix} + {fieldname} + {_} + {row id number}
 			var i;
-			var fieldRegex = new RegExp(this.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
+			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < selects.length; i++) {
 				var element_id = selects[i].id;
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && ((parseInt(info[2]) == id) || ('new_' + info[2] ==  id))) {
-					if (this.initialValues[id] && typeof(this.initialValues[id][info[1]]) == 'boolean') {
-						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
+					if (that.initialValues[id] && typeof(that.initialValues[id][info[1]]) == 'boolean') {
+						that.initialValues[id][info[1]] = (that.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					let iv = this.initialValues[id] ? this.initialValues[id][info[1]] : initialValues[info[1].replace('_new', '')];
-					jQuery(this.container + " #" + element_id + " option[value='" + iv +"']").prop('selected', true);
+					let iv = that.initialValues[id] ? that.initialValues[id][info[1]] : initialValues[info[1].replace('_new', '')];
+					if(iv === undefined) { 
+						iv = templateValues[info[1].replace(/_new$/, '')] ?? null;
+					}
+					jQuery(that.container + " #" + element_id + " option[value='" + iv +"']").prop('selected', true);
 				}
 			}
 
 			// set defaults in CHECKBOX elements
-			var checkboxes = jQuery.makeArray(jQuery(this.container + " input[type=checkbox]"));
+			var checkboxes = jQuery.makeArray(jQuery(that.container + " input[type=checkbox]"));
 
 			// assumes name of fields is:
 			// {fieldNamePrefix} + {fieldname} + {_} + {row id number}
 			var i;
-			var fieldRegex = new RegExp(this.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
+			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < checkboxes.length; i++) {
 				var element_id = checkboxes[i].id;
 
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
-					jQuery(this.container + " #" + element_id).prop('checked', false);
-					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
-						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
+					jQuery(that.container + " #" + element_id).prop('checked', false);
+					if (typeof(that.initialValues[id][info[1]]) == 'boolean') {
+						that.initialValues[id][info[1]] = (that.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + "[value=" + this.initialValues[id][info[1]] +"]").prop('checked', true);
+					jQuery(that.container + " #" + element_id + "[value=" + that.initialValues[id][info[1]] +"]").prop('checked', true);
 				}
 			}
 
 			// set defaults in RADIO elements
-			var radios = jQuery.makeArray(jQuery(this.container + " input[type=radio]"));
+			var radios = jQuery.makeArray(jQuery(that.container + " input[type=radio]"));
 
 			// assumes name of fields is:
 			// {fieldNamePrefix} + {fieldname} + {_} + {row id number} + {_} + {checkbox sequence number - eg. 0, 1, 2}
 			var i;
-			var fieldRegex = new RegExp(this.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)_([0-9]+)");
+			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)_([0-9]+)");
 			for(i=0; i < radios.length; i++) {
 				var element_id = radios[i].id;
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
-					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
-						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
+					if (typeof(that.initialValues[id][info[1]]) == 'boolean') {
+						that.initialValues[id][info[1]] = (that.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + "[value=" + this.initialValues[id][info[1]] +"]").prop('checked', true);
+					jQuery(that.container + " #" + element_id + "[value=" + that.initialValues[id][info[1]] +"]").prop('checked', true);
 				}
 			}
 
 
 			// Do show/hide on creation of new item
 			if (isNew) {
-				var curCount = this.getCount();
-				if (this.showOnNewIDList.length > 0) {
-					jQuery.each(this.showOnNewIDList, function(i, show_id) {
+				var curCount = that.getCount();
+				if (that.showOnNewIDList.length > 0) {
+					jQuery.each(that.showOnNewIDList, function(i, show_id) {
 						jQuery(that.container + ' #' + show_id +'new_' + curCount).show(); }
 					);
 				}
-				if (this.hideOnNewIDList.length > 0) {
-					jQuery.each(this.hideOnNewIDList, function(i, hide_id) {
+				if (that.hideOnNewIDList.length > 0) {
+					jQuery.each(that.hideOnNewIDList, function(i, hide_id) {
 						jQuery(that.container + ' #' + hide_id +'new_' + curCount).hide();}
 					);
 				}
 
-				if (this.enableOnNewIDList.length > 0) {
-					jQuery.each(this.enableOnNewIDList,
+				if (that.enableOnNewIDList.length > 0) {
+					jQuery.each(that.enableOnNewIDList,
 						function(i, enable_id) {
 							jQuery(that.container + ' #' + enable_id +'new_' + curCount).prop('disabled', false);
 						}
 					);
 				}
 			} else {
-				if (this.disableOnExistingIDList.length > 0) {
-					jQuery.each(this.disableOnExistingIDList,
+				if (that.disableOnExistingIDList.length > 0) {
+					jQuery.each(that.disableOnExistingIDList,
 						function(i, disable_id) {
 							jQuery(that.container + ' #' + disable_id + id).prop('disabled', true);
 						}
@@ -376,9 +377,9 @@ var caUI = caUI || {};
 			}
 
 			// attach interstitial edit button
-			if (this.interstitialButtonClassName) {
-				if (!this.readonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
-					jQuery("#" +this.itemID + templateValues.n).find("." + this.interstitialButtonClassName).on('click', null,  {}, function(e) {
+			if (that.interstitialButtonClassName) {
+				if (!that.readonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
+					jQuery("#" +that.itemID + templateValues.n).find("." + that.interstitialButtonClassName).on('click', null,  {}, function(e) {
 						// Trigger interstitial edit panel
 						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
 						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
@@ -390,68 +391,68 @@ var caUI = caUI || {};
 						return false;
 					});
 				} else {
-					jQuery("#" +this.itemID + templateValues.n).find("." + this.interstitialButtonClassName).css("display", "none");
+					jQuery("#" +that.itemID + templateValues.n).find("." + that.interstitialButtonClassName).css("display", "none");
 				}
 			}
 
 			// attach delete button
-			if (!this.readonly) {
-				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).on('click', null, {}, function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
+			if (!that.readonly) {
+				jQuery("#" +that.itemID + templateValues.n).find("." + that.deleteButtonClassName).on('click', null, {}, function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
 			} else {
-				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).css("display", "none");
+				jQuery("#" +that.itemID + templateValues.n).find("." + that.deleteButtonClassName).css("display", "none");
 			}
 			
 			// attach other buttons
-			if(this.buttons) {
-				for(var i in this.buttons) {
-					let b = this.buttons[i];
-					jQuery("#" +this.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
+			if(that.buttons) {
+				for(var i in that.buttons) {
+					let b = that.buttons[i];
+					jQuery("#" +that.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
 				}
 			}
 
 			// set default locale for new
 			if (isNew) {
 				if (defaultLocaleSelectedIndex !== false) {
-					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
+					if (jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
 						// There's a locale drop-down to mess with
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
+						jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
+						jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + that.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
+						jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				} else {
-					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
+					if (jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n +" option").length) {
 						// There's a locale drop-down to mess with
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
+						jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
+						jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + that.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
+						jQuery(that.container + " #" + that.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				}
 			}
 
 			// Add bundle preview value text
-			if(this.bundlePreview && (this.bundlePreview.length > 0)) {
-				jQuery('#' + this.fieldNamePrefix + 'BundleContentPreview').text(this.bundlePreview);
+			if(that.bundlePreview && (that.bundlePreview.length > 0)) {
+				jQuery('#' + that.fieldNamePrefix + 'BundleContentPreview').text(that.bundlePreview);
 			}
 
-			if(this.onAddItem) {
-				this.onAddItem(id ? id : templateValues.n, this, isNew);
+			if(that.onAddItem) {
+				that.onAddItem(id ? id : templateValues.n, this, isNew);
 			}
 
-			this.incrementCount();
-			if (!dontUpdateBundleFormState) { this.updateBundleFormState(); }
+			that.incrementCount();
+			if (!dontUpdateBundleFormState) { that.updateBundleFormState(); }
 
-			if (this.onItemCreate) {
-				this.onItemCreate(templateValues.n, this.initialValues[id]);
+			if (that.onItemCreate) {
+				that.onItemCreate(templateValues.n, that.initialValues[id]);
 			}
 
-			if (this.readonly) {
-				jQuery(this.container + " input").prop("disabled", true);
-				jQuery(this.container + " textarea").prop("disabled", true);
-				jQuery(this.container + " select").prop("disabled", true);
+			if (that.readonly) {
+				jQuery(that.container + " input").prop("disabled", true);
+				jQuery(that.container + " textarea").prop("disabled", true);
+				jQuery(that.container + " select").prop("disabled", true);
 			}
 
 			return this;

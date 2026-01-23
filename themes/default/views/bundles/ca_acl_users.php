@@ -39,7 +39,7 @@ $t_acl = new ca_acl();
 $read_only = false;
 
 $initial_values = $this->getVar('initialValues');
-if (!is_array($initial_values)) { $initial_values = array(); }	
+if (!is_array($initial_values)) { $initial_values = []; }	
 ?>
 <div id="<?= $id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php
@@ -94,6 +94,7 @@ if (!is_array($initial_values)) { $initial_values = array(); }
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
 			templateValues: ['label', 'effective_date', 'access', 'id', 'inheritance_link'],
 			initialValues: <?= json_encode($initial_values); ?>,
+			defaultValues: <?= json_encode(['access' => __CA_ACL_READONLY_ACCESS__]); ?>,
 			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
@@ -101,7 +102,7 @@ if (!is_array($initial_values)) { $initial_values = array(); }
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get', array()); ?>'
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get',[]); ?>'
 		});
 	});
 </script>
