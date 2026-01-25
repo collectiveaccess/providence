@@ -7930,6 +7930,176 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------	
 	/**
+	 *
+	 */
+	public function setACLAccessFromForm(RequestHTTP $request) : ?bool {
+		if ((!$this->isSaveable($request)) || (!$request->user->canDoAction('can_change_acl_'.$this->tableName()))) {
+			$this->postError(2570, _t('Cannot set access'), 'BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()');
+			return false;
+		}
+		$save_access = $this->getAppConfig()->get('acl_show_public_access_controls');
+		
+		$pawtucket_only_acl_enabled = caACLIsEnabled($this, ['forPawtucket' => true]);
+		$can_save_acl = ((!method_exists($this, 'supportsACL') || $this->supportsACL())) || $pawtucket_only_acl_enabled;
+	
+		$subject_table = $this->tableName();
+		$subject_pk = $this->primaryKey();
+		$form_prefix = $request->getParameter('_formName', pString);
+
+		$this->opo_app_plugin_manager->hookBeforeSaveItem([
+			'id' => $subject_id,
+			'table_num' => $this->tableNum(),
+			'table_name' => $subject_table, 
+			'instance' => &$this,
+			'is_insert' => false
+		]);
+		
+		// Set Pawtucket access
+		$orig_access = $this->get('access');
+		if($save_access && !is_null($request->parameterExists('access')) && $this->hasField('access')) {
+			$this->set('access', $request->getParameter('access', pInteger) );
+			$this->update();
+		}
+		if($pawtucket_only_acl_enabled) {
+			$set_all = $request->getParameter('set_all_access_inherit_from_parent', pInteger);
+			$request->setParameter('set_all_acl_inherit_from_parent', $set_all);
+			
+			$set_all = $request->getParameter('set_all_objects_access_inherit_from_parent', pInteger);
+			$request->setParameter('set_all_acl_inherit_from_ca_collections', $set_all);
+			
+			$set_none = $request->getParameter('set_none_access_inherit_from_parent', pInteger);
+			$request->setParameter('set_none_acl_inherit_from_parent', $set_none);
+			
+			$set_none = $request->getParameter('set_none_objects_access_inherit_from_parent', pInteger);
+			$request->setParameter('set_none_acl_inherit_from_ca_collections', $set_none);
+			
+			$inherit = $request->getParameter('access_inherit_from_parent', pInteger);
+			$request->setParameter('acl_inherit_from_ca_collections', $inherit);
+			$request->setParameter('acl_inherit_from_parent', $inherit);
+		}
+	
+		if($can_save_acl) {
+			// Force all?
+			if(($set_all = $request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
+				if(!ca_acl::setACLInheritanceSettingForAllChildRows($this, $this->getPrimaryKey(), $set_all)) {
+					$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
+				}
+				$_REQUEST['form_timestamp'] = time();
+			}
+			if(
+				($subject_table === 'ca_collections')
+				&&
+				($set_all = $request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
+			) {
+				if(!ca_acl::setACLInheritanceSettingForRelatedObjects($this, $this->getPrimaryKey(), $set_all)) {
+					$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
+				}
+				$_REQUEST['form_timestamp'] = time();
+			}
+		}
+		if(
+			($set_all = $request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $request->getParameter('set_none_access_inherit_from_parent', pInteger))
+		) {
+			if(!ca_acl::setAccessInheritanceSettingForChildrenFromRow($this, $this->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
+		if(
+			($subject_table === 'ca_collections')
+			&&
+			($set_all = $request->getParameter('set_all_objects_access_inherit_from_parent', pInteger)) || ($set_none = $request->getParameter('set_none_objects_access_inherit_from_parent', pInteger))
+		) {
+			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($this, $this->getPrimaryKey(), $set_all)) {
+				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
+			}
+			$_REQUEST['form_timestamp'] = time();
+		}
+		// Set ACL-related intrinsic fields
+		if ($this->hasField('acl_inherit_from_ca_collections') || $this->hasField('acl_inherit_from_parent') || $this->hasField('access_inherit_from_parent')) {
+			if($can_save_acl) {
+				if ($this->hasField('acl_inherit_from_ca_collections')) {
+					$this->set('acl_inherit_from_ca_collections', $request->getParameter('acl_inherit_from_ca_collections', pInteger));
+				}
+				if ($this->hasField('acl_inherit_from_parent')) {
+					$this->set('acl_inherit_from_parent', $request->getParameter('acl_inherit_from_parent', pInteger));
+				}
+			}
+			if ($this->hasField('access_inherit_from_parent')) {
+				$this->set('access_inherit_from_parent', $request->getParameter('access_inherit_from_parent', pInteger));
+			}
+			$this->update();
+
+			//if ($this->numErrors()) {
+			//	$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $this->getErrors())),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
+			//}
+		}
+		if($can_save_acl) {
+			$preserve_inherited = [];
+			if($this->hasField('acl_inherit_from_ca_collections') && $this->get('acl_inherit_from_ca_collections')) { $preserve_inherited[] = 13; }
+			if($this->get('acl_inherit_from_parent')) { $preserve_inherited[] = $this->tableNum(); }
+	
+			// Save user ACL's
+			$users_to_set = [];
+			foreach($_REQUEST as $key => $val) {
+				if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
+					$user_id = (int)$request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
+					$access = $request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
+					if ($access >= 0) {
+						$users_to_set[$user_id] = $access;
+					}
+				}
+			}
+			$this->setACLUsers($users_to_set, ['preserveInherited' => $preserve_inherited]);
+	
+			// Save group ACL's
+			$groups_to_set = [];
+			foreach($_REQUEST as $key => $val) {
+				if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
+					$group_id = (int)$request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
+					$access = $request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
+					if ($access >= 0) {
+						$groups_to_set[$group_id] = $access;
+					}
+				}
+			}
+			$this->setACLUserGroups($groups_to_set, ['preserveInherited' => $preserve_inherited]);
+	
+			// Save "world" ACL
+			if($pawtucket_only_acl_enabled) {
+				// Set world access to public access value in "front-end only" mode
+				
+				$access_to_acl_map = caGetACLItemLevelMap();
+				$this->setACLWorldAccess($access_to_acl_map[$request->getParameter('access', pInteger) ?? 0], ['preserveInherited' => $preserve_inherited]);
+			} else {
+				$this->setACLWorldAccess($request->getParameter("{$form_prefix}_access_world", pInteger));
+			}
+			
+			ca_acl::updateACLInheritanceForRow($this);
+		}
+		
+		SearchResult::clearCaches();
+		ca_acl::applyAccessInheritance($this);
+		SearchResult::clearCaches();
+		ca_acl::applyAccessInheritanceToChildrenFromRow($this);
+		SearchResult::clearCaches();
+		if($this->tableName() === 'ca_collections') {
+			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($this);
+		}
+		$this->opo_app_plugin_manager->hookSaveItem(
+			[
+				'id' => $subject_id,
+				'table_num' => $this->tableNum(),
+				'table_name' => $subject_table,
+				'instance' => &$this,
+				'is_insert' => false,
+				'request' => $request
+			]
+		);
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------	
+	/**
 	 * Returns array of user-based ACL entries associated with the currently loaded row. The array
 	 * is key'ed on user user user_id; each value is an  array containing information about the user. Array keys are:
 	 *			user_id			[user_id for user]
